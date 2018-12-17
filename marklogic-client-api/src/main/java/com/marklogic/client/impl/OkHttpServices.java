@@ -1360,7 +1360,7 @@ public class OkHttpServices implements RESTServices {
       status = response.code();
 
       responseHeaders = response.headers();
-      if (!retryStatus.contains(status)) {
+      if (transaction != null || !retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
 
         break;
@@ -1504,7 +1504,7 @@ public class OkHttpServices implements RESTServices {
       status = response.code();
 
       responseHeaders = response.headers();
-      if (!retryStatus.contains(status)) {
+      if (transaction != null || !retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
 
         break;
@@ -2207,7 +2207,7 @@ public class OkHttpServices implements RESTServices {
 
         status = response.code();
 
-        if (!retryStatus.contains(status)) {
+        if (transaction != null || !retryStatus.contains(status)) {
           if (isFirstRequest()) setFirstRequest(false);
 
           break;
@@ -3162,7 +3162,7 @@ public class OkHttpServices implements RESTServices {
       response = doPut(requestBldr, multiPart, hasStreamingPart);
       status = response.code();
 
-      if (!retryStatus.contains(status)) {
+      if (transaction != null || !retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
 
         break;
@@ -3334,7 +3334,7 @@ public class OkHttpServices implements RESTServices {
       response = doPost(requestBldr, multiPart, hasStreamingPart);
       status = response.code();
 
-      if (!retryStatus.contains(status)) {
+      if (transaction != null || !retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
 
         break;
@@ -3859,7 +3859,7 @@ public class OkHttpServices implements RESTServices {
       response = doPost(requestBldr, multiPart, hasStreamingPart);
       status = response.code();
 
-      if (!retryStatus.contains(status)) {
+      if (transaction != null || !retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
 
         break;
