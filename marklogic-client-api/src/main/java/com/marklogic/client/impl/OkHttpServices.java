@@ -1312,80 +1312,40 @@ public class OkHttpServices implements RESTServices {
       requestBldr = requestBldr.header("X-HTTP-Method-Override", "PATCH");
       method  = "post";
     }
-    boolean isResendable = handleBase.isResendable();
 
-    Response response = null;
-    int status = -1;
-    Headers responseHeaders = null;
-    long startTime = System.currentTimeMillis();
-    int nextDelay = 0;
-    int retry = 0;
-    for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
-      if (nextDelay > 0) {
-        try {
-          Thread.sleep(nextDelay);
-        } catch (InterruptedException e) {
-        }
-      }
-
-      Object value = handleBase.sendContent();
+    final Object value = handleBase.sendContent();
+    final String finalMethod = method;
+    final Function<Request.Builder, Response> postFunction = builder -> {
       if (value == null) {
         throw new IllegalArgumentException(
-          "Document write with null value for " + ((uri != null) ? uri : "new document"));
+            "Document write with null value for " + ((desc.getUri() != null) ? desc.getUri() : "new document"));
       }
 
-      if (isFirstRequest() && !isResendable && isStreaming(value)) {
-        nextDelay = makeFirstRequest(retry);
-        if (nextDelay != 0) continue;
-      }
-
-      MediaType mediaType = makeType(requestBldr.build().header(HEADER_CONTENT_TYPE));
+      MediaType mediaType = makeType(builder.build().header(HEADER_CONTENT_TYPE));
       if (value instanceof OutputStreamSender) {
         StreamingOutputImpl sentStream =
-          new StreamingOutputImpl((OutputStreamSender) value, reqlog, mediaType);
-        requestBldr =
-          ("put".equals(method)) ?
-            requestBldr.put(sentStream) :
-            requestBldr.post(sentStream);
+            new StreamingOutputImpl((OutputStreamSender) value, reqlog, mediaType);
+        builder =
+            ("put".equals(finalMethod)) ?
+                builder.put(sentStream) :
+                builder.post(sentStream);
       } else {
         Object sentObj = (reqlog != null) ?
-          reqlog.copyContent(value) : value;
-        requestBldr =
-          ("put".equals(method)) ?
-            requestBldr.put(new ObjectRequestBody(sentObj, mediaType)) :
-            requestBldr.post(new ObjectRequestBody(sentObj, mediaType));
-      }
-      response = sendRequestOnce(requestBldr);
-
-      status = response.code();
-
-      responseHeaders = response.headers();
-      if (!retryStatus.contains(status)) {
-        if (isFirstRequest()) setFirstRequest(false);
-
-        break;
+            reqlog.copyContent(value) : value;
+        builder =
+            ("put".equals(finalMethod)) ?
+                builder.put(new ObjectRequestBody(sentObj, mediaType)) :
+                builder.post(new ObjectRequestBody(sentObj, mediaType));
       }
 
-      String retryAfterRaw = response.header("Retry-After");
-      response.close();
+      return sendRequestOnce(builder);
+    };
 
-      if (!isResendable) {
-        checkFirstRequest();
-        throw new ResourceNotResendableException(
-          "Cannot retry request for " +
-            ((uri != null) ? uri : "new document"));
-      }
+    final boolean isRetryable = handleBase.isResendable() && transaction == null && isStreaming(value);
+    final Response response = sendRequestWithRetry(requestBldr, isRetryable, postFunction, null);
+    final int status = response.code();
+    final Headers responseHeaders = response.headers();
 
-      int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
-      nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
-    }
-    if (retryStatus.contains(status)) {
-      checkFirstRequest();
-      throw new FailedRetryException(
-        "Service unavailable and maximum retry period elapsed: "+
-          Math.round((System.currentTimeMillis() - startTime) / 1000)+
-          " seconds after "+retry+" retries");
-    }
     if (status == STATUS_NOT_FOUND) {
       throw new ResourceNotFoundException(
         "Could not write non-existent document",
@@ -1432,10 +1392,6 @@ public class OkHttpServices implements RESTServices {
             "document create produced invalid location: " + location);
         }
         uri = location.substring(offset + DOCUMENT_URI_PREFIX.length());
-        if (uri == null) {
-          throw new MarkLogicInternalException(
-            "document create produced location without uri: " + location);
-        }
         desc.setUri(uri);
         updateVersion(desc, responseHeaders);
         updateDescriptor(desc, responseHeaders);
@@ -2962,7 +2918,7 @@ public class OkHttpServices implements RESTServices {
         return postResource(reqlog, "internal/uris", transaction, params, input, output);
       } else if (qdef instanceof StructuredQueryDefinition) {
           String structure = ((StructuredQueryDefinition) qdef).serialize();
-          
+
           logger.debug("Query uris with structured query {}{}", structure, qtextMessage);
           if (structure != null) {
             params.add("structuredQuery", structure);
@@ -2975,7 +2931,7 @@ public class OkHttpServices implements RESTServices {
         }
       } else if (qdef instanceof CombinedQueryDefinition) {
         String structure = ((CombinedQueryDefinition) qdef).serialize();
-        
+
         logger.debug("Query uris with combined query {}", structure);
         if (structure != null) {
           params.add("structuredQuery", structure);
