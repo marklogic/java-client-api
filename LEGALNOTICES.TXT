@@ -559,7 +559,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Source materials are available for download at: http://mvnrepository.com/artifact/org.hsqldb/hsqldb 
 
-Jackson Annotations 2.9.4 
+Jackson Annotations 2.9.8
 
 Attribution Statements
 http://wiki.fasterxml.com/JacksonHome
@@ -572,7 +572,7 @@ Made available under the Apache License 2.0. See Appendix for full text.
 
 Source materials are available for download at: http://github.com/FasterXML/jackson 
 
-Jackson Core 2.9.4 
+Jackson Core 2.9.8
 
 Attribution Statements
 http://wiki.fasterxml.com/JacksonHome
@@ -585,7 +585,7 @@ Made available under the Apache License 2.0. See Appendix for full text.
 
 Source materials are available for download at: https://github.com/FasterXML/jackson-core 
 
-Jackson Databind 2.9.7 
+Jackson Databind 2.9.8
 
 Attribution Statements
 http://wiki.fasterxml.com/JacksonHome
@@ -611,7 +611,7 @@ Made available under the Apache License 2.0. See Appendix for full text.
 
 Source materials are available for download at: https://github.com/FasterXML/jackson-dataformat-csv 
 
-Jackson Dataformat XML 2.9.4 
+Jackson Dataformat XML 2.9.8
 
 Attribution Statements
 http://wiki.fasterxml.com/JacksonExtensionXmlDataBinding
@@ -624,7 +624,7 @@ Made available under the Apache License 2.0. See Appendix for full text.
 
 Source materials are available for download at: https://github.com/FasterXML/jackson-dataformat-xml 
 
-Jackson Module Kotlin 2.9.3 
+Jackson Module Kotlin 2.9.8
 
 Attribution Statements
 https://github.com/FasterXML/jackson-module-kotlin
