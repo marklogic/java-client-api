@@ -19,7 +19,13 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.*;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.BasicAuthContext;
+import com.marklogic.client.DatabaseClientFactory.CertificateAuthContext;
+import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
+import com.marklogic.client.DatabaseClientFactory.KerberosAuthContext;
+import com.marklogic.client.DatabaseClientFactory.SAMLAuthContext;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
 import com.marklogic.client.document.ContentDescriptor;
@@ -170,6 +176,7 @@ public class OkHttpServices implements RESTServices {
   private HttpUrl baseUri;
   private OkHttpClient client;
   private boolean released = false;
+  private String headerValue = "Authorization";
 
   private Random randRetry    = new Random();
 
@@ -246,6 +253,7 @@ public class OkHttpServices implements RESTServices {
   }
 
   @Override
+  @Deprecated
   public void connect(String host, int port, String database, String user, String password,Map<String,String> kerberosOptions,
       Authentication authenType, SSLContext sslContext, X509TrustManager trustManager,
       SSLHostnameVerifier verifier) {
@@ -398,6 +406,105 @@ public class OkHttpServices implements RESTServices {
     // HttpProtocolParams.setUseExpectContinue(httpParams, false);
     // httpParams.setIntParameter(CoreProtocolPNames.WAIT_FOR_CONTINUE, 1000);
     */
+  }
+  
+  @Override
+  public void connect(String host, int port, String database, SecurityContext securityContext){
+	String user = null;
+	Map<String, String> kerberosOptions = null;
+	String password = null;
+	Authentication type = null;
+	SSLContext sslContext = null;
+	SSLHostnameVerifier sslVerifier = null;
+	X509TrustManager trustManager = null;
+
+	if (securityContext instanceof BasicAuthContext) {
+		BasicAuthContext basicContext = (BasicAuthContext) securityContext;
+		user = basicContext.getUser();
+		password = basicContext.getPassword();
+		type = Authentication.BASIC;
+		if (basicContext.getSSLContext() != null) {
+			sslContext = basicContext.getSSLContext();
+			if (basicContext.getTrustManager() != null)
+				trustManager = basicContext.getTrustManager();
+			if (basicContext.getSSLHostnameVerifier() != null) {
+				sslVerifier = basicContext.getSSLHostnameVerifier();
+			} else {
+				sslVerifier = SSLHostnameVerifier.COMMON;
+			}
+		}
+	} else if (securityContext instanceof DigestAuthContext) {
+		DigestAuthContext digestContext = (DigestAuthContext) securityContext;
+		user = digestContext.getUser();
+		password = digestContext.getPassword();
+		type = Authentication.DIGEST;
+		if (digestContext.getSSLContext() != null) {
+			sslContext = digestContext.getSSLContext();
+			if (digestContext.getTrustManager() != null)
+				trustManager = digestContext.getTrustManager();
+			if (digestContext.getSSLHostnameVerifier() != null) {
+				sslVerifier = digestContext.getSSLHostnameVerifier();
+			} else {
+				sslVerifier = SSLHostnameVerifier.COMMON;
+			}
+		}
+	} else if (securityContext instanceof KerberosAuthContext) {
+		KerberosAuthContext kerberosContext = (KerberosAuthContext) securityContext;
+		kerberosOptions = kerberosContext.getKrbOptions();
+		type = Authentication.KERBEROS;
+		if (kerberosContext.getSSLContext() != null) {
+			sslContext = kerberosContext.getSSLContext();
+			if (kerberosContext.getTrustManager() != null)
+				trustManager = kerberosContext.getTrustManager();
+			if (kerberosContext.getSSLHostnameVerifier() != null) {
+				sslVerifier = kerberosContext.getSSLHostnameVerifier();
+			} else {
+				sslVerifier = SSLHostnameVerifier.COMMON;
+			}
+		}
+	} else if (securityContext instanceof CertificateAuthContext) {
+		CertificateAuthContext certificateContext = (CertificateAuthContext) securityContext;
+		type = Authentication.CERTIFICATE;
+		sslContext = certificateContext.getSSLContext();
+		if (certificateContext.getTrustManager() != null)
+			trustManager = certificateContext.getTrustManager();
+		if (certificateContext.getSSLHostnameVerifier() != null) {
+			sslVerifier = certificateContext.getSSLHostnameVerifier();
+		} else {
+			sslVerifier = SSLHostnameVerifier.COMMON;
+		}
+	} else if (securityContext instanceof SAMLAuthContext) {
+			SAMLAuthContext samlAuthContext = (SAMLAuthContext) securityContext;
+			type = Authentication.SAML;
+			sslContext = samlAuthContext.getSSLContext();
+			headerValue = samlAuthContext.getToken();
+			if (samlAuthContext.getTrustManager() != null)
+				trustManager = samlAuthContext.getTrustManager();
+			if (samlAuthContext.getSSLHostnameVerifier() != null) {
+				sslVerifier = samlAuthContext.getSSLHostnameVerifier();
+			} else {
+				sslVerifier = SSLHostnameVerifier.COMMON;
+			}
+		}  else {
+			throw new IllegalArgumentException("securityContext must be of type BasicAuthContext, "
+					+ "DigestAuthContext, KerberosAuthContext, CertificateAuthContext or SAMLAuthContext");
+		}
+		HostnameVerifier hostnameVerifier = null;
+		if (sslVerifier == SSLHostnameVerifier.ANY) {
+			hostnameVerifier = new HostnameVerifier() {
+				@Override
+				public boolean verify(String hostname, SSLSession session) {
+					return true;
+				}
+			};
+		} else if (sslVerifier == SSLHostnameVerifier.COMMON || sslVerifier == SSLHostnameVerifier.STRICT) {
+			hostnameVerifier = null;
+		} else if (sslVerifier != null) {
+			hostnameVerifier = new SSLHostnameVerifier.HostnameVerifierAdapter(sslVerifier);
+		} 
+		
+		connect(host, port, database, user, password, kerberosOptions, type, sslContext, trustManager,
+				hostnameVerifier);
   }
 
   @Override
@@ -4223,6 +4330,10 @@ public class OkHttpServices implements RESTServices {
     }
     Request.Builder request = new Request.Builder()
         .url(uri.build());
+    if(headerValue!=null && headerValue.length()!=0) {
+		String samlHeaderValue = "Authorization: SAML token="+ headerValue;
+		request = request.header(HEADER_AUTHORIZATION, samlHeaderValue);
+	}
     return request;
   }
 

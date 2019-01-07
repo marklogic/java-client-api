@@ -48,8 +48,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import okhttp3.OkHttpClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
 import com.marklogic.client.extra.httpclient.HttpClientConfigurator;
@@ -91,7 +89,11 @@ public class DatabaseClientFactory {
     /**
      * Authentication using Certificates;
      */
-    CERTIFICATE;
+    CERTIFICATE,
+	/**
+	 * Authentication using SAML;
+	 */
+	SAML;
     /**
      * Returns the enumerated value for the case-insensitive name.
      * @param name	the name of the enumerated value
@@ -372,6 +374,10 @@ public class DatabaseClientFactory {
       this.sslVerifier = verifier;
     }
 
+	public X509TrustManager getTrustManager() {
+		return this.trustManager;
+	}
+	
     @Override
     @Deprecated
     public SecurityContext withSSLContext(SSLContext context) {
@@ -473,6 +479,9 @@ public class DatabaseClientFactory {
   public static class KerberosAuthContext extends AuthContext {
 
     Map<String, String> krbOptions;
+	public Map<String, String> getKrbOptions() {
+		return krbOptions;
+	}
 
     public KerberosAuthContext() {
 
@@ -509,6 +518,65 @@ public class DatabaseClientFactory {
       return this;
     }
   }
+  
+	public class SAMLAuthContext implements SecurityContext {
+		private String token;
+		SSLContext sslContext;
+		X509TrustManager trustManager;
+		SSLHostnameVerifier sslVerifier;
+		
+		public X509TrustManager getTrustManager() {
+			return trustManager;
+		}
+
+		public SAMLAuthContext(String authorizationToken) {
+			this.token = authorizationToken;
+		}
+		public String getToken() {
+			return token;
+		}
+
+		@Override
+		public SAMLAuthContext withSSLContext(SSLContext context, X509TrustManager trustManager) {
+			this.sslContext = context;
+			this.trustManager = trustManager;
+			return this;
+		}
+
+		@Override
+		public SAMLAuthContext withSSLHostnameVerifier(SSLHostnameVerifier verifier) {
+			this.sslVerifier = verifier;
+			return this;
+		}
+
+		@Override
+		public SSLContext getSSLContext() {
+			return sslContext;
+		}
+
+		@Override
+		public void setSSLContext(SSLContext context) {
+			this.sslContext = context;
+
+		}
+
+		@Override
+		public SSLHostnameVerifier getSSLHostnameVerifier() {
+			return sslVerifier;
+		}
+
+		@Override
+		public void setSSLHostnameVerifier(SSLHostnameVerifier verifier) {
+			this.sslVerifier = verifier;
+
+		}
+
+		@Override
+		public SecurityContext withSSLContext(SSLContext context) {
+			this.sslContext = context;
+			return this;
+		}
+	}
 
   public static class KerberosConfig {
 
@@ -1012,74 +1080,11 @@ public class DatabaseClientFactory {
    * @return a new client for making database requests
    */
   static public DatabaseClient newClient(String host, int port, String database,
-                                         SecurityContext securityContext,
-                                         DatabaseClient.ConnectionType connectionType)
-  {
-    String user = null;
-    Map<String,String> kerberosOptions = null;
-    String password = null;
-    Authentication type = null;
-    SSLContext sslContext = null;
-    SSLHostnameVerifier sslVerifier = null;
-    X509TrustManager trustManager = null;
-    if (securityContext instanceof BasicAuthContext) {
-      BasicAuthContext basicContext = (BasicAuthContext) securityContext;
-      user = basicContext.user;
-      password = basicContext.password;
-      type = Authentication.BASIC;
-      if (basicContext.sslContext != null) {
-        sslContext = basicContext.sslContext;
-        if(basicContext.trustManager != null) trustManager = basicContext.trustManager;
-        if (basicContext.sslVerifier != null) {
-          sslVerifier = basicContext.sslVerifier;
-        } else {
-          sslVerifier = SSLHostnameVerifier.COMMON;
-        }
-      }
-    } else if (securityContext instanceof DigestAuthContext) {
-      DigestAuthContext digestContext = (DigestAuthContext) securityContext;
-      user = digestContext.user;
-      password = digestContext.password;
-      type = Authentication.DIGEST;
-      if (digestContext.sslContext != null) {
-        sslContext = digestContext.sslContext;
-        if(digestContext.trustManager != null) trustManager = digestContext.trustManager;
-        if (digestContext.sslVerifier != null) {
-          sslVerifier = digestContext.sslVerifier;
-        } else {
-          sslVerifier = SSLHostnameVerifier.COMMON;
-        }
-      }
-    } else if (securityContext instanceof KerberosAuthContext) {
-      KerberosAuthContext kerberosContext = (KerberosAuthContext) securityContext;
-      kerberosOptions = kerberosContext.krbOptions;
-      type = Authentication.KERBEROS;
-      if (kerberosContext.sslContext != null) {
-        sslContext = kerberosContext.sslContext;
-        if(kerberosContext.trustManager != null) trustManager = kerberosContext.trustManager;
-        if (kerberosContext.sslVerifier != null) {
-          sslVerifier = kerberosContext.sslVerifier;
-        } else {
-          sslVerifier = SSLHostnameVerifier.COMMON;
-        }
-      }
-    } else if (securityContext instanceof CertificateAuthContext) {
-      CertificateAuthContext certificateContext = (CertificateAuthContext) securityContext;
-      type = Authentication.CERTIFICATE;
-      sslContext = certificateContext.getSSLContext();
-      if(certificateContext.trustManager != null) trustManager = certificateContext.trustManager;
-      if (certificateContext.sslVerifier != null) {
-        sslVerifier = certificateContext.sslVerifier;
-      } else {
-        sslVerifier = SSLHostnameVerifier.COMMON;
-      }
-    } else {
-      throw new IllegalArgumentException("securityContext must be of type BasicAuthContext, " +
-        "DigestAuthContext, KerberosAuthContext, or CertificateAuthContext");
-    }
-
+          SecurityContext securityContext,
+          DatabaseClient.ConnectionType connectionType)
+{
     OkHttpServices services = new OkHttpServices();
-    services.connect(host, port, database, user, password, kerberosOptions, type, sslContext, trustManager, sslVerifier);
+    services.connect(host, port, database, securityContext);
 
     if (clientConfigurator != null) {
       if ( clientConfigurator instanceof OkHttpClientConfigurator ) {
