@@ -128,6 +128,7 @@ public interface RESTServices {
   @Deprecated
   public void connect(String host, int port, String database, String user, String password, Map<String,String> kerberosOptions, Authentication type,
                       SSLContext context, SSLHostnameVerifier verifier);
+  @Deprecated
   public void connect(String host, int port, String database, String user, String password, Map<String,String> kerberosOptions, Authentication type,
       SSLContext context, X509TrustManager trustManager, SSLHostnameVerifier verifier);
   public void connect(String host, int port, String database, SecurityContext securityContext);
