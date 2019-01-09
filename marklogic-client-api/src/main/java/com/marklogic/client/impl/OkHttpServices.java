@@ -169,7 +169,6 @@ public class OkHttpServices implements RESTServices {
   private HttpUrl baseUri;
   private OkHttpClient client;
   private boolean released = false;
-  private String authorizationTokenValue = null;
 
   private Random randRetry    = new Random();
 
@@ -268,12 +267,12 @@ public class OkHttpServices implements RESTServices {
     //  throw new IllegalArgumentException(
     //    "Null SSLContext but non-null SSLHostnameVerifier for client");
     //}
-    connect(host, port, database, user, password, kerberosOptions, authenType, sslContext, trustManager, hostnameVerifier);
+    connect(host, port, database, user, password, kerberosOptions, authenType, sslContext, trustManager, hostnameVerifier, null);
   }
 
   private void connect(String host, int port, String database, String user, String password, Map<String,String> kerberosOptions,
                        Authentication authenType, SSLContext sslContext, X509TrustManager trustManager,
-                       HostnameVerifier verifier) {
+                       HostnameVerifier verifier, String samlAuthToken) {
     logger.debug("Connecting to {} at {} as {}", new Object[]{host, port, user});
 
     if (host == null) throw new IllegalArgumentException("No host provided");
@@ -311,6 +310,11 @@ public class OkHttpServices implements RESTServices {
         authenticator = new DigestAuthenticator(credentials);
         interceptor = new AuthenticationCacheInterceptor(authCache);
         checkFirstRequest = true;
+      } else if (authenType == Authentication.SAML) {
+    	  if(samlAuthToken == null || samlAuthToken.length() == 0)
+    		  throw new IllegalArgumentException("SAML Authentication token cannot be null");
+          interceptor = new HTTPSamlAuthInterceptor(samlAuthToken);
+          checkFirstRequest = false;
       } else {
           throw new MarkLogicInternalException(
             "Internal error - unknown authentication type: " + authenType.name());
@@ -410,6 +414,7 @@ public class OkHttpServices implements RESTServices {
 	SSLContext sslContext = null;
 	SSLHostnameVerifier sslVerifier = null;
 	X509TrustManager trustManager = null;
+	String authorizationTokenValue = null;
 
 	if (securityContext instanceof BasicAuthContext) {
 		BasicAuthContext basicContext = (BasicAuthContext) securityContext;
@@ -497,7 +502,7 @@ public class OkHttpServices implements RESTServices {
 		} 
 		
 		connect(host, port, database, user, password, kerberosOptions, type, sslContext, trustManager,
-				hostnameVerifier);
+				hostnameVerifier, authorizationTokenValue);
   }
 
   @Override
@@ -4323,10 +4328,6 @@ public class OkHttpServices implements RESTServices {
     }
     Request.Builder request = new Request.Builder()
         .url(uri.build());
-    if(authorizationTokenValue!=null && authorizationTokenValue.length()!=0) {
-    	String samlHeaderValue = HEADER_AUTHORIZATION + ": " + AUTHORIZATION_TYPE_SAML+ " "+ AUTHORIZATION_PARAM_TOKEN + "=" + authorizationTokenValue;
-		request = request.header(HEADER_AUTHORIZATION, samlHeaderValue);
-	}
     return request;
   }
 
