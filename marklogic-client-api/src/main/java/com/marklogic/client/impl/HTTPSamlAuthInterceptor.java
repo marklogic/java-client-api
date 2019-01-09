@@ -18,7 +18,7 @@ public class HTTPSamlAuthInterceptor implements Interceptor{
 	  public Response intercept(Chain chain) throws IOException {
 	    Request request = chain.request();
 	    String samlHeaderValue = RESTServices.AUTHORIZATION_TYPE_SAML+ " "+ RESTServices.AUTHORIZATION_PARAM_TOKEN + "=" + authorizationTokenValue;
-	    Request authenticatedRequest = request.newBuilder().header("Authorization", samlHeaderValue).build();
+	    Request authenticatedRequest = request.newBuilder().header(RESTServices.HEADER_AUTHORIZATION, samlHeaderValue).build();
 	    return chain.proceed(authenticatedRequest);
 	  }
 
