@@ -124,7 +124,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
   private static String appServerName = "REST-Java-Client-API-ServerKerberos";
   // External security name to be set for the App Server.
   private static String extSecurityName = "KerberosExtSec";
-  private static String kdcPrincipalUser = "user2@MLTEST1.LOCAL";
+  private static String kdcPrincipalUser = "builder@MLTEST1.LOCAL";
   private static String keytabFile;
   private static String principal;
 
@@ -135,6 +135,19 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     System.out.println("In setup");
     loadGradleProperties();
     appServerHostName = getRestAppServerHostName();
+    
+    // Modify default location if needed for services.keytab file.
+ 	keytabFile = System.getProperty("keytabFile");
+ 	principal = System.getProperty("principal", kdcPrincipalUser);
+ 	
+     System.out.println("Location of key tab file is " + keytabFile);
+     
+     if (keytabFile == null) {
+     	fail("Key tab file value from Gradle is null / incorrect");
+     }
+     if (!(new File(keytabFile).exists())) {
+     	fail("Key tab file does not exist or is invalid");
+     }
 
     setupJavaRESTServer(dbName, fNames[0], appServerName, appServerHostPort);
     createAutomaticGeoIndex();
@@ -145,7 +158,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     // Associate the external security with the App Server.
     associateRESTServerWithKerberosExtSecurity(appServerName, extSecurityName);
     createUserRolesWithPrevilages("test-evalKer", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
-    createRESTKerberosUser("user2", "MarkLogic200", kdcPrincipalUser, "admin", "test-evalKer");
+    createRESTKerberosUser("builder", "Welcome123", kdcPrincipalUser, "admin", "test-evalKer");
     createRESTUser("rest-admin", "x", "rest-admin");
   }
 
@@ -153,22 +166,13 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tear down");
     deleteUserRole("test-evalKer");
-    deleteRESTUser("user2");
+    deleteRESTUser("builder");
     tearDownJavaRESTServer(dbName, fNames, appServerName);
   }
 
   @Before
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     SSLContext sslcontext = null;
-    // Modify default location if needed for services.keytab file.
-	keytabFile = System.getProperty("keytabFile", "/space/Jenkins/workspace/services.keytab");
-	principal = System.getProperty("principal");
-	
-    System.out.println("Location of key tab file is " + keytabFile);
-    
-    if (keytabFile == null || !(new File(keytabFile).exists())) {
-    	fail("Key tab file does not exist or is invalid");
-    }
 
     if (IsSecurityEnabled()) {
       sslcontext = getSslContext();
