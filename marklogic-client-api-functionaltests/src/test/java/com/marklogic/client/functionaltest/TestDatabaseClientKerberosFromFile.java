@@ -158,7 +158,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     // Associate the external security with the App Server.
     associateRESTServerWithKerberosExtSecurity(appServerName, extSecurityName);
     createUserRolesWithPrevilages("test-evalKer", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
-    createRESTKerberosUser("builder", "Welcome123", kdcPrincipalUser, "admin", "test-evalKer");
+    createRESTKerberosUser("builder", "Welcome123", kdcPrincipalUser, "rest-reader", "rest-writer", "test-evalKer");
     createRESTUser("rest-admin", "x", "rest-admin");
   }
 
@@ -516,6 +516,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
   @Test
   public void testPOJOGeoQuerySearchWithGeoPair() {
     System.out.println("Running testPOJOGeoQuerySearchWithGeoPair method");
+  
     PojoRepository<GeoSpecialArtifact, Long> products = client.newPojoRepository(GeoSpecialArtifact.class, Long.class);
     PojoPage<GeoSpecialArtifact> p;
     this.loadSimplePojos(products);
