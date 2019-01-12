@@ -158,7 +158,9 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     // Associate the external security with the App Server.
     associateRESTServerWithKerberosExtSecurity(appServerName, extSecurityName);
     createUserRolesWithPrevilages("test-evalKer", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
-    createRESTKerberosUser("builder", "Welcome123", kdcPrincipalUser, "rest-reader", "rest-writer", "test-evalKer");
+    //createRESTKerberosUser("builder", "Welcome123", kdcPrincipalUser, "rest-reader", "rest-writer", "rest-admin", "rest-extension-user", "test-evalKer");
+    
+    createRESTUser("builder", "Welcome123", "test-evalKer", "rest-admin", "rest-writer", "rest-reader");
     createRESTUser("rest-admin", "x", "rest-admin");
   }
 
@@ -198,7 +200,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     			.withStoreKey(true)
     			.withKeyTab(keytabFile);
     	System.out.println("Password of key tab file is " + krbConfig.getStorePass());
-    	System.out.println("Principle of key tab file is " + krbConfig.getPrincipal());
+    	System.out.println("Principal of key tab file is " + krbConfig.getPrincipal());
     	client = DatabaseClientFactory.newClient(appServerHostName,
     			appServerHostPort, new DatabaseClientFactory.KerberosAuthContext(krbConfig));
     }
