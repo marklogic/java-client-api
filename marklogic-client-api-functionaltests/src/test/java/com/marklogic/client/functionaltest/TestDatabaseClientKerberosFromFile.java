@@ -252,7 +252,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     }
   }
   
-  // Method sets REST server's "authentication" to "Kerberos-ticket" and "internal security" to true
+  // Method sets REST server's "authentication" to "Kerberos-ticket" and "internal security" to false
   // external security to be "none"
   public static void setAuthToKerberosAndInternalSecurityToTrue(String restServerName)
 			throws Exception {
@@ -260,7 +260,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
 
 		client.getCredentialsProvider().setCredentials(new AuthScope(appServerHostName, getAdminPort()),
 				new UsernamePasswordCredentials("admin", "admin"));
-		String body = "{\"group-name\": \"Default\", \"authentication\":\"kerberos-ticket\",\"internal-security\": \"true\"}";
+		String body = "{\"group-name\": \"Default\", \"authentication\":\"kerberos-ticket\",\"internal-security\": \"false\"}";
 
 		HttpPut put = new HttpPut("http://" + appServerHostName + ":" + getAdminPort() + "/manage/v2/servers/" + restServerName
 				+ "/properties?server-type=http");
