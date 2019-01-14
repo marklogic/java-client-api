@@ -164,7 +164,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     // Create the External Security setting.
     createExternalSecurityForKerberos(appServerName, extSecurityName);
     // Set authentication to kerberos-ticket, internal security to true and external securities to be none on App Server.
-    setAuthToKerberosAndInternalSecurityToTrue(appServerName, "none");
+    setAuthToKerberosAndInternalSecurityToTrue(appServerName);
     createUserRolesWithPrevilages("test-evalKer", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     //createRESTKerberosUser("builder", "Welcome123", kdcPrincipalUser, "rest-reader", "rest-writer", "rest-admin", "rest-extension-user", "test-evalKer");
     
@@ -254,14 +254,13 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
   
   // Method sets REST server's "authentication" to "Kerberos-ticket" and "internal security" to true
   // external security to be "none"
-  public static void setAuthToKerberosAndInternalSecurityToTrue(String restServerName, String extSecurityrName)
+  public static void setAuthToKerberosAndInternalSecurityToTrue(String restServerName)
 			throws Exception {
 		DefaultHttpClient client = new DefaultHttpClient();
 
 		client.getCredentialsProvider().setCredentials(new AuthScope(appServerHostName, getAdminPort()),
 				new UsernamePasswordCredentials("admin", "admin"));
-		String body = "{\"group-name\": \"Default\", \"authentication\":\"kerberos-ticket\",\"internal-security\": \"true\",\"external-security\": \""
-				+ extSecurityrName + "\"}";
+		String body = "{\"group-name\": \"Default\", \"authentication\":\"kerberos-ticket\",\"internal-security\": \"true\"}";
 
 		HttpPut put = new HttpPut("http://" + appServerHostName + ":" + getAdminPort() + "/manage/v2/servers/" + restServerName
 				+ "/properties?server-type=http");
