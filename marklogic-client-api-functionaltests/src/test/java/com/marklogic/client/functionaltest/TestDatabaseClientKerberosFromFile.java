@@ -163,12 +163,13 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     setupAppServicesConstraint(dbName);
     // Create the External Security setting.
     createExternalSecurityForKerberos(appServerName, extSecurityName);
+    associateRESTServerWithKerberosExtSecurity(appServerName, extSecurityName);
     // Set authentication to kerberos-ticket, internal security to true and external securities to be none on App Server.
-    setAuthToKerberosAndInternalSecurityToTrue(appServerName);
+    //setAuthToKerberosAndInternalSecurityToTrue(appServerName);
     createUserRolesWithPrevilages("test-evalKer", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
-    //createRESTKerberosUser("builder", "Welcome123", kdcPrincipalUser, "rest-reader", "rest-writer", "rest-admin", "rest-extension-user", "test-evalKer");
+    createRESTKerberosUser("builder", "Welcome123", kdcPrincipalUser, "rest-reader", "rest-writer", "rest-admin", "rest-extension-user", "test-evalKer");
     
-    createRESTUser("builder", "Welcome123", "test-evalKer", "rest-admin", "rest-writer", "rest-reader");
+    //createRESTUser("builder", "Welcome123", "test-evalKer", "rest-admin", "rest-writer", "rest-reader");
     createRESTUser("rest-admin", "x", "rest-admin");
   }
 
