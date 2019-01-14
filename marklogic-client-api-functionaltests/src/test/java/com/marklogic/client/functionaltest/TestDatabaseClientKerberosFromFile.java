@@ -156,7 +156,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     // Create the External Security setting.
     createExternalSecurityForKerberos(appServerName, extSecurityName);
     // Associate the external security with the App Server.
-    associateRESTServerWithKerberosExtSecurity(appServerName, extSecurityName);
+    // Do not attach external security to REST Server - associateRESTServerWithKerberosExtSecurity(appServerName, extSecurityName);
     createUserRolesWithPrevilages("test-evalKer", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     //createRESTKerberosUser("builder", "Welcome123", kdcPrincipalUser, "rest-reader", "rest-writer", "rest-admin", "rest-extension-user", "test-evalKer");
     
