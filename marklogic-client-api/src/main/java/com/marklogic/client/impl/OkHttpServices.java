@@ -237,46 +237,138 @@ public class OkHttpServices implements RESTServices {
   }
 
   @Override
-  @Deprecated
-  public void connect(String host, int port, String database, String user, String password,Map<String,String> kerberosOptions,
-      Authentication authenType, SSLContext sslContext,
-      SSLHostnameVerifier verifier) {
-    connect(host, port, database, user, password, kerberosOptions, authenType, sslContext, null, verifier);
-  }
+  public void connect(String host, int port, String database, SecurityContext securityContext){
+	String user = null;
+	Map<String, String> kerberosOptions = null;
+	String password = null;
+	Authentication type = null;
+	SSLContext sslContext = null;
+	SSLHostnameVerifier sslVerifier = null;
+	X509TrustManager trustManager = null;
+	String authorizationTokenValue = null;
+    Credentials credentials = null;
+    final Map<String,CachingAuthenticator> authCache = new ConcurrentHashMap<String,CachingAuthenticator>();
+    CachingAuthenticator authenticator = null;
+    Interceptor interceptor = null;
+    
+    if (host == null) 
+    	throw new IllegalArgumentException("No host provided");
+    
+	if (securityContext instanceof BasicAuthContext || ((BasicAuthContext)securityContext).getSSLContext()!=null) {
+		BasicAuthContext basicContext = (BasicAuthContext) securityContext;
+		user = basicContext.getUser();
+		password = basicContext.getPassword();
+		if (user == null) 
+			throw new IllegalArgumentException("No user provided");
+	    if (password == null) 
+	    	throw new IllegalArgumentException("No password provided");
+		credentials = new Credentials(user, password);
+		logger.debug("Connecting to {} at {} as {} using Basic Authentication.", new Object[]{host, port, user});
+		type = Authentication.BASIC;
+		if (basicContext.getSSLContext() != null) {
+			sslContext = basicContext.getSSLContext();
+			if (basicContext.getTrustManager() != null)
+				trustManager = basicContext.getTrustManager();
+			if (basicContext.getSSLHostnameVerifier() != null) {
+				sslVerifier = basicContext.getSSLHostnameVerifier();
+			} else {
+				sslVerifier = SSLHostnameVerifier.COMMON;
+			}
+			interceptor = new HTTPBasicAuthInterceptor(credentials);
+	        checkFirstRequest = false;
+		}
+	} else if (securityContext instanceof DigestAuthContext) {
 
-  @Override
-  @Deprecated
-  public void connect(String host, int port, String database, String user, String password,Map<String,String> kerberosOptions,
-      Authentication authenType, SSLContext sslContext, X509TrustManager trustManager,
-      SSLHostnameVerifier verifier) {
-    HostnameVerifier hostnameVerifier = null;
-    if (verifier == SSLHostnameVerifier.ANY) {
-      hostnameVerifier = new HostnameVerifier() {
-        @Override
-        public boolean verify(String hostname, SSLSession session) {
-          return true;
-        }
-      };
-    } else if (verifier == SSLHostnameVerifier.COMMON) {
-      hostnameVerifier = null;
-    } else if (verifier == SSLHostnameVerifier.STRICT) {
-      hostnameVerifier = null;
-    } else if (verifier != null) {
-      hostnameVerifier = new SSLHostnameVerifier.HostnameVerifierAdapter(verifier);
-    }// else {
-    //  throw new IllegalArgumentException(
-    //    "Null SSLContext but non-null SSLHostnameVerifier for client");
-    //}
-    connect(host, port, database, user, password, kerberosOptions, authenType, sslContext, trustManager, hostnameVerifier, null);
-  }
+		DigestAuthContext digestContext = (DigestAuthContext) securityContext;
+		user = digestContext.getUser();
+		password = digestContext.getPassword();
+		if (user == null) 
+			throw new IllegalArgumentException("No user provided");
+	    if (password == null) 
+	    	throw new IllegalArgumentException("No password provided");
+		credentials = new Credentials(user, password);
+		logger.debug("Connecting to {} at {} as {} using Digest Authentication.", new Object[]{host, port, user});
+		type = Authentication.DIGEST;
+		if (digestContext.getSSLContext() != null) {
+			sslContext = digestContext.getSSLContext();
+			if (digestContext.getTrustManager() != null)
+				trustManager = digestContext.getTrustManager();
+			if (digestContext.getSSLHostnameVerifier() != null) {
+				sslVerifier = digestContext.getSSLHostnameVerifier();
+			} else {
+				sslVerifier = SSLHostnameVerifier.COMMON;
+			}
+		}
+		 authenticator = new DigestAuthenticator(credentials);
+		 interceptor = new AuthenticationCacheInterceptor(authCache);
+		 checkFirstRequest = true;
+	} else if (securityContext instanceof KerberosAuthContext) {
+		KerberosAuthContext kerberosContext = (KerberosAuthContext) securityContext;
+		kerberosOptions = kerberosContext.getKrbOptions();
+		type = Authentication.KERBEROS;
+		logger.debug("Connecting to {} at {} as {} using Kerberos Authentication.", new Object[]{host, port, user});
+		if (kerberosContext.getSSLContext() != null) {
+			sslContext = kerberosContext.getSSLContext();
+			if (kerberosContext.getTrustManager() != null)
+				trustManager = kerberosContext.getTrustManager();
+			if (kerberosContext.getSSLHostnameVerifier() != null) {
+				sslVerifier = kerberosContext.getSSLHostnameVerifier();
+			} else {
+				sslVerifier = SSLHostnameVerifier.COMMON;
+			}
+		}
+		interceptor = new HTTPKerberosAuthInterceptor(host, kerberosOptions);
+	    checkFirstRequest = false;
+	} else if (securityContext instanceof CertificateAuthContext) {
+		CertificateAuthContext certificateContext = (CertificateAuthContext) securityContext;
+		type = Authentication.CERTIFICATE;
+		logger.debug("Connecting to {} at {} as {} using Certificate Authentication.", new Object[]{host, port, user});
+		sslContext = certificateContext.getSSLContext();
+		if (certificateContext.getTrustManager() != null)
+			trustManager = certificateContext.getTrustManager();
+		if (certificateContext.getSSLHostnameVerifier() != null) {
+			sslVerifier = certificateContext.getSSLHostnameVerifier();
+		} else {
+			sslVerifier = SSLHostnameVerifier.COMMON;
+		}
+		checkFirstRequest = false;
+	} else if (securityContext instanceof SAMLAuthContext) {
+			SAMLAuthContext samlAuthContext = (SAMLAuthContext) securityContext;
+			type = Authentication.SAML;
+			logger.debug("Connecting to {} at {} as {} using SAML Authentication.", new Object[]{host, port, user});
+			sslContext = samlAuthContext.getSSLContext();
+			authorizationTokenValue = samlAuthContext.getToken();
+			if (samlAuthContext.getTrustManager() != null)
+				trustManager = samlAuthContext.getTrustManager();
+			if (samlAuthContext.getSSLHostnameVerifier() != null) {
+				sslVerifier = samlAuthContext.getSSLHostnameVerifier();
+			} else {
+				sslVerifier = SSLHostnameVerifier.COMMON;
+			}
 
-  private void connect(String host, int port, String database, String user, String password, Map<String,String> kerberosOptions,
-                       Authentication authenType, SSLContext sslContext, X509TrustManager trustManager,
-                       HostnameVerifier verifier, String samlAuthToken) {
-    logger.debug("Connecting to {} at {} as {}", new Object[]{host, port, user});
-
-    if (host == null) throw new IllegalArgumentException("No host provided");
-
+	  	  if(authorizationTokenValue == null || authorizationTokenValue.length() == 0)
+	  		  throw new IllegalArgumentException("SAML Authentication token cannot be null");
+	      interceptor = new HTTPSamlAuthInterceptor(authorizationTokenValue);
+	      checkFirstRequest = false;
+	    
+	} else {
+		throw new IllegalArgumentException("securityContext must be of type BasicAuthContext, "
+				+ "DigestAuthContext, KerberosAuthContext, CertificateAuthContext or SAMLAuthContext");
+	}
+	HostnameVerifier hostnameVerifier = null;
+	if (sslVerifier == SSLHostnameVerifier.ANY) {
+		hostnameVerifier = new HostnameVerifier() {
+			@Override
+			public boolean verify(String hostname, SSLSession session) {
+				return true;
+			}
+		};
+	} else if (sslVerifier == SSLHostnameVerifier.COMMON || sslVerifier == SSLHostnameVerifier.STRICT) {
+		hostnameVerifier = null;
+	} else if (sslVerifier != null) {
+		hostnameVerifier = new SSLHostnameVerifier.HostnameVerifierAdapter(sslVerifier);
+	} 
+	
     this.database = database;
 
     this.baseUri = new HttpUrl.Builder()
@@ -285,41 +377,6 @@ public class OkHttpServices implements RESTServices {
       .port(port)
       .encodedPath("/v1/ping")
       .build();
-
-    Credentials credentials = new Credentials(user, password);
-    final Map<String,CachingAuthenticator> authCache = new ConcurrentHashMap<String,CachingAuthenticator>();
-
-    if ( authenType == null && sslContext != null ) {
-        authenType = Authentication.BASIC;
-    }
-
-    CachingAuthenticator authenticator = null;
-    Interceptor interceptor = null;
-    if (authenType == null || authenType == Authentication.CERTIFICATE) {
-      checkFirstRequest = false;
-    } else if (authenType == Authentication.KERBEROS) {
-      interceptor = new HTTPKerberosAuthInterceptor(host, kerberosOptions);
-      checkFirstRequest = false;
-    } else {
-      if (user == null) throw new IllegalArgumentException("No user provided");
-      if (password == null) throw new IllegalArgumentException("No password provided");
-      if (authenType == Authentication.BASIC) {
-        interceptor = new HTTPBasicAuthInterceptor(credentials);
-        checkFirstRequest = false;
-      } else if (authenType == Authentication.DIGEST) {
-        authenticator = new DigestAuthenticator(credentials);
-        interceptor = new AuthenticationCacheInterceptor(authCache);
-        checkFirstRequest = true;
-      } else if (authenType == Authentication.SAML) {
-    	  if(samlAuthToken == null || samlAuthToken.length() == 0)
-    		  throw new IllegalArgumentException("SAML Authentication token cannot be null");
-          interceptor = new HTTPSamlAuthInterceptor(samlAuthToken);
-          checkFirstRequest = false;
-      } else {
-          throw new MarkLogicInternalException(
-            "Internal error - unknown authentication type: " + authenType.name());
-      }
-    }
 
     OkHttpClient.Builder clientBldr = new OkHttpClient.Builder()
       .followRedirects(false)
@@ -340,11 +397,13 @@ public class OkHttpServices implements RESTServices {
       }
     }
 
-    if(authenticator != null) clientBldr.authenticator(new CachingAuthenticatorDecorator(authenticator, authCache));
-    if(interceptor != null) clientBldr.addInterceptor(interceptor);
+    if(authenticator != null) 
+    	clientBldr.authenticator(new CachingAuthenticatorDecorator(authenticator, authCache));
+    if(interceptor != null) 
+    	clientBldr.addInterceptor(interceptor);
 
-    if ( verifier != null ) {
-      clientBldr = clientBldr.hostnameVerifier(verifier);
+    if ( hostnameVerifier != null ) {
+      clientBldr = clientBldr.hostnameVerifier(hostnameVerifier);
     }
 
     Properties props = System.getProperties();
@@ -403,106 +462,6 @@ public class OkHttpServices implements RESTServices {
     // HttpProtocolParams.setUseExpectContinue(httpParams, false);
     // httpParams.setIntParameter(CoreProtocolPNames.WAIT_FOR_CONTINUE, 1000);
     */
-  }
-  
-  @Override
-  public void connect(String host, int port, String database, SecurityContext securityContext){
-	String user = null;
-	Map<String, String> kerberosOptions = null;
-	String password = null;
-	Authentication type = null;
-	SSLContext sslContext = null;
-	SSLHostnameVerifier sslVerifier = null;
-	X509TrustManager trustManager = null;
-	String authorizationTokenValue = null;
-
-	if (securityContext instanceof BasicAuthContext) {
-		BasicAuthContext basicContext = (BasicAuthContext) securityContext;
-		user = basicContext.getUser();
-		password = basicContext.getPassword();
-		type = Authentication.BASIC;
-		if (basicContext.getSSLContext() != null) {
-			sslContext = basicContext.getSSLContext();
-			if (basicContext.getTrustManager() != null)
-				trustManager = basicContext.getTrustManager();
-			if (basicContext.getSSLHostnameVerifier() != null) {
-				sslVerifier = basicContext.getSSLHostnameVerifier();
-			} else {
-				sslVerifier = SSLHostnameVerifier.COMMON;
-			}
-		}
-	} else if (securityContext instanceof DigestAuthContext) {
-		DigestAuthContext digestContext = (DigestAuthContext) securityContext;
-		user = digestContext.getUser();
-		password = digestContext.getPassword();
-		type = Authentication.DIGEST;
-		if (digestContext.getSSLContext() != null) {
-			sslContext = digestContext.getSSLContext();
-			if (digestContext.getTrustManager() != null)
-				trustManager = digestContext.getTrustManager();
-			if (digestContext.getSSLHostnameVerifier() != null) {
-				sslVerifier = digestContext.getSSLHostnameVerifier();
-			} else {
-				sslVerifier = SSLHostnameVerifier.COMMON;
-			}
-		}
-	} else if (securityContext instanceof KerberosAuthContext) {
-		KerberosAuthContext kerberosContext = (KerberosAuthContext) securityContext;
-		kerberosOptions = kerberosContext.getKrbOptions();
-		type = Authentication.KERBEROS;
-		if (kerberosContext.getSSLContext() != null) {
-			sslContext = kerberosContext.getSSLContext();
-			if (kerberosContext.getTrustManager() != null)
-				trustManager = kerberosContext.getTrustManager();
-			if (kerberosContext.getSSLHostnameVerifier() != null) {
-				sslVerifier = kerberosContext.getSSLHostnameVerifier();
-			} else {
-				sslVerifier = SSLHostnameVerifier.COMMON;
-			}
-		}
-	} else if (securityContext instanceof CertificateAuthContext) {
-		CertificateAuthContext certificateContext = (CertificateAuthContext) securityContext;
-		type = Authentication.CERTIFICATE;
-		sslContext = certificateContext.getSSLContext();
-		if (certificateContext.getTrustManager() != null)
-			trustManager = certificateContext.getTrustManager();
-		if (certificateContext.getSSLHostnameVerifier() != null) {
-			sslVerifier = certificateContext.getSSLHostnameVerifier();
-		} else {
-			sslVerifier = SSLHostnameVerifier.COMMON;
-		}
-	} else if (securityContext instanceof SAMLAuthContext) {
-			SAMLAuthContext samlAuthContext = (SAMLAuthContext) securityContext;
-			type = Authentication.SAML;
-			sslContext = samlAuthContext.getSSLContext();
-			authorizationTokenValue = samlAuthContext.getToken();
-			if (samlAuthContext.getTrustManager() != null)
-				trustManager = samlAuthContext.getTrustManager();
-			if (samlAuthContext.getSSLHostnameVerifier() != null) {
-				sslVerifier = samlAuthContext.getSSLHostnameVerifier();
-			} else {
-				sslVerifier = SSLHostnameVerifier.COMMON;
-			}
-		}  else {
-			throw new IllegalArgumentException("securityContext must be of type BasicAuthContext, "
-					+ "DigestAuthContext, KerberosAuthContext, CertificateAuthContext or SAMLAuthContext");
-		}
-		HostnameVerifier hostnameVerifier = null;
-		if (sslVerifier == SSLHostnameVerifier.ANY) {
-			hostnameVerifier = new HostnameVerifier() {
-				@Override
-				public boolean verify(String hostname, SSLSession session) {
-					return true;
-				}
-			};
-		} else if (sslVerifier == SSLHostnameVerifier.COMMON || sslVerifier == SSLHostnameVerifier.STRICT) {
-			hostnameVerifier = null;
-		} else if (sslVerifier != null) {
-			hostnameVerifier = new SSLHostnameVerifier.HostnameVerifierAdapter(sslVerifier);
-		} 
-		
-		connect(host, port, database, user, password, kerberosOptions, type, sslContext, trustManager,
-				hostnameVerifier, authorizationTokenValue);
   }
 
   @Override

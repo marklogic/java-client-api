@@ -519,7 +519,7 @@ public class DatabaseClientFactory {
     }
   }
   
-	public class SAMLAuthContext implements SecurityContext {
+	public static class SAMLAuthContext implements SecurityContext {
 		private String token;
 		SSLContext sslContext;
 		X509TrustManager trustManager;
