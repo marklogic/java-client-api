@@ -43,6 +43,14 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.TransformerException;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -155,8 +163,8 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     setupAppServicesConstraint(dbName);
     // Create the External Security setting.
     createExternalSecurityForKerberos(appServerName, extSecurityName);
-    // Associate the external security with the App Server.
-    // Do not attach external security to REST Server - associateRESTServerWithKerberosExtSecurity(appServerName, extSecurityName);
+    // Set authentication to kerberos-ticket, internal security to true and external securities to be none on App Server.
+    setAuthToKerberosAndInternalSecurityToTrue(appServerName, "none");
     createUserRolesWithPrevilages("test-evalKer", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     //createRESTKerberosUser("builder", "Welcome123", kdcPrincipalUser, "rest-reader", "rest-writer", "rest-admin", "rest-extension-user", "test-evalKer");
     
@@ -243,6 +251,31 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
       }
     }
   }
+  
+  // Method sets REST server's "authentication" to "Kerberos-ticket" and "internal security" to true
+  // external security to be "none"
+  public static void setAuthToKerberosAndInternalSecurityToTrue(String restServerName, String extSecurityrName)
+			throws Exception {
+		DefaultHttpClient client = new DefaultHttpClient();
+
+		client.getCredentialsProvider().setCredentials(new AuthScope(appServerHostName, getAdminPort()),
+				new UsernamePasswordCredentials("admin", "admin"));
+		String body = "{\"group-name\": \"Default\", \"authentication\":\"kerberos-ticket\",\"internal-security\": \"true\",\"external-security\": \""
+				+ extSecurityrName + "\"}";
+
+		HttpPut put = new HttpPut("http://" + appServerHostName + ":" + getAdminPort() + "/manage/v2/servers/" + restServerName
+				+ "/properties?server-type=http");
+		put.addHeader("Content-type", "application/json");
+		put.setEntity(new StringEntity(body));
+
+		HttpResponse response2 = client.execute(put);
+		HttpEntity respEntity = response2.getEntity();
+		if (respEntity != null) {
+			String content = EntityUtils.toString(respEntity);
+			System.out.println(content);
+		}
+		client.getConnectionManager().shutdown();
+	}
 
   public GeoSpecialArtifact getGeoArtifact(int counter) {
 
