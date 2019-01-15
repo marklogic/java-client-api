@@ -1156,7 +1156,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
   }
   
   //Test DatabaseCLient with valid ADC user, but that user is not in the services keytab file. Should expect an Exception.
- @Test
+ @Ignore
  public void testValidDCUserNotInKeytabFile() {
 	 System.out.println("Running testValidDCUserNotInKeytabFile method");
 
@@ -1184,7 +1184,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
  }
  
 //Test DatabaseCLient with invalid ADC user. Should expect an Exception.
-@Test
+@Ignore
 public void testInValidDCUserNotInKeytabFile() {
 	 System.out.println("Running testInValidDCUserNotInKeytabFile method");
 
