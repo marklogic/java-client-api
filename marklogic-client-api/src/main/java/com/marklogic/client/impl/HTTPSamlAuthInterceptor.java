@@ -5,8 +5,6 @@ import java.time.Instant;
 import java.util.function.Function;
 
 import com.marklogic.client.DatabaseClientFactory.SAMLAuthContext.ExpiringSAMLAuth;
-import com.marklogic.client.MarkLogicInternalException;
-
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -22,7 +20,7 @@ public class HTTPSamlAuthInterceptor implements Interceptor{
 	  private String authorizationTokenValue;
 	  private Function<ExpiringSAMLAuth, ExpiringSAMLAuth> authorizer;
 	  private ExpiringSAMLAuth expiringSAMLAuth;
-	  Instant threshold;
+	  private Instant threshold;
 
 	  HTTPSamlAuthInterceptor(String authToken) {
 	    this.authorizationTokenValue = authToken;
@@ -34,9 +32,9 @@ public class HTTPSamlAuthInterceptor implements Interceptor{
 	  @Override
 	  public Response intercept(Chain chain) throws IOException {
 	    Request request = chain.request();
-	    if(expiringSAMLAuth==null)
+	    if(expiringSAMLAuth==null) {
 	    	authorize(null);
-	    else if(Instant.now().getEpochSecond()>= threshold.getEpochSecond()){
+	    } else if(threshold.isBefore(Instant.now())){
 	    	authorize(expiringSAMLAuth.getExpiry());
 	    }
 	 
@@ -46,21 +44,28 @@ public class HTTPSamlAuthInterceptor implements Interceptor{
 	  }
 	  
 	  private synchronized void authorize(Instant expiry) {
-		  if(expiringSAMLAuth == null)
-			  throw new MarkLogicInternalException("ExpiringSAMLAuth cannot be null");
-		  if(expiry!=null && expiry!=expiringSAMLAuth.getExpiry())
+		  if(expiry == null && expiringSAMLAuth != null) {
 			  return;
-		   
+		  }
+		  if(expiry!=null && expiry!=expiringSAMLAuth.getExpiry()) {
+			  return;
+		  }
 		  expiringSAMLAuth = authorizer.apply(expiringSAMLAuth);
-		  if(expiringSAMLAuth==null)
+		  if(expiringSAMLAuth==null) {
 			  throw new IllegalArgumentException("SAML Authentication cannot be null");
+		  }
 		  
-		  if(expiringSAMLAuth.getAuthorizationToken() == null)
+		  if(expiringSAMLAuth.getAuthorizationToken() == null) {
 			  throw new IllegalArgumentException("SAML Authentication token cannot be null");
+		  }
 		  authorizationTokenValue = expiringSAMLAuth.getAuthorizationToken();
 		  
-		  if(expiringSAMLAuth.getExpiry() == null)
+		  if(expiringSAMLAuth.getExpiry() == null) {
 			  throw new IllegalArgumentException("SAML authentication does not have expiry value.");
+		  }
+		  if(expiringSAMLAuth.getExpiry().isBefore(Instant.now())) {
+			  throw new IllegalArgumentException("SAML authentication token has expired.");
+		  }
 		  threshold = Instant.now().plusSeconds((expiringSAMLAuth.getExpiry().getEpochSecond())/2);
 	  }
 }

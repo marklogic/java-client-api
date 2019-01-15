@@ -239,20 +239,26 @@ public class OkHttpServices implements RESTServices {
   @Override
   public void connect(String host, int port, String database, SecurityContext securityContext){
 	String user = null;
-	Map<String, String> kerberosOptions = null;
 	String password = null;
 	Authentication type = null;
 	SSLContext sslContext = null;
 	SSLHostnameVerifier sslVerifier = null;
 	X509TrustManager trustManager = null;
-	String authorizationTokenValue = null;
-    Credentials credentials = null;
-    final Map<String,CachingAuthenticator> authCache = new ConcurrentHashMap<String,CachingAuthenticator>();
-    CachingAuthenticator authenticator = null;
-    Interceptor interceptor = null;
+	Credentials credentials = null;
     
     if (host == null) 
     	throw new IllegalArgumentException("No host provided");
+    
+    OkHttpClient.Builder clientBldr = new OkHttpClient.Builder()
+    	      .followRedirects(false)
+    	      .followSslRedirects(false)
+    	      // all clients share a single connection pool
+    	      .connectionPool(connectionPool)
+    	      // cookies are ignored (except when a Transaction is being used)
+    	      .cookieJar(CookieJar.NO_COOKIES)
+    	      // no timeouts since some of our clients' reads and writes can be massive
+    	      .readTimeout(0, TimeUnit.SECONDS)
+    	      .writeTimeout(0, TimeUnit.SECONDS);
     
 	if (securityContext instanceof BasicAuthContext || ((BasicAuthContext)securityContext).getSSLContext()!=null) {
 		BasicAuthContext basicContext = (BasicAuthContext) securityContext;
@@ -274,8 +280,7 @@ public class OkHttpServices implements RESTServices {
 			} else {
 				sslVerifier = SSLHostnameVerifier.COMMON;
 			}
-			interceptor = new HTTPBasicAuthInterceptor(credentials);
-	        checkFirstRequest = false;
+	    clientBldr = configureAuthentication(credentials, clientBldr);
 		}
 	} else if (securityContext instanceof DigestAuthContext) {
 
@@ -299,12 +304,11 @@ public class OkHttpServices implements RESTServices {
 				sslVerifier = SSLHostnameVerifier.COMMON;
 			}
 		}
-		 authenticator = new DigestAuthenticator(credentials);
-		 interceptor = new AuthenticationCacheInterceptor(authCache);
-		 checkFirstRequest = true;
+		final Map<String,CachingAuthenticator> authCache = new ConcurrentHashMap<String,CachingAuthenticator>();
+		clientBldr = configureAuthentication(credentials, clientBldr, authCache);
 	} else if (securityContext instanceof KerberosAuthContext) {
 		KerberosAuthContext kerberosContext = (KerberosAuthContext) securityContext;
-		kerberosOptions = kerberosContext.getKrbOptions();
+		Map<String, String> kerberosOptions = kerberosContext.getKrbOptions();
 		type = Authentication.KERBEROS;
 		logger.debug("Connecting to {} at {} as {} using Kerberos Authentication.", new Object[]{host, port, user});
 		if (kerberosContext.getSSLContext() != null) {
@@ -317,8 +321,7 @@ public class OkHttpServices implements RESTServices {
 				sslVerifier = SSLHostnameVerifier.COMMON;
 			}
 		}
-		interceptor = new HTTPKerberosAuthInterceptor(host, kerberosOptions);
-	    checkFirstRequest = false;
+	    clientBldr = configureAuthentication(host,clientBldr, kerberosOptions);
 	} else if (securityContext instanceof CertificateAuthContext) {
 		CertificateAuthContext certificateContext = (CertificateAuthContext) securityContext;
 		type = Authentication.CERTIFICATE;
@@ -337,7 +340,7 @@ public class OkHttpServices implements RESTServices {
 			type = Authentication.SAML;
 			logger.debug("Connecting to {} at {} as {} using SAML Authentication.", new Object[]{host, port, user});
 			sslContext = samlAuthContext.getSSLContext();
-			authorizationTokenValue = samlAuthContext.getToken();
+			String authorizationTokenValue = samlAuthContext.getToken();
 			if (samlAuthContext.getTrustManager() != null)
 				trustManager = samlAuthContext.getTrustManager();
 			if (samlAuthContext.getSSLHostnameVerifier() != null) {
@@ -348,9 +351,7 @@ public class OkHttpServices implements RESTServices {
 
 	  	  if(authorizationTokenValue == null || authorizationTokenValue.length() == 0)
 	  		  throw new IllegalArgumentException("SAML Authentication token cannot be null");
-	      interceptor = new HTTPSamlAuthInterceptor(authorizationTokenValue);
-	      checkFirstRequest = false;
-	    
+	      clientBldr = configureAuthentication(authorizationTokenValue, clientBldr);
 	} else {
 		throw new IllegalArgumentException("securityContext must be of type BasicAuthContext, "
 				+ "DigestAuthContext, KerberosAuthContext, CertificateAuthContext or SAMLAuthContext");
@@ -378,17 +379,6 @@ public class OkHttpServices implements RESTServices {
       .encodedPath("/v1/ping")
       .build();
 
-    OkHttpClient.Builder clientBldr = new OkHttpClient.Builder()
-      .followRedirects(false)
-      .followSslRedirects(false)
-      // all clients share a single connection pool
-      .connectionPool(connectionPool)
-      // cookies are ignored (except when a Transaction is being used)
-      .cookieJar(CookieJar.NO_COOKIES)
-      // no timeouts since some of our clients' reads and writes can be massive
-      .readTimeout(0, TimeUnit.SECONDS)
-      .writeTimeout(0, TimeUnit.SECONDS);
-
     if (sslContext != null) {
       if (trustManager == null) {
         clientBldr.sslSocketFactory(sslContext.getSocketFactory());
@@ -396,11 +386,6 @@ public class OkHttpServices implements RESTServices {
         clientBldr.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
       }
     }
-
-    if(authenticator != null) 
-    	clientBldr.authenticator(new CachingAuthenticatorDecorator(authenticator, authCache));
-    if(interceptor != null) 
-    	clientBldr.addInterceptor(interceptor);
 
     if ( hostnameVerifier != null ) {
       clientBldr = clientBldr.hostnameVerifier(hostnameVerifier);
@@ -462,6 +447,50 @@ public class OkHttpServices implements RESTServices {
     // HttpProtocolParams.setUseExpectContinue(httpParams, false);
     // httpParams.setIntParameter(CoreProtocolPNames.WAIT_FOR_CONTINUE, 1000);
     */
+  }
+  
+  public OkHttpClient.Builder configureAuthentication(Credentials credentials, OkHttpClient.Builder clientBuilder) {
+	  OkHttpClient.Builder builder = clientBuilder;
+	  Interceptor interceptor = new HTTPBasicAuthInterceptor(credentials);
+	  checkFirstRequest = false;
+	  
+	  if(interceptor != null) 
+		  builder.addInterceptor(interceptor);
+	  return builder;
+  }
+  
+  public OkHttpClient.Builder configureAuthentication(Credentials credentials, OkHttpClient.Builder clientBuilder, Map<String,CachingAuthenticator> authCache) {
+	  	OkHttpClient.Builder builder = clientBuilder;
+	    CachingAuthenticator authenticator = new DigestAuthenticator(credentials);
+	    Interceptor interceptor =  new AuthenticationCacheInterceptor(authCache);
+        checkFirstRequest = true;
+        
+        if(authenticator != null) {
+        	builder.authenticator(new CachingAuthenticatorDecorator(authenticator, authCache));
+        }
+        if(interceptor != null) {
+  		  builder.addInterceptor(interceptor);
+        }
+	    return builder;
+  }
+  
+  public OkHttpClient.Builder configureAuthentication(String host, OkHttpClient.Builder clientBuilder, Map<String,String> kerberosOptions) {
+	  Interceptor interceptor = new HTTPKerberosAuthInterceptor(host, kerberosOptions);
+      checkFirstRequest = false;
+	  OkHttpClient.Builder builder = clientBuilder;
+	  if(interceptor != null) 
+		  builder.addInterceptor(interceptor);
+	  return builder;
+  }
+  
+  public OkHttpClient.Builder configureAuthentication(String samlAuthToken, OkHttpClient.Builder clientBuilder) {
+	  Interceptor interceptor = new HTTPSamlAuthInterceptor(samlAuthToken);
+      checkFirstRequest = false;
+	  OkHttpClient.Builder builder = clientBuilder;
+	  
+	  if(interceptor != null) 
+		  builder.addInterceptor(interceptor);
+	  return builder;
   }
 
   @Override

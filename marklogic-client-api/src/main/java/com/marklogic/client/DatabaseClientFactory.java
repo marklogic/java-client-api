@@ -523,10 +523,10 @@ public class DatabaseClientFactory {
   
 	public static class SAMLAuthContext implements SecurityContext {
 		private String token;
-		SSLContext sslContext;
-		X509TrustManager trustManager;
-		SSLHostnameVerifier sslVerifier;
-		Function<ExpiringSAMLAuth, ExpiringSAMLAuth> authorizer;
+		private SSLContext sslContext;
+		private X509TrustManager trustManager;
+		private SSLHostnameVerifier sslVerifier;
+		private Function<ExpiringSAMLAuth, ExpiringSAMLAuth> authorizer;
 		
 		public X509TrustManager getTrustManager() {
 			return trustManager;
@@ -543,23 +543,24 @@ public class DatabaseClientFactory {
 		}
 
 		public interface ExpiringSAMLAuth {
-	        public static ExpiringSAMLAuth newExpiringSAMLAuth(final String authorizationToken, final Instant expiry) {
-	            return new ExpiringSAMLAuth() {
-					
-					@Override
-					public Instant getExpiry() {
-						return expiry;
-					}
-					
-					@Override
-					public String getAuthorizationToken() {
-						return authorizationToken;
-					}
-				};
-	        }
 	        public String getAuthorizationToken();
 	        public Instant getExpiry();
 	    }
+		
+		public static ExpiringSAMLAuth newExpiringSAMLAuth(final String authorizationToken, final Instant expiry) {
+            return new ExpiringSAMLAuth() {
+                
+                @Override
+                public Instant getExpiry() {
+                    return expiry;
+                }
+                
+                @Override
+                public String getAuthorizationToken() {
+                    return authorizationToken;
+                }
+            };
+        }
 
 		@Override
 		public SAMLAuthContext withSSLContext(SSLContext context, X509TrustManager trustManager) {
