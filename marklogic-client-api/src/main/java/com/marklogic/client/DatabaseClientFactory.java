@@ -27,6 +27,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
@@ -524,6 +526,7 @@ public class DatabaseClientFactory {
 		SSLContext sslContext;
 		X509TrustManager trustManager;
 		SSLHostnameVerifier sslVerifier;
+		Function<ExpiringSAMLAuth, ExpiringSAMLAuth> authorizer;
 		
 		public X509TrustManager getTrustManager() {
 			return trustManager;
@@ -532,9 +535,31 @@ public class DatabaseClientFactory {
 		public SAMLAuthContext(String authorizationToken) {
 			this.token = authorizationToken;
 		}
+		public SAMLAuthContext(Function<ExpiringSAMLAuth, ExpiringSAMLAuth> authorizer) {
+			this.authorizer = authorizer;
+		}
 		public String getToken() {
 			return token;
 		}
+
+		public interface ExpiringSAMLAuth {
+	        public static ExpiringSAMLAuth newExpiringSAMLAuth(final String authorizationToken, final Instant expiry) {
+	            return new ExpiringSAMLAuth() {
+					
+					@Override
+					public Instant getExpiry() {
+						return expiry;
+					}
+					
+					@Override
+					public String getAuthorizationToken() {
+						return authorizationToken;
+					}
+				};
+	        }
+	        public String getAuthorizationToken();
+	        public Instant getExpiry();
+	    }
 
 		@Override
 		public SAMLAuthContext withSSLContext(SSLContext context, X509TrustManager trustManager) {
