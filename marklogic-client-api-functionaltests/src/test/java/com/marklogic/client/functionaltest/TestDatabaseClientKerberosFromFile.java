@@ -1162,6 +1162,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
 
 	 // User "user2" is not in the ML Data folder's services.keytab file. But "user2" is in Active Directory and valid.
 	 StringBuilder msg = new StringBuilder();
+	 DatabaseClient client2 = null;
 	 try {
 		 KerberosConfig krbConfigUser2 = new DatabaseClientFactory.KerberosConfig().withPrincipal("user2")
 				 .withUseKeyTab(true)
@@ -1169,7 +1170,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
 				 .withStoreKey(true)
 				 .withKeyTab(keytabFile);
 		 System.out.println("Principal of key tab file is " + krbConfigUser2.getPrincipal());
-		 client = DatabaseClientFactory.newClient(appServerHostName,
+		 client2 = DatabaseClientFactory.newClient(appServerHostName,
 				 appServerHostPort, new DatabaseClientFactory.KerberosAuthContext(krbConfigUser2));
 	 } catch (Exception e) {
 		 msg.append(e.getMessage());
@@ -1177,6 +1178,9 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
 	 }
 	 
 	 assertTrue("Exception is not thrown for user2", msg.toString().contains("Unable to obtain password from user"));
+	 if (client2 != null) {
+		 client2.release();
+	 }
  }
  
 //Test DatabaseCLient with invalid ADC user. Should expect an Exception.
@@ -1186,6 +1190,7 @@ public void testInValidDCUserNotInKeytabFile() {
 
 	 // User "builder890" is not in the ML Data folder's services.keytab file.
 	 StringBuilder msg = new StringBuilder();
+	 DatabaseClient client890 = null;
 	 try {
 		 KerberosConfig krbConfigUser890 = new DatabaseClientFactory.KerberosConfig().withPrincipal("builder890")
 				 .withUseKeyTab(true)
@@ -1193,7 +1198,7 @@ public void testInValidDCUserNotInKeytabFile() {
 				 .withStoreKey(true)
 				 .withKeyTab(keytabFile);
 		 System.out.println("Principal of key tab file is " + krbConfigUser890.getPrincipal());
-		 client = DatabaseClientFactory.newClient(appServerHostName,
+		 client890 = DatabaseClientFactory.newClient(appServerHostName,
 				 appServerHostPort, new DatabaseClientFactory.KerberosAuthContext(krbConfigUser890));
 	 } catch (Exception e) {
 		 msg.append(e.getMessage());
@@ -1201,6 +1206,9 @@ public void testInValidDCUserNotInKeytabFile() {
 	 }
 	 
 	 assertTrue("Exception is not thrown for builder890", msg.toString().contains("Unable to obtain password from user"));
+	 if (client890 != null) {
+		 client890.release();
+	 }
 }
 	
 }
