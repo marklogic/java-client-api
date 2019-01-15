@@ -141,8 +141,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
   private static String appServerName = "REST-Java-Client-API-ServerKerberos";
   // External security name to be set for the App Server.
   private static String extSecurityName = "KerberosExtSec";
-  private static String kdcPrincipalUser = "builder";
-  private static final String RealmName = "@MLTEST1.LOCAL";
+  private static String kdcPrincipalUser = "builder@MLTEST1.LOCAL";
   private static String keytabFile;
   private static String principal;
 
@@ -156,7 +155,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     
     // Modify default location if needed for services.keytab file. Jenkins job passes in the services.keytab file.
  	keytabFile = System.getProperty("keytabFile");
- 	principal = System.getProperty("principal", kdcPrincipalUser);
+ 	principal = System.getProperty("principal");
  	
      System.out.println("Location of key tab file is " + keytabFile);
      
@@ -175,10 +174,9 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     createExternalSecurityForKerberos(appServerName, extSecurityName);
     associateRESTServerWithKerberosExtSecurity(appServerName, extSecurityName);
     
-    String extName = principal + RealmName;
     createUserRolesWithPrevilages("test-evalKer", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     
-    createRESTKerberosUser("builder", "Welcome123", extName, "rest-reader", "rest-writer", "rest-admin", "rest-extension-user", "test-evalKer");
+    createRESTKerberosUser("builder", "Welcome123", kdcPrincipalUser, "rest-reader", "rest-writer", "rest-admin", "rest-extension-user", "test-evalKer");
     createRESTUser("rest-admin", "x", "rest-admin");
   }
 
