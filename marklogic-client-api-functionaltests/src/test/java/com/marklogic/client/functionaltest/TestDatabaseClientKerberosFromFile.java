@@ -115,6 +115,15 @@ import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.util.RequestLogger;
 
+/*
+ * For this test we need to have a services.keytab file that contains both service (host name) and user principal names.
+ * Generate a services.keytab file.
+ * Then use addent (refer to Jenkins job script) command to add "builder" user to the same services.keytab file.
+ * Make sure that user ("builder") is in Active Directory with proper local name and password.
+ * Jenkins script destorys cached TGT before running this test.
+ * Copy the services.keytab file to ML Server data directory.
+ */
+
 public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
 
   private static String dbName = "TestDBClientWithKerberosFileDB";
@@ -132,7 +141,8 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
   private static String appServerName = "REST-Java-Client-API-ServerKerberos";
   // External security name to be set for the App Server.
   private static String extSecurityName = "KerberosExtSec";
-  private static String kdcPrincipalUser = "builder@MLTEST1.LOCAL";
+  private static String kdcPrincipalUser = "builder";
+  private static final String RealmName = "@MLTEST1.LOCAL";
   private static String keytabFile;
   private static String principal;
 
@@ -144,7 +154,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     loadGradleProperties();
     appServerHostName = getRestAppServerHostName();
     
-    // Modify default location if needed for services.keytab file.
+    // Modify default location if needed for services.keytab file. Jenkins job passes in the services.keytab file.
  	keytabFile = System.getProperty("keytabFile");
  	principal = System.getProperty("principal", kdcPrincipalUser);
  	
@@ -164,12 +174,11 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     // Create the External Security setting.
     createExternalSecurityForKerberos(appServerName, extSecurityName);
     associateRESTServerWithKerberosExtSecurity(appServerName, extSecurityName);
-    // Set authentication to kerberos-ticket, internal security to true and external securities to be none on App Server.
-    //setAuthToKerberosAndInternalSecurityToTrue(appServerName);
-    createUserRolesWithPrevilages("test-evalKer", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
-    createRESTKerberosUser("builder", "Welcome123", kdcPrincipalUser, "rest-reader", "rest-writer", "rest-admin", "rest-extension-user", "test-evalKer");
     
-    //createRESTUser("builder", "Welcome123", "test-evalKer", "rest-admin", "rest-writer", "rest-reader");
+    String extName = principal + RealmName;
+    createUserRolesWithPrevilages("test-evalKer", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
+    
+    createRESTKerberosUser("builder", "Welcome123", extName, "rest-reader", "rest-writer", "rest-admin", "rest-extension-user", "test-evalKer");
     createRESTUser("rest-admin", "x", "rest-admin");
   }
 
@@ -201,7 +210,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     	/*Pass this file's location for the gradle (thru Jenkins job) 
     	  QA functional test project's build.gradle file has << systemProperty "keytabFile", System.getProperty("keytabFile") >>
     	  On gradle command line use the following syntax to pass in the location of the keytab file:
-    	  ./gradlew marklogic-client-api-functionaltests:test -DkeytabFile=/space/Jenkins/workspace/services.keytab -Dprincipal=user2  .....other options
+    	  ./gradlew marklogic-client-api-functionaltests:test -DkeytabFile=$WORKSPACE/java-client-api/services.keytab -Dprincipal=builder  .....other options
     	  */   	
     	KerberosConfig krbConfig = new DatabaseClientFactory.KerberosConfig().withPrincipal(principal)
     			.withUseKeyTab(true)
@@ -252,30 +261,6 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
       }
     }
   }
-  
-  // Method sets REST server's "authentication" to "Kerberos-ticket" and "internal security" to false
-  // external security to be "none"
-  public static void setAuthToKerberosAndInternalSecurityToTrue(String restServerName)
-			throws Exception {
-		DefaultHttpClient client = new DefaultHttpClient();
-
-		client.getCredentialsProvider().setCredentials(new AuthScope(appServerHostName, getAdminPort()),
-				new UsernamePasswordCredentials("admin", "admin"));
-		String body = "{\"group-name\": \"Default\", \"authentication\":\"kerberos-ticket\",\"internal-security\": \"false\"}";
-
-		HttpPut put = new HttpPut("http://" + appServerHostName + ":" + getAdminPort() + "/manage/v2/servers/" + restServerName
-				+ "/properties?server-type=http");
-		put.addHeader("Content-type", "application/json");
-		put.setEntity(new StringEntity(body));
-
-		HttpResponse response2 = client.execute(put);
-		HttpEntity respEntity = response2.getEntity();
-		if (respEntity != null) {
-			String content = EntityUtils.toString(respEntity);
-			System.out.println(content);
-		}
-		client.getConnectionManager().shutdown();
-	}
 
   public GeoSpecialArtifact getGeoArtifact(int counter) {
 
@@ -1124,8 +1109,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     clientUber.release();
   }
 
-  // Test DatabaseCLient with Basic Auth DIGEST auth type. Should expect an
-  // Exception.
+  // Test DatabaseCLient with Basic Auth DIGEST auth type. Should expect an Exception.
   @Test
   public void testWriteWithBasicAuthDigest() {
     System.out.println("Running testWriteWithBasicAuthDigest method");
@@ -1172,4 +1156,53 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
 
     clientDigest.release();
   }
+  
+  //Test DatabaseCLient with valid ADC user, but that user is not in the services keytab file. Should expect an Exception.
+ @Test
+ public void testValidDCUserNotInKeytabFile() {
+	 System.out.println("Running testValidDCUserNotInKeytabFile method");
+
+	 // User "user2" is not in the ML Data folder's services.keytab file. But "user2" is in Active Directory and valid.
+	 StringBuilder msg = new StringBuilder();
+	 try {
+		 KerberosConfig krbConfigUser2 = new DatabaseClientFactory.KerberosConfig().withPrincipal("user2")
+				 .withUseKeyTab(true)
+				 .withDoNotPrompt(true)
+				 .withStoreKey(true)
+				 .withKeyTab(keytabFile);
+		 System.out.println("Principal of key tab file is " + krbConfigUser2.getPrincipal());
+		 client = DatabaseClientFactory.newClient(appServerHostName,
+				 appServerHostPort, new DatabaseClientFactory.KerberosAuthContext(krbConfigUser2));
+	 } catch (Exception e) {
+		 msg.append(e.getMessage());
+		 e.printStackTrace();
+	 }
+	 
+	 assertTrue("Exception is not thrown for user2", msg.toString().contains("Unable to obtain password from user"));
+ }
+ 
+//Test DatabaseCLient with invalid ADC user. Should expect an Exception.
+@Test
+public void testInValidDCUserNotInKeytabFile() {
+	 System.out.println("Running testInValidDCUserNotInKeytabFile method");
+
+	 // User "builder890" is not in the ML Data folder's services.keytab file.
+	 StringBuilder msg = new StringBuilder();
+	 try {
+		 KerberosConfig krbConfigUser890 = new DatabaseClientFactory.KerberosConfig().withPrincipal("builder890")
+				 .withUseKeyTab(true)
+				 .withDoNotPrompt(true)
+				 .withStoreKey(true)
+				 .withKeyTab(keytabFile);
+		 System.out.println("Principal of key tab file is " + krbConfigUser890.getPrincipal());
+		 client = DatabaseClientFactory.newClient(appServerHostName,
+				 appServerHostPort, new DatabaseClientFactory.KerberosAuthContext(krbConfigUser890));
+	 } catch (Exception e) {
+		 msg.append(e.getMessage());
+		 e.printStackTrace();
+	 }
+	 
+	 assertTrue("Exception is not thrown for builder890", msg.toString().contains("Unable to obtain password from user"));
+}
+	
 }
