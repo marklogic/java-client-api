@@ -20,7 +20,7 @@ public class HTTPSamlAuthInterceptor implements Interceptor{
 	  private String authorizationTokenValue;
 	  private Function<ExpiringSAMLAuth, ExpiringSAMLAuth> authorizer;
 	  private ExpiringSAMLAuth expiringSAMLAuth;
-	  private Instant threshold;
+	  private long threshold;
 
 	  HTTPSamlAuthInterceptor(String authToken) {
 	    this.authorizationTokenValue = authToken;
@@ -34,7 +34,7 @@ public class HTTPSamlAuthInterceptor implements Interceptor{
 	    Request request = chain.request();
 	    if(expiringSAMLAuth==null) {
 	    	authorize(null);
-	    } else if(threshold.isBefore(Instant.now())){
+	    } else if(threshold<=Instant.now().getEpochSecond()){
 	    	authorize(expiringSAMLAuth.getExpiry());
 	    }
 	 
@@ -66,6 +66,7 @@ public class HTTPSamlAuthInterceptor implements Interceptor{
 		  if(expiringSAMLAuth.getExpiry().isBefore(Instant.now())) {
 			  throw new IllegalArgumentException("SAML authentication token has expired.");
 		  }
-		  threshold = Instant.now().plusSeconds((expiringSAMLAuth.getExpiry().getEpochSecond())/2);
+		  long current = Instant.now().getEpochSecond();
+		  threshold = current+ (expiringSAMLAuth.getExpiry().getEpochSecond() - current)/2;
 	  }
 }

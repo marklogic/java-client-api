@@ -26,6 +26,7 @@ import com.marklogic.client.DatabaseClientFactory.KerberosAuthContext;
 import com.marklogic.client.DatabaseClientFactory.SAMLAuthContext;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
+import com.marklogic.client.DatabaseClientFactory.SAMLAuthContext.ExpiringSAMLAuth;
 import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
 import com.marklogic.client.document.ContentDescriptor;
@@ -257,7 +258,7 @@ public class OkHttpServices implements RESTServices {
     	      .readTimeout(0, TimeUnit.SECONDS)
     	      .writeTimeout(0, TimeUnit.SECONDS);
     
-	if (securityContext instanceof BasicAuthContext || ((BasicAuthContext)securityContext).getSSLContext()!=null) {
+	if (securityContext instanceof BasicAuthContext) {
 	    BasicAuthContext basicContext = (BasicAuthContext) securityContext;
 	    if (basicContext.getSSLContext() != null) {
             sslContext = basicContext.getSSLContext();
@@ -458,10 +459,19 @@ public class OkHttpServices implements RESTServices {
   
   public OkHttpClient.Builder configureAuthentication(SAMLAuthContext samlAuthContext, OkHttpClient.Builder clientBuilder) {
       String authorizationTokenValue = samlAuthContext.getToken();
+      java.util.function.Function<ExpiringSAMLAuth, ExpiringSAMLAuth> authorizer = null;
       type = Authentication.SAML;
-      if(authorizationTokenValue == null || authorizationTokenValue.length() == 0)
-          throw new IllegalArgumentException("SAML Authentication token cannot be null");
-	  Interceptor interceptor = new HTTPSamlAuthInterceptor(authorizationTokenValue);
+      Interceptor interceptor = null;
+      if(authorizationTokenValue != null && authorizationTokenValue.length() > 0) {
+          interceptor = new HTTPSamlAuthInterceptor(authorizationTokenValue);
+      } else {
+          authorizer = samlAuthContext.getAuthorizer();
+          if(authorizer!=null)
+              interceptor = new HTTPSamlAuthInterceptor(authorizer);
+          else
+              throw new IllegalArgumentException("SAML Authentication requires token or authorizer.");
+      }
+	  
       checkFirstRequest = false;
 	  OkHttpClient.Builder builder = clientBuilder;
 	  

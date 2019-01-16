@@ -541,6 +541,9 @@ public class DatabaseClientFactory {
 		public String getToken() {
 			return token;
 		}
+		public Function<ExpiringSAMLAuth, ExpiringSAMLAuth> getAuthorizer() {
+            return authorizer;
+        }
 
 		public interface ExpiringSAMLAuth {
 	        public String getAuthorizationToken();
