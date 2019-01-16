@@ -544,9 +544,19 @@ public class DatabaseClientFactory {
 		public Function<ExpiringSAMLAuth, ExpiringSAMLAuth> getAuthorizer() {
             return authorizer;
         }
-
+		
+		/**
+		 * ExpiringSAMLAuth is used by SAMLAuthContext for reauthorization.
+		 */
 		public interface ExpiringSAMLAuth {
+		    /**
+		     * @return a new SAML assertion token.
+		     */
 	        public String getAuthorizationToken();
+	        
+	        /**
+	         * @return the expiration time stamp of the newly generated SAML assertion token.
+	         */
 	        public Instant getExpiry();
 	    }
 		
