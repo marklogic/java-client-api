@@ -520,7 +520,12 @@ public class DatabaseClientFactory {
       return this;
     }
   }
-  
+  /**
+   * A SAMLAuthContext is used for authorization using SAML.
+   * It consists of a authorization token each with an expiration time stamp.
+   * SAMLAuthContext asks for a new token with a new expiration time stamp if 
+   * the previous token expires and the session is still valid.
+   */
 	public static class SAMLAuthContext implements SecurityContext {
 		private String token;
 		private SSLContext sslContext;
@@ -528,16 +533,26 @@ public class DatabaseClientFactory {
 		private SSLHostnameVerifier sslVerifier;
 		private Function<ExpiringSAMLAuth, ExpiringSAMLAuth> authorizer;
 		
+		/**
+         * @return the X509TrustManagerused for authentication.
+         */
 		public X509TrustManager getTrustManager() {
 			return trustManager;
 		}
-
+		
+		/**
+         * Replaces the token with new SAML authorization token.
+         */
 		public SAMLAuthContext(String authorizationToken) {
 			this.token = authorizationToken;
 		}
 		public SAMLAuthContext(Function<ExpiringSAMLAuth, ExpiringSAMLAuth> authorizer) {
 			this.authorizer = authorizer;
 		}
+		
+		/**
+		 * @return the SAML authentication token.
+		 */
 		public String getToken() {
 			return token;
 		}
@@ -560,6 +575,12 @@ public class DatabaseClientFactory {
 	        public Instant getExpiry();
 	    }
 		
+		/**
+         * newExpiringSAMLAuth is used to provide a new token with a new expiration time stamp.
+         * @param authorizationToken refers to the new SAML token.
+         * @param expiry refers to the expiration time stamp of authorizationToken.
+         * @return an ExpiringSAMLAuth instance.
+         */
 		public static ExpiringSAMLAuth newExpiringSAMLAuth(final String authorizationToken, final Instant expiry) {
             return new ExpiringSAMLAuth() {
                 
