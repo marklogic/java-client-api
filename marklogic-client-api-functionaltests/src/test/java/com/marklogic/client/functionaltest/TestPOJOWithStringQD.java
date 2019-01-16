@@ -69,7 +69,7 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 
   @Before
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    client = getDatabaseClient("rest-admin", "x", getConnType());
   }
 
   @After
@@ -277,17 +277,13 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
     JacksonHandle jh = new JacksonHandle();
     p = products.search(qd, 1, jh);
 
-    long pageNo = 1, count = 0;
+    long pageNo = 1;
     do {
-      count = 0;
       p = products.search(qd, pageNo, results.withFormat(Format.JSON));
 
       while (p.iterator().hasNext()) {
         Artifact a = p.iterator().next();
         validateArtifact(a);
-        count++;
-        // System.out.println(a.getId()+" "+a.getManufacturer().getName()
-        // +"  "+count);
       }
       assertEquals("Page total results", 0, p.getTotalSize());
       pageNo = pageNo + p.getPageSize();
@@ -304,5 +300,4 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 
     assertEquals("Total search results resulted are ", actNode.asInt(), 0);
   }
-
 }

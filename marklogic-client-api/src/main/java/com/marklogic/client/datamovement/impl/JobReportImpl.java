@@ -17,15 +17,13 @@ package com.marklogic.client.datamovement.impl;
 
 import java.util.Calendar;
 
+import com.marklogic.client.datamovement.JobReport;
+import com.marklogic.client.datamovement.QueryBatchListener;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.QueryFailureListener;
-import com.marklogic.client.datamovement.impl.QueryJobReportListener;
 import com.marklogic.client.datamovement.WriteBatchListener;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.WriteFailureListener;
-import com.marklogic.client.datamovement.JobReport;
-import com.marklogic.client.datamovement.QueryBatchListener;
-import com.marklogic.client.datamovement.impl.WriteJobReportListener;
 
 public class JobReportImpl implements JobReport {
 
@@ -34,6 +32,8 @@ public class JobReportImpl implements JobReport {
   private long successBatchesCount = 0;
   private long failureBatchesCount = 0;
   private boolean isJobComplete;
+  private Calendar jobStartTime;
+  private Calendar jobEndTime;
   private Calendar reportTimestamp;
 
   public JobReportImpl(WriteBatcher batcher) {
@@ -67,6 +67,8 @@ public class JobReportImpl implements JobReport {
     failureEventsCount = writeJobSuccessListener.getFailureEventsCount();
     isJobComplete = batcher.isStopped();
     reportTimestamp = Calendar.getInstance();
+    jobStartTime = batcher.getJobStartTime();
+    jobEndTime = batcher.getJobEndTime();
   }
 
   public JobReportImpl(QueryBatcher batcher) {
@@ -100,6 +102,8 @@ public class JobReportImpl implements JobReport {
     successEventsCount = queryJobSuccessListener.getSuccessEventsCount();
     isJobComplete = batcher.isStopped();
     reportTimestamp = Calendar.getInstance();
+    jobStartTime = batcher.getJobStartTime();
+    jobEndTime = batcher.getJobEndTime();
   }
 
   @Override
@@ -129,5 +133,15 @@ public class JobReportImpl implements JobReport {
   @Override
   public Calendar getReportTimestamp() {
     return reportTimestamp;
+  }
+
+  @Override
+  public Calendar getJobStartTime() {
+    return jobStartTime;
+  }
+
+  @Override
+  public Calendar getJobEndTime() {
+    return jobEndTime;
   }
 }

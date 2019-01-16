@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * An instance of a server unsigned byte expression.
+ * @deprecated (as of 4.2) Use {@link com.marklogic.client.type.ServerExpression}
  */
 public interface XsUnsignedByteExpr extends XsUnsignedByteSeqExpr, XsUnsignedShortExpr {
 }

@@ -146,8 +146,8 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     		                             "rest-reader", "rest-extension-user", "manage-user");    
 
     if (IsSecurityEnabled()) {
-        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", Authentication.DIGEST);
-        client = getDatabaseClient("opticUser", "0pt1c", Authentication.DIGEST);
+        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", getConnType());
+        client = getDatabaseClient("opticUser", "0pt1c", getConnType());
     }
     else {
         schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("opticUser", "0pt1c"));
@@ -288,7 +288,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
     
     
-    clientRes = getDatabaseClient("eval-user", "x", Authentication.DIGEST); 
+    clientRes = getDatabaseClient("eval-user", "x", getConnType()); 
     
     resourceMgr = clientRes.newServerConfigManager().newResourceExtensionsManager();
     ExtensionMetadata resextMetadata = new ExtensionMetadata();
@@ -576,7 +576,6 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 
     // plans from literals
     ModifyPlan plan1 = p.fromLiterals(literals1);
-    ModifyPlan plan2 = p.fromLiterals(literals2);
 
     ModifyPlan output = plan1.groupBy(p.col("colorId"), p.max("new_color_id", "colorId"));
 
@@ -683,7 +682,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
                 p.col("colorDesc"),
                 p.as("added", p.add(p.col("rowId"), p.col("colorId"), p.xs.intVal(10))),
                 p.as("subtracted", p.subtract(p.col("colorId"), p.col("rowId"))),
-                p.as("negSubtracted", p.subtract(p.col("colorId"), p.col("desc"))),
+                p.as("negSubtracted", p.subtract(p.col("colorId"), p.col("rowId"))),
                 p.as("divided", p.divide(p.col("colorId"), p.col("rowId"))),
                 p.as("multiplied", p.multiply(p.col("colorId"), p.col("rowId"), p.xs.floatVal(0.6f))),
                 p.as("colDefined", p.isDefined(p.col("added"))),

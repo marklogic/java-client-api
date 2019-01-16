@@ -73,7 +73,7 @@ public class TestBulkWriteOptimisticLocking extends BasicJavaClientREST {
    * @Before public void testSetup() throws KeyManagementException,
    * NoSuchAlgorithmException, Exception { // create new connection for each
    * test below client = getDatabaseClient("rest-admin", "x",
-   * Authentication.DIGEST);
+   * getConnType());
    * 
    * // create server configuration manager ServerConfigurationManager configMgr
    * = client.newServerConfigManager();

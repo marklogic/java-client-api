@@ -39,7 +39,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentWriteSet;
@@ -103,7 +102,6 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
     // Insert word lexicon.
     ObjectMapper mapper = new ObjectMapper();
     ObjectNode mainNode = mapper.createObjectNode();
-    ObjectNode wordLexicon = mapper.createObjectNode();
     ArrayNode childArray = mapper.createArrayNode();
     ObjectNode childNodeObject = mapper.createObjectNode();
 
@@ -135,8 +133,8 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
     		                             "rest-reader", "rest-extension-user", "manage-user");    
 
     if (IsSecurityEnabled()) {
-        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", Authentication.DIGEST);
-        client = getDatabaseClient("opticUser", "0pt1c", Authentication.DIGEST);
+        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", getConnType());
+        client = getDatabaseClient("opticUser", "0pt1c", getConnType());
     }
     else {
         schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("opticUser", "0pt1c"));
@@ -533,8 +531,6 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 
     XsStringSeqVal options = p.xs.stringSeq("wildcarded", "case-sensitive");
 
-    // ModifyPlan output = plan1.where(p.cts.jsonPropertyWordQuery(propertyName,
-    // value, options))
     ModifyPlan output = plan1.where(p.cts.jsonPropertyWordQuery("city", "*k", "wildcarded", "case-sensitive"))
         .joinInner(plan2)
         .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
@@ -736,7 +732,6 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
     // Create a new Plan.
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
-    PlanPrefixer bb = p.prefixer("http://marklogic.com/baseball/players");
 
     // plan1 - fromView
     CtsQueryExpr andQuery1 = p.cts.andQuery(p.cts.jsonPropertyWordQuery("id", "400"),
@@ -790,7 +785,6 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
     // Create a new Plan.
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
-    PlanPrefixer bb = p.prefixer("http://marklogic.com/baseball/players");
 
     // plan1 - fromView
     CtsQueryExpr andQuery3 = p.cts.jsonPropertyWordQuery("id", "1");

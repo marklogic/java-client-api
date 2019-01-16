@@ -21,9 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -39,11 +37,9 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.TuplesHandle;
 import com.marklogic.client.io.ValuesHandle;
@@ -81,7 +77,7 @@ public class TestBug21159 extends BasicJavaClientREST {
 
     String[] filenames = { "tuples-test1.xml", "tuples-test2.xml", "tuples-test3.xml", "tuples-test4.xml", "lexicon-test1.xml", "lexicon-test2.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -131,7 +127,7 @@ public class TestBug21159 extends BasicJavaClientREST {
 
     String[] filenames = { "tuples-test1.xml", "tuples-test2.xml", "tuples-test3.xml", "tuples-test4.xml", "lexicon-test1.xml", "lexicon-test2.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -179,7 +175,7 @@ public class TestBug21159 extends BasicJavaClientREST {
 
     String[] filenames = { "tuples-test1.xml", "tuples-test2.xml", "tuples-test3.xml", "tuples-test4.xml", "lexicon-test1.xml", "lexicon-test2.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
     srvMgr.readConfiguration();
@@ -217,7 +213,6 @@ public class TestBug21159 extends BasicJavaClientREST {
             "<cts:text>Alaska</cts:text>" +
             "</cts:word-query>"; 
            
-    StringHandle stringResults = null;
     ValuesDefinition valuesDef = queryMgr.newValuesDefinition("n-way", queryOptionName);
 
     StringHandle handle = new StringHandle().with(wordQuery).withFormat(Format.XML);
@@ -257,13 +252,12 @@ public class TestBug21159 extends BasicJavaClientREST {
     System.out.println("Running testTuplesWithRawCombinedCtsQuery");
     String[] filenames = { "tuples-test1.xml", "tuples-test2.xml", "tuples-test3.xml", "tuples-test4.xml", "lexicon-test1.xml", "lexicon-test2.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
     srvMgr.readConfiguration();
     srvMgr.setQueryOptionValidation(true);
     srvMgr.writeConfiguration();
-    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
     StringHandle Opthandle = new StringHandle();
     String options = "<options xmlns=\"http://marklogic.com/appservices/search\"> " + 
             "<tuples name=\"n-way\">" +
@@ -295,7 +289,7 @@ public class TestBug21159 extends BasicJavaClientREST {
             "</cts:word-query>"+
             options +
             "</search:search>";
-    StringHandle stringResults = null;
+    
     ValuesDefinition valuesDef = queryMgr.newValuesDefinition("n-way");
 
     StringHandle handle = new StringHandle().with(wordQuery).withFormat(Format.XML);

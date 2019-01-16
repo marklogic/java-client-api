@@ -1,6 +1,6 @@
 package com.marklogic.client.datamovement.functionaltests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +30,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.datamovement.ApplyTransformListener;
@@ -39,11 +39,10 @@ import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.ServerTransform;
-import com.marklogic.client.impl.DatabaseClientImpl;
+import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
@@ -92,7 +91,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 	    
 		host = getRestAppServerHostName();
 		dbClient = getDatabaseClient(user, password, getConnType());
-		DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
 		dmManager = dbClient.newDataMovementManager();
 		hostNames = getHosts();
 		createDB(dbName);
@@ -345,6 +343,8 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		Assert.assertEquals(6000, dmManager.getJobReport(queryTicket).getSuccessEventsCount());
 		Assert.assertEquals(batches.intValue(), dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
 		if(!isLBHost()) {
+			System.out.println("Method queryFailure hostNames.length " + hostNames.length);
+			System.out.println("Method queryFailure getFailureEventsCount() " + dmManager.getJobReport(queryTicket).getFailureEventsCount());
 			Assert.assertEquals(hostNames.length, dmManager.getJobReport(queryTicket).getFailureEventsCount());
 			Assert.assertEquals(hostNames.length, dmManager.getJobReport(queryTicket).getFailureBatchesCount());
 		}
@@ -451,7 +451,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		Assert.assertTrue(dmManager.getJobReport(queryTicket).getSuccessEventsCount() > 40);
 		Assert.assertTrue(dmManager.getJobReport(queryTicket).getSuccessEventsCount() < 1000);
 		Assert.assertTrue(batchCount.get() == dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
-
 	}
 
 	@Test
@@ -531,7 +530,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 					List<String> batchList = Arrays.asList(batch.getItems());
 					skippedBatch.addAll(batchList);
 					System.out.println("stopTransformJobTest : Skipped: " + batch.getItems()[0]);
-				}).onBatchFailure((batch, throwable) -> {
+				}).onFailure((batch, throwable) -> {
 					List<String> batchList = Arrays.asList(batch.getItems());
 					throwable.printStackTrace();
 					System.out.println("stopTransformJobTest: Failed: " + batch.getItems()[0]);
@@ -574,8 +573,9 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		System.out.println("stopTransformJobTest: Success: " + successBatch.size());
 		System.out.println("stopTransformJobTest: Skipped: " + skippedBatch.size());
 		System.out.println("stopTransformJobTest : count " + count);
-		Assert.assertEquals(2000 - count.get(), successBatch.size());
-		Assert.assertEquals(2000 - count.get(), successCount.get());
+		
+		System.out.println("stopTransformJobTest : successCount.get() " + successCount.get());
+		Assert.assertEquals(successCount.get(), successBatch.size());
 
 	}
 }

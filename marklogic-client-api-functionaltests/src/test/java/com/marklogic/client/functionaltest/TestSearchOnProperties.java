@@ -38,7 +38,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
@@ -69,7 +68,7 @@ public class TestSearchOnProperties extends BasicJavaClientREST {
   public void testSearchOnProperties() throws KeyManagementException, NoSuchAlgorithmException, IOException
   {
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
@@ -199,7 +198,7 @@ public class TestSearchOnProperties extends BasicJavaClientREST {
     String filename3 = "property3.xml";
     String queryOptionName = "propertiesSearchWordOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create and initialize a handle on the metadata
     DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -249,7 +248,7 @@ public class TestSearchOnProperties extends BasicJavaClientREST {
     String filename3 = "property3.xml";
     String queryOptionName = "propertiesSearchWordOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create and initialize a handle on the metadata
     DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -300,7 +299,7 @@ public class TestSearchOnProperties extends BasicJavaClientREST {
     String filename3 = "property3.xml";
     String queryOptionName = "propertiesSearchWordOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create and initialize a handle on the metadata
     DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();

@@ -19,7 +19,6 @@ package com.marklogic.client.functionaltest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -39,10 +38,7 @@ import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
-import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
@@ -50,7 +46,6 @@ import com.marklogic.client.io.ValuesHandle;
 import com.marklogic.client.io.marker.CtsQueryWriteHandle;
 import com.marklogic.client.query.CountedDistinctValue;
 import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 
@@ -75,7 +70,7 @@ public class TestRawCtsQueryDefinition extends BasicJavaClientREST {
     addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
     addFieldExcludeRoot(dbName, "para");
     includeElementFieldWithWeight(dbName, "para", "", "p", 5, "", "", "");
-    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    client = getDatabaseClient("rest-admin", "x", getConnType());
   }
 
   @After
@@ -287,10 +282,16 @@ public class TestRawCtsQueryDefinition extends BasicJavaClientREST {
     JacksonHandle resultsHandle2 = new JacksonHandle();
     queryMgr.search(querydef, resultsHandle2);
 
-    // get the result
+    // get the result - Should be 0.
     JsonNode result2 = resultsHandle2.get();
-    assertTrue("Search results total incorrect", result2.path("total").asInt() == 2);
+    assertTrue("Search results total incorrect", result2.path("total").asInt() == 0);
     
+    JacksonHandle jacksonHandle2 = new JacksonHandle();
+    RawCtsQueryDefinition querydef2 = queryMgr.newRawCtsQueryDefinition(handle);
+    querydef2.setHandle(handle2.withFormat(Format.JSON));
+    queryMgr.search(querydef2, jacksonHandle2);
+    
+    result2 = jacksonHandle2.get();
     JsonNode highlightNode1 = result2.path("results").get(0).path("matches").get(0).path("match-text");
     String txt1 = highlightNode1.get(0).toString().trim();
     assertTrue("Highlight text 1 returned incorrect", highlightNode1.toString().contains("groundbreaking"));
@@ -311,7 +312,7 @@ public class TestRawCtsQueryDefinition extends BasicJavaClientREST {
     String[] filenames = { "aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml" };
     String queryOptionName = "aggregatesOpt5Occ.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -364,7 +365,7 @@ public class TestRawCtsQueryDefinition extends BasicJavaClientREST {
     System.out.println("Running testValuesWithRawCtsQueryCombinedDefinition");
 
     String[] filenames = { "aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml" };
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames) {

@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -40,7 +41,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
@@ -61,7 +61,6 @@ import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.StringQueryDefinition;
-import java.util.Map;
 
 public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST {
   private static final int BATCH_SIZE = 100;
@@ -90,7 +89,7 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST {
   @Before
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     // create new connection for each test below
-    client = getDatabaseClient("usr1", "password", Authentication.DIGEST);
+    client = getDatabaseClient("usr1", "password", getConnType());
   }
 
   @After
@@ -284,7 +283,6 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST {
   // JSON, expectint it to work, logged an issue 82
   @Test
   public void testBulkSearchSQDwithResponseFormatandStringHandle() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-    int count = 1;
     loadTxtDocuments();
     loadJSONDocuments();
     TextDocumentManager docMgr = client.newTextDocumentManager();
@@ -306,7 +304,6 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST {
       docMgr.readMetadata(rec.getUri(), mh);
       assertTrue("Records has permissions? ", mh.getPermissions().containsKey("flexrep-eval"));
       assertTrue("Record has collections ?", mh.getCollections().isEmpty());
-      count++;
     }
     assertFalse("Search handle contains", results.get().isEmpty());
 
@@ -331,11 +328,8 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST {
 
     // System.out.println(jh.get().toString());
     assertTrue("Searh response has entry for facets", jh.get().has("facets"));
-    assertFalse("Searh response has entry for results", jh.get().has("results"));// Issue
-                                                                                 // 84
-                                                                                 // is
-                                                                                 // tracking
-                                                                                 // this
+    assertFalse("Searh response has entry for results", jh.get().has("results"));
+    // Issue 84 is tracking this
     assertFalse("Searh response has entry for metrics", jh.get().has("metrics"));
 
     docMgr.setSearchView(QueryView.RESULTS);
@@ -343,11 +337,8 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST {
 
     assertFalse("Searh response has entry for facets", jh.get().has("facets"));
     assertTrue("Searh response has entry for results", jh.get().has("results"));
-    assertFalse("Searh response has entry for metrics", jh.get().has("metrics"));// Issue
-                                                                                 // 84
-                                                                                 // is
-                                                                                 // tracking
-                                                                                 // this
+    assertFalse("Searh response has entry for metrics", jh.get().has("metrics"));
+    // Issue 84 is tracking this                                                                     
 
     docMgr.setSearchView(QueryView.METADATA);
     page = docMgr.search(qd, 1, jh);
@@ -422,7 +413,5 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST {
 
     assertEquals("Total search results after rollback are ", results.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total").getNodeValue(),
         "0");
-
   }
-
 }

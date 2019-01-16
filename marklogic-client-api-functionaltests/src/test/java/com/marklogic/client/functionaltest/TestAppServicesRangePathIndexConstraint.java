@@ -34,7 +34,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.StringHandle;
@@ -62,7 +61,6 @@ public class TestAppServicesRangePathIndexConstraint extends BasicJavaClientREST
     System.out.println("Running clear script");
   }
 
-  @SuppressWarnings("deprecation")
   @Test
   public void testPathIndex() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
       TransformerException
@@ -72,7 +70,7 @@ public class TestAppServicesRangePathIndexConstraint extends BasicJavaClientREST
     String[] filenames = { "pathindex1.xml", "pathindex2.xml" };
     String queryOptionName = "pathIndexConstraintOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -107,7 +105,7 @@ public class TestAppServicesRangePathIndexConstraint extends BasicJavaClientREST
 
     System.out.println("Running testPathIndexWithConstraint");
 
-    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -168,7 +166,7 @@ public class TestAppServicesRangePathIndexConstraint extends BasicJavaClientREST
 
     String[] filenames2 = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames2) {

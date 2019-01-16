@@ -16,7 +16,12 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -28,14 +33,18 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.util.Iterator;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.BytesHandle;
@@ -101,9 +110,9 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
     int restPort = getRestServerPort();
-    adminClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-admin", "x", Authentication.DIGEST);
-    writerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-writer", "x", Authentication.DIGEST);
-    readerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-reader", "x", Authentication.DIGEST);
+    adminClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-admin", "x", getConnType());
+    writerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-writer", "x", getConnType());
+    readerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-reader", "x", getConnType());
     gmWriter = writerClient.newGraphManager();
     gmReader = readerClient.newGraphManager();
   }
@@ -865,7 +874,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
     createRESTUser("perm-user", "x", "test-perm");
     // Create Client with above User
     int restPort = getRestServerPort();
-    DatabaseClient permUser = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "perm-user", "x", Authentication.DIGEST);
+    DatabaseClient permUser = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "perm-user", "x", getConnType());
     // Create GraphManager with Above client
     GraphManager gmTestPerm = permUser.newGraphManager();
     // Set Update Capability for the Created User
@@ -986,7 +995,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
     createRESTUser("perm-user", "x", "test-perm");
     // Create Client with above User
     int restPort = getRestServerPort();
-    DatabaseClient permUser = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "perm-user", "x", Authentication.DIGEST);
+    DatabaseClient permUser = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "perm-user", "x", getConnType());
     // Create GraphManager with Above client
 
     Transaction trx = permUser.openTransaction();
@@ -1033,7 +1042,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
     createRESTUser("perm-user", "x", "test-perm");
     // Create Client with above User
     int restPort = getRestServerPort();
-    DatabaseClient permUser = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "perm-user", "x", Authentication.DIGEST);
+    DatabaseClient permUser = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "perm-user", "x", getConnType());
 
     // Create GraphManager with Above client
     Transaction trx = permUser.openTransaction();

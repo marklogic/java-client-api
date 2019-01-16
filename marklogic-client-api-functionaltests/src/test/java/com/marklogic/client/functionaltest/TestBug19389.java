@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.Format;
@@ -56,7 +55,7 @@ public class TestBug19389 extends BasicJavaClientREST {
   {
     System.out.println("Running testBug19389");
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set error format to JSON
     ServerConfigurationManager srvMgr = client.newServerConfigManager();

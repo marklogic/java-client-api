@@ -38,15 +38,12 @@ import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryManager;
@@ -82,7 +79,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
     String[] jsonFiles = { "Tropic-of-Capricorn-json.json", "Tropic-of-Cancer-json.json", "South-Pole-json.json", "South-More-json.json", "South-East-json.json",
         "Prime-Meridian-json.json", "North-West-json.json", "North-Pole-json.json", "International-Date-Line-json.json", "Equator-json.json" };
 
-    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : xmlFiles) {
@@ -447,7 +444,6 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 
     // get the result
     JsonNode resultNode = resultsHandle.get();
-    JsonNode jsonPointNodes = resultNode.path("results");
 
     // Should have 2 nodes returned.
     assertEquals("Two nodes not returned from testPolygonCoversBox method ", 2, resultNode.path("total").asInt());

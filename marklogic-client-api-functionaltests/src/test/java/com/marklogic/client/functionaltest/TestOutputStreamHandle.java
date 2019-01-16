@@ -36,7 +36,6 @@ import org.xml.sax.SAXException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.InputStreamHandle;
 
 public class TestOutputStreamHandle extends BasicJavaClientREST {
@@ -59,7 +58,7 @@ public class TestOutputStreamHandle extends BasicJavaClientREST {
     System.out.println("Running testXmlCRUD");
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     writeDocumentUsingOutputStreamHandle(client, filename, uri, "XML");
@@ -128,7 +127,7 @@ public class TestOutputStreamHandle extends BasicJavaClientREST {
     System.out.println("Running testTextCRUD");
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     writeDocumentUsingOutputStreamHandle(client, filename, uri, "Text");
@@ -193,7 +192,7 @@ public class TestOutputStreamHandle extends BasicJavaClientREST {
     ObjectMapper mapper = new ObjectMapper();
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     writeDocumentUsingOutputStreamHandle(client, filename, uri, "JSON");
@@ -260,7 +259,7 @@ public class TestOutputStreamHandle extends BasicJavaClientREST {
     System.out.println("Running testBinaryCRUD");
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     writeDocumentUsingOutputStreamHandle(client, filename, uri, "Binary");

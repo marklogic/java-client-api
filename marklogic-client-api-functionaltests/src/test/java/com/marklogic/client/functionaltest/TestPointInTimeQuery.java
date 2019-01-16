@@ -16,7 +16,8 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,7 +45,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.DocumentPatchBuilder.PathLanguage;
@@ -101,7 +101,7 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
 
     String[] filenames = { "json-original.json" };
 
-    DatabaseClient client = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("eval-user", "x", getConnType());
 
     // write docs and save the timestamps in the array
 
@@ -115,8 +115,7 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
     // Read the document with timestamp.
     docMgrIns.read("/partial-update/" + filenames[0], jacksonHandle);
 
-    // Make sure we have the original document and document count is 1.
-    JsonNode jsonResults = jacksonHandle.get();
+    // Make sure we have the original document and document count is 1
 
     long insTimeStamp = jacksonHandle.getServerTimestamp();
     System.out.println("Point in Time Stamp after the initial insert " + insTimeStamp);

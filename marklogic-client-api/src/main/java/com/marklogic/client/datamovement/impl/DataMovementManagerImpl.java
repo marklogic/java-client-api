@@ -18,6 +18,7 @@ package com.marklogic.client.datamovement.impl;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
@@ -126,6 +127,10 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   @Override
   public QueryBatcher newQueryBatcher(RawCombinedQueryDefinition query) {
+    return newQueryBatcherImpl(query);
+  }
+  @Override
+  public QueryBatcher newQueryBatcher(RawCtsQueryDefinition query) {
     return newQueryBatcherImpl(query);
   }
 

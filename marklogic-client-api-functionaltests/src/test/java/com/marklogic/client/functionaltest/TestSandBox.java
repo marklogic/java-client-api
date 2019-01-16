@@ -50,7 +50,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
@@ -325,7 +324,7 @@ public class TestSandBox extends BasicJavaClientREST {
         "rest-reader", "temporal-admin");
     createRESTUser("eval-readeruser", "x", "rest-reader");
     writerClient = getDatabaseClientOnDatabase(appServerHostname, restPort,
-        dbName, "eval-user", "x", Authentication.DIGEST);
+        dbName, "eval-user", "x", getConnType());
   }
 
   @After
@@ -501,7 +500,7 @@ public class TestSandBox extends BasicJavaClientREST {
     DatabaseClient client = null;
     try {
 
-      client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+      client = getDatabaseClient("rest-writer", "x", getConnType());
 
       // write docs
       for (String filename : filenames) {
@@ -548,7 +547,7 @@ public class TestSandBox extends BasicJavaClientREST {
     DatabaseClient client = null;
     try {
 
-      client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+      client = getDatabaseClient("rest-admin", "x", getConnType());
 
       // write docs
       for (int i = 1; i <= 9; i++) {
@@ -602,7 +601,7 @@ public class TestSandBox extends BasicJavaClientREST {
     
     try {
 
-      client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+      client = getDatabaseClient("rest-admin", "x", getConnType());
 
       // create and initialize a handle on the metadata
       DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -669,7 +668,7 @@ public class TestSandBox extends BasicJavaClientREST {
 
     try {
       // Create a new Plan.
-      client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+      client = getDatabaseClient("rest-admin", "x", getConnType());
       RowManager rowMgr = client.newRowManager();
       PlanBuilder p = rowMgr.newPlanBuilder();
       Map<String, CtsReferenceExpr> index1 = new HashMap<String, CtsReferenceExpr>();
@@ -732,7 +731,7 @@ public class TestSandBox extends BasicJavaClientREST {
   {
     DatabaseClient client = null;
     try {
-      client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+      client = getDatabaseClient("rest-admin", "x", getConnType());
       String docId[] = { "/original.json", "/updated.json", "/constraint1.json" };
       String jsonFilename1 = "json-original.json";
       String jsonFilename2 = "json-updated.json";
@@ -809,7 +808,7 @@ public class TestSandBox extends BasicJavaClientREST {
     String uri = "http://test.sem.quads/json-quads";
     DatabaseClient writerClient = getDatabaseClientOnDatabase(
         appServerHostname, restPort, dbName, "rest-writer", "x",
-        Authentication.DIGEST);
+        getConnType());
     Transaction trxIn = writerClient.openTransaction();
     gmWriter = writerClient.newGraphManager();
     Transaction trxInMergeGraph = null;
@@ -1022,7 +1021,7 @@ public class TestSandBox extends BasicJavaClientREST {
     DatabaseClient client = null;
     try {
 
-      client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+      client = getDatabaseClient("rest-admin", "x", getConnType());
 
       PojoRepository<Artifact, Long> products = client.newPojoRepository(Artifact.class, Long.class);
       PojoPage<Artifact> p;

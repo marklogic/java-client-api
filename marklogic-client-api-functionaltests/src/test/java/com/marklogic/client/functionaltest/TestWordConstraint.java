@@ -27,7 +27,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.SearchHandle;
 
 public class TestWordConstraint extends BasicJavaClientREST {
@@ -47,7 +46,7 @@ public class TestWordConstraint extends BasicJavaClientREST {
   @Test
   public void testElementWordConstraint() throws KeyManagementException, NoSuchAlgorithmException, IOException
   {
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames)

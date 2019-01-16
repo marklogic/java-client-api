@@ -22,11 +22,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 
 public class ThreadSearch extends BasicJavaClientREST implements Runnable {
 
@@ -41,7 +39,7 @@ public class ThreadSearch extends BasicJavaClientREST implements Runnable {
     DatabaseClient client;
     try {
 
-      client = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
+      client = getDatabaseClient("rest-reader", "x", getConnType());
       QueryManager queryMgr = client.newQueryManager();
       StringQueryDefinition querydef = queryMgr.newStringDefinition(null);
 

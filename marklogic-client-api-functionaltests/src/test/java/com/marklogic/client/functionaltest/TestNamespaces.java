@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+
+// This test needs to be removed/deleted when NamespaceManager Class is taken out of Java Client API package.
 package com.marklogic.client.functionaltest;
 
 import static org.junit.Assert.assertEquals;
@@ -31,7 +33,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.NamespacesManager;
 import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.XMLDocumentManager;
@@ -57,7 +58,7 @@ public class TestNamespaces extends BasicJavaClientREST {
     System.out.println("Running testNamespaces");
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create namespaces manager
     NamespacesManager nsMgr = client.newServerConfigManager().newNamespacesManager();
@@ -105,7 +106,7 @@ public class TestNamespaces extends BasicJavaClientREST {
     System.out.println("Running testDefaultNamespaces");
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create namespaces manager
     NamespacesManager nsMgr = client.newServerConfigManager().newNamespacesManager();
@@ -145,7 +146,7 @@ public class TestNamespaces extends BasicJavaClientREST {
 
     System.out.println("Runing testBug22396");
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     writeDocumentUsingInputStreamHandle(client, "constraint1.xml", "/testBug22396/", "XML");

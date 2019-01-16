@@ -36,7 +36,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
@@ -48,8 +47,6 @@ import com.marklogic.client.query.RawCombinedQueryDefinition;
 public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
   private static String dbName = "TestRawCombinedQueryGeoDB";
   private static String[] fNames = { "TestRawCombinedQueryGeoDB-1" };
-
-  private static int restPort = 8011;
 
   @BeforeClass
   public static void setUp() throws Exception
@@ -72,7 +69,7 @@ public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
   {
     System.out.println("Running testRawCombinedQueryGeo");
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     loadGeoData();
@@ -116,7 +113,7 @@ public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
   {
     System.out.println("Running testRawCombinedQueryGeoJSON");
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     loadGeoData();
@@ -164,7 +161,7 @@ public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
   {
     System.out.println("Running testRawCombinedQueryGeoBoxAndWordJSON");
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     loadGeoData();
@@ -211,7 +208,7 @@ public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
   {
     System.out.println("testRawCombinedQueryGeoCircle");
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     loadGeoData();
@@ -253,7 +250,7 @@ public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
   {
     System.out.println("testRawCombinedQueryGeoBox");
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     loadGeoData();
@@ -293,7 +290,7 @@ public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
   {
     System.out.println("Running testRawCombinedQueryGeoBoxAndWord");
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     loadGeoData();
@@ -331,7 +328,7 @@ public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
   {
     System.out.println("Running testRawCombinedQueryGeoPointAndWord");
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (int i = 1; i <= 9; i++)

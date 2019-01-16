@@ -26,11 +26,13 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
@@ -54,7 +56,9 @@ import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.Forest;
+import com.marklogic.client.datamovement.HostAvailabilityListener;
 import com.marklogic.client.datamovement.JobTicket;
+import com.marklogic.client.datamovement.ProgressListener;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.UrisToWriterListener;
 import com.marklogic.client.datamovement.WriteBatcher;
@@ -110,7 +114,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "rest-extension-user", "manage-user");
 
     // For use with Java/REST Client API
-    client = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+    client = getDatabaseClient("eval-user", "x", getConnType());
     dmManager = client.newDataMovementManager();
   }
 
@@ -265,7 +269,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
     }
   }
-  
+
   /*
    * To test query by example with WriteBatcher and QueryBatcher.
    * 
@@ -381,7 +385,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
       String[] filenames = { "curbappeal.xml", "flipper.xml", "justintime.xml" };
 
-      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+      clientTmp = getDatabaseClient("eval-user", "x", getConnType());
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       QueryManager queryMgr = clientTmp.newQueryManager();
@@ -524,7 +528,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
       String queryName = "combinedQueryNoOption.xml";
 
-      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+      clientTmp = getDatabaseClient("eval-user", "x", getConnType());
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       QueryManager queryMgr = clientTmp.newQueryManager();
@@ -655,7 +659,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
       String combinedQueryFileName = "combinedQueryOptionJSON.json";
 
-      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+      clientTmp = getDatabaseClient("eval-user", "x", getConnType());
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       QueryManager queryMgr = clientTmp.newQueryManager();
@@ -785,7 +789,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       String[] filenames = { "pathindex1.xml", "pathindex2.xml" };
       String combinedQueryFileName = "combinedQueryOptionPathIndex.xml";
 
-      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+      clientTmp = getDatabaseClient("eval-user", "x", getConnType());
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       QueryManager queryMgr = clientTmp.newQueryManager();
@@ -1609,7 +1613,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       handle.set(jsonDoc);
       String uri = null;
 
-      // Insert 2K documents to have a sufficient large query seek time
+      // Insert 20K documents to have a sufficient large query seek time
       for (int i = 0; i < 20000; i++) {
         uri = "/firstName" + i + ".json";
         batcher.add(uri, handle);
@@ -1809,7 +1813,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
       String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
       String queryOptionName = "absRangeConstraintWithVariousGrammarAndWordQueryOpt.xml";
-      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+      clientTmp = getDatabaseClient("eval-user", "x", getConnType());
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       setQueryOption(clientTmp, queryOptionName);
@@ -1972,7 +1976,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       srvMgr.setQueryOptionValidation(true);
       srvMgr.writeConfiguration();
 
-      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+      clientTmp = getDatabaseClient("eval-user", "x", getConnType());
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       QueryManager queryMgr = clientTmp.newQueryManager();
@@ -2086,7 +2090,6 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
       StructuredQueryDefinition valuequeyDef = qb.value(qb.elementAttribute(qb.element(new QName("http://cloudbank.com", "price")), qb.attribute("amt")), "0.1");
       QueryBatcher queryBatcher3 = dmManagerTmp.newQueryBatcher(valuequeyDef);
-      // StringBuilder batchRangeResults = new StringBuilder();
       List<String> batchValueResults = new ArrayList<String>();
       StringBuilder batchvalueFailResults = new StringBuilder();
 
@@ -2128,5 +2131,200 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       clientTmp.release();
       Thread.sleep(10000);
     }
+  }
+  
+  @Test
+  public void testMinHostWithHostAvailabilityListener() throws Exception
+  {
+	  DatabaseClient client = null;
+	  DataMovementManager dmManagerTmp = null;
+	  StringBuilder batchFailResults = new StringBuilder();
+
+	  if(!isLBHost()) {
+		  try {
+			  System.out.println("Running testMinHostWithHostAvailabilityListener");
+			  String[] hostNames = null;
+			  client = getDatabaseClient("eval-user", "x", getConnType());
+			  dmManagerTmp = client.newDataMovementManager();
+
+			  QueryManager queryMgr = client.newQueryManager();
+			  StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
+			  StructuredQueryDefinition queryWorddef = qb.word(qb.element("id"), "0026");
+
+			  hostNames = getHosts();
+			  StructuredQueryDefinition queryRangedef = qb.range(qb.element("popularity"), "xs:integer", Operator.GE, 4);
+			  QueryBatcher queryBatcher = dmManagerTmp.newQueryBatcher(queryRangedef);
+
+			  queryBatcher.setQueryFailureListeners(
+					  new HostAvailabilityListener(dmManagerTmp)
+					  .withSuspendTimeForHostUnavailable(Duration.ofSeconds(15))
+					  .withMinHosts(5)
+					  );
+			  queryBatcher.onUrisReady(batch -> {
+				  System.out.println("Batch results are: " + batch.getJobResultsSoFar());
+			  }
+					  );
+			  queryBatcher.onQueryFailure(throwable -> {
+				  System.out.println("Exceptions thrown from callback onQueryFailure in testMinHostWithHostAvailabilityListener");
+				  throwable.printStackTrace();
+
+			  });
+			  JobTicket jobTicket = dmManagerTmp.startJob(queryBatcher);
+		  }
+		  catch(IllegalArgumentException ex) {
+			  batchFailResults.append(ex.getMessage());
+		  }
+		  finally {
+			  client.release();
+			  System.out.println("Exception Message is " + batchFailResults.toString());
+			  assertTrue("Exception incorrect", batchFailResults.toString().contains("numHosts must be less than or equal to the number of hosts in the cluster"));
+		  }
+	  }
+  }
+  
+  @Test
+  public void testProgressListener() throws Exception {
+	  DatabaseClient clientTmp = null;
+	  try {
+		  DataMovementManager dmManager = null;
+
+		  clientTmp = getDatabaseClient("eval-user", "x", getConnType());
+		  dmManager = clientTmp.newDataMovementManager();
+		  QueryManager queryMgr = clientTmp.newQueryManager();
+		  StringQueryDefinition querydef = queryMgr.newStringDefinition();
+		  querydef.setCriteria("John AND Bob");
+
+		  String jsonDoc = "{" + "\"employees\": [" + "{ \"firstName\":\"John\" , \"lastName\":\"Doe\" },"
+				  + "{ \"firstName\":\"Ann\" , \"lastName\":\"Smith\" },"
+				  + "{ \"firstName\":\"Bob\" , \"lastName\":\"Foo\" }]" + "}";
+		  WriteBatcher wbatcher = dmManager.newWriteBatcher();
+		  wbatcher.withBatchSize(600);
+		  wbatcher.onBatchFailure((batch, throwable) -> throwable.printStackTrace());
+		  StringHandle handle = new StringHandle();
+		  handle.set(jsonDoc);
+		  String uri = null;
+
+		  // Insert 6 K documents
+		  for (int i = 0; i < 6000; i++) {
+			  uri = "/firstName" + i + ".json";
+			  wbatcher.add(uri, handle);
+		  }
+
+		  wbatcher.flushAndWait();
+		  // Read all 6000 docs in a batch and monitor progress.
+		  StringBuilder str6000 = new StringBuilder();
+		  QueryBatcher batcher6000 = dmManager.newQueryBatcher(querydef).withBatchSize(6000).withThreadCount(1);
+		  batcher6000.onUrisReady(
+
+				  new ProgressListener()
+				  .onProgressUpdate(progressUpdate -> {
+					  System.out.println("From ProgressListener (Batch 6000): " + progressUpdate.getProgressAsString());
+					  str6000.append(progressUpdate.getProgressAsString());
+				  }));
+		  batcher6000.onQueryFailure((throwable) -> {
+			  System.out.println("queryFailures 6000: ");
+			  try {
+				  Thread.currentThread().sleep(7000L);
+			  } catch (Exception e) {
+				  // TODO Auto-generated catch block
+				  e.printStackTrace();
+			  }
+		  });
+
+		  JobTicket queryTicket6000 = dmManager.startJob(batcher6000);
+		  batcher6000.awaitCompletion();
+		  System.out.println("From buffer 6000: " + str6000.toString());
+		  assertTrue("Progress Update incorrect", str6000.toString().contains("Progress: 6000 results"));
+
+		  // Read in smaller batches and monitor progress
+		  StringBuilder str60 = new StringBuilder();
+		  QueryBatcher batcher60 = dmManager.newQueryBatcher(querydef).withBatchSize(60).withThreadCount(1);
+		  batcher60.onUrisReady(
+				  new ProgressListener()
+				  .onProgressUpdate(progressUpdate -> {
+					  System.out.println("From ProgressListener (From Batch 60): " + progressUpdate.getProgressAsString());
+					  str60.append(progressUpdate.getProgressAsString());
+				  }));
+		  batcher60.onQueryFailure((throwable) -> {
+			  System.out.println("queryFailures 60: ");
+			  try {
+				  Thread.currentThread().sleep(7000L);
+			  } catch (Exception e) {
+				  // TODO Auto-generated catch block
+				  e.printStackTrace();
+			  }
+		  });
+
+		  JobTicket queryTicket60 = dmManager.startJob(batcher60);
+		  batcher60.awaitCompletion();
+
+		  System.out.println("From buffer 60: " + str60.toString());
+		  // Make sure all updates are available
+		  assertTrue("Progress Update Batch 1 incorrect", str60.toString().contains("Progress: 60 results"));
+		  assertTrue("Progress Update Batch 5940 incorrect", str60.toString().contains("Progress: 5940 results"));
+		  assertTrue("Progress Update incorrect", str60.toString().contains("Progress: 6000 results"));
+		  // Batches read are uneven and with multiple threads
+		  StringBuilder str33 = new StringBuilder();
+		  QueryBatcher batcher33 = dmManager.newQueryBatcher(querydef).withBatchSize(33).withThreadCount(3);
+		  batcher33.onUrisReady(
+				  new ProgressListener()
+				  .onProgressUpdate(progressUpdate -> {
+					  System.out.println("From ProgressListener (From Batch 33): " + progressUpdate.getProgressAsString());
+					  str33.append(progressUpdate.getProgressAsString());
+				  }));
+		  batcher33.onQueryFailure((throwable) -> {
+			  System.out.println("queryFailures 33: ");
+			  try {
+				  Thread.currentThread().sleep(7000L);
+			  } catch (Exception e) {
+				  // TODO Auto-generated catch block
+				  e.printStackTrace();
+			  }
+		  });
+
+		  JobTicket queryTicket33 = dmManager.startJob(batcher33);
+		  batcher33.awaitCompletion();
+
+		  System.out.println("From buffer 33: " + str33.toString());
+		  // Make sure all updates are available
+		  assertTrue("Progress Update Batch 1 incorrect", str33.toString().contains("Progress: 33 results"));
+		  assertTrue("Progress Update Batch 5973 incorrect", str33.toString().contains("Progress: 5973 results"));
+		  assertTrue("Progress Update incorrect", str33.toString().contains("Progress: 6000 results"));
+
+		  // Batches read errors
+		  StringBuilder strErr = new StringBuilder();	  
+		  StringQueryDefinition querydefErr = queryMgr.newStringDefinition();
+		  querydefErr.setCriteria("Jhn AND BAA");
+
+		  QueryBatcher batcherErr = dmManager.newQueryBatcher(querydefErr).withBatchSize(100).withThreadCount(3);
+		  batcherErr.onUrisReady(
+				  new ProgressListener()
+				  .onProgressUpdate(progressUpdate -> {
+					  System.out.println("From ProgressListener (From Batch Err): " + progressUpdate.getProgressAsString());
+					  strErr.append(progressUpdate.getProgressAsString());	  
+				  }))
+		  .onQueryFailure((throwable) -> {
+			  System.out.println("queryFailures Err: ");
+			  try {
+				  Thread.currentThread().sleep(7000L);
+			  } catch (Exception e) {
+				  // TODO Auto-generated catch block
+				  e.printStackTrace();
+			  }
+		  });
+
+		  JobTicket queryTicketErr = dmManager.startJob(batcherErr);
+		  batcherErr.awaitCompletion();
+
+		  System.out.println("From buffer Err: " + strErr.toString());
+		  // No updates are available
+		  assertTrue("Progress Update Batch 1 incorrect", strErr.toString().isEmpty());	  
+	  }
+	  catch (Exception ex) {
+		  ex.printStackTrace();
+	  }
+	  finally {
+		  clientTmp.release();
+	  }
   }
 }

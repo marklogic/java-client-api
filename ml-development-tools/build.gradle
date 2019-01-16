@@ -27,7 +27,7 @@ dependencies {
     compileOnly gradleApi()
     compile project (':marklogic-client-api')
     compile ('org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.51')
-    compile ('com.fasterxml.jackson.module:jackson-module-kotlin:2.9.3')
+    compile ('com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8')
     testCompileOnly gradleTestKit()
 }
 

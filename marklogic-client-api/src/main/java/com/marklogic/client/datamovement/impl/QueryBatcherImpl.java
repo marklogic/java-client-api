@@ -50,6 +50,7 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -73,13 +74,16 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private final AtomicReference<List<DatabaseClient>> clientList = new AtomicReference<>();
   private Map<Forest,AtomicLong> forestResults = new HashMap<>();
   private Map<Forest,AtomicBoolean> forestIsDone = new HashMap<>();
+  private Map<Forest, AtomicInteger> retryForestMap = new HashMap<>();
+  private AtomicBoolean runJobCompletionListeners = new AtomicBoolean(false);
   private final AtomicBoolean stopped = new AtomicBoolean(false);
   private final AtomicBoolean started = new AtomicBoolean(false);
   private final Object lock = new Object();
   private final Map<Forest,List<QueryTask>> blackListedTasks = new HashMap<>();
   private boolean isSingleThreaded = false;
   private JobTicket jobTicket;
-  private Thread runJobCompletionListeners;
+  private Calendar jobStartTime;
+  private Calendar jobEndTime;
 
   public QueryBatcherImpl(QueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super(moveMgr);
@@ -155,6 +159,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
     // we're obviously not done with this forest
     forestIsDone.get(retryForest).set(false);
+    retryForestMap.get(retryForest).incrementAndGet();
     long start = queryEvent.getForestResultsSoFar() + 1;
     logger.trace("retryForest {} on retryHost {} at start {}",
       retryForest.getForestName(), retryForest.getPreferredHost(), start);
@@ -323,10 +328,11 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
     jobTicket = ticket;
     initialize();
-    started.set(true);
     for (QueryBatchListener urisReadyListener : urisReadyListeners) {
       urisReadyListener.initializeListener(this);
     }
+    jobStartTime = Calendar.getInstance();
+    started.set(true);
     if ( query != null ) {
       startQuerying();
     } else {
@@ -357,33 +363,6 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     logger.info("Starting job batchSize={}, threadCount={}, onUrisReady listeners={}, failure listeners={}",
       getBatchSize(), getThreadCount(), urisReadyListeners.size(), failureListeners.size());
     threadPool = new QueryThreadPoolExecutor(getThreadCount(), this);
-    runJobCompletionListeners = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        if ( stopped.get() == true ) {
-          logger.warn("Cancelling task to run the job completion listeners since the batcher is stopped");
-          return;
-        }
-        if ( jobCompletionListeners.size() > 0 ) {
-          boolean isCompleted = awaitCompletion();
-          if ( isCompleted ) {
-            for (QueryBatcherListener listener : jobCompletionListeners) {
-              if ( Thread.interrupted() ) {
-                logger.warn("Thread interrupted while running job completion listeners");
-                return;
-              }
-              try {
-                listener.processEvent(QueryBatcherImpl.this);
-              } catch (Throwable e) {
-                logger.error("Exception thrown by an onJobCompletion listener", e);
-              }
-            }
-          } else {
-            logger.warn("Job Completion interrupted");
-          }
-        }
-      }
-    });
   }
 
   /* When withForestConfig is called before the job starts, it just provides
@@ -427,6 +406,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       hosts.put(forest.getPreferredHost(), forest);
       if ( forestResults.get(forest) == null ) forestResults.put(forest, new AtomicLong());
       if ( forestIsDone.get(forest) == null  ) forestIsDone.put(forest, new AtomicBoolean(false));
+      if ( retryForestMap.get(forest) == null ) retryForestMap.put(forest, new AtomicInteger(0));
     }
     logger.info("(withForestConfig) Using forests on {} hosts for \"{}\"", hosts.keySet(), forests[0].getDatabaseName());
     List<DatabaseClient> newClientList = new ArrayList<>();
@@ -638,10 +618,6 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
           if ( uris.size() == getBatchSize() ) {
             // this is a full batch
             launchNextTask();
-          } else {
-            // we're done if we get a partial batch (always the last)
-            isDone.set(true);
-            shutdownIfAllForestsAreDone();
           }
           batch = batch
             .withItems(uris.toArray(new String[uris.size()]))
@@ -659,16 +635,18 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
               logger.error("Exception thrown by an onUrisReady listener", t);
             }
           }
+          if ( uris.size() != getBatchSize() ) {
+            // we're done if we get a partial batch (always the last)
+            isDone.set(true);
+          }
         }
       } catch (ResourceNotFoundException e) {
         // we're done if we get a 404 NOT FOUND which throws ResourceNotFoundException
         // this should only happen if the last query retrieved a full batch so it thought
         // there would be more and queued this task which retrieved 0 results
         isDone.set(true);
-        shutdownIfAllForestsAreDone();
       } catch (Throwable t) {
         // any error outside listeners is grounds for stopping queries to this forest
-        isDone.set(true);
         if ( callFailListeners == true ) {
           batch = batch
             .withJobResultsSoFar(resultsSoFar.get())
@@ -680,12 +658,19 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
               logger.error("Exception thrown by an onQueryFailure listener", e2);
             }
           }
-          shutdownIfAllForestsAreDone();
+          if(retryForestMap.get(forest).get() == 0) {
+            isDone.set(true);
+          } else {
+            retryForestMap.get(forest).decrementAndGet();
+          }
         } else if ( t instanceof RuntimeException ) {
           throw (RuntimeException) t;
         } else {
           throw new DataMovementException("Failed to retry batch", t);
         }
+      }
+      if(isDone.get()) {
+        shutdownIfAllForestsAreDone();
       }
     }
 
@@ -709,12 +694,19 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
     // if we made it this far, all forests are done. let's run the Job
     // completion listeners and shutdown.
-    if ( !runJobCompletionListeners.isAlive() ) {
-      synchronized(this) {
-        if ( !runJobCompletionListeners.isAlive() ) runJobCompletionListeners.start();
+    if(runJobCompletionListeners.compareAndSet(false, true)) runJobCompletionListeners();
+    threadPool.shutdown();
+  }
+
+  private void runJobCompletionListeners() {
+    for (QueryBatcherListener listener : jobCompletionListeners) {
+      try {
+        listener.processEvent(QueryBatcherImpl.this);
+      } catch (Throwable e) {
+        logger.error("Exception thrown by an onJobCompletion listener", e);
       }
     }
-    threadPool.shutdown();
+    if(jobEndTime == null) jobEndTime = Calendar.getInstance();
   }
 
   private class IteratorTask implements Runnable {
@@ -728,12 +720,15 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     @Override
     public void run() {
       try {
+        boolean lastBatch = false;
         List<String> uriQueue = new ArrayList<>(getBatchSize());
         while (iterator.hasNext()) {
           uriQueue.add(iterator.next());
+          if(!iterator.hasNext()) lastBatch = true;
           // if we've hit batchSize or the end of the iterator
           if (uriQueue.size() == getBatchSize() || !iterator.hasNext()) {
             final List<String> uris = uriQueue;
+            final boolean finalLastBatch = lastBatch;
             uriQueue = new ArrayList<>(getBatchSize());
             Runnable processBatch = new Runnable() {
               public void run() {
@@ -771,6 +766,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
                   }
                   logger.warn("Error iterating to queue uris: {}", t.toString());
                 }
+                if(finalLastBatch) {
+                  runJobCompletionListeners();
+                }
               }
             };
             threadPool.execute(processBatch);
@@ -798,7 +796,6 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
         }
         logger.warn("Error iterating to queue uris: {}", t.toString());
       }
-      runJobCompletionListeners.start();
       threadPool.shutdown();
     }
   }
@@ -824,12 +821,11 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   public void stop() {
     stopped.set(true);
     if ( threadPool != null ) threadPool.shutdownNow();
-    boolean allDone = true;
+    if(jobEndTime == null) jobEndTime = Calendar.getInstance();
     if ( query != null ) {
       for ( AtomicBoolean isDone : forestIsDone.values() ) {
         // if even one isn't done, log a warning
-        allDone = isDone.get();
-        if ( allDone == false ) {
+        if ( isDone.get() == false ) {
           logger.warn("QueryBatcher instance \"{}\" stopped before all results were retrieved",
             getJobName());
           break;
@@ -837,19 +833,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       }
     } else {
       if ( iterator != null && iterator.hasNext() ) {
-        allDone = false;
         logger.warn("QueryBatcher instance \"{}\" stopped before all results were processed",
           getJobName());
       }
-    }
-    if ( allDone ) {
-      try {
-        runJobCompletionListeners.join();
-      } catch (InterruptedException e) {
-        logger.warn("Thread interrupted while waiting for the Job completion listeners");
-      }
-    } else {
-      if ( runJobCompletionListeners != null ) runJobCompletionListeners.interrupt();
     }
     closeAllListeners();
   }
@@ -972,6 +958,24 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       for (QueryBatcherListener listener : listeners) {
         jobCompletionListeners.add(listener);
       }
+    }
+  }
+
+  @Override
+  public Calendar getJobStartTime() {
+    if(! this.isStarted()) {
+      return null;
+    } else {
+      return jobStartTime;
+    }
+  }
+
+  @Override
+  public Calendar getJobEndTime() {
+    if(! this.isStopped()) {
+      return null;
+    } else {
+      return jobEndTime;
     }
   }
 }

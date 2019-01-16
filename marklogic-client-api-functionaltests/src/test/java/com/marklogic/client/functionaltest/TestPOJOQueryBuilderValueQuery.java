@@ -62,7 +62,7 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 
   @Before
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    client = getDatabaseClient("rest-admin", "x", getConnType());
   }
 
   @After
@@ -423,7 +423,6 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
     PojoQueryBuilder qb = products.getQueryBuilder();
     String[] searchNames = { "Adme spe* *", "Wedgets spe* *" };
     QueryManager queryMgr = client.newQueryManager();
-    StructuredQueryBuilder strdqb = queryMgr.newStructuredQueryBuilder();
 
     StructuredQueryDefinition strutdDef = qb.word("name", "Widgets 101");
     strutdDef.setCriteria("Cogs 101");

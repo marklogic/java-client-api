@@ -42,8 +42,6 @@ import org.xml.sax.InputSource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResult.Type;
@@ -85,7 +83,7 @@ public class TestEvalXquery extends BasicJavaClientREST {
 
   @Before
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-    client = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+    client = getDatabaseClient("eval-user", "x", getConnType());
   }
 
   @After
@@ -326,7 +324,6 @@ public class TestEvalXquery extends BasicJavaClientREST {
     InputSource is = new InputSource();
     is.setCharacterStream(new StringReader("<foo attr=\"attribute\"><?processing instruction?><!--comment-->test1</foo>"));
     Document doc = db.parse(is);
-    String jsonNode = "{ \"a\" : {\"obj\": \"value\"}, \"b\" : \"s0\",\"c1\" : 1,\"c2\" : 2,\"d\" : null,\"f\" : true,\"g\" : [\"s1\", \"s2\", \"s3\" ]}";
     System.out.println(this.convertXMLDocumentToString(doc));
     try {
       String query1 = "declare namespace test=\"http://marklogic.com/test\";"
@@ -476,7 +473,7 @@ public class TestEvalXquery extends BasicJavaClientREST {
     String restServerName = getRestServerName();
     String appServerHostname = getRestAppServerHostName();
 
-    DatabaseClient moduleClient = getDatabaseClientOnDatabase(appServerHostname, restPort, (restServerName + "-modules"), "admin", "admin", Authentication.DIGEST);
+    DatabaseClient moduleClient = getDatabaseClientOnDatabase(appServerHostname, restPort, (restServerName + "-modules"), "admin", "admin", getConnType());
     try {
       inputStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/xquery-modules-with-diff-variable-types.xqy");
       InputStreamHandle ish = new InputStreamHandle();

@@ -25,16 +25,13 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Map;
 
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.DocumentPage;
@@ -49,7 +46,6 @@ import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
-import java.util.Map;
 
 public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 
@@ -175,7 +171,7 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 	  System.out.println("Inside testBulkWritewithTransactionCommit");
 	  try {
 		  int count = 1;
-		  client = getDatabaseClient("usr1", "password", Authentication.DIGEST);
+		  client = getDatabaseClient("usr1", "password", getConnType());
 		  Transaction t = client.openTransaction();
 		  System.out.println("Transaction is = " + t.getTransactionId());
 		  XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -236,7 +232,7 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 	  System.out.println("Inside testBulkWritewithTransactionsNoCommit");
 	  try {
 		  int count = 1;
-		  client = getDatabaseClient("usr1", "password", Authentication.DIGEST);
+		  client = getDatabaseClient("usr1", "password", getConnType());
 		  boolean tstatus = true;
 		  Transaction t1 = client.openTransaction();
 		  try {
@@ -313,7 +309,7 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 	  boolean tstatus = true;
 	  System.out.println("Inside testBulkWritewithMetadataTransactionNoCommit");
 	  try {		  
-		  client = getDatabaseClient("usr1", "password", Authentication.DIGEST);
+		  client = getDatabaseClient("usr1", "password", getConnType());
 		  Transaction t1 = client.openTransaction();
 		  try {
 			  XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -404,8 +400,8 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 
     int count = 1;
     boolean tstatus = true;
-    client = getDatabaseClient("usr1", "password", Authentication.DIGEST);
-    DatabaseClient c = getDatabaseClient("usr1", "password", Authentication.DIGEST);
+    client = getDatabaseClient("usr1", "password", getConnType());
+    DatabaseClient c = getDatabaseClient("usr1", "password", getConnType());
     Transaction t1 = client.openTransaction();
     try {
       XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -466,7 +462,7 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
     String docId[] = { "Sega-4MB.jpg" };
     System.out.println("Inside testBulkWritewithTransactionCommitTimeOut");
 	  try {		  
-		  client = getDatabaseClient("usr1", "password", Authentication.DIGEST);
+		  client = getDatabaseClient("usr1", "password", getConnType());
     Transaction t = client.openTransaction("timeoutTrans", 1);
     BinaryDocumentManager docMgr = client.newBinaryDocumentManager();
 
@@ -521,7 +517,7 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
     int count = 1;
     boolean tstatus = true;
     System.out.println("Inside testBulkWriteDeleteWithTransactions");
-    client = getDatabaseClient("usr1", "password", Authentication.DIGEST);
+    client = getDatabaseClient("usr1", "password", getConnType());
     Transaction t1 = client.openTransaction();
     try {
       XMLDocumentManager docMgr = client.newXMLDocumentManager();

@@ -28,6 +28,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 
 import org.junit.After;
@@ -40,7 +41,6 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.document.BinaryDocumentManager;
@@ -59,7 +59,6 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
-import javax.xml.transform.Source;
 
 /*
  * This test is designed to to test simple bulk writes with different types of Managers and different content type like JSON,text,binary,XMl
@@ -89,7 +88,7 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST {
   public void testSetup() throws KeyManagementException, NoSuchAlgorithmException, Exception
   {
     // create new connection for each test below
-    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    client = getDatabaseClient("rest-admin", "x", getConnType());
   }
 
   @After

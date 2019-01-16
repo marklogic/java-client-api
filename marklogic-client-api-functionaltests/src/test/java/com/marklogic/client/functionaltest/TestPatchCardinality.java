@@ -32,7 +32,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentMetadataPatchBuilder.Cardinality;
 import com.marklogic.client.document.DocumentPatchBuilder;
@@ -46,8 +45,6 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 
   private static String dbName = "TestPatchCardinalityDB";
   private static String[] fNames = { "TestPatchCardinalityDB-1" };
-
-  private static int restPort = 8011;
 
   @BeforeClass
   public static void setUp() throws Exception
@@ -71,7 +68,7 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 
     String[] filenames = { "cardinal1.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -110,7 +107,7 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 
     String[] filenames = { "cardinal2.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -142,7 +139,7 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 
     String[] filenames = { "cardinal1.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -178,7 +175,7 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 
     String[] filenames = { "cardinal3.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -217,7 +214,7 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 
     String[] filenames = { "cardinal1.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -256,7 +253,7 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 
     String[] filenames = { "cardinal2.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -288,7 +285,7 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 
     String[] filenames = { "cardinal3.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -320,7 +317,7 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 
     String[] filenames = { "cardinal1.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -356,7 +353,7 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 
     String[] filenames = { "cardinal1.xml", "cardinal4.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (String filename : filenames)

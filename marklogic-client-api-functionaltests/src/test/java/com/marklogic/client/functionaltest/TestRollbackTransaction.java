@@ -37,7 +37,6 @@ import org.xml.sax.SAXException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.io.DOMHandle;
@@ -65,7 +64,7 @@ public class TestRollbackTransaction extends BasicJavaClientREST {
     String filename = "bbq1.xml";
     String uri = "/tx-rollback/";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
 
@@ -124,7 +123,7 @@ public class TestRollbackTransaction extends BasicJavaClientREST {
     String updateFilename = "json-updated.json";
     String uri = "/tx-rollback/";
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
 
@@ -186,7 +185,7 @@ public class TestRollbackTransaction extends BasicJavaClientREST {
     String uri = "/tx-rollback/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
 
@@ -262,7 +261,7 @@ public class TestRollbackTransaction extends BasicJavaClientREST {
     String filename = "bbq1.xml";
     String uri = "/tx-rollback/";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
 
@@ -305,7 +304,6 @@ public class TestRollbackTransaction extends BasicJavaClientREST {
     } catch (Exception e) {
       exception = e.toString();
     }
-    ;
 
     assertTrue("Exception is not thrown", exception.contains(expectedException));
 

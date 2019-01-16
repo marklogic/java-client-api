@@ -32,16 +32,13 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.DeleteListener;
 import com.marklogic.client.datamovement.ExportListener;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.impl.DatabaseClientImpl;
+import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
@@ -52,12 +49,10 @@ public class ExportListenerTest extends BasicJavaClientREST {
   private static String dbName = "ExportListener";
   private static DataMovementManager dmManager = null;
   private static DatabaseClient dbClient;
-  private static String host = null;
   private static String user = "admin";
   private static int port = 8000;
   private static String password = "admin";
   private static String server = "App-Services";
-  private static JsonNode clusterInfo;
 
   private static final String query1 = "fn:count(fn:doc())";
   private static String[] hostNames;
@@ -68,7 +63,6 @@ public class ExportListenerTest extends BasicJavaClientREST {
     server = getRestAppServerName();
     port = getRestAppServerPort();
     
-    host = getRestAppServerHostName();
     hostNames = getHosts();
     createDB(dbName);
     Thread.currentThread().sleep(500L);
@@ -85,12 +79,8 @@ public class ExportListenerTest extends BasicJavaClientREST {
 		enableSecurityOnRESTServer(server, dbName);
 	}
 
-    dbClient = getDatabaseClient(user, password, Authentication.DIGEST);
-    DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
+    dbClient = getDatabaseClient(user, password, getConnType());
     dmManager = dbClient.newDataMovementManager();
-
-    clusterInfo = ((DatabaseClientImpl) adminClient).getServices()
-            .getResource(null, "internal/forestinfo", null, null, new JacksonHandle()).get();
   }
 
   @AfterClass
@@ -343,12 +333,10 @@ public class ExportListenerTest extends BasicJavaClientREST {
     Thread.currentThread().sleep(5000L);
 
     List<String> docExporterList = new ArrayList<String>();
-    List<String> batcherList = new ArrayList<String>();
 
     QueryManager queryMgr = dbClient.newQueryManager();
     StringQueryDefinition querydef = queryMgr.newStringDefinition();
     querydef.setCriteria("John AND Bob");
-    StringBuffer batchResults = new StringBuffer();
 
     try {
       // Listener is setup with no withConsistentSnapshot()
@@ -612,7 +600,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
                     docExporterList.add(uriOfDoc);
                   }
                   )
-                  .onBatchFailure((batch, throwable) -> {
+                  .onFailure((batch, throwable) -> {
                     onBatchFailureStr.append("From onBatchFailure QA Exception");
                     System.out.println("From onBatchFailure " + throwable.getMessage());
                     System.out.println("From onBatchFailure QA Exception");

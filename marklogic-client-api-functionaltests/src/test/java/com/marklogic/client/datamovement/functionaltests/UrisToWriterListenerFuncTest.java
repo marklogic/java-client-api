@@ -39,17 +39,15 @@ import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.UrisToWriterListener;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.WriteEvent;
-import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.functionaltest.Artifact;
+import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.functionaltest.Company;
 import com.marklogic.client.functionaltest.Product;
 import com.marklogic.client.io.DocumentMetadataHandle;
@@ -70,7 +68,6 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
   private static String dbName = "UrisToWriterListenerFuncTestDB";
   private static String[] fNames = { "UrisToWriterListenerFuncTestDB-1", "UrisToWriterListenerFuncTestDB-2", "UrisToWriterListenerFuncTestDB-3" };
 
-  private static String restServerHost = null;
   private static String restServerName = null;
   private static String dataConfigDirPath = null;
   private static int restServerPort = 0;
@@ -85,7 +82,6 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
   public static void setUpBeforeClass() throws Exception {
     loadGradleProperties();
     restServerPort = getRestAppServerPort();
-    restServerHost = getRestAppServerHostName();
 
     restServerName = getRestAppServerName();
     dataConfigDirPath = getDataConfigDirPath();
@@ -97,10 +93,10 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "rest-extension-user", "manage-user");
 
     // For use with QueryHostBatcher
-    clientQHB =getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+    clientQHB =getDatabaseClient("eval-user", "x", getConnType());
     dmManager = clientQHB.newDataMovementManager();
 
-    clientQHBTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+    clientQHBTmp = getDatabaseClient("eval-user", "x", getConnType());
     dmManagerTmp = clientQHBTmp.newDataMovementManager();
   }
 
@@ -1198,7 +1194,7 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
       QueryBatcher qBatcher = dmManagerTmp.newQueryBatcher(querydef);
       qBatcher.withBatchSize(100)
           .onUrisReady(new UrisToWriterListener(writer)
-              .onBatchFailure((batch, throwable) -> {
+              .onFailure((batch, throwable) -> {
                 batchFailResults.append("QA OnBatchFailure Event");
                 System.out.println("Exception thrown from onBatchFailure == " + throwable.getMessage());
               })

@@ -36,7 +36,6 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
@@ -76,7 +75,7 @@ public class TestSearchOnJSON extends BasicJavaClientREST {
 
     String queryOptionName = "valueConstraintWildCardOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create a manager for writing query options
     QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
@@ -131,7 +130,7 @@ public class TestSearchOnJSON extends BasicJavaClientREST {
     String filename5 = "constraint5.xml";
     String queryOptionName = "appservicesConstraintCombinationOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create and initialize a handle on the metadata
     DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();

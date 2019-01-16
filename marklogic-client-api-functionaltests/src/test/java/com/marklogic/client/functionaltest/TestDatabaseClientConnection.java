@@ -18,6 +18,7 @@ package com.marklogic.client.functionaltest;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -26,14 +27,16 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.io.InputStream;
 import java.text.DecimalFormat;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Scanner;
 import java.util.TreeMap;
 
+import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
@@ -46,39 +49,43 @@ import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.alerting.RuleDefinition;
 import com.marklogic.client.alerting.RuleDefinitionList;
 import com.marklogic.client.alerting.RuleManager;
 import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.JAXBHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.TuplesHandle;
 import com.marklogic.client.io.ValuesHandle;
 import com.marklogic.client.io.ValuesListHandle;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentMetadataValues;
 import com.marklogic.client.query.AggregateResult;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.SuggestDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
-import java.util.Map;
 
 public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
   private static String dbName = "DatabaseClientConnectionDB";
   private static String[] fNames = { "DatabaseClientConnectionDB-1" };
-  private static int restPort;
   private static String restServerName;
 
   // These members are used to test Git Issue 332.
   private static String UberdbName = "UberDatabaseClientConnectionDB";
-  private static String UberDefaultdbName = "Documents";
   private static String[] UberfNames = { "UberDatabaseClientConnectionDB-1" };
   private static int Uberport = 8000;
   private static String UberrestServerName = "App-Services";
@@ -88,7 +95,6 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
   public static void setUp() throws Exception {
     System.out.println("In setup");
     configureRESTServer(dbName, fNames);
-    restPort = getRestServerPort();
     restServerName = getRestServerName();
     appServerHostname = getRestAppServerHostName();
 
@@ -111,7 +117,6 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     addRangeElementIndex(UberdbName, "string", "http://noun/", "title", "http://marklogic.com/collation/");
   }
 
-  @SuppressWarnings("deprecation")
   @Test
   public void testReleasedClient() throws IOException, KeyManagementException, NoSuchAlgorithmException
   {
@@ -120,7 +125,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     String filename = "facebook-10443244874876159931";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write doc
     writeDocumentUsingStringHandle(client, filename, "/write-text-doc/", "Text");
@@ -141,13 +146,12 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     assertEquals("Exception is not thrown", expectedException, stringException);
   }
 
-  @SuppressWarnings("deprecation")
   @Test
   public void testDatabaseClientConnectionExist() throws KeyManagementException, NoSuchAlgorithmException, IOException
   {
     System.out.println("Running testDatabaseClientConnectionExist");
 
-    DatabaseClient client = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-reader", "x", getConnType());
     String[] stringClient = client.toString().split("@");
     assertEquals("Object does not exist", "com.marklogic.client.impl.DatabaseClientImpl", stringClient[0]);
 
@@ -155,7 +159,6 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     client.release();
   }
 
-  @SuppressWarnings("deprecation")
   @Test
   public void testDatabaseClientConnectionInvalidPort() throws IOException
   {
@@ -163,7 +166,8 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     String filename = "facebook-10443244874876159931";
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8033, "rest-reader", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-reader", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8033, secContext, getConnType());
 
     String expectedException = null;
     String exception = "";
@@ -186,7 +190,6 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     client.release();
   }
 
-  @SuppressWarnings("deprecation")
   @Test
   public void testDatabaseClientConnectionInvalidUser() throws IOException, KeyManagementException, NoSuchAlgorithmException
   {
@@ -194,7 +197,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     String filename = "facebook-10443244874876159931";
 
-    DatabaseClient client = getDatabaseClient("foo-the-bar", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("foo-the-bar", "x", getConnType());
 
     String expectedException = "com.marklogic.client.FailedRequestException: Local message: write failed: Unauthorized. Server Message: Unauthorized";
     String exception = "";
@@ -215,7 +218,6 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     client.release();
   }
 
-  @SuppressWarnings("deprecation")
   @Test
   public void testDatabaseClientConnectionInvalidPassword() throws IOException, KeyManagementException, NoSuchAlgorithmException
   {
@@ -223,7 +225,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     String filename = "facebook-10443244874876159931";
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "foobar", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "foobar", getConnType());
 
     String expectedException = "com.marklogic.client.FailedRequestException: Local message: write failed: Unauthorized. Server Message: Unauthorized";
     String exception = "";
@@ -244,7 +246,6 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     client.release();
   }
 
-  @SuppressWarnings("deprecation")
   @Test
   public void testDatabaseClientConnectionInvalidHost() throws IOException
   {
@@ -252,7 +253,8 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     String filename = "facebook-10443244874876159931";
 
-    DatabaseClient client = DatabaseClientFactory.newClient("foobarhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-writer", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient("foobarhost", 8011, secContext, getConnType());
 
     // String expectedException =
     // "com.sun.jersey.api.client.ClientHandlerException: java.net.UnknownHostException: foobarhost: Name or service not known";
@@ -292,7 +294,6 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
    */
 
   // Trying to access database without specifying the database name.
-  @SuppressWarnings("deprecation")
   @Test
   public void testDBClientUsingWithoutDatabaseName() throws IOException, SAXException, ParserConfigurationException
   {
@@ -300,8 +301,8 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     String filename = "xml-original-test.xml";
     String uri = "/write-xml-string/";
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, "eval-user", "x", Authentication.DIGEST);
-    String exception = "";
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, secContext, getConnType());
 
     // write doc
     writeDocumentUsingStringHandle(client, filename, uri, "XML");
@@ -322,7 +323,6 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
   }
 
   // Trying to access database by specifying the database name.
-  @SuppressWarnings("deprecation")
   @Test
   public void testDBClientUsingWithDatabaseName() throws IOException, SAXException, ParserConfigurationException, KeyManagementException, NoSuchAlgorithmException
   {
@@ -332,10 +332,11 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     String uri = "/write-xml-string/";
     DatabaseClient client = null;
     if (isLBHost())
-    	client	= getDatabaseClient("eval-user", "x", Authentication.DIGEST);
-    else
-    	client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
-    String exception = "";
+    	client	= getDatabaseClient("eval-user", "x", getConnType());
+    else {
+    	SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    	client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
+    }
 
     // write doc
     writeDocumentUsingStringHandle(client, filename, uri, "XML");
@@ -362,8 +363,9 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     String[] filenames = { "multibyte1.xml", "multibyte2.xml", "multibyte3.xml" };
     String queryOptionName = "suggestionOpt.xml";
-
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
+    
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
     // write docs
     for (String filename : filenames) {
       writeDocumentUsingInputStreamHandle(client, filename, "/ss/", "XML");
@@ -392,7 +394,8 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     String[] filenames = { "aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml", "aggr5.xml" };
     String queryOptionName = "aggregatesOpt.xml";
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -449,7 +452,8 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     String[] filenames = { "aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml" };
     String queryOptionName = "aggregatesOpt5Occ.xml";
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -483,14 +487,13 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     System.out.println("Running testTransactionReadStatus");
 
     String docId[] = { "/foo/test/transactionURIFoo1.txt", "/foo/test/transactionURIFoo2.txt", "/foo/test/transactionURIFoo3.txt" };
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
     Transaction transaction = client.openTransaction();
     try {
       TextDocumentManager docMgr = client.newTextDocumentManager();
       docMgr.setMetadataCategories(Metadata.ALL);
       DocumentWriteSet writeset = docMgr.newWriteSet();
-
-      DocumentMetadataHandle mhRead = new DocumentMetadataHandle();
 
       writeset.add(docId[0], new StringHandle().with("This is so transactionURIFoo 1"));
       writeset.add(docId[1], new StringHandle().with("This is so transactionURIFoo 2"));
@@ -529,7 +532,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     String[] candidateRules = { "RULE-TEST-1", "RULE-TEST-2" };
     int i = 0;
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -603,7 +606,8 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     System.out.println("Running testAddAs");
 
     String[] docId = { "aggr1.xml", "aggr2.xml", "aggr3.xml" };
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
     Transaction transaction = client.openTransaction();
 
     try {
@@ -611,7 +615,6 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
       docMgr.setMetadataCategories(Metadata.ALL);
       DocumentWriteSet writeset = docMgr.newWriteSet();
 
-      DocumentMetadataHandle mhRead = new DocumentMetadataHandle();
       InputStream inputStream1 = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/" + docId[0]);
       InputStream inputStream2 = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/" + docId[1]);
       InputStream inputStream3 = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/" + docId[2]);
@@ -664,7 +667,8 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     try {
       String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-      client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
+      SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+      client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
       // write docs
       for (String filename : filenames) {
         writeDocumentUsingInputStreamHandle(client, filename, "/raw-alert/", "XML");
@@ -737,7 +741,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     String ruleName1 = "RULE-TEST-1";
     String ruleName2 = "RULE-TEST-2";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
     // write docs
     for (String filename : filenames) {
       writeDocumentUsingInputStreamHandle(client, filename, "/raw-alert/", "XML");
@@ -760,9 +764,6 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     // write the rule to the database
     ruleMgr.writeRule(ruleName1, ruleHandle1);
     ruleMgr.writeRule(ruleName2, ruleHandle2);
-
-    // create a manager for document search criteria
-    QueryManager queryMgr = client.newQueryManager();
 
     // create a manager for matching rules
     RuleManager ruleMatchMgr = client.newRuleManager();
@@ -795,6 +796,131 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     // release client
     client.release();
   }
+  
+  @Test
+  public void testDatabaseClientFactoryBean() throws IOException, ParserConfigurationException, SAXException, XpathException, KeyManagementException,
+  NoSuchAlgorithmException
+  {
+	  DatabaseClient client = null;
+	  try {
+		  DatabaseClientFactory.Bean clientFactoryBean = new DatabaseClientFactory.Bean();
+		  clientFactoryBean.setHost(getRestAppServerHostName());
+		  clientFactoryBean.setPort(getRestAppServerPort());
+		  clientFactoryBean.setConnectionType(getConnType());
+		  SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-admin", "x");
+
+		  clientFactoryBean.setSecurityContext(secContext);
+		  client = clientFactoryBean.newClient();
+
+		  String docId[] = { "/foo/test/myFoo1.txt", "/foo/test/myFoo2.txt", "/foo/test/myFoo3.txt" };
+
+		  TextDocumentManager docMgr = client.newTextDocumentManager();
+		  DocumentWriteSet writeset = docMgr.newWriteSet();
+
+		  writeset.add(docId[0], new StringHandle().with("This is so foo1"));
+		  writeset.add(docId[1], new StringHandle().with("This is so foo2"));
+		  writeset.add(docId[2], new StringHandle().with("This is so foo3"));
+
+		  docMgr.write(writeset);
+		  assertEquals("Text document write difference", "This is so foo1", docMgr.read(docId[0], new StringHandle()).get());
+		  assertEquals("Text document write difference", "This is so foo2", docMgr.read(docId[1], new StringHandle()).get());
+		  assertEquals("Text document write difference", "This is so foo3", docMgr.read(docId[2], new StringHandle()).get());
+		  docMgr.delete(docId[0], docId[1], docId[2]);
+	  } catch (ResourceNotFoundException e) {
+		e.printStackTrace();
+	}
+	  finally {
+		  client.release();
+	  }
+  }
+  
+  // Verify that DatabaseClient from Bean handles transactions
+  @Test
+  public void testDBClientFactoryBeanTransaction() throws Exception {
+	  DatabaseClient client = null;
+
+	  String filename = "facebook-10443244874876159931";
+	  DatabaseClientFactory.Bean clientFactoryBean = new DatabaseClientFactory.Bean();
+	  clientFactoryBean.setHost(getRestAppServerHostName());
+	  clientFactoryBean.setPort(getRestAppServerPort());
+	  clientFactoryBean.setConnectionType(getConnType());
+	  SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-writer", "x");
+
+	  clientFactoryBean.setSecurityContext(secContext);
+	  client = clientFactoryBean.newClient();
+	 
+	  DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+	  DocumentMetadataHandle readMetadataHandle = new DocumentMetadataHandle();
+	  DocumentMetadataValues metadatavalues = readMetadataHandle.getMetadataValues();
+	  Transaction t1 = null;
+	  Transaction t2 = null;
+	  metadataHandle.getMetadataValues().add("key1", "value1");
+	  metadataHandle.getMetadataValues().add("key2", "value2");
+	  metadataHandle.getMetadataValues().add("key3", "value3");
+
+	  TextDocumentManager docMgr = client.newTextDocumentManager();
+	  String uri = "/trx-jsonhandle-metadatavalues/";
+	  String docId = uri + filename;
+	  FileInputStream fis = null;
+	  Scanner scanner = null;
+	  String readContent;
+	  File file = null;
+
+	  try {
+		  file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
+		  fis = new FileInputStream(file);
+		  scanner = new Scanner(fis).useDelimiter("\\Z");
+		  readContent = scanner.next();
+	  } finally {
+		  fis.close();
+		  scanner.close();
+	  }
+	  StringHandle contentHandle = new StringHandle();
+	  contentHandle.set(readContent);
+	  // write the doc
+	  docMgr.writeAs(docId, metadataHandle, contentHandle);
+	  DocumentUriTemplate template = docMgr.newDocumentUriTemplate("Text").withDirectory("/trx-jsonhandle-metadatavalues-template/");
+
+	  try {
+		  // Trx with metadata values rollback scenario
+		  t1 = client.openTransaction();
+		  metadataHandle.getMetadataValues().add("keyTrx1", "valueTrx1");
+		  docMgr.writeMetadata(docId, metadataHandle, t1);
+		  docMgr.readMetadata(docId, readMetadataHandle, t1);
+		  assertTrue(" metadata doesnot contain expected string valueTrx1", metadatavalues.containsValue("valueTrx1"));
+		  t1.rollback();
+		  docMgr.readMetadata(docId, readMetadataHandle);
+		  metadatavalues = readMetadataHandle.getMetadataValues();
+		  assertFalse(" metadata  contains unexpected string valueTrx1", metadatavalues.containsValue("valueTrx1"));
+
+		  // Trx with metadata values commit scenario
+		  t2 = client.openTransaction();
+		  metadataHandle.getMetadataValues().add("keyTrx2", "valueTrx2");
+		  DocumentDescriptor desc = docMgr.create(template, metadataHandle, contentHandle, t2);
+		  String docId1 = desc.getUri();
+		  docMgr.read(docId1, readMetadataHandle, contentHandle, t2);
+		  assertTrue(" metadata doesnot contain expected string valueTrx2", metadatavalues.containsValue("valueTrx2"));
+		  t2.commit();
+		  docMgr.readAs(docId1, readMetadataHandle, String.class);
+		  metadatavalues = readMetadataHandle.getMetadataValues();
+		  assertTrue(" metadata doesnot contains  string 'valueTrx2' after trx commit", metadatavalues.containsValue("valueTrx2"));
+		  waitForPropertyPropagate();
+
+		  t1 = t2 = null;
+	  } catch (Exception e) {
+		  e.printStackTrace();
+	  } finally {
+		  if (t1 != null) {
+			  t1.rollback();
+			  t1 = null;
+
+		  } else if (t2 != null) {
+			  t2.rollback();
+			  t2 = null;
+		  }
+		  client.release();
+	  }
+  }
 
   @Test
   public void testRuleManagerMatchAs() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException, KeyManagementException,
@@ -806,8 +932,8 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     // DatabaseClient client =
     // DatabaseClientFactory.newClient(appServerHostname, 8011, "rest-admin",
-    // "x", Authentication.DIGEST);
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    // "x", getConnType());
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -831,9 +957,6 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     // write the rule to the database
     ruleMgr.writeRule(rules[0], ruleHandle1);
     ruleMgr.writeRule(rules[1], ruleHandle2);
-
-    // create a manager for document search criteria
-    QueryManager queryMgr = client.newQueryManager();
 
     // create a manager for matching rules
     RuleManager ruleMatchMgr = client.newRuleManager();

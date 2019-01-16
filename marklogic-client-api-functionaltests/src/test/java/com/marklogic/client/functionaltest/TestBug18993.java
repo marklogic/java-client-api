@@ -28,7 +28,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.StringHandle;
 
@@ -62,7 +61,7 @@ public class TestBug18993 extends BasicJavaClientREST {
       // Run it only in non-SSL mode.
       System.out.println("Running testBug18993");
 
-      DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+      DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
       XMLDocumentManager docMgr = client.newXMLDocumentManager();
 

@@ -47,7 +47,7 @@ import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.FilteredForestConfiguration;
 import com.marklogic.client.datamovement.Forest;
@@ -112,8 +112,8 @@ public class WBFailover extends BasicJavaClientREST {
 
 			int index = new Random().nextInt(hostLists.size());
 			dbClient = getDatabaseClientOnDatabase(hostLists.get(index), port, dbName, user, password,
-					Authentication.DIGEST);
-			evalClient = getDatabaseClientOnDatabase(host, port, dbName, user, password, Authentication.DIGEST);
+					getConnType());
+			evalClient = getDatabaseClientOnDatabase(host, port, dbName, user, password, getConnType());
 			dmManager = dbClient.newDataMovementManager();
 			Map<String, String> props = new HashMap<>();
 			createDB(dbName);
@@ -332,9 +332,8 @@ public class WBFailover extends BasicJavaClientREST {
 			final AtomicInteger successCount = new AtomicInteger(0);
 			final AtomicBoolean containsBLHost = new AtomicBoolean(false);
 			final AtomicBoolean failState = new AtomicBoolean(false);
-
-			DatabaseClient dbClient = DatabaseClientFactory.newClient(hostLists.get(3), 8000, "admin", "admin",
-					Authentication.DIGEST);
+			SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("admin", "admin");
+			DatabaseClient dbClient = DatabaseClientFactory.newClient(hostLists.get(3), 8000, secContext, getConnType());
 			DataMovementManager dmManager = dbClient.newDataMovementManager();
 			WriteBatcher ihb2 = dmManager.newWriteBatcher();
 			FilteredForestConfiguration forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig())

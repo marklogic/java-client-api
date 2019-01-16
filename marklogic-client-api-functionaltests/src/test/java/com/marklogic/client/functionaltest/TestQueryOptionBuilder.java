@@ -34,7 +34,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.document.XMLDocumentManager;
@@ -75,7 +74,7 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -144,7 +143,7 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -225,7 +224,7 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
     String filename4 = "constraint4.xml";
     String filename5 = "constraint5.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create and initialize a handle on the metadata
     DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -347,7 +346,7 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
     String filename4 = "constraint4.xml";
     String filename5 = "constraint5.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create and initialize a handle on the metadata
     DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -475,7 +474,7 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
     String filename = "xml-original.xml";
     String uri = "/extract-metadata/";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     ServerConfigurationManager scMgr = client.newServerConfigManager();
     scMgr.setServerRequestLogging(true);
@@ -566,7 +565,7 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
    * String filename = "xml-original.xml"; String uri = "/extract-metadata/";
    * 
    * DatabaseClient client = getDatabaseClient("rest-admin", "x",
-   * Authentication.DIGEST);
+   * getConnType());
    * 
    * ServerConfigurationManager scMgr = client.newServerConfigManager();
    * scMgr.setServerRequestLogging(true); scMgr.writeConfiguration();
@@ -640,7 +639,7 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
     String filename = "xml-original.xml";
     String uri = "/extract-metadata/";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     ServerConfigurationManager scMgr = client.newServerConfigManager();
     scMgr.setServerRequestLogging(true);
@@ -732,7 +731,7 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
     String filename = "xml-original.xml";
     String uri = "/extract-metadata/";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     ServerConfigurationManager scMgr = client.newServerConfigManager();
     scMgr.setServerRequestLogging(true);

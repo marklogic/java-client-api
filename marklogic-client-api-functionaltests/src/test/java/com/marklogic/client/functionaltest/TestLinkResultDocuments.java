@@ -33,7 +33,6 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.XMLStreamReaderHandle;
 import com.marklogic.client.query.MatchDocumentSummary;
@@ -61,7 +60,7 @@ public class TestLinkResultDocuments extends BasicJavaClientREST {
 
     String[] filenames = { "constraint4.xml", "binary.jpg", "constraint4.json" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -113,7 +112,7 @@ public class TestLinkResultDocuments extends BasicJavaClientREST {
 
     String[] filenames = { "constraint4.xml", "binary.jpg", "constraint3.json" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -192,7 +191,7 @@ public class TestLinkResultDocuments extends BasicJavaClientREST {
 
     String[] filenames = { "constraint4.xml", "binary.jpg", "constraint4.json" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames)

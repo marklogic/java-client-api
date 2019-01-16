@@ -39,6 +39,8 @@ import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.marker.GenericReadHandle;
+import com.marklogic.client.io.marker.GenericWriteHandle;
 
 public class TestDocumentFormat extends BasicJavaClientREST {
 
@@ -62,10 +64,10 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String uri = "/xml-format-xml-file/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
-    DocumentManager docMgr = client.newDocumentManager();
+    DocumentManager<GenericReadHandle, GenericWriteHandle> docMgr = client.newDocumentManager();
 
     File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
 
@@ -97,7 +99,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String uri = "/json-format-xml-file/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -139,7 +141,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String uri = "/bin-format-xml-file/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -174,7 +176,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String uri = "/txt-format-xml-file/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -209,7 +211,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String uri = "/json-format-json-file/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -244,7 +246,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String uri = "/xml-format-json-file/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -279,7 +281,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String uri = "/bin-format-json-file/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -314,7 +316,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String uri = "/txt-format-json-file/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -349,7 +351,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String uri = "/bin-format-bin-file/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -384,7 +386,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String uri = "/xml-format-bin-file/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -426,7 +428,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String uri = "/json-format-bin-file/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -468,7 +470,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String uri = "/bin-format-bin-file/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -510,7 +512,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String uri = "/txt-format-txt-file/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -545,7 +547,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String uri = "/xml-format-txt-file/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -580,7 +582,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String uri = "/json-format-txt-file/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -622,7 +624,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String uri = "/bin-format-txt-file/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -658,7 +660,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String uri = "/negative-format/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();

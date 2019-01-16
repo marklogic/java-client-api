@@ -22,7 +22,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -35,7 +34,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -44,12 +42,9 @@ import org.w3c.dom.ls.DOMImplementationLS;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.admin.ExtensionMetadata;
@@ -67,13 +62,11 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonDatabindHandle;
-import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
@@ -88,7 +81,6 @@ public class TestBiTemporal extends BasicJavaClientREST {
   private static String schemadbName = "TestBiTemporalJavaSchemaDB";
   private static String[] schemafNames = { "TestBiTemporalJavaSchemaDB-1" };
 
-  private static int uberPort = 8000;
   private DatabaseClient adminClient = null;
   private DatabaseClient writerClient = null;
   private DatabaseClient readerClient = null;
@@ -116,8 +108,6 @@ public class TestBiTemporal extends BasicJavaClientREST {
   private final static String updateCollectionName = "updateCollection";
   private final static String insertCollectionName = "insertCollection";
 
-  private static String appServerHostname = null;
-
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     System.out.println("In setup");
@@ -133,10 +123,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
         validEndERIName);
     createDB(schemadbName);
     createForest(schemafNames[0], schemadbName);
-    Thread.sleep(10000);
+    waitForPropertyPropagate();
     // Set the schemadbName database as the Schema database.
     setDatabaseProperties(dbName, "schema-database", schemadbName);
-    Thread.sleep(10000);
+    waitForPropertyPropagate();
 
     // Temporal axis must be created before temporal collection associated with
     // those axes is created
@@ -152,7 +142,6 @@ public class TestBiTemporal extends BasicJavaClientREST {
         temporalLsqtCollectionName, axisSystemName, axisValidName);
     ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
         temporalLsqtCollectionName, true);
-    appServerHostname = getRestAppServerHostName();
   }
 
   @AfterClass
@@ -185,13 +174,13 @@ public class TestBiTemporal extends BasicJavaClientREST {
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri",
         "xdbc:invoke", "temporal:statement-set-system-time");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "temporal-admin");
-    int restPort = getRestServerPort();
-    adminClient = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
-    //adminClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-admin", "x", Authentication.DIGEST);
-    //writerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-user", "x", Authentication.DIGEST);
-    writerClient = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
-    //readerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-reader", "x", Authentication.DIGEST);
-    readerClient = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
+    
+    adminClient = getDatabaseClient("rest-admin", "x", getConnType());
+    //adminClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-admin", "x", getConnType());
+    //writerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-user", "x", getConnType());
+    writerClient = getDatabaseClient("eval-user", "x", getConnType());
+    //readerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-reader", "x", getConnType());
+    readerClient = getDatabaseClient("rest-reader", "x", getConnType());
   }
 
   @After
@@ -700,7 +689,6 @@ public class TestBiTemporal extends BasicJavaClientREST {
   public void insertSimpleDocument(String docId, String transformName, Transaction transaction) throws Exception {
 
       System.out.println("Inside getDocumentDescriptor");
-      TemporalDescriptor desc = null;
 
       JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
               "2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON",
@@ -2171,10 +2159,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
     String docId = "javaSingleJSONDoc.json";
 
     insertJSONSingleDocument(temporalCollectionName, docId, null);
-    Thread.sleep(20000);
+    waitForPropertyPropagate();
 
     updateJSONSingleDocument(temporalCollectionName, docId);
-    Thread.sleep(20000);
+    waitForPropertyPropagate();
 
     // Fetch documents associated with a search term (such as XML) in Address
     // element

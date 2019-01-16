@@ -22,7 +22,15 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,7 +45,6 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.datamovement.ApplyTransformListener;
@@ -68,7 +75,6 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 	private static final String TEST_DIR_PREFIX = "/WriteHostBatcher-testdata/";
 
 	private static DatabaseClient dbClient;
-	private static String host = null;
 	private static String user = "admin";
 	private static int port = 8000;
 	private static String password = "admin";
@@ -103,7 +109,6 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		server = getRestAppServerName();
         port = getRestAppServerPort();
 
-		host = getRestAppServerHostName();
 		hostNames = getHosts();
 		createDB(dbName);
 		Thread.currentThread().sleep(500L);
@@ -251,7 +256,7 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		ApplyTransformListener listener = new ApplyTransformListener().withTransform(transform)
 				.withApplyResult(ApplyResult.REPLACE).onSuccess(batch -> {
 					success.addAndGet(batch.getItems().length);
-				}).onBatchFailure((batch, throwable) -> {
+				}).onFailure((batch, throwable) -> {
 					throwable.printStackTrace();
 				}).onSkipped(batch -> {
 					skipped.addAndGet(batch.getItems().length);
@@ -303,7 +308,7 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		ApplyTransformListener listener = new ApplyTransformListener().withTransform(transform)
 				.withApplyResult(ApplyResult.REPLACE).onSuccess(batch -> {
 					success.addAndGet(batch.getItems().length);
-				}).onBatchFailure((batch, throwable) -> {
+				}).onFailure((batch, throwable) -> {
 					failure.addAndGet(batch.getItems().length);
 					throwable.printStackTrace();
 				}).onSkipped(batch -> {
@@ -511,12 +516,13 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 				.withApplyResult(ApplyResult.REPLACE).onSuccess(batch -> {
 					List<String> batchList = Arrays.asList(batch.getItems());
 					successBatch.addAll(batchList);
-				}).onBatchFailure((batch, throwable) -> {
+				}).onFailure((batch, throwable) -> {
 					failCount.addAndGet(1);
 					List<String> batchList = Arrays.asList(batch.getItems());
 					failedBatch.addAll(batchList);
 					throwable.printStackTrace();
 					System.out.println("Failure batch " + batch.getItems().length);
+					// String set to null on purpose, to get an Exception.
 					String s = null;
 					s.charAt(0);
 				}).onSkipped(batch -> {
@@ -610,7 +616,7 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 					String s = null;
 					s.charAt(0);
 
-				}).onBatchFailure((batch, throwable) -> {
+				}).onFailure((batch, throwable) -> {
 					isFailureCalled.set(true);
 					throwable.printStackTrace();
 
@@ -720,7 +726,7 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 					skippedBatch.addAll(Arrays.asList(batch.getItems()));
 					System.out.println("stopTransformJobTest : Skipped: " + batch.getItems()[0]);
 
-				}).onBatchFailure((batch, throwable) -> {
+				}).onFailure((batch, throwable) -> {
 					throwable.printStackTrace();
 					System.out.println("stopTransformJobTest: Failed: " + batch.getItems()[0]);
 

@@ -23,13 +23,27 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
@@ -50,7 +64,6 @@ import com.marklogic.client.io.marker.ContentHandleFactory;
  * database requests.
  */
 public class DatabaseClientFactory {
-  static final private Logger logger = LoggerFactory.getLogger(DatabaseClientFactory.class);
 
   static private ClientConfigurator<?> clientConfigurator;
   static private HandleFactoryRegistry handleRegistry =
@@ -128,6 +141,74 @@ public class DatabaseClientFactory {
      * @throws SSLException if the hostname isn't acceptable
      */
     public void verify(String hostname, String[] cns, String[] subjectAlts) throws SSLException;
+    
+    /**
+     * HostnameVerifierAdapter verifies the hostname,SSLSession and X509Certificate certificate.
+     * */
+    static class HostnameVerifierAdapter implements HostnameVerifier {
+    	private SSLHostnameVerifier verifier;
+
+    	public HostnameVerifierAdapter(SSLHostnameVerifier verifier) {
+	          this.verifier = verifier;
+	        }
+    	/**
+    	 * verify method verifies the incoming hostname and SSLSession.
+    	 * @param hostname denotes the hostname.
+    	 * @param session represents the SSLSession containing the pper certificates.
+    	 * @return true if the hostname and peer certificates are valid and false if they are invalid.
+    	 * */
+    	@Override
+    	public boolean verify(String hostname, SSLSession session) {
+    		try {
+    			Certificate[] certificates = session.getPeerCertificates();
+	            verify(hostname, (X509Certificate) certificates[0]);
+	            return true;
+	          } catch(SSLException e) {
+	            return false;
+	          }
+	        }
+    	/**
+    	 * verify method verifies the hostname and X509Certificate certificate.
+    	 * @param hostname denotes the hostname.
+    	 * @param cert represents the X509Certificate certificate.
+    	 * @throws SSLException if the hostname or certificate is/are invalid.
+    	 * */
+    	public void verify(String hostname, X509Certificate cert) throws SSLException {
+    		ArrayList<String> cnArray = new ArrayList<>();
+    		try {
+    			LdapName ldapDN = new LdapName(cert.getSubjectX500Principal().getName());
+	            for(Rdn rdn: ldapDN.getRdns()) {
+	              Object value = rdn.getValue();
+	              if ( "CN".equalsIgnoreCase(rdn.getType()) && value instanceof String ) {
+	                cnArray.add((String) value);
+	              }
+	            }
+	            int type_dnsName = 2;
+	            int type_ipAddress = 7;
+	            ArrayList<String> subjectAltArray = new ArrayList<>();
+	            Collection<List<?>> alts = cert.getSubjectAlternativeNames();
+	            if ( alts != null ) {
+	              for ( List<?> alt : alts ) {
+	                if ( alt != null && alt.size() == 2 && alt.get(1) instanceof String ) {
+	                  Integer type = (Integer) alt.get(0);
+	                  if ( type == type_dnsName || type == type_ipAddress ) {
+	                    subjectAltArray.add((String) alt.get(1));
+	                  }
+	                }
+	              }
+	            }
+	            String[] cns = cnArray.toArray(new String[cnArray.size()]);
+	            String[] subjectAlts = subjectAltArray.toArray(new String[subjectAltArray.size()]);
+	            verifier.verify(hostname, cns, subjectAlts);
+	          } 
+    		catch(CertificateParsingException e) {
+	            throw new MarkLogicIOException(e);
+	          } 
+    		catch(InvalidNameException e) {
+	            throw new MarkLogicIOException(e);
+	          }
+	        }
+	   }
 
     /**
      * Builtin supports builtin implementations of SSLHostnameVerifier.
@@ -150,6 +231,7 @@ public class DatabaseClientFactory {
       public String getName() {
         return name;
       }
+      
     }
   }
 
@@ -389,12 +471,22 @@ public class DatabaseClientFactory {
   }
 
   public static class KerberosAuthContext extends AuthContext {
-    String externalName;
 
-    public KerberosAuthContext() {}
+    Map<String, String> krbOptions;
 
-    public KerberosAuthContext(String externalName) {
-      this.externalName = externalName;
+    public KerberosAuthContext() {
+
+      krbOptions = Collections.unmodifiableMap(new KerberosConfig().toOptions());
+    }
+
+    public KerberosAuthContext(String principal) {
+
+      krbOptions = Collections.unmodifiableMap(new KerberosConfig().withPrincipal(principal).toOptions());
+    }
+
+    public KerberosAuthContext(KerberosConfig krbConfig) {
+
+      krbOptions = Collections.unmodifiableMap(krbConfig.toOptions());
     }
 
     @Override
@@ -416,6 +508,187 @@ public class DatabaseClientFactory {
       this.sslVerifier = verifier;
       return this;
     }
+  }
+
+  public static class KerberosConfig {
+
+    private boolean refreshKrb5Config;
+    private String principal = null;
+    private boolean useTicketCache = true;
+    private String ticketCache = null;
+    private boolean renewTGT = false;
+    private boolean doNotPrompt = true;
+    private boolean useKeyTab = false;
+    private String keyTab = null;
+    private boolean storeKey = false;
+    private boolean isInitiator = true;
+    private boolean useFirstPass = false;
+    private boolean tryFirstPass = false;
+    private boolean storePass = false;
+    private boolean clearPass = false;
+    private boolean debug = false;
+
+    public KerberosConfig() {
+    }
+
+    public KerberosConfig withRefreshKrb5Config(boolean refreshKrb5Config) {
+      this.refreshKrb5Config = refreshKrb5Config;
+      return this;
+    }
+
+    public String getRefreshKrb5Config() {
+      return String.valueOf(this.refreshKrb5Config);
+    }
+
+    public KerberosConfig withPrincipal(String principal) {
+      this.principal = principal;
+      return this;
+    }
+
+    public String getPrincipal() {
+      return this.principal;
+    }
+
+    public KerberosConfig withUseTicketCache(boolean useTicketCache) {
+      this.useTicketCache = useTicketCache;
+      return this;
+    }
+
+    public String getUseTicketCache() {
+      return String.valueOf(this.useTicketCache);
+    }
+
+    public KerberosConfig withTicketCache(String ticketCache) {
+      this.ticketCache = ticketCache;
+      return this;
+    }
+
+    public String getTicketCache() {
+      return this.ticketCache;
+    }
+
+    public KerberosConfig withRenewTGT(boolean renewTGT) {
+      this.renewTGT = renewTGT;
+      return this;
+    }
+
+    public String getRenewTGT() {
+      return String.valueOf(this.renewTGT);
+    }
+
+    public KerberosConfig withDoNotPrompt(boolean doNotPrompt) {
+      this.doNotPrompt = doNotPrompt;
+      return this;
+    }
+
+    public String getDoNotPrompt() {
+      return String.valueOf(this.doNotPrompt);
+    }
+
+    public KerberosConfig withUseKeyTab(boolean useKeyTab) {
+      this.useKeyTab = useKeyTab;
+      return this;
+    }
+
+    public String getUseKeyTab() {
+      return String.valueOf(this.useKeyTab);
+    }
+
+    public KerberosConfig withKeyTab(String keyTab) {
+      this.keyTab = keyTab;
+      return this;
+    }
+
+    public String getKeyTab() {
+      return this.keyTab;
+    }
+
+    public KerberosConfig withStoreKey(boolean storeKey) {
+      this.storeKey = storeKey;
+      return this;
+    }
+
+    public String getStoreKey() {
+      return String.valueOf(this.storeKey);
+    }
+
+    public KerberosConfig withUseFirstPass(boolean useFirstPass) {
+      this.useFirstPass = useFirstPass;
+      return this;
+    }
+
+    public String getUseFirstPass() {
+      return String.valueOf(this.useFirstPass);
+    }
+
+    public KerberosConfig withTryFirstPass(boolean tryFirstPass) {
+      this.tryFirstPass = tryFirstPass;
+      return this;
+    }
+
+    public String getTryFirstPass() {
+      return String.valueOf(this.tryFirstPass);
+    }
+
+    public KerberosConfig withStorePass(boolean storePass) {
+      this.storePass = storePass;
+      return this;
+    }
+
+    public String getStorePass() {
+      return String.valueOf(this.storePass);
+    }
+
+    public KerberosConfig withClearPass(boolean clearPass) {
+      this.clearPass = clearPass;
+      return this;
+    }
+
+    public String getClearPass() {
+      return String.valueOf(this.clearPass);
+    }
+
+    public KerberosConfig withInitiator(boolean initiator) {
+      this.isInitiator = initiator;
+      return this;
+    }
+
+    public String getInitiator() {
+      return String.valueOf(this.isInitiator);
+    }
+
+    public KerberosConfig withDebug(boolean debug) {
+      this.debug = debug;
+      return this;
+    }
+
+    public String getDebug() {
+      return String.valueOf(this.debug);
+    }
+
+    public Map<String, String> toOptions() {
+      Map<String, String> options = new HashMap<>();
+      options.put("refreshKrb5Config", getRefreshKrb5Config());
+      if (getPrincipal() != null)
+        options.put("principal", getPrincipal());
+      options.put("useTicketCache", getUseTicketCache());
+      if (getUseTicketCache().equals("true") && getTicketCache() != null)
+        options.put("ticketCache", getTicketCache());
+      options.put("renewTGT", getRenewTGT());
+      options.put("doNotPrompt", getDoNotPrompt());
+      options.put("useKeyTab", getUseKeyTab());
+      if (getUseKeyTab().equals("true") && getKeyTab() != null)
+        options.put("keyTab", getKeyTab());
+      options.put("storeKey", getStoreKey());
+      options.put("useFirstPass", getUseFirstPass());
+      options.put("tryFirstPass", getTryFirstPass());
+      options.put("storePass", getStorePass());
+      options.put("clearPass", getClearPass());
+      options.put("isInitiator", getInitiator());
+      options.put("debug", getDebug());
+      return options;
+    }
+
   }
 
   public static class CertificateAuthContext extends AuthContext {
@@ -743,6 +1016,7 @@ public class DatabaseClientFactory {
                                          DatabaseClient.ConnectionType connectionType)
   {
     String user = null;
+    Map<String,String> kerberosOptions = null;
     String password = null;
     Authentication type = null;
     SSLContext sslContext = null;
@@ -778,7 +1052,7 @@ public class DatabaseClientFactory {
       }
     } else if (securityContext instanceof KerberosAuthContext) {
       KerberosAuthContext kerberosContext = (KerberosAuthContext) securityContext;
-      user = kerberosContext.externalName;
+      kerberosOptions = kerberosContext.krbOptions;
       type = Authentication.KERBEROS;
       if (kerberosContext.sslContext != null) {
         sslContext = kerberosContext.sslContext;
@@ -805,7 +1079,7 @@ public class DatabaseClientFactory {
     }
 
     OkHttpServices services = new OkHttpServices();
-    services.connect(host, port, database, user, password, type, sslContext, trustManager, sslVerifier);
+    services.connect(host, port, database, user, password, kerberosOptions, type, sslContext, trustManager, sslVerifier);
 
     if (clientConfigurator != null) {
       if ( clientConfigurator instanceof OkHttpClientConfigurator ) {
@@ -1035,6 +1309,7 @@ public class DatabaseClientFactory {
     public Bean() {
       super();
     }
+    
 
     /**
      * Returns the host for clients created with a
@@ -1248,7 +1523,6 @@ public class DatabaseClientFactory {
       this.connectionType = connectionType;
     }
 
-
     /**
      * Returns the registry for associating
      * IO representation classes with handle factories.
@@ -1281,10 +1555,9 @@ public class DatabaseClientFactory {
      * The client accesses the database by means of a REST server.
      * @return	a new client for making database requests
      */
-    public DatabaseClient newClient() {
+	public DatabaseClient newClient() {
       DatabaseClientImpl client = (DatabaseClientImpl) DatabaseClientFactory.newClient(
-            host, port, database,
-            makeSecurityContext(user, password, authentication, context, verifier),
+            host, port, database, (securityContext!=null? securityContext:makeSecurityContext(user, password, authentication, context, verifier)),
             connectionType);
       client.setHandleRegistry(getHandleRegistry().copy());
       return client;

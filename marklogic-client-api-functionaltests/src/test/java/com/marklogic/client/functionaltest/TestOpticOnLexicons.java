@@ -133,8 +133,8 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     		                             "rest-reader", "rest-extension-user", "manage-user");    
 
     if (IsSecurityEnabled()) {
-        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", Authentication.DIGEST);
-        client = getDatabaseClient("opticUser", "0pt1c", Authentication.DIGEST);
+        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", getConnType());
+        client = getDatabaseClient("opticUser", "0pt1c", getConnType());
     }
     else {
         schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("opticUser", "0pt1c"));
@@ -393,7 +393,6 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     strHandle.setMimetype("application/json");
 
     rowMgr.resultDoc(plan3, strHandle);
-    String strContent = strHandle.get();
 
     JsonNode jsonInnerDocNodes = jsonResults.path("rows");
     assertTrue("Number of Elements after plan execution is incorrect. Should be 5", 5 == jsonInnerDocNodes.size());
@@ -671,7 +670,6 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
 
     PlanColumn popCol = p.col("popularity");
-    PlanColumn dateCol = p.col("date");
 
     // prepare = 0
     ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
@@ -833,7 +831,6 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     PlanColumn popCol = p.col("popularity");
-    PlanColumn dateCol = p.col("date");
 
     Map<String, CtsReferenceExpr> index1 = new HashMap<String, CtsReferenceExpr>();
     index1.put("uri1", p.cts.uriReference());
@@ -885,8 +882,6 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     // Create a new Plan.
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
-    PlanColumn popCol = p.col("popularity");
-    PlanColumn dateCol = p.col("date");
 
     Map<String, CtsReferenceExpr> index1 = new HashMap<String, CtsReferenceExpr>();
     index1.put("uri1", p.cts.uriReference());
@@ -1094,7 +1089,6 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     // Create a new Plan.
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
-    PlanColumn popCol = p.col("popularity");
 
     Map<String, CtsReferenceExpr> index1 = new HashMap<String, CtsReferenceExpr>();
     index1.put("uri1", p.cts.uriReference());
@@ -1142,7 +1136,6 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     // Create a new Plan.
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
-    PlanColumn popCol = p.col("popularity");
 
     Map<String, CtsReferenceExpr> index1 = new HashMap<String, CtsReferenceExpr>();
     index1.put("uri1", p.cts.uriReference());

@@ -122,9 +122,9 @@ public interface RESTServices {
   void setMaxDelay(int maxDelay);
 
   @Deprecated
-  public void connect(String host, int port, String database, String user, String password, Authentication type,
+  public void connect(String host, int port, String database, String user, String password, Map<String,String> kerberosOptions, Authentication type,
                       SSLContext context, SSLHostnameVerifier verifier);
-  public void connect(String host, int port, String database, String user, String password, Authentication type,
+  public void connect(String host, int port, String database, String user, String password, Map<String,String> kerberosOptions, Authentication type,
       SSLContext context, X509TrustManager trustManager, SSLHostnameVerifier verifier);
   public DatabaseClient getDatabaseClient();
   public void setDatabaseClient(DatabaseClient client);

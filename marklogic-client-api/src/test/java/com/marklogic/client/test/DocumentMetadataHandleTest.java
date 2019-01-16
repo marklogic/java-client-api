@@ -21,8 +21,10 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -38,6 +40,7 @@ import org.xml.sax.SAXException;
 
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
@@ -190,6 +193,42 @@ public class DocumentMetadataHandleTest {
     assertEquals(Capability.NODE_UPDATE, Capability.getValueOf("node-Update"));
     assertEquals(Capability.NODE_UPDATE, Capability.getValueOf("NODE_UPDATE"));
   }
+  
+  @Test
+  public void testMetadataPropertiesExtraction() {
+	String docId = "/test.bin";
+	// Make a document manager to work with binary files 
+    BinaryDocumentManager docMgr = Common.client.newBinaryDocumentManager();
+    DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+    docMgr.setMetadataExtraction(BinaryDocumentManager.MetadataExtraction.PROPERTIES);
+    // read binary from resources
+    ClassLoader classLoader = getClass().getClassLoader();
+    File file = null;
+    FileInputStream docStream = null;
+    try {
+    	file = new File(classLoader.getResource("test.bin").getFile());
+    	docStream = new FileInputStream(file);
+    } catch (Exception e) {
+    	assertTrue(false);
+    }
+
+    // Create a handle to hold string content.
+    InputStreamHandle handle = new InputStreamHandle(docStream);
+    docMgr.write(docId, metadataHandle, handle);
+    
+    DocumentMetadataHandle readMetadataHandle = new DocumentMetadataHandle();
+    //read only the metadata into a handle
+    docMgr.readMetadata(docId, readMetadataHandle);
+    QName qn = new QName("", "testId");
+    readMetadataHandle.getProperties().put(qn, "123456");
+    docMgr.writeMetadata(docId, readMetadataHandle);
+    
+    readMetadataHandle = new DocumentMetadataHandle();
+    
+    docMgr.readMetadata(docId, readMetadataHandle);
+    assertEquals("123456", readMetadataHandle.getProperties().get(qn));
+  }
+
 
   // testing https://github.com/marklogic/java-client-api/issues/783
   @Test

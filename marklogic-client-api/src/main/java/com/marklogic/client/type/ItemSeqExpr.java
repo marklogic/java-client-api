@@ -17,5 +17,7 @@ package com.marklogic.client.type;
 
 /**
  * One or more server expressions.
+ * An instance of a JSON or XML document node expression.
+ * @deprecated (as of 4.2) Use {@link com.marklogic.client.type.ServerExpression}
  */
-public interface ItemSeqExpr { }
+public interface ItemSeqExpr extends ServerExpression { }

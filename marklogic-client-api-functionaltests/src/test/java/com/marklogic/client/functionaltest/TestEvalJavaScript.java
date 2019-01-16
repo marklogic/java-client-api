@@ -43,8 +43,6 @@ import org.xml.sax.InputSource;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResult.Type;
@@ -92,7 +90,7 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
   @Before
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     int restPort = getRestServerPort();
-    client = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    client = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-user", "x", getConnType());
   }
 
   @After
@@ -564,7 +562,7 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
     InputStream inputStream = null;
     int restPort = getRestServerPort();
     String restServerName = getRestServerName();
-    DatabaseClient moduleClient = getDatabaseClientOnDatabase(appServerHostname, restPort, (restServerName + "-modules"), "admin", "admin", Authentication.DIGEST);
+    DatabaseClient moduleClient = getDatabaseClientOnDatabase(appServerHostname, restPort, (restServerName + "-modules"), "admin", "admin", getConnType());
     try {
       inputStream = new FileInputStream(
           "src/test/java/com/marklogic/client/functionaltest/data/javascriptQueries.sjs");
@@ -580,7 +578,7 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
       InputSource is = new InputSource();
       is.setCharacterStream(new StringReader(
           "<foo attr=\"attribute\"><?processing instruction?><!--comment-->test1</foo>"));
-      Document doc = db.parse(is);
+   
       ServerEvaluationCall evl = client.newServerEval().modulePath(
           "/data/javascriptQueries.sjs");
 

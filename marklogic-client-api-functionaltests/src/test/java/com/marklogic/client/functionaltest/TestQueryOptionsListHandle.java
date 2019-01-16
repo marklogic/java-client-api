@@ -19,7 +19,7 @@ package com.marklogic.client.functionaltest;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -29,9 +29,7 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.QueryOptionsListHandle;
-import java.util.Map;
 
 public class TestQueryOptionsListHandle extends BasicJavaClientREST {
 
@@ -51,7 +49,7 @@ public class TestQueryOptionsListHandle extends BasicJavaClientREST {
     System.out.println("Running testNPE");
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     QueryOptionsListHandle handle = new QueryOptionsListHandle();
 

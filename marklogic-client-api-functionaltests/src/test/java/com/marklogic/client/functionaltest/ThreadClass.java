@@ -21,9 +21,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.TextDocumentManager;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.StringHandle;
 
 public class ThreadClass extends BasicJavaClientREST implements Runnable {
@@ -33,7 +31,7 @@ public class ThreadClass extends BasicJavaClientREST implements Runnable {
   public void run() {
     DatabaseClient client;
     try {
-      client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+      client = getDatabaseClient("rest-admin", "x", getConnType());
 
       TextDocumentManager docMgr = client.newTextDocumentManager();
 

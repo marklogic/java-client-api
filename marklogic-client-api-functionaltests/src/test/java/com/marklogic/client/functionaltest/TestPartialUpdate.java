@@ -16,7 +16,6 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -30,12 +29,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.admin.ExtensionLibrariesManager;
@@ -54,7 +52,6 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
@@ -97,7 +94,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -111,7 +109,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldr.insertFragment("/root", Position.LAST_CHILD, "<modified>2013-03-21</modified>");
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -131,7 +129,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     // write the document content
     docMgr.write(xmlDocId, contentHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
 
     // Read it back to make sure the write worked.
     String contentXml = docMgr.read(xmlDocId, new StringHandle()).get();
@@ -147,7 +145,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentPatchHandle patchHandleBool = patchBldrBool.build();
     docMgr.patch(xmlDocId, patchHandleBool);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
 
     String content1 = docMgr.read(xmlDocId, new StringHandle()).get();
     System.out.println(content1);
@@ -171,7 +169,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     String[] filenames = { "json-original.json" };
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "bad-eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("bad-eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -187,7 +186,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     String[] filenames = { "json-original.json" };
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -220,7 +220,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -240,7 +240,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentPatchHandle patchHandleBool = patchBldrBool.build();
     docMgr.patch(docId, patchHandleBool);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
 
     String content1 = docMgr.read(docId, new StringHandle()).get();
 
@@ -260,7 +260,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     String filename = "constraint1.xml";
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "XML");
@@ -279,7 +280,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldr.insertFragment("/root", Position.LAST_CHILD, "<modified>2013-03-21</modified>");
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     String contentBefore = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println(" Before Updating " + contentBefore);
@@ -288,7 +289,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     DocumentPatchBuilder xmlPatchBldr = xmlDocMgr.newPatchBuilder();
     DocumentPatchHandle xmlPatchForNode = xmlPatchBldr.replaceFragment("/root/modified", "<modified>2012-11-5</modified>").build();
     xmlDocMgr.patch(docId, xmlPatchForNode);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     String contentAfter = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println("After Updating" + contentAfter);
@@ -302,7 +303,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     System.out.println(" Before Updating " + contentBeforeElement);
     DocumentPatchHandle xmlPatchForElement = xmlPatchBldr.replaceValue("/root/popularity", 10).build();
     xmlDocMgr.patch(docId, xmlPatchForElement);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     contentAfter = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println("After Updating" + contentAfter);
@@ -321,7 +322,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     // xmlPatchBldr.replaceValue("/root/*:price/@xmlns","http://marklogic.com");
     DocumentPatchHandle xmlPatchForValue = xmlPatchBldr.build();
     xmlDocMgr.patch(docId, xmlPatchForValue);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     contentAfter = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println("After Updating" + contentAfter);
@@ -337,7 +338,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     // Changing Element Value
     DocumentPatchHandle xmlPatch = xmlPatchBldr.replaceValue("/root/*:date", "2006-02-02").build();
     xmlDocMgr.patch(docId, xmlPatch);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     contentAfter = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println("After Updating" + contentAfter);
@@ -353,7 +354,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
   {
     System.out.println("Running testPartialUpdateDeletePath");
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     String filename = "constraint1.xml";
@@ -372,13 +374,13 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     // "2006-02-02").build();
     DocumentPatchHandle xmlPatch = xmlPatchBldr.delete("/root/*:date").build();
     xmlDocMgr.patch(docId, xmlPatch);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
 
     // Delete invalid Path
     try {
       xmlPatch = xmlPatchBldr.delete("InvalidPath").build();
       xmlDocMgr.patch(docId, xmlPatch);
-      this.waitForPropertyPropagate();
+      waitForPropertyPropagate();
     } catch (Exception e) {
       System.out.println(e.toString());
       assertTrue("Haven't deleted Invalid path", e.toString().contains(" invalid path: //InvalidPath"));
@@ -395,12 +397,13 @@ public class TestPartialUpdate extends BasicJavaClientREST {
   @Test
   public void testPartialUpdateFragments() throws Exception {
     System.out.println("Running testPartialUpdateFragments");
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     String filename = "constraint1.xml";
     writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "XML");
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     String docId = "/partial-update/constraint1.xml";
 
     // Creating Manager
@@ -416,7 +419,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldr.insertFragment("/root/someinvalidpath", Position.BEFORE, "<false>Entry</false>");
     DocumentPatchHandle patchHandle = patchBldr.build();
     xmlDocMgr.patch(docId, patchHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     String content = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println(content);
@@ -432,7 +435,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
   @Test
   public void testPartialUpdateInsertFragments() throws Exception {
     System.out.println("Running testPartialUpdateInsertFragments");
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     String filename = "constraint1.xml";
@@ -451,7 +455,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldr.replaceInsertFragment("/root/nonexist", "/root", Position.LAST_CHILD, "  <foo>bar</foo>\n ");
     DocumentPatchHandle patchHandle = patchBldr.build();
     xmlDocMgr.patch(docId, patchHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     String content = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println(content);
@@ -466,7 +470,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
   @Test
   public void testPartialUpdateInsertExistingFragments() throws Exception {
     System.out.println("Running testPartialUpdateInsertExistingFragments");
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     String filename = "constraint1.xml";
@@ -484,7 +489,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldr.replaceInsertFragment("/root/p", "/root", Position.AFTER, "<foo>After</foo>");
     DocumentPatchHandle patchHandle = patchBldr.build();
     xmlDocMgr.patch(docId, patchHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     String content = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println(content);
@@ -500,15 +505,18 @@ public class TestPartialUpdate extends BasicJavaClientREST {
   @Test
   public void testPartialUpdateReplaceApply() throws Exception {
     System.out.println("Running testPartialUpdateReplaceApply");
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8000, "rest-admin", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-admin", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8000, secContext, getConnType());
     ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
 
     libsMgr.write("/ext/patch/custom-lib.xqy", new FileHandle(new File("src/test/java/com/marklogic/client/functionaltest/data/custom-lib.xqy")).withFormat(Format.TEXT));
+    libsMgr.write("/ext/patch/qatests.sjs", new FileHandle(new File("src/test/java/com/marklogic/client/functionaltest/data/qatests.sjs")).withFormat(Format.TEXT));
     // write docs
     String filename = "constraint6.xml";
+    String filename2 = "constraint6.json";
     writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "XML");
-    // writeDocumentUsingInputStreamHandle(client, "custom-lib.xqy",
-    // "/partial-update/", "XML");
+    writeDocumentUsingInputStreamHandle(client, filename2, "/partial-update/", "JSON");
+    
     String docId = "/partial-update/constraint6.xml";
 
     // Creating Manager
@@ -529,11 +537,9 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldr.replaceApply("/root/replaceRegex", patchBldr.call().replaceRegex("[a-m]", "1"));
     patchBldr.replaceApply("/root/applyLibrary", patchBldr.call().applyLibraryFragments("underwrite", "<applyLibrary>API</applyLibrary>")).library(
         "http://marklogic.com/ext/patch/custom-lib", "/ext/patch/custom-lib.xqy");
-    // patchBldr.replaceApply("/root/applyLibrary",
-    // patchBldr.call().applyLibraryValues("any-content","<applyLibraryValues>")).library("http://marklogic.com/ext/patch/custom-lib","/ext/patch/custom-lib.xqy");
     DocumentPatchHandle patchHandle = patchBldr.build();
     xmlDocMgr.patch(docId, patchHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     String content = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println("After Update" + content);
@@ -549,15 +555,83 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     assertTrue("concatenateBetween Failed", content.contains("<concatenateBetween>ML Version 7</concatenateBetween>"));
     assertTrue("Ragex Failed", content.contains("<replaceRegex>C111nt</replaceRegex>"));
     assertTrue("Apply Library Fragments Failed ", content.contains("<applyLibrary>APIAPI</applyLibrary>"));
+    
+    String docId2 = "/partial-update/constraint6.json";
+    
+    JSONDocumentManager jdm = client.newJSONDocumentManager();
+    DocumentPatchBuilder patchBldrSJS = jdm.newPatchBuilder();
+    patchBldrSJS.pathLanguage(PathLanguage.JSONPATH);
+	
+    patchBldrSJS.library("", "/ext/patch/qatests.sjs");
+    patchBldrSJS.replaceApply("root.divide", 
+    		patchBldrSJS.call().applyLibraryValues("Mymin", 18, 21));
+    DocumentPatchHandle patchHandleSJS = patchBldrSJS.build();
+    jdm.patch(docId2, patchHandleSJS);
+    System.out.println(patchBldrSJS.build().toString());
+    
+    waitForPropertyPropagate();
+    String content1 = xmlDocMgr.read(docId2, new StringHandle()).get();
+    System.out.println("After Update on divide with fn() values " + content1);
+    assertTrue("Division Failed", content1.contains("\"divide\":18"));
+    
+    // Work on the different element with different values and another patch update
+    DocumentPatchBuilder patchBldrSJS1 = jdm.newPatchBuilder();
+    patchBldrSJS1.pathLanguage(PathLanguage.JSONPATH);
+	
+    patchBldrSJS1.library("", "/ext/patch/qatests.sjs");
+    patchBldrSJS1.replaceApply("root.add", 
+    		patchBldrSJS1.call().applyLibraryValues("Mymin", -12, 21));
+    ObjectMapper mapper = new ObjectMapper();
+    ObjectNode fragmentNode = mapper.createObjectNode();
+    fragmentNode = mapper.createObjectNode();
+    fragmentNode.put("modulo", 2);
+    String fragment = mapper.writeValueAsString(fragmentNode);
+    patchBldrSJS1.insertFragment("root.divide", Position.AFTER, fragment);
+    
+    DocumentPatchHandle patchHandleSJS1 = patchBldrSJS1.build();
+    jdm.patch(docId2, patchHandleSJS1);
+    System.out.println(patchBldrSJS1.build().toString());
+    
+    waitForPropertyPropagate();
+    String content2 = xmlDocMgr.read(docId2, new StringHandle()).get();
+    System.out.println("After Update on add with fn() values " + content2);
+    assertTrue("Add Failed", content2.contains("\"add\":-12"));
+    assertTrue("Modulo Failed", content2.contains("\"modulo\":2"));
+    
+    // Error condition checks
+    DocumentPatchBuilder patchBldrSJSErr = jdm.newPatchBuilder();
+    patchBldrSJSErr.pathLanguage(PathLanguage.JSONPATH);
+	
+    patchBldrSJSErr.library("", "/ext/patch/qatests.sjs");
+    patchBldrSJSErr.replaceApply("root.add", 
+    		patchBldrSJSErr.call().applyLibraryValues("Mymin", new String("A"),  new String("A")));
+    StringBuilder strErr = new StringBuilder();
+    try {
+    DocumentPatchHandle patchHandleSJSErr = patchBldrSJSErr.build();
+    jdm.patch(docId2, patchHandleSJSErr);
+    }
+    catch (Exception ex) {
+    	System.out.println(ex.getMessage());
+    	strErr.append(ex.getMessage());
+    }
+    System.out.println(patchBldrSJSErr.build().toString());
+    
+    waitForPropertyPropagate();
+    String content3 = xmlDocMgr.read(docId2, new StringHandle()).get();
+    System.out.println("After Update on divide with fn() values " + content3);
+    assertTrue("No exception should be available", strErr.toString().isEmpty());
+
     // release client
     libsMgr.delete("/ext/patch/custom-lib.xqy");
+    libsMgr.delete("/ext/patch/qatests.sjs");
     client.release();
   }
 
   @Test
   public void testPartialUpdateCombination() throws Exception {
     System.out.println("Running testPartialUpdateCombination");
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     String filename = "constraint1.xml";
@@ -573,7 +647,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     DocumentPatchHandle xmlPatch = xmlPatchBldr.insertFragment("/root", Position.LAST_CHILD, "<modified>2012-11-5</modified>").delete("/root/*:date")
         .replaceApply("/root/popularity", xmlPatchBldr.call().multiply(2)).build();
     xmlDocMgr.patch(docId, xmlPatch);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     String content = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println(" After Updating " + content);
@@ -588,7 +662,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
   @Test
   public void testPartialUpdateCombinationTransc() throws Exception {
     System.out.println("Running testPartialUpdateCombination");
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
     Transaction t = client.openTransaction("Transac");
     // write docs
     String filename = "constraint1.xml";
@@ -608,7 +683,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
         .replaceApply("/root/popularity", xmlPatchBldr.call().multiply(2)).build();
     xmlDocMgr.patch(docId, xmlPatch, t);
     t.commit();
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     String content = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println(" After Updating " + content);
@@ -625,7 +700,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
   @Test
   public void testPartialUpdateCombinationTranscRevert() throws Exception {
     System.out.println("Running testPartialUpdateCombinationTranscRevert");
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
     // write docs
     String[] filenames = { "constraint1.xml", "constraint2.xml" };
     for (String filename : filenames) {
@@ -650,13 +726,13 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     Transaction t1 = client.openTransaction();
     xmlDocMgr1.patch(docId1, xmlPatch1, t1);
     t1.commit();
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     String content1 = xmlDocMgr1.read(docId1, new StringHandle()).get();
     System.out.println(" After Updating Documant 1 : Transaction Commit" + content1);
     Transaction t2 = client.openTransaction();
     xmlDocMgr1.patch(docId2, xmlPatch2, t2);
     t2.rollback();
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
 
     String content2 = xmlDocMgr2.read(docId2, new StringHandle()).get();
     System.out.println(" After Updating Document 2 : Transaction Rollback" + content2);
@@ -673,7 +749,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
   @Test
   public void testPartialUpdateCombinationJSON() throws Exception {
     System.out.println("Running testPartialUpdateCombinationJSON");
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     String[] filenames = { "json-original.json" };
@@ -700,7 +776,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldr.insertFragment("$.employees[0]", Position.AFTER, fragment).delete("$.employees[2]").replaceApply("$.employees[1].firstName", patchBldr.call().concatenateAfter("Hi"));
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -717,7 +793,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
   @Test
   public void testPartialUpdateMetadata() throws Exception {
     System.out.println("Running testPartialUpdateMetadata");
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     String filename = "constraint1.xml";
@@ -735,7 +812,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldr.addPropertyValue("Hello", "Hi");
     DocumentPatchHandle patchHandle = patchBldr.build();
     xmlDocMgr.patch(docId, patchHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
 
     String contentMetadata1 = xmlDocMgr.readMetadata(docId, new StringHandle()).get();
     System.out.println(" After Changing " + contentMetadata1);
@@ -754,7 +831,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldrRep.replacePropertyValue("Hello", "Bye");
     DocumentPatchHandle patchHandleRep = patchBldrRep.build();
     xmlDocMgr.patch(docId, patchHandleRep);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     String contentMetadataRep = xmlDocMgr.readMetadata(docId, new StringHandle()).get();
     System.out.println(" After Updating " + contentMetadataRep);
 
@@ -772,7 +849,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldrDel.deleteProperty("Hello");
     DocumentPatchHandle patchHandleDel = patchBldrDel.build();
     xmlDocMgr.patch(docId, patchHandleDel);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     String contentMetadataDel = xmlDocMgr.readMetadata(docId, new StringHandle()).get();
     System.out.println(" After Deleting " + contentMetadataDel);
 
@@ -791,7 +868,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -809,7 +887,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     DocumentPatchHandle patchHandle = patchBldr.build();
 
     docMgr.patch(desc, patchHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -827,7 +905,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     String[] filenames = { "json-original.json" };
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -853,7 +932,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     DocumentPatchHandle patchHandle = patchBldr.build();
 
     docMgr.patch(desc, patchHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -871,7 +950,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -892,7 +972,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     Transaction t = client.openTransaction("Tranc");
     docMgr.patch(desc, patchHandle, t);
     t.commit();
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     String content = docMgr.read(docId, new StringHandle()).get();
 
     System.out.println("After" + content);
@@ -909,7 +989,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     String[] filenames = { "json-original.json" };
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -936,7 +1017,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     // Transaction t = client.openTransaction("Tranc");
     docMgr.patch(desc, patchHandle);// ,t);
     // t.commit();
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     String content = docMgr.read(docId, new StringHandle()).get();
 
     System.out.println("After" + content);
@@ -953,7 +1034,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     String filename = "constraint1.xml";
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "XML");
@@ -969,7 +1051,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldr.insertFragment("/root", Position.LAST_CHILD, Cardinality.ONE, "<modified>2013-03-21</modified>");
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     String contentBefore = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println(" Content after Updating with Cardinality.ONE : " + contentBefore);
@@ -978,7 +1060,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     DocumentPatchBuilder xmlPatchBldr = xmlDocMgr.newPatchBuilder();
     DocumentPatchHandle xmlPatchForNode = xmlPatchBldr.insertFragment("/root/id", Position.BEFORE, Cardinality.ONE_OR_MORE, "<modified>1989-04-06</modified>").build();
     xmlDocMgr.patch(docId, xmlPatchForNode);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     String contentAfter = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println("Content after Updating with Cardinality.ONE_OR_MORE" + contentAfter);
@@ -987,7 +1069,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     DocumentPatchBuilder xmlPatchBldr1 = xmlDocMgr.newPatchBuilder();
     DocumentPatchHandle xmlPatchForNode1 = xmlPatchBldr1.insertFragment("/root/id", Position.AFTER, Cardinality.ZERO_OR_ONE, "<modified>2013-07-29</modified>").build();
     xmlDocMgr.patch(docId, xmlPatchForNode1);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
     contentAfter = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println("Content after Updating with Cardinality.ZERO_OR_ONE" + contentAfter);
@@ -1010,7 +1092,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     String[] filenames = { "json-original.json" };
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -1028,7 +1111,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -1056,7 +1139,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     String[] filenames = { "json-original.json" };
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -1074,7 +1158,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -1103,7 +1187,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     String[] filenames = { "json-original.json" };
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -1121,7 +1206,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -1151,7 +1236,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     String[] filenames = { "json-original.json" };
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -1169,7 +1255,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -1197,7 +1283,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     String[] filenames = { "json-original.json" };
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -1215,7 +1302,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -1248,7 +1335,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
       content1.append("{ \"RegionId\": \"1004\", \"Direction\": \"SW\" }");
       content1.append("]}}]}");
 
-      DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+      SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+      DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
       int count = 1;
       XMLDocumentManager docMgr = client.newXMLDocumentManager();
       // Write docs
@@ -1306,7 +1394,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
       DocumentPatchHandle patchHandle = patchBldr.build();
       docMgr.patch(docId, patchHandle);
-      this.waitForPropertyPropagate();
+      waitForPropertyPropagate();
       
       // Verify the results again. Poppulation should be 500 for second document
       String content = docMgr.read(docId, new StringHandle()).get();
@@ -1329,7 +1417,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     String[] filenames = { "json-original.json" };
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
     DocumentMetadataHandle mhRead = new DocumentMetadataHandle();
 
     // write docs
@@ -1347,7 +1436,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentMetadataPatchBuilder.PatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
-    this.waitForPropertyPropagate();
+    waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 

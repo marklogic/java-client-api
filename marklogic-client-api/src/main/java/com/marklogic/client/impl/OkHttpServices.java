@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.*;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
@@ -161,60 +163,6 @@ public class OkHttpServices implements RESTServices {
   private final static MediaType URLENCODED_MIME_TYPE = MediaType.parse("application/x-www-form-urlencoded; charset=UTF-8");
   private final static String UTF8_ID = StandardCharsets.UTF_8.toString();
 
-  static protected class HostnameVerifierAdapter implements HostnameVerifier {
-    private SSLHostnameVerifier verifier;
-
-    protected HostnameVerifierAdapter(SSLHostnameVerifier verifier) {
-      this.verifier = verifier;
-    }
-
-    @Override
-    public boolean verify(String hostname, SSLSession session) {
-      try {
-        Certificate[] certificates = session.getPeerCertificates();
-        verify(hostname, (X509Certificate) certificates[0]);
-        return true;
-      } catch(SSLException e) {
-        return false;
-      }
-    }
-
-    public void verify(String hostname, X509Certificate cert) throws SSLException {
-      ArrayList<String> cnArray = new ArrayList<>();
-      try {
-        LdapName ldapDN = new LdapName(cert.getSubjectX500Principal().getName());
-        for(Rdn rdn: ldapDN.getRdns()) {
-          Object value = rdn.getValue();
-          if ( "CN".equalsIgnoreCase(rdn.getType()) && value instanceof String ) {
-            cnArray.add((String) value);
-          }
-        }
-
-        int type_dnsName = 2;
-        int type_ipAddress = 7;
-        ArrayList<String> subjectAltArray = new ArrayList<>();
-        Collection<List<?>> alts = cert.getSubjectAlternativeNames();
-        if ( alts != null ) {
-          for ( List<?> alt : alts ) {
-            if ( alt != null && alt.size() == 2 && alt.get(1) instanceof String ) {
-              Integer type = (Integer) alt.get(0);
-              if ( type == type_dnsName || type == type_ipAddress ) {
-                subjectAltArray.add((String) alt.get(1));
-              }
-            }
-          }
-        }
-        String[] cns = cnArray.toArray(new String[cnArray.size()]);
-        String[] subjectAlts = subjectAltArray.toArray(new String[subjectAltArray.size()]);
-        verifier.verify(hostname, cns, subjectAlts);
-      } catch(CertificateParsingException e) {
-        throw new MarkLogicIOException(e);
-      } catch(InvalidNameException e) {
-        throw new MarkLogicIOException(e);
-      }
-    }
-  }
-
   static final private ConnectionPool connectionPool = new ConnectionPool();
 
   private DatabaseClient databaseClient;
@@ -291,14 +239,14 @@ public class OkHttpServices implements RESTServices {
 
   @Override
   @Deprecated
-  public void connect(String host, int port, String database, String user, String password,
+  public void connect(String host, int port, String database, String user, String password,Map<String,String> kerberosOptions,
       Authentication authenType, SSLContext sslContext,
       SSLHostnameVerifier verifier) {
-    connect(host, port, database, user, password, authenType, sslContext, null, verifier);
+    connect(host, port, database, user, password, kerberosOptions, authenType, sslContext, null, verifier);
   }
 
   @Override
-  public void connect(String host, int port, String database, String user, String password,
+  public void connect(String host, int port, String database, String user, String password,Map<String,String> kerberosOptions,
       Authentication authenType, SSLContext sslContext, X509TrustManager trustManager,
       SSLHostnameVerifier verifier) {
     HostnameVerifier hostnameVerifier = null;
@@ -314,15 +262,15 @@ public class OkHttpServices implements RESTServices {
     } else if (verifier == SSLHostnameVerifier.STRICT) {
       hostnameVerifier = null;
     } else if (verifier != null) {
-      hostnameVerifier = new HostnameVerifierAdapter(verifier);
+      hostnameVerifier = new SSLHostnameVerifier.HostnameVerifierAdapter(verifier);
     }// else {
     //  throw new IllegalArgumentException(
     //    "Null SSLContext but non-null SSLHostnameVerifier for client");
     //}
-    connect(host, port, database, user, password, authenType, sslContext, trustManager, hostnameVerifier);
+    connect(host, port, database, user, password, kerberosOptions, authenType, sslContext, trustManager, hostnameVerifier);
   }
 
-  private void connect(String host, int port, String database, String user, String password,
+  private void connect(String host, int port, String database, String user, String password, Map<String,String> kerberosOptions,
                        Authentication authenType, SSLContext sslContext, X509TrustManager trustManager,
                        HostnameVerifier verifier) {
     logger.debug("Connecting to {} at {} as {}", new Object[]{host, port, user});
@@ -350,7 +298,7 @@ public class OkHttpServices implements RESTServices {
     if (authenType == null || authenType == Authentication.CERTIFICATE) {
       checkFirstRequest = false;
     } else if (authenType == Authentication.KERBEROS) {
-      interceptor = new HTTPKerberosAuthInterceptor(host, user);
+      interceptor = new HTTPKerberosAuthInterceptor(host, kerberosOptions);
       checkFirstRequest = false;
     } else {
       if (user == null) throw new IllegalArgumentException("No user provided");
@@ -604,7 +552,7 @@ public class OkHttpServices implements RESTServices {
         return sendRequestOnce(funcBuilder.delete().build());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doDeleteFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doDeleteFunction, null);
     int status = response.code();
 
     if (status == STATUS_NOT_FOUND) {
@@ -699,7 +647,6 @@ public class OkHttpServices implements RESTServices {
   }
 
   private Response sendRequestOnce(Request request) {
-// System.out.println(request.method()+ " "+request.url().url().toExternalForm());
     try {
       return getConnection().newCall(request).execute();
     } catch (IOException e) {
@@ -708,6 +655,12 @@ public class OkHttpServices implements RESTServices {
   }
 
   private Response sendRequestWithRetry(Request.Builder requestBldr, Function<Request.Builder, Response> doFunction, Consumer<Boolean> resendableConsumer) {
+    return sendRequestWithRetry(requestBldr, true, doFunction, resendableConsumer);
+  }
+
+  private Response sendRequestWithRetry(
+        Request.Builder requestBldr, boolean isRetryable, Function<Request.Builder, Response> doFunction, Consumer<Boolean> resendableConsumer
+  ) {
     Response response = null;
     int status = -1;
     long startTime = System.currentTimeMillis();
@@ -727,11 +680,12 @@ public class OkHttpServices implements RESTServices {
        */
       response = doFunction.apply(requestBldr);
       status = response.code();
-      if (!retryStatus.contains(status)) {
+      if (!isRetryable || !retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
         /*
-         * If we don't get a service unavailable status, we break
-         * from the retrying loop and return the response
+         * If we don't get a service unavailable status or if the request
+         * is not retryable, we break from the retrying loop and return
+         * the response
          */
         break;
       }
@@ -806,7 +760,8 @@ public class OkHttpServices implements RESTServices {
         return sendRequestOnce(funcBuilder.get().build());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
+
     int status = response.code();
     if (status == STATUS_NOT_FOUND) {
       throw new ResourceNotFoundException(
@@ -1082,7 +1037,7 @@ public class OkHttpServices implements RESTServices {
         return sendRequestOnce(funcBuilder.addHeader(HEADER_ACCEPT, multipartMixedWithBoundary()).get());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
     int status = response.code();
     if (status == STATUS_NOT_FOUND) {
       throw new ResourceNotFoundException(
@@ -1200,7 +1155,7 @@ public class OkHttpServices implements RESTServices {
         return sendRequestOnce(funcBuilder.head().build());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doHeadFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doHeadFunction, null);
     int status = response.code();
     if (status != STATUS_OK) {
       if (status == STATUS_NOT_FOUND) {
@@ -1405,7 +1360,7 @@ public class OkHttpServices implements RESTServices {
       status = response.code();
 
       responseHeaders = response.headers();
-      if (!retryStatus.contains(status)) {
+      if (transaction != null || !retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
 
         break;
@@ -1549,7 +1504,7 @@ public class OkHttpServices implements RESTServices {
       status = response.code();
 
       responseHeaders = response.headers();
-      if (!retryStatus.contains(status)) {
+      if (transaction != null || !retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
 
         break;
@@ -1737,7 +1692,7 @@ public class OkHttpServices implements RESTServices {
         return sendRequestOnce(funcBuilder.post(RequestBody.create(null, "")).build());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doPostFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, false, doPostFunction, null);
     int status = response.code();
 
     if (status == STATUS_FORBIDDEN) {
@@ -2151,6 +2106,8 @@ public class OkHttpServices implements RESTServices {
         text = ((StructuredQueryDefinition) queryDef).getCriteria();
       } else if (queryDef instanceof RawStructuredQueryDefinition) {
         text = ((RawStructuredQueryDefinition) queryDef).getCriteria();
+      } else if (queryDef instanceof RawCtsQueryDefinition) {
+    	text = ((RawCtsQueryDefinition) queryDef).getCriteria();
       }
       if (text != null) {
         params.add("q", text);
@@ -2250,7 +2207,7 @@ public class OkHttpServices implements RESTServices {
 
         status = response.code();
 
-        if (!retryStatus.contains(status)) {
+        if (transaction != null || !retryStatus.contains(status)) {
           if (isFirstRequest()) setFirstRequest(false);
 
           break;
@@ -2336,7 +2293,7 @@ public class OkHttpServices implements RESTServices {
         return sendRequestOnce(funcBuilder.delete().build());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doDeleteFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doDeleteFunction, null);
     int status = response.code();
     if (status == STATUS_FORBIDDEN) {
       throw new ForbiddenUserException("User is not allowed to delete",
@@ -2489,21 +2446,21 @@ public class OkHttpServices implements RESTServices {
     requestBldr = addTelemetryAgentId(requestBldr);
 
     final HandleImplementation tempBaseHandle = baseHandle;
-    Function<Request.Builder, Response> doGetFunction =
+
+    Function<Request.Builder, Response> doFunction = (baseHandle == null) ?
       new Function<Request.Builder, Response>() {
         public Response apply(Request.Builder funcBuilder) {
           return doGet(funcBuilder);
         }
-      };
-    Function<Request.Builder, Response> doPostFunction =
+      } :
       new Function<Request.Builder, Response>() {
         public Response apply(Request.Builder funcBuilder) {
           return doPost(null, funcBuilder.header(HEADER_CONTENT_TYPE, tempBaseHandle.getMimetype()),
             tempBaseHandle.sendContent());
         }
       };
-    Response response = baseHandle == null ? sendRequestWithRetry(requestBldr, doGetFunction, null)
-      : sendRequestWithRetry(requestBldr, doPostFunction, null);
+
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doFunction, null);
     int status = response.code();
 
     if (status == STATUS_FORBIDDEN) {
@@ -2553,7 +2510,7 @@ public class OkHttpServices implements RESTServices {
         return sendRequestOnce(funcBuilder.get().build());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
     int status = response.code();
 
     if (status == STATUS_FORBIDDEN) {
@@ -2596,7 +2553,7 @@ public class OkHttpServices implements RESTServices {
         return sendRequestOnce(funcBuilder.get().build());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
     int status = response.code();
 
     if (status == STATUS_FORBIDDEN) {
@@ -2623,12 +2580,12 @@ public class OkHttpServices implements RESTServices {
                         boolean isNullable, String mimetype, Class<T> as)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    return getValue(reqlog, type, key, null, isNullable, mimetype, as);
+	  return getValue(reqlog, type, key, null, isNullable, mimetype, as);
   }
   @Override
   public <T> T getValue(RequestLogger reqlog, String type, String key, Transaction transaction,
-                        boolean isNullable, String mimetype, Class<T> as)
-    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+		  boolean isNullable, String mimetype, Class<T> as)
+				  throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     logger.debug("Getting {}/{}", type, key);
 
@@ -2641,7 +2598,7 @@ public class OkHttpServices implements RESTServices {
         return sendRequestOnce(funcBuilder.get().build());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
     int status = response.code();
 
     if (status != STATUS_OK) {
@@ -2990,29 +2947,35 @@ public class OkHttpServices implements RESTServices {
         text = ((StructuredQueryDefinition) qdef).getCriteria();
       } else if (qdef instanceof RawStructuredQueryDefinition) {
         text = ((RawStructuredQueryDefinition) qdef).getCriteria();
+      } else if (qdef instanceof RawCtsQueryDefinition) {
+        text = ((RawCtsQueryDefinition) qdef).getCriteria();
       }
       String qtextMessage = "";
       if (text != null) {
         params.add("q", text);
         qtextMessage = " and string query \"" + text + "\"";
       }
-      if (qdef instanceof StructuredQueryDefinition) {
-        String structure = ((StructuredQueryDefinition) qdef).serialize();
-
-        logger.debug("Query uris with structured query {}{}", structure, qtextMessage);
-        if (structure != null) {
-          params.add("structuredQuery", structure);
-        }
-      } else if (qdef instanceof RawStructuredQueryDefinition) {
-        String structure = ((RawStructuredQueryDefinition) qdef).serialize();
-
-        logger.debug("Query uris with raw structured query {}{}", structure, qtextMessage);
-        if (structure != null) {
+      if (qdef instanceof RawCtsQueryDefinition) {
+          String structure = qdef instanceof RawQueryDefinitionImpl.CtsQuery ? ((RawQueryDefinitionImpl.CtsQuery) qdef).serialize() : "";
+          logger.debug("Query uris with raw cts query {}{}", structure, qtextMessage);
+           CtsQueryWriteHandle input = ((RawCtsQueryDefinition) qdef).getHandle();
+        return postResource(reqlog, "internal/uris", transaction, params, input, output);
+      } else if (qdef instanceof StructuredQueryDefinition) {
+          String structure = ((StructuredQueryDefinition) qdef).serialize();
+          
+          logger.debug("Query uris with structured query {}{}", structure, qtextMessage);
+          if (structure != null) {
+            params.add("structuredQuery", structure);
+          }
+        } else if (qdef instanceof RawStructuredQueryDefinition) {
+          String structure = ((RawStructuredQueryDefinition) qdef).serialize();
+          logger.debug("Query uris with raw structured query {}{}", structure, qtextMessage);
+          if (structure != null) {
           params.add("structuredQuery", structure);
         }
       } else if (qdef instanceof CombinedQueryDefinition) {
         String structure = ((CombinedQueryDefinition) qdef).serialize();
-
+        
         logger.debug("Query uris with combined query {}", structure);
         if (structure != null) {
           params.add("structuredQuery", structure);
@@ -3021,11 +2984,12 @@ public class OkHttpServices implements RESTServices {
         logger.debug("Query uris with string query \"{}\"", text);
       } else {
         throw new UnsupportedOperationException("Cannot query uris with " +
-          qdef.getClass().getName());
+            qdef.getClass().getName());
+        }
+        return getResource(reqlog, "internal/uris", transaction, params, output);
       }
-      return getResource(reqlog, "internal/uris", transaction, params, output);
     }
-  }
+
 
   @Override
   public <R extends AbstractReadHandle> R getResource(RequestLogger reqlog,
@@ -3051,7 +3015,7 @@ public class OkHttpServices implements RESTServices {
         return doGet(funcBuilder);
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
     int status = response.code();
     checkStatus(response, status, "read", "resource", path,
       ResponseStatus.OK_OR_NO_CONTENT);
@@ -3093,7 +3057,7 @@ public class OkHttpServices implements RESTServices {
         return doGet(funcBuilder);
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
     int status = response.code();
     checkStatus(response, status, "read", "resource", path,
       ResponseStatus.OK_OR_NO_CONTENT);
@@ -3140,7 +3104,7 @@ public class OkHttpServices implements RESTServices {
         return doPut(reqlog, funcBuilder, inputBase.sendContent());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doPutFunction, resendableConsumer);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPutFunction, resendableConsumer);
     int status = response.code();
 
     checkStatus(response, status, "write", "resource", path,
@@ -3198,7 +3162,7 @@ public class OkHttpServices implements RESTServices {
       response = doPut(requestBldr, multiPart, hasStreamingPart);
       status = response.code();
 
-      if (!retryStatus.contains(status)) {
+      if (transaction != null || !retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
 
         break;
@@ -3303,7 +3267,7 @@ public class OkHttpServices implements RESTServices {
       }
     };
 
-    Response response = sendRequestWithRetry(requestBldr, doPostFunction, resendableConsumer);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPostFunction, resendableConsumer);
     int status = response.code();
     checkStatus(response, status, operation, "resource", path,
       ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
@@ -3370,7 +3334,7 @@ public class OkHttpServices implements RESTServices {
       response = doPost(requestBldr, multiPart, hasStreamingPart);
       status = response.code();
 
-      if (!retryStatus.contains(status)) {
+      if (transaction != null || !retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
 
         break;
@@ -3842,7 +3806,7 @@ public class OkHttpServices implements RESTServices {
           inputBase.sendContent());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doPostFunction, resendableConsumer);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPostFunction, resendableConsumer);
     int status = response.code();
 
     checkStatus(response, status, "apply", "resource", path,
@@ -3895,7 +3859,7 @@ public class OkHttpServices implements RESTServices {
       response = doPost(requestBldr, multiPart, hasStreamingPart);
       status = response.code();
 
-      if (!retryStatus.contains(status)) {
+      if (transaction != null || !retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
 
         break;
@@ -3953,7 +3917,7 @@ public class OkHttpServices implements RESTServices {
         return doDelete(funcBuilder);
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doDeleteFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doDeleteFunction, null);
     int status = response.code();
     checkStatus(response, status, "delete", "resource", path,
       ResponseStatus.OK_OR_NO_CONTENT);
@@ -4106,8 +4070,8 @@ public class OkHttpServices implements RESTServices {
         throw new MarkLogicInternalException("no requestBldr available to get the URI");
       }
       requestBldr = addCookies(
-          requestBldr, transaction.getCookies(), ((TransactionImpl) transaction).getCreatedTimestamp()
-          );
+              requestBldr, transaction.getCookies(), ((TransactionImpl) transaction).getCreatedTimestamp()
+              );
     }
     return requestBldr;
   }
@@ -4140,13 +4104,13 @@ public class OkHttpServices implements RESTServices {
       // else if ( cookie.getMaxAge() == Integer.MIN_VALUE ) {
       // don't forward the cookie if it has a max age and we're past the max age
       if ( creation != null && cookie.getMaxAge() > 0 ) {
-        int currentAge = (int) TimeUnit.MILLISECONDS.toSeconds(
-              System.currentTimeMillis() - creation.getTimeInMillis()
-        );
-        if ( currentAge > cookie.getMaxAge() ) {
-          logger.warn(
-                cookie.getName()+" cookie expired after "+cookie.getMaxAge()+" seconds: "+cookie.getValue()
+          int currentAge = (int) TimeUnit.MILLISECONDS.toSeconds(
+                System.currentTimeMillis() - creation.getTimeInMillis()
           );
+          if ( currentAge > cookie.getMaxAge() ) {
+            logger.warn(
+                  cookie.getName()+" cookie expired after "+cookie.getMaxAge()+" seconds: "+cookie.getValue()
+            );
           continue;
         }
       }
@@ -4259,7 +4223,6 @@ public class OkHttpServices implements RESTServices {
     }
     Request.Builder request = new Request.Builder()
         .url(uri.build());
-// System.out.println(uri.toString());
     return request;
   }
 
@@ -5501,7 +5464,7 @@ public class OkHttpServices implements RESTServices {
     private void prepareRequestBuilder() {
       this.requestBldr = setupRequest(callBaseUri, endpoint, null);
       if (session != null) {
-        this.requestBldr = addCookies(this.requestBldr, session.getCookies(), session.getCreatedTimestamp());
+    	this.requestBldr = addCookies(this.requestBldr, session.getCookies(), session.getCreatedTimestamp());
         // Add the Cookie header for SessionId if we have a session object passed
         this.requestBldr.addHeader(HEADER_COOKIE, "SessionID="+session.getSessionId());
       }

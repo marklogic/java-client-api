@@ -16,21 +16,22 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import java.io.InputStream;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.functionaltest.BasicJavaClientREST;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.io.InputStreamHandle;
-
-import org.junit.*;
-
-import static org.junit.Assert.*;
 
 /*
  * The tests here run against normal a no SSL enabled REST Server.
@@ -76,14 +77,13 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST {
   public void testAuthenticationNone() throws KeyManagementException, NoSuchAlgorithmException, IOException
   {
     System.out.println("Running testAuthenticationNone");
-    DatabaseClient client = null;
     if (!IsSecurityEnabled()) {
       setAuthentication("application-level", restServerName);
       setDefaultUser("rest-admin", restServerName);
       // connect the client
       StringBuilder str = new StringBuilder();
       try {
-        client = DatabaseClientFactory.newClient(hostName, restPort);
+    	  DatabaseClient client = DatabaseClientFactory.newClient(hostName, restPort);
       } catch (Exception ex) {
         str.append(ex.getMessage());
       }
@@ -106,7 +106,8 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST {
       String filename = "text-original.txt";
 
       // connect the client
-      DatabaseClient client = DatabaseClientFactory.newClient(hostName, restPort, "rest-writer", "x", Authentication.BASIC);
+      SecurityContext secContext = new DatabaseClientFactory.BasicAuthContext("rest-writer", "x");
+      DatabaseClient client = DatabaseClientFactory.newClient(hostName, restPort, secContext, getConnType());
 
       // write doc
       writeDocumentUsingStringHandle(client, filename, "/write-text-doc-basic/", "Text");

@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.io.FileHandle;
 
@@ -57,7 +56,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     String uri = "/xml-mimetype/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -99,7 +98,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     String uri = "/xml-mimetype/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -141,7 +140,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     String uri = "/xml-mimetype/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -183,7 +182,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     String uri = "/xml-mimetype/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -225,7 +224,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     String uri = "/json-mimetype/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -267,7 +266,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     String uri = "/json-mimetype/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -309,7 +308,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     String uri = "/json-mimetype/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -351,7 +350,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     String uri = "/json-mimetype/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -393,7 +392,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     String uri = "/bin-mimetype/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -435,7 +434,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     String uri = "/bin-mimetype/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -477,7 +476,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     String uri = "/bin-mimetype/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -519,7 +518,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     String uri = "/bin-mimetype/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -561,7 +560,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     String uri = "/txt-mimetype/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -603,7 +602,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     String uri = "/txt-mimetype/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -645,7 +644,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     String uri = "/txt-mimetype/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();
@@ -687,7 +686,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     String uri = "/txt-mimetype/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     DocumentManager docMgr = client.newDocumentManager();

@@ -23,6 +23,7 @@ import com.marklogic.client.type.XsNumericExpr;
 import com.marklogic.client.type.XsStringSeqExpr;
 import com.marklogic.client.type.XsUnsignedLongExpr;
 
+import com.marklogic.client.type.ServerExpression;
 import com.marklogic.client.type.JsonArrayExpr;
 import com.marklogic.client.type.JsonArraySeqExpr;
 import com.marklogic.client.type.JsonObjectExpr;
@@ -49,7 +50,7 @@ class JsonExprImpl implements JsonExpr {
 
   
   @Override
-  public JsonArrayExpr array(ElementNodeExpr array) {
+  public JsonArrayExpr array(ServerExpression array) {
     if (array == null) {
       throw new IllegalArgumentException("array parameter for array() cannot be null");
     }
@@ -58,13 +59,13 @@ class JsonExprImpl implements JsonExpr {
 
   
   @Override
-  public XsUnsignedLongExpr arraySize(JsonArrayExpr array) {
+  public XsUnsignedLongExpr arraySize(ServerExpression array) {
     return new XsExprImpl.UnsignedLongCallImpl("json", "array-size", new Object[]{ array });
   }
 
   
   @Override
-  public ItemSeqExpr arrayValues(JsonArrayExpr array) {
+  public ItemSeqExpr arrayValues(ServerExpression array) {
     if (array == null) {
       throw new IllegalArgumentException("array parameter for arrayValues() cannot be null");
     }
@@ -73,13 +74,13 @@ class JsonExprImpl implements JsonExpr {
 
   
   @Override
-  public ItemSeqExpr arrayValues(JsonArrayExpr array, boolean flatten) {
+  public ItemSeqExpr arrayValues(ServerExpression array, boolean flatten) {
     return arrayValues(array, xs.booleanVal(flatten));
   }
 
   
   @Override
-  public ItemSeqExpr arrayValues(JsonArrayExpr array, XsBooleanExpr flatten) {
+  public ItemSeqExpr arrayValues(ServerExpression array, ServerExpression flatten) {
     if (array == null) {
       throw new IllegalArgumentException("array parameter for arrayValues() cannot be null");
     }
@@ -94,7 +95,7 @@ class JsonExprImpl implements JsonExpr {
 
   
   @Override
-  public JsonObjectExpr object(ElementNodeExpr map) {
+  public JsonObjectExpr object(ServerExpression map) {
     if (map == null) {
       throw new IllegalArgumentException("map parameter for object() cannot be null");
     }
@@ -109,19 +110,19 @@ class JsonExprImpl implements JsonExpr {
 
   
   @Override
-  public JsonObjectExpr objectDefine(XsStringSeqExpr keys) {
+  public JsonObjectExpr objectDefine(ServerExpression keys) {
     return new ObjectCallImpl("json", "object-define", new Object[]{ keys });
   }
 
   
   @Override
-  public JsonArrayExpr subarray(JsonArrayExpr array, double startingLoc) {
+  public JsonArrayExpr subarray(ServerExpression array, double startingLoc) {
     return subarray(array, xs.doubleVal(startingLoc));
   }
 
   
   @Override
-  public JsonArrayExpr subarray(JsonArrayExpr array, XsNumericExpr startingLoc) {
+  public JsonArrayExpr subarray(ServerExpression array, ServerExpression startingLoc) {
     if (array == null) {
       throw new IllegalArgumentException("array parameter for subarray() cannot be null");
     }
@@ -133,13 +134,13 @@ class JsonExprImpl implements JsonExpr {
 
   
   @Override
-  public JsonArrayExpr subarray(JsonArrayExpr array, double startingLoc, double length) {
+  public JsonArrayExpr subarray(ServerExpression array, double startingLoc, double length) {
     return subarray(array, xs.doubleVal(startingLoc), xs.doubleVal(length));
   }
 
   
   @Override
-  public JsonArrayExpr subarray(JsonArrayExpr array, XsNumericExpr startingLoc, XsNumericExpr length) {
+  public JsonArrayExpr subarray(ServerExpression array, ServerExpression startingLoc, ServerExpression length) {
     if (array == null) {
       throw new IllegalArgumentException("array parameter for subarray() cannot be null");
     }
@@ -160,31 +161,31 @@ class JsonExprImpl implements JsonExpr {
 
   
   @Override
-  public JsonArrayExpr toArray(ItemSeqExpr items) {
+  public JsonArrayExpr toArray(ServerExpression items) {
     return new ArrayCallImpl("json", "to-array", new Object[]{ items });
   }
 
   
   @Override
-  public JsonArrayExpr toArray(ItemSeqExpr items, double limit) {
+  public JsonArrayExpr toArray(ServerExpression items, double limit) {
     return toArray(items, xs.doubleVal(limit));
   }
 
   
   @Override
-  public JsonArrayExpr toArray(ItemSeqExpr items, XsNumericExpr limit) {
+  public JsonArrayExpr toArray(ServerExpression items, ServerExpression limit) {
     return new ArrayCallImpl("json", "to-array", new Object[]{ items, limit });
   }
 
   
   @Override
-  public JsonArrayExpr toArray(ItemSeqExpr items, double limit, ItemExpr zero) {
+  public JsonArrayExpr toArray(ServerExpression items, double limit, ServerExpression zero) {
     return toArray(items, xs.doubleVal(limit), zero);
   }
 
   
   @Override
-  public JsonArrayExpr toArray(ItemSeqExpr items, XsNumericExpr limit, ItemExpr zero) {
+  public JsonArrayExpr toArray(ServerExpression items, ServerExpression limit, ServerExpression zero) {
     return new ArrayCallImpl("json", "to-array", new Object[]{ items, limit, zero });
   }
 
@@ -192,19 +193,19 @@ class JsonExprImpl implements JsonExpr {
   public JsonArraySeqExpr arraySeq(JsonArrayExpr... items) {
     return new ArraySeqListImpl(items);
   }
-  static class ArraySeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements JsonArraySeqExpr {
+  static class ArraySeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements JsonArraySeqExpr {
     ArraySeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+      super(items);
     }
   }
-  static class ArraySeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonArraySeqExpr {
+  static class ArraySeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements JsonArraySeqExpr {
     ArraySeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class ArrayCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonArrayExpr {
+  static class ArrayCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements JsonArrayExpr {
     ArrayCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
  
@@ -212,19 +213,19 @@ class JsonExprImpl implements JsonExpr {
   public JsonObjectSeqExpr objectSeq(JsonObjectExpr... items) {
     return new ObjectSeqListImpl(items);
   }
-  static class ObjectSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements JsonObjectSeqExpr {
+  static class ObjectSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements JsonObjectSeqExpr {
     ObjectSeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+      super(items);
     }
   }
-  static class ObjectSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonObjectSeqExpr {
+  static class ObjectSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements JsonObjectSeqExpr {
     ObjectSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class ObjectCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonObjectExpr {
+  static class ObjectCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements JsonObjectExpr {
     ObjectCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
 

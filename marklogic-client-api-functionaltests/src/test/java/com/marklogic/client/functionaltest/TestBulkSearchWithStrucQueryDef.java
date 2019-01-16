@@ -48,10 +48,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -120,7 +118,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
     @Before
     public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
         // create new connection for each test below
-        client = getDatabaseClient("usr1", "password", Authentication.DIGEST);
+        client = getDatabaseClient("usr1", "password", getConnType());
     }
 
     @After
@@ -439,7 +437,6 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
         String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
         String tail = "</search:search>";
         String qtext4 = "<search:qtext>71 OR dog14</search:qtext>";
-        DocumentManager docMgr = client.newDocumentManager();
         QueryManager queryMgr = client.newQueryManager();
         String options =
                 "<search:options>" +
@@ -878,7 +875,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
     public void testPageLenOptionsWithBulkSearch() throws KeyManagementException, NoSuchAlgorithmException, Exception {
         this.loadJSONDocuments();
 
-        DatabaseClient clientTmp = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+        DatabaseClient clientTmp = getDatabaseClient("rest-admin", "x", getConnType());
         String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
         String tail = "</search:search>";
         String qtext4 = "<search:qtext>71 OR dog14 OR dog15 OR dog21 OR dog22</search:qtext>";
@@ -979,7 +976,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
     public void testDirectionOptionsWithBulkSearch() throws KeyManagementException, NoSuchAlgorithmException, Exception {
         this.loadJSONDocuments();
 
-        DatabaseClient clientTmp = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+        DatabaseClient clientTmp = getDatabaseClient("rest-admin", "x", getConnType());
         String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
         String tail = "</search:search>";
         String qtext4 = "<search:qtext>dog10 OR dog14 OR dog15 OR dog21 OR dog22</search:qtext>";
@@ -1158,7 +1155,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
         try {
             this.loadJSONDocuments();
 
-            DatabaseClient clientTmp = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+            DatabaseClient clientTmp = getDatabaseClient("rest-admin", "x", getConnType());
             String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
             String tail = "</search:search>";
             String qtext4 = "<search:qtext>dog10 OR dog11 OR dog12 OR dog13 OR dog14 OR dog15 OR dog16 OR dog17 OR dog18 OR dog19 OR dog20 OR dog21 OR dog22 OR dog23</search:qtext>";

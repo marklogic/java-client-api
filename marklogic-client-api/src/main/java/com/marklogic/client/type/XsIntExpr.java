@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * An instance of a server int expression.
+ * @deprecated (as of 4.2) Use {@link com.marklogic.client.type.ServerExpression}
  */
 public interface XsIntExpr extends XsIntSeqExpr, XsLongExpr {
 }

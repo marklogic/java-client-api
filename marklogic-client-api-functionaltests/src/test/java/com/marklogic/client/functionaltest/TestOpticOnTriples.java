@@ -39,7 +39,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentWriteSet;
@@ -59,7 +58,6 @@ import com.marklogic.client.type.PlanSystemColumn;
 import com.marklogic.client.type.PlanTripleOption;
 import com.marklogic.client.type.PlanTriplePatternSeq;
 import com.marklogic.client.type.PlanTriplePositionSeq;
-import com.marklogic.client.type.SemIriSeqVal;
 import com.marklogic.client.type.SemStoreExpr;
 
 public class TestOpticOnTriples extends BasicJavaClientREST {
@@ -137,8 +135,8 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
     		                             "rest-reader", "rest-extension-user", "manage-user");    
 
     if (IsSecurityEnabled()) {
-        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", Authentication.DIGEST);
-        client = getDatabaseClient("opticUser", "0pt1c", Authentication.DIGEST);
+        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", getConnType());
+        client = getDatabaseClient("opticUser", "0pt1c", getConnType());
     }
     else {
         schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("opticUser", "0pt1c"));
@@ -724,7 +722,6 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
         p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
         p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
         );
-    SemIriSeqVal storeIris = p.sem.iriSeq("/optic/player/triple/test", "/optic/team/triple/test");
     SemStoreExpr storeExpr = p.sem.store("any");
     ModifyPlan player_plan = p.fromTriples(patPlayerSeq, (String) null, (String) null,
         PlanTripleOption.DEDUPLICATED)
@@ -942,8 +939,6 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 
     PlanColumn ageCol = p.col("age");
     PlanColumn idCol = p.col("id");
-    PlanColumn nameCol = p.col("name");
-    PlanColumn teamCol = p.col("team");
 
     PlanTriplePatternSeq patSeq = p.patternSeq(p.pattern(
         idCol,
@@ -1020,7 +1015,6 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
     rowMgr.resultDoc(output, jacksonHandle);
     JsonNode jsonResults = jacksonHandle.get();
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
-    JsonNode nodeVal = jsonBindingsNodes.path(0);
     // Should have 1 nodes returned.
     assertEquals("One node not returned from testJoinLeftWithMultipleKeyMatch method", 1, jsonBindingsNodes.size());
   }
@@ -1072,7 +1066,6 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
     rowMgr.resultDoc(output, jacksonHandle);
     JsonNode jsonResults = jacksonHandle.get();
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
-    JsonNode nodeVal = jsonBindingsNodes.path(0);
     // Should have 8 nodes returned.
     assertEquals("Eight nodes not returned from testJoinWhereDistinct method", 8, jsonBindingsNodes.size());
   }
@@ -1257,7 +1250,6 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
     rowMgr.resultDoc(output, jacksonHandle);
     JsonNode jsonResults = jacksonHandle.get();
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
-    JsonNode nodeVal = jsonBindingsNodes.path(0);
     // Should have 8 nodes returned.
     assertEquals("Eight nodes not returned from testProcessingFunctions method", 8, jsonBindingsNodes.size());
     assertEquals("Row 1 myOriginal.org_name value incorrect", "Aoki Yamada", jsonBindingsNodes.path(0).path("myOriginal.org_name").path("value").asText());
@@ -1422,7 +1414,6 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     PlanPrefixer bb = p.prefixer("http://marklogic.com/baseball/players");
-    PlanPrefixer team = p.prefixer("http://marklogic.com/mlb/team/");
 
     PlanParamExpr ageParam = p.param("player_age");
 
@@ -1540,7 +1531,6 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
     rowMgr.resultDoc(output1, jacksonHandle1);
     JsonNode jsonResults1 = jacksonHandle1.get();
     JsonNode jsonBindingsNodes1 = jsonResults1.path("rows");
-    JsonNode nodeVal1 = jsonBindingsNodes1.path(0);
     // Should have 2 nodes returned.
     assertEquals("Two nodes not returned from testPatternValuePermutations method", 2, jsonBindingsNodes1.size());
     assertTrue("Node not returned from testPatternValuePermutations method",

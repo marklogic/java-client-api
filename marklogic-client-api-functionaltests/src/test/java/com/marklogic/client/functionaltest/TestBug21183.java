@@ -33,7 +33,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.XMLStreamReaderHandle;
 import com.marklogic.client.query.MatchDocumentSummary;
@@ -60,7 +59,7 @@ public class TestBug21183 extends BasicJavaClientREST {
 
     String[] filenames = { "bug21183.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames)

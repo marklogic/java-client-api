@@ -54,7 +54,6 @@ import org.junit.Test;
 import org.w3c.dom.Node;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.datamovement.ApplyTransformListener;
@@ -139,9 +138,8 @@ public class QBFailover extends BasicJavaClientREST {
 			}
 			hostLists.add("localhost");
 			int index = new Random().nextInt(hostLists.size());
-			dbClient = getDatabaseClientOnDatabase(hostLists.get(index), port, dbName, user, password,
-					Authentication.DIGEST);
-			evalClient = getDatabaseClientOnDatabase(host, port, dbName, user, password, Authentication.DIGEST);
+			dbClient = getDatabaseClientOnDatabase(hostLists.get(index), port, dbName, user, password, getConnType());
+			evalClient = getDatabaseClientOnDatabase(host, port, dbName, user, password, getConnType());
 			dmManager = dbClient.newDataMovementManager();
 			tempMgr = evalClient.newDataMovementManager();
 			Map<String, String> props = new HashMap<>();
@@ -950,8 +948,8 @@ public class QBFailover extends BasicJavaClientREST {
 	 * 
 	 * 
 	 */
-	@Ignore
-	//@Test(timeout = 450000)
+	
+	@Test(timeout = 450000)
 	public void testListenerCloseables() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
 

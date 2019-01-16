@@ -33,7 +33,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 
@@ -59,7 +58,7 @@ public class TestMetadataXML extends BasicJavaClientREST {
     String uri = "/write-bin-metadata/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -142,13 +141,13 @@ public class TestMetadataXML extends BasicJavaClientREST {
     String uri = "/write-neg-metadata/";
 
     // connect the client
-    DatabaseClient client1 = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client1 = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write the doc
     writeDocumentUsingBytesHandle(client1, filename, uri, "Binary");
 
     // connect with another client to write metadata
-    DatabaseClient client2 = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
+    DatabaseClient client2 = getDatabaseClient("rest-reader", "x", getConnType());
 
     // create doc manager
     XMLDocumentManager docMgr = client2.newXMLDocumentManager();

@@ -270,7 +270,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   // TODO: delete as(), col(), viewCol(), schemaCol(), fragmentIdCol(), and graphCol()
 // after code generation can specify base class
   @Override
-  public PlanExprCol as(PlanColumn column, ItemSeqExpr expression) {
+  public PlanExprCol as(PlanColumn column, ServerExpression expression) {
     return new ExprColCallImpl("op", "as", new Object[]{ column, expression });
   }
   @Override
@@ -296,22 +296,18 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
 
   // TODO: move when() and elseExpr() into generated code
   @Override
-  public PlanCase when(boolean condition, ItemExpr... value) {
-    return when(xs.booleanVal(condition), new BaseTypeImpl.ItemSeqListImpl(value));
+  public PlanCase when(boolean condition, ServerExpression... value) {
+    return when(xs.booleanVal(condition), value);
   }
   @Override
-  public PlanCase when(XsBooleanExpr condition, ItemExpr... value) {
-    return when(condition, new BaseTypeImpl.ItemSeqListImpl(value));
-  }
-  @Override
-  public PlanCase when(XsBooleanExpr condition, ItemSeqExpr value) {
-    if (!(value instanceof BaseTypeImpl.BaseArgImpl)) {
-      throw new IllegalArgumentException("invalid value for when(): "+value.getClass().getName());
+  public PlanCase when(ServerExpression condition, ServerExpression... value) {
+    if (condition == null) {
+      throw new IllegalArgumentException("condition parameter for when() cannot be null");
     }
-    return new CaseWhenCallImpl(new Object[]{condition, value});
+    return new CaseWhenCallImpl(new Object[]{ condition, new BaseTypeImpl.ItemSeqListImpl(value) });
   }
   @Override
-  public PlanCase elseExpr(ItemExpr value) {
+  public PlanCase elseExpr(ServerExpression value) {
     if (!(value instanceof BaseTypeImpl.BaseArgImpl)) {
       throw new IllegalArgumentException("invalid value for elseExpr(): "+value.getClass().getName());
     }
@@ -324,24 +320,31 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     return new JsonObjectCallImpl(new Object[]{ new JsonPropertySeqListImpl(properties) });
   }
   @Override
-  public ArrayNodeExpr jsonArray(JsonContentNodeExpr... items) {
-    return new JsonArrayCallImpl(new Object[]{ new JsonContentSeqListImpl(items) });
+  public ArrayNodeExpr jsonArray(ServerExpression... items) {
+    return new JsonArrayCallImpl(new Object[]{ new BaseTypeImpl.ItemSeqListImpl(items) });
   }
 
+/* TODO: DELETE
   // TODO: move xmlElement() into generated code
   @Override
-  public ElementNodeExpr xmlElement(XsQNameExpr name, AttributeNodeSeqExpr attributes, XmlContentNodeSeqExpr content) {
-    return new XmlElementCallImpl(new Object[]{ name, attributes, content });
+  public ElementNodeExpr xmlElement(ServerExpression name, ServerExpression attributes, ServerExpression... content) {
+    return new XmlElementCallImpl(new Object[]{ name, attributes, new BaseTypeImpl.ItemSeqListImpl(content)});
   }
+ */
 
   @Override
-  public AttributeNodeSeqExpr xmlAttributeSeq(AttributeNodeExpr... attributes) {
+  public AttributeNodeSeqExpr xmlAttributeSeq(ServerExpression... attributes) {
     return new XmlAttributeSeqListImpl(attributes);
   }
 
   @Override
   public PlanFunction resolveFunction(XsQNameVal functionName, String modulePath) {
     return resolveFunction(functionName, xs.string(modulePath));
+  }
+
+  @Override
+  public ServerExpression seq(ServerExpression... expr) {
+    return new BaseTypeImpl.ServerExpressionListImpl(expr, true);
   }
 
   @Override
@@ -626,7 +629,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
 
     @Override
-    public ModifyPlan where(XsBooleanExpr condition) {
+    public ModifyPlan where(ServerExpression condition) {
       return new ModifyPlanSubImpl(this, "op", "where", new Object[]{ condition });
     }
 
@@ -759,16 +762,16 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     public String getColName();
   }
 
-  static class CaseCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements ItemExpr {
+  static class CaseCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements ItemExpr {
     CaseCallImpl(BaseTypeImpl.BaseArgImpl[] whenList, BaseTypeImpl.BaseArgImpl otherwise) {
       super("op", "case", new BaseTypeImpl.BaseArgImpl[]{
-        new BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl>(whenList), otherwise
+        new BaseTypeImpl.ServerExpressionListImpl(whenList), otherwise
       });
     }
   }
-  static class CaseWhenCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements PlanCase {
+  static class CaseWhenCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements PlanCase {
     CaseWhenCallImpl(Object[] args) {
-      super("op", "when", BaseTypeImpl.convertList(args));
+      super("op", "when", args);
     }
   }
   static class CaseElseImpl implements PlanCase {
@@ -782,55 +785,57 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   static interface JsonContentCallImpl extends JsonContentNodeExpr, BaseTypeImpl.BaseArgImpl {}
-  static class JsonContentSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> {
+  static class JsonContentSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl {
     JsonContentSeqListImpl(JsonContentNodeExpr[] items) {
       super(Arrays.copyOf(items, items.length, BaseTypeImpl.BaseArgImpl[].class));
     }
   }
 
-  static class JsonPropertySeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> {
+  static class JsonPropertySeqListImpl extends BaseTypeImpl.ServerExpressionListImpl {
     JsonPropertySeqListImpl(PlanJsonProperty[] items) {
       super(Arrays.copyOf(items, items.length, BaseTypeImpl.BaseArgImpl[].class));
     }
   }
 
-  static class JsonObjectCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements ObjectNodeExpr, JsonContentCallImpl {
+  static class JsonObjectCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements ObjectNodeExpr, JsonContentCallImpl {
     JsonObjectCallImpl(Object[] args) {
-      super("op", "json-object", BaseTypeImpl.convertList(args));
+      super("op", "json-object", args);
     }
   }
-  static class JsonPropertyCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements PlanJsonProperty {
+  static class JsonPropertyCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements PlanJsonProperty {
     JsonPropertyCallImpl(Object[] args) {
-      super("op", "prop", BaseTypeImpl.convertList(args));
+      super("op", "prop", args);
     }
   }
-  static class JsonArrayCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements ArrayNodeExpr, JsonContentCallImpl {
+  static class JsonArrayCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements ArrayNodeExpr, JsonContentCallImpl {
     JsonArrayCallImpl(Object[] args) {
-      super("op", "json-array", BaseTypeImpl.convertList(args));
+      super("op", "json-array", args);
     }
   }
 
-  static class XmlAttributeSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements AttributeNodeSeqExpr {
-    XmlAttributeSeqListImpl(AttributeNodeExpr[] items) {
+  static class XmlAttributeSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements AttributeNodeSeqExpr {
+    XmlAttributeSeqListImpl(ServerExpression[] items) {
       super(Arrays.copyOf(items, items.length, XmlAttributeCallImpl[].class));
     }
   }
 
   static interface XmlContentCallImpl  extends XmlContentNodeExpr,  BaseTypeImpl.BaseArgImpl {}
-  static class XmlContentSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> {
+  static class XmlContentSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl {
     XmlContentSeqListImpl(XmlContentNodeExpr[] items) {
       super(Arrays.copyOf(items, items.length, BaseTypeImpl.NodeCallImpl[].class));
     }
   }
 
-  static class XmlElementCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements ElementNodeExpr, XmlContentCallImpl {
+/* TODO: DELETE
+  static class XmlElementCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements ElementNodeExpr, XmlContentCallImpl {
     XmlElementCallImpl(Object[] args) {
-      super("op", "xml-element", BaseTypeImpl.convertList(args));
+      super("op", "xml-element", args);
     }
   }
-  static class XmlAttributeCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements AttributeNodeExpr {
+ */
+  static class XmlAttributeCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements AttributeNodeExpr {
     XmlAttributeCallImpl(Object[] args) {
-      super("op", "xml-attribute", BaseTypeImpl.convertList(args));
+      super("op", "xml-attribute", args);
     }
   }
 

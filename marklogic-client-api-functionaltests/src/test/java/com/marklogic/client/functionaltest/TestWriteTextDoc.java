@@ -16,14 +16,17 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
-import org.junit.*;
 
 public class TestWriteTextDoc extends BasicJavaClientREST
 {
@@ -40,7 +43,8 @@ public class TestWriteTextDoc extends BasicJavaClientREST
   @Test
   public void testWriteTextDoc()
   {
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8015, "admin", "admin", Authentication.DIGEST);
+	SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("admin", "admin");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8015, secContext, getConnType());
 
     String docId = "/foo/test/myFoo.txt";
     TextDocumentManager docMgr = client.newTextDocumentManager();

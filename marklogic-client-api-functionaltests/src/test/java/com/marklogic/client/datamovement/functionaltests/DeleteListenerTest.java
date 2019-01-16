@@ -33,18 +33,15 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.DeleteListener;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.UrisToWriterListener;
 import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
-import com.marklogic.client.impl.DatabaseClientImpl;
+import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
@@ -87,7 +84,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     hostNames = getHosts();
     createDB(dbName);
     Thread.currentThread().sleep(500L);
-  //Ensure db has atleast one forest
+  //Ensure DB has at-least one forest
 	createForestonHost(dbName + "-" + forestCount, dbName, hostNames[0]);
 	forestCount++;
 	for (String forestHost : hostNames) {
@@ -106,7 +103,6 @@ public class DeleteListenerTest extends BasicJavaClientREST {
 	}
 
     dbClient = getDatabaseClient(user, password, getConnType());
-    DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
     dmManager = dbClient.newDataMovementManager();
 
     // JacksonHandle
@@ -402,7 +398,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     if (failures2.length() > 0)
       fail(failures2.toString());
 
-    assertEquals("There should be 0 documents in t++he db",
+    assertEquals("There should be 0 documents in the db",
         0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 
     DocumentPage page = dbClient.newDocumentManager().read("/local/json-1998");

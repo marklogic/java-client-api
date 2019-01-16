@@ -29,6 +29,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 
 import org.junit.After;
@@ -40,7 +41,6 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -63,7 +63,6 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
-import javax.xml.transform.Source;
 
 /**
  * @author skottam This test is designed to add default meta data bulk writes
@@ -107,7 +106,7 @@ public class TestBulkWriteMetadata1 extends BasicJavaClientREST {
   @Before
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     // create new connection for each test below
-    client = getDatabaseClient("app-user", "password", Authentication.DIGEST);
+    client = getDatabaseClient("app-user", "password", getConnType());
   }
 
   /**

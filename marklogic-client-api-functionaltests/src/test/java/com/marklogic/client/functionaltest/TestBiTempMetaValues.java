@@ -35,7 +35,6 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
 import com.marklogic.client.document.DocumentManager.Metadata;
@@ -159,7 +158,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 
   @Before
   public void setUp() throws Exception {
-    writerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    writerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-user", "x", getConnType());
   }
 
   @After
@@ -743,8 +742,6 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     Calendar updateTime1 = DatatypeConverter.parseDateTime("2007-01-01T00:00:21");
     Calendar updateTime2 = DatatypeConverter.parseDateTime("2009-01-01T00:00:21");
 
-    DatabaseClient adminClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "admin", "x", Authentication.DIGEST);
-
     String docId = "javaSingleJSONDoc.json";
     JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle("2001-01-01T00:00:00Z",
         "2011-12-30T23:59:59Z",
@@ -801,10 +798,8 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     long startOffset = 1;
     DocumentPage termQueryResults = docMgr.search(periodQuery, startOffset);
 
-    long count = 0;
     String toDeleteURI = null;
     while (termQueryResults.hasNext()) {
-      ++count;
       DocumentRecord record = termQueryResults.next();
       System.out.println("URI = " + record.getUri());
       JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<>(
@@ -1120,12 +1115,11 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
   public void testProtectWipeWithoutPermission() throws Exception {
 
     System.out.println("Inside testProtectWipeWithoutPermission");
-    DatabaseClient adminClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-readeruser", "x", Authentication.DIGEST);
+    DatabaseClient adminClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-readeruser", "x", getConnType());
     ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
         temporalLsqtCollectionName, true);
 
     Calendar insertTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:01");
-    Calendar updateTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:11");
 
     String docId = "javaSingleJSONDoc.json";
     JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle("2001-01-01T00:00:00",
@@ -1157,7 +1151,6 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
   public void testProtectWipe() throws Exception {
 
     System.out.println("Inside testProtectWipe");
-    DatabaseClient adminClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-admin", "x", Authentication.DIGEST);
     ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
         temporalLsqtCollectionName, true);
 
@@ -1172,7 +1165,6 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
         );
 
     JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
-    JSONDocumentManager docMgrProtect = adminClient.newJSONDocumentManager();
 
     docMgr.write(docId, null, handle, null, null, temporalLsqtCollectionName, insertTime);
     Thread.sleep(5000);

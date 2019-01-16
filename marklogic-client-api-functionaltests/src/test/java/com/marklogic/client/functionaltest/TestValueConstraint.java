@@ -30,7 +30,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.ReaderHandle;
@@ -65,7 +64,7 @@ public class TestValueConstraint extends BasicJavaClientREST {
   @Test
   public void testElementValueConstraint() throws KeyManagementException, NoSuchAlgorithmException, IOException
   {
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create doc manager
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -152,7 +151,7 @@ public class TestValueConstraint extends BasicJavaClientREST {
   @Test
   public void testAttributeValueConstraint() throws KeyManagementException, NoSuchAlgorithmException, IOException
   {
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create doc manager
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
