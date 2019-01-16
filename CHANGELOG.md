@@ -5,7 +5,8 @@
 - [#995](https://github.com/marklogic/java-client-api/issues/995) - Support for Kerberos keytab file to authenticate 
 
 #### Improvements and Bug Fixes
-- [#1020](https://github.com/marklogic/java-client-api/issues/1020) - Provide missing DatabaseClientFactory Bean configuration  
+- [#1020](https://github.com/marklogic/java-client-api/issues/1020) - Provide missing DatabaseClientFactory Bean configuration
+- [#1046](https://github.com/marklogic/java-client-api/issues/1046) - Jackson library upgrade to version 2.9.8
 
 ## 4.1.1
 #### New Functionality
