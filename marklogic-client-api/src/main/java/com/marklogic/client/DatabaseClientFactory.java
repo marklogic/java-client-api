@@ -531,9 +531,13 @@ public class DatabaseClientFactory {
 		private SSLContext sslContext;
 		private X509TrustManager trustManager;
 		private SSLHostnameVerifier sslVerifier;
-		private Function<ExpiringSAMLAuth, ExpiringSAMLAuth> authorizer;
-		
-		/**
+		private AuthorizerCallback authorizer;
+		private ExpiringSAMLAuth authorization;
+
+        private RenewerCallback renewer;
+
+
+        /**
          * @return the X509TrustManagerused for authentication.
          */
 		public X509TrustManager getTrustManager() {
@@ -546,8 +550,12 @@ public class DatabaseClientFactory {
 		public SAMLAuthContext(String authorizationToken) {
 			this.token = authorizationToken;
 		}
-		public SAMLAuthContext(Function<ExpiringSAMLAuth, ExpiringSAMLAuth> authorizer) {
+		public SAMLAuthContext(AuthorizerCallback authorizer) {
 			this.authorizer = authorizer;
+		}
+		public SAMLAuthContext(ExpiringSAMLAuth authorization, RenewerCallback renewer) {
+		    this.authorization = authorization;
+		    this.renewer = renewer;
 		}
 		
 		/**
@@ -556,8 +564,14 @@ public class DatabaseClientFactory {
 		public String getToken() {
 			return token;
 		}
-		public Function<ExpiringSAMLAuth, ExpiringSAMLAuth> getAuthorizer() {
+		public AuthorizerCallback getAuthorizer() {
             return authorizer;
+        }
+        public RenewerCallback getRenewer() {
+            return renewer;
+        }
+        public ExpiringSAMLAuth getAuthorization() {
+            return authorization;
         }
 		
 		/**
@@ -595,6 +609,12 @@ public class DatabaseClientFactory {
                 }
             };
         }
+		
+		 @FunctionalInterface
+		 public interface AuthorizerCallback extends Function<ExpiringSAMLAuth, ExpiringSAMLAuth> { }
+		 
+		 @FunctionalInterface
+		 public interface RenewerCallback extends Function<ExpiringSAMLAuth, Instant> { }
 
 		@Override
 		public SAMLAuthContext withSSLContext(SSLContext context, X509TrustManager trustManager) {
