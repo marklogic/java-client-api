@@ -56,14 +56,14 @@ public class HTTPSamlAuthInterceptor implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
         if (authorizer != null) {
-            if ((expiringSAMLAuth == null || threshold <= Instant.now().getEpochSecond())) {
-                authorizeCallback();
+            if(expiringSAMLAuth == null) {
+                authorizeCallbackWrapper(null);
+            } else if(threshold<=Instant.now().getEpochSecond()){
+                authorizeCallbackWrapper(expiringSAMLAuth.getExpiry());
             }
-        } else if (renewer != null && threshold <= Instant.now().getEpochSecond()) {
-                RenewCallback renewExpiry = new RenewCallback(expiringSAMLAuth);
-                if (isCallbackExecuting.compareAndSet(false, true))
-                    Executors.defaultThreadFactory().newThread(renewExpiry).start();
-
+        } else if (renewer != null && threshold <= Instant.now().getEpochSecond() && isCallbackExecuting.compareAndSet(false, true)) {
+                RenewCallbackWrapper renewCallbackWrapper = new RenewCallbackWrapper(expiringSAMLAuth);
+                Executors.defaultThreadFactory().newThread(renewCallbackWrapper).start();
         }
         String samlHeaderValue = RESTServices.AUTHORIZATION_TYPE_SAML + " " + RESTServices.AUTHORIZATION_PARAM_TOKEN
                 + "=" + authorizationTokenValue;
@@ -72,8 +72,14 @@ public class HTTPSamlAuthInterceptor implements Interceptor {
         return chain.proceed(authenticatedRequest);
     }
 
-    private synchronized void authorizeCallback() {
-
+    private synchronized void authorizeCallbackWrapper(Instant expiry) {
+        
+        if(expiry == null && expiringSAMLAuth != null) {
+            return;
+        }
+        if(expiry!=null && expiry!=expiringSAMLAuth.getExpiry()) {
+            return;
+        }
         expiringSAMLAuth = authorizer.apply(expiringSAMLAuth);
         
         if(expiringSAMLAuth == null) {
@@ -98,11 +104,11 @@ public class HTTPSamlAuthInterceptor implements Interceptor {
         threshold = current + ((instant.getEpochSecond() - current) / 2);
     }
 
-    private class RenewCallback implements Runnable {
+    private class RenewCallbackWrapper implements Runnable {
         
         private ExpiringSAMLAuth expiringAuth;
         
-        public RenewCallback(ExpiringSAMLAuth expiringSamlAuth) {
+        public RenewCallbackWrapper(ExpiringSAMLAuth expiringSamlAuth) {
             this.expiringAuth = expiringSamlAuth;
         }
         @Override
