@@ -459,7 +459,11 @@ public class OkHttpServices implements RESTServices {
   public OkHttpClient.Builder configureAuthentication(SAMLAuthContext samlAuthContext, OkHttpClient.Builder clientBuilder) {
       type = Authentication.SAML;
       Interceptor interceptor = null;
-      if(samlAuthContext.getAuthorizer()!=null) {
+      String authorizationTokenValue = samlAuthContext.getToken();
+      
+      if(authorizationTokenValue != null && authorizationTokenValue.length() > 0) {
+          interceptor = new HTTPSamlAuthInterceptor(authorizationTokenValue);
+      } else if(samlAuthContext.getAuthorizer()!=null) {
            interceptor = new HTTPSamlAuthInterceptor(samlAuthContext.getAuthorizer());
       } else if(samlAuthContext.getRenewer()!=null) {
           interceptor = new HTTPSamlAuthInterceptor(samlAuthContext.getAuthorization(),samlAuthContext.getRenewer());

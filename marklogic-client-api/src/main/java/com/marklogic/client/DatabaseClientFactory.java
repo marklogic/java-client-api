@@ -533,9 +533,7 @@ public class DatabaseClientFactory {
 		private SSLHostnameVerifier sslVerifier;
 		private AuthorizerCallback authorizer;
 		private ExpiringSAMLAuth authorization;
-
-        private RenewerCallback renewer;
-
+		private RenewerCallback renewer;
 
         /**
          * @return the X509TrustManagerused for authentication.
