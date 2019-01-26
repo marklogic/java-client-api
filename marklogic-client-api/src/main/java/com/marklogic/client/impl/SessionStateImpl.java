@@ -29,7 +29,7 @@ public class SessionStateImpl implements SessionState {
    private AtomicBoolean setCreatedTimestamp;
    private Calendar created;
 
-   protected SessionStateImpl() {
+   public SessionStateImpl() {
       sessionId = Long.toUnsignedString(ThreadLocalRandom.current().nextLong(), 16);
       cookies = new ArrayList<>();
       setCreatedTimestamp = new AtomicBoolean(false);

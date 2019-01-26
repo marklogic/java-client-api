@@ -63,6 +63,8 @@ public class Common {
   final public static int     MODULES_WAIT  = Integer.parseInt(System.getProperty("TEST_MODULES_WAIT",  WITH_WAIT ? "1200" : "0"));
   final public static int     PROPERTY_WAIT = Integer.parseInt(System.getProperty("TEST_PROPERTY_WAIT", WITH_WAIT ? "8200" : "0"));
 
+  final public static int DATA_SERVICE_PORT = Integer.parseInt(System.getProperty("TEST_DATA_SERVICE_PORT", "8016"));
+
   final public static DatabaseClient.ConnectionType CONNECTION_TYPE =
       DatabaseClient.ConnectionType.valueOf(System.getProperty("TEST_CONNECT_TYPE", "DIRECT"));
 
@@ -73,48 +75,60 @@ public class Common {
   public static DatabaseClient serverAdminClient;
   public static DatabaseClient evalClient;
   public static DatabaseClient readOnlyClient;
+  public static DatabaseClient dataServiceClient;
 
   public static DatabaseClient connect() {
-    if (client != null) return client;
-    client = newClient();
+    if (client == null)
+      client = newClient();
     return client;
   }
   public static DatabaseClient connectAdmin() {
-    if (adminClient != null) return adminClient;
-    adminClient = newAdminClient();
+    if (adminClient == null)
+      adminClient = newAdminClient();
     return adminClient;
   }
   public static DatabaseClient connectServerAdmin() {
-    if (serverAdminClient != null) return serverAdminClient;
-    serverAdminClient = newServerAdminClient();
+    if (serverAdminClient == null)
+      serverAdminClient = newServerAdminClient();
     return serverAdminClient;
   }
   public static DatabaseClient connectEval() {
-    if (evalClient != null) return evalClient;
-    evalClient = newEvalClient();
+    if (evalClient == null)
+      evalClient = newEvalClient();
     return evalClient;
   }
   public static DatabaseClient connectReadOnly() {
-    if (readOnlyClient != null) return readOnlyClient;
-    readOnlyClient = newReadOnlyClient();
+    if (readOnlyClient == null)
+      readOnlyClient = newReadOnlyClient();
     return readOnlyClient;
+  }
+  public static DatabaseClient connectDataService() {
+    if (dataServiceClient == null)
+      dataServiceClient = newDataServiceClient();
+    return dataServiceClient;
   }
   public static DatabaseClient newClient() {
     return newClient(null);
   }
   public static DatabaseClient newClient(String databaseName) {
     return DatabaseClientFactory.newClient(Common.HOST, Common.PORT, databaseName,
-      new DatabaseClientFactory.DigestAuthContext(Common.USER, Common.PASS),
+        new DatabaseClientFactory.DigestAuthContext(Common.USER, Common.PASS),
           CONNECTION_TYPE);
   }
   public static DatabaseClient newAdminClient() {
-    return DatabaseClientFactory.newClient(
-      Common.HOST, Common.PORT, new DigestAuthContext(Common.REST_ADMIN_USER, Common.REST_ADMIN_PASS),
+    return newAdminClient(null);
+  }
+  public static DatabaseClient newAdminClient(String databaseName) {
+    return DatabaseClientFactory.newClient(Common.HOST, Common.PORT, databaseName,
+       new DigestAuthContext(Common.REST_ADMIN_USER, Common.REST_ADMIN_PASS),
           CONNECTION_TYPE);
   }
   public static DatabaseClient newServerAdminClient() {
-    return DatabaseClientFactory.newClient(
-      Common.HOST, Common.PORT, new DigestAuthContext(Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS),
+    return newServerAdminClient(null);
+  }
+  public static DatabaseClient newServerAdminClient(String databaseName) {
+    return DatabaseClientFactory.newClient(Common.HOST, Common.PORT, databaseName,
+       new DigestAuthContext(Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS),
           CONNECTION_TYPE);
   }
   public static DatabaseClient newEvalClient() {
@@ -129,6 +143,11 @@ public class Common {
     return DatabaseClientFactory.newClient(
       Common.HOST, Common.PORT, new DigestAuthContext(Common.READ_ONLY_USER, Common.READ_ONLY_PASS),
           CONNECTION_TYPE);
+  }
+  public static DatabaseClient newDataServiceClient() {
+    return DatabaseClientFactory.newClient(Common.HOST, Common.DATA_SERVICE_PORT,
+            new DatabaseClientFactory.DigestAuthContext(Common.USER, Common.PASS),
+            CONNECTION_TYPE);
   }
 
   public static byte[] streamToBytes(InputStream is) throws IOException {
