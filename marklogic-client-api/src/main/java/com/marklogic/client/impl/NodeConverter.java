@@ -36,6 +36,8 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class NodeConverter {
@@ -70,63 +72,169 @@ public class NodeConverter {
    }
 
    static public BinaryWriteHandle BinaryWriter(BinaryWriteHandle handle) {
-      return (handle == null) ? null : withFormat(handle, Format.BINARY, BinaryWriteHandle.class);
+      return (handle == null) ? null : withFormat(handle, Format.BINARY);
    }
    static public Stream<BinaryWriteHandle> BinaryWriter(Stream<? extends BinaryWriteHandle> handles) {
       return (handles == null) ? null : handles.map(NodeConverter::BinaryWriter);
    }
    static public BinaryReadHandle BinaryReader(BinaryReadHandle handle) {
-      return (handle == null) ? null : withFormat(handle, Format.BINARY, BinaryReadHandle.class);
+      return (handle == null) ? null : withFormat(handle, Format.BINARY);
    }
    static public Stream<BinaryReadHandle> BinaryReader(Stream<? extends BinaryReadHandle> handles) {
       return (handles == null) ? null : handles.map(NodeConverter::BinaryReader);
    }
    static public JSONWriteHandle JSONWriter(JSONWriteHandle handle) {
-      return (handle == null) ? null : withFormat(handle, Format.JSON, JSONWriteHandle.class);
+      return (handle == null) ? null : withFormat(handle, Format.JSON);
    }
    static public Stream<JSONWriteHandle> JSONWriter(Stream<? extends JSONWriteHandle> handles) {
       return (handles == null) ? null : handles.map(NodeConverter::JSONWriter);
    }
    static public JSONReadHandle JSONReader(JSONReadHandle handle) {
-      return (handle == null) ? null : withFormat(handle, Format.JSON, JSONReadHandle.class);
+      return (handle == null) ? null : withFormat(handle, Format.JSON);
    }
    static public Stream<JSONReadHandle> JSONReader(Stream<? extends JSONReadHandle> handles) {
       return (handles == null) ? null : handles.map(NodeConverter::JSONReader);
    }
    static public TextWriteHandle TextWriter(TextWriteHandle handle) {
-      return (handle == null) ? null : withFormat(handle, Format.TEXT, TextWriteHandle.class);
+      return (handle == null) ? null : withFormat(handle, Format.TEXT);
    }
    static public Stream<TextWriteHandle> TextWriter(Stream<? extends TextWriteHandle> handles) {
       return (handles == null) ? null : handles.map(NodeConverter::TextWriter);
    }
    static public TextReadHandle TextReader(TextReadHandle handle) {
-      return (handle == null) ? null : withFormat(handle, Format.TEXT, TextReadHandle.class);
+      return (handle == null) ? null : withFormat(handle, Format.TEXT);
    }
    static public Stream<TextReadHandle> TextReader(Stream<? extends TextReadHandle> handles) {
       return (handles == null) ? null : handles.map(NodeConverter::TextReader);
    }
    static public XMLWriteHandle XMLWriter(XMLWriteHandle handle) {
-      return (handle == null) ? null : withFormat(handle, Format.XML, XMLWriteHandle.class);
+      return (handle == null) ? null : withFormat(handle, Format.XML);
    }
    static public Stream<XMLWriteHandle> XMLWriter(Stream<? extends XMLWriteHandle> handles) {
       return (handles == null) ? null : handles.map(NodeConverter::XMLWriter);
    }
    static public XMLReadHandle XMLReader(XMLReadHandle handle) {
-      return (handle == null) ? null : withFormat(handle, Format.XML, XMLReadHandle.class);
+      return (handle == null) ? null : withFormat(handle, Format.XML);
    }
    static public Stream<XMLReadHandle> XMLReader(Stream<? extends XMLReadHandle> handles) {
       return (handles == null) ? null : handles.map(NodeConverter::XMLReader);
    }
-   static private <T> T withFormat(T handle, Format format, Class<T> as) {
+   static public <T> T withFormat(T handle, Format format) {
       if (handle != null) {
          if (!(handle instanceof BaseHandle)) {
             throw new IllegalArgumentException(
-                  "cannot set format on handle of "+handle.getClass().getName()
+                    "cannot set format on handle of "+handle.getClass().getName()
             );
          }
-         ((BaseHandle) handle).setFormat(format);
+         if (format != null) {
+            ((BaseHandle) handle).setFormat(format);
+         }
       }
       return handle;
+   }
+   static public <T extends AbstractWriteHandle> Stream<T> streamWithFormat(Stream<T> handles, Format format) {
+      if (handles == null || format == null) {
+         return handles;
+      }
+      final Formatter<T> formatter = new Formatter(format);
+      return handles.map(formatter);
+   }
+   static private class Formatter<T extends AbstractWriteHandle> implements Function<T,T> {
+      private Format format;
+      Formatter(Format format) {
+         this.format = format;
+      }
+      @Override
+      public T apply(T handle) {
+         return NodeConverter.withFormat(handle, format);
+      }
+   }
+
+   static public AbstractWriteHandle ObjectToHandle(Object value, Format format) {
+      if (value == null) {
+        return null;
+      } else if (value instanceof byte[]) {
+        return BytesObjectToHandle(value, format);
+      } else if (value instanceof File) {
+        return FileObjectToHandle(value, format);
+      } else if (value instanceof InputStream) {
+        return InputStreamObjectToHandle(value, format);
+      } else if (value instanceof Reader) {
+        return ReaderObjectToHandle(value, format);
+      } else if (value instanceof String) {
+        return StringObjectToHandle(value, format);
+      }
+      throw new IllegalArgumentException(
+          "unsupported value argument "+value.getClass().getCanonicalName()+
+          ", expected byte[], File, InputStream, Reader, or String"
+      );
+   }
+   static private BytesHandle BytesObjectToHandle(Object value, Format format) {
+     return BytesToHandle((byte[]) value).withFormat(format);
+   }
+   static private FileHandle FileObjectToHandle(Object value, Format format) {
+     return FileToHandle((File) value).withFormat(format);
+   }
+   static private InputStreamHandle InputStreamObjectToHandle(Object value, Format format) {
+     return InputStreamToHandle((InputStream) value).withFormat(format);
+   }
+   static private ReaderHandle ReaderObjectToHandle(Object value, Format format) {
+     return ReaderToHandle((Reader) value).withFormat(format);
+   }
+   static private StringHandle StringObjectToHandle(Object value, Format format) {
+     return StringToHandle((String) value).withFormat(format);
+   }
+
+   static public Stream<? extends AbstractWriteHandle> ObjectToHandle(Stream<?> values, Format format) {
+     if (values == null) {
+       return null;
+     }
+     final ObjectHandler handler = new ObjectHandler(format);
+     return values.map(handler::toHandle);
+   }
+   static private class ObjectHandler {
+     private Format format;
+     private BiFunction<Object, Format, ? extends AbstractWriteHandle> toHandler = null;
+     private Class<?> itemType = null;
+     ObjectHandler(Format format) {
+       this.format = format;
+     }
+     AbstractWriteHandle toHandle(Object value) {
+       if (value == null) {
+         return null;
+       } else if (toHandler == null || itemType == null) {
+         init(value);
+       } else if (!itemType.isInstance(value)) {
+         throw new IllegalArgumentException(
+             "inconsistent stream - expected instance of "+itemType.getSimpleName()+
+             " but received "+value.getClass().getCanonicalName()
+         );
+       }
+       return toHandler.apply(value, format);
+     }
+     private synchronized void init(Object value) {
+       if (value instanceof byte[]) {
+         toHandler = NodeConverter::BytesObjectToHandle;
+         itemType  = byte[].class;
+       } else if (value instanceof File) {
+         toHandler = NodeConverter::FileObjectToHandle;
+         itemType  = File.class;
+       } else if (value instanceof InputStream) {
+         toHandler = NodeConverter::InputStreamObjectToHandle;
+         itemType  = InputStream.class;
+       } else if (value instanceof Reader) {
+         toHandler = NodeConverter::ReaderObjectToHandle;
+         itemType  = Reader.class;
+       } else if (value instanceof String) {
+         toHandler = NodeConverter::StringObjectToHandle;
+         itemType  = String.class;
+       } else {
+         throw new IllegalArgumentException(
+            "unsupported stream item argument "+value.getClass().getCanonicalName()+
+            ", expected byte[], File, InputStream, Reader, or String"
+         );
+       }
+     }
    }
 
    static public BytesHandle BytesToHandle(byte[] value) {
@@ -352,5 +460,33 @@ public class NodeConverter {
       } catch (IOException e) {
          throw new RuntimeException(e);
       }
+   }
+
+   static public JsonNode ObjectToJsonNode(Object jsonTree) {
+      try {
+         if (jsonTree == null || jsonTree instanceof JsonNode) {
+            return (JsonNode) jsonTree;
+         }
+
+         ObjectMapper mapper = new ObjectMapper();
+         if (jsonTree instanceof byte[]) {
+            return mapper.readTree((byte[]) jsonTree);
+         } else if (jsonTree instanceof File) {
+            return mapper.readTree((File) jsonTree);
+         } else if (jsonTree instanceof JsonParser) {
+            return mapper.readTree((JsonParser) jsonTree);
+         } else if (jsonTree instanceof InputStream) {
+            return mapper.readTree((InputStream) jsonTree);
+         } else if (jsonTree instanceof Reader) {
+            return mapper.readTree((Reader) jsonTree);
+         } else if (jsonTree instanceof String) {
+            return mapper.readTree((String) jsonTree);
+         }
+      } catch (IOException e) {
+         throw new RuntimeException(e);
+      }
+      throw new IllegalArgumentException(
+              "Could not convert JSON of class: "+jsonTree.getClass().getCanonicalName()+"\n"+jsonTree.toString()
+      );
    }
 }

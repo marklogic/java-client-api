@@ -302,6 +302,13 @@ public class ValueConverter {
     return (T) convertToJava(type, value);
   }
 
+  static public String ObjectToString(Object value) {
+    return (value == null || value instanceof String) ? (String) value : value.toString();
+  }
+  static public Stream<String> ObjectToString(Stream<?> values) {
+    return (values == null) ? null : values.map(ValueConverter::ObjectToString);
+  }
+
   static public String BigDecimalToString(BigDecimal value) {
     return (value == null) ? null : DatatypeConverter.printDecimal(value);
   }
