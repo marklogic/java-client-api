@@ -24,10 +24,8 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.dataservices.CallManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.impl.NodeConverter;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.*;
+import com.marklogic.client.io.marker.*;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.test.Common;
@@ -146,7 +144,6 @@ public class CallManagerTest {
 
         adminClient.release();
     }
-
 
     private static void setupParamNoReturnEndpoint(
             JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
@@ -647,7 +644,13 @@ public class CallManagerTest {
         };
 
         testNode(functionName, callableEndpoint, values);
-        // TODO: BinarytWriteHandle
+
+// TODO: File
+
+        BytesHandle[] values2 = convert(values, CallManagerTest::BytesHandle, BytesHandle.class);
+        CallManager.ManyCaller<BinaryReadHandle> caller4 =
+                makeManyCaller(callableEndpoint, BinaryReadHandle.class).param("param1", values2);
+        testConvertedCall(functionName, caller4, values, CallManagerTest::string);
     }
     @Test
     public void testJsonDocument() {
@@ -659,17 +662,22 @@ public class CallManagerTest {
 
         testCharacterNode(functionName, callableEndpoint, values);
 
-        JsonNode[] values2 = convert(values, CallManagerTest::jsonNode, JsonNode.class);
-        CallManager.ManyCaller<JsonNode> caller =
-                makeManyCaller(callableEndpoint, JsonNode.class).param("param1", values2);
-        testConvertedCall(functionName, caller, values, CallManagerTest::string);
+// TODO: File
 
-        JsonParser[] values3 = convert(values, CallManagerTest::jsonParser, JsonParser.class);
-        CallManager.ManyCaller<JsonParser> caller2 =
-                makeManyCaller(callableEndpoint, JsonParser.class).param("param1", values3);
+        JsonNode[] values2 = convert(values, CallManagerTest::jsonNode, JsonNode.class);
+        CallManager.ManyCaller<JsonNode> caller2 =
+                makeManyCaller(callableEndpoint, JsonNode.class).param("param1", values2);
         testConvertedCall(functionName, caller2, values, CallManagerTest::string);
 
-        // TODO: JsonWriteHandle
+        JsonParser[] values3 = convert(values, CallManagerTest::jsonParser, JsonParser.class);
+        CallManager.ManyCaller<JsonParser> caller3 =
+                makeManyCaller(callableEndpoint, JsonParser.class).param("param1", values3);
+        testConvertedCall(functionName, caller3, values, CallManagerTest::string);
+
+        StringHandle[] values4 = convert(values, StringHandle::new, StringHandle.class);
+        CallManager.ManyCaller<JSONReadHandle> caller4 =
+                makeManyCaller(callableEndpoint, JSONReadHandle.class).param("param1", values4);
+        testConvertedCall(functionName, caller4, values, CallManagerTest::string);
     }
     @Test
     public void testArray() {
@@ -683,16 +691,19 @@ public class CallManagerTest {
         testCharacterNode(functionName, callableEndpoint, valuesSpaced);
 
         JsonNode[] values2 = convert(valuesUnspaced, CallManagerTest::jsonNode, JsonNode.class);
-        CallManager.ManyCaller<JsonNode> caller =
+        CallManager.ManyCaller<JsonNode> caller2 =
                 makeManyCaller(callableEndpoint, JsonNode.class).param("param1", values2);
-        testConvertedCall(functionName, caller, valuesUnspaced, CallManagerTest::string);
-
-        JsonParser[] values3 = convert(valuesUnspaced, CallManagerTest::jsonParser, JsonParser.class);
-        CallManager.ManyCaller<JsonParser> caller2 =
-                makeManyCaller(callableEndpoint, JsonParser.class).param("param1", values3);
         testConvertedCall(functionName, caller2, valuesUnspaced, CallManagerTest::string);
 
-        // TODO: JsonWriteHandle
+        JsonParser[] values3 = convert(valuesUnspaced, CallManagerTest::jsonParser, JsonParser.class);
+        CallManager.ManyCaller<JsonParser> caller3 =
+                makeManyCaller(callableEndpoint, JsonParser.class).param("param1", values3);
+        testConvertedCall(functionName, caller3, valuesUnspaced, CallManagerTest::string);
+
+        StringHandle[] values4 = convert(valuesSpaced, StringHandle::new, StringHandle.class);
+        CallManager.ManyCaller<JSONReadHandle> caller4 =
+                makeManyCaller(callableEndpoint, JSONReadHandle.class).param("param1", values4);
+        testConvertedCall(functionName, caller4, valuesSpaced, CallManagerTest::string);
     }
     @Test
     public void testTwoNode() {
@@ -717,16 +728,19 @@ public class CallManagerTest {
         testCharacterNode(functionName, callableEndpoint, values);
 
         JsonNode[] values2 = convert(values, CallManagerTest::jsonNode, JsonNode.class);
-        CallManager.ManyCaller<JsonNode> caller =
+        CallManager.ManyCaller<JsonNode> caller2 =
                 makeManyCaller(callableEndpoint, JsonNode.class).param("param1", values2);
-        testConvertedCall(functionName, caller, values, CallManagerTest::string);
-
-        JsonParser[] values3 = convert(values, CallManagerTest::jsonParser, JsonParser.class);
-        CallManager.ManyCaller<JsonParser> caller2 =
-                makeManyCaller(callableEndpoint, JsonParser.class).param("param1", values3);
         testConvertedCall(functionName, caller2, values, CallManagerTest::string);
 
-        // TODO: JsonWriteHandle
+        JsonParser[] values3 = convert(values, CallManagerTest::jsonParser, JsonParser.class);
+        CallManager.ManyCaller<JsonParser> caller3 =
+                makeManyCaller(callableEndpoint, JsonParser.class).param("param1", values3);
+        testConvertedCall(functionName, caller3, values, CallManagerTest::string);
+
+        StringHandle[] values4 = convert(values, StringHandle::new, StringHandle.class);
+        CallManager.ManyCaller<JSONReadHandle> caller4 =
+                makeManyCaller(callableEndpoint, JSONReadHandle.class).param("param1", values4);
+        testConvertedCall(functionName, caller4, values, CallManagerTest::string);
     }
     @Test
     public void testSingleNode() {
@@ -739,16 +753,19 @@ public class CallManagerTest {
         testCharacterNode(functionName, callableEndpoint, value);
 
         JsonNode value2 = jsonNode(value);
-        CallManager.OneCaller<JsonNode> caller =
+        CallManager.OneCaller<JsonNode> caller2 =
                 makeOneCaller(callableEndpoint, JsonNode.class).param("param1", value2);
-        testConvertedCall(functionName, caller, value, CallManagerTest::string);
-
-        JsonParser value3 = jsonParser(value);
-        CallManager.OneCaller<JsonParser> caller2 =
-                makeOneCaller(callableEndpoint, JsonParser.class).param("param1", value3);
         testConvertedCall(functionName, caller2, value, CallManagerTest::string);
 
-        // TODO: JsonWriteHandle
+        JsonParser value3 = jsonParser(value);
+        CallManager.OneCaller<JsonParser> caller3 =
+                makeOneCaller(callableEndpoint, JsonParser.class).param("param1", value3);
+        testConvertedCall(functionName, caller3, value, CallManagerTest::string);
+
+        StringHandle value4 = new StringHandle(value);
+        CallManager.OneCaller<JSONReadHandle> caller4 =
+                makeOneCaller(callableEndpoint, JSONReadHandle.class).param("param1", value4);
+        testConvertedCall(functionName, caller4, value, CallManagerTest::string);
     }
     @Test
     public void testTextDocument() {
@@ -760,7 +777,12 @@ public class CallManagerTest {
 
         testCharacterNode(functionName, callableEndpoint, values);
 
-        // TODO: TexttWriteHandle
+// TODO: File
+
+        StringHandle[] values2 = convert(values, StringHandle::new, StringHandle.class);
+        CallManager.ManyCaller<TextReadHandle> caller2 =
+                makeManyCaller(callableEndpoint, TextReadHandle.class).param("param1", values2);
+        testConvertedCall(functionName, caller2, values, CallManagerTest::string);
     }
     @Test
     public void testMultipleNullNode() {
@@ -785,7 +807,7 @@ public class CallManagerTest {
                 makeManyCaller(callableEndpoint, byte[].class).param("param1", values2);
         testConvertedCall(functionName, caller2, values, CallManagerTest::xmlString);
 
-        // TODO: File
+// TODO: File
 
         InputStream[] values3 = convert(values, CallManagerTest::inputStream, InputStream.class);
         CallManager.ManyCaller<InputStream> caller3 =
@@ -826,7 +848,10 @@ public class CallManagerTest {
                 makeManyCaller(callableEndpoint, XMLStreamReader.class).param("param1", values10);
         testConvertedCall(functionName, caller10, values, CallManagerTest::string);
 
-        // TODO: XmltWriteHandle
+        StringHandle[] values11 = convert(values, StringHandle::new, StringHandle.class);
+        CallManager.ManyCaller<XMLReadHandle> caller11 =
+                makeManyCaller(callableEndpoint, XMLReadHandle.class).param("param1", values11);
+        testConvertedCall(functionName, caller11, values, CallManagerTest::xmlString);
     }
     @Test
     public void testNullNode() {
@@ -842,21 +867,16 @@ public class CallManagerTest {
         testCall(functionName, makeOneCaller(callableEndpoint, Source.class));
         testCall(functionName, makeOneCaller(callableEndpoint, XMLEventReader.class));
         testCall(functionName, makeOneCaller(callableEndpoint, XMLStreamReader.class));
-
-        // TODO: XmltWriteHandle
+        testCall(functionName, makeOneCaller(callableEndpoint, XMLReadHandle.class));
     }
 
     private void testNodeMany(String functionName, CallManager.CallableEndpoint callableEndpoint) {
         testCall(functionName, makeManyCaller(callableEndpoint, byte[].class));
 
-        // TODO: File
-
         testCall(functionName, makeManyCaller(callableEndpoint, InputStream.class));
     }
     private void testNodeOne(String functionName, CallManager.CallableEndpoint callableEndpoint) {
         testCall(functionName, makeOneCaller(callableEndpoint, byte[].class));
-
-        // TODO: File
 
         testCall(functionName, makeOneCaller(callableEndpoint, InputStream.class));
     }
@@ -865,8 +885,6 @@ public class CallManagerTest {
         CallManager.OneCaller<byte[]> caller2 =
                 makeOneCaller(callableEndpoint, byte[].class).param("param1", value2);
         testConvertedCall(functionName, caller2, value, CallManagerTest::string);
-
-        // TODO: File
 
         InputStream value3 = inputStream(value);
         CallManager.OneCaller<InputStream> caller3 =
@@ -878,8 +896,6 @@ public class CallManagerTest {
         CallManager.ManyCaller<byte[]> caller2 =
                 makeManyCaller(callableEndpoint, byte[].class).param("param1", values2);
         testConvertedCall(functionName, caller2, values, CallManagerTest::string);
-
-        // TODO: File
 
         InputStream[] values3 = convert(values, CallManagerTest::inputStream, InputStream.class);
         CallManager.ManyCaller<InputStream> caller3 =
@@ -928,6 +944,9 @@ public class CallManagerTest {
     private static byte[] bytes(String value) {
         return value.getBytes(Charset.forName("UTF-8"));
     }
+    private static BytesHandle BytesHandle(String value) {
+        return new BytesHandle(bytes(value));
+    }
     private static Document document(String value) {
         return NodeConverter.InputStreamToDocument(inputStream(value));
     }
@@ -959,11 +978,20 @@ public class CallManagerTest {
     private static Source source(String value) {
         return NodeConverter.ReaderToSource(new StringReader(value));
     }
+    private static String string(BinaryReadHandle value) {
+        return string((InputStreamHandle) value);
+    }
     private static String string(byte[] value) {
         return new String(value, Charset.forName("UTF-8"));
     }
     private static String string(Document value) {
         return string(new DOMSource(value));
+    }
+    private static String string(InputStreamHandle value) {
+        return string(value.get());
+    }
+    private static String string(InputStream value) {
+        return NodeConverter.InputStreamToString(value);
     }
     private static String string(InputSource value) {
         return string(new SAXSource(value));
@@ -990,10 +1018,19 @@ public class CallManagerTest {
             throw new RuntimeException(e);
         }
     }
+    private static String string(JSONReadHandle value) {
+        return string((ReaderHandle) value);
+    }
+    private static String string(ReaderHandle value) {
+        return NodeConverter.ReaderToString(value.get());
+    }
     private static String string(Source value) {
             StringWriter writer = new StringWriter();
             transform(value, new StreamResult(writer));
             return writer.toString();
+    }
+    private static String string(TextReadHandle value) {
+        return string((ReaderHandle) value);
     }
     private static String string(XMLEventReader value) {
         try {
@@ -1023,6 +1060,9 @@ public class CallManagerTest {
     }
     private static String xmlString(String value) {
         return string(new StreamSource(new StringReader(value)));
+    }
+    private static String xmlString(XMLReadHandle value) {
+        return xmlString(((ReaderHandle) value).get());
     }
 
 // TODO: initialize once

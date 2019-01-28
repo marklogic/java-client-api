@@ -26,7 +26,7 @@ import com.marklogic.client.impl.RESTServices.MultipleCallResponse;
 import com.marklogic.client.impl.RESTServices.SingleCallResponse;
 import com.marklogic.client.impl.SessionStateImpl;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.OutputStreamSender;
+import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.marker.*;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -469,7 +469,7 @@ class CallManagerImpl implements CallManager {
         return this;
       }
       @Override
-      public Stream<? extends R> call() {
+      public Stream<R> call() {
         return converter.many(startRequest().responseMultiple(getEndpoint().isNullable(), format));
       }
     }
@@ -673,11 +673,6 @@ class CallManagerImpl implements CallManager {
         return addField(paramdef.getFielder().field(name, paramdef.isNullable(), paramdef.isMultiple(), value));
       }
       @Override
-      public T param(String name, OutputStreamSender... value) {
-        ParamdefImpl paramdef = getParamdef(name);
-        return addField(paramdef.getFielder().field(name, paramdef.isNullable(), paramdef.isMultiple(), value));
-      }
-      @Override
       public T param(String name, Reader... value) {
         ParamdefImpl paramdef = getParamdef(name);
         return addField(paramdef.getFielder().field(name, paramdef.isNullable(), paramdef.isMultiple(), value));
@@ -823,9 +818,6 @@ class CallManagerImpl implements CallManager {
     CallField field(String name, boolean nullable, boolean multiple, OffsetTime[] value) {
       throw new IllegalArgumentException("OffsetTime values not accepted for "+name+" parameter");
     }
-    CallField field(String name, boolean nullable, boolean multiple, OutputStreamSender[] value) {
-      throw new IllegalArgumentException("OutputStreamSender values not accepted for "+name+" parameter");
-    }
     CallField field(String name, boolean nullable, boolean multiple, Reader[] value) {
       throw new IllegalArgumentException("Reader values not accepted for "+name+" parameter");
     }
@@ -900,13 +892,6 @@ class CallManagerImpl implements CallManager {
       return multiple ?
               BaseProxy.documentParam(name, nullable, formatAll(NodeConverter.InputStreamToHandle(Stream.of(value)))) :
               BaseProxy.documentParam(name, nullable, format(NodeConverter.InputStreamToHandle(value[0])));
-    }
-    @Override
-    CallField field(String name, boolean nullable, boolean multiple, OutputStreamSender[] value) {
-      if (isEmpty(name, multiple, value)) return null;
-      return multiple ?
-              BaseProxy.documentParam(name, nullable, formatAll(NodeConverter.OutputStreamSenderToHandle(Stream.of(value)))) :
-              BaseProxy.documentParam(name, nullable, format(NodeConverter.OutputStreamSenderToHandle(value[0])));
     }
   }
   private static abstract class CharacterNodeFieldifier extends NodeFieldifier {

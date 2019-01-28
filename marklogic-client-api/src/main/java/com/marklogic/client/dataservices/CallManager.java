@@ -67,7 +67,7 @@ public interface CallManager {
     }
     interface ManyCaller<R> extends CallBuilder<ManyCaller<R>> {
         // can be called any number of times if the input is retryable
-        Stream<? extends R> call();
+        Stream<R> call();
     }
 
     interface CallBuilder<T extends CallBuilder> {
@@ -92,7 +92,6 @@ public interface CallManager {
         T param(String name, Long... value);
         T param(String name, OffsetDateTime... value);
         T param(String name, OffsetTime... value);
-        T param(String name, OutputStreamSender... value);
         T param(String name, Reader... value);
         T param(String name, Source... value);
         T param(String name, String... value);
