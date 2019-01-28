@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,7 @@ import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.document.DocumentWriteOperation.OperationType;
+import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.impl.Utilities;
@@ -60,6 +62,7 @@ import com.marklogic.client.datamovement.DataMovementException;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.ForestConfiguration;
+import com.marklogic.client.datamovement.JacksonCSVSplitter;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.WriteBatch;
 import com.marklogic.client.datamovement.WriteBatchListener;
@@ -222,6 +225,7 @@ public class WriteBatcherImpl
   private JobTicket jobTicket;
   private Calendar jobStartTime;
   private Calendar jobEndTime;
+  private DocumentMetadataHandle docMetadataHandle;
 
   public WriteBatcherImpl(DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super(moveMgr);
@@ -1331,4 +1335,20 @@ public class WriteBatcherImpl
       return tasks;
     }
   }
+
+
+@Override
+public WriteBatcher withDefaultMetadata(DocumentMetadataHandle handle) {
+    this.docMetadataHandle = handle;
+    return this;
+}
+
+@Override
+public void addAll(Stream<? extends DocumentWriteOperation> operations, JacksonCSVSplitter splitter) {
+    Iterator<? extends DocumentWriteOperation> docWriteItr = operations.iterator();
+    while(docWriteItr.hasNext()) {
+      add(docWriteItr.next());
+      splitter.incrementCount();
+    }
+}
 }

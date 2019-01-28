@@ -16,9 +16,11 @@
 package com.marklogic.client.datamovement;
 
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.ServerTransform;
+import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
@@ -65,6 +67,17 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  * your resource there.</p>
  */
 public interface WriteBatcher extends Batcher {
+    /**
+     * Sets the DocumentMetadataHandle for write operations.
+     * @param handle the passed in DocumentMetadataHandle
+     */
+    WriteBatcher withDefaultMetadata(DocumentMetadataHandle handle);
+    
+    /**
+     * Writes a document to the database for each row in the csv and keeps track of the number of documents written.
+     * @param operations is the DocumentWriteOperation stream passed in.
+     */
+    void addAll(Stream<? extends DocumentWriteOperation> operations, JacksonCSVSplitter splitter);
   /**
    * <p>Add a document to be batched then written to the server when a batch is full
    * or {@link #flushAsync} or {@link #flushAndWait} is called.</p>
