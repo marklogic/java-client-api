@@ -15,6 +15,11 @@
  */
 package com.marklogic.client.document;
 
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
@@ -85,4 +90,88 @@ public interface DocumentWriteOperation {
    * @return the logical temporal document URI
    */
   String getTemporalDocumentURI();
+  
+  /**
+   * The from method prepares each content object for writing as a document including generating a URI by inserting a UUID.
+   * @param a subclass of AbstractWriteHandle
+   * @param DocumentUriMaker which internally accepts an AbstractWriteHandle and returns a String
+   * @return a stream of DocumentWriteOperation to be written in the database.
+   */
+    public static Stream<DocumentWriteOperation> from(Stream<? extends AbstractWriteHandle> content,
+            final DocumentUriMaker uriMaker) {
+        final class DocumentWriteOperationImpl implements DocumentWriteOperation {
+            public DocumentWriteOperationImpl(AbstractWriteHandle content, String uri) {
+                this.content = content;
+                this.uri = uri;
+            }
+
+            private AbstractWriteHandle content;
+            private String uri;
+
+            @Override
+            public OperationType getOperationType() {
+                return null;
+            }
+
+            @Override
+            public String getUri() {
+                return uri;
+            }
+
+            @Override
+            public DocumentMetadataWriteHandle getMetadata() {
+                return null;
+            }
+
+            @Override
+            public AbstractWriteHandle getContent() {
+                return content;
+            }
+
+            @Override
+            public String getTemporalDocumentURI() {
+                return null;
+            }
+
+        }
+        final class WrapperImpl {
+            DocumentWriteOperation mapper(AbstractWriteHandle content) {
+                String uri = uriMaker.apply(content);
+                if (uri == null)
+                    throw new MarkLogicInternalException("Uri could not be created");
+                return new DocumentWriteOperationImpl(content, uri);
+            }
+
+        }
+        WrapperImpl wrapperImpl = new WrapperImpl();
+        return content.map(wrapperImpl::mapper);
+
+    }
+
+    /**
+     * The uriMaker method creates a uri for each document written in the database
+     * @param format refers to the pattern passed.
+     * @return DocumentUriMaker which contains the formatted uri for the new document.
+     */
+    public static DocumentUriMaker uriMaker(String format) {
+
+        final class FormatUriMaker {
+            private String formatter;
+
+            FormatUriMaker(String format) {
+                this.formatter = format;
+            }
+
+            String makeUri(AbstractWriteHandle content) {
+                return String.format(formatter, UUID.randomUUID());
+            }
+        }
+        FormatUriMaker formatUriMaker = new FormatUriMaker(format);
+
+        return formatUriMaker::makeUri;
+    }
+
+    @FunctionalInterface
+    public interface DocumentUriMaker extends Function<AbstractWriteHandle, String> {
+    }
 }
