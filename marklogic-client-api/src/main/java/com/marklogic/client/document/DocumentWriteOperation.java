@@ -99,14 +99,19 @@ public interface DocumentWriteOperation {
    */
     public static Stream<DocumentWriteOperation> from(Stream<? extends AbstractWriteHandle> content,
             final DocumentUriMaker uriMaker) {
+        if(content == null || uriMaker == null)
+            throw new IllegalArgumentException("Content and/or Uri maker cannot be null");
+        
         final class DocumentWriteOperationImpl implements DocumentWriteOperation {
+            
+            private AbstractWriteHandle content;
+            private String uri;
+            
             public DocumentWriteOperationImpl(AbstractWriteHandle content, String uri) {
                 this.content = content;
                 this.uri = uri;
             }
 
-            private AbstractWriteHandle content;
-            private String uri;
 
             @Override
             public OperationType getOperationType() {
@@ -135,15 +140,19 @@ public interface DocumentWriteOperation {
 
         }
         final class WrapperImpl {
+            private DocumentUriMaker docUriMaker;
+            WrapperImpl(DocumentUriMaker uriMaker){
+                this.docUriMaker = uriMaker;
+            }
             DocumentWriteOperation mapper(AbstractWriteHandle content) {
-                String uri = uriMaker.apply(content);
+                String uri = docUriMaker.apply(content);
                 if (uri == null)
                     throw new MarkLogicInternalException("Uri could not be created");
                 return new DocumentWriteOperationImpl(content, uri);
             }
 
         }
-        WrapperImpl wrapperImpl = new WrapperImpl();
+        WrapperImpl wrapperImpl = new WrapperImpl(uriMaker);
         return content.map(wrapperImpl::mapper);
 
     }
@@ -153,17 +162,20 @@ public interface DocumentWriteOperation {
      * @param format refers to the pattern passed.
      * @return DocumentUriMaker which contains the formatted uri for the new document.
      */
-    public static DocumentUriMaker uriMaker(String format) {
+    public static DocumentUriMaker uriMaker(String format) throws IllegalArgumentException{
 
+        if(format == null || format.length() == 0)
+            throw new IllegalArgumentException("Format cannot be null or empty");
+        
         final class FormatUriMaker {
-            private String formatter;
+            private String uriFormat;
 
             FormatUriMaker(String format) {
-                this.formatter = format;
+                this.uriFormat = format;
             }
 
             String makeUri(AbstractWriteHandle content) {
-                return String.format(formatter, UUID.randomUUID());
+                return String.format(uriFormat, UUID.randomUUID());
             }
         }
         FormatUriMaker formatUriMaker = new FormatUriMaker(format);

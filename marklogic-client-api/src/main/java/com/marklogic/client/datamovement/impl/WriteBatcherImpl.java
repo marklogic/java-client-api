@@ -62,7 +62,6 @@ import com.marklogic.client.datamovement.DataMovementException;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.ForestConfiguration;
-import com.marklogic.client.datamovement.JacksonCSVSplitter;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.WriteBatch;
 import com.marklogic.client.datamovement.WriteBatchListener;
@@ -225,7 +224,7 @@ public class WriteBatcherImpl
   private JobTicket jobTicket;
   private Calendar jobStartTime;
   private Calendar jobEndTime;
-  private DocumentMetadataHandle docMetadataHandle;
+  private DocumentMetadataHandle defaultMetadata;
 
   public WriteBatcherImpl(DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super(moveMgr);
@@ -286,6 +285,9 @@ public class WriteBatcherImpl
     boolean timeToWriteBatch = (recordNum % getBatchSize()) == 0;
     if ( timeToWriteBatch ) {
       BatchWriteSet writeSet = newBatchWriteSet(false);
+      if(defaultMetadata != null) {
+          writeSet.getWriteSet().add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT, null, defaultMetadata, null));
+      }
       int i=0;
       for ( ; i < getBatchSize(); i++ ) {
         DocumentWriteOperation doc = queue.poll();
@@ -1339,16 +1341,13 @@ public class WriteBatcherImpl
 
 @Override
 public WriteBatcher withDefaultMetadata(DocumentMetadataHandle handle) {
-    this.docMetadataHandle = handle;
+    this.defaultMetadata = handle;
     return this;
 }
 
 @Override
-public void addAll(Stream<? extends DocumentWriteOperation> operations, JacksonCSVSplitter splitter) {
+public void addAll(Stream<? extends DocumentWriteOperation> operations) {
     Iterator<? extends DocumentWriteOperation> docWriteItr = operations.iterator();
-    while(docWriteItr.hasNext()) {
-      add(docWriteItr.next());
-      splitter.incrementCount();
-    }
+    docWriteItr.forEachRemaining(this::add);
 }
 }

@@ -22,21 +22,28 @@ import com.marklogic.client.io.JacksonHandle;
 public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
     private CsvSchema csvSchema = null;
     private CsvMapper csvMapper;
-    private ObjectReader objectParser;
-    private long count;
+    private long count = 0;
     
-    public JacksonCSVSplitter() {
-        setCsvMapper();
-        setCount(0);
+    public CsvMapper getCsvMapper() {
+        return csvMapper;
+    }
+
+    public JacksonCSVSplitter withCsvSchema(CsvSchema schema) {
+        this.csvSchema = schema;
+        return this;
+    } 
+    
+    public JacksonCSVSplitter withCsvMapper(CsvMapper mapper) {
+        this.csvMapper = mapper;
+        return this;
     }
     
-    public JacksonCSVSplitter(CsvSchema newSchema) {
-        setCsvSchema(newSchema);
-        setCsvMapper();
-        setCount(0);
+    public CsvSchema getCsvSchema() {
+        return csvSchema;
     }
     
-    private void setCsvMapper() {
+    private CsvMapper configureCsvMapper() {
+        if(csvMapper == null) {
         csvMapper = new CsvMapper()
                 .configure(CsvParser.Feature.ALLOW_TRAILING_COMMA, true)
                 .configure(CsvParser.Feature.FAIL_ON_MISSING_COLUMNS, false)
@@ -45,50 +52,50 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
                 .configure(CsvParser.Feature.SKIP_EMPTY_LINES, true)
                 .configure(CsvParser.Feature.TRIM_SPACES, true)
                 .configure(CsvParser.Feature.WRAP_AS_ARRAY, false);
-    }
-    // overriding the default Jackson configuration
-    public void setObjectReader(ObjectReader parser) { 
-        this.objectParser = parser;
-    } 
-    public ObjectReader getObjectReader() {
-        return objectParser;
-    }
-    public void setCsvSchema(CsvSchema schema) {
-        this.csvSchema = schema;
-    } 
-    public CsvSchema getCsvSchema() {
-        return csvSchema;
+        }
+        return csvMapper;
     }
 
     @Override
     public Stream<JacksonHandle> split(InputStream input) throws Exception { 
 
+        if(input == null) {
+            throw new IllegalArgumentException("InputSteam cannot be null.");
+        }
         Iterator<JsonNode> nodeItr = configureObjReader().readValues(input);
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(nodeItr, Spliterator.ORDERED), false)
-                .map(JacksonHandle::new);
+                .map(this::configureJacksonHandle);
     }
-    public Stream<JacksonHandle> split(Reader input) throws Exception { 
+    public Stream<JacksonHandle> split(Reader input) throws Exception  { 
 
+        if(input == null) {
+            throw new IllegalArgumentException("Input cannot be null.");
+        }
         Iterator<JsonNode> nodeItr = configureObjReader().readValues(input);
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(nodeItr, Spliterator.ORDERED), false)
-                .map(JacksonHandle::new);
+                .map(this::configureJacksonHandle);
     }
 
     @Override
     public long getCount() { 
         return this.count;
     }
-    public void incrementCount() {
+    
+    private void incrementCount() {
         this.count++;
-    }
-    private void setCount(long countValue) {
-        this.count = countValue;
     }
     
     private ObjectReader configureObjReader() {
+        this.count=0;
         CsvSchema firstLineSchema = getCsvSchema()!=null? getCsvSchema():CsvSchema.emptySchema().withHeader();
-        ObjectReader objectReader = getObjectReader()!=null? getObjectReader():csvMapper.readerFor(JsonNode.class);
+        
+        ObjectReader objectReader = configureCsvMapper().readerFor(JsonNode.class);
         
         return objectReader.with(firstLineSchema);
+    }
+    
+    private JacksonHandle configureJacksonHandle(JsonNode content) {
+        incrementCount();
+        return new JacksonHandle(content);
     }
 }
