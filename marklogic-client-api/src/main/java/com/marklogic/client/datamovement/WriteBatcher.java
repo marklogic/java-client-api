@@ -77,7 +77,7 @@ public interface WriteBatcher extends Batcher {
      * Writes a document to the database for each row in the csv and keeps track of the number of documents written.
      * @param operations is the DocumentWriteOperation stream passed in.
      */
-    void addAll(Stream<? extends DocumentWriteOperation> operations, JacksonCSVSplitter splitter);
+    void addAll(Stream<? extends DocumentWriteOperation> operations);
   /**
    * <p>Add a document to be batched then written to the server when a batch is full
    * or {@link #flushAsync} or {@link #flushAndWait} is called.</p>
