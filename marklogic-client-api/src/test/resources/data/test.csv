@@ -1,0 +1,12 @@
+customer360.orderlines.order_id,customer360.orderlines.product_id,customer360.orderlines.sku,customer360.orderlines.price,customer360.orderlines.quantity,customer360.orderlines.discounted_price,customer360.orderlines.title
+513,1000238,1.32E+11,35,1,26,golden clam
+296,1000025,1.75E+11,12.99,1,10.76,safe constant
+426,1000154,2.30E+11,9.99,3,9.56,premier maestro Extension 0
+922,1000032,1.35E+11,4.5,1,3.73,classical golf
+499,1000072,4.66E+11,15,1,15,weird air
+448,1000153,1.64E+11,4.5,1,3.34,unwilling eave
+745,1000176,2.28E+11,19.99,1,15.71,beneficial mind Extension 2
+515,1000043,4.41E+11,15,1,13.07,loud france
+339,1000109,4.22E+11,15,1,12.43,white blade
+384,1000245,2.37E+11,10,2,7.86,beautiful pumpkin Extension 1
+616,1000263,1.21E+11,12.99,1,11.88,puzzled sandra

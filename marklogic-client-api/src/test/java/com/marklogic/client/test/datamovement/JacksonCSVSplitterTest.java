@@ -17,18 +17,18 @@ package com.marklogic.client.test.datamovement;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.Arrays;
+import java.io.FileReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.w3c.dom.Document;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
@@ -38,17 +38,18 @@ import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteOperation.OperationType;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
-import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.QueryManager;
+import com.opencsv.CSVReader;
 
 public class JacksonCSVSplitterTest {
     
-    static final private String csvFile = "src/test/resources" + File.separator + "OrderLines.csv";
+    static final private String csvFile = "src/test/resources/data" + File.separator + "test.csv";
     private DatabaseClient client;
     private DataMovementManager moveMgr;
-    private Stream<JacksonHandle> contentStream;
     
     @Before
     public void setUp() throws Exception {
@@ -58,25 +59,29 @@ public class JacksonCSVSplitterTest {
     }
     
     @Test
-    public void run() throws Exception  {
-        try {
-            testSplitter();
-            testDocumentWriteOperation();
-            testBatcher();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            fail("test exception");
-        } finally {
-                
-        }
-    }
-    
-    @Test
     public void testSplitter() throws Exception {
 
         JacksonCSVSplitter splitter = new JacksonCSVSplitter();
-        contentStream = splitter.split(new FileInputStream(csvFile));
+        Stream<JacksonHandle> contentStream = splitter.split(new FileInputStream(csvFile));
         assertNotNull(contentStream);
+        
+        JacksonHandle[] result = contentStream.toArray(size -> new JacksonHandle[size]);
+        assertNotNull(result);
+        assertTrue(result.length == (Files.lines(Paths.get(csvFile)).count()-1));
+        
+        FileReader fileReader = new FileReader(csvFile);
+        CSVReader csvReader = new CSVReader(fileReader);
+        String[] headerValues = csvReader.readNext();
+        
+        for(int i=0; i<result.length; i++) {
+            assertNotNull(result[i].get());
+            assertNotNull(result[i].get().fields());
+            for(int j=0; j<headerValues.length;j++) {
+                assertNotNull(result[i].get().findValue(headerValues[j]));
+            }
+        }
+        fileReader.close();
+        csvReader.close();
     }
     
     @Test
@@ -90,33 +95,36 @@ public class JacksonCSVSplitterTest {
         assertNotNull(documentStream);
         String[] stringHandleValues = {"first", "second"};
         Iterator<DocumentWriteOperation> itr = documentStream.iterator();
-        while(itr.hasNext()) {
+        for(int i=0; itr.hasNext(); i++) {
             DocumentWriteOperation docOp = itr.next();
             assertNotNull(docOp.getUri());
             assertNotNull(docOp.getContent());
-            
-            assertTrue(Arrays.stream(stringHandleValues).anyMatch(docOp.getContent().toString()::equals));
+            assertTrue(docOp.getContent().toString().equals(stringHandleValues[i]));
         }
     }
     
     @Test
     public void testBatcher() throws Exception {
-        
-        DocumentMetadataHandle documentMetadata = new DocumentMetadataHandle();
-        WriteBatcher batcher = moveMgr.newWriteBatcher().withDefaultMetadata(documentMetadata);
-        
-        assertTrue(batcher.getDocumentMetadata() == documentMetadata);
-        DocumentWriteOperation docWriteImpl = new DocumentWriteOperationImpl(
-                OperationType.DOCUMENT_WRITE,
-                "/sample/test1.txt",
-                documentMetadata,
-                new StringHandle().with("Test1")
-                );
-        DocumentWriteOperation docWriteImpl1 = new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE, "/sample/test2.txt", documentMetadata, new StringHandle().with("Test2"));
-        Stream<DocumentWriteOperation> docSteam = Stream.of(docWriteImpl, docWriteImpl1);
-        batcher.addAll(docSteam);
-        
-        batcher.flushAndWait();
+        try {
+            DocumentMetadataHandle documentMetadata = new DocumentMetadataHandle();
+            WriteBatcher batcher = moveMgr.newWriteBatcher().withDefaultMetadata(documentMetadata);
+
+            assertTrue(batcher.getDocumentMetadata() == documentMetadata);
+            DocumentWriteOperation docWriteImpl = new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE,
+                    "/sample/test/test1.txt", documentMetadata, new StringHandle().with("Test1"));
+            DocumentWriteOperation docWriteImpl1 = new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE,
+                    "/sample/test/test2.txt", documentMetadata, new StringHandle().with("Test2"));
+            Stream<DocumentWriteOperation> docSteam = Stream.of(docWriteImpl, docWriteImpl1);
+
+            moveMgr.startJob(batcher);
+            batcher.addAll(docSteam);
+            batcher.flushAndWait();
+        } finally {
+            QueryManager queryMgr = client.newQueryManager();
+            DeleteQueryDefinition deleteDef = queryMgr.newDeleteDefinition();
+            deleteDef.setDirectory("/sample/test/");
+            queryMgr.delete(deleteDef);
+        }
     }
     
     @After
