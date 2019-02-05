@@ -68,7 +68,7 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
                 .configure(CsvParser.Feature.SKIP_EMPTY_LINES, true)
                 .configure(CsvParser.Feature.TRIM_SPACES, true)
                 .configure(CsvParser.Feature.WRAP_AS_ARRAY, false)
-                .configure(CsvParser.Feature.IGNORE_TRAILING_UNMAPPABLE, false);
+                .configure(CsvParser.Feature.IGNORE_TRAILING_UNMAPPABLE, true);
         }
         return csvMapper;
     }
