@@ -78,6 +78,12 @@ public interface WriteBatcher extends Batcher {
      * @param operations is the DocumentWriteOperation stream passed in.
      */
     void addAll(Stream<? extends DocumentWriteOperation> operations);
+    
+    /**
+     @return the documentMetadatHandle associated with the WriteeBatcher.
+     */
+    DocumentMetadataHandle getDocumentMetadata();
+    
   /**
    * <p>Add a document to be batched then written to the server when a batch is full
    * or {@link #flushAsync} or {@link #flushAndWait} is called.</p>
@@ -90,6 +96,7 @@ public interface WriteBatcher extends Batcher {
    * @param contentHandle the document contents
    * @return WriteBatcher the batcher containing the documents added
    */
+    
   WriteBatcher add(String uri, AbstractWriteHandle contentHandle);
 
   /**

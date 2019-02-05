@@ -1347,7 +1347,11 @@ public WriteBatcher withDefaultMetadata(DocumentMetadataHandle handle) {
 
 @Override
 public void addAll(Stream<? extends DocumentWriteOperation> operations) {
-    Iterator<? extends DocumentWriteOperation> docWriteItr = operations.iterator();
-    docWriteItr.forEachRemaining(this::add);
+    operations.forEach(this::add);
+}
+
+@Override
+public DocumentMetadataHandle getDocumentMetadata() {
+  return defaultMetadata;
 }
 }
