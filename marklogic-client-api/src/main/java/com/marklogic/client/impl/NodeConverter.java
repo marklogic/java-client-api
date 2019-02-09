@@ -462,12 +462,21 @@ public class NodeConverter {
       }
    }
 
-   static public JsonNode ObjectToJsonNode(Object jsonTree) {
-      try {
-         if (jsonTree == null || jsonTree instanceof JsonNode) {
-            return (JsonNode) jsonTree;
-         }
+   static public JsonNode handleToJsonNode(JSONWriteHandle jsonHandle) {
+      if (jsonHandle == null) {
+         return null;
+      } else if (!(jsonHandle instanceof ContentHandle)) {
+         throw new IllegalArgumentException(
+             "JSONWriteHandle must implement ContentHandle: "+jsonHandle.getClass().getCanonicalName()
+         );
+      }
+      Object jsonTree = ((ContentHandle<?>) jsonHandle).get();
 
+      if (jsonTree == null || jsonTree instanceof JsonNode) {
+         return (JsonNode) jsonTree;
+      }
+
+      try {
          ObjectMapper mapper = new ObjectMapper();
          if (jsonTree instanceof byte[]) {
             return mapper.readTree((byte[]) jsonTree);
