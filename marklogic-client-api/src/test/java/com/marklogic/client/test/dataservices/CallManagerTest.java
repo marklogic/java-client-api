@@ -68,9 +68,11 @@ public class CallManagerTest {
     private DatabaseClient db      = Common.connectDataService();
     private CallManager    callMgr = CallManager.on(db);
 
-    private ObjectNode servicedef = objectMapper.createObjectNode();
+    private JacksonHandle serviceHandle;
     {
+        ObjectNode servicedef = objectMapper.createObjectNode();
         servicedef.put("endpointDirectory", ENDPOINT_DIRECTORY);
+        serviceHandle = new JacksonHandle(servicedef);
     }
 
     private static Map<String, JsonNode> endpointdefs = new HashMap<>();
@@ -1099,7 +1101,7 @@ public class CallManagerTest {
     private CallManager.CallableEndpoint makeCallableEndpoint(String functionName) {
         JsonNode endpointdef = endpointdefs.get(functionName);
         assertNotNull("no endpoint definition found for "+functionName, endpointdef);
-        return callMgr.endpoint(servicedef, endpointdef, "sjs");
+        return callMgr.endpoint(serviceHandle, new JacksonHandle(endpointdef), "sjs");
     }
     private <T> CallManager.ManyCaller<T> makeManyCaller(CallManager.CallableEndpoint callableEndpoint, Class<T> as) {
         return callableEndpoint.returningMany(as);

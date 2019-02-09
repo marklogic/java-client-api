@@ -26,7 +26,6 @@ import com.marklogic.client.impl.RESTServices.MultipleCallResponse;
 import com.marklogic.client.impl.RESTServices.SingleCallResponse;
 import com.marklogic.client.impl.SessionStateImpl;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.marker.*;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -116,19 +115,19 @@ class CallManagerImpl implements CallManager {
    }
 
    @Override
-   public CallableEndpoint endpoint(Object serviceDeclaration, Object endpointDeclaration, String extension) {
-     if (serviceDeclaration == null) {
+   public CallableEndpoint endpoint(JSONWriteHandle serviceDeclaration, JSONWriteHandle endpointDeclaration, String extension) {
+     JsonNode serviceDecl  = NodeConverter.handleToJsonNode(serviceDeclaration);
+     JsonNode endpointDecl = NodeConverter.handleToJsonNode(endpointDeclaration);
+
+     if (serviceDecl == null) {
        throw new IllegalArgumentException("cannot construct CallableEndpoint with null serviceDeclaration");
-     } else if (endpointDeclaration == null) {
+     } else if (endpointDecl == null) {
        throw new IllegalArgumentException("cannot construct CallableEndpoint with null endpointDeclaration");
      } else if (extension == null || extension.length() == 0) {
        throw new IllegalArgumentException("cannot construct CallableEndpoint with null or empty extension");
      } else if (!"sjs".equals(extension) && !"xqy".equals(extension)) {
        throw new IllegalArgumentException("extension must be sjs or xqy: "+extension);
      }
-
-     JsonNode serviceDecl  = NodeConverter.ObjectToJsonNode(serviceDeclaration);
-     JsonNode endpointDecl = NodeConverter.ObjectToJsonNode(endpointDeclaration);
 
      return new CallableEndpointImpl(client, serviceDecl, endpointDecl, extension);
    }
@@ -407,8 +406,7 @@ class CallManagerImpl implements CallManager {
     return property.asText();
   }
 
-  private static class NoneCallerImpl extends CallBuilderImpl<NoneCaller,NoneCallerImpl>
-            implements NoneCaller {
+  private static class NoneCallerImpl extends CallBuilderImpl<NoneCaller> implements NoneCaller {
      NoneCallerImpl(CallableEndpointImpl endpoint) {
        super(endpoint);
      }
@@ -425,8 +423,7 @@ class CallManagerImpl implements CallManager {
        startRequest().responseNone();
      }
     }
-    private static class OneCallerImpl<R> extends CallBuilderImpl<OneCaller<R>,OneCallerImpl<R>>
-            implements OneCaller<R> {
+    private static class OneCallerImpl<R> extends CallBuilderImpl<OneCaller<R>> implements OneCaller<R> {
       private ReturnConverter<R> converter;
       private Format             format;
 
@@ -449,8 +446,7 @@ class CallManagerImpl implements CallManager {
         return converter.one(startRequest().responseSingle(getEndpoint().isNullable(), format));
       }
     }
-    private static class ManyCallerImpl<R> extends CallBuilderImpl<ManyCaller<R>,ManyCallerImpl<R>>
-            implements ManyCaller<R> {
+    private static class ManyCallerImpl<R> extends CallBuilderImpl<ManyCaller<R>> implements ManyCaller<R> {
       private ReturnConverter<R> converter;
       private Format             format;
 
@@ -474,8 +470,7 @@ class CallManagerImpl implements CallManager {
       }
     }
 
-    private static abstract class CallBuilderImpl<T extends CallBuilder, U extends CallBuilderImpl>
-            implements CallBuilder<T> {
+    private static abstract class CallBuilderImpl<T extends CallBuilder> implements CallBuilder {
       private CallableEndpointImpl endpoint;
       private SessionState         session;
       private List<CallField>      callFields;
@@ -487,15 +482,15 @@ class CallManagerImpl implements CallManager {
       CallBuilderImpl(CallableEndpointImpl endpoint) {
         this.endpoint = endpoint;
       }
-      protected CallBuilderImpl<T,U> clone() {
-        CallBuilderImpl<T,U> next = construct();
+      protected CallBuilderImpl<T> clone() {
+        CallBuilderImpl<T> next = construct();
         next.session        = this.session;
         next.callFields     = this.callFields;
         next.assignedParams = this.assignedParams;
         return next;
       }
 
-      abstract CallBuilderImpl<T,U> construct();
+      abstract CallBuilderImpl<T> construct();
       abstract T cast();
 
       private List<CallField> getCallFields() {
@@ -517,7 +512,7 @@ class CallManagerImpl implements CallManager {
       private T addField(CallField field) {
         if (field == null) return this.cast();
 
-        CallBuilderImpl<T,U> next = clone();
+        CallBuilderImpl<T> next = clone();
 
         if (getEndpoint().getRequiredParams() != null) {
           Set<String> nextAssignedParams = (next.assignedParams == null) ?
@@ -706,7 +701,7 @@ class CallManagerImpl implements CallManager {
         } else if (this.session != null) {
           throw new IllegalArgumentException(getEndpoint().getModule()+" already has a session");
         }
-        CallBuilderImpl<T,U> next = clone();
+        CallBuilderImpl<T> next = clone();
         next.session = session;
         return next.cast();
       }

@@ -32,7 +32,7 @@ public class DataServiceBootstrapper {
     private String host          = Common.HOST;
     private int    serverPort    = Common.DATA_SERVICE_PORT;
 
-    public void main(String... args) throws IOException {
+    public static void main(String... args) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
 
@@ -42,7 +42,7 @@ public class DataServiceBootstrapper {
                 new DataServiceBootstrapper().setupServer(writer);
                 break;
             case "teardown":
-                teardownServer(writer);
+                new DataServiceBootstrapper().teardownServer(writer);
                 break;
             default:
                 throw new IllegalArgumentException("unknown operation: "+operation);
@@ -60,6 +60,8 @@ public class DataServiceBootstrapper {
             );
 
             String forestName = dbName+"-1";
+            instancedef = new HashMap<>();
+            instancedef.put("database", dbName);
             instancedef.put("forest-name", forestName);
             createEntity(
                     client, writer, "forests", "forest", forestName, instancedef
