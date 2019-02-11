@@ -506,7 +506,11 @@ class CallManagerImpl implements CallManager {
         if (name == null || name.length() == 0) {
           throw new IllegalArgumentException("empty parameter name");
         }
-        return getEndpoint().getParamdefs().get(name);
+        ParamdefImpl paramdef = getEndpoint().getParamdefs().get(name);
+        if (paramdef == null) {
+          throw new IllegalArgumentException("no parameter with name: "+name);
+        }
+        return paramdef;
       }
 
       private T addField(CallField field) {

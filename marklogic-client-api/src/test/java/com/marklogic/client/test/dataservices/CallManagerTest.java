@@ -349,6 +349,165 @@ public class CallManagerTest {
     }
 
     @Test
+    public void testBadParamName() {
+        String functionName = "boolean";
+
+        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+
+        CallManager.ManyCaller<Boolean> caller = makeManyCaller(callableEndpoint, Boolean.class);
+
+        boolean threwException = false;
+        try {
+            caller.param("invalidParamName", new Boolean[]{true, false});
+        } catch (IllegalArgumentException ex) {
+            threwException = true;
+        }
+        assertTrue("no exception for parameter with bad name", threwException);
+    }
+    @Test
+    public void testBadParamAtomicType() {
+        String functionName = "int";
+
+        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+
+        CallManager.ManyCaller<Integer> caller = makeManyCaller(callableEndpoint, Integer.class);
+
+        boolean threwException = false;
+        try {
+            caller.param("param2", Integer.valueOf(5));
+        } catch (IllegalArgumentException ex) {
+            threwException = true;
+        }
+        assertTrue("no exception for parameter with bad atomic data type", threwException);
+    }
+    @Test
+    public void testBadParamNodeType() {
+        String functionName = "jsonDocument";
+
+        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName );
+
+        CallManager.ManyCaller<String> caller = makeManyCaller(callableEndpoint, String.class);
+
+        boolean threwException = false;
+        try {
+            caller.param("param1",
+                    CallManagerTest.document("<root><child>text1</child></root>")
+            );
+        } catch (IllegalArgumentException ex) {
+            threwException = true;
+        }
+        assertTrue("no exception for parameter with bad node data type", threwException);
+    }
+    @Test
+    public void testBadParamMultiplicity() {
+        String functionName = "singleAtomic";
+
+        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+
+        CallManager.OneCaller<Date> caller = makeOneCaller(callableEndpoint, Date.class);
+
+        boolean threwException = false;
+        try {
+            caller.param("param1", new Date[]{
+                    DatatypeConverter.parseDateTime("2018-01-02T10:09:08").getTime(),
+                    DatatypeConverter.parseDateTime("2018-01-02T11:10:09.867Z").getTime()
+            });
+        } catch (IllegalArgumentException ex) {
+            threwException = true;
+        }
+        assertTrue("no exception for parameter with bad multiplicity", threwException);
+    }
+    @Test
+    public void testBadParamOptionality() {
+        String functionName = "boolean";
+
+        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+
+        CallManager.ManyCaller<Boolean> caller = makeManyCaller(callableEndpoint, Boolean.class);
+
+        boolean threwException = false;
+        try {
+            caller.call();
+        } catch (IllegalArgumentException ex) {
+            threwException = true;
+        }
+        assertTrue("no exception for parameter with bad optionality", threwException);
+    }
+    @Test
+    public void testBadParamSession() {
+        String functionName = "boolean";
+
+        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+
+        CallManager.ManyCaller<Boolean> caller = makeManyCaller(callableEndpoint, Boolean.class);
+
+        boolean threwException = false;
+        try {
+            caller.session(callMgr.newSessionState());
+        } catch (IllegalArgumentException ex) {
+            threwException = true;
+        }
+        assertTrue("no exception for bad session", threwException);
+    }
+    @Test
+    public void testBadReturnAtomicType() {
+        String functionName = "boolean";
+
+        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+
+        boolean threwException = false;
+        try {
+            makeManyCaller(callableEndpoint, Integer.class);
+        } catch (IllegalArgumentException ex) {
+            threwException = true;
+        }
+        assertTrue("no exception for return with bad atomic data type", threwException);
+    }
+    @Test
+    public void testBadReturnNodeType() {
+        String functionName = "jsonDocument";
+
+        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+
+        boolean threwException = false;
+        try {
+            makeManyCaller(callableEndpoint, Document.class);
+        } catch (IllegalArgumentException ex) {
+            threwException = true;
+        }
+        assertTrue("no exception for return with bad node data type", threwException);
+    }
+    @Test
+    public void testBadReturnMultiplicity() {
+        String functionName = "boolean";
+
+        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+
+        boolean threwException = false;
+        try {
+            makeOneCaller(callableEndpoint, Boolean.class);
+        } catch (IllegalArgumentException ex) {
+            threwException = true;
+        }
+        assertTrue("no exception for return with bad multiplicity", threwException);
+    }
+    @Test
+    public void testBadReturnOptionality() {
+        String functionName = "boolean";
+
+        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+
+        boolean threwException = false;
+        try {
+            callableEndpoint.returningNone();
+        } catch (IllegalArgumentException ex) {
+            threwException = true;
+        }
+        assertTrue("no exception for return with bad optionality", threwException);
+    }
+
+
+    @Test
     public void testBoolean() {
         String functionName = "boolean";
 
