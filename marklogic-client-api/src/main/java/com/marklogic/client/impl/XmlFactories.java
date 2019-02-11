@@ -15,6 +15,13 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.MarkLogicInternalException;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSParser;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLOutputFactory;
 
@@ -22,6 +29,13 @@ public final class XmlFactories {
 
   private static final CachedInstancePerThreadSupplier<XMLOutputFactory> cachedOutputFactory =
     new CachedInstancePerThreadSupplier<>(XmlFactories::makeNewOutputFactory);
+
+  private static final DocumentBuilderFactory documentBuilderFactory = makeDocumentBuilderFactory();
+  private static final CachedInstancePerThreadSupplier<DocumentBuilder> cachedDocumentBuilder =
+    new CachedInstancePerThreadSupplier<>(XmlFactories::makeDocumentBuilder);
+
+  private static final CachedInstancePerThreadFunction<DocumentBuilder, LSParser> cachedLsParser =
+    new CachedInstancePerThreadFunction<>(XmlFactories::makeLSParser);
 
   private XmlFactories() {
   } // preventing instances of utility class
@@ -56,5 +70,52 @@ public final class XmlFactories {
    */
   public static XMLOutputFactory getOutputFactory() {
     return cachedOutputFactory.get();
+  }
+
+  private static DocumentBuilderFactory makeDocumentBuilderFactory() {
+    final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setValidating(false);
+
+    return factory;
+  }
+
+  private static DocumentBuilder makeDocumentBuilder() {
+    try {
+      return documentBuilderFactory.newDocumentBuilder();
+    } catch (final ParserConfigurationException e) {
+      throw new MarkLogicInternalException("Failed to create a document builder.", e);
+    }
+  }
+
+  /**
+   * Returns a shared {@link DocumentBuilder}. This DocumentBuilder is created <b>namespace-aware</b> and <b>not validating</b>.
+   * <p>
+   * Creating a DocumentBuilder is potentially a pretty expensive operation. Using a shared instance helps to amortize
+   * this initialization cost via reuse.
+   *
+   * @return a namespace-aware, non-validating {@link DocumentBuilder}
+   */
+  public static DocumentBuilder getNsAwareNotValidatingDocBuilder() {
+    return cachedDocumentBuilder.get();
+  }
+
+  /**
+   * Returns a shared {@link LSParser}. This LSParser will have {@link DOMImplementationLS#MODE_SYNCHRONOUS} and no {@code schemaType} set.
+   * <p>
+   * Every first usage per {@code documentBuilder} instance will create a new {@link LSParser}.
+   * Further usages might return a cached LSParser instance.
+   *
+   * @param documentBuilder DocumentBuilder from which the LSParser is created.
+   * @return a synchronous LSParser
+   */
+  public static LSParser getSynchronousLSParser(final DocumentBuilder documentBuilder) {
+    return cachedLsParser.apply(documentBuilder);
+  }
+
+  private static LSParser makeLSParser(final DocumentBuilder documentBuilder) {
+    final DOMImplementationLS domImpl = (DOMImplementationLS) documentBuilder.getDOMImplementation();
+
+    return domImpl.createLSParser(DOMImplementationLS.MODE_SYNCHRONOUS, null);
   }
 }

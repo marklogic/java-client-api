@@ -15,24 +15,17 @@
  */
 package com.marklogic.client.io;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-
-import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
-import com.marklogic.client.impl.DocumentBuilderFactories;
+import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.impl.XmlFactories;
+import com.marklogic.client.io.marker.BufferableHandle;
+import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.ContentHandleFactory;
+import com.marklogic.client.io.marker.CtsQueryWriteHandle;
+import com.marklogic.client.io.marker.StructureReadHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMException;
@@ -46,16 +39,21 @@ import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSParser;
 import org.w3c.dom.ls.LSResourceResolver;
 
-import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
-import com.marklogic.client.io.marker.CtsQueryWriteHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
 /**
  * A DOM Handle represents XML content as a DOM document for reading or writing.
@@ -70,8 +68,8 @@ public class DOMHandle
 
   private LSResourceResolver     resolver;
   private Document               content;
-  private DocumentBuilder        documentBuilder = DocumentBuilderFactories.getNamespaceAwareNotValidating();
-  private LSParser               parser;
+  private DocumentBuilder        documentBuilder = XmlFactories.getNsAwareNotValidatingDocBuilder();
+  private LSParser               parser = XmlFactories.getSynchronousLSParser(documentBuilder);
   private XPath                  xpathProcessor;
 
   /**
@@ -128,6 +126,9 @@ public class DOMHandle
    */
   public void setResolver(LSResourceResolver resolver) {
     this.resolver = resolver;
+
+    // remove possibly cached LSParser
+    this.parser = null;
   }
 
   /**
