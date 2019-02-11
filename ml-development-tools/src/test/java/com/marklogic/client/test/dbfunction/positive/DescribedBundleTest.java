@@ -50,14 +50,23 @@ public class DescribedBundleTest {
       Iterable<? extends JavaFileObject> javaFile = fileManager.getJavaFileObjects(sourceFile);
       fileManager.setLocation(DocumentationTool.Location.DOCUMENTATION_OUTPUT, Arrays.asList(outputDir));
 
-      // the default doclet path doesn't seem to have the standard doclet from tools.jar
-      List<File> toolClassPath = getClassPath(ToolProvider.getSystemToolClassLoader());
-      List<File> docletClassPath = toList(fileManager.getLocation(DocumentationTool.Location.DOCLET_PATH));
-      if (docletClassPath != null) {
-         docletClassPath.addAll(toolClassPath);
-         fileManager.setLocation(DocumentationTool.Location.DOCLET_PATH, docletClassPath);
-      } else {
-         fileManager.setLocation(DocumentationTool.Location.DOCLET_PATH, toolClassPath);
+      String javaVersion = System.getProperty("java.version");
+      double javaMajorVersion = Integer.parseInt(javaVersion.substring(0, javaVersion.indexOf(".")));
+
+      // the default doclet path doesn't seem to have the standard doclet from tools.jar in Java 8
+      if (javaMajorVersion < 9) {
+         List<File> toolClassPath = getClassPath(ToolProvider.getSystemToolClassLoader());
+         List<File> docletClassPath = toList(fileManager.getLocation(DocumentationTool.Location.DOCLET_PATH));
+         if (docletClassPath != null) {
+            if (toolClassPath != null) {
+               docletClassPath.addAll(toolClassPath);
+            }
+            fileManager.setLocation(DocumentationTool.Location.DOCLET_PATH, docletClassPath);
+         } else if (toolClassPath != null) {
+            fileManager.setLocation(DocumentationTool.Location.DOCLET_PATH, toolClassPath);
+         } else {
+            throw new IllegalStateException("cannot establish class path");
+         }
       }
 
       DocumentationTool.DocumentationTask docTask = docTool.getTask(
@@ -71,6 +80,9 @@ public class DescribedBundleTest {
       assertTrue("Could not find HTML file for JavaDoc generated from API File", outputFile.exists());
    }
    private List<File> getClassPath(ClassLoader loader) {
+      if (loader == null) {
+         return null;
+      }
       return Arrays.stream(((URLClassLoader) loader).getURLs())
                   .map(url -> {
                      try {
