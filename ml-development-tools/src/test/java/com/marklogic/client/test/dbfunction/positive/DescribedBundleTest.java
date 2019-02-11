@@ -51,7 +51,7 @@ public class DescribedBundleTest {
       fileManager.setLocation(DocumentationTool.Location.DOCUMENTATION_OUTPUT, Arrays.asList(outputDir));
 
       String javaVersion = System.getProperty("java.version");
-      double javaMajorVersion = Integer.parseInt(javaVersion.substring(0, javaVersion.indexOf(".")));
+      int javaMajorVersion = Integer.parseInt(javaVersion.substring(0, javaVersion.indexOf(".")));
 
       // the default doclet path doesn't seem to have the standard doclet from tools.jar in Java 8
       if (javaMajorVersion < 9) {
