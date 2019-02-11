@@ -316,10 +316,39 @@ public class DatabaseClientFactory {
   }
 
   public interface SecurityContext {
+    /**
+     * Returns the SSLContext for an SSL client.
+     * @return	the SSL context
+     */
     SSLContext getSSLContext();
+
+    /**
+     * Set the context without a trust manager
+     * @param context - the SSLContext object required for the SSL connection
+     * @deprecated	(as of 4.0.1) use SecurityContext.withSSLContext(SSLContext,X509TrustManager)
+     */
+    @Deprecated
     void setSSLContext(SSLContext context);
+
+    /*
+     * Returns the host verifier.
+     * @return	the host verifier
+     */
     SSLHostnameVerifier getSSLHostnameVerifier();
+
+    /**
+     * Specifies the host verifier for a client that verifies hosts for
+     * additional security.
+     * @param verifier	the host verifier
+     */
     void setSSLHostnameVerifier(SSLHostnameVerifier verifier);
+
+    /**
+     * Set the context without a trust manager
+     * @param context - the SSLContext object required for the SSL connection
+     * @deprecated	(as of 4.0.1) use SecurityContext.withSSLContext(SSLContext,X509TrustManager)
+     * @return a context containing authentication information
+     */
     @Deprecated
     SecurityContext withSSLContext(SSLContext context);
 
@@ -348,6 +377,13 @@ public class DatabaseClientFactory {
      * @return a context containing authentication information
      */
     SecurityContext withSSLContext(SSLContext context, X509TrustManager trustManager);
+
+    /**
+     * Specifies the host verifier for a client that verifies hosts for
+     * additional security.
+     * @param verifier	the host verifier
+     * @return a context configured with the host verifier
+     */
     SecurityContext withSSLHostnameVerifier(SSLHostnameVerifier verifier);
   }
 
@@ -362,6 +398,7 @@ public class DatabaseClientFactory {
     }
 
     @Override
+    @Deprecated
     public void setSSLContext(SSLContext context) {
       this.sslContext = context;
     }
@@ -633,6 +670,7 @@ public class DatabaseClientFactory {
 		}
 
 		@Override
+        @Deprecated
 		public void setSSLContext(SSLContext context) {
 			this.sslContext = context;
 
@@ -650,6 +688,7 @@ public class DatabaseClientFactory {
 		}
 
 		@Override
+        @Deprecated
 		public SecurityContext withSSLContext(SSLContext context) {
 			this.sslContext = context;
 			return this;
@@ -847,6 +886,7 @@ public class DatabaseClientFactory {
      * certificate and client's private key
      * @param context the SSLContext with which we initialize the
      *				  CertificateAuthContext
+     * @deprecated	(as of 4.0.1) use CertificateAuthContext(SSLContext,X509TrustManager)
      */
     @Deprecated
     public CertificateAuthContext(SSLContext context) {
@@ -878,6 +918,7 @@ public class DatabaseClientFactory {
      * @param context the SSLContext with which we initialize the
      *				  CertificateAuthContext
      * @param verifier a callback for checking host names
+     * @deprecated	(as of 4.0.1) use CertificateAuthContext(SSLContext,SSLHostnameVerifier,X509TrustManager)
      */
     @Deprecated
     public CertificateAuthContext(SSLContext context, SSLHostnameVerifier verifier) {
@@ -1542,8 +1583,7 @@ public class DatabaseClientFactory {
      * Specifies the SSLContext for clients created with a
      * DatabaseClientFactory.Bean object that authenticate with SSL.
      * @param context	the SSL context
-     * @deprecated	(as of 4.0.1) use SecurityContext.setSSLContext(SSLContext)
-     *   or SecurityContext.withSSLContext(SSLContext)
+     * @deprecated	(as of 4.0.1) use SecurityContext.withSSLContext(SSLContext,X509TrustManager)
      */
     @Deprecated
     public void setContext(SSLContext context) {

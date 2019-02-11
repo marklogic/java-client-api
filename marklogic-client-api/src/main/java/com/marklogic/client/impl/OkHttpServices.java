@@ -117,10 +117,7 @@ import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.*;
 import javax.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -137,6 +134,10 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -239,9 +240,9 @@ public class OkHttpServices implements RESTServices {
 
   @Override
   public void connect(String host, int port, String database, SecurityContext securityContext){
-      SSLContext sslContext = null;
-      SSLHostnameVerifier sslVerifier = null;
-      X509TrustManager trustManager = null;
+    SSLContext sslContext = null;
+    SSLHostnameVerifier sslVerifier = null;
+    X509TrustManager trustManager = null;
       
     if (host == null) 
     	throw new IllegalArgumentException("No host provided");
@@ -335,7 +336,33 @@ public class OkHttpServices implements RESTServices {
 
     if (sslContext != null) {
       if (trustManager == null) {
-        clientBldr.sslSocketFactory(sslContext.getSocketFactory());
+        String javaVersion = System.getProperty("java.version");
+        int javaMajorVersion = Integer.parseInt(javaVersion.substring(0, javaVersion.indexOf(".")));
+        // OKHttp starts requiring the trust manager in Java 9
+        if (javaMajorVersion < 9) {
+          clientBldr.sslSocketFactory(sslContext.getSocketFactory());
+        } else {
+          // transitional workaround -- at next backward incompatibility boundary, replace try with thrown exception
+          try {
+            TrustManagerFactory trustMgrFactory =
+                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            trustMgrFactory.init((KeyStore) null);
+            TrustManager[] trustMgrs = trustMgrFactory.getTrustManagers();
+            if (trustMgrs == null || trustMgrs.length == 0)
+              throw new IllegalArgumentException("no trust manager and could not get default trust manager");
+            if (!(trustMgrs[0] instanceof X509TrustManager))
+              throw new IllegalArgumentException("no trust manager and default is not an X509TrustManager");
+            trustManager = (X509TrustManager) trustMgrs[0];
+            sslContext.init(null, trustMgrs, null);
+            clientBldr.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+          } catch (KeyStoreException e) {
+            throw new IllegalArgumentException("no trust manager and cannot initialize factory for default", e);
+          } catch (NoSuchAlgorithmException e) {
+            throw new IllegalArgumentException("no trust manager and no algorithm for default manager", e);
+          } catch (KeyManagementException e) {
+            throw new IllegalArgumentException("no trust manager and cannot initialize context with default", e);
+          }
+        }
       } else {
         clientBldr.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
       }
