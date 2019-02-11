@@ -21,6 +21,7 @@ dependencies {
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version:'2.9.8'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version:'2.9.8'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.9.8'
+    compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-csv', version:'2.9.8'
     testCompile group: 'org.mockito', name: 'mockito-all', version:'1.10.19'
     testCompile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-xml', version:'2.9.8'
     testCompile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-csv', version:'2.9.8'
