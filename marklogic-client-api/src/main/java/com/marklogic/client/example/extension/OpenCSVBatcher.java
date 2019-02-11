@@ -127,7 +127,10 @@ public class OpenCSVBatcher
       }
     }
 
-    DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setValidating(false);
+    DocumentBuilder docBuilder = factory.newDocumentBuilder();
 
     String path = directory + rowName;
 

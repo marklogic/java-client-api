@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -83,12 +84,17 @@ public class QueryOptionsManagerTest {
   {
     String optionsName = "invalid";
 
-    Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setValidating(false);
+    DocumentBuilder documentBldr = factory.newDocumentBuilder();
+
+    Document domDocument = documentBldr.newDocument();
     Element root = domDocument.createElementNS("http://marklogic.com/appservices/search","options");
     Element rf = domDocument.createElementNS("http://marklogic.com/appservices/search","return-facets");
     rf.setTextContent("true");
     root.appendChild(rf);
-    root.setAttributeNS("http://www.w3.org/XML/1998/namespace", "lang", "en");  // MarkLogic adds this if I don't
+    root.setAttributeNS("http://www.w3.org/XML/1998/namespace", "xml:lang", "en");  // MarkLogic adds this if I don't
     domDocument.appendChild(root);
 
     QueryOptionsManager queryOptionsMgr =
@@ -96,8 +102,8 @@ public class QueryOptionsManagerTest {
 
     queryOptionsMgr.writeOptions(optionsName, new DOMHandle(domDocument));
 
-    String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
-      .getDOMImplementation()).createLSSerializer().writeToString(domDocument);
+    String domString =
+            ((DOMImplementationLS) documentBldr.getDOMImplementation()).createLSSerializer().writeToString(domDocument);
 
     String optionsString = queryOptionsMgr.readOptions(optionsName, new StringHandle()).get();
     assertNotNull("Read null string for XML content",optionsString);

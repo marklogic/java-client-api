@@ -230,7 +230,10 @@ public class EvalTest {
   private void runAndTestXQuery(ServerEvaluationCall call)
     throws JsonProcessingException, IOException, SAXException, ParserConfigurationException, DatatypeConfigurationException
   {
-    Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setValidating(false);
+    Document document = factory.newDocumentBuilder()
       .parse(this.getClass().getClassLoader().getResourceAsStream("1-empty-1.0.xml"));
     call = call.addNamespace("myPrefix", "http://marklogic.com/test")
       .addVariable("myPrefix:myString",  "Mars")

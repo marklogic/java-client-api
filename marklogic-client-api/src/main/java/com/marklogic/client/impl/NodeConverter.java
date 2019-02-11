@@ -59,7 +59,10 @@ public class NodeConverter {
    static private DocumentBuilderFactory getDocumentBuilderFactory() {
       // okay if one thread overwrites another during lazy initialization
       if (documentBuilderFactory == null) {
-         documentBuilderFactory = DocumentBuilderFactory.newInstance();
+         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+         factory.setNamespaceAware(true);
+         factory.setValidating(false);
+         documentBuilderFactory = factory;
       }
       return documentBuilderFactory;
    }

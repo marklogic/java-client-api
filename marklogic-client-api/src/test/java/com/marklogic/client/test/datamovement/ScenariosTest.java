@@ -80,8 +80,10 @@ public class ScenariosTest {
     public Map<String, Object> getBody() throws Exception {
       Map<String, Object> map = new HashMap<>();
       map.put("uri", "http://marklogic.com/my/test/uri");
-      Document document =
-        DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      factory.setNamespaceAware(true);
+      factory.setValidating(false);
+      Document document = factory.newDocumentBuilder().newDocument();
       Element element = document.createElement("test");
       document.appendChild(element);
       map.put("content", document);

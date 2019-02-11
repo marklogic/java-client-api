@@ -579,6 +579,8 @@ public class RawQueryDefinitionTest {
 
   private static Document parseXml(String xml) throws Exception {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setValidating(false);
     DocumentBuilder builder = factory.newDocumentBuilder();
     Document document = builder.parse(new InputSource(new StringReader(xml)));
     return document;

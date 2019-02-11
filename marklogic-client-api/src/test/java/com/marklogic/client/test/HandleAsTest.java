@@ -153,7 +153,10 @@ public class HandleAsTest {
     String xmlDocId = "/test/testAs1.xml";
     XMLDocumentManager xmlMgr = Common.client.newXMLDocumentManager();
 
-    DocumentBuilder xmlDocBldr = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setValidating(false);
+    DocumentBuilder xmlDocBldr = factory.newDocumentBuilder();
 
     Document beforeDocument = xmlDocBldr.newDocument();
     Element root = beforeDocument.createElement("doc");

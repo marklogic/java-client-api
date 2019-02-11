@@ -213,7 +213,10 @@ public class Common {
   }
   public static Document testStringToDocument(String document) {
     try {
-      return DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      factory.setNamespaceAware(true);
+      factory.setValidating(false);
+      return factory.newDocumentBuilder().parse(
         new InputSource(new StringReader(document)));
     } catch (SAXException e) {
       throw new RuntimeException(e);
