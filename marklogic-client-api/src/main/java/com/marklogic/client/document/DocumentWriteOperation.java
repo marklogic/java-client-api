@@ -93,8 +93,8 @@ public interface DocumentWriteOperation {
   
   /**
    * The from method prepares each content object for writing as a document including generating a URI by inserting a UUID.
-   * @param a subclass of AbstractWriteHandle
-   * @param DocumentUriMaker which internally accepts an AbstractWriteHandle and returns a String
+   * @param content a subclass of AbstractWriteHandle
+   * @param uriMaker DocumentUriMaker which internally accepts an AbstractWriteHandle and returns a String
    * @return a stream of DocumentWriteOperation to be written in the database.
    */
     public static Stream<DocumentWriteOperation> from(Stream<? extends AbstractWriteHandle> content,
