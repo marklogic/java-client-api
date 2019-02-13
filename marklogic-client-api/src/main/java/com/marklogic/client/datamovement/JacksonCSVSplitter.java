@@ -25,10 +25,13 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.JacksonHandle;
 
 /**
@@ -39,7 +42,13 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
     private CsvSchema csvSchema = null;
     private CsvMapper csvMapper;
     private long count = 0;
+    private ArrayNode headers = null;
+    private JsonNode csvHeaderNode;
     
+    public JsonNode getHeaderNode() {
+        return csvHeaderNode;
+    }
+
     public CsvMapper getCsvMapper() {
         return csvMapper;
     }
@@ -79,23 +88,29 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
         if(input == null) {
             throw new IllegalArgumentException("InputSteam cannot be null.");
         }
-        Iterator<JsonNode> nodeItr = configureObjReader().readValues(input);
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(nodeItr, Spliterator.ORDERED), false)
+        PeekingIterator<JsonNode> peekingIterator = configureSplitObj(configureObjReader().readValues(input));
+        
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(peekingIterator, Spliterator.ORDERED), false)
                 .map(this::wrapJacksonHandle);
     }
+    
     public Stream<JacksonHandle> split(Reader input) throws Exception  { 
 
         if(input == null) {
             throw new IllegalArgumentException("Input cannot be null.");
         }
-        Iterator<JsonNode> nodeItr = configureObjReader().readValues(input);
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(nodeItr, Spliterator.ORDERED), false)
+        PeekingIterator<JsonNode> peekingIterator = configureSplitObj(configureObjReader().readValues(input));
+        setHeaders(peekingIterator.getFirst());
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(peekingIterator, Spliterator.ORDERED), false)
                 .map(this::wrapJacksonHandle);
     }
 
     @Override
     public long getCount() { 
         return this.count;
+    }
+    public ArrayNode getHeaders() {
+        return this.headers;
     }
     
     private void incrementCount() {
@@ -114,5 +129,30 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
     private JacksonHandle wrapJacksonHandle(JsonNode content) {
         incrementCount();
         return new JacksonHandle(content);
+    }
+    
+    private void setHeaders(JsonNode headerNode) {
+        csvHeaderNode = headerNode;
+        Iterator<String> headerValue = headerNode.fieldNames();
+        this.headers = new ObjectMapper().createArrayNode();
+        while (headerValue.hasNext()) {
+            headers.add(headerValue.next());
+        }
+    }
+    
+    private PeekingIterator<JsonNode> configureSplitObj(Iterator<JsonNode> nodeItr){
+        if (!nodeItr.hasNext()) {
+            throw new MarkLogicIOException("No header found.");
+        }
+        PeekingIterator<JsonNode> peekingIterator = new PeekingIterator<JsonNode>(nodeItr);
+        
+        csvHeaderNode = peekingIterator.getFirst();
+        Iterator<String> headerValue = csvHeaderNode.fieldNames();
+        this.headers = new ObjectMapper().createArrayNode();
+        while (headerValue.hasNext()) {
+            headers.add(headerValue.next());
+        }
+        
+        return peekingIterator;
     }
 }
