@@ -43,12 +43,7 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
     private CsvMapper csvMapper;
     private long count = 0;
     private ArrayNode headers = null;
-    private JsonNode csvHeaderNode;
     
-    public JsonNode getHeaderNode() {
-        return csvHeaderNode;
-    }
-
     public CsvMapper getCsvMapper() {
         return csvMapper;
     }
@@ -132,7 +127,6 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
     }
     
     private void setHeaders(JsonNode headerNode) {
-        csvHeaderNode = headerNode;
         Iterator<String> headerValue = headerNode.fieldNames();
         this.headers = new ObjectMapper().createArrayNode();
         while (headerValue.hasNext()) {
@@ -141,13 +135,12 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
     }
     
     private PeekingIterator<JsonNode> configureSplitObj(Iterator<JsonNode> nodeItr){
-        if (!nodeItr.hasNext()) {
+        if (nodeItr == null || !nodeItr.hasNext()) {
             throw new MarkLogicIOException("No header found.");
         }
         PeekingIterator<JsonNode> peekingIterator = new PeekingIterator<JsonNode>(nodeItr);
         
-        csvHeaderNode = peekingIterator.getFirst();
-        Iterator<String> headerValue = csvHeaderNode.fieldNames();
+        Iterator<String> headerValue = peekingIterator.getFirst().fieldNames();
         this.headers = new ObjectMapper().createArrayNode();
         while (headerValue.hasNext()) {
             headers.add(headerValue.next());
