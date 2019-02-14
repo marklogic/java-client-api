@@ -16,6 +16,7 @@
 package com.marklogic.client.test.datamovement;
 
 import com.marklogic.client.document.*;
+import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -217,74 +218,91 @@ public class WriteBatcherTest {
 
   @Test
   public void testDefaultMetadata() throws Exception {
-    String collection = whbTestCollection + ".testDefaultMetadata";
-    String[] collections = new String[]{collection, whbTestCollection};
-
-    DocumentMetadataHandle meta = new DocumentMetadataHandle()
-            .withCollections(collections)
-            .withMetadataValue("metaKey", "metaValue")
-            .withQuality(1);
-    meta.getPermissions().add("manage-user", DocumentMetadataHandle.Capability.READ);
-
-    List<String> successBatch = new ArrayList<>();
-    List<String> failureBatch = new ArrayList<>();
-
-    WriteBatcher batcher =  moveMgr.newWriteBatcher()
-            .withBatchSize(2)
-            .withDefaultMetadata(meta)
-            .onBatchSuccess(
-                    batch -> {
-                      logger.debug("[testSimple] batch: {}, items: {}",
-                              batch.getJobBatchNumber(), batch.getItems().length);
-                      for(WriteEvent w: batch.getItems()){
-                        successBatch.add(w.getTargetUri());
-                      }
-                    })
-            .onBatchFailure(
-                    (batch, throwable) -> {
-                      for(WriteEvent w: batch.getItems()){
-                        failureBatch.add(w.getTargetUri());
-                      }
-                    });
-
-    String firstUri  = "/metadataTest/doc1.txt";
-    String secondUri = "/metadataTest/doc2.txt";
-
-    batcher.add(firstUri, null, new StringHandle("test1"));
-    batcher.add(secondUri, null, new StringHandle("test2"));
-
-    batcher.flushAndWait();
-
-    assertEquals("success count", 3, successBatch.size());
-    assertNull("default metadata", successBatch.get(0));
-    assertEquals("first success", firstUri, successBatch.get(1));
-    assertEquals("first success", secondUri, successBatch.get(2));
-    assertEquals("failure count", 0, failureBatch.size());
+    StringHandle firstContent = new StringHandle("test1");
+    StringHandle secondContent = new StringHandle("test2");
 
     GenericDocumentManager docMgr = client.newDocumentManager();
-    DocumentPage docPage = docMgr.readMetadata(firstUri, secondUri);
-    assertEquals("missing metadata", 2, docPage.getPageSize());
-    for (DocumentRecord docRecord: docPage) {
-      DocumentMetadataHandle actual = docRecord.getMetadata(new DocumentMetadataHandle());
-      assertNotNull("no metadata", actual);
+    for (int i: new int[]{1,2}) {
+      String collection = whbTestCollection + ".testDefaultMetadata"+i;
+      String[] collections = new String[]{collection, whbTestCollection};
 
-      DocumentMetadataHandle.DocumentCollections actualCollections = actual.getCollections();
-      assertNotNull("no collections metadata", actualCollections);
-      for (String expectedCollection: collections) {
-        assertTrue("collection metadata not set", actualCollections.contains(expectedCollection));
+      String firstUri  = "/metadataTest/doc"+i+"_1.txt";
+      String secondUri = "/metadataTest/doc"+i+"_2.txt";
+
+      DocumentMetadataHandle meta = new DocumentMetadataHandle()
+              .withCollections(collections)
+              .withMetadataValue("metaKey", "metaValue")
+              .withQuality(1);
+      meta.getPermissions().add("manage-user", DocumentMetadataHandle.Capability.READ);
+
+      List<String> successBatch = new ArrayList<>();
+      List<String> failureBatch = new ArrayList<>();
+
+      WriteBatcher batcher =  moveMgr.newWriteBatcher()
+              .withBatchSize(2)
+              .withDefaultMetadata(meta)
+              .onBatchSuccess(
+                      batch -> {
+                        logger.debug("[testSimple] batch: {}, items: {}",
+                                batch.getJobBatchNumber(), batch.getItems().length);
+                        for(WriteEvent w: batch.getItems()){
+                          successBatch.add(w.getTargetUri());
+                        }
+                      })
+              .onBatchFailure(
+                      (batch, throwable) -> {
+                        for(WriteEvent w: batch.getItems()){
+                          failureBatch.add(w.getTargetUri());
+                        }
+                      });
+
+      JobTicket ticket = moveMgr.startJob(batcher);
+
+      switch(i) {
+      case 1:
+        batcher.add(firstUri, firstContent);
+        batcher.add(secondUri, secondContent);
+        break;
+      case 2:
+        batcher.addAll(Stream.of(
+            new DocumentWriteOperationImpl(DocumentWriteOperation.OperationType.DOCUMENT_WRITE, firstUri, null, firstContent),
+            new DocumentWriteOperationImpl(DocumentWriteOperation.OperationType.DOCUMENT_WRITE, secondUri, null, secondContent)
+        ));
+        break;
       }
 
-      DocumentMetadataHandle.DocumentPermissions actualPermissions = actual.getPermissions();
-      assertNotNull("no permissions metadata", actualPermissions);
-      assertTrue("permissions metadata not set",
-          actualPermissions.get("manage-user").contains(DocumentMetadataHandle.Capability.READ)
-      );
+      batcher.flushAndWait();
 
-      DocumentMetadataHandle.DocumentMetadataValues actualMetaVals = actual.getMetadataValues();
-      assertNotNull("no key-value metadata", actualMetaVals);
-      assertEquals("key-value metadata not set", actualMetaVals.get("metaKey"), "metaValue");
+      assertEquals("success count", 3, successBatch.size());
+      assertNull("default metadata", successBatch.get(0));
+      assertEquals("first success", firstUri, successBatch.get(1));
+      assertEquals("first success", secondUri, successBatch.get(2));
+      assertEquals("failure count", 0, failureBatch.size());
 
-      assertEquals("quality metadata not set", meta.getQuality(), actual.getQuality());
+      DocumentPage docPage = docMgr.readMetadata(firstUri, secondUri);
+      assertEquals("missing metadata", 2, docPage.getPageSize());
+      for (DocumentRecord docRecord: docPage) {
+        DocumentMetadataHandle actual = docRecord.getMetadata(new DocumentMetadataHandle());
+        assertNotNull("no metadata", actual);
+
+        DocumentMetadataHandle.DocumentCollections actualCollections = actual.getCollections();
+        assertNotNull("no collections metadata", actualCollections);
+        for (String expectedCollection: collections) {
+          assertTrue("collection metadata not set", actualCollections.contains(expectedCollection));
+        }
+
+        DocumentMetadataHandle.DocumentPermissions actualPermissions = actual.getPermissions();
+        assertNotNull("no permissions metadata", actualPermissions);
+        assertTrue("permissions metadata not set",
+            actualPermissions.get("manage-user").contains(DocumentMetadataHandle.Capability.READ)
+        );
+
+        DocumentMetadataHandle.DocumentMetadataValues actualMetaVals = actual.getMetadataValues();
+        assertNotNull("no key-value metadata", actualMetaVals);
+        assertEquals("key-value metadata not set", actualMetaVals.get("metaKey"), "metaValue");
+
+        assertEquals("quality metadata not set", meta.getQuality(), actual.getQuality());
+      }
     }
   }
 
