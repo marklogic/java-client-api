@@ -1817,10 +1817,9 @@ public class OkHttpServices implements RESTServices {
   private void addCategoryParams(Set<Metadata> categories, RequestParameters params,
                                  boolean withContent)
   {
-    if (withContent && categories == null || categories.size() == 0) {
+    if (withContent)
       params.add("category", "content");
-    } else {
-      if (withContent) params.add("category", "content");
+    if (categories != null && categories.size() > 0) {
       if (categories.contains(Metadata.ALL)) {
         params.add("category", "metadata");
       } else {

@@ -285,20 +285,20 @@ public class WriteBatcherImpl
     boolean timeToWriteBatch = (recordNum % getBatchSize()) == 0;
     if ( timeToWriteBatch ) {
       BatchWriteSet writeSet = newBatchWriteSet(false);
+      int minBatchSize = 0;
       if(defaultMetadata != null) {
-          writeSet.getWriteSet().add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT, null, defaultMetadata, null));
+        writeSet.getWriteSet().add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT, null, defaultMetadata, null));
+        minBatchSize = 1;
       }
-      int i=0;
-      for ( ; i < getBatchSize(); i++ ) {
+      for (int i=0; i < getBatchSize(); i++ ) {
         DocumentWriteOperation doc = queue.poll();
-        if ( doc != null ) {
-          writeSet.getWriteSet().add(doc);
-        } else {
+        if ( doc == null ) {
           // strange, there should have been a full batch of docs in the queue...
           break;
         }
+        writeSet.getWriteSet().add(doc);
       }
-      if ( writeSet.getWriteSet().size() > 0 ) {
+      if ( writeSet.getWriteSet().size() > minBatchSize ) {
         threadPool.submit( new BatchWriter(writeSet) );
       }
     }

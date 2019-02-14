@@ -15,10 +15,7 @@
  */
 package com.marklogic.client.test.datamovement;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.marklogic.client.document.*;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,16 +25,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
 
@@ -48,12 +39,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.document.DocumentRecord;
-import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.document.DocumentWriteOperation;
-import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.FileHandle;
@@ -81,6 +66,8 @@ import com.marklogic.client.datamovement.WriteFailureListener;
 import com.marklogic.client.datamovement.WriteBatcher;
 
 import com.marklogic.client.test.Common;
+
+import static org.junit.Assert.*;
 
 public class WriteBatcherTest {
   private Logger logger = LoggerFactory.getLogger(WriteBatcherTest.class);
@@ -225,6 +212,79 @@ public class WriteBatcherTest {
             "test1a", record.getContentAs(JsonNode.class).get("testProperty").textValue() );
         }
       }
+    }
+  }
+
+  @Test
+  public void testDefaultMetadata() throws Exception {
+    String collection = whbTestCollection + ".testDefaultMetadata";
+    String[] collections = new String[]{collection, whbTestCollection};
+
+    DocumentMetadataHandle meta = new DocumentMetadataHandle()
+            .withCollections(collections)
+            .withMetadataValue("metaKey", "metaValue")
+            .withQuality(1);
+    meta.getPermissions().add("manage-user", DocumentMetadataHandle.Capability.READ);
+
+    List<String> successBatch = new ArrayList<>();
+    List<String> failureBatch = new ArrayList<>();
+
+    WriteBatcher batcher =  moveMgr.newWriteBatcher()
+            .withBatchSize(2)
+            .withDefaultMetadata(meta)
+            .onBatchSuccess(
+                    batch -> {
+                      logger.debug("[testSimple] batch: {}, items: {}",
+                              batch.getJobBatchNumber(), batch.getItems().length);
+                      for(WriteEvent w: batch.getItems()){
+                        successBatch.add(w.getTargetUri());
+                      }
+                    })
+            .onBatchFailure(
+                    (batch, throwable) -> {
+                      for(WriteEvent w: batch.getItems()){
+                        failureBatch.add(w.getTargetUri());
+                      }
+                    });
+
+    String firstUri  = "/metadataTest/doc1.txt";
+    String secondUri = "/metadataTest/doc2.txt";
+
+    batcher.add(firstUri, null, new StringHandle("test1"));
+    batcher.add(secondUri, null, new StringHandle("test2"));
+
+    batcher.flushAndWait();
+
+    assertEquals("success count", 3, successBatch.size());
+    assertNull("default metadata", successBatch.get(0));
+    assertEquals("first success", firstUri, successBatch.get(1));
+    assertEquals("first success", secondUri, successBatch.get(2));
+    assertEquals("failure count", 0, failureBatch.size());
+
+    GenericDocumentManager docMgr = client.newDocumentManager();
+    DocumentPage docPage = docMgr.readMetadata(firstUri, secondUri);
+    assertEquals("missing metadata", 2, docPage.getPageSize());
+    for (DocumentRecord docRecord: docPage) {
+      DocumentMetadataHandle actual = docRecord.getMetadata(new DocumentMetadataHandle());
+      assertNotNull("no metadata", actual);
+
+      DocumentMetadataHandle.DocumentCollections actualCollections = actual.getCollections();
+      assertNotNull("no collections metadata", actualCollections);
+      for (String expectedCollection: collections) {
+        assertTrue("collection metadata not set", actualCollections.contains(expectedCollection));
+      }
+
+      DocumentMetadataHandle.DocumentPermissions actualPermissions = actual.getPermissions();
+      assertNotNull("no permissions metadata", actualPermissions);
+      assertTrue("permissions metadata not set",
+          actualPermissions.get("manage-user").contains(DocumentMetadataHandle.Capability.READ)
+      );
+
+      DocumentMetadataHandle.DocumentMetadataValues actualMetaVals = actual.getMetadataValues();
+      assertNotNull("no key-value metadata", actualMetaVals);
+      assertEquals("key-value metadata not set", actualMetaVals.get("metaKey"), "metaValue");
+
+      assertEquals("quality metadata not set", meta.getQuality(), actual.getQuality());
     }
   }
 
