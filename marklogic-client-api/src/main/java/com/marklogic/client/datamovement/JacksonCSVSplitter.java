@@ -83,10 +83,7 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
         if(input == null) {
             throw new IllegalArgumentException("InputSteam cannot be null.");
         }
-        PeekingIterator<JsonNode> peekingIterator = configureSplitObj(configureObjReader().readValues(input));
-        
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(peekingIterator, Spliterator.ORDERED), false)
-                .map(this::wrapJacksonHandle);
+        return configureInput(configureObjReader().readValues(input));
     }
     
     public Stream<JacksonHandle> split(Reader input) throws Exception  { 
@@ -94,9 +91,7 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
         if(input == null) {
             throw new IllegalArgumentException("Input cannot be null.");
         }
-        PeekingIterator<JsonNode> peekingIterator = configureSplitObj(configureObjReader().readValues(input));
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(peekingIterator, Spliterator.ORDERED), false)
-                .map(this::wrapJacksonHandle);
+        return configureInput(configureObjReader().readValues(input));
     }
 
     @Override
@@ -138,5 +133,14 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
         }
         
         return peekingIterator;
+    }
+    
+    private Stream<JacksonHandle> configureInput(Iterator<JsonNode> nodeItr) {
+        
+        if(getCsvSchema() == null) {
+            PeekingIterator<JsonNode> peekingIterator = configureSplitObj(nodeItr);
+            return StreamSupport.stream(Spliterators.spliteratorUnknownSize(peekingIterator, Spliterator.ORDERED), false).map(this::wrapJacksonHandle);
+        }
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(nodeItr, Spliterator.ORDERED), false).map(this::wrapJacksonHandle);
     }
 }
