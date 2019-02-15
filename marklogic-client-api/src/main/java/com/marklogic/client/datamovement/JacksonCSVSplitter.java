@@ -95,7 +95,6 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
             throw new IllegalArgumentException("Input cannot be null.");
         }
         PeekingIterator<JsonNode> peekingIterator = configureSplitObj(configureObjReader().readValues(input));
-        setHeaders(peekingIterator.getFirst());
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(peekingIterator, Spliterator.ORDERED), false)
                 .map(this::wrapJacksonHandle);
     }
@@ -124,14 +123,6 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
     private JacksonHandle wrapJacksonHandle(JsonNode content) {
         incrementCount();
         return new JacksonHandle(content);
-    }
-    
-    private void setHeaders(JsonNode headerNode) {
-        Iterator<String> headerValue = headerNode.fieldNames();
-        this.headers = new ObjectMapper().createArrayNode();
-        while (headerValue.hasNext()) {
-            headers.add(headerValue.next());
-        }
     }
     
     private PeekingIterator<JsonNode> configureSplitObj(Iterator<JsonNode> nodeItr){
