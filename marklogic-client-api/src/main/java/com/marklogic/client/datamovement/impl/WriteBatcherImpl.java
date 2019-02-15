@@ -555,6 +555,9 @@ public class WriteBatcherImpl
         return;
       }
       BatchWriteSet writeSet = newBatchWriteSet(forceNewTransaction);
+      if(defaultMetadata != null) {
+          writeSet.getWriteSet().add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT, null, defaultMetadata, null));
+        }
       int j=0;
       for ( ; j < getBatchSize() && iter.hasNext(); j++ ) {
         DocumentWriteOperation doc = iter.next();
