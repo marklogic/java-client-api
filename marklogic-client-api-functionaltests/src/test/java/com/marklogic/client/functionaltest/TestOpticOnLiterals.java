@@ -997,13 +997,13 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     assertEquals("Nine nodes not returned from testUnionWithWhereDistinct method", 9, jsonBindingsNodes.size());
 
     assertEquals("Row 1 colorId value incorrect", "1", jsonBindingsNodes.path(0).path("colorId").path("value").asText());
-    assertEquals("Row 1 colorDesc value incorrect", "red", jsonBindingsNodes.path(0).path("colorDesc").path("value").asText());
+    assertEquals("Row 1 colorDesc value incorrect", "null", jsonBindingsNodes.path(0).path("colorDesc").path("value").asText());
     assertEquals("Row 2 colorId value incorrect", "2", jsonBindingsNodes.path(1).path("colorId").path("value").asText());
-    assertEquals("Row 2 colorDesc value incorrect", "blue", jsonBindingsNodes.path(1).path("colorDesc").path("value").asText());
-    assertEquals("Row 6 desc value incorrect", "square", jsonBindingsNodes.path(5).path("desc").path("value").asText());
-    assertEquals("Row 6 rowId value incorrect", "2", jsonBindingsNodes.path(5).path("rowId").path("value").asText());
-    assertEquals("Row 9 desc value incorrect", "circle", jsonBindingsNodes.path(8).path("desc").path("value").asText());
-    assertEquals("Row 9 colorId value incorrect", "5", jsonBindingsNodes.path(8).path("colorId").path("value").asText());
+    assertEquals("Row 2 colorDesc value incorrect", "null", jsonBindingsNodes.path(1).path("colorDesc").path("value").asText());
+    assertEquals("Row 6 desc value incorrect", "null", jsonBindingsNodes.path(5).path("desc").path("value").asText());
+    assertEquals("Row 6 rowId value incorrect", "null", jsonBindingsNodes.path(5).path("rowId").path("value").asText());
+    assertEquals("Row 9 desc value incorrect", "null", jsonBindingsNodes.path(8).path("desc").path("value").asText());
+    assertEquals("Row 9 colorId value incorrect", "4", jsonBindingsNodes.path(8).path("colorId").path("value").asText());
   }
 
   /*
