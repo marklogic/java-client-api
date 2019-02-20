@@ -985,7 +985,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     ModifyPlan plan1 = p.fromLiterals(literals1);
     ModifyPlan plan2 = p.fromLiterals(literals2);
 
-    ModifyPlan output = plan1.union(plan2).whereDistinct().orderBy(p.sortKeySeq(p.col("rowId")));
+    ModifyPlan output = plan1.union(plan2).whereDistinct().orderBy(p.sortKeySeq(p.col("rowId"), p.col("colorId")));
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
