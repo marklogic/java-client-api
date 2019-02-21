@@ -77,6 +77,12 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
         return csvMapper;
     }
 
+    /*
+     * Takes the input stream and converts it into a stream of JacksonHandle by setting the schema 
+     *  and wrapping the JsonNode into JacksonHandle.
+     * @param input the input stream passed in.
+     * @return a stream of JacksonHandle.
+     */
     @Override
     public Stream<JacksonHandle> split(InputStream input) throws Exception { 
 
@@ -86,6 +92,12 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
         return configureInput(configureObjReader().readValues(input));
     }
     
+    /*
+     * Takes the input stream and converts it into a stream of JacksonHandle by setting the schema 
+     *  and wrapping the JsonNode into JacksonHandle.
+     * @param input the Reader stream passed in.
+     * @return a stream of JacksonHandle.
+     */
     public Stream<JacksonHandle> split(Reader input) throws Exception  { 
 
         if(input == null) {
