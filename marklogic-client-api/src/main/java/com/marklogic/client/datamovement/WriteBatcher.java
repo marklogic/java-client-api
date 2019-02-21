@@ -74,7 +74,7 @@ public interface WriteBatcher extends Batcher {
     WriteBatcher withDefaultMetadata(DocumentMetadataHandle handle);
     
     /**
-     * Writes a document to the database for each row in the csv and keeps track of the number of documents written.
+     * Writes a document stream to the database.
      * @param operations is the DocumentWriteOperation stream passed in.
      */
     void addAll(Stream<? extends DocumentWriteOperation> operations);
