@@ -24,7 +24,6 @@ dependencies {
     compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-csv', version:'2.9.8'
     testCompile group: 'org.mockito', name: 'mockito-all', version:'1.10.19'
     testCompile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-xml', version:'2.9.8'
-    testCompile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-csv', version:'2.9.8'
     testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
     testCompile group: 'org.hsqldb', name: 'hsqldb', version:'2.4.0'
     compileOnly group: 'org.jdom', name: 'jdom2', version:'2.0.6'
