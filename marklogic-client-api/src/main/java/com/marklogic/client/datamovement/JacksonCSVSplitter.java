@@ -44,20 +44,36 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
     private long count = 0;
     private ArrayNode headers = null;
     
+    /**
+     * @return the CsvMapper for the current instance.
+     */
     public CsvMapper getCsvMapper() {
         return csvMapper;
     }
 
+    /**
+     * Used to set the CsvSchema for the current instance.
+     * @param schema is the CsvSchema passed in.
+     * @return an instance of JacksonCSVSplitter with CsvSchema set to the parameter.
+     */
     public JacksonCSVSplitter withCsvSchema(CsvSchema schema) {
         this.csvSchema = schema;
         return this;
     } 
     
+    /**
+     * Used to set the CsvMapper for the current instance.
+     * @param mapper is the CsvMapper passed in.
+     * @return an instance of JacksonCSVSplitter with CsvMapper set to the parameter.
+     */
     public JacksonCSVSplitter withCsvMapper(CsvMapper mapper) {
         this.csvMapper = mapper;
         return this;
     }
     
+    /**
+     * @return the CsvSchema for the current instance.
+     */
     public CsvSchema getCsvSchema() {
         return csvSchema;
     }
@@ -77,7 +93,7 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
         return csvMapper;
     }
 
-    /*
+    /**
      * Takes the input stream and converts it into a stream of JacksonHandle by setting the schema 
      *  and wrapping the JsonNode into JacksonHandle.
      * @param input the input stream passed in.
@@ -92,7 +108,7 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
         return configureInput(configureObjReader().readValues(input));
     }
     
-    /*
+    /**
      * Takes the input stream and converts it into a stream of JacksonHandle by setting the schema 
      *  and wrapping the JsonNode into JacksonHandle.
      * @param input the Reader stream passed in.
@@ -106,10 +122,17 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
         return configureInput(configureObjReader().readValues(input));
     }
 
+    /**
+     * @return the number of JsonNodes found in the input stream.
+     */
     @Override
     public long getCount() { 
         return this.count;
     }
+    
+    /**
+     * @return the headers found in the csv file.
+     */
     public ArrayNode getHeaders() {
         return this.headers;
     }
