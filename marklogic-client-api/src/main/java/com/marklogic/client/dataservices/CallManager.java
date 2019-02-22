@@ -80,7 +80,7 @@ public interface CallManager {
      * of the value or values returned by the data service endpoint. The values of the server data type
      * must be mappable to objects of the Java class.
      */
-    interface CallableEndpoint {
+    interface CallableEndpoint extends EndpointDefiner {
         /**
          * Creates a caller to an endpoint that doesn't return values.
          * @return  a caller that doesn't return values
@@ -102,239 +102,79 @@ public interface CallManager {
         <R> ManyCaller<R> returningMany(Class<R> as);
     }
 
-    /**
-     * Provides the input parameters for a specific call to a data service.  The
-     * Java representation for a parameter value must be mappable to the server
-     * data type for the parameter.
-     */
-    interface CallBuilder {
+    interface NoneCaller extends EndpointDefiner {
         /**
-         * Sets a node parameter of the data service endpoint by means of a handle.
-         * Handles provide adapters for Java IO representations and are thus
-         * appropriate only for the server data types of nodes such as jsonDocument.
-         * For instance, InputStreamHandle provides an adapter for InputStream.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
+         * Sends the parameter input to an endpoint module that doesn't respond with any output.
+         * Can be executed any number of times to call the endpoint repeatedly with the same input.
+         * If the endpoint has required parameters, the call must provide arguments that set
+         * those parameters.
          */
-        <T extends CallBuilder> T param(String name, AbstractWriteHandle... value);
+        void call();
         /**
-         * Sets a decimal parameter of the data service endpoint to a Java BigDecimal value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
+         * Sends the parameter input to an endpoint module that doesn't respond with any output.
+         * Can be executed any number of times to call the endpoint repeatedly with the same input.
+         * @param args  the parameter input for the call
          */
-        <T extends CallBuilder> T param(String name, BigDecimal... value);
+        void call(CallArgs args);
+    }
+    interface OneCaller<R> extends EndpointDefiner {
         /**
-         * Sets a boolean parameter of the data service endpoint to a Java boolean value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
+         * Sends the parameter input to an endpoint module that responds with at most one value.
+         * Can be executed any number of times to call the endpoint repeatedly with the same input.
+         * If the endpoint has required parameters, the call must provide arguments that set
+         * those parameters.
+         * @return  a Java value of the specified type as returned by the endpoint
          */
-        <T extends CallBuilder> T param(String name, Boolean... value);
+        R call();
         /**
-         * Sets a node parameter of the data service endpoint to a Java byte array value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
+         * Sends the parameter input to an endpoint module that responds with at most one value.
+         * Can be executed any number of times to call the endpoint repeatedly with the same input.
+         * @param args  the parameter input for the call
+         * @return  a Java value of the specified type as returned by the endpoint
          */
-        <T extends CallBuilder> T param(String name, byte[]... value);
+        R call(CallArgs args);
+    }
+    interface ManyCaller<R> extends EndpointDefiner {
         /**
-         * Sets a dateTime parameter of the data service endpoint to a Java Date value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
+         * Sends the parameter input to an endpoint module that can respond with multiple values.
+         * Can be executed any number of times to call the endpoint repeatedly with the same input.
+         * If the endpoint has required parameters, the call must provide arguments that set
+         * those parameters.
+         * @return  a stream of Java values of the specified type as returned by the endpoint
          */
-        <T extends CallBuilder> T param(String name, Date... value);
+        Stream<R> call();
         /**
-         * Sets an xmlDocument parameter of the data service endpoint to a Java Document value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
+         * Sends the parameter input to an endpoint module that can respond with multiple values.
+         * Can be executed any number of times to call the endpoint repeatedly with the same input.
+         * @param args  the parameter input for the call
+         * @return  a stream of Java values of the specified type as returned by the endpoint
          */
-        <T extends CallBuilder> T param(String name, Document... value);
+        Stream<R> call(CallArgs args);
+    }
+    interface EndpointDefiner {
         /**
-         * Sets a double parameter of the data service endpoint to a Java double value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
+         * Starts assigning values to parameters of the endpoint module.
+         * The CallArgs object is not threadsafe.
+         * @return  the CallArgs object for chained building of the arguments
          */
-        <T extends CallBuilder> T param(String name, Double... value);
+        CallArgs args();
         /**
-         * Sets a dayTimeDuration parameter of the data service endpoint to a Java Duration value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, Duration... value);
-        /**
-         * Sets a node parameter of the data service endpoint to a Java File value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, File... value);
-        /**
-         * Sets a float parameter of the data service endpoint to a Java float value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, Float... value);
-        /**
-         * Sets an xmlDocument parameter of the data service endpoint to a Java InputSource value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, InputSource... value);
-        /**
-         * Sets a node parameter of the data service endpoint to a Java InputStream value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, InputStream... value);
-        /**
-         * Sets an int or unsignedInt parameter of the data service endpoint to a Java int value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, Integer... value);
-        /**
-         * Sets a JSON node parameter of the data service endpoint to a Jackson JsonNode value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, JsonNode... value);
-        /**
-         * Sets a JSON node parameter of the data service endpoint to a Jackson JsonParser value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, JsonParser... value);
-        /**
-         * Sets a date parameter of the data service endpoint to a Java LocalDate value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, LocalDate... value);
-        /**
-         * Sets a dateTime parameter of the data service endpoint to a Java LocalDateTime value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, LocalDateTime... value);
-        /**
-         * Sets a time parameter of the data service endpoint to a Java LocalTime value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, LocalTime... value);
-        /**
-         * Sets a long or unsignedLong parameter of the data service endpoint to a Java long value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, Long... value);
-        /**
-         * Sets a dateTime parameter of the data service endpoint to a Java OffsetDateTime value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, OffsetDateTime... value);
-        /**
-         * Sets a time parameter of the data service endpoint to a Java OffsetTime value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, OffsetTime... value);
-        /**
-         * Sets an JSON, XML, or text node parameter of the data service endpoint to a Java Reader value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, Reader... value);
-        /**
-         * Sets an xmlDocument parameter of the data service endpoint to a Java Source value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, Source... value);
-        /**
-         * Sets a parameter of the data service endpoint to a Java String value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, String... value);
-        /**
-         * Sets an xmlDocument parameter of the data service endpoint to a Java XMLEventReader value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, XMLEventReader... value);
-        /**
-         * Sets an xmlDocument parameter of the data service endpoint to a Java XMLStreamReader value.
-         * @param name  the name of the parameter
-         * @param value  the value to assign to the parameter
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
-         */
-        <T extends CallBuilder> T param(String name, XMLStreamReader... value);
-
-        /**
-         * Sets the session for the call to the data service endpoint. The declaration
-         * for the data service endpoint must specify that the service takes a session.
-         * Only one session can be specified per call
+         * Sets the session for the call to the data service endpoint and
+         * starts assigning values to parameters of the endpoint module.
+         * The declaration for the data service endpoint must specify that
+         * the service takes a session.
+         *
+         * The CallArgs object is not threadsafe.
          * @param session  a session constructed by the CallManager.newSessionState() factory
-         * @param <T>  the type of caller
-         * @return  the NoneCaller, OneCaller, or ManyCaller for chained building of the call
+         * @return  the CallArgs object for chained building of the arguments
          */
-        <T extends CallBuilder> T session(SessionState session);
+        CallArgs args(SessionState session);
 
         /**
          * Gets the path from the URI for the request to the endpoint module.
          * @return  the path
          */
-        String endpointPath();
+        String getEndpointPath();
         /**
          * Identifies whether the endpoint takes a session.
          * @return  whether a session should be provided on the call
@@ -351,196 +191,436 @@ public interface CallManager {
          */
         Returndef getReturndef();
     }
-    interface NoneCaller extends CallBuilder {
-        @Override
-        NoneCaller param(String name, AbstractWriteHandle... value);
-        @Override
-        NoneCaller param(String name, BigDecimal... value);
-        @Override
-        NoneCaller param(String name, Boolean... value);
-        @Override
-        NoneCaller param(String name, byte[]... value);
-        @Override
-        NoneCaller param(String name, Date... value);
-        @Override
-        NoneCaller param(String name, Document... value);
-        @Override
-        NoneCaller param(String name, Double... value);
-        @Override
-        NoneCaller param(String name, Duration... value);
-        @Override
-        NoneCaller param(String name, File... value);
-        @Override
-        NoneCaller param(String name, Float... value);
-        @Override
-        NoneCaller param(String name, InputSource... value);
-        @Override
-        NoneCaller param(String name, InputStream... value);
-        @Override
-        NoneCaller param(String name, Integer... value);
-        @Override
-        NoneCaller param(String name, JsonNode... value);
-        @Override
-        NoneCaller param(String name, JsonParser... value);
-        @Override
-        NoneCaller param(String name, LocalDate... value);
-        @Override
-        NoneCaller param(String name, LocalDateTime... value);
-        @Override
-        NoneCaller param(String name, LocalTime... value);
-        @Override
-        NoneCaller param(String name, Long... value);
-        @Override
-        NoneCaller param(String name, OffsetDateTime... value);
-        @Override
-        NoneCaller param(String name, OffsetTime... value);
-        @Override
-        NoneCaller param(String name, Reader... value);
-        @Override
-        NoneCaller param(String name, Source... value);
-        @Override
-        NoneCaller param(String name, String... value);
-        @Override
-        NoneCaller param(String name, XMLEventReader... value);
-        @Override
-        NoneCaller param(String name, XMLStreamReader... value);
-
-        @Override
-        NoneCaller session(SessionState session);
-
+    /**
+     * Provides the input parameters for a specific call to a data service.  The
+     * Java representation for a parameter value must be mappable to the server
+     * data type for the parameter.
+     *
+     * The CallArgs object is not threadsafe.
+     */
+    interface CallArgs {
         /**
-         * Sends the parameter input to an endpoint module that doesn't respond with any output.
-         * Can be executed any number of times to call the endpoint repeatedly with the same input.
+         * Sets a node parameter of the data service endpoint by means of a handle.
+         * Handles provide adapters for Java IO representations and are thus
+         * appropriate only for the server data types of nodes such as jsonDocument.
+         * For instance, InputStreamHandle provides an adapter for InputStream.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
          */
-        void call();
-    }
-    interface OneCaller<R> extends CallBuilder {
-        @Override
-        OneCaller<R> param(String name, AbstractWriteHandle... value);
-        @Override
-        OneCaller<R> param(String name, BigDecimal... value);
-        @Override
-        OneCaller<R> param(String name, Boolean... value);
-        @Override
-        OneCaller<R> param(String name, byte[]... value);
-        @Override
-        OneCaller<R> param(String name, Date... value);
-        @Override
-        OneCaller<R> param(String name, Document... value);
-        @Override
-        OneCaller<R> param(String name, Double... value);
-        @Override
-        OneCaller<R> param(String name, Duration... value);
-        @Override
-        OneCaller<R> param(String name, File... value);
-        @Override
-        OneCaller<R> param(String name, Float... value);
-        @Override
-        OneCaller<R> param(String name, InputSource... value);
-        @Override
-        OneCaller<R> param(String name, InputStream... value);
-        @Override
-        OneCaller<R> param(String name, Integer... value);
-        @Override
-        OneCaller<R> param(String name, JsonNode... value);
-        @Override
-        OneCaller<R> param(String name, JsonParser... value);
-        @Override
-        OneCaller<R> param(String name, LocalDate... value);
-        @Override
-        OneCaller<R> param(String name, LocalDateTime... value);
-        @Override
-        OneCaller<R> param(String name, LocalTime... value);
-        @Override
-        OneCaller<R> param(String name, Long... value);
-        @Override
-        OneCaller<R> param(String name, OffsetDateTime... value);
-        @Override
-        OneCaller<R> param(String name, OffsetTime... value);
-        @Override
-        OneCaller<R> param(String name, Reader... value);
-        @Override
-        OneCaller<R> param(String name, Source... value);
-        @Override
-        OneCaller<R> param(String name, String... value);
-        @Override
-        OneCaller<R> param(String name, XMLEventReader... value);
-        @Override
-        OneCaller<R> param(String name, XMLStreamReader... value);
-
-        @Override
-        OneCaller<R> session(SessionState session);
-
+        CallArgs param(String name, AbstractWriteHandle value);
         /**
-         * Sends the parameter input to an endpoint module that responds with at most one value.
-         * Can be executed any number of times to call the endpoint repeatedly with the same input.
-         * @return  a Java value of the specified type as returned by the endpoint
+         * Sets a node parameter of the data service endpoint by means of multiple handles.
+         * Handles provide adapters for Java IO representations and are thus
+         * appropriate only for the server data types of nodes such as jsonDocument.
+         * For instance, InputStreamHandle provides an adapter for InputStream.
+         * The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
          */
-        R call();
-    }
-    interface ManyCaller<R> extends CallBuilder {
-        @Override
-        ManyCaller<R> param(String name, AbstractWriteHandle... value);
-        @Override
-        ManyCaller<R> param(String name, BigDecimal... value);
-        @Override
-        ManyCaller<R> param(String name, Boolean... value);
-        @Override
-        ManyCaller<R> param(String name, byte[]... value);
-        @Override
-        ManyCaller<R> param(String name, Date... value);
-        @Override
-        ManyCaller<R> param(String name, Document... value);
-        @Override
-        ManyCaller<R> param(String name, Double... value);
-        @Override
-        ManyCaller<R> param(String name, Duration... value);
-        @Override
-        ManyCaller<R> param(String name, File... value);
-        @Override
-        ManyCaller<R> param(String name, Float... value);
-        @Override
-        ManyCaller<R> param(String name, InputSource... value);
-        @Override
-        ManyCaller<R> param(String name, InputStream... value);
-        @Override
-        ManyCaller<R> param(String name, Integer... value);
-        @Override
-        ManyCaller<R> param(String name, JsonNode... value);
-        @Override
-        ManyCaller<R> param(String name, JsonParser... value);
-        @Override
-        ManyCaller<R> param(String name, LocalDate... value);
-        @Override
-        ManyCaller<R> param(String name, LocalDateTime... value);
-        @Override
-        ManyCaller<R> param(String name, LocalTime... value);
-        @Override
-        ManyCaller<R> param(String name, Long... value);
-        @Override
-        ManyCaller<R> param(String name, OffsetDateTime... value);
-        @Override
-        ManyCaller<R> param(String name, OffsetTime... value);
-        @Override
-        ManyCaller<R> param(String name, Reader... value);
-        @Override
-        ManyCaller<R> param(String name, Source... value);
-        @Override
-        ManyCaller<R> param(String name, String... value);
-        @Override
-        ManyCaller<R> param(String name, XMLEventReader... value);
-        @Override
-        ManyCaller<R> param(String name, XMLStreamReader... value);
-
-        @Override
-        ManyCaller<R> session(SessionState session);
-
+        CallArgs param(String name, AbstractWriteHandle[] values);
         /**
-         * Sends the parameter input to an endpoint module that can respond with multiple values.
-         * Can be executed any number of times to call the endpoint repeatedly with the same input.
-         * @return  a stream of Java values of the specified type as returned by the endpoint
+         * Sets a decimal parameter of the data service endpoint to a Java BigDecimal value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
          */
-        Stream<R> call();
+        CallArgs param(String name, BigDecimal value);
+        /**
+         * Sets a decimal parameter of the data service endpoint to multiple Java BigDecimal
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, BigDecimal[] values);
+        /**
+         * Sets a boolean parameter of the data service endpoint to a Java boolean value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Boolean value);
+        /**
+         * Sets a boolean parameter of the data service endpoint to multiple Java boolean
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Boolean[] values);
+        /**
+         * Sets a node parameter of the data service endpoint to a Java byte array value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, byte[] value);
+        /**
+         * Sets a node parameter of the data service endpoint to multiple Java byte array
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, byte[][] values);
+        /**
+         * Sets a dateTime parameter of the data service endpoint to a Java Date value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Date value);
+        /**
+         * Sets a dateTime parameter of the data service endpoint to multiple Java Date
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Date[] values);
+        /**
+         * Sets an xmlDocument parameter of the data service endpoint to a Java Document value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Document value);
+        /**
+         * Sets an xmlDocument parameter of the data service endpoint to multiple Java Document
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Document[] values);
+        /**
+         * Sets a double parameter of the data service endpoint to a Java double value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Double value);
+        /**
+         * Sets a double parameter of the data service endpoint to multiple Java double
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Double[] values);
+        /**
+         * Sets a dayTimeDuration parameter of the data service endpoint to a Java Duration value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Duration value);
+        /**
+         * Sets a dayTimeDuration parameter of the data service endpoint to multiple Java Duration
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Duration[] values);
+        /**
+         * Sets a node parameter of the data service endpoint to a Java File value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, File value);
+        /**
+         * Sets a node parameter of the data service endpoint to multiple Java File
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, File[] values);
+        /**
+         * Sets a float parameter of the data service endpoint to a Java float value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Float value);
+        /**
+         * Sets a float parameter of the data service endpoint to multiple Java float
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Float[] values);
+        /**
+         * Sets an xmlDocument parameter of the data service endpoint to a Java InputSource value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, InputSource value);
+        /**
+         * Sets an xmlDocument parameter of the data service endpoint to multiple Java InputSource
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, InputSource[] values);
+        /**
+         * Sets a node parameter of the data service endpoint to a Java InputStream value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, InputStream value);
+        /**
+         * Sets a node parameter of the data service endpoint to multiple Java InputStream
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, InputStream[] values);
+        /**
+         * Sets an int or unsignedInt parameter of the data service endpoint to a Java int value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Integer value);
+        /**
+         * Sets an int or unsignedInt parameter of the data service endpoint to multiple Java int
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Integer[] values);
+        /**
+         * Sets a JSON node parameter of the data service endpoint to a Jackson JsonNode value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, JsonNode value);
+        /**
+         * Sets a JSON node parameter of the data service endpoint to multiple Jackson JsonNode
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, JsonNode[] values);
+        /**
+         * Sets a JSON node parameter of the data service endpoint to a Jackson JsonParser value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, JsonParser value);
+        /**
+         * Sets a JSON node parameter of the data service endpoint to multiple Jackson JsonParser
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, JsonParser[] values);
+        /**
+         * Sets a date parameter of the data service endpoint to a Java LocalDate value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, LocalDate value);
+        /**
+         * Sets a date parameter of the data service endpoint to multiple Java LocalDate
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, LocalDate[] values);
+        /**
+         * Sets a dateTime parameter of the data service endpoint to a Java LocalDateTime value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, LocalDateTime value);
+        /**
+         * Sets a dateTime parameter of the data service endpoint to multiple Java LocalDateTime
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, LocalDateTime[] values);
+        /**
+         * Sets a time parameter of the data service endpoint to a Java LocalTime value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, LocalTime value);
+        /**
+         * Sets a time parameter of the data service endpoint to multiple Java LocalTime
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, LocalTime[] values);
+        /**
+         * Sets a long or unsignedLong parameter of the data service endpoint to a Java long value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Long value);
+        /**
+         * Sets a long or unsignedLong parameter of the data service endpoint to multiple Java long
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Long[] values);
+        /**
+         * Sets a dateTime parameter of the data service endpoint to a Java OffsetDateTime value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, OffsetDateTime value);
+        /**
+         * Sets a dateTime parameter of the data service endpoint to multiple Java OffsetDateTime
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, OffsetDateTime[] values);
+        /**
+         * Sets a time parameter of the data service endpoint to a Java OffsetTime value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, OffsetTime value);
+        /**
+         * Sets a time parameter of the data service endpoint to multiple Java OffsetTime
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, OffsetTime[] values);
+        /**
+         * Sets an JSON, XML, or text node parameter of the data service endpoint to a Java Reader value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Reader value);
+        /**
+         * Sets an JSON, XML, or text node parameter of the data service endpoint to multiple Java Reader
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Reader[] values);
+        /**
+         * Sets an xmlDocument parameter of the data service endpoint to a Java Source value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Source value);
+        /**
+         * Sets an xmlDocument parameter of the data service endpoint to multiple Java Source
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, Source[] values);
+        /**
+         * Sets a parameter of the data service endpoint to a Java String value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, String value);
+        /**
+         * Sets a parameter of the data service endpoint to multiple Java String
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, String[] values);
+        /**
+         * Sets an xmlDocument parameter of the data service endpoint to a Java XMLEventReader value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, XMLEventReader value);
+        /**
+         * Sets an xmlDocument parameter of the data service endpoint to multiple Java XMLEventReader
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, XMLEventReader[] values);
+        /**
+         * Sets an xmlDocument parameter of the data service endpoint to a Java XMLStreamReader value.
+         * @param name  the name of the parameter
+         * @param value  the value to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, XMLStreamReader value);
+        /**
+         * Sets an xmlDocument parameter of the data service endpoint to multiple Java XMLStreamReader
+         * values. The declaration for the parameter must specify that the parameter accepts
+         * multiple values.
+         * @param name  the name of the parameter
+         * @param values  the values to assign to the parameter
+         * @return  the CallArgs object for chained building of the arguments
+         */
+        CallArgs param(String name, XMLStreamReader[] values);
     }
 
     /**
