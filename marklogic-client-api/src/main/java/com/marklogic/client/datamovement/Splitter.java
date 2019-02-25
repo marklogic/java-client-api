@@ -22,15 +22,13 @@ import java.util.stream.Stream;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 
 /**
- * To facilitate CSV splitting, Splitter allows to implement the split method where the 
- *  incoming input stream is converted to a stream of another object, for example JacksonHandle 
- *  and gives an option to keep a record of the number of objects created using getCount method.
+ * Splitter splits an input stream into a Java stream of write handles.
  */
 public interface Splitter<T extends AbstractWriteHandle> {
     /**
-     * Converts the incoming input stream to a stream of object T.
+     * Converts the incoming input stream to a stream of AbstractWriteHandle objects.
      * @param input is the incoming input stream.
-     * @return a stream of T.
+     * @return a stream of AbstractWriteHandle objects.
      */
     Stream<T> split(InputStream input) throws Exception;
 

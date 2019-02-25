@@ -45,6 +45,7 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
     private ArrayNode headers = null;
     
     /**
+     * The CsvMapper configured for the current instance.
      * @return the CsvMapper for the current instance.
      */
     public CsvMapper getCsvMapper() {
@@ -72,6 +73,7 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
     }
     
     /**
+     * The CsvSchema configured for the current instance.
      * @return the CsvSchema for the current instance.
      */
     public CsvSchema getCsvSchema() {
@@ -123,6 +125,7 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
     }
 
     /**
+     * The number of JsonNodes found so far.
      * @return the number of JsonNodes found in the input stream.
      */
     @Override
@@ -131,6 +134,7 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
     }
     
     /**
+     * The headers of the csv file.
      * @return the headers found in the csv file.
      */
     public ArrayNode getHeaders() {
