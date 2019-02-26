@@ -1620,6 +1620,18 @@ class CallManagerImpl implements CallManager {
           return response.asStreamOfBytes();
         }
       });
+/* TODO: related to #1055
+      put(File.class, new ReturnConverter<File>() {
+        @Override
+        public File one(SingleCallResponse response) {
+          return null;
+        }
+        @Override
+        public Stream<File> many(MultipleCallResponse response) {
+          return null;
+        }
+      });
+ */
       put(InputStream.class, new ReturnConverter<InputStream>() {
         @Override
         public InputStream one(SingleCallResponse response) {

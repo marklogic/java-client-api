@@ -63,8 +63,6 @@ public class Common {
   final public static int     MODULES_WAIT  = Integer.parseInt(System.getProperty("TEST_MODULES_WAIT",  WITH_WAIT ? "1200" : "0"));
   final public static int     PROPERTY_WAIT = Integer.parseInt(System.getProperty("TEST_PROPERTY_WAIT", WITH_WAIT ? "8200" : "0"));
 
-  final public static int DATA_SERVICE_PORT = Integer.parseInt(System.getProperty("TEST_DATA_SERVICE_PORT", "8016"));
-
   final public static DatabaseClient.ConnectionType CONNECTION_TYPE =
       DatabaseClient.ConnectionType.valueOf(System.getProperty("TEST_CONNECT_TYPE", "DIRECT"));
 
@@ -102,11 +100,6 @@ public class Common {
       readOnlyClient = newReadOnlyClient();
     return readOnlyClient;
   }
-  public static DatabaseClient connectDataService() {
-    if (dataServiceClient == null)
-      dataServiceClient = newDataServiceClient();
-    return dataServiceClient;
-  }
   public static DatabaseClient newClient() {
     return newClient(null);
   }
@@ -143,11 +136,6 @@ public class Common {
     return DatabaseClientFactory.newClient(
       Common.HOST, Common.PORT, new DigestAuthContext(Common.READ_ONLY_USER, Common.READ_ONLY_PASS),
           CONNECTION_TYPE);
-  }
-  public static DatabaseClient newDataServiceClient() {
-    return DatabaseClientFactory.newClient(Common.HOST, Common.DATA_SERVICE_PORT,
-            new DatabaseClientFactory.DigestAuthContext(Common.USER, Common.PASS),
-            CONNECTION_TYPE);
   }
 
   public static byte[] streamToBytes(InputStream is) throws IOException {

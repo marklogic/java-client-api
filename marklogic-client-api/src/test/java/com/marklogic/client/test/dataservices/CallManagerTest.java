@@ -65,7 +65,7 @@ public class CallManagerTest {
 
     private final static Map<String, Format> NODE_FORMATS = new HashMap<>();
 
-    private DatabaseClient db      = Common.connectDataService();
+    private DatabaseClient db      = Common.connect();
     private CallManager    callMgr = CallManager.on(db);
 
     private JacksonHandle serviceHandle;
@@ -86,7 +86,7 @@ public class CallManagerTest {
         NODE_FORMATS.put("textDocument",   Format.TEXT);
         NODE_FORMATS.put("xmlDocument",    Format.XML);
 
-        DatabaseClient adminClient = Common.newServerAdminClient("DBFUnitTestModules");
+        DatabaseClient adminClient = Common.newServerAdminClient("java-unittest-modules");
         JSONDocumentManager docMgr = adminClient.newJSONDocumentManager();
 
         DocumentMetadataHandle docMeta = new DocumentMetadataHandle();
@@ -131,13 +131,11 @@ public class CallManagerTest {
         setupNoParamReturnEndpoint(docMgr, docMeta, "noParamReturn", "double", "5.6");
         setupNoParamNoReturnEndpoint(docMgr, docMeta, "noParamNoReturn");
 
-// TODO: negative tests
-
         adminClient.release();
     }
     @AfterClass
     public static void teardown() {
-        DatabaseClient adminClient = Common.newServerAdminClient("DBFUnitTestModules");
+        DatabaseClient adminClient = Common.newServerAdminClient("java-unittest-modules");
 
         QueryManager queryMgr = adminClient.newQueryManager();
         DeleteQueryDefinition deletedef = queryMgr.newDeleteDefinition();
@@ -792,13 +790,19 @@ public class CallManagerTest {
 
         testNode(functionName, callableEndpoint, values);
 
-// TODO: File
-
         BytesHandle[] values2 = convert(values, CallManagerTest::BytesHandle, BytesHandle.class);
-        CallManager.ManyCaller<BinaryReadHandle> caller4 = makeManyCaller(callableEndpoint, BinaryReadHandle.class);
+        CallManager.ManyCaller<BinaryReadHandle> caller2 = makeManyCaller(callableEndpoint, BinaryReadHandle.class);
         testConvertedCall(
-                functionName, caller4, caller4.args().param("param1", values2), values, CallManagerTest::string
+                functionName, caller2, caller2.args().param("param1", values2), values, CallManagerTest::string
         );
+
+/* TODO:
+        File value3 = new File("src/test/resources/test.bin");
+        CallManager.ManyCaller<File> caller3 = makeManyCaller(callableEndpoint, File.class);
+        testConvertedCall(
+                functionName, caller3, caller3.args().param("param1", value3), new String[]{CallManagerTest.string(value3)}, CallManagerTest::string
+        );
+        */
     }
     @Test
     public void testJsonDocument() {
@@ -809,8 +813,6 @@ public class CallManagerTest {
         String[] values = new String[]{"{\"root\":{\"child\":\"text1\"}}", "{\"root\":{\"child\":\"text2\"}}"};
 
         testCharacterNode(functionName, callableEndpoint, values);
-
-// TODO: File
 
         JsonNode[] values2 = convert(values, CallManagerTest::jsonNode, JsonNode.class);
         CallManager.ManyCaller<JsonNode> caller2 = makeManyCaller(callableEndpoint, JsonNode.class);
@@ -829,6 +831,15 @@ public class CallManagerTest {
         testConvertedCall(
                 functionName, caller4, caller4.args().param("param1", values4), values, CallManagerTest::string
         );
+
+/* TODO:
+        File value5 = new File("src/test/resources/basic1.json");
+        CallManager.ManyCaller<File> caller5 = makeManyCaller(callableEndpoint, File.class);
+        testConvertedCall(
+                functionName, caller3, caller3.args().param("param1", value5),
+                new String[]{CallManagerTest.string(value5)}, CallManagerTest::string
+        );
+ */
     }
     @Test
     public void testArray() {
@@ -941,13 +952,20 @@ public class CallManagerTest {
 
         testCharacterNode(functionName, callableEndpoint, values);
 
-// TODO: File
-
         StringHandle[] values2 = convert(values, StringHandle::new, StringHandle.class);
         CallManager.ManyCaller<TextReadHandle> caller2 = makeManyCaller(callableEndpoint, TextReadHandle.class);
         testConvertedCall(
                 functionName, caller2, caller2.args().param("param1", values2), values, CallManagerTest::string
         );
+
+/* TODO:
+        File value3 = new File("src/test/resources/hola.txt");
+        CallManager.ManyCaller<File> caller3 = makeManyCaller(callableEndpoint, File.class);
+        testConvertedCall(
+                functionName, caller3, caller3.args().param("param1", value3),
+                new String[]{CallManagerTest.string(value3)}, CallManagerTest::string
+        );
+        */
     }
     @Test
     public void testMultipleNullNode() {
@@ -972,8 +990,6 @@ public class CallManagerTest {
         testConvertedCall(
                 functionName, caller2, caller2.args().param("param1", values2), values, CallManagerTest::xmlString
         );
-
-// TODO: File
 
         InputStream[] values3 = convert(values, CallManagerTest::inputStream, InputStream.class);
         CallManager.ManyCaller<InputStream> caller3 = makeManyCaller(callableEndpoint, InputStream.class);
@@ -1027,6 +1043,15 @@ public class CallManagerTest {
         testConvertedCall(
                 functionName, caller11, caller11.args().param("param1", values11), values, CallManagerTest::xmlString
         );
+
+/* TODO:
+        File value12 = new File("src/test/resources/test.xml");
+        CallManager.ManyCaller<File> caller12 = makeManyCaller(callableEndpoint, File.class);
+        testConvertedCall(
+                functionName, caller3, caller3.args().param("param1", value12),
+                new String[]{CallManagerTest.string(value12)}, CallManagerTest::string
+        );
+        */
     }
     @Test
     public void testNullNode() {
@@ -1165,6 +1190,13 @@ public class CallManagerTest {
     }
     private static String string(Document value) {
         return string(new DOMSource(value));
+    }
+    private static String string(File value) {
+        try {
+            return string(new FileInputStream(value));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
     private static String string(InputStreamHandle value) {
         return string(value.get());
