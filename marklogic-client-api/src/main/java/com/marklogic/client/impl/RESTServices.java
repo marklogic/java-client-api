@@ -231,7 +231,7 @@ public interface RESTServices {
     throws ForbiddenUserException, FailedRequestException;
 
   public <R extends UrisReadHandle> R uris(RequestLogger reqlog, Transaction transaction,
-                                           QueryDefinition qdef, long start, long pageLength, String forestName, R output)
+                                           QueryDefinition qdef, long start, String afterUri, long pageLength, String forestName, R output)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
   public <R extends AbstractReadHandle> R getResource(RequestLogger reqlog, String path,
                                                       Transaction transaction, RequestParameters params, R output)

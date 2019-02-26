@@ -108,6 +108,15 @@ public class QueryBatchImpl extends BatchImpl<String> implements QueryBatch {
     return forestResultsSoFar;
   }
 
+  @Override
+  public String getLastUriForForest() {
+    String[] items = getItems();
+    if (items == null || items.length == 0) {
+      return null;
+    }
+    return items[items.length - 1];
+  }
+
   public QueryBatchImpl withForestResultsSoFar(long forestResultsSoFar) {
     this.forestResultsSoFar = forestResultsSoFar;
     return this;

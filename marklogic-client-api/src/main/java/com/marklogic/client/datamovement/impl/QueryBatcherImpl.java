@@ -164,7 +164,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     logger.trace("retryForest {} on retryHost {} at start {}",
       retryForest.getForestName(), retryForest.getPreferredHost(), start);
     QueryTask runnable = new QueryTask(getMoveMgr(), this, retryForest, query,
-      queryEvent.getForestBatchNumber(), start, queryEvent.getJobBatchNumber(), callFailListeners);
+      queryEvent.getForestBatchNumber(), start, queryEvent.getLastUriForForest(),
+      queryEvent.getJobBatchNumber(), callFailListeners);
     runnable.run();
   }
   /*
@@ -546,15 +547,24 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     private long start;
     private long retryBatchNumber;
     private boolean callFailListeners;
+    private String afterUri;
+    private String nextAfterUri;
 
     QueryTask(DataMovementManager moveMgr, QueryBatcher batcher, Forest forest,
       QueryDefinition query, long forestBatchNum, long start)
     {
-      this(moveMgr, batcher, forest, query, forestBatchNum, start, -1, true);
+      this(moveMgr, batcher, forest, query, forestBatchNum, start, null, -1, true);
     }
 
     QueryTask(DataMovementManager moveMgr, QueryBatcher batcher, Forest forest,
-      QueryDefinition query, long forestBatchNum, long start, long retryBatchNumber, boolean callFailListeners)
+      QueryDefinition query, long forestBatchNum, long start, String afterUri)
+    {
+      this(moveMgr, batcher, forest, query, forestBatchNum, start, afterUri, -1, true);
+    }
+
+    QueryTask(DataMovementManager moveMgr, QueryBatcher batcher, Forest forest,
+      QueryDefinition query, long forestBatchNum, long start, String afterUri,
+      long retryBatchNumber, boolean callFailListeners)
     {
       this.moveMgr = moveMgr;
       this.batcher = batcher;
@@ -562,6 +572,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       this.query = query;
       this.forestBatchNum = forestBatchNum;
       this.start = start;
+      this.afterUri = afterUri;
       this.retryBatchNumber = retryBatchNumber;
       this.callFailListeners = callFailListeners;
     }
@@ -604,7 +615,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
         // this try-with-resources block will call results.close() once the block is done
         // here we call the /v1/internal/uris endpoint to get the text/uri-list of documents
         // matching this structured or string query
-        try ( UrisHandle results = queryMgr.uris(query, handle, start, null, forest.getForestName()) ) {
+        try ( UrisHandle results = queryMgr.uris(query, handle, start, afterUri, null, forest.getForestName()) ) {
           // if we're doing consistentSnapshot and this is the first result set, let's capture the
           // serverTimestamp so we can use it for all future queries
           if ( consistentSnapshot == true && serverTimestamp.get() == -1 ) {
@@ -616,6 +627,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
             uris.add( uri );
           }
           if ( uris.size() == getBatchSize() ) {
+            nextAfterUri = uris.get(getBatchSize() - 1);
             // this is a full batch
             launchNextTask();
           }
@@ -683,7 +695,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       // we made it to the end, so don't launch anymore tasks
       if ( isDone.get() == true ) return;
       long nextStart = start + getBatchSize();
-      threadPool.execute(new QueryTask(moveMgr, batcher, forest, query, forestBatchNum + 1, nextStart));
+      threadPool.execute(new QueryTask(moveMgr, batcher, forest, query, forestBatchNum + 1, nextStart, nextAfterUri));
     }
   };
 

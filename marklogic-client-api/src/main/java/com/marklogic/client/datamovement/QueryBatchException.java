@@ -86,6 +86,14 @@ public class QueryBatchException extends Exception implements QueryEvent {
     return queryEvent.getForestResultsSoFar();
   }
 
+  /** Within the context of this forest within the job, the last uri
+   * processed including the uris in this event if this is a QueryBatch.
+   */
+  @Override
+  public String getLastUriForForest() {
+    return queryEvent.getLastUriForForest();
+  }
+
   /** The forest queried for this event if this job is based on a
    * QueryDefinition.  Returns null if this job is based on an Iterator.
    */

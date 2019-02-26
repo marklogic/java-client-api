@@ -3019,12 +3019,13 @@ public class OkHttpServices implements RESTServices {
 
   @Override
   public <R extends UrisReadHandle> R uris(RequestLogger reqlog, Transaction transaction,
-                                           QueryDefinition qdef, long start, long pageLength, String forestName, R output)
+        QueryDefinition qdef, long start, String afterUri, long pageLength, String forestName, R output)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     RequestParameters params = new RequestParameters();
     if ( forestName != null )        params.add("forest-name", forestName);
     if (start > 1)                   params.add("start",       Long.toString(start));
+    if (afterUri != null )           params.add("after",       afterUri);
     if (pageLength >= 1)             params.add("pageLength",  Long.toString(pageLength));
     if (qdef.getDirectory() != null) params.add("directory",   qdef.getDirectory());
     if (qdef.getCollections() != null ) {

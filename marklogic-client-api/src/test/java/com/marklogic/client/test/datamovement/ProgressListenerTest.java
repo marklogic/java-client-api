@@ -196,6 +196,11 @@ class FakeQueryBatch implements QueryBatch {
 	}
 
 	@Override
+	public String getLastUriForForest() {
+		return null;
+	}
+
+	@Override
 	public Forest getForest() {
 		return null;
 	}

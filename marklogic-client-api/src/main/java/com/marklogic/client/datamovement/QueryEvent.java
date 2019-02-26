@@ -68,6 +68,13 @@ public interface QueryEvent {
    */
   long getForestResultsSoFar();
 
+  /** Within the context of this forest within the job, the last uri
+   * processed including the uris in this event if this is a QueryBatch.
+   *
+   * @return the last uri in this job in this forest up to the point of this event
+   */
+  String getLastUriForForest();
+
   /** The forest queried for this event if this job is based on a
    * QueryDefinition.  Returns null if this job is based on an Iterator.
    *
