@@ -572,9 +572,13 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       this.query = query;
       this.forestBatchNum = forestBatchNum;
       this.start = start;
-      this.afterUri = afterUri;
       this.retryBatchNumber = retryBatchNumber;
       this.callFailListeners = callFailListeners;
+
+      // ignore the afterUri if the effective version is less than 9.0-9
+      if (Long.compareUnsigned(((DataMovementManagerImpl) moveMgr).getServerVersion(), Long.parseUnsignedLong("9000900")) >= 0) {
+        this.afterUri = afterUri;
+      }
     }
 
     public void run() {

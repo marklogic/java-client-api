@@ -17,6 +17,8 @@ package com.marklogic.client.datamovement.impl;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.impl.DatabaseClientImpl;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
@@ -51,8 +53,18 @@ public class DataMovementManagerImpl implements DataMovementManager {
   // clientMap key is the hostname_database
   private Map<String,DatabaseClient> clientMap = new HashMap<>();
 
+  private long serverVersion = Long.parseUnsignedLong("9000000");
+
   public DataMovementManagerImpl(DatabaseClient client) {
     setPrimaryClient(client);
+
+    try {
+      String version = ((DatabaseClientImpl) client).getServices()
+              .getResource(null, "internal/effective-version", null, null, new StringHandle())
+              .get();
+      serverVersion = Long.parseUnsignedLong(version);
+    } catch(Throwable e) {
+    }
 
     clientMap.put(primaryClient.getHost(), primaryClient);
   }
@@ -222,5 +234,9 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   public DatabaseClient getPrimaryClient() {
     return primaryClient;
+  }
+
+  public long getServerVersion() {
+    return serverVersion;
   }
 }
