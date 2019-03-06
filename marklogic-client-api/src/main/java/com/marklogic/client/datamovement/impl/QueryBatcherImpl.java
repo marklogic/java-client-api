@@ -27,6 +27,11 @@ import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.QueryBatchException;
 import com.marklogic.client.datamovement.QueryEvent;
 import com.marklogic.client.datamovement.QueryBatcherListener;
+import com.marklogic.client.impl.HandleAccessor;
+import com.marklogic.client.impl.HandleImplementation;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.marker.StructureWriteHandle;
+import com.marklogic.client.query.RawQueryDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,6 +95,26 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     this.query = query;
     withForestConfig(forestConfig);
     withBatchSize(1000);
+    if (query instanceof RawQueryDefinition) {
+      RawQueryDefinition rawQuery = (RawQueryDefinition) query;
+
+      StructureWriteHandle handle = rawQuery.getHandle();
+
+      @SuppressWarnings("rawtypes")
+      HandleImplementation baseHandle = HandleAccessor.checkHandle(handle, "queryBatcher");
+
+      Format inputFormat = baseHandle.getFormat();
+      switch(inputFormat) {
+        case UNKNOWN:
+          baseHandle.setFormat(Format.XML);
+          break;
+        case JSON:
+        case XML:
+          break;
+        default:
+          throw new UnsupportedOperationException("Only XML and JSON raw query definitions are possible.");
+      }
+    }
   }
 
   public QueryBatcherImpl(Iterator<String> iterator, DataMovementManager moveMgr, ForestConfiguration forestConfig) {

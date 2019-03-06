@@ -3036,64 +3036,63 @@ public class OkHttpServices implements RESTServices {
     if (qdef.getOptionsName()!= null && qdef.getOptionsName().length() > 0) {
       params.add("options", qdef.getOptionsName());
     }
+
     if (qdef instanceof RawQueryByExampleDefinition) {
       throw new UnsupportedOperationException("Cannot search with RawQueryByExampleDefinition");
+    }
+
+    String text = null;
+    if (qdef instanceof StringQueryDefinition) {
+      text = ((StringQueryDefinition) qdef).getCriteria();
+    } else if (qdef instanceof StructuredQueryDefinition) {
+      text = ((StructuredQueryDefinition) qdef).getCriteria();
+    } else if (qdef instanceof RawStructuredQueryDefinition) {
+      text = ((RawStructuredQueryDefinition) qdef).getCriteria();
+    } else if (qdef instanceof RawCtsQueryDefinition) {
+      text = ((RawCtsQueryDefinition) qdef).getCriteria();
+    }
+
+    String qtextMessage = "";
+    if (text != null) {
+      params.add("q", text);
+      qtextMessage = " and string query \"" + text + "\"";
+    }
+
+    if (qdef instanceof RawCtsQueryDefinition) {
+      String structure = qdef instanceof RawQueryDefinitionImpl.CtsQuery ?
+              ((RawQueryDefinitionImpl.CtsQuery) qdef).serialize() : "";
+      logger.debug("Query uris with raw cts query {}{}", structure, qtextMessage);
+      CtsQueryWriteHandle input = ((RawCtsQueryDefinition) qdef).getHandle();
+      return postResource(reqlog, "internal/uris", transaction, params, input, output);
+    } else if (qdef instanceof StructuredQueryDefinition) {
+      String structure = ((StructuredQueryDefinition) qdef).serialize();
+      logger.debug("Query uris with structured query {}{}", structure, qtextMessage);
+      if (structure != null) {
+        params.add("structuredQuery", structure);
+      }
+    } else if (qdef instanceof RawStructuredQueryDefinition) {
+      String structure = ((RawStructuredQueryDefinition) qdef).serialize();
+      logger.debug("Query uris with raw structured query {}{}", structure, qtextMessage);
+      if (structure != null) {
+        params.add("structuredQuery", structure);
+      }
+    } else if (qdef instanceof CombinedQueryDefinition) {
+      String structure = ((CombinedQueryDefinition) qdef).serialize();
+      logger.debug("Query uris with combined query {}", structure);
+      if (structure != null) {
+        params.add("structuredQuery", structure);
+      }
+    } else if (qdef instanceof StringQueryDefinition) {
+      logger.debug("Query uris with string query \"{}\"", text);
     } else if (qdef instanceof RawQueryDefinition) {
       logger.debug("Raw uris query");
-
       StructureWriteHandle input = ((RawQueryDefinition) qdef).getHandle();
-
       return postResource(reqlog, "internal/uris", transaction, params, input, output);
     } else {
-      String text = null;
-      if (qdef instanceof StringQueryDefinition) {
-        text = ((StringQueryDefinition) qdef).getCriteria();
-      } else if (qdef instanceof StructuredQueryDefinition) {
-        text = ((StructuredQueryDefinition) qdef).getCriteria();
-      } else if (qdef instanceof RawStructuredQueryDefinition) {
-        text = ((RawStructuredQueryDefinition) qdef).getCriteria();
-      } else if (qdef instanceof RawCtsQueryDefinition) {
-        text = ((RawCtsQueryDefinition) qdef).getCriteria();
-      }
-      String qtextMessage = "";
-      if (text != null) {
-        params.add("q", text);
-        qtextMessage = " and string query \"" + text + "\"";
-      }
-      if (qdef instanceof RawCtsQueryDefinition) {
-          String structure = qdef instanceof RawQueryDefinitionImpl.CtsQuery ? ((RawQueryDefinitionImpl.CtsQuery) qdef).serialize() : "";
-          logger.debug("Query uris with raw cts query {}{}", structure, qtextMessage);
-           CtsQueryWriteHandle input = ((RawCtsQueryDefinition) qdef).getHandle();
-        return postResource(reqlog, "internal/uris", transaction, params, input, output);
-      } else if (qdef instanceof StructuredQueryDefinition) {
-          String structure = ((StructuredQueryDefinition) qdef).serialize();
-          
-          logger.debug("Query uris with structured query {}{}", structure, qtextMessage);
-          if (structure != null) {
-            params.add("structuredQuery", structure);
-          }
-        } else if (qdef instanceof RawStructuredQueryDefinition) {
-          String structure = ((RawStructuredQueryDefinition) qdef).serialize();
-          logger.debug("Query uris with raw structured query {}{}", structure, qtextMessage);
-          if (structure != null) {
-          params.add("structuredQuery", structure);
-        }
-      } else if (qdef instanceof CombinedQueryDefinition) {
-        String structure = ((CombinedQueryDefinition) qdef).serialize();
-        
-        logger.debug("Query uris with combined query {}", structure);
-        if (structure != null) {
-          params.add("structuredQuery", structure);
-        }
-      } else if (qdef instanceof StringQueryDefinition) {
-        logger.debug("Query uris with string query \"{}\"", text);
-      } else {
-        throw new UnsupportedOperationException("Cannot query uris with " +
-            qdef.getClass().getName());
-        }
-        return getResource(reqlog, "internal/uris", transaction, params, output);
-      }
+      throw new UnsupportedOperationException("Cannot query uris with " + qdef.getClass().getName());
     }
+    return getResource(reqlog, "internal/uris", transaction, params, output);
+  }
 
 
   @Override

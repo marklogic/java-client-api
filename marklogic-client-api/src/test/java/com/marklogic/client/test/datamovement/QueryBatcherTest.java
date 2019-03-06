@@ -181,15 +181,26 @@ public class QueryBatcherTest {
 
   @Test
   public void testRawCtsQuery() throws Exception {
-    String ctsQuery = "<cts:directory-query xmlns:cts=\"http://marklogic.com/cts\"><cts:uri>/QueryBatcherTest/</cts:uri></cts:directory-query>";
-    RawCtsQueryDefinition query = client.newQueryManager().newRawCtsQueryDefinition(new StringHandle().with(ctsQuery).withFormat(Format.XML)).withCriteria("Jane");
-    Map<String, String[]> matchesByForest = new HashMap<>();
-    matchesByForest.put("java-unittest-3", new String[] {uri2});
-    runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, 1, 2);
+    RawCtsQueryDefinition query = null;
+    Map<String, String[]> matchesByForest = null;
+    String ctsQuery = null;
+    StringHandle handle = null;
+
+    // test explicit and default format
+    ctsQuery = "<cts:directory-query xmlns:cts=\"http://marklogic.com/cts\"><cts:uri>/QueryBatcherTest/</cts:uri></cts:directory-query>";
+    for (int i=0; i < 2; i++) {
+        handle = (i == 0) ? new StringHandle(ctsQuery).withFormat(Format.XML) : new StringHandle(ctsQuery);
+        query = client.newQueryManager().newRawCtsQueryDefinition(handle).withCriteria("Jane");
+        matchesByForest = new HashMap<>();
+        matchesByForest.put("java-unittest-3", new String[] {uri2});
+        runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, 1, 2);
+    }
+
     ctsQuery = "{ctsquery : {\"directoryQuery\":{\"uris\":[\"/QueryBatcherTest/\"]}}}";;
     matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
     matchesByForest.put("java-unittest-2", new String[] {uri5});
-    query = client.newQueryManager().newRawCtsQueryDefinition(new StringHandle().with(ctsQuery).withFormat(Format.JSON));
+    handle = new StringHandle(ctsQuery).withFormat(Format.JSON);
+    query = client.newQueryManager().newRawCtsQueryDefinition(handle);
     runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, 1, 2);
   }
 
