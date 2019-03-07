@@ -24,9 +24,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,6 +65,7 @@ public final class Utilities {
   private static DocumentBuilderFactory factory;
 
   private static DatatypeFactory datatypeFactory;
+  static private int BUFFER_SIZE = 8192;
 
   private static DocumentBuilderFactory getFactory()
     throws ParserConfigurationException {
@@ -669,4 +675,26 @@ public final class Utilities {
     }
     return datatypeFactory;
   }
+  
+  static public void write(InputStream in, Path path) { 
+      try {
+      RandomAccessFile outFile = new RandomAccessFile(path.toString(), "rw");
+      FileChannel  inChannel = outFile.getChannel();
+      byte[] buf = new byte[BUFFER_SIZE * 2];
+      ByteBuffer byteBuf;
+      
+      while (in.read(buf) != -1) {
+        byteBuf = ByteBuffer.wrap(buf);
+        byteBuf.flip();
+        inChannel.write(byteBuf);
+        byteBuf.clear();
+      }
+      outFile.close();
+      } catch (IOException e) {
+          throw new MarkLogicIOException("Internal Exception occured.");
+      } 
+  }
+  
+  static public void write(Reader in, OutputStreamWriter out) { }
+  static public void write(Reader in, OutputStream out) {}
 }
