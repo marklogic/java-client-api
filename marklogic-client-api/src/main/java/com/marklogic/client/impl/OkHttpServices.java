@@ -5388,7 +5388,7 @@ public class OkHttpServices implements RESTServices {
         }
         Path path = Files.createTempFile("tmp", suffix);
         if ( isBinary == true ) {
-          Files.write(path, body.bytes());
+            Utilities.write(body.byteStream(), path);
         } else {
           Writer out = Files.newBufferedWriter(path, Charset.forName("UTF-8"));
           try {
