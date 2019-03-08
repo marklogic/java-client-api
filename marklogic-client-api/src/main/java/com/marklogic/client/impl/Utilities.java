@@ -27,8 +27,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.Writer;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -673,38 +673,51 @@ public final class Utilities {
     return datatypeFactory;
   }
   
+  /**
+   * Writes bytes from the input stream to the output stream.
+   * @param in - the input stream passed in.
+   * @param outStream - output stream where the bytes are written.
+   */
   static public void write(InputStream in, OutputStream outStream) throws IOException { 
+      if(in == null || outStream == null)
+          return;
       try {
           byte[] byteArray = new byte[BUFFER_SIZE * 2];
       
-          while (in.read(byteArray) != -1) {
-            outStream.write(byteArray);
+          int byteCount = 0;
+          while ((byteCount = in.read(byteArray)) != -1) {
+              outStream.write(byteArray, 0, byteCount);
           }
       } finally {
           in.close();
       }
   }
-  static public void write(Reader in, OutputStreamWriter out) throws IOException {
+ 
+  /**
+   * Writes bytes from the input Reader to the Writer stream.
+   * @param in - the Reader passed in.
+   * @param out - Writer stream where the bytes are written.
+   */
+  static public void write(Reader in, Writer out) throws IOException {
+      if(in == null || out == null)
+          return;
       try {
           char[] charArray = new char[BUFFER_SIZE * 2];
-          while (in.read(charArray) != -1) {
-              out.write(charArray);
-            }
+          int charCount = 0;
+          while ((charCount = in.read(charArray)) != -1) {
+              out.write(charArray, 0, charCount);
+          }
       } finally {
           in.close();
       }
   }
+ 
+  /**
+   * Writes bytes from the input Reader to the output stream.
+   * @param in - the Reader passed in.
+   * @param out - OutputStream where the bytes are written.
+   */
   static public void write(Reader in, OutputStream out) throws IOException {
-      try {
-          char[] charArray = new char[BUFFER_SIZE * 2];
-          byte[] byteArray;
-
-          while (in.read(charArray) != -1) {
-              byteArray = new String(charArray).getBytes(StandardCharsets.UTF_8);
-              out.write(byteArray);
-            }
-      } finally {
-          in.close();
-      }
+      write(in, new OutputStreamWriter(out));
   }
 }
