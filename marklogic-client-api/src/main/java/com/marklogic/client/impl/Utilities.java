@@ -25,13 +25,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.io.StringReader;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -676,25 +673,38 @@ public final class Utilities {
     return datatypeFactory;
   }
   
-  static public void write(InputStream in, Path path) { 
+  static public void write(InputStream in, OutputStream outStream) throws IOException { 
       try {
-      RandomAccessFile outFile = new RandomAccessFile(path.toString(), "rw");
-      FileChannel  inChannel = outFile.getChannel();
-      byte[] buf = new byte[BUFFER_SIZE * 2];
-      ByteBuffer byteBuf;
+          byte[] byteArray = new byte[BUFFER_SIZE * 2];
       
-      while (in.read(buf) != -1) {
-        byteBuf = ByteBuffer.wrap(buf);
-        byteBuf.flip();
-        inChannel.write(byteBuf);
-        byteBuf.clear();
+          while (in.read(byteArray) != -1) {
+            outStream.write(byteArray);
+          }
+      } finally {
+          in.close();
       }
-      outFile.close();
-      } catch (IOException e) {
-          throw new MarkLogicIOException("Internal Exception occured.");
-      } 
   }
-  
-  static public void write(Reader in, OutputStreamWriter out) { }
-  static public void write(Reader in, OutputStream out) {}
+  static public void write(Reader in, OutputStreamWriter out) throws IOException {
+      try {
+          char[] charArray = new char[BUFFER_SIZE * 2];
+          while (in.read(charArray) != -1) {
+              out.write(charArray);
+            }
+      } finally {
+          in.close();
+      }
+  }
+  static public void write(Reader in, OutputStream out) throws IOException {
+      try {
+          char[] charArray = new char[BUFFER_SIZE * 2];
+          byte[] byteArray;
+
+          while (in.read(charArray) != -1) {
+              byteArray = new String(charArray).getBytes(StandardCharsets.UTF_8);
+              out.write(byteArray);
+            }
+      } finally {
+          in.close();
+      }
+  }
 }
