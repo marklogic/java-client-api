@@ -124,6 +124,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
@@ -5388,7 +5389,7 @@ public class OkHttpServices implements RESTServices {
         }
         Path path = Files.createTempFile("tmp", suffix);
         if ( isBinary == true ) {
-            Utilities.write(body.byteStream(), path);
+            Utilities.write(body.byteStream(), (OutputStream) path);
         } else {
           Writer out = Files.newBufferedWriter(path, Charset.forName("UTF-8"));
           try {
