@@ -99,6 +99,13 @@ public class BytesHandle
     this();
     set(content);
   }
+  /**
+   * Initializes the handle from the byte content of another handle
+   * @param content	the other handle
+   */
+  public BytesHandle(BufferableHandle content) {
+    this((content == null) ? null : content.toBuffer());
+  }
 
   /**
    * Returns the byte array for the handle content.
