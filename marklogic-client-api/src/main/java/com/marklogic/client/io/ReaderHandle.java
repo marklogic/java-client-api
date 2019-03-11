@@ -226,6 +226,10 @@ public class ReaderHandle
 
   @Override
   public void write(OutputStream out) throws IOException {
+    if (content == null) {
+      throw new IllegalStateException("No character stream to send as output");
+    }
+
     Utilities.write(content, out);
   }
 
