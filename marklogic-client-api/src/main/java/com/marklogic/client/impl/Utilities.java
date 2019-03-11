@@ -688,6 +688,7 @@ public final class Utilities {
           while ((byteCount = in.read(byteArray)) != -1) {
               outStream.write(byteArray, 0, byteCount);
           }
+          outStream.flush();
       } finally {
           in.close();
       }
@@ -707,6 +708,7 @@ public final class Utilities {
           while ((charCount = in.read(charArray)) != -1) {
               out.write(charArray, 0, charCount);
           }
+          out.flush();
       } finally {
           in.close();
       }
