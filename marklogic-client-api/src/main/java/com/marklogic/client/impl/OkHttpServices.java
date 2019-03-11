@@ -134,6 +134,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -5388,7 +5389,7 @@ public class OkHttpServices implements RESTServices {
         }
         Path path = Files.createTempFile("tmp", suffix);
         if ( isBinary == true ) {
-            Files.copy(body.byteStream(), path);
+            Files.copy(body.byteStream(), path, StandardCopyOption.REPLACE_EXISTING);
         } else {
             try(Writer out = Files.newBufferedWriter(path, Charset.forName("UTF-8"))) {
                 Utilities.write(body.charStream(), out);
