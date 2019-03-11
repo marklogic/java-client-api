@@ -19,7 +19,7 @@ package com.marklogic.client.datamovement;
  * Currently only WriteFailureListener implements since QueryBatcher has no
  * batch when the query fails.
  */
-public interface BatchFailureListener<T extends Batch<?>> {
+public interface BatchFailureListener<T extends BatchEvent> {
   /** The method called when a failure occurs.
    *
    * @param batch the batch of items that failed processing
