@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 MarkLogic Corporation
+ * Copyright 2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,10 @@
  */
 package com.marklogic.client.datamovement;
 
-import java.util.Calendar;
+import com.marklogic.client.dataservices.CallManager.CallArgs;
 
-import com.marklogic.client.DatabaseClient;
+public interface CallBatcherBuilder<E extends CallEvent> {
+    CallBatcherBuilder<E> defaultArgs(CallArgs args);
 
-/** A group of items (generally documents or uris) and context representing a
- * completed action in a datamovement job.
- */
-public interface Batch<T> extends BatchEvent {
-  /** The documents read by WriteBatcher or the uris retrieved by QueryBatcher.
-   *
-   * @return the items in this batch
-   */
-  T[] getItems();
+    CallBatcher<CallArgs,E> forArgs();
 }
