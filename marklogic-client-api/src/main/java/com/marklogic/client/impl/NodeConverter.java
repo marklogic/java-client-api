@@ -36,6 +36,9 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -341,6 +344,21 @@ public class NodeConverter {
    }
    static public Stream<Document> InputStreamToDocument(Stream<? extends InputStream> values) {
       return (values == null) ? null : values.map(NodeConverter::InputStreamToDocument);
+   }
+   static public File InputStreamToFile(InputStream inputStream) {
+      if (inputStream == null) {
+         return null;
+      }
+      try {
+         Path tempFile = Files.createTempFile("tmp", null);
+         Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
+         return tempFile.toFile();
+      } catch (IOException e) {
+         throw new RuntimeException(e);
+      }
+   }
+   static public Stream<File> InputStreamToFile(Stream<? extends InputStream> values) {
+      return (values == null) ? null : values.map(NodeConverter::InputStreamToFile);
    }
    static public InputSource ReaderToInputSource(Reader reader) {
       return (reader == null) ? null : new InputSource(reader);

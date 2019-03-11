@@ -21,7 +21,6 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
 import com.marklogic.client.impl.BaseProxy;
 import com.marklogic.client.impl.NodeConverter;
-import com.marklogic.client.impl.RESTServices;
 import com.marklogic.client.impl.RESTServices.CallField;
 import com.marklogic.client.impl.RESTServices.MultipleAtomicCallField;
 import com.marklogic.client.impl.RESTServices.MultipleCallResponse;
@@ -1620,18 +1619,16 @@ class CallManagerImpl implements CallManager {
           return response.asStreamOfBytes();
         }
       });
-/* TODO: related to #1055
       put(File.class, new ReturnConverter<File>() {
         @Override
         public File one(SingleCallResponse response) {
-          return null;
+          return NodeConverter.InputStreamToFile(response.asInputStream());
         }
         @Override
         public Stream<File> many(MultipleCallResponse response) {
-          return null;
+          return NodeConverter.InputStreamToFile(response.asStreamOfInputStream());
         }
       });
- */
       put(InputStream.class, new ReturnConverter<InputStream>() {
         @Override
         public InputStream one(SingleCallResponse response) {

@@ -117,6 +117,11 @@ public class CallManagerTest {
         setupEndpointSingleRequired(docMgr, docMeta, "singleAtomic", "dateTime");
         setupEndpointSingleRequired(docMgr, docMeta, "singleNode", "object");
 
+        setupEndpointSingleRequired(docMgr, docMeta, "singleBinary", "binaryDocument");
+        setupEndpointSingleRequired(docMgr, docMeta, "singleJson", "jsonDocument");
+        setupEndpointSingleRequired(docMgr, docMeta, "singleText", "textDocument");
+        setupEndpointSingleRequired(docMgr, docMeta, "singleXml", "xmlDocument");
+
         setupEndpointSingleNulled(docMgr, docMeta, "nullAtomic", "decimal");
         setupEndpointSingleNulled(docMgr, docMeta, "nullNode", "xmlDocument");
 
@@ -382,7 +387,7 @@ public class CallManagerTest {
     public void testBadParamNodeType() {
         String functionName = "jsonDocument";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName );
+        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
 
         CallManager.ManyCaller<String> caller = makeManyCaller(callableEndpoint, String.class);
 
@@ -796,13 +801,16 @@ public class CallManagerTest {
                 functionName, caller2, caller2.args().param("param1", values2), values, CallManagerTest::string
         );
 
-/* TODO:
+        String functionName3 = "singleBinary";
+
+        CallManager.CallableEndpoint callableEndpoint3 = makeCallableEndpoint(functionName3);
+
         File value3 = new File("src/test/resources/test.bin");
-        CallManager.ManyCaller<File> caller3 = makeManyCaller(callableEndpoint, File.class);
+        CallManager.OneCaller<File> caller3 = makeOneCaller(callableEndpoint3, File.class);
         testConvertedCall(
-                functionName, caller3, caller3.args().param("param1", value3), new String[]{CallManagerTest.string(value3)}, CallManagerTest::string
+                functionName3, caller3, caller3.args().param("param1", value3),
+                CallManagerTest.string(value3), CallManagerTest::string
         );
-        */
     }
     @Test
     public void testJsonDocument() {
@@ -832,14 +840,16 @@ public class CallManagerTest {
                 functionName, caller4, caller4.args().param("param1", values4), values, CallManagerTest::string
         );
 
-/* TODO:
+
+        String functionName5 = "singleJson";
+        CallManager.CallableEndpoint callableEndpoint5 = makeCallableEndpoint(functionName5);
+
         File value5 = new File("src/test/resources/basic1.json");
-        CallManager.ManyCaller<File> caller5 = makeManyCaller(callableEndpoint, File.class);
+        CallManager.OneCaller<File> caller5 = makeOneCaller(callableEndpoint5, File.class);
         testConvertedCall(
-                functionName, caller3, caller3.args().param("param1", value5),
-                new String[]{CallManagerTest.string(value5)}, CallManagerTest::string
+                functionName5, caller5, caller5.args().param("param1", value5),
+                CallManagerTest.string(value5).trim(), CallManagerTest::string
         );
- */
     }
     @Test
     public void testArray() {
@@ -958,14 +968,15 @@ public class CallManagerTest {
                 functionName, caller2, caller2.args().param("param1", values2), values, CallManagerTest::string
         );
 
-/* TODO:
+        String functionName3 = "singleText";
+        CallManager.CallableEndpoint callableEndpoint3 = makeCallableEndpoint(functionName3);
+
         File value3 = new File("src/test/resources/hola.txt");
-        CallManager.ManyCaller<File> caller3 = makeManyCaller(callableEndpoint, File.class);
+        CallManager.OneCaller<File> caller3 = makeOneCaller(callableEndpoint3, File.class);
         testConvertedCall(
-                functionName, caller3, caller3.args().param("param1", value3),
-                new String[]{CallManagerTest.string(value3)}, CallManagerTest::string
+                functionName3, caller3, caller3.args().param("param1", value3),
+                CallManagerTest.string(value3), CallManagerTest::string
         );
-        */
     }
     @Test
     public void testMultipleNullNode() {
@@ -979,7 +990,7 @@ public class CallManagerTest {
     public void testXmlDocument() {
         String functionName = "xmlDocument";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName );
+        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
 
         String[] values = new String[]{"<root><child>text1</child></root>", "<root><child>text2</child></root>"};
 
@@ -1044,20 +1055,21 @@ public class CallManagerTest {
                 functionName, caller11, caller11.args().param("param1", values11), values, CallManagerTest::xmlString
         );
 
-/* TODO:
+        String functionName12 = "singleXml";
+        CallManager.CallableEndpoint callableEndpoint12 = makeCallableEndpoint(functionName12);
+
         File value12 = new File("src/test/resources/test.xml");
-        CallManager.ManyCaller<File> caller12 = makeManyCaller(callableEndpoint, File.class);
+        CallManager.OneCaller<File> caller12 = makeOneCaller(callableEndpoint12, File.class);
         testConvertedCall(
-                functionName, caller3, caller3.args().param("param1", value12),
-                new String[]{CallManagerTest.string(value12)}, CallManagerTest::string
+                functionName12, caller12, caller12.args().param("param1", value12),
+                CallManagerTest.string(value12).trim(), CallManagerTest::xmlString
         );
-        */
     }
     @Test
     public void testNullNode() {
         String functionName = "nullNode";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName );
+        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
 
         testCharacterNodeOne(functionName, callableEndpoint);
 
@@ -1262,6 +1274,9 @@ public class CallManagerTest {
     }
     private static String xmlString(byte[] value) {
         return string(new StreamSource(new ByteArrayInputStream(value)));
+    }
+    private static String xmlString(File value) {
+        return string(new StreamSource(value));
     }
     private static String xmlString(InputStream value) {
         return string(new StreamSource(value));
