@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.datamovement;
+package com.marklogic.client.dataservices;
 
-public interface CallFailureListener extends BatchFailureListener<CallEvent> {
+public interface CallOneEvent<R> extends CallEvent {
+    R getItem();
 }

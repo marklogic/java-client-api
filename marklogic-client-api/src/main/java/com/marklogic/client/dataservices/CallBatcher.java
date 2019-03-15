@@ -13,10 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.datamovement;
+package com.marklogic.client.dataservices;
 
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
+
+import com.marklogic.client.datamovement.Batcher;
+import com.marklogic.client.datamovement.ForestConfiguration;
+import com.marklogic.client.datamovement.JobTicket;
 
 public interface CallBatcher<W,E extends CallEvent> extends Batcher {
 	
