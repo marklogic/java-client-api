@@ -13,12 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.datamovement;
+package com.marklogic.client.dataservices;
 
-import com.marklogic.client.dataservices.CallManager.CallArgs;
+import com.marklogic.client.datamovement.BatchEvent;
 
-public interface CallBatcherBuilder<E extends CallEvent> {
-    CallBatcherBuilder<E> defaultArgs(CallArgs args);
-
-    CallBatcher<CallArgs,E> forArgs();
+public interface CallEvent extends BatchEvent {
 }

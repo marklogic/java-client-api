@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.datamovement;
+package com.marklogic.client.dataservices;
 
-public interface CallSuccessListener<E extends CallEvent> extends BatchListener<E> {
+import com.marklogic.client.datamovement.BatchFailureListener;
+
+public interface CallFailureListener extends BatchFailureListener<CallEvent> {
 }
