@@ -15,5 +15,41 @@
  */
 package com.marklogic.client.datamovement;
 
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+
 public interface CallBatcher<W,E extends CallEvent> extends Batcher {
+	
+    // fluent configuration consistent with other batchers
+    CallBatcher<W,E> onCallSuccess(CallSuccessListener<E> listener);
+    CallBatcher<W,E> onCallFailure(CallFailureListener    listener);
+    CallBatcher<W,E> withBatchSize(int batchSize);
+    CallBatcher<W,E> withForestConfig(ForestConfiguration forestConfig);
+    CallBatcher<W,E> withJobId(String jobId);
+    CallBatcher<W,E> withJobName(String jobName);
+    CallBatcher<W,E> withThreadCount(int threadCount);
+
+    // setters and getters consistent with other batchers
+    CallSuccessListener<E>[] getCallSuccessListeners();
+    CallFailureListener[]    getCallFailureListeners();
+    
+    @SuppressWarnings("unchecked")
+	void setCallSuccessListeners(CallSuccessListener<E>... listeners);
+    void setCallFailureListeners(CallFailureListener...    listeners);
+
+    // input queuing consistent with other batchers
+    CallBatcher<W,E> add(W input);
+    void addAll(Stream<W> input);
+
+    // job management consistent with other batchers
+    void awaitCompletion();
+    void awaitCompletion(long timeout, TimeUnit unit);
+    void flushAndWait();
+    void flushAsync();
+    JobTicket getJobTicket();
+    boolean isStopped();
+
+    // failure recovery consistent with other batchers
+    void retry(E event);
+    void retryWithFailureListeners(E event);
 }

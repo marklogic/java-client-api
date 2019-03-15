@@ -19,6 +19,10 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
+import com.marklogic.client.datamovement.CallBatcherBuilder;
+import com.marklogic.client.datamovement.CallEvent;
+import com.marklogic.client.datamovement.CallManyEvent;
+import com.marklogic.client.datamovement.CallOneEvent;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.w3c.dom.Document;
@@ -116,6 +120,11 @@ public interface CallManager {
          * @param args  the parameter input for the call
          */
         void call(CallArgs args);
+        /**
+         * Constructs a batcher of type CallEvent.
+         * @return the CallBatcherBuilder of type CallEvent.
+         */
+        CallBatcherBuilder<CallEvent> batcher();
     }
     interface OneCaller<R> extends EndpointDefiner {
         /**
@@ -133,6 +142,11 @@ public interface CallManager {
          * @return  a Java value of the specified type as returned by the endpoint
          */
         R call(CallArgs args);
+        /**
+         * Constructs a batcher of type CallOneEvent.
+         * @return the CallBatcherBuilder of type CallOneEvent.
+         */
+        CallBatcherBuilder<CallOneEvent<R>> batcher(); 
     }
     interface ManyCaller<R> extends EndpointDefiner {
         /**
@@ -150,6 +164,11 @@ public interface CallManager {
          * @return  a stream of Java values of the specified type as returned by the endpoint
          */
         Stream<R> call(CallArgs args);
+        /**
+         * Constructs a batcher of type CallManyEvent.
+         * @return the CallBatcherBuilder of type CallManyEvent.
+         */
+        CallBatcherBuilder<CallManyEvent<R>> batcher(); 
     }
     interface EndpointDefiner {
         /**
