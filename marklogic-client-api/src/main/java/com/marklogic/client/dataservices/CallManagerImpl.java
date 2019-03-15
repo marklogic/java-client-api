@@ -19,6 +19,10 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
+import com.marklogic.client.datamovement.CallBatcherBuilder;
+import com.marklogic.client.datamovement.CallEvent;
+import com.marklogic.client.datamovement.CallManyEvent;
+import com.marklogic.client.datamovement.CallOneEvent;
 import com.marklogic.client.impl.BaseProxy;
 import com.marklogic.client.impl.NodeConverter;
 import com.marklogic.client.impl.RESTServices;
@@ -467,6 +471,12 @@ class CallManagerImpl implements CallManager {
        }
        startRequest((CallArgsImpl) args).responseNone();
     }
+
+	@Override
+	public CallBatcherBuilder<CallEvent> batcher() {
+		// TODO Auto-generated method stub
+		return null;
+	}
   }
   private static class OneCallerImpl<R> extends CallerImpl implements OneCaller<R> {
     private ReturnConverter<R> converter;
@@ -489,6 +499,12 @@ class CallManagerImpl implements CallManager {
       }
       return converter.one(startRequest((CallArgsImpl) args).responseSingle(getEndpoint().isNullable(), format));
     }
+
+	@Override
+	public CallBatcherBuilder<CallOneEvent<R>> batcher() {
+		// TODO Auto-generated method stub
+		return null;
+	}
   }
   private static class ManyCallerImpl<R> extends CallerImpl implements ManyCaller<R> {
     private ReturnConverter<R> converter;
@@ -511,6 +527,12 @@ class CallManagerImpl implements CallManager {
       }
       return converter.many(startRequest((CallArgsImpl) args).responseMultiple(getEndpoint().isNullable(), format));
     }
+
+	@Override
+	public CallBatcherBuilder<CallManyEvent<R>> batcher() {
+		// TODO Auto-generated method stub
+		return null;
+	}
   }
   private static abstract class CallerImpl extends EndpointDefinerImpl {
     private CallableEndpointImpl endpoint;
