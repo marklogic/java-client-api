@@ -343,7 +343,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
   }
 
-  synchronized void start(JobTicket ticket) {
+  @Override
+  public synchronized void start(JobTicket ticket) {
     if ( threadPool != null ) {
       logger.warn("startJob called more than once");
       return;
@@ -859,6 +860,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     threadPool.execute(new IteratorTask(this));
   }
 
+  @Override
   public void stop() {
     stopped.set(true);
     if ( threadPool != null ) threadPool.shutdownNow();

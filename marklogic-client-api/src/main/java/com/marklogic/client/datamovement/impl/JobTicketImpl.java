@@ -18,12 +18,14 @@ package com.marklogic.client.datamovement.impl;
 import com.marklogic.client.datamovement.Batcher;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.JobTicket.JobType;
+import com.marklogic.client.dataservices.impl.CallBatcherImpl;
 
 public class JobTicketImpl implements JobTicket {
   private String jobId;
   private JobType jobType;
   private QueryBatcherImpl queryBatcher;
   private WriteBatcherImpl writeBatcher;
+  private CallBatcherImpl  callBatcher;
 
   public JobTicketImpl(String jobId, JobType jobType) {
     this.jobId = jobId;
@@ -34,36 +36,47 @@ public class JobTicketImpl implements JobTicket {
   public String getJobId() {
     return jobId;
   }
-
   @Override
   public JobType getJobType() {
     return jobType;
   }
 
+  @Override
+  public BatcherImpl getBatcher() {
+    switch(this.jobType) {
+      case CALL_BATCHER:  return getCallBatcher();
+      case QUERY_BATCHER: return getQueryBatcher();
+      case WRITE_BATCHER: return getWriteBatcher();
+      default:
+        throw new InternalError(
+                (jobType == null) ?
+                        "null job type" :
+                        "unknown job type: "+jobType.name()
+        );
+    }
+  }
+
+
+  public CallBatcherImpl  getCallBatcher() {
+    return callBatcher;
+  }
+  public QueryBatcherImpl getQueryBatcher() {
+    return queryBatcher;
+  }
   public WriteBatcherImpl getWriteBatcher() {
     return writeBatcher;
   }
 
-  @Override
-  public Batcher getBatcher() {
-    if (this.jobType == JobType.QUERY_BATCHER) {
-      return queryBatcher;
-    } else {
-      return writeBatcher;
-    }
-  }
-
-  public JobTicketImpl withWriteBatcher(WriteBatcherImpl writeBatcher) {
-    this.writeBatcher = writeBatcher;
+  public JobTicketImpl withCallBatcher(CallBatcherImpl batcher) {
+    this.callBatcher = batcher;
     return this;
   }
-
-  public QueryBatcherImpl getQueryBatcher() {
-    return queryBatcher;
-  }
-
   public JobTicketImpl withQueryBatcher(QueryBatcherImpl queryBatcher) {
     this.queryBatcher = queryBatcher;
+    return this;
+  }
+  public JobTicketImpl withWriteBatcher(WriteBatcherImpl writeBatcher) {
+    this.writeBatcher = writeBatcher;
     return this;
   }
 }

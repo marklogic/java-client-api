@@ -19,6 +19,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
+import com.marklogic.client.datamovement.BatchEvent;
+import com.marklogic.client.dataservices.impl.CallManagerImpl;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.w3c.dom.Document;
@@ -120,7 +122,7 @@ public interface CallManager {
          * Constructs a batcher of type CallEvent.
          * @return the CallBatcherBuilder of type CallEvent.
          */
-        CallBatcherBuilder<CallEvent> batcher();
+        CallBatcher.CallBatcherBuilder<CallEvent> batcher();
     }
     interface OneCaller<R> extends EndpointDefiner {
         /**
@@ -139,10 +141,10 @@ public interface CallManager {
          */
         R call(CallArgs args);
         /**
-         * Constructs a batcher of type CallOneEvent.
-         * @return the CallBatcherBuilder of type CallOneEvent.
+         * Constructs a batcher of type OneCallEvent.
+         * @return the CallBatcherBuilder of type OneCallEvent.
          */
-        CallBatcherBuilder<CallOneEvent<R>> batcher(); 
+        CallBatcher.CallBatcherBuilder<OneCallEvent<R>> batcher();
     }
     interface ManyCaller<R> extends EndpointDefiner {
         /**
@@ -161,10 +163,10 @@ public interface CallManager {
          */
         Stream<R> call(CallArgs args);
         /**
-         * Constructs a batcher of type CallManyEvent.
-         * @return the CallBatcherBuilder of type CallManyEvent.
+         * Constructs a batcher of type ManyCallEvent.
+         * @return the CallBatcherBuilder of type ManyCallEvent.
          */
-        CallBatcherBuilder<CallManyEvent<R>> batcher(); 
+        CallBatcher.CallBatcherBuilder<ManyCallEvent<R>> batcher();
     }
     interface EndpointDefiner {
         /**
@@ -683,5 +685,17 @@ public interface CallManager {
          * @return  whether the endpoint can return null
          */
         boolean isMultiple();
+    }
+
+    interface CallEvent extends BatchEvent {
+        CallArgs getArgs();
+    }
+
+    interface ManyCallEvent<R> extends CallEvent {
+        Stream<R> getItems();
+    }
+
+    interface OneCallEvent<R> extends CallEvent {
+        R getItem();
     }
 }

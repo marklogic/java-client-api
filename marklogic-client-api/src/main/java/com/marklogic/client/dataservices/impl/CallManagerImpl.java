@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.dataservices;
+package com.marklogic.client.dataservices.impl;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
+import com.marklogic.client.datamovement.impl.BatchEventImpl;
+import com.marklogic.client.dataservices.CallBatcher;
+import com.marklogic.client.dataservices.CallManager;
 import com.marklogic.client.impl.BaseProxy;
 import com.marklogic.client.impl.NodeConverter;
 import com.marklogic.client.impl.RESTServices.CallField;
@@ -46,7 +49,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class CallManagerImpl implements CallManager {
+public class CallManagerImpl implements CallManager {
   private static final Map<String, BaseFieldifier> paramFieldifiers = new HashMap<>();
   {
     paramFieldifiers.put(BaseProxy.BooleanType.NAME,         new BooleanFieldifier());
@@ -137,6 +140,7 @@ class CallManagerImpl implements CallManager {
    }
 
    private static class CallableEndpointImpl extends EndpointDefinerImpl implements CallableEndpoint {
+     private DatabaseClient            client;
      private BaseProxy                 baseProxy;
      private String                    endpointDirectory;
      private String                    module;
@@ -158,6 +162,8 @@ class CallManagerImpl implements CallManager {
               "no endpointDirectory in service declaration: "+serviceDeclaration.toString()
           );
         }
+        this.client = client;
+
         baseProxy = new BaseProxy(client, endpointDirectory);
 
         String functionName = getText(endpointDeclaration.get("functionName"));
@@ -262,6 +268,9 @@ class CallManagerImpl implements CallManager {
 
      CallableEndpointImpl getEndpoint() {
        return this;
+     }
+     DatabaseClient getDatabaseClient() {
+       return client;
      }
 
      @Override
@@ -450,7 +459,43 @@ class CallManagerImpl implements CallManager {
     abstract CallableEndpointImpl getEndpoint();
   }
 
-  private static class NoneCallerImpl extends CallerImpl implements NoneCaller {
+  static class CallEventImpl extends BatchEventImpl implements CallEvent {
+    private CallArgs args;
+    CallEventImpl(CallArgs args) {
+      this.args = args;
+    }
+    @Override
+    public CallArgs getArgs() {
+      return args;
+    }
+  }
+  static class OneCallEventImpl<R> extends CallEventImpl implements OneCallEvent<R> {
+    private R item;
+    OneCallEventImpl(CallArgs args, R item) {
+      super(args);
+      this.item = item;
+    }
+    @Override
+    public R getItem() {
+      return item;
+    }
+  }
+  static class ManyCallEventImpl<R> extends CallEventImpl implements ManyCallEvent<R> {
+    private Stream<R> items;
+    ManyCallEventImpl(CallArgs args, Stream<R> items) {
+      super(args);
+      this.items = items;
+    }
+    @Override
+    public Stream<R> getItems() {
+      return items;
+    }
+  }
+
+  interface EventedCaller<E extends CallEvent> extends EndpointDefiner {
+    E callForEvent(CallArgs args) throws Exception;
+  }
+  static class NoneCallerImpl extends CallerImpl implements NoneCaller, EventedCaller<CallEvent> {
     NoneCallerImpl(CallableEndpointImpl endpoint) {
        super(endpoint);
      }
@@ -466,12 +511,15 @@ class CallManagerImpl implements CallManager {
        }
        startRequest((CallArgsImpl) args).responseNone();
     }
-
-	@Override
-	public CallBatcherBuilder<CallEvent> batcher() {
-		// TODO Auto-generated method stub
-		return null;
+    @Override
+	public CallBatcher.CallBatcherBuilder<CallEvent> batcher() {
+      return new CallBatcherImpl.BuilderImpl(getEndpoint().getDatabaseClient(), this);
 	}
+    @Override
+    public CallEvent callForEvent(CallArgs args) throws Exception {
+      call(args);
+      return new CallEventImpl(args);
+    }
   }
   private static class OneCallerImpl<R> extends CallerImpl implements OneCaller<R> {
     private ReturnConverter<R> converter;
@@ -494,14 +542,16 @@ class CallManagerImpl implements CallManager {
       }
       return converter.one(startRequest((CallArgsImpl) args).responseSingle(getEndpoint().isNullable(), format));
     }
-
-	@Override
-	public CallBatcherBuilder<CallOneEvent<R>> batcher() {
-		// TODO Auto-generated method stub
-		return null;
+    @Override
+	public CallBatcher.CallBatcherBuilder<OneCallEvent<R>> batcher() {
+      return new CallBatcherImpl.BuilderImpl(getEndpoint().getDatabaseClient(),this);
 	}
+    @Override
+    public OneCallEvent<R> callForEvent(CallArgs args) throws Exception {
+      return new OneCallEventImpl(args, call(args));
+    }
   }
-  private static class ManyCallerImpl<R> extends CallerImpl implements ManyCaller<R> {
+  static class ManyCallerImpl<R> extends CallerImpl implements ManyCaller<R>, EventedCaller<ManyCallEvent<R>> {
     private ReturnConverter<R> converter;
     private Format             format;
 
@@ -522,12 +572,14 @@ class CallManagerImpl implements CallManager {
       }
       return converter.many(startRequest((CallArgsImpl) args).responseMultiple(getEndpoint().isNullable(), format));
     }
-
-	@Override
-	public CallBatcherBuilder<CallManyEvent<R>> batcher() {
-		// TODO Auto-generated method stub
-		return null;
+    @Override
+	public CallBatcher.CallBatcherBuilder<ManyCallEvent<R>> batcher() {
+      return new CallBatcherImpl.BuilderImpl(getEndpoint().getDatabaseClient(),this);
 	}
+    @Override
+    public ManyCallEvent<R> callForEvent(CallArgs args) throws Exception {
+      return new ManyCallEventImpl(args, call(args));
+    }
   }
   private static abstract class CallerImpl extends EndpointDefinerImpl {
     private CallableEndpointImpl endpoint;

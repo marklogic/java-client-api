@@ -17,5 +17,5 @@ package com.marklogic.client.dataservices;
 
 import com.marklogic.client.datamovement.BatchListener;
 
-public interface CallSuccessListener<E extends CallEvent> extends BatchListener<E> {
+public interface CallSuccessListener<E extends CallManager.CallEvent> extends BatchListener<E> {
 }

@@ -17,13 +17,8 @@ package com.marklogic.client.datamovement.impl;
 
 import java.util.Calendar;
 
-import com.marklogic.client.datamovement.JobReport;
-import com.marklogic.client.datamovement.QueryBatchListener;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.QueryFailureListener;
-import com.marklogic.client.datamovement.WriteBatchListener;
-import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.datamovement.WriteFailureListener;
+import com.marklogic.client.datamovement.*;
+import com.marklogic.client.dataservices.CallBatcher;
 
 public class JobReportImpl implements JobReport {
 
@@ -35,6 +30,29 @@ public class JobReportImpl implements JobReport {
   private Calendar jobStartTime;
   private Calendar jobEndTime;
   private Calendar reportTimestamp;
+
+  static public JobReportImpl about(JobTicketImpl ticket) {
+    BatcherImpl       batcher = ticket.getBatcher();
+    JobTicket.JobType jobType = ticket.getJobType();
+    switch(jobType) {
+      case CALL_BATCHER:
+        return new JobReportImpl((CallBatcher) batcher);
+      case QUERY_BATCHER:
+        return new JobReportImpl((QueryBatcher) batcher);
+      case WRITE_BATCHER:
+        return new JobReportImpl((WriteBatcher) batcher);
+      default:
+        throw new InternalError(
+                (jobType == null) ?
+                        "null job type" :
+                        "unknown job type: "+jobType.name()
+        );
+    }
+  }
+
+  public JobReportImpl(CallBatcher batcher) {
+// TODO
+  }
 
   public JobReportImpl(WriteBatcher batcher) {
     WriteJobReportListener writeJobSuccessListener = null;
