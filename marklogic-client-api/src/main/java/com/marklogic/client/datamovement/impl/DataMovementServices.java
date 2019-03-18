@@ -21,6 +21,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.dataservices.CallBatcher;
+import com.marklogic.client.dataservices.impl.CallBatcherImpl;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.datamovement.Batcher;
@@ -30,7 +32,7 @@ import com.marklogic.client.datamovement.JobTicket.JobType;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.JobReport;
-import com.marklogic.client.datamovement.impl.ForestConfigurationImpl;
+
 import java.util.List;
 
 public class DataMovementServices {
@@ -77,41 +79,40 @@ public class DataMovementServices {
   }
 
   public JobTicket startJob(WriteBatcher batcher, ConcurrentHashMap<String, JobTicket> activeJobs) {
-    String jobId = batcher.getJobId() != null ? batcher.getJobId() : generateJobId();
-    if (batcher.getJobId() == null && ! batcher.isStarted() ) batcher.withJobId(jobId);
-    if (!batcher.isStarted() && activeJobs.containsKey(jobId)) {
-      throw new DataMovementException(
-          "Cannot start the batcher because the given job Id already exists in the active jobs", null);
-    }
-    JobTicket jobTicket = new JobTicketImpl(jobId, JobTicket.JobType.WRITE_BATCHER)
-        .withWriteBatcher((WriteBatcherImpl) batcher);
-    ((WriteBatcherImpl) batcher).start(jobTicket);
-    activeJobs.put(jobId, jobTicket);
-    return jobTicket;
+    return startJobImpl((WriteBatcherImpl) batcher, JobType.WRITE_BATCHER, activeJobs)
+            .withWriteBatcher((WriteBatcherImpl) batcher);
+  }
+  public JobTicket startJob(QueryBatcher batcher, ConcurrentHashMap<String, JobTicket> activeJobs) {
+    return startJobImpl((QueryBatcherImpl) batcher, JobType.QUERY_BATCHER, activeJobs)
+        .withQueryBatcher((QueryBatcherImpl) batcher);
+  }
+  public JobTicket startJob(CallBatcher batcher, ConcurrentHashMap<String, JobTicket> activeJobs) {
+    return startJobImpl((CallBatcherImpl) batcher, JobType.CALL_BATCHER, activeJobs)
+            .withCallBatcher((CallBatcherImpl) batcher);
   }
 
-  public JobTicket startJob(QueryBatcher batcher, ConcurrentHashMap<String, JobTicket> activeJobs) {
-    String jobId = batcher.getJobId() != null ? batcher.getJobId() : generateJobId();
-    if (batcher.getJobId() == null) batcher.withJobId(jobId);
+  private JobTicketImpl startJobImpl(
+          BatcherImpl batcher, JobTicket.JobType jobType, ConcurrentHashMap<String, JobTicket> activeJobs
+  ) {
+    String jobId = batcher.getJobId();
+    if (batcher.getJobId() == null) {
+      jobId = generateJobId();
+      batcher.withJobId(jobId);
+    }
     if (!batcher.isStarted() && activeJobs.containsKey(jobId)) {
       throw new DataMovementException(
-          "Cannot start the batcher because the given job Id already exists in the active jobs", null);
+              "Cannot start the batcher because the given job Id already exists in the active jobs", null);
     }
-    JobTicket jobTicket = new JobTicketImpl(jobId, JobTicket.JobType.QUERY_BATCHER)
-        .withQueryBatcher((QueryBatcherImpl) batcher);
-    ((QueryBatcherImpl) batcher).start(jobTicket);
+    JobTicketImpl jobTicket = new JobTicketImpl(jobId, jobType);
+    batcher.start(jobTicket);
     activeJobs.put(jobId, jobTicket);
     return jobTicket;
+
   }
 
   public JobReport getJobReport(JobTicket ticket) {
     if ( ticket instanceof JobTicketImpl ) {
-      JobTicketImpl ticketImpl = (JobTicketImpl) ticket;
-      if ( ticketImpl.getJobType() == JobType.WRITE_BATCHER ) {
-        return new JobReportImpl(ticketImpl.getWriteBatcher());
-      } else if ( ticketImpl.getJobType() == JobType.QUERY_BATCHER ) {
-        return new JobReportImpl(ticketImpl.getQueryBatcher());
-      }
+      return JobReportImpl.about((JobTicketImpl) ticket);
     }
     return null;
   }
@@ -119,20 +120,14 @@ public class DataMovementServices {
   public void stopJob(JobTicket ticket, ConcurrentHashMap<String, JobTicket> activeJobs) {
     if ( ticket instanceof JobTicketImpl ) {
       JobTicketImpl ticketImpl = (JobTicketImpl) ticket;
-      if ( ticketImpl.getJobType() == JobType.WRITE_BATCHER ) {
-        ticketImpl.getWriteBatcher().stop();
-      } else if ( ticketImpl.getJobType() == JobType.QUERY_BATCHER ) {
-        ticketImpl.getQueryBatcher().stop();
-      }
+      ticketImpl.getBatcher().stop();
       activeJobs.remove(ticket.getJobId());
     }
   }
 
   public void stopJob(Batcher batcher, ConcurrentHashMap<String, JobTicket> activeJobs) {
-    if ( batcher instanceof QueryBatcherImpl ) {
-      ((QueryBatcherImpl) batcher).stop();
-    } else if ( batcher instanceof WriteBatcherImpl ) {
-      ((WriteBatcherImpl) batcher).stop();
+    if (batcher instanceof BatcherImpl) {
+      ((BatcherImpl) batcher).stop();
     }
     if (batcher.getJobId() != null) activeJobs.remove(batcher.getJobId());
   }

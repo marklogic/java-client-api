@@ -17,6 +17,7 @@ package com.marklogic.client.datamovement.impl;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.dataservices.CallBatcher;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryDefinition;
@@ -82,13 +83,17 @@ public class DataMovementManagerImpl implements DataMovementManager {
   }
 
   @Override
-  public JobTicket startJob(WriteBatcher batcher) {
+  public JobTicket startJob(CallBatcher batcher) {
     if ( batcher == null ) throw new IllegalArgumentException("batcher must not be null");
     return service.startJob(batcher, activeJobs);
   }
-
   @Override
   public JobTicket startJob(QueryBatcher batcher) {
+    if ( batcher == null ) throw new IllegalArgumentException("batcher must not be null");
+    return service.startJob(batcher, activeJobs);
+  }
+  @Override
+  public JobTicket startJob(WriteBatcher batcher) {
     if ( batcher == null ) throw new IllegalArgumentException("batcher must not be null");
     return service.startJob(batcher, activeJobs);
   }

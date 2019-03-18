@@ -19,10 +19,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import com.marklogic.client.datamovement.Batcher;
+import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.datamovement.JobTicket;
 
-public interface CallBatcher<W,E extends CallEvent> extends Batcher {
+public interface CallBatcher<W,E extends CallManager.CallEvent> extends Batcher {
 	
     // fluent configuration consistent with other batchers
     CallBatcher<W,E> onCallSuccess(CallSuccessListener<E> listener);
@@ -36,9 +37,10 @@ public interface CallBatcher<W,E extends CallEvent> extends Batcher {
     // setters and getters consistent with other batchers
     CallSuccessListener<E>[] getCallSuccessListeners();
     CallFailureListener[]    getCallFailureListeners();
-    
-    @SuppressWarnings("unchecked")
-	void setCallSuccessListeners(CallSuccessListener<E>... listeners);
+
+    DataMovementManager getDataMovementManager();
+
+    void setCallSuccessListeners(CallSuccessListener<E>... listeners);
     void setCallFailureListeners(CallFailureListener...    listeners);
 
     // input queuing consistent with other batchers
@@ -56,4 +58,10 @@ public interface CallBatcher<W,E extends CallEvent> extends Batcher {
     // failure recovery consistent with other batchers
     void retry(E event);
     void retryWithFailureListeners(E event);
+
+    interface CallBatcherBuilder<E extends CallManager.CallEvent> {
+        CallBatcherBuilder<E> defaultArgs(CallManager.CallArgs args);
+
+        CallBatcher<CallManager.CallArgs,E> forArgs();
+    }
 }

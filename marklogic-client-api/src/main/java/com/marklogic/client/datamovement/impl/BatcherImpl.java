@@ -19,6 +19,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.Batcher;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ForestConfiguration;
+import com.marklogic.client.datamovement.JobTicket;
 
 public abstract class BatcherImpl implements Batcher {
   private String jobName = "unnamed";
@@ -100,6 +101,10 @@ public abstract class BatcherImpl implements Batcher {
     this.forestConfig = forestConfig;
     return this;
   }
+
+  public abstract void start(JobTicket ticket);
+  public abstract JobTicket getJobTicket();
+  public abstract void stop();
 
   @Override
   public abstract boolean isStopped();

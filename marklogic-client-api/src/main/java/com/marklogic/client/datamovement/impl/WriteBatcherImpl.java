@@ -652,11 +652,13 @@ public class WriteBatcherImpl
     if ( message != null ) logger.warn(message, t.toString());
   }
 
+  @Override
   public void start(JobTicket ticket) {
     jobTicket = ticket;
     initialize();
   }
 
+  @Override
   public void stop() {
     jobEndTime = Calendar.getInstance();
     stopped.set(true);
