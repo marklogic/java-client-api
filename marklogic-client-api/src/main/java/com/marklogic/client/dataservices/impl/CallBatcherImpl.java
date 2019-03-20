@@ -41,6 +41,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     private JobTicket                        jobTicket;
     private CallingThreadPoolExecutor        threadPool;
     private List<CallSuccessListener<E>>     successListeners = new ArrayList<>();
+    private List<CallFailureListener>        failureListeners = new ArrayList<>();
 
     CallBatcherImpl(DatabaseClient client, CallManagerImpl.EventedCaller<E> caller) {
         super(client.newDataMovementManager());
@@ -49,24 +50,33 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     }
 
     private void sendSuccessToListeners(E event) {
-// TODO
+// TODO: other actions
         for (CallSuccessListener<E> listener: successListeners) {
             listener.processEvent(event);
         }
     }
     private void sendThrowableToListeners(Throwable t, String message, CallManager.CallEvent event) {
-// TODO
+// TODO: other actions
+        for (CallFailureListener listener: failureListeners) {
+            listener.processFailure(event, t);
+        }
     }
 
     @Override
     public CallBatcher onCallSuccess(CallSuccessListener listener) {
-// TODO
-        return null;
+        if (listener == null) {
+            throw new IllegalArgumentException("null success listener");
+        }
+        successListeners.add(listener);
+        return this;
     }
     @Override
     public CallBatcher onCallFailure(CallFailureListener listener) {
-// TODO
-        return null;
+        if (listener == null) {
+            throw new IllegalArgumentException("null failure listener");
+        }
+        failureListeners.add(listener);
+        return this;
     }
     @Override
     public CallBatcher withBatchSize(int batchSize) {
@@ -76,7 +86,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     @Override
     public CallBatcher withForestConfig(ForestConfiguration forestConfig) {
 // TODO
-        return null;
+        return this;
     }
     @Override
     public boolean isStarted() {
@@ -109,16 +119,15 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     }
     @Override
     public CallFailureListener[] getCallFailureListeners() {
-// TODO
-        return new CallFailureListener[0];
+        return failureListeners.toArray(new CallFailureListener[failureListeners.size()]);
     }
     @Override
-    public void setCallSuccessListeners(CallSuccessListener<E>[] listeners) {
+    public void setCallSuccessListeners(CallSuccessListener<E>... listeners) {
         successListeners = Arrays.asList(listeners);
     }
     @Override
     public void setCallFailureListeners(CallFailureListener... listeners) {
-// TODO
+        failureListeners = Arrays.asList(listeners);
     }
     @Override
     public CallBatcher add(W input) {
@@ -133,21 +142,30 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 // TODO
     }
     @Override
-    public void awaitCompletion() {
-// TODO
+    public boolean awaitCompletion() {
+        try {
+            return awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
+        } catch(InterruptedException e) {
+            return false;
+        }
     }
     @Override
-    public void awaitCompletion(long timeout, TimeUnit unit) {
-// TODO
+    public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
+        return threadPool.awaitTermination(timeout, unit);
     }
     @Override
     public void flushAndWait() {
-// TODO
+        flush(true);
     }
     @Override
     public void flushAsync() {
-// TODO
+        flush(false);
     }
+    private void flush(boolean waitForCompletion) {
+// TODO: handle batched parameter
+        if ( waitForCompletion == true ) awaitCompletion();
+    }
+
     @Override
     public DataMovementManager getDataMovementManager() {
         return super.getMoveMgr();
@@ -170,6 +188,8 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     public DatabaseClient getPrimaryClient() {
         return client;
     }
+// TODO: start() without JobTicket?
+// TODO: better, implicit start on first add?
     @Override
     public void start(JobTicket ticket) {
         jobTicket = ticket;

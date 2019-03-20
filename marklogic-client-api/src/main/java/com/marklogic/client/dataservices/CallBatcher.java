@@ -48,8 +48,8 @@ public interface CallBatcher<W,E extends CallManager.CallEvent> extends Batcher 
     void addAll(Stream<W> input);
 
     // job management consistent with other batchers
-    void awaitCompletion();
-    void awaitCompletion(long timeout, TimeUnit unit);
+    boolean awaitCompletion();
+    boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException;
     void flushAndWait();
     void flushAsync();
     JobTicket getJobTicket();
