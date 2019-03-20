@@ -643,7 +643,7 @@ public interface CallManager {
          * Get the names of the parameters that have been assigned arguments
          * @return  the names of the assigned parameters
          */
-        String[] getParamNames();
+        String[] getAssignedParamNames();
     }
 
     /**

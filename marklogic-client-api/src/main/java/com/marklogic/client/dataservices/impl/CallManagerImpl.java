@@ -709,7 +709,7 @@ public class CallManagerImpl implements CallManager {
     }
 
     @Override
-    public String[] getParamNames() {
+    public String[] getAssignedParamNames() {
       if (assignedParams == null) {
         return new String[0];
       }
