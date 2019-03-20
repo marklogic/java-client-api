@@ -638,6 +638,12 @@ public interface CallManager {
          * @return  the CallArgs object for chained building of the arguments
          */
         CallArgs param(String name, XMLStreamReader[] values);
+
+        /**
+         * Get the names of the parameters that have been assigned arguments
+         * @return  the names of the assigned parameters
+         */
+        String[] getParamNames();
     }
 
     /**

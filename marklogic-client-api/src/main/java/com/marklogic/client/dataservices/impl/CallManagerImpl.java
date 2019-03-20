@@ -107,36 +107,36 @@ public class CallManagerImpl implements CallManager {
     new XMLDocumentTypeConverter().putTo(returnConverters);
   }
 
-   private DatabaseClient client;
+  private DatabaseClient client;
 
-   CallManagerImpl(DatabaseClient client) {
-     if (client == null) {
-       throw new IllegalArgumentException("cannot construct CallManager with null database client");
-     }
-     this.client = client;
-   }
+  public CallManagerImpl(DatabaseClient client) {
+    if (client == null) {
+      throw new IllegalArgumentException("cannot construct CallManager with null database client");
+    }
+    this.client = client;
+  }
 
-   @Override
-   public SessionState newSessionState() {
+  @Override
+  public SessionState newSessionState() {
       return new SessionStateImpl();
    }
 
-   @Override
-   public CallableEndpoint endpoint(JSONWriteHandle serviceDeclaration, JSONWriteHandle endpointDeclaration, String extension) {
-     JsonNode serviceDecl  = NodeConverter.handleToJsonNode(serviceDeclaration);
-     JsonNode endpointDecl = NodeConverter.handleToJsonNode(endpointDeclaration);
+  @Override
+  public CallableEndpoint endpoint(JSONWriteHandle serviceDeclaration, JSONWriteHandle endpointDeclaration, String extension) {
+    JsonNode serviceDecl  = NodeConverter.handleToJsonNode(serviceDeclaration);
+    JsonNode endpointDecl = NodeConverter.handleToJsonNode(endpointDeclaration);
 
-     if (serviceDecl == null) {
-       throw new IllegalArgumentException("cannot construct CallableEndpoint with null serviceDeclaration");
-     } else if (endpointDecl == null) {
-       throw new IllegalArgumentException("cannot construct CallableEndpoint with null endpointDeclaration");
-     } else if (extension == null || extension.length() == 0) {
-       throw new IllegalArgumentException("cannot construct CallableEndpoint with null or empty extension");
-     } else if (!"sjs".equals(extension) && !"xqy".equals(extension)) {
-       throw new IllegalArgumentException("extension must be sjs or xqy: "+extension);
-     }
+    if (serviceDecl == null) {
+      throw new IllegalArgumentException("cannot construct CallableEndpoint with null serviceDeclaration");
+    } else if (endpointDecl == null) {
+      throw new IllegalArgumentException("cannot construct CallableEndpoint with null endpointDeclaration");
+    } else if (extension == null || extension.length() == 0) {
+      throw new IllegalArgumentException("cannot construct CallableEndpoint with null or empty extension");
+    } else if (!"sjs".equals(extension) && !"xqy".equals(extension)) {
+      throw new IllegalArgumentException("extension must be sjs or xqy: "+extension);
+    }
 
-     return new CallableEndpointImpl(client, serviceDecl, endpointDecl, extension);
+    return new CallableEndpointImpl(client, serviceDecl, endpointDecl, extension);
    }
 
    private static class CallableEndpointImpl extends EndpointDefinerImpl implements CallableEndpoint {
@@ -521,7 +521,7 @@ public class CallManagerImpl implements CallManager {
       return new CallEventImpl(args);
     }
   }
-  private static class OneCallerImpl<R> extends CallerImpl implements OneCaller<R> {
+  private static class OneCallerImpl<R> extends CallerImpl implements OneCaller<R>, EventedCaller<OneCallEvent<R>> {
     private ReturnConverter<R> converter;
     private Format             format;
 
@@ -706,6 +706,14 @@ public class CallManagerImpl implements CallManager {
       callFields.add(field);
 
       return this;
+    }
+
+    @Override
+    public String[] getParamNames() {
+      if (assignedParams == null) {
+        return new String[0];
+      }
+      return assignedParams.toArray(new String[assignedParams.size()]);
     }
 
     @Override
