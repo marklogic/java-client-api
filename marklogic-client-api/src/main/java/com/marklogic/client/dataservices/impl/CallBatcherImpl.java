@@ -16,6 +16,7 @@
 package com.marklogic.client.dataservices.impl;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.datamovement.DataMovementException;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.datamovement.JobTicket;
@@ -260,13 +261,24 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     public boolean isStopped() {
         return stopped.get();
     }
+
     @Override
     public void retry(CallManager.CallEvent event) {
-// TODO
+        retry(event, false);
     }
     @Override
     public void retryWithFailureListeners(CallManager.CallEvent event) {
-// TODO
+        retry(event, true);
+    }
+    private void retry(CallManager.CallEvent event, boolean callFailListeners) {
+        if (isStopped()) {
+            logger.warn("Job is now stopped, aborting the retry");
+            return;
+        }
+        if (event == null) throw new IllegalArgumentException("event must not be null");
+
+        Callable<W,E> callable = new Callable(caller, event.getArgs(), this);
+        callable.withFailureListeners(callFailListeners).run();
     }
 
     static class BuilderImpl<E extends CallManager.CallEvent> implements CallBatcherBuilder<E> {
@@ -303,6 +315,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         private CallManagerImpl.EventedCaller<E> caller;
         private CallManager.CallArgs             args;
         private CallBatcherImpl<W,E>             batcher;
+        private boolean                          fireFailureListeners = true;
 
         Callable(CallManagerImpl.EventedCaller<E> caller, CallManager.CallArgs args, CallBatcherImpl<W,E> batcher) {
             this.caller  = caller;
@@ -310,13 +323,26 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             this.batcher = batcher;
         }
 
+        Callable<W,E> withFailureListeners(boolean enable) {
+            fireFailureListeners = enable;
+            return this;
+        }
+
         @Override
         public void run() {
+            E output = null;
             try {
-                batcher.sendSuccessToListeners(caller.callForEvent(args));
-            } catch (Throwable e) {
-                CallManager.CallEvent event = new CallManagerImpl.CallEventImpl(args);
-                batcher.sendThrowableToListeners(e, "failure calling "+caller.getEndpointPath()+" {}", event);
+                output = caller.callForEvent(args);
+                batcher.sendSuccessToListeners(output);
+            } catch (Throwable throwable) {
+                if (fireFailureListeners) {
+                    CallManager.CallEvent input = new CallManagerImpl.CallEventImpl(args);
+                    batcher.sendThrowableToListeners(throwable, "failure calling "+caller.getEndpointPath()+" {}", input);
+                } else if (throwable instanceof RuntimeException ) {
+                    throw (RuntimeException) throwable;
+                } else {
+                    throw new DataMovementException("Failed to retry call", throwable);
+                }
             }
         }
     }
