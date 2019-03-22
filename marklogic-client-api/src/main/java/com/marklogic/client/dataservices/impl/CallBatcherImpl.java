@@ -24,6 +24,8 @@ import com.marklogic.client.dataservices.CallBatcher;
 import com.marklogic.client.dataservices.CallFailureListener;
 import com.marklogic.client.dataservices.CallManager;
 import com.marklogic.client.dataservices.CallSuccessListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,9 +35,12 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends BatcherImpl implements CallBatcher<W,E> {
+    private static Logger logger = LoggerFactory.getLogger(CallBatcherImpl.class);
+
     private DatabaseClient                   client;
     private CallManagerImpl.EventedCaller<E> caller;
     private JobTicket                        jobTicket;
@@ -43,10 +48,15 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     private List<CallSuccessListener<E>>     successListeners = new ArrayList<>();
     private List<CallFailureListener>        failureListeners = new ArrayList<>();
 
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
+    private final AtomicBoolean stopped     = new AtomicBoolean(false);
+    private final AtomicBoolean started     = new AtomicBoolean(false);
+
     CallBatcherImpl(DatabaseClient client, CallManagerImpl.EventedCaller<E> caller) {
         super(client.newDataMovementManager());
         this.client = client;
         this.caller = caller;
+// TODO: default to 1 in args case
     }
 
     private void sendSuccessToListeners(E event) {
@@ -80,31 +90,32 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     }
     @Override
     public CallBatcher withBatchSize(int batchSize) {
+        requireInitialized(false);
+// TODO: error if not 1 in args case
         super.withBatchSize(batchSize);
         return this;
     }
     @Override
     public CallBatcher withForestConfig(ForestConfiguration forestConfig) {
+        requireInitialized(false);
 // TODO
         return this;
     }
     @Override
-    public boolean isStarted() {
-// TODO
-        return false;
-    }
-    @Override
     public CallBatcher withJobId(String jobId) {
+        requireInitialized(false);
         super.withJobId(jobId);
         return this;
     }
     @Override
     public CallBatcher withJobName(String jobName) {
+        requireInitialized(false);
         super.withJobName(jobName);
         return this;
     }
     @Override
     public CallBatcher withThreadCount(int threadCount) {
+        requireInitialized(false);
         super.withThreadCount(threadCount);
         return this;
     }
@@ -123,14 +134,18 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     }
     @Override
     public void setCallSuccessListeners(CallSuccessListener<E>... listeners) {
+        requireInitialized(false);
         successListeners = Arrays.asList(listeners);
     }
     @Override
     public void setCallFailureListeners(CallFailureListener... listeners) {
+        requireInitialized(false);
         failureListeners = Arrays.asList(listeners);
     }
     @Override
     public CallBatcher add(W input) {
+        requireInitialized(true);
+        requireNotStopped();
 // TODO: construct the args in a different way depending on the input type
         CallManager.CallArgs args = (CallManager.CallArgs) input;
 // TODO
@@ -138,9 +153,24 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         return this;
     }
     @Override
-    public void addAll(Stream input) {
-// TODO
+    public void addAll(Stream<W> input) {
+        if (input == null) {
+            throw new IllegalArgumentException("null input stream");
+        }
+        input.forEach(this::add);
     }
+
+    private void requireNotStopped() {
+        if (isStopped() == true) throw new IllegalStateException("This instance has been stopped");
+    }
+    private void requireInitialized(boolean state) {
+        if (initialized.get() != state) {
+            throw new IllegalStateException(state ?
+                    "This operation must be called after starting this job" :
+                    "This operation must be called before starting this job");
+        }
+    }
+
     @Override
     public boolean awaitCompletion() {
         try {
@@ -162,6 +192,8 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         flush(false);
     }
     private void flush(boolean waitForCompletion) {
+        requireInitialized(true);
+        requireNotStopped();
 // TODO: handle batched parameter
         if ( waitForCompletion == true ) awaitCompletion();
     }
@@ -172,6 +204,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     }
     @Override
     public JobTicket getJobTicket() {
+        requireInitialized(true);
         return jobTicket;
     }
     @Override
@@ -188,8 +221,10 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     public DatabaseClient getPrimaryClient() {
         return client;
     }
-// TODO: start() without JobTicket?
-// TODO: better, implicit start on first add?
+    @Override
+    public void start() {
+        getDataMovementManager().startJob(this);
+    }
     @Override
     public void start(JobTicket ticket) {
         jobTicket = ticket;
@@ -197,17 +232,33 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         initialize();
     }
     private void initialize() {
+        if (getBatchSize() <= 0) {
+            withBatchSize(1);
+            logger.warn("batchSize should be 1 or greater -- setting batchSize to 1");
+        }
+        if (getThreadCount() <= 0) {
+// TODO: default based on forest count
+            withThreadCount(1);
+            logger.warn("threadCount should be 1 or greater -- setting threadCount to 1");
+        }
+        if (initialized.getAndSet(true)) return;
 // TODO
         threadPool = new CallingThreadPoolExecutor(getThreadCount());
+        started.set(true);
     }
     @Override
     public void stop() {
+        stopped.set(true);
+        if ( threadPool != null ) threadPool.shutdownNow();
 // TODO
     }
     @Override
+    public boolean isStarted() {
+        return started.get();
+    }
+    @Override
     public boolean isStopped() {
-// TODO
-        return false;
+        return stopped.get();
     }
     @Override
     public void retry(CallManager.CallEvent event) {

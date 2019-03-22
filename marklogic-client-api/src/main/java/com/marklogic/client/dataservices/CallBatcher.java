@@ -39,6 +39,7 @@ public interface CallBatcher<W,E extends CallManager.CallEvent> extends Batcher 
     CallFailureListener[]    getCallFailureListeners();
 
     DataMovementManager getDataMovementManager();
+    void start();
 
     void setCallSuccessListeners(CallSuccessListener<E>... listeners);
     void setCallFailureListeners(CallFailureListener...    listeners);
