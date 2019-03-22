@@ -75,7 +75,7 @@ public class CallManagerTest {
         serviceHandle = new JacksonHandle(servicedef);
     }
 
-    private static Map<String, JsonNode> endpointdefs = new HashMap<>();
+    static Map<String, JsonNode> endpointdefs = new HashMap<>();
 
     @BeforeClass
     public static void setup() {
@@ -93,43 +93,43 @@ public class CallManagerTest {
 
         docMeta.getPermissions().add("rest-reader", DocumentMetadataHandle.Capability.EXECUTE);
 
-        setupEndpointMultipleRequired(docMgr, docMeta, "boolean");
-        setupEndpointMultipleRequired(docMgr, docMeta, "date");
-        setupEndpointMultipleRequired(docMgr, docMeta, "dateTime");
-        setupEndpointMultipleRequired(docMgr, docMeta, "dayTimeDuration");
-        setupEndpointMultipleRequired(docMgr, docMeta, "decimal");
-        setupEndpointMultipleRequired(docMgr, docMeta, "double");
-        setupEndpointMultipleRequired(docMgr, docMeta, "float");
-        setupEndpointMultipleRequired(docMgr, docMeta, "int");
-        setupEndpointMultipleRequired(docMgr, docMeta, "long");
-        setupEndpointMultipleRequired(docMgr, docMeta, "string");
-        setupEndpointMultipleRequired(docMgr, docMeta, "time");
-        setupEndpointMultipleRequired(docMgr, docMeta, "unsignedInt");
-        setupEndpointMultipleRequired(docMgr, docMeta, "unsignedLong");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "boolean");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "date");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "dateTime");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "dayTimeDuration");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "decimal");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "double");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "float");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "int");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "long");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "string");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "time");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "unsignedInt");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "unsignedLong");
 
-        setupEndpointMultipleRequired(docMgr, docMeta, "array");
-        setupEndpointMultipleRequired(docMgr, docMeta, "binaryDocument");
-        setupEndpointMultipleRequired(docMgr, docMeta, "jsonDocument");
-        setupEndpointMultipleRequired(docMgr, docMeta, "object");
-        setupEndpointMultipleRequired(docMgr, docMeta, "textDocument");
-        setupEndpointMultipleRequired(docMgr, docMeta, "xmlDocument");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "array");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "binaryDocument");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "jsonDocument");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "object");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "textDocument");
+        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "xmlDocument");
 
-        setupEndpointSingleRequired(docMgr, docMeta, "singleAtomic", "dateTime");
-        setupEndpointSingleRequired(docMgr, docMeta, "singleNode", "object");
+        EndpointSetup.setupEndpointSingleRequired(docMgr, docMeta, "singleAtomic", "dateTime");
+        EndpointSetup.setupEndpointSingleRequired(docMgr, docMeta, "singleNode", "object");
 
-        setupEndpointSingleNulled(docMgr, docMeta, "nullAtomic", "decimal");
-        setupEndpointSingleNulled(docMgr, docMeta, "nullNode", "xmlDocument");
+        EndpointSetup.setupEndpointSingleNulled(docMgr, docMeta, "nullAtomic", "decimal");
+        EndpointSetup.setupEndpointSingleNulled(docMgr, docMeta, "nullNode", "xmlDocument");
 
-        setupEndpointMultipleNulled(docMgr, docMeta, "multipleNullAtomic", "float");
-        setupEndpointMultipleNulled(docMgr, docMeta, "multipleNullNode", "textDocument");
+        EndpointSetup.setupEndpointMultipleNulled(docMgr, docMeta, "multipleNullAtomic", "float");
+        EndpointSetup.setupEndpointMultipleNulled(docMgr, docMeta, "multipleNullNode", "textDocument");
 
-        setupTwoParamEndpoint(docMgr, docMeta, "twoAtomic", "date", "unsignedLong");
-        setupTwoParamEndpoint(docMgr, docMeta, "twoNode", "array", "textDocument");
-        setupTwoParamEndpoint(docMgr, docMeta, "twoMixed", "time", "textDocument");
+        EndpointSetup.setupTwoParamEndpoint(docMgr, docMeta, "twoAtomic", "date", "unsignedLong");
+        EndpointSetup.setupTwoParamEndpoint(docMgr, docMeta, "twoNode", "array", "textDocument");
+        EndpointSetup.setupTwoParamEndpoint(docMgr, docMeta, "twoMixed", "time", "textDocument");
 
-        setupParamNoReturnEndpoint(docMgr, docMeta, "paramNoReturn", "double");
-        setupNoParamReturnEndpoint(docMgr, docMeta, "noParamReturn", "double", "5.6");
-        setupNoParamNoReturnEndpoint(docMgr, docMeta, "noParamNoReturn");
+        EndpointSetup.setupParamNoReturnEndpoint(docMgr, docMeta, "paramNoReturn", "double");
+        EndpointSetup.setupNoParamReturnEndpoint(docMgr, docMeta, "noParamReturn", "double", "5.6");
+        EndpointSetup.setupNoParamNoReturnEndpoint(docMgr, docMeta, "noParamNoReturn");
 
         adminClient.release();
     }
@@ -143,207 +143,6 @@ public class CallManagerTest {
         queryMgr.delete(deletedef);
 
         adminClient.release();
-    }
-
-    private static void setupParamNoReturnEndpoint(
-            JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
-    ) {
-        JsonNode endpointdef = getEndpointdef(functionName, datatype, null, null, false, false);
-        String script = getScript(datatype, null, null, false, false);
-        setupEndpoint(docMgr, docMeta, endpointdef, script);
-    }
-    private static void setupNoParamReturnEndpoint(
-            JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype, String returnVal
-    ) {
-        JsonNode endpointdef = getEndpointdef(functionName, null, null, datatype, false, false);
-        String script = getScript(null, null, returnVal, false, false);
-        setupEndpoint(docMgr, docMeta, endpointdef, script);
-    }
-    private static void setupNoParamNoReturnEndpoint(
-            JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName
-    ) {
-        JsonNode endpointdef = getEndpointdef(functionName, null, null, null, false, false);
-        String script = getScript(null, null, null, false, false);
-        setupEndpoint(docMgr, docMeta, endpointdef, script);
-    }
-    private static void setupTwoParamEndpoint(
-            JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype, String paramType2
-    ) {
-        JsonNode endpointdef = getEndpointdef(functionName, datatype, paramType2, datatype, false, false);
-        String script = getScript(datatype, paramType2, null, false, false);
-        setupEndpoint(docMgr, docMeta, endpointdef, script);
-    }
-    private static void setupEndpointSingleNulled(
-            JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
-    ) {
-        JsonNode endpointdef = getEndpointdef(functionName, datatype, false, true);
-        String script = getScript(datatype, false, true);
-        setupEndpoint(docMgr, docMeta, endpointdef, script);
-    }
-    private static void setupEndpointSingleRequired(
-            JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
-    ) {
-        JsonNode endpointdef = getEndpointdef(functionName, datatype, false, false);
-        String script = getScript(datatype, false, false);
-        setupEndpoint(docMgr, docMeta, endpointdef, script);
-    }
-    private static void setupEndpointMultipleNulled(
-            JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
-    ) {
-        JsonNode endpointdef = getEndpointdef(functionName, datatype, true, true);
-        String script = getScript(datatype, true, true);
-        setupEndpoint(docMgr, docMeta, endpointdef, script);
-    }
-    private static void setupEndpointMultipleRequired(JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String datatype) {
-        JsonNode endpointdef = getEndpointdef(datatype, datatype, true, false);
-        String script = getScript(datatype, true, false);
-        setupEndpoint(docMgr, docMeta, endpointdef, script);
-    }
-    private static void setupEndpoint(JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, JsonNode endpointdef, String script) {
-        String functionName = endpointdef.get("functionName").asText();
-        String baseUri      = ENDPOINT_DIRECTORY + functionName;
-        docMgr.write(baseUri+".api", docMeta, new JacksonHandle(endpointdef));
-        docMgr.write(baseUri+".sjs", docMeta, new StringHandle(script));
-
-        endpointdefs.put(functionName, endpointdef);
-    }
-    private static String getScript(String datatype, boolean isMultiple, boolean isNullable) {
-        return getScript(datatype, null, null, isMultiple, isNullable);
-    }
-    private static String getScript(
-            String paramType1, String paramType2, String returnVal, boolean isMultiple, boolean isNullable
-    ) {
-        StringBuilder scriptBldr = new StringBuilder()
-                .append("'use strict';\n");
-        if (paramType1 != null) {
-            scriptBldr = scriptBldr
-                    .append("var param1;\n");
-            if (paramType2 != null) {
-                scriptBldr = scriptBldr
-                        .append("var param2;\n");
-            }
-        }
-
-        if (paramType1 != null) {
-            if (isNullable) {
-                scriptBldr = scriptBldr
-                        .append("if (fn.count(param1) != 0)\n")
-                        .append("  fn.error(null, 'TEST_ERROR',\n")
-                        .append("    'received ' + fn.count(param1) + ' instead of no values');\n");
-            } else if (isMultiple) {
-                scriptBldr = scriptBldr
-                        .append("if (fn.count(param1) < 2)\n")
-                        .append("  fn.error(null, 'TEST_ERROR',\n")
-                        .append("    'received ' + fn.count(param1) + ' instead of multiple values');\n")
-                        .append("const value1 = fn.head(param1);\n");
-            } else {
-                scriptBldr = scriptBldr
-                        .append("const value1 = param1;\n");
-            }
-            if (paramType2 != null) {
-                if (!isMultiple) {
-                    scriptBldr = scriptBldr
-                            .append("if (fn.count(param2) < 2)\n")
-                            .append("  fn.error(null, 'TEST_ERROR',\n")
-                            .append("    'received ' + fn.count(param2) + ' instead of multiple values');\n")
-                            .append("const value2 = fn.head(param2);\n");
-                } else {
-                    scriptBldr = scriptBldr
-                            .append("const value2 = param2;\n");
-                }
-            }
-
-            Format documentFormat = isNullable ? null : NODE_FORMATS.get(paramType1);
-            if (isNullable) {
-                scriptBldr = scriptBldr
-                        .append("const isValid = true;\n");
-            } else if (documentFormat != null) {
-                scriptBldr = scriptBldr
-                        .append("const isValid = ((value1 instanceof Document) ?\n")
-                        .append("    value1.documentFormat == '").append(documentFormat.name()).append("' :\n")
-                        .append("    xdmp.nodeKind(value1) == '").append(paramType1).append("'\n")
-                        .append("    );\n");
-            } else {
-                scriptBldr = scriptBldr
-                        .append("const isValid = (\n")
-                        .append("    fn.localNameFromQName(xdmp.type(value1)) == '").append(paramType1).append("' ||\n")
-                        .append("    xdmp.castableAs('http://www.w3.org/2001/XMLSchema', '").append(paramType1).append("', value1)\n")
-                        .append("    );\n");
-            }
-            if (paramType2 != null) {
-                Format documentFormat2 = isNullable ? null : NODE_FORMATS.get(paramType2);
-                if (documentFormat2 != null) {
-                    scriptBldr = scriptBldr
-                            .append("const isValid2 = ((value2 instanceof Document) ?\n")
-                            .append("    value2.documentFormat == '").append(documentFormat2.name()).append("' :\n")
-                            .append("    xdmp.nodeKind(value2) == '").append(paramType2).append("'\n")
-                            .append("    );\n");
-                } else {
-                    scriptBldr = scriptBldr
-                            .append("const isValid2 = (\n")
-                            .append("    fn.localNameFromQName(xdmp.type(value2)) == '").append(paramType2).append("' ||\n")
-                            .append("    xdmp.castableAs('http://www.w3.org/2001/XMLSchema', '").append(paramType2).append("', value2)\n")
-                            .append("    );\n");
-                }
-            }
-
-            scriptBldr = scriptBldr
-                    .append("if (!isValid)\n")
-                    .append("  fn.error(null, 'TEST_ERROR',\n")
-                    .append("    'param1 set to ' + Object.prototype.toString.call(value1) +")
-                    .append("    ' instead of ").append(paramType1).append(" value');\n");
-            if (paramType2 != null) {
-                scriptBldr = scriptBldr
-                        .append("if (!isValid2)\n")
-                        .append("  fn.error(null, 'TEST_ERROR',\n")
-                        .append("    'param2 set to ' + Object.prototype.toString.call(value2) +")
-                        .append("    ' instead of ").append(paramType2).append(" value');\n");
-            }
-
-            scriptBldr = scriptBldr
-                    .append("param1;");
-        } else if (returnVal != null) {
-            scriptBldr = scriptBldr
-                    .append(returnVal)
-                    .append(";");
-        }
-
-        return scriptBldr.toString();
-    }
-    private static JsonNode getEndpointdef(String functionName, String datatype, boolean isMultiple, boolean isNullable) {
-        return getEndpointdef(functionName, datatype, null, datatype, isMultiple, isNullable);
-    }
-    private static JsonNode getEndpointdef(
-            String functionName, String paramType1, String paramType2, String returnType, boolean isMultiple, boolean isNullable
-    ) {
-        ObjectNode endpointdef = objectMapper.createObjectNode();
-        endpointdef.put("functionName", functionName);
-        if (paramType1 != null) {
-            ArrayNode paramdefs  = objectMapper.createArrayNode();
-            ObjectNode paramdef = objectMapper.createObjectNode();
-            paramdef.put("name", "param1");
-            paramdef.put("datatype", paramType1);
-            paramdef.put("multiple", isMultiple);
-            paramdef.put("nullable", isNullable);
-            paramdefs.add(paramdef);
-            if (paramType2 != null) {
-                paramdef = objectMapper.createObjectNode();
-                paramdef.put("name", "param2");
-                paramdef.put("datatype", paramType2);
-                paramdef.put("multiple", !isMultiple);
-                paramdef.put("nullable", isNullable);
-                paramdefs.add(paramdef);
-            }
-            endpointdef.set("params", paramdefs);
-        }
-        if (returnType != null) {
-            ObjectNode returndef = objectMapper.createObjectNode();
-            returndef.put("datatype", returnType);
-            returndef.put("multiple", isMultiple);
-            returndef.put("nullable", isNullable);
-            endpointdef.set("return", returndef);
-        }
-        return endpointdef;
     }
 
     @Test
@@ -1465,5 +1264,212 @@ public class CallManagerTest {
             converted[i] = (value == null) ? null : value.toString();
         }
         return converted;
+    }
+    
+    static class EndpointSetup {
+    	
+        static void setupParamNoReturnEndpoint(
+                JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
+        ) {
+            JsonNode endpointdef = getEndpointdef(functionName, datatype, null, null, false, false);
+            String script = getScript(datatype, null, null, false, false);
+            setupEndpoint(docMgr, docMeta, endpointdef, script);
+        }
+        static void setupNoParamReturnEndpoint(
+                JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype, String returnVal
+        ) {
+            JsonNode endpointdef = getEndpointdef(functionName, null, null, datatype, false, false);
+            String script = getScript(null, null, returnVal, false, false);
+            setupEndpoint(docMgr, docMeta, endpointdef, script);
+        }
+        static void setupNoParamNoReturnEndpoint(
+                JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName
+        ) {
+            JsonNode endpointdef = getEndpointdef(functionName, null, null, null, false, false);
+            String script = getScript(null, null, null, false, false);
+            setupEndpoint(docMgr, docMeta, endpointdef, script);
+        }
+        static void setupTwoParamEndpoint(
+                JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype, String paramType2
+        ) {
+            JsonNode endpointdef = getEndpointdef(functionName, datatype, paramType2, datatype, false, false);
+            String script = getScript(datatype, paramType2, null, false, false);
+            setupEndpoint(docMgr, docMeta, endpointdef, script);
+        }
+        static void setupEndpointSingleNulled(
+                JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
+        ) {
+            JsonNode endpointdef = getEndpointdef(functionName, datatype, false, true);
+            String script = getScript(datatype, false, true);
+            setupEndpoint(docMgr, docMeta, endpointdef, script);
+        }
+        static void setupEndpointSingleRequired(
+                JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
+        ) {
+            JsonNode endpointdef = getEndpointdef(functionName, datatype, false, false);
+            String script = getScript(datatype, false, false);
+            setupEndpoint(docMgr, docMeta, endpointdef, script);
+        }
+        static void setupEndpointMultipleNulled(
+                JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
+        ) {
+            JsonNode endpointdef = getEndpointdef(functionName, datatype, true, true);
+            String script = getScript(datatype, true, true);
+            setupEndpoint(docMgr, docMeta, endpointdef, script);
+        }
+        static void setupEndpointMultipleRequired(JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String datatype) {
+            JsonNode endpointdef = getEndpointdef(datatype, datatype, true, false);
+            String script = getScript(datatype, true, false);
+            setupEndpoint(docMgr, docMeta, endpointdef, script);
+        }
+        static void setupEndpoint(JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, JsonNode endpointdef, String script) {
+            String functionName = endpointdef.get("functionName").asText();
+            String baseUri      = ENDPOINT_DIRECTORY + functionName;
+            docMgr.write(baseUri+".api", docMeta, new JacksonHandle(endpointdef));
+            docMgr.write(baseUri+".sjs", docMeta, new StringHandle(script));
+
+            endpointdefs.put(functionName, endpointdef);
+        }
+
+        private static JsonNode getEndpointdef(String functionName, String datatype, boolean isMultiple, boolean isNullable) {
+            return getEndpointdef(functionName, datatype, null, datatype, isMultiple, isNullable);
+        }
+        private static JsonNode getEndpointdef(
+                String functionName, String paramType1, String paramType2, String returnType, boolean isMultiple, boolean isNullable
+        ) {
+            ObjectNode endpointdef = objectMapper.createObjectNode();
+            endpointdef.put("functionName", functionName);
+            if (paramType1 != null) {
+                ArrayNode paramdefs  = objectMapper.createArrayNode();
+                ObjectNode paramdef = objectMapper.createObjectNode();
+                paramdef.put("name", "param1");
+                paramdef.put("datatype", paramType1);
+                paramdef.put("multiple", isMultiple);
+                paramdef.put("nullable", isNullable);
+                paramdefs.add(paramdef);
+                if (paramType2 != null) {
+                    paramdef = objectMapper.createObjectNode();
+                    paramdef.put("name", "param2");
+                    paramdef.put("datatype", paramType2);
+                    paramdef.put("multiple", !isMultiple);
+                    paramdef.put("nullable", isNullable);
+                    paramdefs.add(paramdef);
+                }
+                endpointdef.set("params", paramdefs);
+            }
+            if (returnType != null) {
+                ObjectNode returndef = objectMapper.createObjectNode();
+                returndef.put("datatype", returnType);
+                returndef.put("multiple", isMultiple);
+                returndef.put("nullable", isNullable);
+                endpointdef.set("return", returndef);
+            }
+            return endpointdef;
+        }
+        
+        static String getScript(String datatype, boolean isMultiple, boolean isNullable) {
+            return getScript(datatype, null, null, isMultiple, isNullable);
+        }
+        
+        static String getScript(
+                String paramType1, String paramType2, String returnVal, boolean isMultiple, boolean isNullable
+        ) {
+            StringBuilder scriptBldr = new StringBuilder()
+                    .append("'use strict';\n");
+            if (paramType1 != null) {
+                scriptBldr = scriptBldr
+                        .append("var param1;\n");
+                if (paramType2 != null) {
+                    scriptBldr = scriptBldr
+                            .append("var param2;\n");
+                }
+            }
+
+            if (paramType1 != null) {
+                if (isNullable) {
+                    scriptBldr = scriptBldr
+                            .append("if (fn.count(param1) != 0)\n")
+                            .append("  fn.error(null, 'TEST_ERROR',\n")
+                            .append("    'received ' + fn.count(param1) + ' instead of no values');\n");
+                } else if (isMultiple) {
+                    scriptBldr = scriptBldr
+                            .append("if (fn.count(param1) < 2)\n")
+                            .append("  fn.error(null, 'TEST_ERROR',\n")
+                            .append("    'received ' + fn.count(param1) + ' instead of multiple values');\n")
+                            .append("const value1 = fn.head(param1);\n");
+                } else {
+                    scriptBldr = scriptBldr
+                            .append("const value1 = param1;\n");
+                }
+                if (paramType2 != null) {
+                    if (!isMultiple) {
+                        scriptBldr = scriptBldr
+                                .append("if (fn.count(param2) < 2)\n")
+                                .append("  fn.error(null, 'TEST_ERROR',\n")
+                                .append("    'received ' + fn.count(param2) + ' instead of multiple values');\n")
+                                .append("const value2 = fn.head(param2);\n");
+                    } else {
+                        scriptBldr = scriptBldr
+                                .append("const value2 = param2;\n");
+                    }
+                }
+
+                Format documentFormat = isNullable ? null : NODE_FORMATS.get(paramType1);
+                if (isNullable) {
+                    scriptBldr = scriptBldr
+                            .append("const isValid = true;\n");
+                } else if (documentFormat != null) {
+                    scriptBldr = scriptBldr
+                            .append("const isValid = ((value1 instanceof Document) ?\n")
+                            .append("    value1.documentFormat == '").append(documentFormat.name()).append("' :\n")
+                            .append("    xdmp.nodeKind(value1) == '").append(paramType1).append("'\n")
+                            .append("    );\n");
+                } else {
+                    scriptBldr = scriptBldr
+                            .append("const isValid = (\n")
+                            .append("    fn.localNameFromQName(xdmp.type(value1)) == '").append(paramType1).append("' ||\n")
+                            .append("    xdmp.castableAs('http://www.w3.org/2001/XMLSchema', '").append(paramType1).append("', value1)\n")
+                            .append("    );\n");
+                }
+                if (paramType2 != null) {
+                    Format documentFormat2 = isNullable ? null : NODE_FORMATS.get(paramType2);
+                    if (documentFormat2 != null) {
+                        scriptBldr = scriptBldr
+                                .append("const isValid2 = ((value2 instanceof Document) ?\n")
+                                .append("    value2.documentFormat == '").append(documentFormat2.name()).append("' :\n")
+                                .append("    xdmp.nodeKind(value2) == '").append(paramType2).append("'\n")
+                                .append("    );\n");
+                    } else {
+                        scriptBldr = scriptBldr
+                                .append("const isValid2 = (\n")
+                                .append("    fn.localNameFromQName(xdmp.type(value2)) == '").append(paramType2).append("' ||\n")
+                                .append("    xdmp.castableAs('http://www.w3.org/2001/XMLSchema', '").append(paramType2).append("', value2)\n")
+                                .append("    );\n");
+                    }
+                }
+
+                scriptBldr = scriptBldr
+                        .append("if (!isValid)\n")
+                        .append("  fn.error(null, 'TEST_ERROR',\n")
+                        .append("    'param1 set to ' + Object.prototype.toString.call(value1) +")
+                        .append("    ' instead of ").append(paramType1).append(" value');\n");
+                if (paramType2 != null) {
+                    scriptBldr = scriptBldr
+                            .append("if (!isValid2)\n")
+                            .append("  fn.error(null, 'TEST_ERROR',\n")
+                            .append("    'param2 set to ' + Object.prototype.toString.call(value2) +")
+                            .append("    ' instead of ").append(paramType2).append(" value');\n");
+                }
+
+                scriptBldr = scriptBldr
+                        .append("param1;");
+            } else if (returnVal != null) {
+                scriptBldr = scriptBldr
+                        .append(returnVal)
+                        .append(";");
+            }
+
+            return scriptBldr.toString();
+        }
     }
 }
