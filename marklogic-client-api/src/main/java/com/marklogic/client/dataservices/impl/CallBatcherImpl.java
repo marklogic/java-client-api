@@ -182,6 +182,10 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     }
     @Override
     public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
+        requireNotStopped();
+        requireInitialized(true);
+// TODO: possibly too naive
+        threadPool.shutdown();
         return threadPool.awaitTermination(timeout, unit);
     }
     @Override
@@ -193,8 +197,6 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         flush(false);
     }
     private void flush(boolean waitForCompletion) {
-        requireInitialized(true);
-        requireNotStopped();
 // TODO: handle batched parameter
         if ( waitForCompletion == true ) awaitCompletion();
     }
@@ -221,10 +223,6 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     @Override
     public DatabaseClient getPrimaryClient() {
         return client;
-    }
-    @Override
-    public void start() {
-        getDataMovementManager().startJob(this);
     }
     @Override
     public void start(JobTicket ticket) {
@@ -304,11 +302,13 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 
     static class CallingThreadPoolExecutor extends ThreadPoolExecutor {
         CallingThreadPoolExecutor(int threadCount) {
+// TODO: probably a larger queue capacity
+// TODO: must pass a ThreadPoolExecutor.CallerRunsPolicy as the RejectedExecutionHandler parameter
             super(threadCount, threadCount, 1, TimeUnit.MINUTES,
                     new LinkedBlockingQueue<Runnable>(threadCount * 3)
             );
         }
-// TODO
+// TODO - implement awaitCompletion()?
     }
 
     static class Callable<W,E extends CallManager.CallEvent> implements Runnable {
@@ -334,6 +334,8 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             try {
                 output = caller.callForEvent(args);
                 batcher.sendSuccessToListeners(output);
+// TODO: if not retrying and if the thread pool has only one task, submit a shutdownIfLast runnable
+// TODO: in shutdownIfLast runnable, if synchronized check confirms that the thread pool has only this task, execute thread.shutdown()
             } catch (Throwable throwable) {
                 if (fireFailureListeners) {
                     CallManager.CallEvent input = new CallManagerImpl.CallEventImpl(args);
