@@ -16,6 +16,7 @@
 package com.marklogic.client.dataservices.impl;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.datamovement.DataMovementException;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ForestConfiguration;
@@ -28,14 +29,8 @@ import com.marklogic.client.dataservices.CallSuccessListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
@@ -122,7 +117,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     }
     @Override
     public ForestConfiguration getForestConfig() {
-// TODO
+// TODO - getForestConfig() from services or DataMovementManager?; share DataMovementManager?
         return null;
     }
     @Override
@@ -150,7 +145,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 // TODO: construct the args in a different way depending on the input type
         CallManager.CallArgs args = (CallManager.CallArgs) input;
 // TODO
-        threadPool.submit(new Callable(caller, args, this));
+        threadPool.submitCall(new CallTask(caller, args, this));
         return this;
     }
     @Override
@@ -184,9 +179,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
         requireNotStopped();
         requireInitialized(true);
-// TODO: possibly too naive
-        threadPool.shutdown();
-        return threadPool.awaitTermination(timeout, unit);
+        return threadPool.awaitCompletion(timeout, unit);
     }
     @Override
     public void flushAndWait() {
@@ -248,7 +241,15 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     @Override
     public void stop() {
         stopped.set(true);
-        if ( threadPool != null ) threadPool.shutdownNow();
+        if ( threadPool != null ) {
+            try {
+                threadPool.shutdown();
+                threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+            } catch (InterruptedException e) {
+                logger.warn("interrupted while awaiting termination", e);
+                threadPool.shutdownNow();
+            }
+        }
 // TODO
     }
     @Override
@@ -275,8 +276,8 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         }
         if (event == null) throw new IllegalArgumentException("event must not be null");
 
-        Callable<W,E> callable = new Callable(caller, event.getArgs(), this);
-        callable.withFailureListeners(callFailListeners).run();
+        CallTask<W,E> callTask = new CallTask(caller, event.getArgs(), this);
+        callTask.withFailureListeners(callFailListeners).run();
     }
 
     static class BuilderImpl<E extends CallManager.CallEvent> implements CallBatcherBuilder<E> {
@@ -300,42 +301,88 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         }
     }
 
-    static class CallingThreadPoolExecutor extends ThreadPoolExecutor {
+    static class CallingThreadPoolExecutor<W,E extends CallManager.CallEvent> extends ThreadPoolExecutor {
+// TODO review including whether to derive from CallerRunsPolicy
         CallingThreadPoolExecutor(int threadCount) {
-// TODO: probably a larger queue capacity
-// TODO: must pass a ThreadPoolExecutor.CallerRunsPolicy as the RejectedExecutionHandler parameter
             super(threadCount, threadCount, 1, TimeUnit.MINUTES,
-                    new LinkedBlockingQueue<Runnable>(threadCount * 3)
+                    new LinkedBlockingQueue<Runnable>(threadCount * 25),
+                    new ThreadPoolExecutor.CallerRunsPolicy()
             );
         }
-// TODO - implement awaitCompletion()?
+
+        @Override
+        public Future<?> submit(Runnable task) {
+            throw new MarkLogicInternalException("must submit call");
+        }
+        @Override
+        public <T> Future<T> submit(Runnable task, T result) {
+            throw new MarkLogicInternalException("must submit call");
+        }
+        @Override
+        public <T> Future<T> submit(Callable<T> task) {
+            throw new MarkLogicInternalException("must submit call");
+        }
+        void submitCall(CallTask<W,E> callTask) {
+            Future<Boolean> future = super.submit(callTask, true);
+            callTask.setFuture(future);
+        }
+
+        boolean awaitCompletion(long timeout, TimeUnit unit) {
+            // get the last runnable task in the queue and wait for its future
+            // guarantees that the current tail of the queue has drained
+            // but not that all threads have finished execution
+            try {
+                if (isTerminated()) return true;
+                BlockingQueue<Runnable> queue = getQueue();
+                if (queue.isEmpty()) return true;
+                CallTask<W,E> callTask = null;
+                for (Runnable runnable: queue) {
+                    callTask = (CallTask<W,E>) runnable;
+                }
+                if (callTask == null) return true;
+                Future<Boolean> future = callTask.getFuture();
+                if (future == null || future.isCancelled() || future.isDone()) return true;
+                return future.get(timeout, unit);
+            } catch (InterruptedException e) {
+                logger.warn("interrupted while awaiting completion", e);
+            } catch (ExecutionException e) {
+                logger.warn("access exception while awaiting completion", e);
+            } catch (TimeoutException e) {
+                throw new DataMovementException("timed out while awaiting completion", e);
+            }
+            return false;
+        }
     }
 
-    static class Callable<W,E extends CallManager.CallEvent> implements Runnable {
+    static class CallTask<W,E extends CallManager.CallEvent> implements Runnable {
         private CallManagerImpl.EventedCaller<E> caller;
         private CallManager.CallArgs             args;
         private CallBatcherImpl<W,E>             batcher;
+        private Future<Boolean>                  future;
         private boolean                          fireFailureListeners = true;
 
-        Callable(CallManagerImpl.EventedCaller<E> caller, CallManager.CallArgs args, CallBatcherImpl<W,E> batcher) {
+        CallTask(CallManagerImpl.EventedCaller<E> caller, CallManager.CallArgs args, CallBatcherImpl<W,E> batcher) {
             this.caller  = caller;
             this.args    = args;
             this.batcher = batcher;
         }
 
-        Callable<W,E> withFailureListeners(boolean enable) {
+        CallTask<W,E> withFailureListeners(boolean enable) {
             fireFailureListeners = enable;
             return this;
+        }
+        Future<Boolean> getFuture() {
+            return future;
+        }
+        void setFuture(Future<Boolean> future) {
+            this.future = future;
         }
 
         @Override
         public void run() {
-            E output = null;
             try {
-                output = caller.callForEvent(args);
+                E output = caller.callForEvent(args);
                 batcher.sendSuccessToListeners(output);
-// TODO: if not retrying and if the thread pool has only one task, submit a shutdownIfLast runnable
-// TODO: in shutdownIfLast runnable, if synchronized check confirms that the thread pool has only this task, execute thread.shutdown()
             } catch (Throwable throwable) {
                 if (fireFailureListeners) {
                     CallManager.CallEvent input = new CallManagerImpl.CallEventImpl(args);
