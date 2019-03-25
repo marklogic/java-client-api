@@ -38,8 +38,11 @@ import com.marklogic.client.test.Common;
 import com.marklogic.client.test.dataservices.CallManagerTest.EndpointSetup;
 
 public class CallBatcherTest {
+	
 	  private final static String ENDPOINT_DIRECTORY = "/javaApi/test/callManager/";
+	  private static EndpointSetup endpointSetup = new EndpointSetup(ENDPOINT_DIRECTORY);
 	  private static ObjectMapper objectMapper = new ObjectMapper();
+	  
 	  private DatabaseClient db      = Common.connect();
 	  private CallManager    callMgr = CallManager.on(db);
 	  private JacksonHandle serviceHandle;
@@ -53,7 +56,7 @@ public class CallBatcherTest {
 	  private CallManager.CallableEndpoint installEndpoint(String functionName) {
 		  if(functionName == null || functionName.length() == 0)
 			  throw new MarkLogicInternalException("Invalid input was sent.");
-		  JsonNode endpointdef = CallManagerTest.endpointdefs.get(functionName);
+		  JsonNode endpointdef = endpointSetup.endpointdefs.get(functionName);
 	      return callMgr.endpoint(serviceHandle, new JacksonHandle(endpointdef), "sjs");
 	  }
 	  
@@ -66,16 +69,16 @@ public class CallBatcherTest {
 		DocumentMetadataHandle docMeta = new DocumentMetadataHandle();
 
 		docMeta.getPermissions().add("rest-reader", DocumentMetadataHandle.Capability.EXECUTE);
-		EndpointSetup.setupNoParamReturnEndpoint(docMgr, docMeta, "noParamReturn", "double", "1.2");
-		EndpointSetup.setupEndpointSingleRequired(docMgr, docMeta, "oneParam", "double");
-		EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "float");
+		endpointSetup.setupParamNoReturnEndpoint(docMgr, docMeta, "paramNoReturn", "double");
+		endpointSetup.setupEndpointSingleRequired(docMgr, docMeta, "oneParam", "double");
+		endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "float");
 		
 		adminClient.release();
 	  }
 	  
 	  @Test
 	  public void noneForArgsTest() {
-		  CallManager.CallableEndpoint callableEndpoint = installEndpoint("noParamReturn");
+		  CallManager.CallableEndpoint callableEndpoint = installEndpoint("paramNoReturn");
 		  CallManager.NoneCaller noneCaller = callableEndpoint.returningNone();
 		  
 		  CallBatcher<CallManager.CallArgs,CallManager.CallEvent> batcher = noneCaller.batcher().forArgs();
@@ -90,6 +93,7 @@ public class CallBatcherTest {
 	      batcher.add(noneCaller.args().param("param1", 1.2));
 
 	      batcher.flushAndWait();
+	      batcher.getDataMovementManager().stopJob(batcher);
 	      
 	      assertEquals("Invalid number of parameters", assignedParams.length, 1);
 	      assertEquals("Param values are not equal",assignedParams[0],("param1"));
@@ -114,6 +118,8 @@ public class CallBatcherTest {
 	      batcher.add(oneCaller.args().param("param1", 1.2));
 
 	      batcher.flushAndWait();
+	      batcher.getDataMovementManager().stopJob(batcher);
+	      
 	      assertEquals("Invalid number of parameters", assignedParams.length, 1);
 	      assertEquals("Param values are not equal",assignedParams[0],("param1"));
 	      assertEquals("Return value not as expected", returnValue[0], Double.valueOf(1.2));
@@ -142,6 +148,8 @@ public class CallBatcherTest {
 	      batcher.add(manyCaller.args().param("param1", values));
 
 	      batcher.flushAndWait();
+	      
+	      batcher.getDataMovementManager().stopJob(batcher);
 	     
 	      assertEquals("Invalid number of parameters", assignedParams.length, 1);
 	      assertEquals("Param values are not equal",assignedParams[0],("param1"));
