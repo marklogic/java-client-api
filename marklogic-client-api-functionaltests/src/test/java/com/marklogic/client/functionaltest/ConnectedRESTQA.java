@@ -2508,7 +2508,7 @@ public abstract class ConnectedRESTQA {
 		InputStream input = null;
 
 		try {
-			input = property.getClass().getResourceAsStream("/test.properties");
+			input = ConnectedRESTQA.class.getResourceAsStream("/test.properties");
 
 			// load a properties file
 			property.load(input);
