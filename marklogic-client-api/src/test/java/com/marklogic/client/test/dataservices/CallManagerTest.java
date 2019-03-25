@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.dataservices.CallManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.impl.NodeConverter;
@@ -62,20 +63,12 @@ public class CallManagerTest {
 
     private static ObjectMapper objectMapper = new ObjectMapper();
     private static JsonFactory  jsonFactory  = new JsonFactory();
+    private static EndpointSetup endpointSetup = new EndpointSetup(ENDPOINT_DIRECTORY);
 
     private final static Map<String, Format> NODE_FORMATS = new HashMap<>();
 
     private DatabaseClient db      = Common.connect();
     private CallManager    callMgr = CallManager.on(db);
-
-    private JacksonHandle serviceHandle;
-    {
-        ObjectNode servicedef = objectMapper.createObjectNode();
-        servicedef.put("endpointDirectory", ENDPOINT_DIRECTORY);
-        serviceHandle = new JacksonHandle(servicedef);
-    }
-
-    static Map<String, JsonNode> endpointdefs = new HashMap<>();
 
     @BeforeClass
     public static void setup() {
@@ -93,43 +86,43 @@ public class CallManagerTest {
 
         docMeta.getPermissions().add("rest-reader", DocumentMetadataHandle.Capability.EXECUTE);
 
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "boolean");
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "date");
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "dateTime");
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "dayTimeDuration");
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "decimal");
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "double");
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "float");
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "int");
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "long");
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "string");
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "time");
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "unsignedInt");
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "unsignedLong");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "boolean");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "date");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "dateTime");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "dayTimeDuration");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "decimal");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "double");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "float");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "int");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "long");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "string");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "time");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "unsignedInt");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "unsignedLong");
 
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "array");
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "binaryDocument");
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "jsonDocument");
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "object");
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "textDocument");
-        EndpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "xmlDocument");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "array");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "binaryDocument");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "jsonDocument");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "object");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "textDocument");
+        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "xmlDocument");
 
-        EndpointSetup.setupEndpointSingleRequired(docMgr, docMeta, "singleAtomic", "dateTime");
-        EndpointSetup.setupEndpointSingleRequired(docMgr, docMeta, "singleNode", "object");
+        endpointSetup.setupEndpointSingleRequired(docMgr, docMeta, "singleAtomic", "dateTime");
+        endpointSetup.setupEndpointSingleRequired(docMgr, docMeta, "singleNode", "object");
 
-        EndpointSetup.setupEndpointSingleNulled(docMgr, docMeta, "nullAtomic", "decimal");
-        EndpointSetup.setupEndpointSingleNulled(docMgr, docMeta, "nullNode", "xmlDocument");
+        endpointSetup.setupEndpointSingleNulled(docMgr, docMeta, "nullAtomic", "decimal");
+        endpointSetup.setupEndpointSingleNulled(docMgr, docMeta, "nullNode", "xmlDocument");
 
-        EndpointSetup.setupEndpointMultipleNulled(docMgr, docMeta, "multipleNullAtomic", "float");
-        EndpointSetup.setupEndpointMultipleNulled(docMgr, docMeta, "multipleNullNode", "textDocument");
+        endpointSetup.setupEndpointMultipleNulled(docMgr, docMeta, "multipleNullAtomic", "float");
+        endpointSetup.setupEndpointMultipleNulled(docMgr, docMeta, "multipleNullNode", "textDocument");
 
-        EndpointSetup.setupTwoParamEndpoint(docMgr, docMeta, "twoAtomic", "date", "unsignedLong");
-        EndpointSetup.setupTwoParamEndpoint(docMgr, docMeta, "twoNode", "array", "textDocument");
-        EndpointSetup.setupTwoParamEndpoint(docMgr, docMeta, "twoMixed", "time", "textDocument");
+        endpointSetup.setupTwoParamEndpoint(docMgr, docMeta, "twoAtomic", "date", "unsignedLong");
+        endpointSetup.setupTwoParamEndpoint(docMgr, docMeta, "twoNode", "array", "textDocument");
+        endpointSetup.setupTwoParamEndpoint(docMgr, docMeta, "twoMixed", "time", "textDocument");
 
-        EndpointSetup.setupParamNoReturnEndpoint(docMgr, docMeta, "paramNoReturn", "double");
-        EndpointSetup.setupNoParamReturnEndpoint(docMgr, docMeta, "noParamReturn", "double", "5.6");
-        EndpointSetup.setupNoParamNoReturnEndpoint(docMgr, docMeta, "noParamNoReturn");
+        endpointSetup.setupParamNoReturnEndpoint(docMgr, docMeta, "paramNoReturn", "double");
+        endpointSetup.setupNoParamReturnEndpoint(docMgr, docMeta, "noParamReturn", "double", "5.6");
+        endpointSetup.setupNoParamNoReturnEndpoint(docMgr, docMeta, "noParamNoReturn");
 
         adminClient.release();
     }
@@ -1107,9 +1100,9 @@ public class CallManagerTest {
     }
 
     private CallManager.CallableEndpoint makeCallableEndpoint(String functionName) {
-        JsonNode endpointdef = endpointdefs.get(functionName);
+        JsonNode endpointdef = endpointSetup.endpointdefs.get(functionName);
         assertNotNull("no endpoint definition found for "+functionName, endpointdef);
-        return callMgr.endpoint(serviceHandle, new JacksonHandle(endpointdef), "sjs");
+        return callMgr.endpoint(endpointSetup.serviceHandle, new JacksonHandle(endpointdef), "sjs");
     }
     private <T> CallManager.ManyCaller<T> makeManyCaller(CallManager.CallableEndpoint callableEndpoint, Class<T> as) {
         return callableEndpoint.returningMany(as);
@@ -1268,61 +1261,73 @@ public class CallManagerTest {
     
     static class EndpointSetup {
     	
-        static void setupParamNoReturnEndpoint(
+    	Map<String, JsonNode> endpointdefs = new HashMap<>();
+    	JacksonHandle serviceHandle;
+    	
+    	EndpointSetup(String endpointDirectory){
+    		if(endpointDirectory == null || endpointDirectory.length()==0)
+    			throw new MarkLogicInternalException("Enpoint Directory cannot be null or empty.");
+    		
+            ObjectNode servicedef = objectMapper.createObjectNode();
+            servicedef.put("endpointDirectory", endpointDirectory);
+            this.serviceHandle = new JacksonHandle(servicedef);
+    	}
+    		
+        void setupParamNoReturnEndpoint(
                 JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
         ) {
             JsonNode endpointdef = getEndpointdef(functionName, datatype, null, null, false, false);
             String script = getScript(datatype, null, null, false, false);
             setupEndpoint(docMgr, docMeta, endpointdef, script);
         }
-        static void setupNoParamReturnEndpoint(
+        void setupNoParamReturnEndpoint(
                 JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype, String returnVal
         ) {
             JsonNode endpointdef = getEndpointdef(functionName, null, null, datatype, false, false);
             String script = getScript(null, null, returnVal, false, false);
             setupEndpoint(docMgr, docMeta, endpointdef, script);
         }
-        static void setupNoParamNoReturnEndpoint(
+        void setupNoParamNoReturnEndpoint(
                 JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName
         ) {
             JsonNode endpointdef = getEndpointdef(functionName, null, null, null, false, false);
             String script = getScript(null, null, null, false, false);
             setupEndpoint(docMgr, docMeta, endpointdef, script);
         }
-        static void setupTwoParamEndpoint(
+        void setupTwoParamEndpoint(
                 JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype, String paramType2
         ) {
             JsonNode endpointdef = getEndpointdef(functionName, datatype, paramType2, datatype, false, false);
             String script = getScript(datatype, paramType2, null, false, false);
             setupEndpoint(docMgr, docMeta, endpointdef, script);
         }
-        static void setupEndpointSingleNulled(
+        void setupEndpointSingleNulled(
                 JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
         ) {
             JsonNode endpointdef = getEndpointdef(functionName, datatype, false, true);
             String script = getScript(datatype, false, true);
             setupEndpoint(docMgr, docMeta, endpointdef, script);
         }
-        static void setupEndpointSingleRequired(
+        void setupEndpointSingleRequired(
                 JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
         ) {
             JsonNode endpointdef = getEndpointdef(functionName, datatype, false, false);
             String script = getScript(datatype, false, false);
             setupEndpoint(docMgr, docMeta, endpointdef, script);
         }
-        static void setupEndpointMultipleNulled(
+        void setupEndpointMultipleNulled(
                 JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
         ) {
             JsonNode endpointdef = getEndpointdef(functionName, datatype, true, true);
             String script = getScript(datatype, true, true);
             setupEndpoint(docMgr, docMeta, endpointdef, script);
         }
-        static void setupEndpointMultipleRequired(JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String datatype) {
+        void setupEndpointMultipleRequired(JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String datatype) {
             JsonNode endpointdef = getEndpointdef(datatype, datatype, true, false);
             String script = getScript(datatype, true, false);
             setupEndpoint(docMgr, docMeta, endpointdef, script);
         }
-        static void setupEndpoint(JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, JsonNode endpointdef, String script) {
+        void setupEndpoint(JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, JsonNode endpointdef, String script) {
             String functionName = endpointdef.get("functionName").asText();
             String baseUri      = ENDPOINT_DIRECTORY + functionName;
             docMgr.write(baseUri+".api", docMeta, new JacksonHandle(endpointdef));
@@ -1331,10 +1336,10 @@ public class CallManagerTest {
             endpointdefs.put(functionName, endpointdef);
         }
 
-        private static JsonNode getEndpointdef(String functionName, String datatype, boolean isMultiple, boolean isNullable) {
+        private JsonNode getEndpointdef(String functionName, String datatype, boolean isMultiple, boolean isNullable) {
             return getEndpointdef(functionName, datatype, null, datatype, isMultiple, isNullable);
         }
-        private static JsonNode getEndpointdef(
+        private JsonNode getEndpointdef(
                 String functionName, String paramType1, String paramType2, String returnType, boolean isMultiple, boolean isNullable
         ) {
             ObjectNode endpointdef = objectMapper.createObjectNode();
@@ -1367,11 +1372,11 @@ public class CallManagerTest {
             return endpointdef;
         }
         
-        static String getScript(String datatype, boolean isMultiple, boolean isNullable) {
+        String getScript(String datatype, boolean isMultiple, boolean isNullable) {
             return getScript(datatype, null, null, isMultiple, isNullable);
         }
         
-        static String getScript(
+        String getScript(
                 String paramType1, String paramType2, String returnVal, boolean isMultiple, boolean isNullable
         ) {
             StringBuilder scriptBldr = new StringBuilder()
