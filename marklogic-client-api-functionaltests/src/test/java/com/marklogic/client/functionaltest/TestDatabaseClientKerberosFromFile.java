@@ -62,8 +62,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import sun.security.krb5.KrbException;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
@@ -1056,7 +1054,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
 
   // Access database on Uber port with specifying the database name.
   @Ignore
-  public void testUberClientWithDbName() throws IOException, SAXException, ParserConfigurationException, KrbException {
+  public void testUberClientWithDbName() throws IOException, SAXException, ParserConfigurationException {
     System.out.println("Running testUberClientWithDbName method");
 
     // Associate the external security with the App Server.
