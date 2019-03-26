@@ -17,6 +17,7 @@ package com.marklogic.client.test.dataservices;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -89,14 +90,17 @@ public class CallBatcherTest {
 		  });
 		  
 		  batcher.getDataMovementManager().startJob(batcher);
+		  assertNotNull(batcher.getJobStartTime());
 		  
 	      batcher.add(noneCaller.args().param("param1", 1.2));
 
 	      batcher.flushAndWait();
 	      batcher.getDataMovementManager().stopJob(batcher);
+	      assertNotNull(batcher.getJobEndTime());
 	      
 	      assertEquals("Invalid number of parameters", assignedParams.length, 1);
 	      assertEquals("Param values are not equal",assignedParams[0],("param1"));
+	      assertTrue(batcher.getJobEndTime().getTimeInMillis() >= batcher.getJobStartTime().getTimeInMillis());
 	  }
 	  
 	  @Test
@@ -114,15 +118,18 @@ public class CallBatcherTest {
 		  });
 		  
 		  batcher.getDataMovementManager().startJob(batcher);
+		  assertNotNull(batcher.getJobStartTime());
 		  
 	      batcher.add(oneCaller.args().param("param1", 1.2));
 
 	      batcher.flushAndWait();
 	      batcher.getDataMovementManager().stopJob(batcher);
+	      assertNotNull(batcher.getJobEndTime());
 	      
 	      assertEquals("Invalid number of parameters", assignedParams.length, 1);
 	      assertEquals("Param values are not equal",assignedParams[0],("param1"));
 	      assertEquals("Return value not as expected", returnValue[0], Double.valueOf(1.2));
+	      assertTrue(batcher.getJobEndTime().getTimeInMillis() >= batcher.getJobStartTime().getTimeInMillis());
 	  }
 	  
 	  @Test
@@ -144,17 +151,20 @@ public class CallBatcherTest {
 		  });
 		  
 		  batcher.getDataMovementManager().startJob(batcher);
+		  assertNotNull(batcher.getJobStartTime());
 		  
 	      batcher.add(manyCaller.args().param("param1", values));
 
 	      batcher.flushAndWait();
 	      
 	      batcher.getDataMovementManager().stopJob(batcher);
+	      assertNotNull(batcher.getJobEndTime());
 	     
 	      assertEquals("Invalid number of parameters", assignedParams.length, 1);
 	      assertEquals("Param values are not equal",assignedParams[0],("param1"));
 	      assertEquals("Return value not as expected",returnValues[0], Float.valueOf(1.8f));
 	      assertEquals("Return value not as expected",returnValues[1], Float.valueOf(2.4f));
+	      assertTrue(batcher.getJobEndTime().getTimeInMillis() >= batcher.getJobStartTime().getTimeInMillis());
 	  }
 	  
 	    @AfterClass

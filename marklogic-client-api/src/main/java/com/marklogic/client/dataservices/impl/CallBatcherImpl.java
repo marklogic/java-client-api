@@ -43,6 +43,8 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     private CallingThreadPoolExecutor        threadPool;
     private List<CallSuccessListener<E>>     successListeners = new ArrayList<>();
     private List<CallFailureListener>        failureListeners = new ArrayList<>();
+    private Calendar jobStartTime;
+    private Calendar jobEndTime;
 
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private final AtomicBoolean stopped     = new AtomicBoolean(false);
@@ -205,13 +207,17 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     }
     @Override
     public Calendar getJobStartTime() {
-// TODO
-        return null;
+		if (this.isStarted()) {
+			return jobStartTime;
+		} 
+		return null;
     }
     @Override
     public Calendar getJobEndTime() {
-// TODO
-        return null;
+    	if(this.isStopped()) {
+    		return jobEndTime;
+    	}
+    	return null;
     }
     @Override
     public DatabaseClient getPrimaryClient() {
@@ -236,10 +242,12 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         if (initialized.getAndSet(true)) return;
 // TODO
         threadPool = new CallingThreadPoolExecutor(getThreadCount());
+        jobStartTime = Calendar.getInstance();
         started.set(true);
     }
     @Override
     public void stop() {
+    	jobEndTime = Calendar.getInstance();
         stopped.set(true);
         if ( threadPool != null ) {
             try {
