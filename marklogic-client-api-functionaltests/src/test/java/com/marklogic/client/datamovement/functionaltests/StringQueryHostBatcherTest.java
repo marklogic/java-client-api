@@ -32,7 +32,6 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
@@ -50,7 +49,6 @@ import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.TransformExtensionsManager;
@@ -73,6 +71,7 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
+import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
@@ -872,7 +871,92 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       clientTmp.release();
     }
   }
+  
+  @Test
+  public void testRawCtsQuery() throws IOException, InterruptedException
+  {
+    System.out.println("Running testRawCtsQuery");
 
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+    WriteBatcher batcher = dmManager.newWriteBatcher();
+
+    batcher.withBatchSize(2);
+    // Move to individual data sub folders.
+    String dataFileDir = dataConfigDirPath + "/data/";
+
+    InputStreamHandle contentHandle1 = new InputStreamHandle();
+    contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
+    InputStreamHandle contentHandle2 = new InputStreamHandle();
+    contentHandle2.set(new FileInputStream(dataFileDir + filenames[1]));
+    InputStreamHandle contentHandle3 = new InputStreamHandle();
+    contentHandle3.set(new FileInputStream(dataFileDir + filenames[2]));
+    InputStreamHandle contentHandle4 = new InputStreamHandle();
+    contentHandle4.set(new FileInputStream(dataFileDir + filenames[3]));
+    InputStreamHandle contentHandle5 = new InputStreamHandle();
+    contentHandle5.set(new FileInputStream(dataFileDir + filenames[4]));
+
+    batcher.add("cts-constraint1.xml", contentHandle1);
+    batcher.add("cts-constraint2.xml", contentHandle2);
+    batcher.add("cts-constraint3.xml", contentHandle3);
+    batcher.add("cts-constraint4.xml", contentHandle4);
+    batcher.add("cts-constraint5.xml", contentHandle5);
+
+    // Flush
+    batcher.flushAndWait();
+    StringBuilder batchResults = new StringBuilder();
+    StringBuilder batchFailResults = new StringBuilder();
+    
+    // create a search definition
+    QueryManager queryMgr = client.newQueryManager();
+    
+    String wordQuery = "<cts:word-query xmlns:cts=\"http://marklogic.com/cts\">" +
+                       "<cts:text>unfortunately</cts:text></cts:word-query>";
+    StringHandle handle = new StringHandle().with(wordQuery);
+    RawCtsQueryDefinition querydef = queryMgr.newRawCtsQueryDefinition(handle);
+
+    // Run a QueryBatcher.
+    QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
+    queryBatcher1.onUrisReady(batch -> {
+
+      for (String str : batch.getItems()) {
+        batchResults.append(str).append('|');
+      }
+
+      batchResults.append(batch.getJobResultsSoFar())
+          .append('|')
+          .append(batch.getForest().getForestName())
+          .append('|')
+          .append(batch.getJobBatchNumber())
+          .append('|');
+
+    })
+    .onQueryFailure(throwable -> {
+        System.out.println("Exceptions thrown from callback onQueryFailure" + throwable.getMessage());
+    });
+    
+    JobTicket jobTicket = dmManager.startJob(queryBatcher1);
+    queryBatcher1.awaitCompletion(1, TimeUnit.MINUTES);
+    
+    System.out.println("Batch Results are : " + batchResults.toString());
+    System.out.println("File name is : " + filenames[4]);
+    assertTrue("URI returned not correct", batchResults.toString().contains("cts-" +filenames[4]));
+
+    // Read the document and assert on the value
+    DOMHandle contentHandle = new DOMHandle();
+    contentHandle = readDocumentUsingDOMHandle(client, "cts-"+filenames[4], "XML");
+    Document readDoc = contentHandle.get();
+    try {
+		System.out.println(convertXMLDocumentToString(readDoc));
+	} catch (TransformerException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+
+    assertTrue("Document content returned not correct", readDoc.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
+    assertTrue("Document content returned not correct", readDoc.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
+    assertTrue("Document content returned not correct", readDoc.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));
+  }
+  
   /*
    * To test query by example with WriteBatcher and QueryBatcher with Query
    * Failure (incorrect query syntax).

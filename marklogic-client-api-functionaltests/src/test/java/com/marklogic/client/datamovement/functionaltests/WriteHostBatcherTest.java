@@ -2771,8 +2771,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		}
 	}
 
-	// ISSUE -646
-	@Ignore
+	@Test
 	public void addWithMetadata() throws Exception {
 		System.out.println("In addWithMetadata method");
 
@@ -2810,6 +2809,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			e.printStackTrace();
 		}
 	}
+	
 	@Test
 	public void testDocumentWriteOperationAdd() throws Exception {
 		System.out.println("In testDocumentWriteOperationAdd method");
