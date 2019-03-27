@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 MarkLogic Corporation
+ * Copyright 2012-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.impl.Utilities;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
@@ -69,8 +70,6 @@ public class ReaderHandle
     Closeable
 {
   static final private Logger logger = LoggerFactory.getLogger(InputStreamHandle.class);
-
-  final static private int BUFFER_SIZE = 8192;
 
   private Reader content;
 
@@ -227,27 +226,11 @@ public class ReaderHandle
 
   @Override
   public void write(OutputStream out) throws IOException {
-    Charset charset = Charset.forName("UTF-8");
-    CharsetEncoder encoder = charset.newEncoder();
-
-    CharBuffer charBuf = CharBuffer.allocate(BUFFER_SIZE);
-    byte[] buf = new byte[BUFFER_SIZE * 2];
-    ByteBuffer byteBuf = ByteBuffer.wrap(buf);
-
-    while (content.read(charBuf) != -1) {
-      encoder.reset();
-      charBuf.flip();
-      byteBuf.clear();
-      CoderResult result = encoder.encode(charBuf, byteBuf, false);
-      if (result.isError()) {
-        throw new IOException("Failed during UTF-8 encoding - " + result.toString());
-      }
-      byteBuf.flip();
-      out.write(buf, 0, byteBuf.limit());
-      charBuf.clear();
+    if (content == null) {
+      throw new IllegalStateException("No character stream to send as output");
     }
 
-    out.flush();
+    Utilities.write(content, out);
   }
 
   /** Either call close() or get().close() when finished with this handle to close the underlying Reader.

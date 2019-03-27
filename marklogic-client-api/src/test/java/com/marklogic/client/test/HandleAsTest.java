@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 MarkLogic Corporation
+ * Copyright 2012-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -153,7 +153,10 @@ public class HandleAsTest {
     String xmlDocId = "/test/testAs1.xml";
     XMLDocumentManager xmlMgr = Common.client.newXMLDocumentManager();
 
-    DocumentBuilder xmlDocBldr = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setValidating(false);
+    DocumentBuilder xmlDocBldr = factory.newDocumentBuilder();
 
     Document beforeDocument = xmlDocBldr.newDocument();
     Element root = beforeDocument.createElement("doc");

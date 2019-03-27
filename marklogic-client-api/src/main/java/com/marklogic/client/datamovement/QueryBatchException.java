@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 MarkLogic Corporation
+ * Copyright 2015-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,6 +84,14 @@ public class QueryBatchException extends Exception implements QueryEvent {
   public long getForestResultsSoFar() {
     if ( queryEvent == null ) throw new IllegalStateException("QueryEvent is null");
     return queryEvent.getForestResultsSoFar();
+  }
+
+  /** Within the context of this forest within the job, the last uri
+   * processed including the uris in this event if this is a QueryBatch.
+   */
+  @Override
+  public String getLastUriForForest() {
+    return queryEvent.getLastUriForForest();
   }
 
   /** The forest queried for this event if this job is based on a

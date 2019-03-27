@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 MarkLogic Corporation
+ * Copyright 2012-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.HashMap;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -85,7 +86,12 @@ public class BufferableHandleTest {
   public void testReadWrite()
     throws JAXBException, ParserConfigurationException, SAXException, IOException, XpathException
   {
-    Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setValidating(false);
+
+    Document domDocument = factory.newDocumentBuilder().newDocument();
     Element root = domDocument.createElement("root");
     root.setAttribute("xml:lang", "en");
     root.setAttribute("foo", "bar");

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 MarkLogic Corporation
+ * Copyright 2012-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
 
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -104,7 +105,11 @@ public class RequestLoggerTest {
   public void testWriteReadLog() throws IOException, ParserConfigurationException {
     String docId = "/test/testWrite1.xml";
 
-    Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setValidating(false);
+    DocumentBuilder documentBldr = factory.newDocumentBuilder();
+    Document domDocument = documentBldr.newDocument();
     Element root = domDocument.createElement("root");
     root.setAttribute("xml:lang", "en");
     root.setAttribute("foo", "bar");
@@ -112,7 +117,7 @@ public class RequestLoggerTest {
     root.appendChild(domDocument.createTextNode("mixed"));
     domDocument.appendChild(root);
 
-    String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
+    String domString = ((DOMImplementationLS) documentBldr
       .getDOMImplementation()).createLSSerializer().writeToString(domDocument)
       .replaceFirst("^<\\?xml(\\s+version=\"[^\"]*\"|\\s+encoding=\"[^\"]*\")*\\s*\\?>\\s*", "");
 

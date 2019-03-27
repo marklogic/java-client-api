@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 MarkLogic Corporation
+ * Copyright 2015-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -193,6 +193,11 @@ class FakeQueryBatch implements QueryBatch {
 	@Override
 	public long getForestResultsSoFar() {
 		return 0;
+	}
+
+	@Override
+	public String getLastUriForForest() {
+		return null;
 	}
 
 	@Override

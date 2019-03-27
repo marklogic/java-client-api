@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 MarkLogic Corporation
+ * Copyright 2012-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,6 +62,7 @@ public final class Utilities {
   private static DocumentBuilderFactory factory;
 
   private static DatatypeFactory datatypeFactory;
+  static private int BUFFER_SIZE = 8192;
 
   private static DocumentBuilderFactory getFactory()
     throws ParserConfigurationException {
@@ -668,5 +671,55 @@ public final class Utilities {
       }
     }
     return datatypeFactory;
+  }
+  
+  /**
+   * Writes bytes from the input stream to the output stream.
+   * @param in - the input stream passed in.
+   * @param outStream - output stream where the bytes are written.
+   */
+  static public void write(InputStream in, OutputStream outStream) throws IOException { 
+      if(in == null || outStream == null)
+          return;
+      try {
+          byte[] byteArray = new byte[BUFFER_SIZE * 2];
+      
+          int byteCount = 0;
+          while ((byteCount = in.read(byteArray)) != -1) {
+              outStream.write(byteArray, 0, byteCount);
+          }
+          outStream.flush();
+      } finally {
+          in.close();
+      }
+  }
+ 
+  /**
+   * Writes bytes from the input Reader to the Writer stream.
+   * @param in - the Reader passed in.
+   * @param out - Writer stream where the bytes are written.
+   */
+  static public void write(Reader in, Writer out) throws IOException {
+      if(in == null || out == null)
+          return;
+      try {
+          char[] charArray = new char[BUFFER_SIZE * 2];
+          int charCount = 0;
+          while ((charCount = in.read(charArray)) != -1) {
+              out.write(charArray, 0, charCount);
+          }
+          out.flush();
+      } finally {
+          in.close();
+      }
+  }
+ 
+  /**
+   * Writes bytes from the input Reader to the output stream.
+   * @param in - the Reader passed in.
+   * @param out - OutputStream where the bytes are written.
+   */
+  static public void write(Reader in, OutputStream out) throws IOException {
+      write(in, new OutputStreamWriter(out));
   }
 }

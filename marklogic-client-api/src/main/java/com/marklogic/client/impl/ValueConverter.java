@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 MarkLogic Corporation
+ * Copyright 2012-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -300,6 +300,13 @@ public class ValueConverter {
   @SuppressWarnings("unchecked")
   static public <T> T convertToJava(String type, String value, Class<T> as) {
     return (T) convertToJava(type, value);
+  }
+
+  static public String ObjectToString(Object value) {
+    return (value == null || value instanceof String) ? (String) value : value.toString();
+  }
+  static public Stream<String> ObjectToString(Stream<?> values) {
+    return (values == null) ? null : values.map(ValueConverter::ObjectToString);
   }
 
   static public String BigDecimalToString(BigDecimal value) {

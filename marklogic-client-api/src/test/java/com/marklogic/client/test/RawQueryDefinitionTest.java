@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 MarkLogic Corporation
+ * Copyright 2013-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -579,6 +579,8 @@ public class RawQueryDefinitionTest {
 
   private static Document parseXml(String xml) throws Exception {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setValidating(false);
     DocumentBuilder builder = factory.newDocumentBuilder();
     Document document = builder.parse(new InputSource(new StringReader(xml)));
     return document;

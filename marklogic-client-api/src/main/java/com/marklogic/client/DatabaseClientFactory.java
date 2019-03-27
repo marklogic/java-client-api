@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 MarkLogic Corporation
+ * Copyright 2012-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
@@ -48,8 +50,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import okhttp3.OkHttpClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
 import com.marklogic.client.extra.httpclient.HttpClientConfigurator;
@@ -91,7 +91,11 @@ public class DatabaseClientFactory {
     /**
      * Authentication using Certificates;
      */
-    CERTIFICATE;
+    CERTIFICATE,
+	/**
+	 * Authentication using SAML;
+	 */
+	SAML;
     /**
      * Returns the enumerated value for the case-insensitive name.
      * @param name	the name of the enumerated value
@@ -312,10 +316,39 @@ public class DatabaseClientFactory {
   }
 
   public interface SecurityContext {
+    /**
+     * Returns the SSLContext for an SSL client.
+     * @return	the SSL context
+     */
     SSLContext getSSLContext();
+
+    /**
+     * Set the context without a trust manager
+     * @param context - the SSLContext object required for the SSL connection
+     * @deprecated	(as of 4.0.1) use SecurityContext.withSSLContext(SSLContext,X509TrustManager)
+     */
+    @Deprecated
     void setSSLContext(SSLContext context);
+
+    /*
+     * Returns the host verifier.
+     * @return	the host verifier
+     */
     SSLHostnameVerifier getSSLHostnameVerifier();
+
+    /**
+     * Specifies the host verifier for a client that verifies hosts for
+     * additional security.
+     * @param verifier	the host verifier
+     */
     void setSSLHostnameVerifier(SSLHostnameVerifier verifier);
+
+    /**
+     * Set the context without a trust manager
+     * @param context - the SSLContext object required for the SSL connection
+     * @deprecated	(as of 4.0.1) use SecurityContext.withSSLContext(SSLContext,X509TrustManager)
+     * @return a context containing authentication information
+     */
     @Deprecated
     SecurityContext withSSLContext(SSLContext context);
 
@@ -344,6 +377,13 @@ public class DatabaseClientFactory {
      * @return a context containing authentication information
      */
     SecurityContext withSSLContext(SSLContext context, X509TrustManager trustManager);
+
+    /**
+     * Specifies the host verifier for a client that verifies hosts for
+     * additional security.
+     * @param verifier	the host verifier
+     * @return a context configured with the host verifier
+     */
     SecurityContext withSSLHostnameVerifier(SSLHostnameVerifier verifier);
   }
 
@@ -358,6 +398,7 @@ public class DatabaseClientFactory {
     }
 
     @Override
+    @Deprecated
     public void setSSLContext(SSLContext context) {
       this.sslContext = context;
     }
@@ -372,6 +413,10 @@ public class DatabaseClientFactory {
       this.sslVerifier = verifier;
     }
 
+	public X509TrustManager getTrustManager() {
+		return this.trustManager;
+	}
+	
     @Override
     @Deprecated
     public SecurityContext withSSLContext(SSLContext context) {
@@ -473,6 +518,9 @@ public class DatabaseClientFactory {
   public static class KerberosAuthContext extends AuthContext {
 
     Map<String, String> krbOptions;
+	public Map<String, String> getKrbOptions() {
+		return krbOptions;
+	}
 
     public KerberosAuthContext() {
 
@@ -509,6 +557,143 @@ public class DatabaseClientFactory {
       return this;
     }
   }
+  /**
+   * A SAMLAuthContext is used for authorization using SAML.
+   * It consists of a authorization token each with an expiration time stamp.
+   * SAMLAuthContext asks for a new token with a new expiration time stamp if 
+   * the previous token expires and the session is still valid.
+   */
+	public static class SAMLAuthContext implements SecurityContext {
+		private String token;
+		private SSLContext sslContext;
+		private X509TrustManager trustManager;
+		private SSLHostnameVerifier sslVerifier;
+		private AuthorizerCallback authorizer;
+		private ExpiringSAMLAuth authorization;
+		private RenewerCallback renewer;
+
+        /**
+         * @return the X509TrustManagerused for authentication.
+         */
+		public X509TrustManager getTrustManager() {
+			return trustManager;
+		}
+		
+		/**
+         * Replaces the token with new SAML authorization token.
+         */
+		public SAMLAuthContext(String authorizationToken) {
+			this.token = authorizationToken;
+		}
+		public SAMLAuthContext(AuthorizerCallback authorizer) {
+			this.authorizer = authorizer;
+		}
+		public SAMLAuthContext(ExpiringSAMLAuth authorization, RenewerCallback renewer) {
+		    this.authorization = authorization;
+		    this.renewer = renewer;
+		}
+		
+		/**
+		 * @return the SAML authentication token.
+		 */
+		public String getToken() {
+			return token;
+		}
+		public AuthorizerCallback getAuthorizer() {
+            return authorizer;
+        }
+        public RenewerCallback getRenewer() {
+            return renewer;
+        }
+        public ExpiringSAMLAuth getAuthorization() {
+            return authorization;
+        }
+		
+		/**
+		 * ExpiringSAMLAuth is used by SAMLAuthContext for reauthorization.
+		 */
+		public interface ExpiringSAMLAuth {
+		    /**
+		     * @return a new SAML assertion token.
+		     */
+	        public String getAuthorizationToken();
+	        
+	        /**
+	         * @return the expiration time stamp of the newly generated SAML assertion token.
+	         */
+	        public Instant getExpiry();
+	    }
+		
+		/**
+         * newExpiringSAMLAuth is used to provide a new token with a new expiration time stamp.
+         * @param authorizationToken refers to the new SAML token.
+         * @param expiry refers to the expiration time stamp of authorizationToken.
+         * @return an ExpiringSAMLAuth instance.
+         */
+		public static ExpiringSAMLAuth newExpiringSAMLAuth(final String authorizationToken, final Instant expiry) {
+            return new ExpiringSAMLAuth() {
+                
+                @Override
+                public Instant getExpiry() {
+                    return expiry;
+                }
+                
+                @Override
+                public String getAuthorizationToken() {
+                    return authorizationToken;
+                }
+            };
+        }
+		
+		 @FunctionalInterface
+		 public interface AuthorizerCallback extends Function<ExpiringSAMLAuth, ExpiringSAMLAuth> { }
+		 
+		 @FunctionalInterface
+		 public interface RenewerCallback extends Function<ExpiringSAMLAuth, Instant> { }
+
+		@Override
+		public SAMLAuthContext withSSLContext(SSLContext context, X509TrustManager trustManager) {
+			this.sslContext = context;
+			this.trustManager = trustManager;
+			return this;
+		}
+
+		@Override
+		public SAMLAuthContext withSSLHostnameVerifier(SSLHostnameVerifier verifier) {
+			this.sslVerifier = verifier;
+			return this;
+		}
+
+		@Override
+		public SSLContext getSSLContext() {
+			return sslContext;
+		}
+
+		@Override
+        @Deprecated
+		public void setSSLContext(SSLContext context) {
+			this.sslContext = context;
+
+		}
+
+		@Override
+		public SSLHostnameVerifier getSSLHostnameVerifier() {
+			return sslVerifier;
+		}
+
+		@Override
+		public void setSSLHostnameVerifier(SSLHostnameVerifier verifier) {
+			this.sslVerifier = verifier;
+
+		}
+
+		@Override
+        @Deprecated
+		public SecurityContext withSSLContext(SSLContext context) {
+			this.sslContext = context;
+			return this;
+		}
+	}
 
   public static class KerberosConfig {
 
@@ -701,6 +886,7 @@ public class DatabaseClientFactory {
      * certificate and client's private key
      * @param context the SSLContext with which we initialize the
      *				  CertificateAuthContext
+     * @deprecated	(as of 4.0.1) use CertificateAuthContext(SSLContext,X509TrustManager)
      */
     @Deprecated
     public CertificateAuthContext(SSLContext context) {
@@ -732,6 +918,7 @@ public class DatabaseClientFactory {
      * @param context the SSLContext with which we initialize the
      *				  CertificateAuthContext
      * @param verifier a callback for checking host names
+     * @deprecated	(as of 4.0.1) use CertificateAuthContext(SSLContext,SSLHostnameVerifier,X509TrustManager)
      */
     @Deprecated
     public CertificateAuthContext(SSLContext context, SSLHostnameVerifier verifier) {
@@ -940,6 +1127,10 @@ public class DatabaseClientFactory {
    * without any authentication. Such clients can be convenient for
    * experimentation but should not be used in production.
    *
+   * The CallManager interface can only call an endpoint for the configured content database
+   * of the appserver. You cannot specify the database when constructing a client for working
+   * with a CallManager.
+   *
    * @param host	the host with the REST server
    * @param port	the port for the REST server
    * @param database	the database to access (default: configured database for the REST server)
@@ -984,6 +1175,10 @@ public class DatabaseClientFactory {
   /**
    * Creates a client to access the database by means of a REST server.
    *
+   * The CallManager interface can only call an endpoint for the configured content database
+   * of the appserver. You cannot specify the database when constructing a client for working
+   * with a CallManager.
+   *
    * @param host the host with the REST server
    * @param port the port for the REST server
    * @param database the database to access (default: configured database for
@@ -1000,6 +1195,10 @@ public class DatabaseClientFactory {
   /**
    * Creates a client to access the database by means of a REST server.
    *
+   * The CallManager interface can only call an endpoint for the configured content database
+   * of the appserver. You cannot specify the database when constructing a client for working
+   * with a CallManager.
+   *
    * @param host the host with the REST server
    * @param port the port for the REST server
    * @param database the database to access (default: configured database for
@@ -1012,74 +1211,11 @@ public class DatabaseClientFactory {
    * @return a new client for making database requests
    */
   static public DatabaseClient newClient(String host, int port, String database,
-                                         SecurityContext securityContext,
-                                         DatabaseClient.ConnectionType connectionType)
-  {
-    String user = null;
-    Map<String,String> kerberosOptions = null;
-    String password = null;
-    Authentication type = null;
-    SSLContext sslContext = null;
-    SSLHostnameVerifier sslVerifier = null;
-    X509TrustManager trustManager = null;
-    if (securityContext instanceof BasicAuthContext) {
-      BasicAuthContext basicContext = (BasicAuthContext) securityContext;
-      user = basicContext.user;
-      password = basicContext.password;
-      type = Authentication.BASIC;
-      if (basicContext.sslContext != null) {
-        sslContext = basicContext.sslContext;
-        if(basicContext.trustManager != null) trustManager = basicContext.trustManager;
-        if (basicContext.sslVerifier != null) {
-          sslVerifier = basicContext.sslVerifier;
-        } else {
-          sslVerifier = SSLHostnameVerifier.COMMON;
-        }
-      }
-    } else if (securityContext instanceof DigestAuthContext) {
-      DigestAuthContext digestContext = (DigestAuthContext) securityContext;
-      user = digestContext.user;
-      password = digestContext.password;
-      type = Authentication.DIGEST;
-      if (digestContext.sslContext != null) {
-        sslContext = digestContext.sslContext;
-        if(digestContext.trustManager != null) trustManager = digestContext.trustManager;
-        if (digestContext.sslVerifier != null) {
-          sslVerifier = digestContext.sslVerifier;
-        } else {
-          sslVerifier = SSLHostnameVerifier.COMMON;
-        }
-      }
-    } else if (securityContext instanceof KerberosAuthContext) {
-      KerberosAuthContext kerberosContext = (KerberosAuthContext) securityContext;
-      kerberosOptions = kerberosContext.krbOptions;
-      type = Authentication.KERBEROS;
-      if (kerberosContext.sslContext != null) {
-        sslContext = kerberosContext.sslContext;
-        if(kerberosContext.trustManager != null) trustManager = kerberosContext.trustManager;
-        if (kerberosContext.sslVerifier != null) {
-          sslVerifier = kerberosContext.sslVerifier;
-        } else {
-          sslVerifier = SSLHostnameVerifier.COMMON;
-        }
-      }
-    } else if (securityContext instanceof CertificateAuthContext) {
-      CertificateAuthContext certificateContext = (CertificateAuthContext) securityContext;
-      type = Authentication.CERTIFICATE;
-      sslContext = certificateContext.getSSLContext();
-      if(certificateContext.trustManager != null) trustManager = certificateContext.trustManager;
-      if (certificateContext.sslVerifier != null) {
-        sslVerifier = certificateContext.sslVerifier;
-      } else {
-        sslVerifier = SSLHostnameVerifier.COMMON;
-      }
-    } else {
-      throw new IllegalArgumentException("securityContext must be of type BasicAuthContext, " +
-        "DigestAuthContext, KerberosAuthContext, or CertificateAuthContext");
-    }
-
+          SecurityContext securityContext,
+          DatabaseClient.ConnectionType connectionType)
+{
     OkHttpServices services = new OkHttpServices();
-    services.connect(host, port, database, user, password, kerberosOptions, type, sslContext, trustManager, sslVerifier);
+    services.connect(host, port, database, securityContext);
 
     if (clientConfigurator != null) {
       if ( clientConfigurator instanceof OkHttpClientConfigurator ) {
@@ -1136,6 +1272,10 @@ public class DatabaseClientFactory {
   /**
    * Creates a client to access the database by means of a REST server.
    *
+   * The CallManager interface can only call an endpoint for the configured content database
+   * of the appserver. You cannot specify the database when constructing a client for working
+   * with a CallManager.
+   *
    * @param host	the host with the REST server
    * @param port	the port for the REST server
    * @param database	the database to access (default: configured database for the REST server)
@@ -1167,6 +1307,10 @@ public class DatabaseClientFactory {
   }
   /**
    * Creates a client to access the database by means of a REST server.
+   *
+   * The CallManager interface can only call an endpoint for the configured content database
+   * of the appserver. You cannot specify the database when constructing a client for working
+   * with a CallManager.
    *
    * @param host	the host with the REST server
    * @param port	the port for the REST server
@@ -1201,6 +1345,10 @@ public class DatabaseClientFactory {
   }
   /**
    * Creates a client to access the database by means of a REST server.
+   *
+   * The CallManager interface can only call an endpoint for the configured content database
+   * of the appserver. You cannot specify the database when constructing a client for working
+   * with a CallManager.
    *
    * @param host	the host with the REST server
    * @param port	the port for the REST server
@@ -1440,6 +1588,11 @@ public class DatabaseClientFactory {
     /**
      * Specifies the database for clients created with a
      * DatabaseClientFactory.Bean object.
+     *
+     * The CallManager interface can only call an endpoint for the configured content database
+     * of the appserver. You cannot specify the database when constructing a client for working
+     * with a CallManager.
+     *
      * @param database	a database to pass along to new DocumentManager and QueryManager instances
      */
     public void setDatabase(String database) {
@@ -1459,8 +1612,7 @@ public class DatabaseClientFactory {
      * Specifies the SSLContext for clients created with a
      * DatabaseClientFactory.Bean object that authenticate with SSL.
      * @param context	the SSL context
-     * @deprecated	(as of 4.0.1) use SecurityContext.setSSLContext(SSLContext)
-     *   or SecurityContext.withSSLContext(SSLContext)
+     * @deprecated	(as of 4.0.1) use SecurityContext.withSSLContext(SSLContext,X509TrustManager)
      */
     @Deprecated
     public void setContext(SSLContext context) {

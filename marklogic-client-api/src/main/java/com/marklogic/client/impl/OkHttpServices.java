@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 MarkLogic Corporation
+ * Copyright 2012-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,13 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.*;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.BasicAuthContext;
+import com.marklogic.client.DatabaseClientFactory.CertificateAuthContext;
+import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
+import com.marklogic.client.DatabaseClientFactory.KerberosAuthContext;
+import com.marklogic.client.DatabaseClientFactory.SAMLAuthContext;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
 import com.marklogic.client.document.ContentDescriptor;
@@ -111,14 +117,7 @@ import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
-import javax.naming.InvalidNameException;
-import javax.naming.ldap.LdapName;
-import javax.naming.ldap.Rdn;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.*;
 import javax.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -135,9 +134,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
+import java.nio.file.StandardCopyOption;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -170,6 +171,7 @@ public class OkHttpServices implements RESTServices {
   private HttpUrl baseUri;
   private OkHttpClient client;
   private boolean released = false;
+  private Authentication type = null;
 
   private Random randRetry    = new Random();
 
@@ -238,45 +240,92 @@ public class OkHttpServices implements RESTServices {
   }
 
   @Override
-  @Deprecated
-  public void connect(String host, int port, String database, String user, String password,Map<String,String> kerberosOptions,
-      Authentication authenType, SSLContext sslContext,
-      SSLHostnameVerifier verifier) {
-    connect(host, port, database, user, password, kerberosOptions, authenType, sslContext, null, verifier);
-  }
-
-  @Override
-  public void connect(String host, int port, String database, String user, String password,Map<String,String> kerberosOptions,
-      Authentication authenType, SSLContext sslContext, X509TrustManager trustManager,
-      SSLHostnameVerifier verifier) {
-    HostnameVerifier hostnameVerifier = null;
-    if (verifier == SSLHostnameVerifier.ANY) {
-      hostnameVerifier = new HostnameVerifier() {
-        @Override
-        public boolean verify(String hostname, SSLSession session) {
-          return true;
+  public void connect(String host, int port, String database, SecurityContext securityContext){
+    SSLContext sslContext = null;
+    SSLHostnameVerifier sslVerifier = null;
+    X509TrustManager trustManager = null;
+      
+    if (host == null) 
+    	throw new IllegalArgumentException("No host provided");
+    
+    OkHttpClient.Builder clientBldr = new OkHttpClient.Builder()
+    	      .followRedirects(false)
+    	      .followSslRedirects(false)
+    	      // all clients share a single connection pool
+    	      .connectionPool(connectionPool)
+    	      // cookies are ignored (except when a Transaction is being used)
+    	      .cookieJar(CookieJar.NO_COOKIES)
+    	      // no timeouts since some of our clients' reads and writes can be massive
+    	      .readTimeout(0, TimeUnit.SECONDS)
+    	      .writeTimeout(0, TimeUnit.SECONDS);
+    
+	if (securityContext instanceof BasicAuthContext) {
+	    BasicAuthContext basicContext = (BasicAuthContext) securityContext;
+	    if (basicContext.getSSLContext() != null) {
+            sslContext = basicContext.getSSLContext();
+            if (basicContext.getTrustManager() != null)
+                trustManager = basicContext.getTrustManager();
         }
-      };
-    } else if (verifier == SSLHostnameVerifier.COMMON) {
-      hostnameVerifier = null;
-    } else if (verifier == SSLHostnameVerifier.STRICT) {
-      hostnameVerifier = null;
-    } else if (verifier != null) {
-      hostnameVerifier = new SSLHostnameVerifier.HostnameVerifierAdapter(verifier);
-    }// else {
-    //  throw new IllegalArgumentException(
-    //    "Null SSLContext but non-null SSLHostnameVerifier for client");
-    //}
-    connect(host, port, database, user, password, kerberosOptions, authenType, sslContext, trustManager, hostnameVerifier);
-  }
-
-  private void connect(String host, int port, String database, String user, String password, Map<String,String> kerberosOptions,
-                       Authentication authenType, SSLContext sslContext, X509TrustManager trustManager,
-                       HostnameVerifier verifier) {
-    logger.debug("Connecting to {} at {} as {}", new Object[]{host, port, user});
-
-    if (host == null) throw new IllegalArgumentException("No host provided");
-
+		clientBldr = configureAuthentication(basicContext, clientBldr);
+	} 
+	else if (securityContext instanceof DigestAuthContext) {
+	    DigestAuthContext digestContext = (DigestAuthContext) securityContext;
+	    if (digestContext.getSSLContext() != null) {
+            sslContext = digestContext.getSSLContext();
+            if (digestContext.getTrustManager() != null)
+                trustManager = digestContext.getTrustManager();
+        }
+		clientBldr = configureAuthentication((DigestAuthContext) securityContext, clientBldr);
+	} 
+	else if (securityContext instanceof KerberosAuthContext) {
+		KerberosAuthContext kerberosContext = (KerberosAuthContext) securityContext;
+		if (kerberosContext.getSSLContext() != null) {
+			sslContext = kerberosContext.getSSLContext();
+			if (kerberosContext.getTrustManager() != null)
+				trustManager = kerberosContext.getTrustManager();
+		}
+	    clientBldr = configureAuthentication(kerberosContext, host,clientBldr); 
+	} else if (securityContext instanceof CertificateAuthContext) {
+		CertificateAuthContext certificateContext = (CertificateAuthContext) securityContext;
+		type = Authentication.CERTIFICATE;
+		sslContext = certificateContext.getSSLContext();
+		if (certificateContext.getTrustManager() != null)
+			trustManager = certificateContext.getTrustManager();
+		checkFirstRequest = false;
+	} else if (securityContext instanceof SAMLAuthContext) {
+		SAMLAuthContext samlAuthContext = (SAMLAuthContext) securityContext;
+		if (samlAuthContext.getSSLContext() != null) {
+            sslContext = samlAuthContext.getSSLContext();
+            if (samlAuthContext.getTrustManager() != null)
+                trustManager = samlAuthContext.getTrustManager();
+        }
+        clientBldr = configureAuthentication(samlAuthContext, clientBldr);
+	} else {
+		throw new IllegalArgumentException("securityContext must be of type BasicAuthContext, "
+				+ "DigestAuthContext, KerberosAuthContext, CertificateAuthContext or SAMLAuthContext");
+	}
+	if ((securityContext.getSSLContext() != null) || securityContext instanceof CertificateAuthContext) {
+        if (securityContext.getSSLHostnameVerifier() != null) {
+            sslVerifier = securityContext.getSSLHostnameVerifier();
+        } 
+        else {
+	        sslVerifier = SSLHostnameVerifier.COMMON;
+	    }
+	}
+	HostnameVerifier hostnameVerifier = null;
+	if (sslVerifier == SSLHostnameVerifier.ANY) {
+		hostnameVerifier = new HostnameVerifier() {
+			@Override
+			public boolean verify(String hostname, SSLSession session) {
+				return true;
+			}
+		};
+	} else if (sslVerifier == SSLHostnameVerifier.COMMON || sslVerifier == SSLHostnameVerifier.STRICT) {
+		hostnameVerifier = null;
+	} else if (sslVerifier != null) {
+		hostnameVerifier = new SSLHostnameVerifier.HostnameVerifierAdapter(sslVerifier);
+	} 
+	
     this.database = database;
 
     this.baseUri = new HttpUrl.Builder()
@@ -286,60 +335,42 @@ public class OkHttpServices implements RESTServices {
       .encodedPath("/v1/ping")
       .build();
 
-    Credentials credentials = new Credentials(user, password);
-    final Map<String,CachingAuthenticator> authCache = new ConcurrentHashMap<String,CachingAuthenticator>();
-
-    if ( authenType == null && sslContext != null ) {
-        authenType = Authentication.BASIC;
-    }
-
-    CachingAuthenticator authenticator = null;
-    Interceptor interceptor = null;
-    if (authenType == null || authenType == Authentication.CERTIFICATE) {
-      checkFirstRequest = false;
-    } else if (authenType == Authentication.KERBEROS) {
-      interceptor = new HTTPKerberosAuthInterceptor(host, kerberosOptions);
-      checkFirstRequest = false;
-    } else {
-      if (user == null) throw new IllegalArgumentException("No user provided");
-      if (password == null) throw new IllegalArgumentException("No password provided");
-      if (authenType == Authentication.BASIC) {
-        interceptor = new HTTPBasicAuthInterceptor(credentials);
-        checkFirstRequest = false;
-      } else if (authenType == Authentication.DIGEST) {
-        authenticator = new DigestAuthenticator(credentials);
-        interceptor = new AuthenticationCacheInterceptor(authCache);
-        checkFirstRequest = true;
-      } else {
-          throw new MarkLogicInternalException(
-            "Internal error - unknown authentication type: " + authenType.name());
-      }
-    }
-
-    OkHttpClient.Builder clientBldr = new OkHttpClient.Builder()
-      .followRedirects(false)
-      .followSslRedirects(false)
-      // all clients share a single connection pool
-      .connectionPool(connectionPool)
-      // cookies are ignored (except when a Transaction is being used)
-      .cookieJar(CookieJar.NO_COOKIES)
-      // no timeouts since some of our clients' reads and writes can be massive
-      .readTimeout(0, TimeUnit.SECONDS)
-      .writeTimeout(0, TimeUnit.SECONDS);
-
     if (sslContext != null) {
       if (trustManager == null) {
-        clientBldr.sslSocketFactory(sslContext.getSocketFactory());
+        String javaVersion = System.getProperty("java.version");
+        int javaMajorVersion = Integer.parseInt(javaVersion.substring(0, javaVersion.indexOf(".")));
+        // OKHttp starts requiring the trust manager in Java 9
+        if (javaMajorVersion < 9) {
+          clientBldr.sslSocketFactory(sslContext.getSocketFactory());
+        } else {
+          // transitional workaround -- at next backward incompatibility boundary, replace try with thrown exception
+          try {
+            TrustManagerFactory trustMgrFactory =
+                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            trustMgrFactory.init((KeyStore) null);
+            TrustManager[] trustMgrs = trustMgrFactory.getTrustManagers();
+            if (trustMgrs == null || trustMgrs.length == 0)
+              throw new IllegalArgumentException("no trust manager and could not get default trust manager");
+            if (!(trustMgrs[0] instanceof X509TrustManager))
+              throw new IllegalArgumentException("no trust manager and default is not an X509TrustManager");
+            trustManager = (X509TrustManager) trustMgrs[0];
+            sslContext.init(null, trustMgrs, null);
+            clientBldr.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+          } catch (KeyStoreException e) {
+            throw new IllegalArgumentException("no trust manager and cannot initialize factory for default", e);
+          } catch (NoSuchAlgorithmException e) {
+            throw new IllegalArgumentException("no trust manager and no algorithm for default manager", e);
+          } catch (KeyManagementException e) {
+            throw new IllegalArgumentException("no trust manager and cannot initialize context with default", e);
+          }
+        }
       } else {
         clientBldr.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
       }
     }
 
-    if(authenticator != null) clientBldr.authenticator(new CachingAuthenticatorDecorator(authenticator, authCache));
-    if(interceptor != null) clientBldr.addInterceptor(interceptor);
-
-    if ( verifier != null ) {
-      clientBldr = clientBldr.hostnameVerifier(verifier);
+    if ( hostnameVerifier != null ) {
+      clientBldr = clientBldr.hostnameVerifier(hostnameVerifier);
     }
 
     Properties props = System.getProperties();
@@ -398,6 +429,81 @@ public class OkHttpServices implements RESTServices {
     // HttpProtocolParams.setUseExpectContinue(httpParams, false);
     // httpParams.setIntParameter(CoreProtocolPNames.WAIT_FOR_CONTINUE, 1000);
     */
+  }
+  
+  public OkHttpClient.Builder configureAuthentication(BasicAuthContext basicAuthContext, OkHttpClient.Builder clientBuilder) {
+      String user = basicAuthContext.getUser();
+      String password = basicAuthContext.getPassword();
+      type = Authentication.BASIC;
+      if (user == null) 
+          throw new IllegalArgumentException("No user provided");
+      if (password == null) 
+          throw new IllegalArgumentException("No password provided");
+      Credentials credentials = new Credentials(user, password);
+	  OkHttpClient.Builder builder = clientBuilder;
+	  Interceptor interceptor = new HTTPBasicAuthInterceptor(credentials);
+	  checkFirstRequest = false;
+	  
+	  if(interceptor != null) 
+		  builder.addInterceptor(interceptor);
+	  return builder;
+  }
+  
+  public OkHttpClient.Builder configureAuthentication(DigestAuthContext digestAuthContext, OkHttpClient.Builder clientBuilder) {
+	  	OkHttpClient.Builder builder = clientBuilder;
+        String user = digestAuthContext.getUser();
+        String password = digestAuthContext.getPassword();
+        type = Authentication.DIGEST;
+        if (user == null) 
+            throw new IllegalArgumentException("No user provided");
+        if (password == null) 
+            throw new IllegalArgumentException("No password provided");
+        Credentials credentials = new Credentials(user, password);
+        final Map<String,CachingAuthenticator> authCache = new ConcurrentHashMap<String,CachingAuthenticator>();
+	    CachingAuthenticator authenticator = new DigestAuthenticator(credentials);
+	    Interceptor interceptor =  new AuthenticationCacheInterceptor(authCache);
+        checkFirstRequest = true;
+        
+        if(authenticator != null) {
+        	builder.authenticator(new CachingAuthenticatorDecorator(authenticator, authCache));
+        }
+        if(interceptor != null) {
+  		  builder.addInterceptor(interceptor);
+        }
+	    return builder;
+  }
+  
+  public OkHttpClient.Builder configureAuthentication(KerberosAuthContext keberosAuthContext, String host, OkHttpClient.Builder clientBuilder) {
+	  type = Authentication.KERBEROS;
+	  Map<String, String> kerberosOptions = keberosAuthContext.getKrbOptions();
+	  Interceptor interceptor = new HTTPKerberosAuthInterceptor(host, kerberosOptions);
+      checkFirstRequest = false;
+	  OkHttpClient.Builder builder = clientBuilder;
+	  if(interceptor != null) 
+		  builder.addInterceptor(interceptor);
+	  return builder;
+  }
+  
+  public OkHttpClient.Builder configureAuthentication(SAMLAuthContext samlAuthContext, OkHttpClient.Builder clientBuilder) {
+      type = Authentication.SAML;
+      Interceptor interceptor = null;
+      String authorizationTokenValue = samlAuthContext.getToken();
+      
+      if(authorizationTokenValue != null && authorizationTokenValue.length() > 0) {
+          interceptor = new HTTPSamlAuthInterceptor(authorizationTokenValue);
+      } else if(samlAuthContext.getAuthorizer()!=null) {
+           interceptor = new HTTPSamlAuthInterceptor(samlAuthContext.getAuthorizer());
+      } else if(samlAuthContext.getRenewer()!=null) {
+          interceptor = new HTTPSamlAuthInterceptor(samlAuthContext.getAuthorization(),samlAuthContext.getRenewer());
+      } else
+          throw new IllegalArgumentException("Either a call back or renewer expected.");
+	  
+      checkFirstRequest = false;
+	  OkHttpClient.Builder builder = clientBuilder;
+	  
+	  if(interceptor != null) 
+		  builder.addInterceptor(interceptor);
+	  return builder;
   }
 
   @Override
@@ -1712,10 +1818,9 @@ public class OkHttpServices implements RESTServices {
   private void addCategoryParams(Set<Metadata> categories, RequestParameters params,
                                  boolean withContent)
   {
-    if (withContent && categories == null || categories.size() == 0) {
+    if (withContent)
       params.add("category", "content");
-    } else {
-      if (withContent) params.add("category", "content");
+    if (categories != null && categories.size() > 0) {
       if (categories.contains(Metadata.ALL)) {
         params.add("category", "metadata");
       } else {
@@ -2915,12 +3020,13 @@ public class OkHttpServices implements RESTServices {
 
   @Override
   public <R extends UrisReadHandle> R uris(RequestLogger reqlog, Transaction transaction,
-                                           QueryDefinition qdef, long start, long pageLength, String forestName, R output)
+        QueryDefinition qdef, long start, String afterUri, long pageLength, String forestName, R output)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     RequestParameters params = new RequestParameters();
     if ( forestName != null )        params.add("forest-name", forestName);
     if (start > 1)                   params.add("start",       Long.toString(start));
+    if (afterUri != null )           params.add("after",       afterUri);
     if (pageLength >= 1)             params.add("pageLength",  Long.toString(pageLength));
     if (qdef.getDirectory() != null) params.add("directory",   qdef.getDirectory());
     if (qdef.getCollections() != null ) {
@@ -2931,64 +3037,63 @@ public class OkHttpServices implements RESTServices {
     if (qdef.getOptionsName()!= null && qdef.getOptionsName().length() > 0) {
       params.add("options", qdef.getOptionsName());
     }
+
     if (qdef instanceof RawQueryByExampleDefinition) {
       throw new UnsupportedOperationException("Cannot search with RawQueryByExampleDefinition");
+    }
+
+    String text = null;
+    if (qdef instanceof StringQueryDefinition) {
+      text = ((StringQueryDefinition) qdef).getCriteria();
+    } else if (qdef instanceof StructuredQueryDefinition) {
+      text = ((StructuredQueryDefinition) qdef).getCriteria();
+    } else if (qdef instanceof RawStructuredQueryDefinition) {
+      text = ((RawStructuredQueryDefinition) qdef).getCriteria();
+    } else if (qdef instanceof RawCtsQueryDefinition) {
+      text = ((RawCtsQueryDefinition) qdef).getCriteria();
+    }
+
+    String qtextMessage = "";
+    if (text != null) {
+      params.add("q", text);
+      qtextMessage = " and string query \"" + text + "\"";
+    }
+
+    if (qdef instanceof RawCtsQueryDefinition) {
+      String structure = qdef instanceof RawQueryDefinitionImpl.CtsQuery ?
+              ((RawQueryDefinitionImpl.CtsQuery) qdef).serialize() : "";
+      logger.debug("Query uris with raw cts query {}{}", structure, qtextMessage);
+      CtsQueryWriteHandle input = ((RawCtsQueryDefinition) qdef).getHandle();
+      return postResource(reqlog, "internal/uris", transaction, params, input, output);
+    } else if (qdef instanceof StructuredQueryDefinition) {
+      String structure = ((StructuredQueryDefinition) qdef).serialize();
+      logger.debug("Query uris with structured query {}{}", structure, qtextMessage);
+      if (structure != null) {
+        params.add("structuredQuery", structure);
+      }
+    } else if (qdef instanceof RawStructuredQueryDefinition) {
+      String structure = ((RawStructuredQueryDefinition) qdef).serialize();
+      logger.debug("Query uris with raw structured query {}{}", structure, qtextMessage);
+      if (structure != null) {
+        params.add("structuredQuery", structure);
+      }
+    } else if (qdef instanceof CombinedQueryDefinition) {
+      String structure = ((CombinedQueryDefinition) qdef).serialize();
+      logger.debug("Query uris with combined query {}", structure);
+      if (structure != null) {
+        params.add("structuredQuery", structure);
+      }
+    } else if (qdef instanceof StringQueryDefinition) {
+      logger.debug("Query uris with string query \"{}\"", text);
     } else if (qdef instanceof RawQueryDefinition) {
       logger.debug("Raw uris query");
-
       StructureWriteHandle input = ((RawQueryDefinition) qdef).getHandle();
-
       return postResource(reqlog, "internal/uris", transaction, params, input, output);
     } else {
-      String text = null;
-      if (qdef instanceof StringQueryDefinition) {
-        text = ((StringQueryDefinition) qdef).getCriteria();
-      } else if (qdef instanceof StructuredQueryDefinition) {
-        text = ((StructuredQueryDefinition) qdef).getCriteria();
-      } else if (qdef instanceof RawStructuredQueryDefinition) {
-        text = ((RawStructuredQueryDefinition) qdef).getCriteria();
-      } else if (qdef instanceof RawCtsQueryDefinition) {
-        text = ((RawCtsQueryDefinition) qdef).getCriteria();
-      }
-      String qtextMessage = "";
-      if (text != null) {
-        params.add("q", text);
-        qtextMessage = " and string query \"" + text + "\"";
-      }
-      if (qdef instanceof RawCtsQueryDefinition) {
-          String structure = qdef instanceof RawQueryDefinitionImpl.CtsQuery ? ((RawQueryDefinitionImpl.CtsQuery) qdef).serialize() : "";
-          logger.debug("Query uris with raw cts query {}{}", structure, qtextMessage);
-           CtsQueryWriteHandle input = ((RawCtsQueryDefinition) qdef).getHandle();
-        return postResource(reqlog, "internal/uris", transaction, params, input, output);
-      } else if (qdef instanceof StructuredQueryDefinition) {
-          String structure = ((StructuredQueryDefinition) qdef).serialize();
-          
-          logger.debug("Query uris with structured query {}{}", structure, qtextMessage);
-          if (structure != null) {
-            params.add("structuredQuery", structure);
-          }
-        } else if (qdef instanceof RawStructuredQueryDefinition) {
-          String structure = ((RawStructuredQueryDefinition) qdef).serialize();
-          logger.debug("Query uris with raw structured query {}{}", structure, qtextMessage);
-          if (structure != null) {
-          params.add("structuredQuery", structure);
-        }
-      } else if (qdef instanceof CombinedQueryDefinition) {
-        String structure = ((CombinedQueryDefinition) qdef).serialize();
-        
-        logger.debug("Query uris with combined query {}", structure);
-        if (structure != null) {
-          params.add("structuredQuery", structure);
-        }
-      } else if (qdef instanceof StringQueryDefinition) {
-        logger.debug("Query uris with string query \"{}\"", text);
-      } else {
-        throw new UnsupportedOperationException("Cannot query uris with " +
-            qdef.getClass().getName());
-        }
-        return getResource(reqlog, "internal/uris", transaction, params, output);
-      }
+      throw new UnsupportedOperationException("Cannot query uris with " + qdef.getClass().getName());
     }
+    return getResource(reqlog, "internal/uris", transaction, params, output);
+  }
 
 
   @Override
@@ -5284,14 +5389,11 @@ public class OkHttpServices implements RESTServices {
         }
         Path path = Files.createTempFile("tmp", suffix);
         if ( isBinary == true ) {
-          Files.write(path, body.bytes());
+            Files.copy(body.byteStream(), path, StandardCopyOption.REPLACE_EXISTING);
         } else {
-          Writer out = Files.newBufferedWriter(path, Charset.forName("UTF-8"));
-          try {
-            out.write(body.string());
-          } finally {
-            out.close();
-          }
+            try(Writer out = Files.newBufferedWriter(path, Charset.forName("UTF-8"))) {
+                Utilities.write(body.charStream(), out);
+            }
         }
         return (T) path.toFile();
       } else {

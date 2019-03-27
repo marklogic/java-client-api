@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 MarkLogic Corporation
+ * Copyright 2012-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
 
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -70,7 +71,13 @@ public class GeospatialRegionQueriesTest {
   private static void buildEnvironment() throws ParserConfigurationException {
     XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
     DocumentWriteSet writeset =docMgr.newWriteSet();
-    Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setValidating(false);
+    DocumentBuilder documentBldr = factory.newDocumentBuilder();
+
+    Document domDocument = documentBldr.newDocument();
     Element root = domDocument.createElement("country");
     Element name = domDocument.createElement("name");
     name.appendChild(domDocument.createTextNode("USA"));
@@ -82,7 +89,7 @@ public class GeospatialRegionQueriesTest {
     domDocument.appendChild(root);
     writeset.add("usa.xml", new DOMHandle().with(domDocument));
 
-    domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+    domDocument = documentBldr.newDocument();
     root = domDocument.createElement("country");
     name = domDocument.createElement("name");
     name.appendChild(domDocument.createTextNode("Cuba"));
@@ -94,7 +101,7 @@ public class GeospatialRegionQueriesTest {
     domDocument.appendChild(root);
     writeset.add("cuba.xml", new DOMHandle().with(domDocument));
 
-    domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+    domDocument = documentBldr.newDocument();
     root = domDocument.createElement("country");
     name = domDocument.createElement("name");
     name.appendChild(domDocument.createTextNode("Mexico"));
@@ -106,7 +113,7 @@ public class GeospatialRegionQueriesTest {
     domDocument.appendChild(root);
     writeset.add("newpolygon.xml", new DOMHandle().with(domDocument));
 
-    domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+    domDocument = documentBldr.newDocument();
     root = domDocument.createElement("country");
     name = domDocument.createElement("name");
     name.appendChild(domDocument.createTextNode("Mexico"));
@@ -118,7 +125,7 @@ public class GeospatialRegionQueriesTest {
     domDocument.appendChild(root);
     writeset.add("mexico.xml", new DOMHandle().with(domDocument));
 
-    domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+    domDocument = documentBldr.newDocument();
     root = domDocument.createElement("point");
     Element lat = domDocument.createElement("lat");
     lat.appendChild(domDocument.createTextNode("5"));
@@ -129,7 +136,7 @@ public class GeospatialRegionQueriesTest {
     domDocument.appendChild(root);
     writeset.add("p1.xml", new DOMHandle().with(domDocument));
 
-    domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+    domDocument = documentBldr.newDocument();
     root = domDocument.createElement("point");
     lat = domDocument.createElement("lat");
     lat.appendChild(domDocument.createTextNode("10.0000001"));

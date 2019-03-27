@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 MarkLogic Corporation
+ * Copyright 2012-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,9 @@ import org.slf4j.LoggerFactory;
 /**
  * A Binding Exception indicates a problem converting between a Java object
  * and XML representation of the data.  The exception may indicate an internal
- * error.  Please contact MarkLogic support.
+ * error.
+ *
+ * If you have an active maintenance contract, you can contact MarkLogic Technical Support.
  */
 @SuppressWarnings("serial")
 public class MarkLogicBindingException extends RuntimeException {

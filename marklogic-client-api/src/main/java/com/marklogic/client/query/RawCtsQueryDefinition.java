@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 MarkLogic Corporation
+ * Copyright 2013-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
 package com.marklogic.client.query;
 
 import com.marklogic.client.io.marker.CtsQueryWriteHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
 
 /**
  * A RawCtsQueryDefinition allows you to create a query with a serialized cts
  * query in a JSON or XML representation.
  */
-public interface RawCtsQueryDefinition extends QueryDefinition, ValueQueryDefinition {
+public interface RawCtsQueryDefinition extends RawQueryDefinition, ValueQueryDefinition {
   /**
    * Returns the query criteria, that is the query string.
    * @return The query string.
@@ -49,16 +50,10 @@ public interface RawCtsQueryDefinition extends QueryDefinition, ValueQueryDefini
   CtsQueryWriteHandle getHandle();
 
   /**
-   * Specifies the handle for the JSON or XML representation of the query.
-   * @param handle	the JSON or XML handle.
-   */
-  void setHandle(CtsQueryWriteHandle handle);
-
-  /**
    * Specifies the handle for the JSON or XML representation
    * of a combined query and returns the query definition.
    * @param handle	the JSON or XML handle.
    * @return	the query definition.
    */
-  RawCtsQueryDefinition withHandle(CtsQueryWriteHandle handle);
+  RawCtsQueryDefinition withHandle(StructureWriteHandle handle);
 }

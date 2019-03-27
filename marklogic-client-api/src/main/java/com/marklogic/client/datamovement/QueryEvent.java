@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 MarkLogic Corporation
+ * Copyright 2015-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,13 @@ public interface QueryEvent {
    * @return the number of results in this job in this forest up to the point of this event
    */
   long getForestResultsSoFar();
+
+  /** Within the context of this forest within the job, the last uri
+   * processed including the uris in this event if this is a QueryBatch.
+   *
+   * @return the last uri in this job in this forest up to the point of this event
+   */
+  String getLastUriForForest();
 
   /** The forest queried for this event if this job is based on a
    * QueryDefinition.  Returns null if this job is based on an Iterator.

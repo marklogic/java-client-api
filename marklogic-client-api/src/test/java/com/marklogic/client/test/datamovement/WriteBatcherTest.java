@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 MarkLogic Corporation
+ * Copyright 2015-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,8 @@
  */
 package com.marklogic.client.test.datamovement;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.marklogic.client.document.*;
+import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,16 +26,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
 
@@ -48,12 +40,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.document.DocumentRecord;
-import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.document.DocumentWriteOperation;
-import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.FileHandle;
@@ -81,6 +67,8 @@ import com.marklogic.client.datamovement.WriteFailureListener;
 import com.marklogic.client.datamovement.WriteBatcher;
 
 import com.marklogic.client.test.Common;
+
+import static org.junit.Assert.*;
 
 public class WriteBatcherTest {
   private Logger logger = LoggerFactory.getLogger(WriteBatcherTest.class);
@@ -224,6 +212,96 @@ public class WriteBatcherTest {
           assertEquals( "the transform should have changed testProperty to 'test1a'",
             "test1a", record.getContentAs(JsonNode.class).get("testProperty").textValue() );
         }
+      }
+    }
+  }
+
+  @Test
+  public void testDefaultMetadata() throws Exception {
+    StringHandle firstContent = new StringHandle("test1");
+    StringHandle secondContent = new StringHandle("test2");
+
+    GenericDocumentManager docMgr = client.newDocumentManager();
+    for (int i: new int[]{1,2}) {
+      String collection = whbTestCollection + ".testDefaultMetadata"+i;
+      String[] collections = new String[]{collection, whbTestCollection};
+
+      String firstUri  = "/metadataTest/doc"+i+"_1.txt";
+      String secondUri = "/metadataTest/doc"+i+"_2.txt";
+
+      DocumentMetadataHandle meta = new DocumentMetadataHandle()
+              .withCollections(collections)
+              .withMetadataValue("metaKey", "metaValue")
+              .withQuality(1);
+      meta.getPermissions().add("manage-user", DocumentMetadataHandle.Capability.READ);
+
+      List<String> successBatch = new ArrayList<>();
+      List<String> failureBatch = new ArrayList<>();
+
+      WriteBatcher batcher =  moveMgr.newWriteBatcher()
+              .withBatchSize(2)
+              .withDefaultMetadata(meta)
+              .onBatchSuccess(
+                      batch -> {
+                        logger.debug("[testSimple] batch: {}, items: {}",
+                                batch.getJobBatchNumber(), batch.getItems().length);
+                        for(WriteEvent w: batch.getItems()){
+                          successBatch.add(w.getTargetUri());
+                        }
+                      })
+              .onBatchFailure(
+                      (batch, throwable) -> {
+                        for(WriteEvent w: batch.getItems()){
+                          failureBatch.add(w.getTargetUri());
+                        }
+                      });
+
+      JobTicket ticket = moveMgr.startJob(batcher);
+
+      switch(i) {
+      case 1:
+        batcher.add(firstUri, firstContent);
+        batcher.add(secondUri, secondContent);
+        break;
+      case 2:
+        batcher.addAll(Stream.of(
+            new DocumentWriteOperationImpl(DocumentWriteOperation.OperationType.DOCUMENT_WRITE, firstUri, null, firstContent),
+            new DocumentWriteOperationImpl(DocumentWriteOperation.OperationType.DOCUMENT_WRITE, secondUri, null, secondContent)
+        ));
+        break;
+      }
+
+      batcher.flushAndWait();
+
+      assertEquals("success count", 3, successBatch.size());
+      assertNull("default metadata", successBatch.get(0));
+      assertEquals("first success", firstUri, successBatch.get(1));
+      assertEquals("first success", secondUri, successBatch.get(2));
+      assertEquals("failure count", 0, failureBatch.size());
+
+      DocumentPage docPage = docMgr.readMetadata(firstUri, secondUri);
+      assertEquals("missing metadata", 2, docPage.getPageSize());
+      for (DocumentRecord docRecord: docPage) {
+        DocumentMetadataHandle actual = docRecord.getMetadata(new DocumentMetadataHandle());
+        assertNotNull("no metadata", actual);
+
+        DocumentMetadataHandle.DocumentCollections actualCollections = actual.getCollections();
+        assertNotNull("no collections metadata", actualCollections);
+        for (String expectedCollection: collections) {
+          assertTrue("collection metadata not set", actualCollections.contains(expectedCollection));
+        }
+
+        DocumentMetadataHandle.DocumentPermissions actualPermissions = actual.getPermissions();
+        assertNotNull("no permissions metadata", actualPermissions);
+        assertTrue("permissions metadata not set",
+            actualPermissions.get("manage-user").contains(DocumentMetadataHandle.Capability.READ)
+        );
+
+        DocumentMetadataHandle.DocumentMetadataValues actualMetaVals = actual.getMetadataValues();
+        assertNotNull("no key-value metadata", actualMetaVals);
+        assertEquals("key-value metadata not set", actualMetaVals.get("metaKey"), "metaValue");
+
+        assertEquals("quality metadata not set", meta.getQuality(), actual.getQuality());
       }
     }
   }

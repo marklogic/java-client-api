@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 MarkLogic Corporation
+ * Copyright 2015-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,7 @@ import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.document.DocumentWriteOperation.OperationType;
+import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.impl.Utilities;
@@ -222,6 +224,7 @@ public class WriteBatcherImpl
   private JobTicket jobTicket;
   private Calendar jobStartTime;
   private Calendar jobEndTime;
+  private DocumentMetadataHandle defaultMetadata;
 
   public WriteBatcherImpl(DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super(moveMgr);
@@ -282,17 +285,20 @@ public class WriteBatcherImpl
     boolean timeToWriteBatch = (recordNum % getBatchSize()) == 0;
     if ( timeToWriteBatch ) {
       BatchWriteSet writeSet = newBatchWriteSet(false);
-      int i=0;
-      for ( ; i < getBatchSize(); i++ ) {
+      int minBatchSize = 0;
+      if(defaultMetadata != null) {
+        writeSet.getWriteSet().add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT, null, defaultMetadata, null));
+        minBatchSize = 1;
+      }
+      for (int i=0; i < getBatchSize(); i++ ) {
         DocumentWriteOperation doc = queue.poll();
-        if ( doc != null ) {
-          writeSet.getWriteSet().add(doc);
-        } else {
+        if ( doc == null ) {
           // strange, there should have been a full batch of docs in the queue...
           break;
         }
+        writeSet.getWriteSet().add(doc);
       }
-      if ( writeSet.getWriteSet().size() > 0 ) {
+      if ( writeSet.getWriteSet().size() > minBatchSize ) {
         threadPool.submit( new BatchWriter(writeSet) );
       }
     }
@@ -549,6 +555,9 @@ public class WriteBatcherImpl
         return;
       }
       BatchWriteSet writeSet = newBatchWriteSet(forceNewTransaction);
+      if(defaultMetadata != null) {
+          writeSet.getWriteSet().add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT, null, defaultMetadata, null));
+        }
       int j=0;
       for ( ; j < getBatchSize() && iter.hasNext(); j++ ) {
         DocumentWriteOperation doc = iter.next();
@@ -1331,4 +1340,21 @@ public class WriteBatcherImpl
       return tasks;
     }
   }
+
+
+@Override
+public WriteBatcher withDefaultMetadata(DocumentMetadataHandle handle) {
+    this.defaultMetadata = handle;
+    return this;
+}
+
+@Override
+public void addAll(Stream<? extends DocumentWriteOperation> operations) {
+    operations.forEach(this::add);
+}
+
+@Override
+public DocumentMetadataHandle getDocumentMetadata() {
+  return defaultMetadata;
+}
 }

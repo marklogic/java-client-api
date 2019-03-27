@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 MarkLogic Corporation
+ * Copyright 2012-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,11 @@ public class DeleteSearchTest {
   }
 
   public static void writeDoc() throws Exception {
-    Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setValidating(false);
+
+    Document domDocument = factory.newDocumentBuilder().newDocument();
     Element root = domDocument.createElement("root");
     root.setAttribute("xml:lang", "en");
     root.setAttribute("foo", "bar");
@@ -62,7 +66,7 @@ public class DeleteSearchTest {
     domDocument.appendChild(root);
 
     @SuppressWarnings("unused")
-    String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
+    String domString = ((DOMImplementationLS) factory.newDocumentBuilder()
       .getDOMImplementation()).createLSSerializer().writeToString(domDocument);
 
     XMLDocumentManager docMgr = client.newXMLDocumentManager();

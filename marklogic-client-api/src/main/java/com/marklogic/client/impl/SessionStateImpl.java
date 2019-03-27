@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 MarkLogic Corporation
+ * Copyright 2018-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ public class SessionStateImpl implements SessionState {
    private AtomicBoolean setCreatedTimestamp;
    private Calendar created;
 
-   protected SessionStateImpl() {
+   public SessionStateImpl() {
       sessionId = Long.toUnsignedString(ThreadLocalRandom.current().nextLong(), 16);
       cookies = new ArrayList<>();
       setCreatedTimestamp = new AtomicBoolean(false);

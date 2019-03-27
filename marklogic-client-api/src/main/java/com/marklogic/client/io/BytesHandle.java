@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 MarkLogic Corporation
+ * Copyright 2012-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,6 +98,13 @@ public class BytesHandle
   public BytesHandle(byte[] content) {
     this();
     set(content);
+  }
+  /**
+   * Initializes the handle from the byte content of another handle
+   * @param content	the other handle
+   */
+  public BytesHandle(BufferableHandle content) {
+    this((content == null) ? null : content.toBuffer());
   }
 
   /**

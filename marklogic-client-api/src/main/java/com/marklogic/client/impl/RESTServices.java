@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 MarkLogic Corporation
+ * Copyright 2012-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import javax.net.ssl.X509TrustManager;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
@@ -70,7 +71,10 @@ import com.marklogic.client.util.RequestParameters;
 
 public interface RESTServices {
 
+  String AUTHORIZATION_TYPE_SAML = "SAML";
+  String AUTHORIZATION_PARAM_TOKEN = "token";
   String HEADER_ACCEPT = "Accept";
+  String HEADER_AUTHORIZATION = "Authorization";
   String HEADER_COOKIE = "Cookie";
   String HEADER_ERROR_FORMAT = "X-Error-Accept";
   String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
@@ -121,11 +125,7 @@ public interface RESTServices {
   int getMaxDelay();
   void setMaxDelay(int maxDelay);
 
-  @Deprecated
-  public void connect(String host, int port, String database, String user, String password, Map<String,String> kerberosOptions, Authentication type,
-                      SSLContext context, SSLHostnameVerifier verifier);
-  public void connect(String host, int port, String database, String user, String password, Map<String,String> kerberosOptions, Authentication type,
-      SSLContext context, X509TrustManager trustManager, SSLHostnameVerifier verifier);
+  public void connect(String host, int port, String database, SecurityContext securityContext);
   public DatabaseClient getDatabaseClient();
   public void setDatabaseClient(DatabaseClient client);
   public void release();
@@ -231,7 +231,7 @@ public interface RESTServices {
     throws ForbiddenUserException, FailedRequestException;
 
   public <R extends UrisReadHandle> R uris(RequestLogger reqlog, Transaction transaction,
-                                           QueryDefinition qdef, long start, long pageLength, String forestName, R output)
+                                           QueryDefinition qdef, long start, String afterUri, long pageLength, String forestName, R output)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
   public <R extends AbstractReadHandle> R getResource(RequestLogger reqlog, String path,
                                                       Transaction transaction, RequestParameters params, R output)

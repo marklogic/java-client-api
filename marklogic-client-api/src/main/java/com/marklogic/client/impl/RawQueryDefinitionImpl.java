@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 MarkLogic Corporation
+ * Copyright 2013-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,12 @@ import com.marklogic.client.query.RawQueryByExampleDefinition;
 import com.marklogic.client.query.RawQueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
 
-abstract public class RawQueryDefinitionImpl
+abstract public class RawQueryDefinitionImpl<T extends StructureWriteHandle>
   extends AbstractQueryDefinition
   implements RawQueryDefinition
 {
   static public class Combined
-    extends RawQueryDefinitionImpl
+    extends RawQueryDefinitionImpl<StructureWriteHandle>
     implements RawCombinedQueryDefinition {
     Combined(StructureWriteHandle handle) {
       super(handle);
@@ -44,11 +44,31 @@ abstract public class RawQueryDefinitionImpl
     }
   }
 
-  static public class Structured
-    extends RawQueryDefinitionImpl
-    implements RawStructuredQueryDefinition {
+  static abstract class RawCriteriaQueryImpl<T extends StructureWriteHandle>
+    extends RawQueryDefinitionImpl<T>
+  {
     private String criteria = null;
 
+    public RawCriteriaQueryImpl(T handle) {
+      super(handle);
+    }
+    public RawCriteriaQueryImpl(T handle, String optionsName) {
+      super(handle, optionsName);
+    }
+
+    public String getCriteria() {
+      return criteria;
+    }
+
+    public void setCriteria(String criteria) {
+      this.criteria = criteria;
+    }
+  }
+
+  static public class Structured
+    extends RawCriteriaQueryImpl<StructureWriteHandle>
+    implements RawStructuredQueryDefinition
+  {
     public Structured(StructureWriteHandle handle) {
       super(handle);
     }
@@ -62,21 +82,6 @@ abstract public class RawQueryDefinitionImpl
       return this;
     }
 
-    public String serialize() {
-      if (getHandle() == null) return "";
-      return HandleAccessor.contentAsString(getHandle());
-    }
-
-    @Override
-    public String getCriteria() {
-      return criteria;
-    }
-
-    @Override
-    public void setCriteria(String criteria) {
-      this.criteria = criteria;
-    }
-
     @Override
     public RawStructuredQueryDefinition withCriteria(String criteria) {
       setCriteria(criteria);
@@ -84,33 +89,15 @@ abstract public class RawQueryDefinitionImpl
     }
   }
 
-  static public class CtsQuery extends AbstractQueryDefinition implements RawCtsQueryDefinition {
-    private String criteria = null;
-    private CtsQueryWriteHandle handle;
-
+  static public class CtsQuery
+          extends RawCriteriaQueryImpl<CtsQueryWriteHandle>
+          implements RawCtsQueryDefinition
+  {
     public CtsQuery(CtsQueryWriteHandle handle) {
-      super();
-      setHandle(handle);
+      super(handle);
     }
     public CtsQuery(CtsQueryWriteHandle handle, String optionsName) {
-      super();
-      setHandle(handle);
-      setOptionsName(optionsName);
-    }
-
-    public String serialize() {
-      if (getHandle() == null) return "";
-      return HandleAccessor.contentAsString(getHandle());
-    }
-
-    @Override
-    public String getCriteria() {
-      return criteria;
-    }
-
-    @Override
-    public void setCriteria(String criteria) {
-      this.criteria = criteria;
+      super(handle, optionsName);
     }
 
     @Override
@@ -120,33 +107,27 @@ abstract public class RawQueryDefinitionImpl
     }
 
     @Override
-    public CtsQueryWriteHandle getHandle() {
-      return handle;
+    public void setHandle(StructureWriteHandle handle) {
+      if (handle != null && !(handle instanceof CtsQueryWriteHandle)) {
+        throw new IllegalArgumentException(
+                "handle must be an instance of CtsQueryWriteHandle instead of: "+
+                handle.getClass().getCanonicalName()
+        );
+      }
+      super.setHandle((CtsQueryWriteHandle) handle);
     }
 
     @Override
-    public void setHandle(CtsQueryWriteHandle handle) {
-      this.handle = handle;
-    }
-
-    @Override
-    public RawCtsQueryDefinition withHandle(CtsQueryWriteHandle handle) {
+    public RawCtsQueryDefinition withHandle(StructureWriteHandle handle) {
       setHandle(handle);
       return this;
-    }
-
-    @Override
-    public String toString() {
-      if (handle == null) {
-        return "";
-      }
-      return handle.toString();
     }
   }
 
   static public class ByExample
-    extends RawQueryDefinitionImpl
-    implements RawQueryByExampleDefinition {
+    extends RawQueryDefinitionImpl<StructureWriteHandle>
+    implements RawQueryByExampleDefinition
+  {
     ByExample(StructureWriteHandle handle) {
       super(handle);
     }
@@ -161,25 +142,31 @@ abstract public class RawQueryDefinitionImpl
     }
   }
 
-  private StructureWriteHandle handle;
+  private T handle;
 
-  RawQueryDefinitionImpl(StructureWriteHandle handle) {
+  RawQueryDefinitionImpl(T handle) {
     super();
     setHandle(handle);
   }
-  RawQueryDefinitionImpl(StructureWriteHandle handle, String optionsName) {
+  RawQueryDefinitionImpl(T handle, String optionsName) {
     this(handle);
     setOptionsName(optionsName);
   }
 
-  @Override
-  public StructureWriteHandle getHandle() {
-    return handle;
+  public String serialize() {
+    if (handle == null) return "";
+    return HandleAccessor.contentAsString(handle);
   }
 
   @Override
+  public T getHandle() {
+    return handle;
+  }
+
+  // must override with instanceof test if T is not StructureWriteHandle
+  @Override
   public void setHandle(StructureWriteHandle handle) {
-    this.handle = handle;
+    this.handle = (T) handle;
   }
 
   @Override
@@ -189,5 +176,4 @@ abstract public class RawQueryDefinitionImpl
     }
     return handle.toString();
   }
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2018 MarkLogic Corporation
+ * Copyright 2014-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2508,7 +2508,7 @@ public abstract class ConnectedRESTQA {
 		InputStream input = null;
 
 		try {
-			input = property.getClass().getResourceAsStream("/test.properties");
+			input = ConnectedRESTQA.class.getResourceAsStream("/test.properties");
 
 			// load a properties file
 			property.load(input);

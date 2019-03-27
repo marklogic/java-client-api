@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 MarkLogic Corporation
+ * Copyright 2015-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,6 +106,15 @@ public class QueryBatchImpl extends BatchImpl<String> implements QueryBatch {
   @Override
   public long getForestResultsSoFar() {
     return forestResultsSoFar;
+  }
+
+  @Override
+  public String getLastUriForForest() {
+    String[] items = getItems();
+    if (items == null || items.length == 0) {
+      return null;
+    }
+    return items[items.length - 1];
   }
 
   public QueryBatchImpl withForestResultsSoFar(long forestResultsSoFar) {

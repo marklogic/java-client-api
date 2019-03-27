@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 MarkLogic Corporation
+ * Copyright 2012-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,30 +73,31 @@ public class Common {
   public static DatabaseClient serverAdminClient;
   public static DatabaseClient evalClient;
   public static DatabaseClient readOnlyClient;
+  public static DatabaseClient dataServiceClient;
 
   public static DatabaseClient connect() {
-    if (client != null) return client;
-    client = newClient();
+    if (client == null)
+      client = newClient();
     return client;
   }
   public static DatabaseClient connectAdmin() {
-    if (adminClient != null) return adminClient;
-    adminClient = newAdminClient();
+    if (adminClient == null)
+      adminClient = newAdminClient();
     return adminClient;
   }
   public static DatabaseClient connectServerAdmin() {
-    if (serverAdminClient != null) return serverAdminClient;
-    serverAdminClient = newServerAdminClient();
+    if (serverAdminClient == null)
+      serverAdminClient = newServerAdminClient();
     return serverAdminClient;
   }
   public static DatabaseClient connectEval() {
-    if (evalClient != null) return evalClient;
-    evalClient = newEvalClient();
+    if (evalClient == null)
+      evalClient = newEvalClient();
     return evalClient;
   }
   public static DatabaseClient connectReadOnly() {
-    if (readOnlyClient != null) return readOnlyClient;
-    readOnlyClient = newReadOnlyClient();
+    if (readOnlyClient == null)
+      readOnlyClient = newReadOnlyClient();
     return readOnlyClient;
   }
   public static DatabaseClient newClient() {
@@ -104,17 +105,23 @@ public class Common {
   }
   public static DatabaseClient newClient(String databaseName) {
     return DatabaseClientFactory.newClient(Common.HOST, Common.PORT, databaseName,
-      new DatabaseClientFactory.DigestAuthContext(Common.USER, Common.PASS),
+        new DatabaseClientFactory.DigestAuthContext(Common.USER, Common.PASS),
           CONNECTION_TYPE);
   }
   public static DatabaseClient newAdminClient() {
-    return DatabaseClientFactory.newClient(
-      Common.HOST, Common.PORT, new DigestAuthContext(Common.REST_ADMIN_USER, Common.REST_ADMIN_PASS),
+    return newAdminClient(null);
+  }
+  public static DatabaseClient newAdminClient(String databaseName) {
+    return DatabaseClientFactory.newClient(Common.HOST, Common.PORT, databaseName,
+       new DigestAuthContext(Common.REST_ADMIN_USER, Common.REST_ADMIN_PASS),
           CONNECTION_TYPE);
   }
   public static DatabaseClient newServerAdminClient() {
-    return DatabaseClientFactory.newClient(
-      Common.HOST, Common.PORT, new DigestAuthContext(Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS),
+    return newServerAdminClient(null);
+  }
+  public static DatabaseClient newServerAdminClient(String databaseName) {
+    return DatabaseClientFactory.newClient(Common.HOST, Common.PORT, databaseName,
+       new DigestAuthContext(Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS),
           CONNECTION_TYPE);
   }
   public static DatabaseClient newEvalClient() {
@@ -194,7 +201,10 @@ public class Common {
   }
   public static Document testStringToDocument(String document) {
     try {
-      return DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      factory.setNamespaceAware(true);
+      factory.setValidating(false);
+      return factory.newDocumentBuilder().parse(
         new InputSource(new StringReader(document)));
     } catch (SAXException e) {
       throw new RuntimeException(e);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2018 MarkLogic Corporation
+ * Copyright 2014-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2771,8 +2771,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		}
 	}
 
-	// ISSUE -646
-	@Ignore
+	@Test
 	public void addWithMetadata() throws Exception {
 		System.out.println("In addWithMetadata method");
 
@@ -2810,6 +2809,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			e.printStackTrace();
 		}
 	}
+	
 	@Test
 	public void testDocumentWriteOperationAdd() throws Exception {
 		System.out.println("In testDocumentWriteOperationAdd method");

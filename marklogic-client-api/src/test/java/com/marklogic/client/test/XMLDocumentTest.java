@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 MarkLogic Corporation
+ * Copyright 2012-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLEventReader;
@@ -95,7 +96,10 @@ public class XMLDocumentTest {
   {
     String docId = "/test/testWrite1.xml";
 
-    Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setValidating(false);
+    Document domDocument = factory.newDocumentBuilder().newDocument();
     Element root = domDocument.createElement("root");
     root.setAttribute("xml:lang", "en");
     root.setAttribute("foo", "bar");
@@ -351,8 +355,12 @@ public class XMLDocumentTest {
 
     DocumentPatchHandle patchHandle = patchBldr.build();
 
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setValidating(false);
+    DocumentBuilder documentBldr = factory.newDocumentBuilder();
     for (int i=0; i < 2; i++) {
-      Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+      Document domDocument = documentBldr.newDocument();
       Element root    = domDocument.createElement("root");
       Element firstChild = domDocument.createElement("firstChild");
       Element firstChildOfFirstChild = domDocument.createElement("firstChildOfFirstChild");

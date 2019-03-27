@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 MarkLogic Corporation
+ * Copyright 2015-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,11 @@
 package com.marklogic.client.datamovement;
 
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.ServerTransform;
+import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
@@ -65,6 +67,23 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  * your resource there.</p>
  */
 public interface WriteBatcher extends Batcher {
+    /**
+     * Sets the DocumentMetadataHandle for write operations.
+     * @param handle the passed in DocumentMetadataHandle
+     */
+    WriteBatcher withDefaultMetadata(DocumentMetadataHandle handle);
+    
+    /**
+     * Writes a document stream to the database.
+     * @param operations is the DocumentWriteOperation stream passed in.
+     */
+    void addAll(Stream<? extends DocumentWriteOperation> operations);
+    
+    /**
+     @return the documentMetadatHandle associated with the WriteeBatcher.
+     */
+    DocumentMetadataHandle getDocumentMetadata();
+    
   /**
    * <p>Add a document to be batched then written to the server when a batch is full
    * or {@link #flushAsync} or {@link #flushAndWait} is called.</p>
@@ -77,6 +96,7 @@ public interface WriteBatcher extends Batcher {
    * @param contentHandle the document contents
    * @return WriteBatcher the batcher containing the documents added
    */
+    
   WriteBatcher add(String uri, AbstractWriteHandle contentHandle);
 
   /**

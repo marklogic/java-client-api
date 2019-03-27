@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 MarkLogic Corporation
+ * Copyright 2012-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -307,13 +307,12 @@ public class DocumentMetadataHandle
     }
   }
 
-  private DocumentCollections collections;
-  private DocumentPermissions permissions;
-  private DocumentProperties  properties;
-  private int                 quality = 0;
+  private DocumentCollections    collections;
+  private DocumentPermissions    permissions;
+  private DocumentProperties     properties;
+  private int                    quality = 0;
   private DocumentMetadataValues metadataValues;
-  private boolean             qualityModified = false;
-  private ValueSerializer     valueSerializer;
+  private boolean                qualityModified = false;
 
   /**
    * Zero-argument constructor.
@@ -772,8 +771,6 @@ public class DocumentMetadataHandle
     try {
       XMLOutputFactory factory = XmlFactories.getOutputFactory();
 
-      valueSerializer = null;
-
       XMLStreamWriter serializer = factory.createXMLStreamWriter(out, "UTF-8");
 
       serializer.writeStartDocument("utf-8", "1.0");
@@ -803,8 +800,6 @@ public class DocumentMetadataHandle
       throw new MarkLogicIOException("Failed to serialize metadata", e);
     } catch (TransformerException e) {
       throw new MarkLogicIOException("Failed to serialize metadata", e);
-    } finally {
-      valueSerializer = null;
     }
   }
 
@@ -859,6 +854,9 @@ public class DocumentMetadataHandle
   }
   private void sendPropertiesImpl(final XMLStreamWriter serializer) throws XMLStreamException, TransformerFactoryConfigurationError, TransformerException {
     if ( getProperties() == null || getProperties().size() == 0 ) return;
+
+    ValueSerializer valueSerializer = null;
+
     serializer.writeStartElement("prop", "properties", PROPERTY_API_NS);
 
     for (Map.Entry<QName, Object> property: getProperties().entrySet()) {
@@ -894,6 +892,8 @@ public class DocumentMetadataHandle
     }
 
     serializer.writeEndElement();
+
+    valueSerializer = null;
   }
   private void sendQualityImpl(XMLStreamWriter serializer) throws XMLStreamException {
     if ( qualityModified == false ) return;
