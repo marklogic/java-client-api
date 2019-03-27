@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 4.2.0
+#### New Functionality
+- [#862](https://github.com/marklogic/java-client-api/issues/862) - Support for Java 9, OpenJDK 10 and OpenJDK 11
+- [#965](https://github.com/marklogic/java-client-api/issues/965) - Enable QueryBatcher to take in a RawCtsQueryDefinition
+
+#### Improvements and Bug Fixes
+- [#1038](https://github.com/marklogic/java-client-api/issues/1038) - Deadlock detection in multi-statement transactions
+- [#1052](https://github.com/marklogic/java-client-api/issues/1052) - Splitter with CSV Implementation
+- [#1057](https://github.com/marklogic/java-client-api/issues/1057) - Dependency on JAXB libraries conditional on Java version
+
 ## 4.1.2
 #### New Functionality
 - [#995](https://github.com/marklogic/java-client-api/issues/995) - Support for Kerberos keytab file to authenticate 
