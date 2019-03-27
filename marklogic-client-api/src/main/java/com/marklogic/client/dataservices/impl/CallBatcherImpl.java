@@ -17,10 +17,7 @@ package com.marklogic.client.dataservices.impl;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.datamovement.DataMovementException;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.ForestConfiguration;
-import com.marklogic.client.datamovement.JobTicket;
+import com.marklogic.client.datamovement.*;
 import com.marklogic.client.datamovement.impl.BatcherImpl;
 import com.marklogic.client.dataservices.CallBatcher;
 import com.marklogic.client.dataservices.CallFailureListener;
@@ -32,17 +29,19 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends BatcherImpl implements CallBatcher<W,E> {
     private static Logger logger = LoggerFactory.getLogger(CallBatcherImpl.class);
 
-    private DatabaseClient                   client;
     private CallManagerImpl.EventedCaller<E> caller;
     private JobTicket                        jobTicket;
     private CallingThreadPoolExecutor        threadPool;
+    private List<DatabaseClient>             clients;
     private List<CallSuccessListener<E>>     successListeners = new ArrayList<>();
     private List<CallFailureListener>        failureListeners = new ArrayList<>();
+    private AtomicLong                       callCount = new AtomicLong();
     private Calendar jobStartTime;
     private Calendar jobEndTime;
 
@@ -52,9 +51,11 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 
     CallBatcherImpl(DatabaseClient client, CallManagerImpl.EventedCaller<E> caller) {
         super(client.newDataMovementManager());
-        this.client = client;
         this.caller = caller;
-// TODO: default to 1 in args case
+        withForestConfig(getDataMovementManager().readForestConfig());
+        withThreadCount(clients.size());
+// TODO: default to larger batch size for batched param case
+        withBatchSize(1);
     }
 
     private void sendSuccessToListeners(E event) {
@@ -63,7 +64,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             listener.processEvent(event);
         }
     }
-    private void sendThrowableToListeners(Throwable t, String message, CallManager.CallEvent event) {
+    private void sendThrowableToListeners(Throwable t, String message, CallManagerImpl.CallEvent event) {
 // TODO: other actions
         for (CallFailureListener listener: failureListeners) {
             listener.processFailure(event, t);
@@ -96,13 +97,18 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     @Override
     public CallBatcher withForestConfig(ForestConfiguration forestConfig) {
         requireInitialized(false);
-// TODO
+        super.withForestConfig(forestConfig);
+        Forest[] forests = forests(forestConfig);
+// TODO: cache hosts as well as forests and clients?
+        Set<String> hosts = hosts(forests);
+        clients = clients(hosts);
+// TODO fire host unavailable listeners if host list changed
         return this;
     }
     @Override
     public CallBatcher withJobId(String jobId) {
         requireInitialized(false);
-        super.withJobId(jobId);
+        setJobId(jobId);
         return this;
     }
     @Override
@@ -116,11 +122,6 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         requireInitialized(false);
         super.withThreadCount(threadCount);
         return this;
-    }
-    @Override
-    public ForestConfiguration getForestConfig() {
-// TODO - getForestConfig() from services or DataMovementManager?; share DataMovementManager?
-        return null;
     }
     @Override
     public CallSuccessListener<E>[] getCallSuccessListeners() {
@@ -146,8 +147,9 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         requireNotStopped();
 // TODO: construct the args in a different way depending on the input type
         CallManager.CallArgs args = (CallManager.CallArgs) input;
+        long callNumber = callCount.incrementAndGet();
 // TODO
-        threadPool.submitCall(new CallTask(caller, args, this));
+        threadPool.submit(new CallTask(this, callNumber, args));
         return this;
     }
     @Override
@@ -156,6 +158,18 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             throw new IllegalArgumentException("null input stream");
         }
         input.forEach(this::add);
+    }
+
+    CallManagerImpl.EventedCaller<E> getCaller() {
+        return caller;
+    }
+    DatabaseClient getClient(long callNumber) {
+        int clientSize = (clients == null) ? 0 : clients.size();
+        if (clientSize < 2 || getDataMovementManager().getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) {
+            return getPrimaryClient();
+        }
+        int clientNumber = (int) (callNumber % clients.size());
+        return clients.get(clientNumber);
     }
 
     private void requireNotStopped() {
@@ -209,7 +223,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     public Calendar getJobStartTime() {
 		if (this.isStarted()) {
 			return jobStartTime;
-		} 
+		}
 		return null;
     }
     @Override
@@ -218,10 +232,6 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     		return jobEndTime;
     	}
     	return null;
-    }
-    @Override
-    public DatabaseClient getPrimaryClient() {
-        return client;
     }
     @Override
     public void start(JobTicket ticket) {
@@ -241,7 +251,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         }
         if (initialized.getAndSet(true)) return;
 // TODO
-        threadPool = new CallingThreadPoolExecutor(getThreadCount());
+        threadPool = new CallingThreadPoolExecutor(this, getThreadCount());
         jobStartTime = Calendar.getInstance();
         started.set(true);
     }
@@ -284,8 +294,8 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         }
         if (event == null) throw new IllegalArgumentException("event must not be null");
 
-        CallTask<W,E> callTask = new CallTask(caller, event.getArgs(), this);
-        callTask.withFailureListeners(callFailListeners).run();
+        CallTask<W,E> callTask = new CallTask(this, event.getJobBatchNumber(), event.getArgs());
+        callTask.withFailureListeners(callFailListeners).call();
     }
 
     static class BuilderImpl<E extends CallManager.CallEvent> implements CallBatcherBuilder<E> {
@@ -310,12 +320,14 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     }
 
     static class CallingThreadPoolExecutor<W,E extends CallManager.CallEvent> extends ThreadPoolExecutor {
+        private CallBatcherImpl<W,E> batcher;
 // TODO review including whether to derive from CallerRunsPolicy
-        CallingThreadPoolExecutor(int threadCount) {
+        CallingThreadPoolExecutor(CallBatcherImpl<W,E> batcher, int threadCount) {
             super(threadCount, threadCount, 1, TimeUnit.MINUTES,
                     new LinkedBlockingQueue<Runnable>(threadCount * 25),
                     new ThreadPoolExecutor.CallerRunsPolicy()
             );
+            this.batcher = batcher;
         }
 
         @Override
@@ -326,14 +338,6 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         public <T> Future<T> submit(Runnable task, T result) {
             throw new MarkLogicInternalException("must submit call");
         }
-        @Override
-        public <T> Future<T> submit(Callable<T> task) {
-            throw new MarkLogicInternalException("must submit call");
-        }
-        void submitCall(CallTask<W,E> callTask) {
-            Future<Boolean> future = super.submit(callTask, true);
-            callTask.setFuture(future);
-        }
 
         boolean awaitCompletion(long timeout, TimeUnit unit) {
             // get the last runnable task in the queue and wait for its future
@@ -343,14 +347,13 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
                 if (isTerminated()) return true;
                 BlockingQueue<Runnable> queue = getQueue();
                 if (queue.isEmpty()) return true;
-                CallTask<W,E> callTask = null;
+                RunnableFuture<Boolean> future = null;
                 for (Runnable runnable: queue) {
-                    callTask = (CallTask<W,E>) runnable;
+                    future = (RunnableFuture<Boolean>) runnable;
                 }
-                if (callTask == null) return true;
-                Future<Boolean> future = callTask.getFuture();
                 if (future == null || future.isCancelled() || future.isDone()) return true;
-                return future.get(timeout, unit);
+                future.get(timeout, unit);
+                return true;
             } catch (InterruptedException e) {
                 logger.warn("interrupted while awaiting completion", e);
             } catch (ExecutionException e) {
@@ -362,39 +365,49 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         }
     }
 
-    static class CallTask<W,E extends CallManager.CallEvent> implements Runnable {
-        private CallManagerImpl.EventedCaller<E> caller;
-        private CallManager.CallArgs             args;
-        private CallBatcherImpl<W,E>             batcher;
-        private Future<Boolean>                  future;
-        private boolean                          fireFailureListeners = true;
+    static class CallTask<W,E extends CallManager.CallEvent> implements Callable<Boolean> {
+        private CallManager.CallArgs args;
+        private CallBatcherImpl<W,E> batcher;
+        private long                 callNumber;
+        private Future<Boolean>      future;
+        private boolean              fireFailureListeners = true;
 
-        CallTask(CallManagerImpl.EventedCaller<E> caller, CallManager.CallArgs args, CallBatcherImpl<W,E> batcher) {
-            this.caller  = caller;
-            this.args    = args;
-            this.batcher = batcher;
+        CallTask(CallBatcherImpl<W,E> batcher, long callNumber, CallManager.CallArgs args) {
+            this.batcher    = batcher;
+            this.callNumber = callNumber;
+            this.args       = args;
         }
 
         CallTask<W,E> withFailureListeners(boolean enable) {
             fireFailureListeners = enable;
             return this;
         }
-        Future<Boolean> getFuture() {
-            return future;
-        }
-        void setFuture(Future<Boolean> future) {
-            this.future = future;
+
+        void initEvent(DatabaseClient client, Calendar callTime, CallManager.CallEvent event) {
+            ((CallManagerImpl.CallEventImpl) event)
+                    .withClient(client)
+                    .withJobBatchNumber(callNumber)
+                    .withJobTicket(batcher.getJobTicket())
+                    .withTimestamp(callTime);
         }
 
         @Override
-        public void run() {
+        public Boolean call() {
+            CallManagerImpl.EventedCaller<E> caller = batcher.getCaller();
+            DatabaseClient client = batcher.getClient(callNumber);
+            Calendar callTime = Calendar.getInstance();
             try {
-                E output = caller.callForEvent(args);
+// TODO: remove callNumber
+                E output = caller.callForEvent(client, args);
+                initEvent(client, callTime, output);
                 batcher.sendSuccessToListeners(output);
+                return true;
             } catch (Throwable throwable) {
                 if (fireFailureListeners) {
-                    CallManager.CallEvent input = new CallManagerImpl.CallEventImpl(args);
+                    CallManagerImpl.CallEventImpl input = new CallManagerImpl.CallEventImpl(args);
+                    initEvent(client, callTime, input);
                     batcher.sendThrowableToListeners(throwable, "failure calling "+caller.getEndpointPath()+" {}", input);
+                    return false;
                 } else if (throwable instanceof RuntimeException ) {
                     throw (RuntimeException) throwable;
                 } else {

@@ -184,27 +184,31 @@ public class DataMovementManagerImpl implements DataMovementManager {
   }
 
   public DatabaseClient getForestClient(Forest forest) {
-    if ( forest == null ) throw new IllegalArgumentException("forest must not be null");
+    if (forest == null) throw new IllegalArgumentException("forest must not be null");
+    return getHostClient(forest.getPreferredHost());
+  }
+  public DatabaseClient getHostClient(String hostName) {
     if (getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) {
       return getPrimaryClient();
     }
-    String hostName = forest.getPreferredHost();
-    String key = hostName;
-    DatabaseClient client = clientMap.get(key);
-    if ( client != null ) return client;
+
+    DatabaseClient client = clientMap.get(hostName);
+    if (client != null) return client;
+
     // since this is shared across threads, let's get an exclusive lock on it before updating it
     synchronized(clientMap) {
       // just to avoid creating unnecessary DatabaseClient instances, let's check one more time if
       // another thread just barely inserted an instance that matches
-      client = clientMap.get(key);
-      if ( client != null ) return client;
+      client = clientMap.get(hostName);
+      if (client != null) return client;
+
       client = DatabaseClientFactory.newClient(
-        hostName,
-        primaryClient.getPort(),
-        forest.getDatabaseName(),
-        primaryClient.getSecurityContext()
+              hostName,
+              primaryClient.getPort(),
+              primaryClient.getDatabase(),
+              primaryClient.getSecurityContext()
       );
-      clientMap.put(key, client);
+      clientMap.put(hostName, client);
     }
     return client;
   }

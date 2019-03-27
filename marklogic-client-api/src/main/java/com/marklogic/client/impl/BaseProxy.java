@@ -50,9 +50,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class BaseProxy {
-   private static ObjectMapper mapper = null;
-   private String         endpointDir;
-   private RESTServices services;
+   static private ObjectMapper mapper = null;
 
    static protected ObjectMapper getMapper() {
       // okay if one thread overwrites another during lazy initialization
@@ -62,20 +60,7 @@ public class BaseProxy {
       return mapper;
    }
 
-   public BaseProxy(DatabaseClient db, String endpointDir) {
-      if (db == null) {
-         throw new IllegalArgumentException("Cannot connect with null database client");
-      } else if (db.getDatabase() != null) {
-         throw new IllegalArgumentException("Client cannot specify a database - specified: "+db.getDatabase());
-      }
-      if (endpointDir == null || endpointDir.length() == 0) {
-         throw new IllegalArgumentException("Cannot make requests with null or empty endpoint directory");
-      }
-
-      this.endpointDir = endpointDir;
-
-      DatabaseClientImpl dbImpl = (DatabaseClientImpl) db;
-      this.services = dbImpl.getServices();
+   private BaseProxy() {
    }
 
    public interface ServerDataType {
@@ -567,11 +552,20 @@ public class BaseProxy {
       NONE, SINGLE_ATOMIC, SINGLE_NODE, MULTIPLE_ATOMICS, MULTIPLE_NODES, MULTIPLE_MIXED;
    }
 
-   public DBFunctionRequest request(String module, ParameterValuesKind paramsKind) {
+   static public DBFunctionRequest request(DatabaseClient db, String endpointDir, String module, ParameterValuesKind paramsKind) {
+      if (db == null) {
+         throw new IllegalArgumentException("Cannot connect with null database client");
+      } else if (db.getDatabase() != null) {
+         throw new IllegalArgumentException("Client cannot specify a database - specified: "+db.getDatabase());
+      }
+      if (endpointDir == null || endpointDir.length() == 0) {
+         throw new IllegalArgumentException("Cannot make requests with null or empty endpoint directory");
+      }
       if (module == null) {
          throw new IllegalArgumentException("null module");
       }
-      return new DBFunctionRequest(this.services, this.endpointDir, module, paramsKind);
+
+      return new DBFunctionRequest(((DatabaseClientImpl) db).getServices(), endpointDir, module, paramsKind);
    }
 
    static public SingleAtomicCallField atomicParam(String paramName, boolean isNullable, String value) {

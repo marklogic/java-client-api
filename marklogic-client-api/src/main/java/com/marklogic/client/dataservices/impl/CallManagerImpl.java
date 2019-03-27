@@ -111,7 +111,7 @@ public class CallManagerImpl implements CallManager {
 
   public CallManagerImpl(DatabaseClient client) {
     if (client == null) {
-      throw new IllegalArgumentException("cannot construct CallManager with null database client");
+      throw new IllegalArgumentException("cannot construct CallManager with null database primaryClient");
     }
     this.client = client;
   }
@@ -140,8 +140,7 @@ public class CallManagerImpl implements CallManager {
    }
 
    private static class CallableEndpointImpl extends EndpointDefinerImpl implements CallableEndpoint {
-     private DatabaseClient            client;
-     private BaseProxy                 baseProxy;
+     private DatabaseClient            primaryClient;
      private String                    endpointDirectory;
      private String                    module;
      private String                    endpointPath;
@@ -162,9 +161,7 @@ public class CallManagerImpl implements CallManager {
               "no endpointDirectory in service declaration: "+serviceDeclaration.toString()
           );
         }
-        this.client = client;
-
-        baseProxy = new BaseProxy(client, endpointDirectory);
+        this.primaryClient = client;
 
         String functionName = getText(endpointDeclaration.get("functionName"));
         if (functionName == null || functionName.length() == 0) {
@@ -269,8 +266,12 @@ public class CallManagerImpl implements CallManager {
      CallableEndpointImpl getEndpoint() {
        return this;
      }
-     DatabaseClient getDatabaseClient() {
-       return client;
+     DatabaseClient getPrimaryClient() {
+       return primaryClient;
+     }
+
+     String getEndpointDirectory() {
+         return endpointDirectory;
      }
 
      @Override
@@ -329,9 +330,6 @@ public class CallManagerImpl implements CallManager {
 
      boolean isNullable() {
        return returndef.isNullable();
-     }
-     BaseProxy getBaseProxy() {
-        return baseProxy;
      }
      String getModule() {
         return module;
@@ -462,7 +460,7 @@ public class CallManagerImpl implements CallManager {
   static class CallEventImpl extends BatchEventImpl implements CallEvent {
     private CallArgs args;
     CallEventImpl(CallArgs args) {
-      this.args = args;
+      this.args       = args;
     }
     @Override
     public CallArgs getArgs() {
@@ -493,7 +491,7 @@ public class CallManagerImpl implements CallManager {
   }
 
   interface EventedCaller<E extends CallEvent> extends EndpointDefiner {
-    E callForEvent(CallArgs args) throws Exception;
+    E callForEvent(DatabaseClient client, CallArgs args) throws Exception;
   }
   static class NoneCallerImpl extends CallerImpl implements NoneCaller, EventedCaller<CallEvent> {
     NoneCallerImpl(CallableEndpointImpl endpoint) {
@@ -506,18 +504,21 @@ public class CallManagerImpl implements CallManager {
     }
     @Override
     public void call(CallArgs args) {
-       if (!(args instanceof CallArgsImpl)) {
-         throw new IllegalArgumentException("arguments not constructed by the builder");
-       }
-       startRequest((CallArgsImpl) args).responseNone();
+      callImpl(getEndpoint().getPrimaryClient(), args);
+    }
+    private void callImpl(DatabaseClient client, CallArgs args) {
+      if (!(args instanceof CallArgsImpl)) {
+        throw new IllegalArgumentException("arguments not constructed by the builder");
+      }
+      startRequest(client, (CallArgsImpl) args).responseNone();
     }
     @Override
 	public CallBatcher.CallBatcherBuilder<CallEvent> batcher() {
-      return new CallBatcherImpl.BuilderImpl(getEndpoint().getDatabaseClient(), this);
+      return new CallBatcherImpl.BuilderImpl(getEndpoint().getPrimaryClient(), this);
 	}
     @Override
-    public CallEvent callForEvent(CallArgs args) throws Exception {
-      call(args);
+    public CallEvent callForEvent(DatabaseClient client, CallArgs args) throws Exception {
+      callImpl(client, args);
       return new CallEventImpl(args);
     }
   }
@@ -537,18 +538,21 @@ public class CallManagerImpl implements CallManager {
     }
     @Override
     public R call(CallArgs args) {
+      return callImpl(getEndpoint().getPrimaryClient(), args);
+    }
+    private R callImpl(DatabaseClient client, CallArgs args) {
       if (!(args instanceof CallArgsImpl)) {
         throw new IllegalArgumentException("arguments not constructed by the builder");
       }
-      return converter.one(startRequest((CallArgsImpl) args).responseSingle(getEndpoint().isNullable(), format));
+      return converter.one(startRequest(client, (CallArgsImpl) args).responseSingle(getEndpoint().isNullable(), format));
     }
     @Override
 	public CallBatcher.CallBatcherBuilder<OneCallEvent<R>> batcher() {
-      return new CallBatcherImpl.BuilderImpl(getEndpoint().getDatabaseClient(),this);
+      return new CallBatcherImpl.BuilderImpl(getEndpoint().getPrimaryClient(),this);
 	}
     @Override
-    public OneCallEvent<R> callForEvent(CallArgs args) throws Exception {
-      return new OneCallEventImpl(args, call(args));
+    public OneCallEvent<R> callForEvent(DatabaseClient client, CallArgs args) throws Exception {
+      return new OneCallEventImpl(args, callImpl(client, args));
     }
   }
   static class ManyCallerImpl<R> extends CallerImpl implements ManyCaller<R>, EventedCaller<ManyCallEvent<R>> {
@@ -567,25 +571,25 @@ public class CallManagerImpl implements CallManager {
     }
     @Override
     public Stream<R> call(CallArgs args) {
+      return callImpl(getEndpoint().getPrimaryClient(), args);
+    }
+    private Stream<R> callImpl(DatabaseClient client, CallArgs args) {
       if (!(args instanceof CallArgsImpl)) {
         throw new IllegalArgumentException("arguments not constructed by the builder");
       }
-      return converter.many(startRequest((CallArgsImpl) args).responseMultiple(getEndpoint().isNullable(), format));
+      return converter.many(startRequest(client, (CallArgsImpl) args).responseMultiple(getEndpoint().isNullable(), format));
     }
     @Override
 	public CallBatcher.CallBatcherBuilder<ManyCallEvent<R>> batcher() {
-      return new CallBatcherImpl.BuilderImpl(getEndpoint().getDatabaseClient(),this);
+      return new CallBatcherImpl.BuilderImpl(getEndpoint().getPrimaryClient(),this);
 	}
     @Override
-    public ManyCallEvent<R> callForEvent(CallArgs args) throws Exception {
-      return new ManyCallEventImpl(args, call(args));
+    public ManyCallEvent<R> callForEvent(DatabaseClient client, CallArgs args) throws Exception {
+      return new ManyCallEventImpl(args, callImpl(client, args));
     }
   }
   private static abstract class CallerImpl extends EndpointDefinerImpl {
     private CallableEndpointImpl endpoint;
-    // an uncloned cache
-    private BaseProxy.DBFunctionRequest request;
-
     CallerImpl(CallableEndpointImpl endpoint) {
       this.endpoint = endpoint;
     }
@@ -610,40 +614,36 @@ public class CallManagerImpl implements CallManager {
     CallableEndpointImpl getEndpoint() {
       return endpoint;
     }
-    BaseProxy.DBFunctionRequest startRequest(CallArgsImpl callArgs) {
-      if (this.request == null) {
-        // no concern about a race condition because any thread will cache the same fully built value
-        BaseProxy.DBFunctionRequest request = endpoint.getBaseProxy()
-                .request(endpoint.getModule(), endpoint.getParameterValuesKind());
+    BaseProxy.DBFunctionRequest startRequest(DatabaseClient client, CallArgsImpl callArgs) {
+      BaseProxy.DBFunctionRequest request = BaseProxy.request(
+          client, endpoint.getEndpointDirectory(), endpoint.getModule(), endpoint.getParameterValuesKind()
+      );
 
-        Paramdef sessiondef = endpoint.getSessiondef();
-        request = (sessiondef == null) ?
-                request.withSession() :
-                request.withSession(sessiondef.getParamName(), callArgs.getSession(), sessiondef.isNullable());
+      Paramdef sessiondef = endpoint.getSessiondef();
+      request = (sessiondef == null) ?
+              request.withSession() :
+              request.withSession(sessiondef.getParamName(), callArgs.getSession(), sessiondef.isNullable());
 
-        List<CallField> callFields = callArgs.getCallFields();
-        int fieldSize = (callFields == null) ? 0 : callFields.size();
-        Set<String> requiredParams = endpoint.getRequiredParams();
-        if (fieldSize > 0) {
+      List<CallField> callFields = callArgs.getCallFields();
+      int fieldSize = (callFields == null) ? 0 : callFields.size();
+      Set<String> requiredParams = endpoint.getRequiredParams();
+      if (fieldSize > 0) {
           Set<String> assignedParams = callArgs.getAssignedParams();
           if (requiredParams != null && !assignedParams.containsAll(requiredParams)) {
-            throw new IllegalArgumentException(
-                    endpoint.getModule()+" called without some required parameters: "+
-                            requiredParams.stream().filter(assignedParams::contains).collect(Collectors.joining(", "))
-            );
+              throw new IllegalArgumentException(
+                      endpoint.getModule()+" called without some required parameters: "+
+                              requiredParams.stream().filter(assignedParams::contains).collect(Collectors.joining(", "))
+              );
           }
           request = request.withParams(callFields.toArray(new CallField[fieldSize]));
-        } else if (requiredParams != null) {
+      } else if (requiredParams != null) {
           throw new IllegalArgumentException(
                   endpoint.getModule()+" called without the required parameters: "+
                           requiredParams.stream().collect(Collectors.joining(", "))
           );
-        }
-
-        this.request = request.withMethod("POST");
       }
 
-      return this.request;
+      return request.withMethod("POST");
     }
   }
 
@@ -1672,7 +1672,7 @@ public class CallManagerImpl implements CallManager {
       ReturnConverter<?> converter = converters.get(as);
       if (converter == null) {
         throw new IllegalArgumentException(
-                "cannot convert server type "+serverType+" to client type "+as.getCanonicalName()
+                "cannot convert server type "+serverType+" to primaryClient type "+as.getCanonicalName()
         );
       }
       return (ReturnConverter<T>) converter;

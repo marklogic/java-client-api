@@ -97,7 +97,7 @@ public class DataMovementServices {
     String jobId = batcher.getJobId();
     if (batcher.getJobId() == null) {
       jobId = generateJobId();
-      batcher.withJobId(jobId);
+      batcher.setJobId(jobId);
     }
     if (!batcher.isStarted() && activeJobs.containsKey(jobId)) {
       throw new DataMovementException(

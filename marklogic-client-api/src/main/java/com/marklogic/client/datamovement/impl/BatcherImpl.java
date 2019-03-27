@@ -16,10 +16,9 @@
 package com.marklogic.client.datamovement.impl;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.datamovement.Batcher;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.ForestConfiguration;
-import com.marklogic.client.datamovement.JobTicket;
+import com.marklogic.client.datamovement.*;
+
+import java.util.*;
 
 public abstract class BatcherImpl implements Batcher {
   private String jobName = "unnamed";
@@ -44,10 +43,8 @@ public abstract class BatcherImpl implements Batcher {
     return this;
   }
 
-  @Override
-  public Batcher withJobId(String jobId) {
+  public void setJobId(String jobId) {
     this.jobId = jobId;
-    return this;
   }
 
   @Override
@@ -102,6 +99,11 @@ public abstract class BatcherImpl implements Batcher {
     return this;
   }
 
+  @Override
+  public DatabaseClient getPrimaryClient() {
+    return getMoveMgr().getPrimaryClient();
+  }
+
   public abstract void start(JobTicket ticket);
   public abstract JobTicket getJobTicket();
   public abstract void stop();
@@ -112,7 +114,46 @@ public abstract class BatcherImpl implements Batcher {
   @Override
   public abstract boolean isStarted();
 
-  public DataMovementManagerImpl getMoveMgr() {
+  protected DataMovementManagerImpl getMoveMgr() {
     return moveMgr;
   }
+
+  protected Forest[] forests(ForestConfiguration config) {
+    if (config == null) {
+      throw new IllegalArgumentException("forestConfig must not be null");
+    }
+    return config.listForests();
+  }
+  protected Set<String> hosts(Forest[] forests) {
+    if (forests.length == 0) {
+      throw new IllegalStateException("batcher requires at least one forest");
+    }
+    Set<String> hosts = new HashSet<>();
+    for (Forest forest: forests) {
+      if (forest.getPreferredHost() == null) {
+        throw new IllegalStateException("Hostname must not be null for any forest");
+      }
+      hosts.add(forest.getPreferredHost());
+    }
+    for (Forest forest: forests) {
+      String hostName = forest.getHost();
+      if (forest.getPreferredHostType() == Forest.HostType.REQUEST_HOST &&
+              !hostName.toLowerCase().equals(forest.getRequestHost().toLowerCase())) {
+        if (hosts.contains(hostName))
+          hosts.remove(hostName);
+      }
+    }
+    return hosts;
+  }
+  protected List<DatabaseClient> clients(Set<String> hosts) {
+    if (hosts == null || hosts.size() == 0) {
+      throw new IllegalStateException("no hosts for batcher");
+    }
+    List<DatabaseClient> clients = new ArrayList<>();
+    for (String host: hosts) {
+      clients.add(moveMgr.getHostClient(host));
+    }
+    return clients;
+  }
+
 }
