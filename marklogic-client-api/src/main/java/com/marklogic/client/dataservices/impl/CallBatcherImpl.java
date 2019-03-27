@@ -245,9 +245,9 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             logger.warn("batchSize should be 1 or greater -- setting batchSize to 1");
         }
         if (getThreadCount() <= 0) {
-// TODO: default based on forest count
-            withThreadCount(1);
-            logger.warn("threadCount should be 1 or greater -- setting threadCount to 1");
+            int threadCount = clients.size();
+            withThreadCount(threadCount);
+            logger.warn("threadCount should be 1 or greater -- setting threadCount to number of hosts: "+threadCount);
         }
         if (initialized.getAndSet(true)) return;
 // TODO
@@ -321,7 +321,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 
     static class CallingThreadPoolExecutor<W,E extends CallManager.CallEvent> extends ThreadPoolExecutor {
         private CallBatcherImpl<W,E> batcher;
-// TODO review including whether to derive from CallerRunsPolicy
+// TODO review including whether CallerRunsPolicy requires a derivation
         CallingThreadPoolExecutor(CallBatcherImpl<W,E> batcher, int threadCount) {
             super(threadCount, threadCount, 1, TimeUnit.MINUTES,
                     new LinkedBlockingQueue<Runnable>(threadCount * 25),
@@ -383,9 +383,8 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             return this;
         }
 
-        void initEvent(DatabaseClient client, Calendar callTime, CallManager.CallEvent event) {
+        void initEvent(CallManager.CallEvent event, Calendar callTime) {
             ((CallManagerImpl.CallEventImpl) event)
-                    .withClient(client)
                     .withJobBatchNumber(callNumber)
                     .withJobTicket(batcher.getJobTicket())
                     .withTimestamp(callTime);
@@ -397,15 +396,14 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             DatabaseClient client = batcher.getClient(callNumber);
             Calendar callTime = Calendar.getInstance();
             try {
-// TODO: remove callNumber
                 E output = caller.callForEvent(client, args);
-                initEvent(client, callTime, output);
+                initEvent(output, callTime);
                 batcher.sendSuccessToListeners(output);
                 return true;
             } catch (Throwable throwable) {
                 if (fireFailureListeners) {
-                    CallManagerImpl.CallEventImpl input = new CallManagerImpl.CallEventImpl(args);
-                    initEvent(client, callTime, input);
+                    CallManagerImpl.CallEventImpl input = new CallManagerImpl.CallEventImpl(client, args);
+                    initEvent(input, callTime);
                     batcher.sendThrowableToListeners(throwable, "failure calling "+caller.getEndpointPath()+" {}", input);
                     return false;
                 } else if (throwable instanceof RuntimeException ) {

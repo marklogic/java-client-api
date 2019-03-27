@@ -459,8 +459,9 @@ public class CallManagerImpl implements CallManager {
 
   static class CallEventImpl extends BatchEventImpl implements CallEvent {
     private CallArgs args;
-    CallEventImpl(CallArgs args) {
-      this.args       = args;
+    CallEventImpl(DatabaseClient client, CallArgs args) {
+      this.args = args;
+      withClient(client);
     }
     @Override
     public CallArgs getArgs() {
@@ -469,8 +470,8 @@ public class CallManagerImpl implements CallManager {
   }
   static class OneCallEventImpl<R> extends CallEventImpl implements OneCallEvent<R> {
     private R item;
-    OneCallEventImpl(CallArgs args, R item) {
-      super(args);
+    OneCallEventImpl(DatabaseClient client, CallArgs args, R item) {
+      super(client, args);
       this.item = item;
     }
     @Override
@@ -480,8 +481,8 @@ public class CallManagerImpl implements CallManager {
   }
   static class ManyCallEventImpl<R> extends CallEventImpl implements ManyCallEvent<R> {
     private Stream<R> items;
-    ManyCallEventImpl(CallArgs args, Stream<R> items) {
-      super(args);
+    ManyCallEventImpl(DatabaseClient client, CallArgs args, Stream<R> items) {
+      super(client, args);
       this.items = items;
     }
     @Override
@@ -519,7 +520,7 @@ public class CallManagerImpl implements CallManager {
     @Override
     public CallEvent callForEvent(DatabaseClient client, CallArgs args) throws Exception {
       callImpl(client, args);
-      return new CallEventImpl(args);
+      return new CallEventImpl(client, args);
     }
   }
   private static class OneCallerImpl<R> extends CallerImpl implements OneCaller<R>, EventedCaller<OneCallEvent<R>> {
@@ -552,7 +553,7 @@ public class CallManagerImpl implements CallManager {
 	}
     @Override
     public OneCallEvent<R> callForEvent(DatabaseClient client, CallArgs args) throws Exception {
-      return new OneCallEventImpl(args, callImpl(client, args));
+      return new OneCallEventImpl(client, args, callImpl(client, args));
     }
   }
   static class ManyCallerImpl<R> extends CallerImpl implements ManyCaller<R>, EventedCaller<ManyCallEvent<R>> {
@@ -585,7 +586,7 @@ public class CallManagerImpl implements CallManager {
 	}
     @Override
     public ManyCallEvent<R> callForEvent(DatabaseClient client, CallArgs args) throws Exception {
-      return new ManyCallEventImpl(args, callImpl(client, args));
+      return new ManyCallEventImpl(client, args, callImpl(client, args));
     }
   }
   private static abstract class CallerImpl extends EndpointDefinerImpl {
