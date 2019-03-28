@@ -212,7 +212,7 @@ public class TestMultithreading extends BasicJavaClientREST {
 			  t6.readStatus(jh);
 			  JsonNode node = jh.get();
 			  System.out.println("Read status from t6 is " + node.asText());
-			  Thread.sleep(15000);
+			  //Thread.sleep(15000);
 			  t6.commit();            
 		  } catch (Exception ex) {
 			  logger.info("Rollback t6");
@@ -236,6 +236,13 @@ public class TestMultithreading extends BasicJavaClientREST {
 
 	  StringHandle strHdle2 = docMgr.read(docId, new StringHandle());
 	  System.out.println(strHdle2.get().toString());
+	  
+	  if (th1.isAlive()) {th1.join(5000);}
+	  if (th2.isAlive()) {th2.join(5000);}
+	  if (th3.isAlive()) {th3.join(5000);}
+	  if (th4.isAlive()) {th4.join(5000);}
+	  if (th5.isAlive()) {th5.join(5000);}
+	  if (th6.isAlive()) {th6.join(5000);}
 }
 
   @AfterClass

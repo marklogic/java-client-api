@@ -330,12 +330,15 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 
 		wbatcher.flushAndWait();
 
+		AtomicInteger failureCnts = new AtomicInteger(0);
 		QueryBatcher batcher = dmManager.newQueryBatcher(querydef).withBatchSize(10).withThreadCount(3);
 		batcher.onUrisReady(batch -> {
 			batches.incrementAndGet();
 		});
 		batcher.onQueryFailure((throwable) -> {
 			System.out.println("queryFailures: ");
+			failureCnts.incrementAndGet();
+			System.out.println("DB disabled for Forest " + throwable.getForest().getForestName());
 			try {
 				Thread.currentThread().sleep(7000L);
 			} catch (Exception e) {
@@ -360,8 +363,9 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		if(!isLBHost()) {
 			System.out.println("Method queryFailure hostNames.length " + hostNames.length);
 			System.out.println("Method queryFailure getFailureEventsCount() " + dmManager.getJobReport(queryTicket).getFailureEventsCount());
-			Assert.assertEquals(hostNames.length, dmManager.getJobReport(queryTicket).getFailureEventsCount());
-			Assert.assertEquals(hostNames.length, dmManager.getJobReport(queryTicket).getFailureBatchesCount());
+			
+			Assert.assertEquals(failureCnts.get(), dmManager.getJobReport(queryTicket).getFailureEventsCount());
+			Assert.assertEquals(failureCnts.get(), dmManager.getJobReport(queryTicket).getFailureBatchesCount());
 		}
 	}
 
