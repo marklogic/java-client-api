@@ -51,6 +51,9 @@ import java.util.stream.Stream;
 
 public class BaseProxy {
    static private ObjectMapper mapper = null;
+   private String         endpointDir;
+   private DatabaseClient db;
+
 
    static protected ObjectMapper getMapper() {
       // okay if one thread overwrites another during lazy initialization
@@ -60,7 +63,21 @@ public class BaseProxy {
       return mapper;
    }
 
-   private BaseProxy() {
+   public BaseProxy() {
+   }
+   public BaseProxy(DatabaseClient db, String endpointDir) {
+      this();
+      if (db == null) {
+         throw new IllegalArgumentException("Cannot connect with null database client");
+      } else if (db.getDatabase() != null) {
+         throw new IllegalArgumentException("Client cannot specify a database - specified: "+db.getDatabase());
+      }
+      if (endpointDir == null || endpointDir.length() == 0) {
+         throw new IllegalArgumentException("Cannot make requests with null or empty endpoint directory");
+      }
+
+      this.endpointDir = endpointDir;
+      this.db          = db;
    }
 
    public interface ServerDataType {
@@ -552,6 +569,9 @@ public class BaseProxy {
       NONE, SINGLE_ATOMIC, SINGLE_NODE, MULTIPLE_ATOMICS, MULTIPLE_NODES, MULTIPLE_MIXED;
    }
 
+   public DBFunctionRequest request(String module, ParameterValuesKind paramsKind) {
+      return request(db, endpointDir, module, paramsKind);
+   }
    static public DBFunctionRequest request(DatabaseClient db, String endpointDir, String module, ParameterValuesKind paramsKind) {
       if (db == null) {
          throw new IllegalArgumentException("Cannot connect with null database client");
