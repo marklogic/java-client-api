@@ -62,6 +62,7 @@ public interface CallBatcher<W,E extends CallManager.CallEvent> extends Batcher 
     interface CallBatcherBuilder<E extends CallManager.CallEvent> {
         CallBatcherBuilder<E> defaultArgs(CallManager.CallArgs args);
 
+        <W> CallBatcher<W,E>                forBatchedParam(String paramName, Class<W> as);
         CallBatcher<CallManager.CallArgs,E> forArgs();
     }
 }
