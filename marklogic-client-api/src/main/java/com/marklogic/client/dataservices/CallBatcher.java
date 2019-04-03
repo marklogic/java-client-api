@@ -33,6 +33,7 @@ public interface CallBatcher<W,E extends CallManager.CallEvent> extends Batcher 
     CallBatcher<W,E> withJobId(String jobId);
     CallBatcher<W,E> withJobName(String jobName);
     CallBatcher<W,E> withThreadCount(int threadCount);
+    CallBatcher<W,E> withdefaultArgs(CallManager.CallArgs args);
 
     // setters and getters consistent with other batchers
     CallSuccessListener<E>[] getCallSuccessListeners();
@@ -60,7 +61,6 @@ public interface CallBatcher<W,E extends CallManager.CallEvent> extends Batcher 
     void retryWithFailureListeners(E event);
 
     interface CallBatcherBuilder<E extends CallManager.CallEvent> {
-        CallBatcherBuilder<E> defaultArgs(CallManager.CallArgs args);
 
         CallBatcher<CallManager.CallArgs,E> forArgs();
     }

@@ -105,6 +105,13 @@ public class BytesHandle
    */
   public BytesHandle(BufferableHandle content) {
     this((content == null) ? null : content.toBuffer());
+    if(content != null) {
+			if (!(content instanceof BaseHandle<?, ?>))
+				throw new IllegalArgumentException("Bufferable Handle not instance of BaseHandle.");
+			BaseHandle<?, ?> baseHandle = (BaseHandle<?, ?>) content;
+			setFormat(baseHandle.getFormat());
+			setMimetype(baseHandle.getMimetype());
+    }
   }
 
   /**

@@ -102,6 +102,12 @@ public interface CallManager {
          * @return  a caller that may return more than one value
          */
         <R> ManyCaller<R> returningMany(Class<R> as);
+        /**
+         * Verifies if two different objects have the same endpoint definition
+         * @param other the CallableEndpoint to be compared with the current object.
+         * @return true if endpoints are same else returns false.
+         */
+        boolean isSameEndpoint(CallableEndpoint other); 
     }
 
     interface NoneCaller extends EndpointDefiner {

@@ -23,12 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
@@ -47,11 +42,16 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
+import com.marklogic.client.impl.RESTServices.CallField.MultipleAtomicCallField;
+import com.marklogic.client.impl.RESTServices.CallField.MultipleNodeCallField;
+import com.marklogic.client.impl.RESTServices.CallField.SingleNodeCallField;
+import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
@@ -440,6 +440,20 @@ public interface RESTServices {
     public String getParamName() {
       return paramName;
     }
+    public CallField toBuffered() {
+    	return this;
+    }
+ 
+    public interface MultipleAtomicCallField {
+    	Stream<String> getParamValues();
+    }
+    
+    public interface MultipleNodeCallField {
+    	Stream<? extends AbstractWriteHandle> getParamValues();
+    }
+    public interface SingleNodeCallField {
+    	AbstractWriteHandle getParamValue();
+    }
   }
   static public class SingleAtomicCallField extends CallField {
     private String paramValue;
@@ -450,37 +464,116 @@ public interface RESTServices {
     public String getParamValue() {
       return paramValue;
     }
+    @Override
+    public SingleAtomicCallField toBuffered() {
+    	return this;
+    }
   }
-  static public class MultipleAtomicCallField extends CallField {
+  static public class UnbufferedMultipleAtomicCallField extends CallField implements MultipleAtomicCallField {
     private Stream<String> paramValues;
-    public MultipleAtomicCallField(String paramName, Stream<String> paramValues) {
+    public UnbufferedMultipleAtomicCallField(String paramName, Stream<String> paramValues) {
       super(paramName);
       this.paramValues = paramValues;
     }
-    public Stream<String> getParamValues() {
-      return paramValues;
+    
+    @Override
+    public BufferedMultipleAtomicCallField toBuffered() {
+    	return new BufferedMultipleAtomicCallField(super.paramName, paramValues);
     }
+
+    @Override
+    public Stream<String> getParamValues() {
+		return paramValues;
+	}
   }
-  static public class SingleNodeCallField extends CallField {
+  static public class UnbufferedSingleNodeCallField extends CallField implements SingleNodeCallField {
     private AbstractWriteHandle paramValue;
-    public SingleNodeCallField(String paramName, AbstractWriteHandle paramValue) {
+    public UnbufferedSingleNodeCallField(String paramName, AbstractWriteHandle paramValue) {
       super(paramName);
       this.paramValue = paramValue;
     }
+    @Override
     public AbstractWriteHandle getParamValue() {
       return paramValue;
     }
+    @Override
+    public BufferedSingleNodeCallField toBuffered() {
+    	if(!(paramValue instanceof BufferableHandle))
+    		throw new IllegalArgumentException("Default parameter must implement BufferableHandle.");
+    	BytesHandle bytesHandle = new BytesHandle((BufferableHandle) paramValue);
+    	return new BufferedSingleNodeCallField(super.paramName, Stream.of(bytesHandle));
+    }
+
   }
-  static public class MultipleNodeCallField extends CallField {
+  static public class UnbufferedMultipleNodeCallField extends CallField implements MultipleNodeCallField {
     private Stream<? extends AbstractWriteHandle> paramValues;
 
-    public MultipleNodeCallField(String paramName, Stream<? extends AbstractWriteHandle> paramValues) {
+    public UnbufferedMultipleNodeCallField(String paramName, Stream<? extends AbstractWriteHandle> paramValues) {
       super(paramName);
       this.paramValues = paramValues;
     }
+    
+    @Override
     public Stream<? extends AbstractWriteHandle> getParamValues() {
       return paramValues;
     }
+    
+    @Override
+    public BufferedMultipleNodeCallField toBuffered() {
+    	if(!(paramValues instanceof BufferableHandle))
+    		throw new IllegalArgumentException("Default parameter must implement BufferableHandle.");
+    	BytesHandle bytesHandle = new BytesHandle((BufferableHandle) paramValues);
+    	return new BufferedMultipleNodeCallField(super.paramName, Stream.of(bytesHandle));
+    }
+    
+  }
+  static public class BufferedMultipleAtomicCallField extends CallField implements MultipleAtomicCallField {
+	  
+	private String[] paramValues;
+	public BufferedMultipleAtomicCallField(String paramName, Stream<String> paramValues) {
+		super(paramName);
+        this.paramValues = (String[]) paramValues.toArray();
+    }
+  
+	@Override
+	public Stream<String> getParamValues() {
+		return Stream.of(paramValues);
+	}
+  }
+	
+  static public class BufferedMultipleNodeCallField extends CallField implements MultipleNodeCallField {
+	  
+		private Stream<BytesHandle> paramValues;
+		public BufferedMultipleNodeCallField(String paramName, Stream<BytesHandle> paramValues) {
+			super(paramName);
+	        this.paramValues = paramValues;
+	    }
+	  
+		@Override
+		public Stream<BytesHandle> getParamValues() {
+			return paramValues;
+		}
+	  
+  }
+  
+  static public class BufferedSingleNodeCallField extends CallField implements SingleNodeCallField {
+	  
+		private Stream<BytesHandle> paramValues;
+		public BufferedSingleNodeCallField(String paramName, Stream<BytesHandle> paramValues) {
+			super(paramName);
+	        this.paramValues = paramValues;
+	    }
+	  
+		public Stream<BytesHandle> getParamValues() {
+			return paramValues;
+		}
+
+		@Override
+		public AbstractWriteHandle getParamValue() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	  
   }
 
   public interface CallRequest {
