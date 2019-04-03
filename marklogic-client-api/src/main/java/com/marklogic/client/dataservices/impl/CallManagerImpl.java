@@ -25,12 +25,12 @@ import com.marklogic.client.dataservices.CallManager;
 import com.marklogic.client.impl.BaseProxy;
 import com.marklogic.client.impl.NodeConverter;
 import com.marklogic.client.impl.RESTServices.CallField;
-import com.marklogic.client.impl.RESTServices.MultipleAtomicCallField;
+import com.marklogic.client.impl.RESTServices.UnbufferedMultipleAtomicCallField;
 import com.marklogic.client.impl.RESTServices.MultipleCallResponse;
-import com.marklogic.client.impl.RESTServices.MultipleNodeCallField;
+import com.marklogic.client.impl.RESTServices.UnbufferedMultipleNodeCallField;
 import com.marklogic.client.impl.RESTServices.SingleAtomicCallField;
 import com.marklogic.client.impl.RESTServices.SingleCallResponse;
-import com.marklogic.client.impl.RESTServices.SingleNodeCallField;
+import com.marklogic.client.impl.RESTServices.UnbufferedSingleNodeCallField;
 import com.marklogic.client.impl.SessionStateImpl;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.*;
@@ -139,7 +139,7 @@ public class CallManagerImpl implements CallManager {
     return new CallableEndpointImpl(client, serviceDecl, endpointDecl, extension);
    }
 
-   private static class CallableEndpointImpl extends EndpointDefinerImpl implements CallableEndpoint {
+   static class CallableEndpointImpl extends EndpointDefinerImpl implements CallableEndpoint {
      private DatabaseClient            primaryClient;
      private String                    endpointDirectory;
      private String                    module;
@@ -349,6 +349,13 @@ public class CallManagerImpl implements CallManager {
      BaseProxy.ParameterValuesKind getParameterValuesKind() {
        return parameterValuesKind;
      }
+
+	@Override
+	public boolean isSameEndpoint(CallableEndpoint other) {
+		if(other!=null && (other.equals(this) || other.equals(this.getEndpoint())))
+			return true;
+		return false;
+	}
   }
 
   private static abstract class ValuedefImpl {
@@ -589,7 +596,7 @@ public class CallManagerImpl implements CallManager {
       return new ManyCallEventImpl(client, args, callImpl(client, args));
     }
   }
-  private static abstract class CallerImpl extends EndpointDefinerImpl {
+  static abstract class CallerImpl extends EndpointDefinerImpl {
     private CallableEndpointImpl endpoint;
     CallerImpl(CallableEndpointImpl endpoint) {
       this.endpoint = endpoint;
@@ -648,7 +655,7 @@ public class CallManagerImpl implements CallManager {
     }
   }
 
-  private static class CallArgsImpl implements CallArgs {
+  static class CallArgsImpl implements CallArgs {
     private CallableEndpointImpl endpoint;
     private List<CallField>      callFields;
     private SessionState         session;
@@ -666,6 +673,10 @@ public class CallManagerImpl implements CallManager {
       }
       this.session = session;
     }
+    CallArgsImpl(CallableEndpointImpl endpoint, List<CallField> callFields) {
+    	this.endpoint = endpoint;
+    	this.callFields = callFields;
+    }
 
     SessionState getSession() {
       return session;
@@ -677,7 +688,7 @@ public class CallManagerImpl implements CallManager {
       return assignedParams;
     }
 
-    private CallableEndpointImpl getEndpoint() {
+    CallableEndpointImpl getEndpoint() {
       return this.endpoint;
     }
     private ParamdefImpl getParamdef(String name) {
@@ -1187,7 +1198,7 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, boolean multiple, String[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, Stream.of(values)) :
+      return isMultiple(name, multiple, values) ? new UnbufferedMultipleAtomicCallField(name, Stream.of(values)) :
               new SingleAtomicCallField(name, values[0]);
     }
   }
@@ -1215,49 +1226,49 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, AbstractWriteHandle value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, format(value));
+      return new UnbufferedSingleNodeCallField(name, format(value));
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, AbstractWriteHandle[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleNodeCallField(name, formatAll(values)) :
-              new SingleNodeCallField(name, format(values[0]));
+      return isMultiple(name, multiple, values) ? new UnbufferedMultipleNodeCallField(name, formatAll(values)) :
+              new UnbufferedSingleNodeCallField(name, format(values[0]));
     }
     @Override
     CallField field(String name, boolean nullable, byte[] value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, format(NodeConverter.BytesToHandle(value)));
+      return new UnbufferedSingleNodeCallField(name, format(NodeConverter.BytesToHandle(value)));
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, byte[][] values) {
       if (isEmpty(name, nullable, values)) return null;
       return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, formatAll(NodeConverter.BytesToHandle(Stream.of(values)))) :
-              new SingleNodeCallField(name, format(NodeConverter.BytesToHandle(values[0])));
+              new UnbufferedMultipleNodeCallField(name, formatAll(NodeConverter.BytesToHandle(Stream.of(values)))) :
+              new UnbufferedSingleNodeCallField(name, format(NodeConverter.BytesToHandle(values[0])));
     }
     @Override
     CallField field(String name, boolean nullable, File value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, format(NodeConverter.FileToHandle(value)));
+      return new UnbufferedSingleNodeCallField(name, format(NodeConverter.FileToHandle(value)));
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, File[] values) {
       if (isEmpty(name, nullable, values)) return null;
       return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, formatAll(NodeConverter.FileToHandle(Stream.of(values)))) :
-              new SingleNodeCallField(name, format(NodeConverter.FileToHandle(values[0])));
+              new UnbufferedMultipleNodeCallField(name, formatAll(NodeConverter.FileToHandle(Stream.of(values)))) :
+              new UnbufferedSingleNodeCallField(name, format(NodeConverter.FileToHandle(values[0])));
     }
     @Override
     CallField field(String name, boolean nullable, InputStream value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, format(NodeConverter.InputStreamToHandle(value)));
+      return new UnbufferedSingleNodeCallField(name, format(NodeConverter.InputStreamToHandle(value)));
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, InputStream[] values) {
       if (isEmpty(name, nullable, values)) return null;
       return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, formatAll(NodeConverter.InputStreamToHandle(Stream.of(values)))) :
-              new SingleNodeCallField(name, format(NodeConverter.InputStreamToHandle(values[0])));
+              new UnbufferedMultipleNodeCallField(name, formatAll(NodeConverter.InputStreamToHandle(Stream.of(values)))) :
+              new UnbufferedSingleNodeCallField(name, format(NodeConverter.InputStreamToHandle(values[0])));
     }
   }
   private static abstract class CharacterNodeFieldifier extends NodeFieldifier {
@@ -1267,26 +1278,26 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, Reader value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, format(NodeConverter.ReaderToHandle(value)));
+      return new UnbufferedSingleNodeCallField(name, format(NodeConverter.ReaderToHandle(value)));
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Reader[] values) {
       if (isEmpty(name, nullable, values)) return null;
       return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, formatAll(NodeConverter.ReaderToHandle(Stream.of(values)))) :
-              new SingleNodeCallField(name, format(NodeConverter.ReaderToHandle(values[0])));
+              new UnbufferedMultipleNodeCallField(name, formatAll(NodeConverter.ReaderToHandle(Stream.of(values)))) :
+              new UnbufferedSingleNodeCallField(name, format(NodeConverter.ReaderToHandle(values[0])));
     }
     @Override
     CallField field(String name, boolean nullable, String value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, format(NodeConverter.StringToHandle(value)));
+      return new UnbufferedSingleNodeCallField(name, format(NodeConverter.StringToHandle(value)));
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, String[] values) {
       if (isEmpty(name, nullable, values)) return null;
       return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, formatAll(NodeConverter.StringToHandle(Stream.of(values)))) :
-              new SingleNodeCallField(name, format(NodeConverter.StringToHandle(values[0])));
+              new UnbufferedMultipleNodeCallField(name, formatAll(NodeConverter.StringToHandle(Stream.of(values)))) :
+              new UnbufferedSingleNodeCallField(name, format(NodeConverter.StringToHandle(values[0])));
     }
   }
   private static class BooleanFieldifier extends AtomicFieldifier {
@@ -1301,7 +1312,7 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Boolean[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.BooleanType.fromBoolean(Stream.of(values))) :
+      return isMultiple(name, multiple, values) ? new UnbufferedMultipleAtomicCallField(name, BaseProxy.BooleanType.fromBoolean(Stream.of(values))) :
               new SingleAtomicCallField(name, BaseProxy.BooleanType.fromBoolean(values[0]));
     }
   }
@@ -1317,7 +1328,7 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, boolean multiple, LocalDate[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.DateType.fromLocalDate(Stream.of(values))) :
+      return isMultiple(name, multiple, values) ? new UnbufferedMultipleAtomicCallField(name, BaseProxy.DateType.fromLocalDate(Stream.of(values))) :
               new SingleAtomicCallField(name, BaseProxy.DateType.fromLocalDate(values[0]));
     }
   }
@@ -1333,7 +1344,7 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Date[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.DateTimeType.fromDate(Stream.of(values))) :
+      return isMultiple(name, multiple, values) ? new UnbufferedMultipleAtomicCallField(name, BaseProxy.DateTimeType.fromDate(Stream.of(values))) :
               new SingleAtomicCallField(name, BaseProxy.DateTimeType.fromDate(values[0]));
     }
     @Override
@@ -1344,7 +1355,7 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, boolean multiple, LocalDateTime[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.DateTimeType.fromLocalDateTime(Stream.of(values))) :
+      return isMultiple(name, multiple, values) ? new UnbufferedMultipleAtomicCallField(name, BaseProxy.DateTimeType.fromLocalDateTime(Stream.of(values))) :
               new SingleAtomicCallField(name, BaseProxy.DateTimeType.fromLocalDateTime(values[0]));
     }
     @Override
@@ -1355,7 +1366,7 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, boolean multiple, OffsetDateTime[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.DateTimeType.fromOffsetDateTime(Stream.of(values))) :
+      return isMultiple(name, multiple, values) ? new UnbufferedMultipleAtomicCallField(name, BaseProxy.DateTimeType.fromOffsetDateTime(Stream.of(values))) :
               new SingleAtomicCallField(name, BaseProxy.DateTimeType.fromOffsetDateTime(values[0]));
     }
   }
@@ -1371,7 +1382,7 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Duration[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.DayTimeDurationType.fromDuration(Stream.of(values))) :
+      return isMultiple(name, multiple, values) ? new UnbufferedMultipleAtomicCallField(name, BaseProxy.DayTimeDurationType.fromDuration(Stream.of(values))) :
               new SingleAtomicCallField(name, BaseProxy.DayTimeDurationType.fromDuration(values[0]));
     }
   }
@@ -1387,7 +1398,7 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, boolean multiple, BigDecimal[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.DecimalType.fromBigDecimal(Stream.of(values))) :
+      return isMultiple(name, multiple, values) ? new UnbufferedMultipleAtomicCallField(name, BaseProxy.DecimalType.fromBigDecimal(Stream.of(values))) :
               new SingleAtomicCallField(name, BaseProxy.DecimalType.fromBigDecimal(values[0]));
     }
   }
@@ -1403,7 +1414,7 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Double[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.DoubleType.fromDouble(Stream.of(values))) :
+      return isMultiple(name, multiple, values) ? new UnbufferedMultipleAtomicCallField(name, BaseProxy.DoubleType.fromDouble(Stream.of(values))) :
               new SingleAtomicCallField(name, BaseProxy.DoubleType.fromDouble(values[0]));
     }
   }
@@ -1419,7 +1430,7 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Float[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.FloatType.fromFloat(Stream.of(values))) :
+      return isMultiple(name, multiple, values) ? new UnbufferedMultipleAtomicCallField(name, BaseProxy.FloatType.fromFloat(Stream.of(values))) :
               new SingleAtomicCallField(name, BaseProxy.FloatType.fromFloat(values[0]));
     }
   }
@@ -1435,7 +1446,7 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Integer[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.IntegerType.fromInteger(Stream.of(values))) :
+      return isMultiple(name, multiple, values) ? new UnbufferedMultipleAtomicCallField(name, BaseProxy.IntegerType.fromInteger(Stream.of(values))) :
               new SingleAtomicCallField(name, BaseProxy.IntegerType.fromInteger(values[0]));
     }
   }
@@ -1451,7 +1462,7 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Long[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.LongType.fromLong(Stream.of(values))) :
+      return isMultiple(name, multiple, values) ? new UnbufferedMultipleAtomicCallField(name, BaseProxy.LongType.fromLong(Stream.of(values))) :
               new SingleAtomicCallField(name, BaseProxy.LongType.fromLong(values[0]));
     }
   }
@@ -1472,7 +1483,7 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, boolean multiple, LocalTime[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.TimeType.fromLocalTime(Stream.of(values))) :
+      return isMultiple(name, multiple, values) ? new UnbufferedMultipleAtomicCallField(name, BaseProxy.TimeType.fromLocalTime(Stream.of(values))) :
               new SingleAtomicCallField(name, BaseProxy.TimeType.fromLocalTime(values[0]));
     }
     @Override
@@ -1483,7 +1494,7 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, boolean multiple, OffsetTime[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.TimeType.fromOffsetTime(Stream.of(values))) :
+      return isMultiple(name, multiple, values) ? new UnbufferedMultipleAtomicCallField(name, BaseProxy.TimeType.fromOffsetTime(Stream.of(values))) :
               new SingleAtomicCallField(name, BaseProxy.TimeType.fromOffsetTime(values[0]));
     }
   }
@@ -1499,7 +1510,7 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Integer[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.UnsignedIntegerType.fromInteger(Stream.of(values))) :
+      return isMultiple(name, multiple, values) ? new UnbufferedMultipleAtomicCallField(name, BaseProxy.UnsignedIntegerType.fromInteger(Stream.of(values))) :
               new SingleAtomicCallField(name, BaseProxy.UnsignedIntegerType.fromInteger(values[0]));
     }
   }
@@ -1515,7 +1526,7 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Long[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.UnsignedLongType.fromLong(Stream.of(values))) :
+      return isMultiple(name, multiple, values) ? new UnbufferedMultipleAtomicCallField(name, BaseProxy.UnsignedLongType.fromLong(Stream.of(values))) :
               new SingleAtomicCallField(name, BaseProxy.UnsignedLongType.fromLong(values[0]));
     }
   }
@@ -1534,26 +1545,26 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, JsonNode value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, BaseProxy.JsonDocumentType.fromJsonNode(value));
+      return new UnbufferedSingleNodeCallField(name, BaseProxy.JsonDocumentType.fromJsonNode(value));
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, JsonNode[] values) {
       if (isEmpty(name, nullable, values)) return null;
       return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, BaseProxy.JsonDocumentType.fromJsonNode(Stream.of(values))) :
-              new SingleNodeCallField(name, BaseProxy.JsonDocumentType.fromJsonNode(values[0]));
+              new UnbufferedMultipleNodeCallField(name, BaseProxy.JsonDocumentType.fromJsonNode(Stream.of(values))) :
+              new UnbufferedSingleNodeCallField(name, BaseProxy.JsonDocumentType.fromJsonNode(values[0]));
     }
     @Override
     CallField field(String name, boolean nullable, JsonParser value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, BaseProxy.JsonDocumentType.fromJsonParser(value));
+      return new UnbufferedSingleNodeCallField(name, BaseProxy.JsonDocumentType.fromJsonParser(value));
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, JsonParser[] values) {
       if (isEmpty(name, nullable, values)) return null;
       return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, BaseProxy.JsonDocumentType.fromJsonParser(Stream.of(values))) :
-              new SingleNodeCallField(name, BaseProxy.JsonDocumentType.fromJsonParser(values[0]));
+              new UnbufferedMultipleNodeCallField(name, BaseProxy.JsonDocumentType.fromJsonParser(Stream.of(values))) :
+              new UnbufferedSingleNodeCallField(name, BaseProxy.JsonDocumentType.fromJsonParser(values[0]));
     }
   }
   static public class ArrayFieldifier extends JsonDocumentFieldifier {
@@ -1578,62 +1589,62 @@ public class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, Document value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromDocument(value));
+      return new UnbufferedSingleNodeCallField(name, BaseProxy.XmlDocumentType.fromDocument(value));
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Document[] values) {
       if (isEmpty(name, nullable, values)) return null;
       return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, BaseProxy.XmlDocumentType.fromDocument(Stream.of(values))) :
-              new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromDocument(values[0]));
+              new UnbufferedMultipleNodeCallField(name, BaseProxy.XmlDocumentType.fromDocument(Stream.of(values))) :
+              new UnbufferedSingleNodeCallField(name, BaseProxy.XmlDocumentType.fromDocument(values[0]));
     }
     @Override
     CallField field(String name, boolean nullable, InputSource value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromInputSource(value));
+      return new UnbufferedSingleNodeCallField(name, BaseProxy.XmlDocumentType.fromInputSource(value));
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, InputSource[] values) {
       if (isEmpty(name, nullable, values)) return null;
       return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, BaseProxy.XmlDocumentType.fromInputSource(Stream.of(values))) :
-              new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromInputSource(values[0]));
+              new UnbufferedMultipleNodeCallField(name, BaseProxy.XmlDocumentType.fromInputSource(Stream.of(values))) :
+              new UnbufferedSingleNodeCallField(name, BaseProxy.XmlDocumentType.fromInputSource(values[0]));
     }
     @Override
     CallField field(String name, boolean nullable, Source value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromSource(value));
+      return new UnbufferedSingleNodeCallField(name, BaseProxy.XmlDocumentType.fromSource(value));
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Source[] values) {
       if (isEmpty(name, nullable, values)) return null;
       return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, BaseProxy.XmlDocumentType.fromSource(Stream.of(values))) :
-              new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromSource(values[0]));
+              new UnbufferedMultipleNodeCallField(name, BaseProxy.XmlDocumentType.fromSource(Stream.of(values))) :
+              new UnbufferedSingleNodeCallField(name, BaseProxy.XmlDocumentType.fromSource(values[0]));
     }
     @Override
     CallField field(String name, boolean nullable, XMLEventReader value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(value));
+      return new UnbufferedSingleNodeCallField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(value));
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, XMLEventReader[] values) {
       if (isEmpty(name, nullable, values)) return null;
       return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(Stream.of(values))) :
-              new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(values[0]));
+              new UnbufferedMultipleNodeCallField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(Stream.of(values))) :
+              new UnbufferedSingleNodeCallField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(values[0]));
     }
     @Override
     CallField field(String name, boolean nullable, XMLStreamReader value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(value));
+      return new UnbufferedSingleNodeCallField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(value));
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, XMLStreamReader[] values) {
       if (isEmpty(name, nullable, values)) return null;
       return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(Stream.of(values))) :
-              new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(values[0]));
+              new UnbufferedMultipleNodeCallField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(Stream.of(values))) :
+              new UnbufferedSingleNodeCallField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(values[0]));
     }
   }
 

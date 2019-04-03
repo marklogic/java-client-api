@@ -22,7 +22,12 @@ import com.marklogic.client.datamovement.impl.BatcherImpl;
 import com.marklogic.client.dataservices.CallBatcher;
 import com.marklogic.client.dataservices.CallFailureListener;
 import com.marklogic.client.dataservices.CallManager;
+import com.marklogic.client.dataservices.CallManager.CallArgs;
 import com.marklogic.client.dataservices.CallSuccessListener;
+import com.marklogic.client.dataservices.impl.CallManagerImpl.CallArgsImpl;
+import com.marklogic.client.dataservices.impl.CallManagerImpl.CallerImpl;
+import com.marklogic.client.impl.RESTServices.CallField;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +49,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     private AtomicLong                       callCount = new AtomicLong();
     private Calendar jobStartTime;
     private Calendar jobEndTime;
+    private List<CallField> defaultArgs;
 
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private final AtomicBoolean stopped     = new AtomicBoolean(false);
@@ -148,7 +154,11 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 // TODO: construct the args in a different way depending on the input type
         CallManager.CallArgs args = (CallManager.CallArgs) input;
         long callNumber = callCount.incrementAndGet();
-// TODO
+        
+        if(defaultArgs!=null && defaultArgs.size()!=0) {
+        	CallerImpl callerImpl = (com.marklogic.client.dataservices.impl.CallManagerImpl.CallerImpl) caller;
+        	addDefaultArgs(new CallArgsImpl(callerImpl.getEndpoint()));
+        }
         threadPool.submit(new CallTask(this, callNumber, args));
         return this;
     }
@@ -308,12 +318,6 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         }
 
         @Override
-        public CallBatcherBuilder<E> defaultArgs(CallManager.CallArgs args) {
-// TODO
-            return null;
-        }
-
-        @Override
         public CallBatcherImpl<CallManager.CallArgs, E> forArgs() {
             return new CallBatcherImpl(client, caller);
         }
@@ -414,4 +418,50 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             }
         }
     }
+
+	@Override
+	public CallBatcherImpl<W, E> withdefaultArgs(CallArgs args) {
+		if(args == null)
+			throw new IllegalArgumentException("CallArgs cannot be null.");
+		CallArgsImpl callArgsImpl = (CallArgsImpl) args;
+		if(callArgsImpl == null || ! (callArgsImpl instanceof CallArgsImpl))
+			throw new IllegalArgumentException("Illegal Argument.");
+		if(callArgsImpl.getEndpoint().getEndpointPath()!= caller.getEndpointPath())
+			throw new IllegalArgumentException("Endpoints are different.");
+		
+		List<CallField> callFieldList = callArgsImpl.getCallFields();
+		callFieldList.forEach(p->p.toBuffered());
+		this.defaultArgs = callFieldList;
+		return this;
+	}
+	
+	CallArgsImpl addDefaultArgs(CallField callField) {
+		CallerImpl callerImpl = (com.marklogic.client.dataservices.impl.CallManagerImpl.CallerImpl) caller;
+		if(callField == null) {
+			if(defaultArgs == null || defaultArgs.size()==0)
+				return new CallArgsImpl(callerImpl.getEndpoint());
+			return new CallArgsImpl(callerImpl.getEndpoint(), defaultArgs);
+		}
+		List<CallField> newCallFields = new ArrayList<CallField>();
+		newCallFields.add(callField);
+		
+		if(defaultArgs != null && defaultArgs.size()!=0)
+			newCallFields.addAll(defaultArgs);
+		
+		return new CallArgsImpl(callerImpl.getEndpoint(), newCallFields);
+	}
+	
+	CallArgsImpl addDefaultArgs(CallArgsImpl callArgsImpl) {
+		if(defaultArgs == null || defaultArgs.size()==0)
+			return callArgsImpl;
+		CallerImpl callerImpl = (com.marklogic.client.dataservices.impl.CallManagerImpl.CallerImpl) caller;
+		List<CallField> newCallFields = new ArrayList<CallField>();
+		
+		if(callArgsImpl.getCallFields()!=null && callArgsImpl.getCallFields().size()!=0)
+			newCallFields.addAll(callArgsImpl.getCallFields());
+		
+		newCallFields.addAll(defaultArgs);
+		
+		return new CallArgsImpl(callerImpl.getEndpoint(), newCallFields);
+	}
 }
