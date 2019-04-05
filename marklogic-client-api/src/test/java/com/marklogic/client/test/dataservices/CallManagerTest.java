@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 MarkLogic Corporation
+ * Copyright 2018-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,7 @@ package com.marklogic.client.test.dataservices;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.dataservices.CallManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.impl.NodeConverter;
@@ -61,24 +58,15 @@ import static org.junit.Assert.*;
 public class CallManagerTest {
     private final static String ENDPOINT_DIRECTORY = "/javaApi/test/callManager/";
 
+    private static DatabaseClient db      = Common.connect();
+    private static CallManager    callMgr = CallManager.on(db);
+
     private static ObjectMapper objectMapper = new ObjectMapper();
     private static JsonFactory  jsonFactory  = new JsonFactory();
-    private static EndpointSetup endpointSetup = new EndpointSetup(ENDPOINT_DIRECTORY);
-
-    private final static Map<String, Format> NODE_FORMATS = new HashMap<>();
-
-    private DatabaseClient db      = Common.connect();
-    private CallManager    callMgr = CallManager.on(db);
+    private static EndpointUtil endpointUtil = new EndpointUtil(callMgr, ENDPOINT_DIRECTORY);
 
     @BeforeClass
     public static void setup() {
-        NODE_FORMATS.put("array",          Format.JSON);
-        NODE_FORMATS.put("binaryDocument", Format.BINARY);
-        NODE_FORMATS.put("jsonDocument",   Format.JSON);
-        NODE_FORMATS.put("object",         Format.JSON);
-        NODE_FORMATS.put("textDocument",   Format.TEXT);
-        NODE_FORMATS.put("xmlDocument",    Format.XML);
-
         DatabaseClient adminClient = Common.newServerAdminClient("java-unittest-modules");
         JSONDocumentManager docMgr = adminClient.newJSONDocumentManager();
 
@@ -86,43 +74,43 @@ public class CallManagerTest {
 
         docMeta.getPermissions().add("rest-reader", DocumentMetadataHandle.Capability.EXECUTE);
 
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "boolean");
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "date");
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "dateTime");
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "dayTimeDuration");
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "decimal");
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "double");
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "float");
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "int");
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "long");
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "string");
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "time");
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "unsignedInt");
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "unsignedLong");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "boolean");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "date");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "dateTime");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "dayTimeDuration");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "decimal");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "double");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "float");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "int");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "long");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "string");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "time");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "unsignedInt");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "unsignedLong");
 
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "array");
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "binaryDocument");
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "jsonDocument");
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "object");
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "textDocument");
-        endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "xmlDocument");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "array");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "binaryDocument");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "jsonDocument");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "object");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "textDocument");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "xmlDocument");
 
-        endpointSetup.setupEndpointSingleRequired(docMgr, docMeta, "singleAtomic", "dateTime");
-        endpointSetup.setupEndpointSingleRequired(docMgr, docMeta, "singleNode", "object");
+        endpointUtil.setupEndpointSingleRequired(docMgr, docMeta, "singleAtomic", "dateTime");
+        endpointUtil.setupEndpointSingleRequired(docMgr, docMeta, "singleNode", "object");
 
-        endpointSetup.setupEndpointSingleNulled(docMgr, docMeta, "nullAtomic", "decimal");
-        endpointSetup.setupEndpointSingleNulled(docMgr, docMeta, "nullNode", "xmlDocument");
+        endpointUtil.setupEndpointSingleNulled(docMgr, docMeta, "nullAtomic", "decimal");
+        endpointUtil.setupEndpointSingleNulled(docMgr, docMeta, "nullNode", "xmlDocument");
 
-        endpointSetup.setupEndpointMultipleNulled(docMgr, docMeta, "multipleNullAtomic", "float");
-        endpointSetup.setupEndpointMultipleNulled(docMgr, docMeta, "multipleNullNode", "textDocument");
+        endpointUtil.setupEndpointMultipleNulled(docMgr, docMeta, "multipleNullAtomic", "float");
+        endpointUtil.setupEndpointMultipleNulled(docMgr, docMeta, "multipleNullNode", "textDocument");
 
-        endpointSetup.setupTwoParamEndpoint(docMgr, docMeta, "twoAtomic", "date", "unsignedLong");
-        endpointSetup.setupTwoParamEndpoint(docMgr, docMeta, "twoNode", "array", "textDocument");
-        endpointSetup.setupTwoParamEndpoint(docMgr, docMeta, "twoMixed", "time", "textDocument");
+        endpointUtil.setupTwoParamEndpoint(docMgr, docMeta, "twoAtomic", "date", "unsignedLong");
+        endpointUtil.setupTwoParamEndpoint(docMgr, docMeta, "twoNode", "array", "textDocument");
+        endpointUtil.setupTwoParamEndpoint(docMgr, docMeta, "twoMixed", "time", "textDocument");
 
-        endpointSetup.setupParamNoReturnEndpoint(docMgr, docMeta, "paramNoReturn", "double");
-        endpointSetup.setupNoParamReturnEndpoint(docMgr, docMeta, "noParamReturn", "double", "5.6");
-        endpointSetup.setupNoParamNoReturnEndpoint(docMgr, docMeta, "noParamNoReturn");
+        endpointUtil.setupParamNoReturnEndpoint(docMgr, docMeta, "paramNoReturn", "double");
+        endpointUtil.setupNoParamReturnEndpoint(docMgr, docMeta, "noParamReturn", "double", "5.6");
+        endpointUtil.setupNoParamNoReturnEndpoint(docMgr, docMeta, "noParamNoReturn");
 
         adminClient.release();
     }
@@ -142,9 +130,9 @@ public class CallManagerTest {
     public void testBadParamName() {
         String functionName = "boolean";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
-        CallManager.ManyCaller<Boolean> caller = makeManyCaller(callableEndpoint, Boolean.class);
+        CallManager.ManyCaller<Boolean> caller = endpointUtil.makeManyCaller(callableEndpoint, Boolean.class);
 
         boolean threwException = false;
         try {
@@ -158,9 +146,9 @@ public class CallManagerTest {
     public void testBadParamAtomicType() {
         String functionName = "int";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
-        CallManager.ManyCaller<Integer> caller = makeManyCaller(callableEndpoint, Integer.class);
+        CallManager.ManyCaller<Integer> caller = endpointUtil.makeManyCaller(callableEndpoint, Integer.class);
 
         boolean threwException = false;
         try {
@@ -174,9 +162,9 @@ public class CallManagerTest {
     public void testBadParamNodeType() {
         String functionName = "jsonDocument";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName );
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName );
 
-        CallManager.ManyCaller<String> caller = makeManyCaller(callableEndpoint, String.class);
+        CallManager.ManyCaller<String> caller = endpointUtil.makeManyCaller(callableEndpoint, String.class);
 
         boolean threwException = false;
         try {
@@ -192,9 +180,9 @@ public class CallManagerTest {
     public void testBadParamMultiplicity() {
         String functionName = "singleAtomic";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
-        CallManager.OneCaller<Date> caller = makeOneCaller(callableEndpoint, Date.class);
+        CallManager.OneCaller<Date> caller = endpointUtil.makeOneCaller(callableEndpoint, Date.class);
 
         boolean threwException = false;
         try {
@@ -211,9 +199,9 @@ public class CallManagerTest {
     public void testBadParamOptionality() {
         String functionName = "boolean";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
-        CallManager.ManyCaller<Boolean> caller = makeManyCaller(callableEndpoint, Boolean.class);
+        CallManager.ManyCaller<Boolean> caller = endpointUtil.makeManyCaller(callableEndpoint, Boolean.class);
 
         boolean threwException = false;
         try {
@@ -227,9 +215,9 @@ public class CallManagerTest {
     public void testBadParamSession() {
         String functionName = "boolean";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
-        CallManager.ManyCaller<Boolean> caller = makeManyCaller(callableEndpoint, Boolean.class);
+        CallManager.ManyCaller<Boolean> caller = endpointUtil.makeManyCaller(callableEndpoint, Boolean.class);
 
         boolean threwException = false;
         try {
@@ -243,11 +231,11 @@ public class CallManagerTest {
     public void testBadReturnAtomicType() {
         String functionName = "boolean";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         boolean threwException = false;
         try {
-            makeManyCaller(callableEndpoint, Integer.class);
+            endpointUtil.makeManyCaller(callableEndpoint, Integer.class);
         } catch (IllegalArgumentException ex) {
             threwException = true;
         }
@@ -257,11 +245,11 @@ public class CallManagerTest {
     public void testBadReturnNodeType() {
         String functionName = "jsonDocument";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         boolean threwException = false;
         try {
-            makeManyCaller(callableEndpoint, Document.class);
+            endpointUtil.makeManyCaller(callableEndpoint, Document.class);
         } catch (IllegalArgumentException ex) {
             threwException = true;
         }
@@ -271,11 +259,11 @@ public class CallManagerTest {
     public void testBadReturnMultiplicity() {
         String functionName = "boolean";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         boolean threwException = false;
         try {
-            makeOneCaller(callableEndpoint, Boolean.class);
+            endpointUtil.makeOneCaller(callableEndpoint, Boolean.class);
         } catch (IllegalArgumentException ex) {
             threwException = true;
         }
@@ -285,7 +273,7 @@ public class CallManagerTest {
     public void testBadReturnOptionality() {
         String functionName = "boolean";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         boolean threwException = false;
         try {
@@ -301,10 +289,10 @@ public class CallManagerTest {
     public void testBoolean() {
         String functionName = "boolean";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         Boolean[] values = new Boolean[]{true, false};
-        CallManager.ManyCaller<Boolean> caller = makeManyCaller(callableEndpoint, Boolean.class);
+        CallManager.ManyCaller<Boolean> caller = endpointUtil.makeManyCaller(callableEndpoint, Boolean.class);
         testCall(functionName, caller, caller.args().param("param1", values), values);
 
         testAtomicCall(functionName, callableEndpoint, stringify(values));
@@ -313,11 +301,11 @@ public class CallManagerTest {
     public void testDate() {
         String functionName = "date";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         LocalDate[] values = new LocalDate[]{LocalDate.parse("2018-01-02"), LocalDate.parse("2018-02-03")};
         CallManager.ManyCaller<LocalDate> caller =
-                makeManyCaller(callableEndpoint, LocalDate.class);
+                endpointUtil.makeManyCaller(callableEndpoint, LocalDate.class);
         testCall(functionName, caller, caller.args().param("param1", values), values);
 
         testAtomicCall(functionName, callableEndpoint, stringify(values));
@@ -326,10 +314,10 @@ public class CallManagerTest {
     public void testTwoAtomic() {
         String functionName = "twoAtomic";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         LocalDate value = LocalDate.parse("2018-01-02");
-        CallManager.OneCaller<LocalDate> caller = makeOneCaller(callableEndpoint, LocalDate.class);
+        CallManager.OneCaller<LocalDate> caller = endpointUtil.makeOneCaller(callableEndpoint, LocalDate.class);
         testCall(functionName, caller,
                 caller.args()
                       .param("param1", value)
@@ -340,25 +328,25 @@ public class CallManagerTest {
     public void testDateTime() {
         String functionName = "dateTime";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         Date[] values = new Date[]{
                 DatatypeConverter.parseDateTime("2018-01-02T10:09:08").getTime(),
                 DatatypeConverter.parseDateTime("2018-01-02T11:10:09.867Z").getTime()
         };
-        CallManager.ManyCaller<Date> caller = makeManyCaller(callableEndpoint, Date.class);
+        CallManager.ManyCaller<Date> caller = endpointUtil.makeManyCaller(callableEndpoint, Date.class);
         testCall(functionName, caller, caller.args().param("param1", values), values);
 
         LocalDateTime[] values2 = new LocalDateTime[]{
                 LocalDateTime.parse("2018-01-02T10:09:08"), LocalDateTime.parse("2018-01-02T11:10:09.867")
         };
-        CallManager.ManyCaller<LocalDateTime> caller2 = makeManyCaller(callableEndpoint, LocalDateTime.class);
+        CallManager.ManyCaller<LocalDateTime> caller2 = endpointUtil.makeManyCaller(callableEndpoint, LocalDateTime.class);
         testCall(functionName, caller2, caller2.args().param("param1", values2), values2);
 
         OffsetDateTime[] values3 = new OffsetDateTime[]{
                 OffsetDateTime.parse("2018-01-02T10:09:08+07:00"), OffsetDateTime.parse("2018-01-02T11:10:09.867Z")
         };
-        CallManager.ManyCaller<OffsetDateTime> caller3 = makeManyCaller(callableEndpoint, OffsetDateTime.class);
+        CallManager.ManyCaller<OffsetDateTime> caller3 = endpointUtil.makeManyCaller(callableEndpoint, OffsetDateTime.class);
         testCall(functionName, caller3, caller3.args().param("param1", values3), values3);
 
         testAtomicCall(functionName, callableEndpoint, stringify(values3));
@@ -367,18 +355,18 @@ public class CallManagerTest {
     public void testSingleAtomic() throws ParseException {
         String functionName = "singleAtomic";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         Date value = DatatypeConverter.parseDateTime("2018-01-02T10:09:08").getTime();
-        CallManager.OneCaller<Date> caller = makeOneCaller(callableEndpoint, Date.class);
+        CallManager.OneCaller<Date> caller = endpointUtil.makeOneCaller(callableEndpoint, Date.class);
         testCall(functionName, caller, caller.args().param("param1", value), value);
 
         LocalDateTime value2 = LocalDateTime.parse("2018-01-02T10:09:08");
-        CallManager.OneCaller<LocalDateTime> caller2 = makeOneCaller(callableEndpoint, LocalDateTime.class);
+        CallManager.OneCaller<LocalDateTime> caller2 = endpointUtil.makeOneCaller(callableEndpoint, LocalDateTime.class);
         testCall(functionName, caller2, caller2.args().param("param1", value2), value2);
 
         OffsetDateTime value3 = OffsetDateTime.parse("2018-01-02T10:09:08+07:00");
-        CallManager.OneCaller<OffsetDateTime> caller3 = makeOneCaller(callableEndpoint, OffsetDateTime.class);
+        CallManager.OneCaller<OffsetDateTime> caller3 = endpointUtil.makeOneCaller(callableEndpoint, OffsetDateTime.class);
         testCall(functionName, caller3, caller3.args().param("param1", value3), value3);
 
         testAtomicCall(functionName, callableEndpoint, value3.toString());
@@ -387,10 +375,10 @@ public class CallManagerTest {
     public void testDayTimeDuration() {
         String functionName = "dayTimeDuration";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         Duration[] values = new Duration[]{Duration.parse("P3DT4H5M6S"), Duration.parse("PT5H6M7S")};
-        CallManager.ManyCaller<Duration> caller = makeManyCaller(callableEndpoint, Duration.class);
+        CallManager.ManyCaller<Duration> caller = endpointUtil.makeManyCaller(callableEndpoint, Duration.class);
         testCall(functionName, caller, caller.args().param("param1", values), values);
 
         Stream<? extends String> output = callableEndpoint
@@ -403,10 +391,10 @@ public class CallManagerTest {
     public void testDecimal() {
         String functionName = "decimal";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         BigDecimal[] values = new BigDecimal[]{new BigDecimal("1.2"), new BigDecimal("3.4")};
-        CallManager.ManyCaller<BigDecimal> caller = makeManyCaller(callableEndpoint, BigDecimal.class);
+        CallManager.ManyCaller<BigDecimal> caller = endpointUtil.makeManyCaller(callableEndpoint, BigDecimal.class);
         testCall(functionName, caller, caller.args().param("param1", values), values);
 
         testAtomicCall(functionName, callableEndpoint, stringify(values));
@@ -415,9 +403,9 @@ public class CallManagerTest {
     public void testNullAtomic() {
         String functionName = "nullAtomic";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
-        testCall(functionName, makeOneCaller(callableEndpoint, BigDecimal.class));
+        testCall(functionName, endpointUtil.makeOneCaller(callableEndpoint, BigDecimal.class));
 
         testAtomicCallOne(functionName, callableEndpoint);
     }
@@ -425,10 +413,10 @@ public class CallManagerTest {
     public void testDouble() {
         String functionName = "double";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         Double[] values = new Double[]{1.2, 3.4};
-        CallManager.ManyCaller<Double> caller = makeManyCaller(callableEndpoint, Double.class);
+        CallManager.ManyCaller<Double> caller = endpointUtil.makeManyCaller(callableEndpoint, Double.class);
         testCall(functionName, caller, caller.args().param("param1", values), values);
 
         testAtomicCall(functionName, callableEndpoint, stringify(values));
@@ -437,7 +425,7 @@ public class CallManagerTest {
     public void testParamNoReturn() {
         String functionName = "paramNoReturn";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         callableEndpoint.returningNone().call(callableEndpoint.args().param("param1", 1.2));
     }
@@ -445,7 +433,7 @@ public class CallManagerTest {
     public void testNoParamReturn() {
         String functionName = "noParamReturn";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         double result = callableEndpoint.returningOne(Double.class).call();
         assertEquals("result mismatch with generated module for "+functionName, 5.6, result, 0.1);
@@ -454,7 +442,7 @@ public class CallManagerTest {
     public void testNoParamNoReturn() {
         String functionName = "noParamNoReturn";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         callableEndpoint.returningNone().call();
     }
@@ -462,10 +450,10 @@ public class CallManagerTest {
     public void testFloat() {
         String functionName = "float";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         Float[] values = new Float[]{1.2f, 3.4f};
-        CallManager.ManyCaller<Float> caller = makeManyCaller(callableEndpoint, Float.class);
+        CallManager.ManyCaller<Float> caller = endpointUtil.makeManyCaller(callableEndpoint, Float.class);
         testCall(functionName, caller, caller.args().param("param1", values), values);
 
         testAtomicCall(functionName, callableEndpoint, stringify(values));
@@ -474,9 +462,9 @@ public class CallManagerTest {
     public void testMultipleNullAtomic() {
         String functionName = "multipleNullAtomic";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
-        testCall(functionName, makeManyCaller(callableEndpoint, Float.class));
+        testCall(functionName, endpointUtil.makeManyCaller(callableEndpoint, Float.class));
 
         testAtomicCallMany(functionName, callableEndpoint);
     }
@@ -484,10 +472,10 @@ public class CallManagerTest {
     public void testInteger() {
         String functionName = "int";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         Integer[] values = new Integer[]{5, 6};
-        CallManager.ManyCaller<Integer> caller = makeManyCaller(callableEndpoint, Integer.class);
+        CallManager.ManyCaller<Integer> caller = endpointUtil.makeManyCaller(callableEndpoint, Integer.class);
         testCall(functionName, caller, caller.args().param("param1", values), values);
 
         testAtomicCall(functionName, callableEndpoint, stringify(values));
@@ -496,10 +484,10 @@ public class CallManagerTest {
     public void testLong() {
         String functionName = "long";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         Long[] values = new Long[]{5l, 6l};
-        CallManager.ManyCaller<Long> caller = makeManyCaller(callableEndpoint, Long.class);
+        CallManager.ManyCaller<Long> caller = endpointUtil.makeManyCaller(callableEndpoint, Long.class);
         testCall(functionName, caller, caller.args().param("param1", values), values);
 
         testAtomicCall(functionName, callableEndpoint, stringify(values));
@@ -508,7 +496,7 @@ public class CallManagerTest {
     public void testString() {
         String functionName = "string";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         String[] values = new String[]{"abc", "def"};
 
@@ -518,14 +506,14 @@ public class CallManagerTest {
     public void testTime() {
         String functionName = "time";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         LocalTime[] values = new LocalTime[]{LocalTime.parse("10:09:08"), LocalTime.parse("11:10:09.867")};
-        CallManager.ManyCaller<LocalTime> caller = makeManyCaller(callableEndpoint, LocalTime.class);
+        CallManager.ManyCaller<LocalTime> caller = endpointUtil.makeManyCaller(callableEndpoint, LocalTime.class);
         testCall(functionName, caller, caller.args().param("param1", values), values);
 
         OffsetTime[] values2 = new OffsetTime[]{OffsetTime.parse("10:09:08+07:00"), OffsetTime.parse("11:10:09.867Z")};
-        CallManager.ManyCaller<OffsetTime> caller2 = makeManyCaller(callableEndpoint, OffsetTime.class);
+        CallManager.ManyCaller<OffsetTime> caller2 = endpointUtil.makeManyCaller(callableEndpoint, OffsetTime.class);
         testCall(functionName, caller2, caller2.args().param("param1", values2), values2);
 
         testAtomicCall(functionName, callableEndpoint, stringify(values2));
@@ -534,10 +522,10 @@ public class CallManagerTest {
     public void testTwoMixed() {
         String functionName = "twoMixed";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         LocalTime value = LocalTime.parse("10:09:08");
-        CallManager.OneCaller<LocalTime> caller = makeOneCaller(callableEndpoint, LocalTime.class);
+        CallManager.OneCaller<LocalTime> caller = endpointUtil.makeOneCaller(callableEndpoint, LocalTime.class);
         testCall(functionName, caller,
                 caller.args()
                       .param("param1", value)
@@ -548,10 +536,10 @@ public class CallManagerTest {
     public void testUnsignedInteger() {
         String functionName = "unsignedInt";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         Integer[] values = new Integer[]{5, 6};
-        CallManager.ManyCaller<Integer> caller =makeManyCaller(callableEndpoint, Integer.class);
+        CallManager.ManyCaller<Integer> caller = endpointUtil.makeManyCaller(callableEndpoint, Integer.class);
         testCall(functionName, caller, caller.args().param("param1", values), values);
 
         testAtomicCall(functionName, callableEndpoint, stringify(values));
@@ -560,10 +548,10 @@ public class CallManagerTest {
     public void testUnsignedLong() {
         String functionName = "unsignedLong";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         Long[] values = new Long[]{5l, 6l};
-        CallManager.ManyCaller<Long> caller = makeManyCaller(callableEndpoint, Long.class);
+        CallManager.ManyCaller<Long> caller = endpointUtil.makeManyCaller(callableEndpoint, Long.class);
         testCall(functionName, caller, caller.args().param("param1", values), values);
 
         testAtomicCall(functionName, callableEndpoint, stringify(values));
@@ -573,7 +561,7 @@ public class CallManagerTest {
     public void testBinaryDocument() {
         String functionName = "binaryDocument";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         String[] values = new String[]{
             "iVBORw0KGgoAAAANSUhEUgAAAA0AAAATCAYAAABLN4eXAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9oIEQEjMtAYogQAAAKvSURBVCjPlZLLbhxFAEVPVVdXVz/G8zCOn0CsKGyQkSIIKzas8xfsWbLkp/gJhCKheIlAJDaj2MYez6u7p7vrxQKUPVc6+yOdK77/4cfXQohJqlOVZdmBSpKY6jQKBM45oVMlgHvrvMuNWRljvlNKq69G2YyqLDg4mLE/2yPNYFRWlFXF/nTC2clRWbc7Fss1IcZzqTA8eWY5eu7p1Hv+WvyBVjnGZOQmI9UKISUqSXDO0bS7Tko0xfGSp18kjM7v+P3+NUMr8T5grWMYLCEErHM474khoCw1t78eU/8mEOpjXpxekJUORIZSCbkxSCnRWpPnBikTqbx31E1DjJHpeIzRhnW9xceI857H5Yr1Zku765jf3DIMtlUAIQRCiFhnabsOH1IEAmstAGWRY11ApykmM0oplTKZjNGZREpJoUueHI0ZFRV7exX7+1Nm0yn9YLm5u2fX96lUseLwxQ0vX8H04i2/XP9Et5H44OkHS920hBDo+56u77GDjcrHjvV1ya3TDO2M01mOUAEAhED+R5IkpKmCiFCOjoc/p+xuLbPpCc+P95HaEqIBIhHoB8t2W/PwsKBudl5FH7GxwUYYouJh5ci7nLbtWW02LBaPvLuef1AdrItKKolJpkivwGrG5QxTCsq8pCxLqqrk7PiIwTmW6y0xRCVTSg4vFnz+raM4+5ur1RtSUZHnOUWeMx5VVFWJTlOstfTWRuk96NIyOUgRRc188RZvgRg/3OffjoFESohxUMvmjqufP+X+MqDTU77+5EvMKKBUQpZpijxHSkluDHvjMW8uL79Rnz07bwSyzDLFqCzwDNw/PNI0O9bbhvVmQ7vb0bQdi+Wq327rl+rko8krodKnCHnofJju+r5oupBstg1KJT7Vuruev185O9zVm/WVUmouYoz83/0DxhRmafe2kasAAAAASUVORK5CYII=",
@@ -583,7 +571,7 @@ public class CallManagerTest {
         testNode(functionName, callableEndpoint, values);
 
         BytesHandle[] values2 = convert(values, CallManagerTest::BytesHandle, BytesHandle.class);
-        CallManager.ManyCaller<BinaryReadHandle> caller2 = makeManyCaller(callableEndpoint, BinaryReadHandle.class);
+        CallManager.ManyCaller<BinaryReadHandle> caller2 = endpointUtil.makeManyCaller(callableEndpoint, BinaryReadHandle.class);
         testConvertedCall(
                 functionName, caller2, caller2.args().param("param1", values2), values, CallManagerTest::string
         );
@@ -600,26 +588,26 @@ public class CallManagerTest {
     public void testJsonDocument() {
         String functionName = "jsonDocument";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         String[] values = new String[]{"{\"root\":{\"child\":\"text1\"}}", "{\"root\":{\"child\":\"text2\"}}"};
 
         testCharacterNode(functionName, callableEndpoint, values);
 
         JsonNode[] values2 = convert(values, CallManagerTest::jsonNode, JsonNode.class);
-        CallManager.ManyCaller<JsonNode> caller2 = makeManyCaller(callableEndpoint, JsonNode.class);
+        CallManager.ManyCaller<JsonNode> caller2 = endpointUtil.makeManyCaller(callableEndpoint, JsonNode.class);
         testConvertedCall(
                 functionName, caller2, caller2.args().param("param1", values2), values, CallManagerTest::string
         );
 
         JsonParser[] values3 = convert(values, CallManagerTest::jsonParser, JsonParser.class);
-        CallManager.ManyCaller<JsonParser> caller3 = makeManyCaller(callableEndpoint, JsonParser.class);
+        CallManager.ManyCaller<JsonParser> caller3 = endpointUtil.makeManyCaller(callableEndpoint, JsonParser.class);
         testConvertedCall(
                 functionName, caller3, caller3.args().param("param1", values3), values, CallManagerTest::string
         );
 
         StringHandle[] values4 = convert(values, StringHandle::new, StringHandle.class);
-        CallManager.ManyCaller<JSONReadHandle> caller4 = makeManyCaller(callableEndpoint, JSONReadHandle.class);
+        CallManager.ManyCaller<JSONReadHandle> caller4 = endpointUtil.makeManyCaller(callableEndpoint, JSONReadHandle.class);
         testConvertedCall(
                 functionName, caller4, caller4.args().param("param1", values4), values, CallManagerTest::string
         );
@@ -637,7 +625,7 @@ public class CallManagerTest {
     public void testArray() {
         String functionName = "array";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         String[] valuesSpaced   = new String[]{"[\"text1\", 1]", "[\"text2\", 2]"};
         String[] valuesUnspaced = new String[]{"[\"text1\",1]", "[\"text2\",2]"};
@@ -645,19 +633,19 @@ public class CallManagerTest {
         testCharacterNode(functionName, callableEndpoint, valuesSpaced);
 
         JsonNode[] values2 = convert(valuesUnspaced, CallManagerTest::jsonNode, JsonNode.class);
-        CallManager.ManyCaller<JsonNode> caller2 = makeManyCaller(callableEndpoint, JsonNode.class);
+        CallManager.ManyCaller<JsonNode> caller2 = endpointUtil.makeManyCaller(callableEndpoint, JsonNode.class);
         testConvertedCall(
                 functionName, caller2, caller2.args().param("param1", values2), valuesUnspaced, CallManagerTest::string
         );
 
         JsonParser[] values3 = convert(valuesUnspaced, CallManagerTest::jsonParser, JsonParser.class);
-        CallManager.ManyCaller<JsonParser> caller3 = makeManyCaller(callableEndpoint, JsonParser.class);
+        CallManager.ManyCaller<JsonParser> caller3 = endpointUtil.makeManyCaller(callableEndpoint, JsonParser.class);
         testConvertedCall(
                 functionName, caller3, caller3.args().param("param1", values3), valuesUnspaced, CallManagerTest::string
         );
 
         StringHandle[] values4 = convert(valuesSpaced, StringHandle::new, StringHandle.class);
-        CallManager.ManyCaller<JSONReadHandle> caller4 = makeManyCaller(callableEndpoint, JSONReadHandle.class);
+        CallManager.ManyCaller<JSONReadHandle> caller4 = endpointUtil.makeManyCaller(callableEndpoint, JSONReadHandle.class);
         testConvertedCall(
                 functionName, caller4, caller4.args().param("param1", values4), valuesSpaced, CallManagerTest::string
         );
@@ -666,10 +654,10 @@ public class CallManagerTest {
     public void testTwoNode() {
         String functionName = "twoNode";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         String value = "[\"text1\",1]";
-        CallManager.OneCaller<JsonNode> caller = makeOneCaller(callableEndpoint, JsonNode.class);
+        CallManager.OneCaller<JsonNode> caller = endpointUtil.makeOneCaller(callableEndpoint, JsonNode.class);
         testConvertedCall(functionName, caller,
                 caller.args()
                       .param("param1", jsonNode(value))
@@ -682,26 +670,26 @@ public class CallManagerTest {
     public void testObject() {
         String functionName = "object";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         String[] values = new String[]{"{\"root\":{\"child\":\"text1\"}}", "{\"root\":{\"child\":\"text2\"}}"};
 
         testCharacterNode(functionName, callableEndpoint, values);
 
         JsonNode[] values2 = convert(values, CallManagerTest::jsonNode, JsonNode.class);
-        CallManager.ManyCaller<JsonNode> caller2 = makeManyCaller(callableEndpoint, JsonNode.class);
+        CallManager.ManyCaller<JsonNode> caller2 = endpointUtil.makeManyCaller(callableEndpoint, JsonNode.class);
         testConvertedCall(
                 functionName, caller2, caller2.args().param("param1", values2), values, CallManagerTest::string
         );
 
         JsonParser[] values3 = convert(values, CallManagerTest::jsonParser, JsonParser.class);
-        CallManager.ManyCaller<JsonParser> caller3 = makeManyCaller(callableEndpoint, JsonParser.class);
+        CallManager.ManyCaller<JsonParser> caller3 = endpointUtil.makeManyCaller(callableEndpoint, JsonParser.class);
         testConvertedCall(
                 functionName, caller3, caller3.args().param("param1", values3), values, CallManagerTest::string
         );
 
         StringHandle[] values4 = convert(values, StringHandle::new, StringHandle.class);
-        CallManager.ManyCaller<JSONReadHandle> caller4 = makeManyCaller(callableEndpoint, JSONReadHandle.class);
+        CallManager.ManyCaller<JSONReadHandle> caller4 = endpointUtil.makeManyCaller(callableEndpoint, JSONReadHandle.class);
         testConvertedCall(
                 functionName, caller4, caller4.args().param("param1", values4), values, CallManagerTest::string
         );
@@ -710,26 +698,26 @@ public class CallManagerTest {
     public void testSingleNode() {
         String functionName = "singleNode";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         String value = "{\"root\":{\"child\":\"text1\"}}";
 
         testCharacterNode(functionName, callableEndpoint, value);
 
         JsonNode value2 = jsonNode(value);
-        CallManager.OneCaller<JsonNode> caller2 = makeOneCaller(callableEndpoint, JsonNode.class);
+        CallManager.OneCaller<JsonNode> caller2 = endpointUtil.makeOneCaller(callableEndpoint, JsonNode.class);
         testConvertedCall(
                 functionName, caller2, caller2.args().param("param1", value2), value, CallManagerTest::string
         );
 
         JsonParser value3 = jsonParser(value);
-        CallManager.OneCaller<JsonParser> caller3 = makeOneCaller(callableEndpoint, JsonParser.class);
+        CallManager.OneCaller<JsonParser> caller3 = endpointUtil.makeOneCaller(callableEndpoint, JsonParser.class);
         testConvertedCall(
                 functionName, caller3, caller3.args().param("param1", value3), value, CallManagerTest::string
         );
 
         StringHandle value4 = new StringHandle(value);
-        CallManager.OneCaller<JSONReadHandle> caller4 = makeOneCaller(callableEndpoint, JSONReadHandle.class);
+        CallManager.OneCaller<JSONReadHandle> caller4 = endpointUtil.makeOneCaller(callableEndpoint, JSONReadHandle.class);
         testConvertedCall(
                 functionName, caller4, caller4.args().param("param1", value4), value, CallManagerTest::string
         );
@@ -738,14 +726,14 @@ public class CallManagerTest {
     public void testTextDocument() {
         String functionName = "textDocument";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         String[] values = new String[]{"abc", "def"};
 
         testCharacterNode(functionName, callableEndpoint, values);
 
         StringHandle[] values2 = convert(values, StringHandle::new, StringHandle.class);
-        CallManager.ManyCaller<TextReadHandle> caller2 = makeManyCaller(callableEndpoint, TextReadHandle.class);
+        CallManager.ManyCaller<TextReadHandle> caller2 = endpointUtil.makeManyCaller(callableEndpoint, TextReadHandle.class);
         testConvertedCall(
                 functionName, caller2, caller2.args().param("param1", values2), values, CallManagerTest::string
         );
@@ -763,7 +751,7 @@ public class CallManagerTest {
     public void testMultipleNullNode() {
         String functionName = "multipleNullNode";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName);
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
 
         testCharacterNodeMany(functionName, callableEndpoint);
     }
@@ -771,67 +759,67 @@ public class CallManagerTest {
     public void testXmlDocument() {
         String functionName = "xmlDocument";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName );
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName );
 
         String[] values = new String[]{"<root><child>text1</child></root>", "<root><child>text2</child></root>"};
 
         // can't call testCharacterNode() because of the XML prolog
 
         byte[][] values2 = convert(values, CallManagerTest::bytes, byte[].class);
-        CallManager.ManyCaller<byte[]> caller2 = makeManyCaller(callableEndpoint, byte[].class);
+        CallManager.ManyCaller<byte[]> caller2 = endpointUtil.makeManyCaller(callableEndpoint, byte[].class);
         testConvertedCall(
                 functionName, caller2, caller2.args().param("param1", values2), values, CallManagerTest::xmlString
         );
 
         InputStream[] values3 = convert(values, CallManagerTest::inputStream, InputStream.class);
-        CallManager.ManyCaller<InputStream> caller3 = makeManyCaller(callableEndpoint, InputStream.class);
+        CallManager.ManyCaller<InputStream> caller3 = endpointUtil.makeManyCaller(callableEndpoint, InputStream.class);
         testConvertedCall(
                 functionName, caller3, caller3.args().param("param1", values3), values, CallManagerTest::xmlString
         );
 
         Reader[] values4 = convert(values, StringReader::new, Reader.class);
-        CallManager.ManyCaller<Reader> caller4 = makeManyCaller(callableEndpoint, Reader.class);
+        CallManager.ManyCaller<Reader> caller4 = endpointUtil.makeManyCaller(callableEndpoint, Reader.class);
         testConvertedCall(
                 functionName, caller4, caller4.args().param("param1", values4), values, CallManagerTest::xmlString
         );
 
-        CallManager.ManyCaller<String> caller5 = makeManyCaller(callableEndpoint, String.class);
+        CallManager.ManyCaller<String> caller5 = endpointUtil.makeManyCaller(callableEndpoint, String.class);
         testConvertedCall(
                 functionName, caller5, caller5.args().param("param1", values), values, CallManagerTest::xmlString
         );
 
         Document[] values6 = convert(values, CallManagerTest::document, Document.class);
-        CallManager.ManyCaller<Document> caller6 = makeManyCaller(callableEndpoint, Document.class);
+        CallManager.ManyCaller<Document> caller6 = endpointUtil.makeManyCaller(callableEndpoint, Document.class);
         testConvertedCall(
                 functionName, caller6, caller6.args().param("param1", values6), values, CallManagerTest::string
         );
 
         InputSource[] values7 = convert(values, CallManagerTest::inputSource, InputSource.class);
-        CallManager.ManyCaller<InputSource> caller7 = makeManyCaller(callableEndpoint, InputSource.class);
+        CallManager.ManyCaller<InputSource> caller7 = endpointUtil.makeManyCaller(callableEndpoint, InputSource.class);
         testConvertedCall(
                 functionName, caller7, caller7.args().param("param1", values7), values, CallManagerTest::string
         );
 
         Source[] values8 = convert(values, CallManagerTest::source, Source.class);
-        CallManager.ManyCaller<Source> caller8 = makeManyCaller(callableEndpoint, Source.class);
+        CallManager.ManyCaller<Source> caller8 = endpointUtil.makeManyCaller(callableEndpoint, Source.class);
         testConvertedCall(
                 functionName, caller8, caller8.args().param("param1", values8), values, CallManagerTest::string
         );
 
         XMLEventReader[] values9 = convert(values, CallManagerTest::xmlEventReader, XMLEventReader.class);
-        CallManager.ManyCaller<XMLEventReader> caller9 = makeManyCaller(callableEndpoint, XMLEventReader.class);
+        CallManager.ManyCaller<XMLEventReader> caller9 = endpointUtil.makeManyCaller(callableEndpoint, XMLEventReader.class);
         testConvertedCall(
                 functionName, caller9, caller9.args().param("param1", values9), values, CallManagerTest::string
         );
 
         XMLStreamReader[] values10 = convert(values, CallManagerTest::xmlStreamReader, XMLStreamReader.class);
-        CallManager.ManyCaller<XMLStreamReader> caller10 = makeManyCaller(callableEndpoint, XMLStreamReader.class);
+        CallManager.ManyCaller<XMLStreamReader> caller10 = endpointUtil.makeManyCaller(callableEndpoint, XMLStreamReader.class);
         testConvertedCall(
                 functionName, caller10, caller10.args().param("param1", values10), values, CallManagerTest::string
         );
 
         StringHandle[] values11 = convert(values, StringHandle::new, StringHandle.class);
-        CallManager.ManyCaller<XMLReadHandle> caller11 = makeManyCaller(callableEndpoint, XMLReadHandle.class);
+        CallManager.ManyCaller<XMLReadHandle> caller11 = endpointUtil.makeManyCaller(callableEndpoint, XMLReadHandle.class);
         testConvertedCall(
                 functionName, caller11, caller11.args().param("param1", values11), values, CallManagerTest::xmlString
         );
@@ -849,51 +837,51 @@ public class CallManagerTest {
     public void testNullNode() {
         String functionName = "nullNode";
 
-        CallManager.CallableEndpoint callableEndpoint = makeCallableEndpoint(functionName );
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName );
 
         testCharacterNodeOne(functionName, callableEndpoint);
 
-        testCall(functionName, makeOneCaller(callableEndpoint, String.class));
-        testCall(functionName, makeOneCaller(callableEndpoint, Document.class));
-        testCall(functionName, makeOneCaller(callableEndpoint, InputSource.class));
-        testCall(functionName, makeOneCaller(callableEndpoint, Source.class));
-        testCall(functionName, makeOneCaller(callableEndpoint, XMLEventReader.class));
-        testCall(functionName, makeOneCaller(callableEndpoint, XMLStreamReader.class));
-        testCall(functionName, makeOneCaller(callableEndpoint, XMLReadHandle.class));
+        testCall(functionName, endpointUtil.makeOneCaller(callableEndpoint, String.class));
+        testCall(functionName, endpointUtil.makeOneCaller(callableEndpoint, Document.class));
+        testCall(functionName, endpointUtil.makeOneCaller(callableEndpoint, InputSource.class));
+        testCall(functionName, endpointUtil.makeOneCaller(callableEndpoint, Source.class));
+        testCall(functionName, endpointUtil.makeOneCaller(callableEndpoint, XMLEventReader.class));
+        testCall(functionName, endpointUtil.makeOneCaller(callableEndpoint, XMLStreamReader.class));
+        testCall(functionName, endpointUtil.makeOneCaller(callableEndpoint, XMLReadHandle.class));
     }
 
     private void testNodeMany(String functionName, CallManager.CallableEndpoint callableEndpoint) {
-        testCall(functionName, makeManyCaller(callableEndpoint, byte[].class));
+        testCall(functionName, endpointUtil.makeManyCaller(callableEndpoint, byte[].class));
 
-        testCall(functionName, makeManyCaller(callableEndpoint, InputStream.class));
+        testCall(functionName, endpointUtil.makeManyCaller(callableEndpoint, InputStream.class));
     }
     private void testNodeOne(String functionName, CallManager.CallableEndpoint callableEndpoint) {
-        testCall(functionName, makeOneCaller(callableEndpoint, byte[].class));
+        testCall(functionName, endpointUtil.makeOneCaller(callableEndpoint, byte[].class));
 
-        testCall(functionName, makeOneCaller(callableEndpoint, InputStream.class));
+        testCall(functionName, endpointUtil.makeOneCaller(callableEndpoint, InputStream.class));
     }
     private void testNode(String functionName, CallManager.CallableEndpoint callableEndpoint, String value) {
         byte[] value2 = bytes(value);
-        CallManager.OneCaller<byte[]> caller2 = makeOneCaller(callableEndpoint, byte[].class);
+        CallManager.OneCaller<byte[]> caller2 = endpointUtil.makeOneCaller(callableEndpoint, byte[].class);
         testConvertedCall(
                 functionName, caller2, caller2.args().param("param1", value2), value, CallManagerTest::string
         );
 
         InputStream value3 = inputStream(value);
-        CallManager.OneCaller<InputStream> caller3 = makeOneCaller(callableEndpoint, InputStream.class);
+        CallManager.OneCaller<InputStream> caller3 = endpointUtil.makeOneCaller(callableEndpoint, InputStream.class);
         testConvertedCall(
                 functionName, caller3, caller3.args().param("param1", value3), value, NodeConverter::InputStreamToString
         );
     }
     private void testNode(String functionName, CallManager.CallableEndpoint callableEndpoint, String[] values) {
         byte[][] values2 = convert(values, CallManagerTest::bytes, byte[].class);
-        CallManager.ManyCaller<byte[]> caller2 = makeManyCaller(callableEndpoint, byte[].class);
+        CallManager.ManyCaller<byte[]> caller2 = endpointUtil.makeManyCaller(callableEndpoint, byte[].class);
         testConvertedCall(
                 functionName, caller2, caller2.args().param("param1", values2), values, CallManagerTest::string
         );
 
         InputStream[] values3 = convert(values, CallManagerTest::inputStream, InputStream.class);
-        CallManager.ManyCaller<InputStream> caller3 = makeManyCaller(callableEndpoint, InputStream.class);
+        CallManager.ManyCaller<InputStream> caller3 = endpointUtil.makeManyCaller(callableEndpoint, InputStream.class);
         testConvertedCall(
                 functionName, caller3, caller3.args().param("param1", values3), values, NodeConverter::InputStreamToString
         );
@@ -901,39 +889,39 @@ public class CallManagerTest {
     private void testCharacterNodeMany(String functionName, CallManager.CallableEndpoint callableEndpoint) {
         testNodeMany(functionName, callableEndpoint);
 
-        testCall(functionName, makeManyCaller(callableEndpoint, Reader.class));
+        testCall(functionName, endpointUtil.makeManyCaller(callableEndpoint, Reader.class));
 
-        testCall(functionName, makeManyCaller(callableEndpoint, String.class));
+        testCall(functionName, endpointUtil.makeManyCaller(callableEndpoint, String.class));
     }
     private void testCharacterNodeOne(String functionName, CallManager.CallableEndpoint callableEndpoint) {
         testNodeOne(functionName, callableEndpoint);
 
-        testCall(functionName, makeOneCaller(callableEndpoint, Reader.class));
+        testCall(functionName, endpointUtil.makeOneCaller(callableEndpoint, Reader.class));
 
-        testCall(functionName, makeOneCaller(callableEndpoint, String.class));
+        testCall(functionName, endpointUtil.makeOneCaller(callableEndpoint, String.class));
     }
     private void testCharacterNode(String functionName, CallManager.CallableEndpoint callableEndpoint, String value) {
         testNode(functionName, callableEndpoint, value);
 
         Reader value2 = new StringReader(value);
-        CallManager.OneCaller<Reader> caller2 = makeOneCaller(callableEndpoint, Reader.class);
+        CallManager.OneCaller<Reader> caller2 = endpointUtil.makeOneCaller(callableEndpoint, Reader.class);
         testConvertedCall(
                 functionName, caller2, caller2.args().param("param1", value2), value, NodeConverter::ReaderToString
         );
 
-        CallManager.OneCaller<String> caller = makeOneCaller(callableEndpoint, String.class);
+        CallManager.OneCaller<String> caller = endpointUtil.makeOneCaller(callableEndpoint, String.class);
         testCall(functionName, caller, caller.args().param("param1", value), value);
     }
     private void testCharacterNode(String functionName, CallManager.CallableEndpoint callableEndpoint, String[] values) {
         testNode(functionName, callableEndpoint, values);
 
         Reader[] values2 = convert(values, StringReader::new, Reader.class);
-        CallManager.ManyCaller<Reader> caller2 = makeManyCaller(callableEndpoint, Reader.class);
+        CallManager.ManyCaller<Reader> caller2 = endpointUtil.makeManyCaller(callableEndpoint, Reader.class);
         testConvertedCall(
                 functionName, caller2, caller2.args().param("param1", values2), values, NodeConverter::ReaderToString
         );
 
-        CallManager.ManyCaller<String> caller = makeManyCaller(callableEndpoint, String.class);
+        CallManager.ManyCaller<String> caller = endpointUtil.makeManyCaller(callableEndpoint, String.class);
         testCall(functionName, caller, caller.args().param("param1", values), values);
     }
 
@@ -1099,17 +1087,6 @@ public class CallManagerTest {
         return converted;
     }
 
-    private CallManager.CallableEndpoint makeCallableEndpoint(String functionName) {
-        JsonNode endpointdef = endpointSetup.endpointdefs.get(functionName);
-        assertNotNull("no endpoint definition found for "+functionName, endpointdef);
-        return callMgr.endpoint(endpointSetup.serviceHandle, new JacksonHandle(endpointdef), "sjs");
-    }
-    private <T> CallManager.ManyCaller<T> makeManyCaller(CallManager.CallableEndpoint callableEndpoint, Class<T> as) {
-        return callableEndpoint.returningMany(as);
-    }
-    private <T> CallManager.OneCaller<T> makeOneCaller(CallManager.CallableEndpoint callableEndpoint, Class<T> as) {
-        return callableEndpoint.returningOne(as);
-    }
     private <T> void testCall(String functionName, CallManager.ManyCaller<T> caller) {
         try {
             Stream<? extends T> result = caller.call();
@@ -1258,223 +1235,5 @@ public class CallManagerTest {
         }
         return converted;
     }
-    
-    static class EndpointSetup {
-    	
-    	Map<String, JsonNode> endpointdefs = new HashMap<>();
-    	JacksonHandle serviceHandle;
-    	
-    	EndpointSetup(String endpointDirectory){
-    		if(endpointDirectory == null || endpointDirectory.length()==0)
-    			throw new MarkLogicInternalException("Enpoint Directory cannot be null or empty.");
-    		
-            ObjectNode servicedef = objectMapper.createObjectNode();
-            servicedef.put("endpointDirectory", endpointDirectory);
-            this.serviceHandle = new JacksonHandle(servicedef);
-    	}
-    		
-        void setupParamNoReturnEndpoint(
-                JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
-        ) {
-            JsonNode endpointdef = getEndpointdef(functionName, datatype, null, null, false, false);
-            String script = getScript(datatype, null, null, false, false);
-            setupEndpoint(docMgr, docMeta, endpointdef, script);
-        }
-        void setupNoParamReturnEndpoint(
-                JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype, String returnVal
-        ) {
-            JsonNode endpointdef = getEndpointdef(functionName, null, null, datatype, false, false);
-            String script = getScript(null, null, returnVal, false, false);
-            setupEndpoint(docMgr, docMeta, endpointdef, script);
-        }
-        void setupNoParamNoReturnEndpoint(
-                JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName
-        ) {
-            JsonNode endpointdef = getEndpointdef(functionName, null, null, null, false, false);
-            String script = getScript(null, null, null, false, false);
-            setupEndpoint(docMgr, docMeta, endpointdef, script);
-        }
-        void setupTwoParamEndpoint(
-                JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype, String paramType2
-        ) {
-            JsonNode endpointdef = getEndpointdef(functionName, datatype, paramType2, datatype, false, false);
-            String script = getScript(datatype, paramType2, null, false, false);
-            setupEndpoint(docMgr, docMeta, endpointdef, script);
-        }
-        void setupEndpointSingleNulled(
-                JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
-        ) {
-            JsonNode endpointdef = getEndpointdef(functionName, datatype, false, true);
-            String script = getScript(datatype, false, true);
-            setupEndpoint(docMgr, docMeta, endpointdef, script);
-        }
-        void setupEndpointSingleRequired(
-                JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
-        ) {
-            JsonNode endpointdef = getEndpointdef(functionName, datatype, false, false);
-            String script = getScript(datatype, false, false);
-            setupEndpoint(docMgr, docMeta, endpointdef, script);
-        }
-        void setupEndpointMultipleNulled(
-                JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
-        ) {
-            JsonNode endpointdef = getEndpointdef(functionName, datatype, true, true);
-            String script = getScript(datatype, true, true);
-            setupEndpoint(docMgr, docMeta, endpointdef, script);
-        }
-        void setupEndpointMultipleRequired(JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String datatype) {
-            JsonNode endpointdef = getEndpointdef(datatype, datatype, true, false);
-            String script = getScript(datatype, true, false);
-            setupEndpoint(docMgr, docMeta, endpointdef, script);
-        }
-        void setupEndpoint(JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, JsonNode endpointdef, String script) {
-            String functionName = endpointdef.get("functionName").asText();
-            String baseUri      = ENDPOINT_DIRECTORY + functionName;
-            docMgr.write(baseUri+".api", docMeta, new JacksonHandle(endpointdef));
-            docMgr.write(baseUri+".sjs", docMeta, new StringHandle(script));
 
-            endpointdefs.put(functionName, endpointdef);
-        }
-
-        private JsonNode getEndpointdef(String functionName, String datatype, boolean isMultiple, boolean isNullable) {
-            return getEndpointdef(functionName, datatype, null, datatype, isMultiple, isNullable);
-        }
-        private JsonNode getEndpointdef(
-                String functionName, String paramType1, String paramType2, String returnType, boolean isMultiple, boolean isNullable
-        ) {
-            ObjectNode endpointdef = objectMapper.createObjectNode();
-            endpointdef.put("functionName", functionName);
-            if (paramType1 != null) {
-                ArrayNode paramdefs  = objectMapper.createArrayNode();
-                ObjectNode paramdef = objectMapper.createObjectNode();
-                paramdef.put("name", "param1");
-                paramdef.put("datatype", paramType1);
-                paramdef.put("multiple", isMultiple);
-                paramdef.put("nullable", isNullable);
-                paramdefs.add(paramdef);
-                if (paramType2 != null) {
-                    paramdef = objectMapper.createObjectNode();
-                    paramdef.put("name", "param2");
-                    paramdef.put("datatype", paramType2);
-                    paramdef.put("multiple", !isMultiple);
-                    paramdef.put("nullable", isNullable);
-                    paramdefs.add(paramdef);
-                }
-                endpointdef.set("params", paramdefs);
-            }
-            if (returnType != null) {
-                ObjectNode returndef = objectMapper.createObjectNode();
-                returndef.put("datatype", returnType);
-                returndef.put("multiple", isMultiple);
-                returndef.put("nullable", isNullable);
-                endpointdef.set("return", returndef);
-            }
-            return endpointdef;
-        }
-        
-        String getScript(String datatype, boolean isMultiple, boolean isNullable) {
-            return getScript(datatype, null, null, isMultiple, isNullable);
-        }
-        
-        String getScript(
-                String paramType1, String paramType2, String returnVal, boolean isMultiple, boolean isNullable
-        ) {
-            StringBuilder scriptBldr = new StringBuilder()
-                    .append("'use strict';\n");
-            if (paramType1 != null) {
-                scriptBldr = scriptBldr
-                        .append("var param1;\n");
-                if (paramType2 != null) {
-                    scriptBldr = scriptBldr
-                            .append("var param2;\n");
-                }
-            }
-
-            if (paramType1 != null) {
-                if (isNullable) {
-                    scriptBldr = scriptBldr
-                            .append("if (fn.count(param1) != 0)\n")
-                            .append("  fn.error(null, 'TEST_ERROR',\n")
-                            .append("    'received ' + fn.count(param1) + ' instead of no values');\n");
-                } else if (isMultiple) {
-                    scriptBldr = scriptBldr
-                            .append("if (fn.count(param1) < 2)\n")
-                            .append("  fn.error(null, 'TEST_ERROR',\n")
-                            .append("    'received ' + fn.count(param1) + ' instead of multiple values');\n")
-                            .append("const value1 = fn.head(param1);\n");
-                } else {
-                    scriptBldr = scriptBldr
-                            .append("const value1 = param1;\n");
-                }
-                if (paramType2 != null) {
-                    if (!isMultiple) {
-                        scriptBldr = scriptBldr
-                                .append("if (fn.count(param2) < 2)\n")
-                                .append("  fn.error(null, 'TEST_ERROR',\n")
-                                .append("    'received ' + fn.count(param2) + ' instead of multiple values');\n")
-                                .append("const value2 = fn.head(param2);\n");
-                    } else {
-                        scriptBldr = scriptBldr
-                                .append("const value2 = param2;\n");
-                    }
-                }
-
-                Format documentFormat = isNullable ? null : NODE_FORMATS.get(paramType1);
-                if (isNullable) {
-                    scriptBldr = scriptBldr
-                            .append("const isValid = true;\n");
-                } else if (documentFormat != null) {
-                    scriptBldr = scriptBldr
-                            .append("const isValid = ((value1 instanceof Document) ?\n")
-                            .append("    value1.documentFormat == '").append(documentFormat.name()).append("' :\n")
-                            .append("    xdmp.nodeKind(value1) == '").append(paramType1).append("'\n")
-                            .append("    );\n");
-                } else {
-                    scriptBldr = scriptBldr
-                            .append("const isValid = (\n")
-                            .append("    fn.localNameFromQName(xdmp.type(value1)) == '").append(paramType1).append("' ||\n")
-                            .append("    xdmp.castableAs('http://www.w3.org/2001/XMLSchema', '").append(paramType1).append("', value1)\n")
-                            .append("    );\n");
-                }
-                if (paramType2 != null) {
-                    Format documentFormat2 = isNullable ? null : NODE_FORMATS.get(paramType2);
-                    if (documentFormat2 != null) {
-                        scriptBldr = scriptBldr
-                                .append("const isValid2 = ((value2 instanceof Document) ?\n")
-                                .append("    value2.documentFormat == '").append(documentFormat2.name()).append("' :\n")
-                                .append("    xdmp.nodeKind(value2) == '").append(paramType2).append("'\n")
-                                .append("    );\n");
-                    } else {
-                        scriptBldr = scriptBldr
-                                .append("const isValid2 = (\n")
-                                .append("    fn.localNameFromQName(xdmp.type(value2)) == '").append(paramType2).append("' ||\n")
-                                .append("    xdmp.castableAs('http://www.w3.org/2001/XMLSchema', '").append(paramType2).append("', value2)\n")
-                                .append("    );\n");
-                    }
-                }
-
-                scriptBldr = scriptBldr
-                        .append("if (!isValid)\n")
-                        .append("  fn.error(null, 'TEST_ERROR',\n")
-                        .append("    'param1 set to ' + Object.prototype.toString.call(value1) +")
-                        .append("    ' instead of ").append(paramType1).append(" value');\n");
-                if (paramType2 != null) {
-                    scriptBldr = scriptBldr
-                            .append("if (!isValid2)\n")
-                            .append("  fn.error(null, 'TEST_ERROR',\n")
-                            .append("    'param2 set to ' + Object.prototype.toString.call(value2) +")
-                            .append("    ' instead of ").append(paramType2).append(" value');\n");
-                }
-
-                scriptBldr = scriptBldr
-                        .append("param1;");
-            } else if (returnVal != null) {
-                scriptBldr = scriptBldr
-                        .append(returnVal)
-                        .append(";");
-            }
-
-            return scriptBldr.toString();
-        }
-    }
 }

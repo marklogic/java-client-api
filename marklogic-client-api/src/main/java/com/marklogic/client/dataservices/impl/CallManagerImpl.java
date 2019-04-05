@@ -589,10 +589,19 @@ public class CallManagerImpl implements CallManager {
       return new ManyCallEventImpl(client, args, callImpl(client, args));
     }
   }
-  private static abstract class CallerImpl extends EndpointDefinerImpl {
+  static abstract class CallerImpl extends EndpointDefinerImpl {
     private CallableEndpointImpl endpoint;
     CallerImpl(CallableEndpointImpl endpoint) {
       this.endpoint = endpoint;
+    }
+
+    CallArgsImpl args(CallField field) {
+      CallArgsImpl args = (CallArgsImpl) args();
+      args.assignedParams = new HashSet<>();
+      args.assignedParams.add(field.getParamName());
+      args.callFields = new ArrayList<>();
+      args.callFields.add(field);
+      return args;
     }
 
     @Override

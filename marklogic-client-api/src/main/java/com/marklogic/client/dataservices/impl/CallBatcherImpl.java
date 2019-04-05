@@ -200,12 +200,13 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 // TODO: construct CallArgsImpl with field and default arguments and assign to args
 // TODO: first-time check that all required fields are set
 // TODO: skip check on required fields
+            args = ((CallManagerImpl.CallerImpl) caller).args(field);
         } else if (fieldifier != null) {
             RESTServices.CallField field = fieldifier.field(input);
 // TODO: construct CallArgsImpl with field and default arguments and assign to args
 // TODO: first-time check that all required fields are set
 // TODO: skip check on required fields
-
+            args = ((CallManagerImpl.CallerImpl) caller).args(field);
         } else if (input instanceof CallManager.CallArgs) {
 // TODO: add default arguments, check that all required fields are set
            args = (CallManager.CallArgs) input;
@@ -292,6 +293,15 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     public DataMovementManager getDataMovementManager() {
         return super.getMoveMgr();
     }
+    @Override
+    public JobTicket startJob​() {
+        return getDataMovementManager().startJob(this);
+    }
+    @Override
+    public void stopJob() {
+        getDataMovementManager().stopJob(this);
+    }
+
     @Override
     public JobTicket getJobTicket() {
         requireInitialized(true);

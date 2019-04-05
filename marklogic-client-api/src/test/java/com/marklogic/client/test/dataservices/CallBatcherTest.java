@@ -23,44 +23,23 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.dataservices.CallBatcher;
 import com.marklogic.client.dataservices.CallManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.test.Common;
-import com.marklogic.client.test.dataservices.CallManagerTest.EndpointSetup;
 
 public class CallBatcherTest {
 	
-	  private final static String ENDPOINT_DIRECTORY = "/javaApi/test/callManager/";
-	  private static EndpointSetup endpointSetup = new EndpointSetup(ENDPOINT_DIRECTORY);
-	  private static ObjectMapper objectMapper = new ObjectMapper();
-	  
-	  private DatabaseClient db      = Common.connect();
-	  private CallManager    callMgr = CallManager.on(db);
-	  private JacksonHandle serviceHandle;
-	    {
-	        ObjectNode servicedef = objectMapper.createObjectNode();
-	        servicedef.put("endpointDirectory", ENDPOINT_DIRECTORY);
-	        serviceHandle = new JacksonHandle(servicedef);
-	    }
+	  private final static String ENDPOINT_DIRECTORY = "/javaApi/test/callBatcher/";
 
-	  
-	  private CallManager.CallableEndpoint installEndpoint(String functionName) {
-		  if(functionName == null || functionName.length() == 0)
-			  throw new MarkLogicInternalException("Invalid input was sent.");
-		  JsonNode endpointdef = endpointSetup.endpointdefs.get(functionName);
-	      return callMgr.endpoint(serviceHandle, new JacksonHandle(endpointdef), "sjs");
-	  }
-	  
+      private static DatabaseClient db            = Common.connect();
+      private static CallManager    callMgr       = CallManager.on(db);
+      private static EndpointUtil endpointUtil = new EndpointUtil(callMgr, ENDPOINT_DIRECTORY);
+
 	  @BeforeClass
 	  public static void setup() {
 
@@ -70,16 +49,16 @@ public class CallBatcherTest {
 		DocumentMetadataHandle docMeta = new DocumentMetadataHandle();
 
 		docMeta.getPermissions().add("rest-reader", DocumentMetadataHandle.Capability.EXECUTE);
-		endpointSetup.setupParamNoReturnEndpoint(docMgr, docMeta, "paramNoReturn", "double");
-		endpointSetup.setupEndpointSingleRequired(docMgr, docMeta, "oneParam", "double");
-		endpointSetup.setupEndpointMultipleRequired(docMgr, docMeta, "float");
+		endpointUtil.setupParamNoReturnEndpoint(docMgr, docMeta, "paramNoReturn", "double");
+		endpointUtil.setupEndpointSingleRequired(docMgr, docMeta, "oneParam", "double");
+		endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "float");
 		
 		adminClient.release();
 	  }
 	  
 	  @Test
 	  public void noneForArgsTest() {
-		  CallManager.CallableEndpoint callableEndpoint = installEndpoint("paramNoReturn");
+		  CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint("paramNoReturn");
 		  CallManager.NoneCaller noneCaller = callableEndpoint.returningNone();
 		  
 		  CallBatcher<CallManager.CallArgs,CallManager.CallEvent> batcher = noneCaller.batcher().forArgs();
@@ -89,13 +68,13 @@ public class CallBatcherTest {
 				  assignedParams[0] = event.getArgs().getAssignedParamNames()[0];
 		  });
 		  
-		  batcher.getDataMovementManager().startJob(batcher);
+		  batcher.startJob​();
 		  assertNotNull(batcher.getJobStartTime());
 		  
 	      batcher.add(noneCaller.args().param("param1", 1.2));
 
 	      batcher.flushAndWait();
-	      batcher.getDataMovementManager().stopJob(batcher);
+	      batcher.stopJob();
 	      assertNotNull(batcher.getJobEndTime());
 	      
 	      assertEquals("Invalid number of parameters", assignedParams.length, 1);
@@ -105,7 +84,7 @@ public class CallBatcherTest {
 	  
 	  @Test
 	  public void oneForArgsTest() {
-		  CallManager.CallableEndpoint callableEndpoint = installEndpoint("oneParam");
+		  CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint("oneParam");
 		  CallManager.OneCaller<Double> oneCaller = callableEndpoint.returningOne(Double.class);
 		  
 		  CallBatcher<CallManager.CallArgs,CallManager.OneCallEvent<Double>> batcher = oneCaller.batcher().forArgs();
@@ -117,13 +96,13 @@ public class CallBatcherTest {
 			  returnValue[0] = event.getItem();
 		  });
 		  
-		  batcher.getDataMovementManager().startJob(batcher);
+		  batcher.startJob​();
 		  assertNotNull(batcher.getJobStartTime());
 		  
 	      batcher.add(oneCaller.args().param("param1", 1.2));
 
 	      batcher.flushAndWait();
-	      batcher.getDataMovementManager().stopJob(batcher);
+	      batcher.stopJob();
 	      assertNotNull(batcher.getJobEndTime());
 	      
 	      assertEquals("Invalid number of parameters", assignedParams.length, 1);
@@ -134,7 +113,7 @@ public class CallBatcherTest {
 	  
 	  @Test
 	  public void manyForArgsTest() {
-		  CallManager.CallableEndpoint callableEndpoint = installEndpoint("float");
+		  CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint("float");
 		  CallManager.ManyCaller<Float> manyCaller = callableEndpoint.returningMany(Float.class);
 		  
 		  CallBatcher<CallManager.CallArgs,CallManager.ManyCallEvent<Float>> batcher = manyCaller.batcher().forArgs();
@@ -149,15 +128,15 @@ public class CallBatcherTest {
 			  returnValues[1] = paramValues[1];
 			  
 		  });
-		  
-		  batcher.getDataMovementManager().startJob(batcher);
+
+          batcher.startJob​();
 		  assertNotNull(batcher.getJobStartTime());
 		  
 	      batcher.add(manyCaller.args().param("param1", values));
 
 	      batcher.flushAndWait();
 	      
-	      batcher.getDataMovementManager().stopJob(batcher);
+	      batcher.stopJob();
 	      assertNotNull(batcher.getJobEndTime());
 	     
 	      assertEquals("Invalid number of parameters", assignedParams.length, 1);
@@ -177,6 +156,5 @@ public class CallBatcherTest {
 	        queryMgr.delete(deletedef);
 	
 	        adminClient.release();
-	       
 	    }
 }
