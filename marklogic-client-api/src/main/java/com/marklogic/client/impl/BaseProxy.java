@@ -592,13 +592,13 @@ public class BaseProxy {
       return isParamNull(paramName, isNullable, value)  ? null : new SingleAtomicCallField(paramName, value);
    }
    static public MultipleAtomicCallField atomicParam(String paramName, boolean isNullable, Stream<String> values) {
-      return isParamNull(paramName, isNullable, values) ? null : new MultipleAtomicCallField(paramName, values);
+      return isParamNull(paramName, isNullable, values) ? null : new UnbufferedMultipleAtomicCallField(paramName, values);
    }
    static public SingleNodeCallField documentParam(String paramName, boolean isNullable, AbstractWriteHandle value) {
-      return isParamNull(paramName, isNullable, value)  ? null : new SingleNodeCallField(paramName, value);
+      return isParamNull(paramName, isNullable, value)  ? null : new UnbufferedSingleNodeCallField(paramName, value);
    }
    static public MultipleNodeCallField documentParam(String paramName, boolean isNullable, Stream<? extends AbstractWriteHandle> values) {
-      return isParamNull(paramName, isNullable, values) ? null : new MultipleNodeCallField(paramName, values);
+      return isParamNull(paramName, isNullable, values) ? null : new UnbufferedMultipleNodeCallField(paramName, values);
    }
    static protected boolean isParamNull(String paramName, boolean isNullable, Object value) {
       if (value != null) {

@@ -42,9 +42,6 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
-import com.marklogic.client.impl.RESTServices.CallField.MultipleAtomicCallField;
-import com.marklogic.client.impl.RESTServices.CallField.MultipleNodeCallField;
-import com.marklogic.client.impl.RESTServices.CallField.SingleNodeCallField;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
@@ -443,27 +440,24 @@ public interface RESTServices {
     public CallField toBuffered() {
     	return this;
     }
- 
-    public static abstract class MultipleAtomicCallField extends CallField {
-    	MultipleAtomicCallField(String paramName) {
-			super(paramName);
-		}
-		abstract Stream<String> getParamValues();
-    }
-    
-    public static abstract class MultipleNodeCallField extends CallField {
-    	MultipleNodeCallField(String paramName) {
-			super(paramName);
-		}
-		abstract Stream<? extends AbstractWriteHandle> getParamValues();
-    }
-    
-    public static abstract class SingleNodeCallField extends CallField {
-    	SingleNodeCallField(String paramName) {
-			super(paramName);
-		}
-		abstract AbstractWriteHandle getParamValue();
-    }
+  }
+  public static abstract class MultipleAtomicCallField extends CallField {
+    MultipleAtomicCallField(String paramName) {
+            super(paramName);
+        }
+    abstract Stream<String> getParamValues();
+  }
+  public static abstract class MultipleNodeCallField extends CallField {
+    MultipleNodeCallField(String paramName) {
+            super(paramName);
+        }
+    abstract Stream<? extends AbstractWriteHandle> getParamValues();
+  }
+  public static abstract class SingleNodeCallField extends CallField {
+    SingleNodeCallField(String paramName) {
+            super(paramName);
+        }
+    abstract AbstractWriteHandle getParamValue();
   }
   static public class SingleAtomicCallField extends CallField {
     private String paramValue;

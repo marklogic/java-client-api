@@ -40,6 +40,8 @@ public interface CallBatcher<W,E extends CallManager.CallEvent> extends Batcher 
     CallFailureListener[]    getCallFailureListeners();
 
     DataMovementManager getDataMovementManager();
+    JobTicket startJob​();
+    void stopJob();
 
     void setCallSuccessListeners(CallSuccessListener<E>... listeners);
     void setCallFailureListeners(CallFailureListener...    listeners);
@@ -62,6 +64,7 @@ public interface CallBatcher<W,E extends CallManager.CallEvent> extends Batcher 
 
     interface CallBatcherBuilder<E extends CallManager.CallEvent> {
 
+        <W> CallBatcher<W,E>                forBatchedParam(String paramName, Class<W> as);
         CallBatcher<CallManager.CallArgs,E> forArgs();
     }
 }
