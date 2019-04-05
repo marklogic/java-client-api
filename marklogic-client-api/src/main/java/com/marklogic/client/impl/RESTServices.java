@@ -444,15 +444,25 @@ public interface RESTServices {
     	return this;
     }
  
-    public interface MultipleAtomicCallField {
-    	Stream<String> getParamValues();
+    public static abstract class MultipleAtomicCallField extends CallField {
+    	MultipleAtomicCallField(String paramName) {
+			super(paramName);
+		}
+		abstract Stream<String> getParamValues();
     }
     
-    public interface MultipleNodeCallField {
-    	Stream<? extends AbstractWriteHandle> getParamValues();
+    public static abstract class MultipleNodeCallField extends CallField {
+    	MultipleNodeCallField(String paramName) {
+			super(paramName);
+		}
+		abstract Stream<? extends AbstractWriteHandle> getParamValues();
     }
-    public interface SingleNodeCallField {
-    	AbstractWriteHandle getParamValue();
+    
+    public static abstract class SingleNodeCallField extends CallField {
+    	SingleNodeCallField(String paramName) {
+			super(paramName);
+		}
+		abstract AbstractWriteHandle getParamValue();
     }
   }
   static public class SingleAtomicCallField extends CallField {
@@ -469,7 +479,7 @@ public interface RESTServices {
     	return this;
     }
   }
-  static public class UnbufferedMultipleAtomicCallField extends CallField implements MultipleAtomicCallField {
+  static public class UnbufferedMultipleAtomicCallField extends MultipleAtomicCallField {
     private Stream<String> paramValues;
     public UnbufferedMultipleAtomicCallField(String paramName, Stream<String> paramValues) {
       super(paramName);
@@ -478,7 +488,7 @@ public interface RESTServices {
     
     @Override
     public BufferedMultipleAtomicCallField toBuffered() {
-    	return new BufferedMultipleAtomicCallField(super.paramName, paramValues);
+    	return new BufferedMultipleAtomicCallField(super.getParamName(), paramValues);
     }
 
     @Override
@@ -486,7 +496,7 @@ public interface RESTServices {
 		return paramValues;
 	}
   }
-  static public class UnbufferedSingleNodeCallField extends CallField implements SingleNodeCallField {
+  static public class UnbufferedSingleNodeCallField extends SingleNodeCallField {
     private AbstractWriteHandle paramValue;
     public UnbufferedSingleNodeCallField(String paramName, AbstractWriteHandle paramValue) {
       super(paramName);
@@ -501,11 +511,11 @@ public interface RESTServices {
     	if(!(paramValue instanceof BufferableHandle))
     		throw new IllegalArgumentException("Default parameter must implement BufferableHandle.");
     	BytesHandle bytesHandle = new BytesHandle((BufferableHandle) paramValue);
-    	return new BufferedSingleNodeCallField(super.paramName, Stream.of(bytesHandle));
+    	return new BufferedSingleNodeCallField(super.getParamName(), bytesHandle);
     }
 
   }
-  static public class UnbufferedMultipleNodeCallField extends CallField implements MultipleNodeCallField {
+  static public class UnbufferedMultipleNodeCallField extends MultipleNodeCallField {
     private Stream<? extends AbstractWriteHandle> paramValues;
 
     public UnbufferedMultipleNodeCallField(String paramName, Stream<? extends AbstractWriteHandle> paramValues) {
@@ -520,19 +530,21 @@ public interface RESTServices {
     
     @Override
     public BufferedMultipleNodeCallField toBuffered() {
-    	if(!(paramValues instanceof BufferableHandle))
-    		throw new IllegalArgumentException("Default parameter must implement BufferableHandle.");
-    	BytesHandle bytesHandle = new BytesHandle((BufferableHandle) paramValues);
-    	return new BufferedMultipleNodeCallField(super.paramName, Stream.of(bytesHandle));
+    	Stream<BytesHandle> bytesHandleStream = paramValues.map(handle ->{
+    		if(!(handle instanceof BufferableHandle))
+        		throw new IllegalArgumentException("Default parameter must implement BufferableHandle.");
+    		return new BytesHandle((BufferableHandle) handle);
+        });
+    	return new BufferedMultipleNodeCallField(super.getParamName(), bytesHandleStream);
     }
     
   }
-  static public class BufferedMultipleAtomicCallField extends CallField implements MultipleAtomicCallField {
+  static public class BufferedMultipleAtomicCallField extends MultipleAtomicCallField {
 	  
 	private String[] paramValues;
 	public BufferedMultipleAtomicCallField(String paramName, Stream<String> paramValues) {
 		super(paramName);
-        this.paramValues = (String[]) paramValues.toArray();
+        this.paramValues = paramValues.toArray(size -> new String[size]);
     }
   
 	@Override
@@ -541,37 +553,34 @@ public interface RESTServices {
 	}
   }
 	
-  static public class BufferedMultipleNodeCallField extends CallField implements MultipleNodeCallField {
+  static public class BufferedMultipleNodeCallField extends MultipleNodeCallField {
 	  
-		private Stream<BytesHandle> paramValues;
-		public BufferedMultipleNodeCallField(String paramName, Stream<BytesHandle> paramValues) {
+	  private BytesHandle[] paramValues;
+	  public BufferedMultipleNodeCallField(String paramName, Stream<BytesHandle> paramValues) {
 			super(paramName);
-	        this.paramValues = paramValues;
-	    }
-	  
-		@Override
-		public Stream<BytesHandle> getParamValues() {
-			return paramValues;
-		}
-	  
+	        this.paramValues = paramValues.toArray(size -> new BytesHandle[size]);
+	  }
+	  @Override
+	  public Stream<BytesHandle> getParamValues() {
+			return Stream.of(paramValues);
+			}
   }
   
-  static public class BufferedSingleNodeCallField extends CallField implements SingleNodeCallField {
+  static public class BufferedSingleNodeCallField extends SingleNodeCallField {
 	  
-		private Stream<BytesHandle> paramValues;
-		public BufferedSingleNodeCallField(String paramName, Stream<BytesHandle> paramValues) {
+		private BytesHandle paramValue;
+		public BufferedSingleNodeCallField(String paramName, BytesHandle paramValue) {
 			super(paramName);
-	        this.paramValues = paramValues;
+	        this.paramValue = paramValue;
 	    }
 	  
-		public Stream<BytesHandle> getParamValues() {
-			return paramValues;
+		@Override
+		public BytesHandle getParamValue() {
+			return paramValue;
 		}
 
-		@Override
-		public AbstractWriteHandle getParamValue() {
-			// TODO Auto-generated method stub
-			return null;
+		public Stream<AbstractWriteHandle> getParamValues() {
+			return Stream.of(paramValue);
 		}
 	  
   }

@@ -35,6 +35,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends BatcherImpl implements CallBatcher<W,E> {
@@ -423,14 +424,18 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 	public CallBatcherImpl<W, E> withdefaultArgs(CallArgs args) {
 		if(args == null)
 			throw new IllegalArgumentException("CallArgs cannot be null.");
+		
 		CallArgsImpl callArgsImpl = (CallArgsImpl) args;
+		
 		if(callArgsImpl == null || ! (callArgsImpl instanceof CallArgsImpl))
 			throw new IllegalArgumentException("Illegal Argument.");
 		if(callArgsImpl.getEndpoint().getEndpointPath()!= caller.getEndpointPath())
 			throw new IllegalArgumentException("Endpoints are different.");
+		if(callArgsImpl.getCallFields() == null || callArgsImpl.getCallFields().size() == 0)
+			return this;
 		
-		List<CallField> callFieldList = callArgsImpl.getCallFields();
-		callFieldList.forEach(p->p.toBuffered());
+		List<CallField> callFieldList = callArgsImpl.getCallFields().stream().map(p->p.toBuffered()).collect(Collectors.toList());
+		
 		this.defaultArgs = callFieldList;
 		return this;
 	}
@@ -455,13 +460,24 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 		if(defaultArgs == null || defaultArgs.size()==0)
 			return callArgsImpl;
 		CallerImpl callerImpl = (com.marklogic.client.dataservices.impl.CallManagerImpl.CallerImpl) caller;
-		List<CallField> newCallFields = new ArrayList<CallField>();
+		Set<CallField> newCallFields = new HashSet<CallField>();
+		Set<String> assignedParams = new HashSet<String>();
 		
-		if(callArgsImpl.getCallFields()!=null && callArgsImpl.getCallFields().size()!=0)
+		if(callArgsImpl.getCallFields()!=null && callArgsImpl.getCallFields().size()!=0) {
 			newCallFields.addAll(callArgsImpl.getCallFields());
+			assignedParams.addAll(callArgsImpl.getAssignedParams());
+		}
 		
+		for(CallField i: defaultArgs) {
+			if(!assignedParams.contains(i.getParamName())) {
+				assignedParams.add(i.getParamName());
+				newCallFields.add(i);
+			}
+		}
+
 		newCallFields.addAll(defaultArgs);
+		List<CallField> callFieldList = newCallFields.stream().collect(Collectors.toList());
 		
-		return new CallArgsImpl(callerImpl.getEndpoint(), newCallFields);
+		return new CallArgsImpl(callerImpl.getEndpoint(), callFieldList);
 	}
 }
