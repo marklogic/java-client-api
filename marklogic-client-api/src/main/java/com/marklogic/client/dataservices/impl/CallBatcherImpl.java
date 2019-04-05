@@ -422,18 +422,22 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 
 	@Override
 	public CallBatcherImpl<W, E> withdefaultArgs(CallArgs args) {
-		if(args == null)
-			throw new IllegalArgumentException("CallArgs cannot be null.");
 		
+		if(args == null) {
+			this.defaultArgs = null;
+			return this;
+		}
+		if(! (args instanceof CallArgsImpl))
+			throw new IllegalArgumentException("Illegal Argument.");
 		CallArgsImpl callArgsImpl = (CallArgsImpl) args;
 		
-		if(callArgsImpl == null || ! (callArgsImpl instanceof CallArgsImpl))
-			throw new IllegalArgumentException("Illegal Argument.");
 		if(callArgsImpl.getEndpoint().getEndpointPath()!= caller.getEndpointPath())
 			throw new IllegalArgumentException("Endpoints are different.");
-		if(callArgsImpl.getCallFields() == null || callArgsImpl.getCallFields().size() == 0)
-			return this;
 		
+		if(callArgsImpl.getCallFields() == null || callArgsImpl.getCallFields().size() == 0) {
+			this.defaultArgs = null;
+			return this;
+		}
 		List<CallField> callFieldList = callArgsImpl.getCallFields().stream().map(p->p.toBuffered()).collect(Collectors.toList());
 		
 		this.defaultArgs = callFieldList;
@@ -460,7 +464,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 		if(defaultArgs == null || defaultArgs.size()==0)
 			return callArgsImpl;
 		CallerImpl callerImpl = (com.marklogic.client.dataservices.impl.CallManagerImpl.CallerImpl) caller;
-		Set<CallField> newCallFields = new HashSet<CallField>();
+		List<CallField> newCallFields = new ArrayList<CallField>();
 		Set<String> assignedParams = new HashSet<String>();
 		
 		if(callArgsImpl.getCallFields()!=null && callArgsImpl.getCallFields().size()!=0) {
@@ -475,9 +479,6 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 			}
 		}
 
-		newCallFields.addAll(defaultArgs);
-		List<CallField> callFieldList = newCallFields.stream().collect(Collectors.toList());
-		
-		return new CallArgsImpl(callerImpl.getEndpoint(), callFieldList);
+		return new CallArgsImpl(callerImpl.getEndpoint(), newCallFields);
 	}
 }

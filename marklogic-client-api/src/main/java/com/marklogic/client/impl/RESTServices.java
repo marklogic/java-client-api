@@ -578,11 +578,6 @@ public interface RESTServices {
 		public BytesHandle getParamValue() {
 			return paramValue;
 		}
-
-		public Stream<AbstractWriteHandle> getParamValues() {
-			return Stream.of(paramValue);
-		}
-	  
   }
 
   public interface CallRequest {
