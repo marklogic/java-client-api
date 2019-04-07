@@ -16,6 +16,7 @@
 package com.marklogic.client.datamovement;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.dataservices.CallBatcher;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
@@ -71,6 +72,8 @@ public interface DataMovementManager {
    * @return a JobTicket which can be used to track the job
    */
   public JobTicket startJob(QueryBatcher batcher);
+
+  public JobTicket startJob(CallBatcher batcher);
 
   /**
    * Get a snapshot report of the state of the job when the call is made.

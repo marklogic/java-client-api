@@ -13,21 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.dataservices;
+package com.marklogic.client.dataservices.impl;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
+import com.marklogic.client.datamovement.impl.BatchEventImpl;
+import com.marklogic.client.dataservices.CallBatcher;
+import com.marklogic.client.dataservices.CallManager;
 import com.marklogic.client.impl.BaseProxy;
 import com.marklogic.client.impl.NodeConverter;
 import com.marklogic.client.impl.RESTServices.CallField;
-import com.marklogic.client.impl.RESTServices.MultipleAtomicCallField;
+import com.marklogic.client.impl.RESTServices.UnbufferedMultipleAtomicCallField;
 import com.marklogic.client.impl.RESTServices.MultipleCallResponse;
-import com.marklogic.client.impl.RESTServices.MultipleNodeCallField;
+import com.marklogic.client.impl.RESTServices.UnbufferedMultipleNodeCallField;
 import com.marklogic.client.impl.RESTServices.SingleAtomicCallField;
 import com.marklogic.client.impl.RESTServices.SingleCallResponse;
-import com.marklogic.client.impl.RESTServices.SingleNodeCallField;
+import com.marklogic.client.impl.RESTServices.UnbufferedSingleNodeCallField;
 import com.marklogic.client.impl.SessionStateImpl;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.*;
@@ -46,7 +49,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class CallManagerImpl implements CallManager {
+public class CallManagerImpl implements CallManager {
   private static final Map<String, BaseFieldifier> paramFieldifiers = new HashMap<>();
   {
     paramFieldifiers.put(BaseProxy.BooleanType.NAME,         new BooleanFieldifier());
@@ -104,40 +107,40 @@ class CallManagerImpl implements CallManager {
     new XMLDocumentTypeConverter().putTo(returnConverters);
   }
 
-   private DatabaseClient client;
+  private DatabaseClient client;
 
-   CallManagerImpl(DatabaseClient client) {
-     if (client == null) {
-       throw new IllegalArgumentException("cannot construct CallManager with null database client");
-     }
-     this.client = client;
-   }
+  public CallManagerImpl(DatabaseClient client) {
+    if (client == null) {
+      throw new IllegalArgumentException("cannot construct CallManager with null database primaryClient");
+    }
+    this.client = client;
+  }
 
-   @Override
-   public SessionState newSessionState() {
+  @Override
+  public SessionState newSessionState() {
       return new SessionStateImpl();
    }
 
-   @Override
-   public CallableEndpoint endpoint(JSONWriteHandle serviceDeclaration, JSONWriteHandle endpointDeclaration, String extension) {
-     JsonNode serviceDecl  = NodeConverter.handleToJsonNode(serviceDeclaration);
-     JsonNode endpointDecl = NodeConverter.handleToJsonNode(endpointDeclaration);
+  @Override
+  public CallableEndpoint endpoint(JSONWriteHandle serviceDeclaration, JSONWriteHandle endpointDeclaration, String extension) {
+    JsonNode serviceDecl  = NodeConverter.handleToJsonNode(serviceDeclaration);
+    JsonNode endpointDecl = NodeConverter.handleToJsonNode(endpointDeclaration);
 
-     if (serviceDecl == null) {
-       throw new IllegalArgumentException("cannot construct CallableEndpoint with null serviceDeclaration");
-     } else if (endpointDecl == null) {
-       throw new IllegalArgumentException("cannot construct CallableEndpoint with null endpointDeclaration");
-     } else if (extension == null || extension.length() == 0) {
-       throw new IllegalArgumentException("cannot construct CallableEndpoint with null or empty extension");
-     } else if (!"sjs".equals(extension) && !"xqy".equals(extension)) {
-       throw new IllegalArgumentException("extension must be sjs or xqy: "+extension);
-     }
+    if (serviceDecl == null) {
+      throw new IllegalArgumentException("cannot construct CallableEndpoint with null serviceDeclaration");
+    } else if (endpointDecl == null) {
+      throw new IllegalArgumentException("cannot construct CallableEndpoint with null endpointDeclaration");
+    } else if (extension == null || extension.length() == 0) {
+      throw new IllegalArgumentException("cannot construct CallableEndpoint with null or empty extension");
+    } else if (!"sjs".equals(extension) && !"xqy".equals(extension)) {
+      throw new IllegalArgumentException("extension must be sjs or xqy: "+extension);
+    }
 
-     return new CallableEndpointImpl(client, serviceDecl, endpointDecl, extension);
+    return new CallableEndpointImpl(client, serviceDecl, endpointDecl, extension);
    }
 
-   private static class CallableEndpointImpl extends EndpointDefinerImpl implements CallableEndpoint {
-     private BaseProxy                 baseProxy;
+   static class CallableEndpointImpl extends EndpointDefinerImpl implements CallableEndpoint {
+     private DatabaseClient            primaryClient;
      private String                    endpointDirectory;
      private String                    module;
      private String                    endpointPath;
@@ -158,7 +161,7 @@ class CallManagerImpl implements CallManager {
               "no endpointDirectory in service declaration: "+serviceDeclaration.toString()
           );
         }
-        baseProxy = new BaseProxy(client, endpointDirectory);
+        this.primaryClient = client;
 
         String functionName = getText(endpointDeclaration.get("functionName"));
         if (functionName == null || functionName.length() == 0) {
@@ -263,6 +266,13 @@ class CallManagerImpl implements CallManager {
      CallableEndpointImpl getEndpoint() {
        return this;
      }
+     DatabaseClient getPrimaryClient() {
+       return primaryClient;
+     }
+
+     String getEndpointDirectory() {
+         return endpointDirectory;
+     }
 
      @Override
      public String getEndpointPath() {
@@ -321,9 +331,6 @@ class CallManagerImpl implements CallManager {
      boolean isNullable() {
        return returndef.isNullable();
      }
-     BaseProxy getBaseProxy() {
-        return baseProxy;
-     }
      String getModule() {
         return module;
      }
@@ -342,6 +349,13 @@ class CallManagerImpl implements CallManager {
      BaseProxy.ParameterValuesKind getParameterValuesKind() {
        return parameterValuesKind;
      }
+
+	@Override
+	public boolean isSameEndpoint(CallableEndpoint other) {
+		if(other!=null && (other.equals(this) || other.equals(this.getEndpoint())))
+			return true;
+		return false;
+	}
   }
 
   private static abstract class ValuedefImpl {
@@ -371,7 +385,7 @@ class CallManagerImpl implements CallManager {
       return isMultiple;
     }
   }
-  private static class ReturndefImpl extends ValuedefImpl implements Returndef {
+  static class ReturndefImpl extends ValuedefImpl implements Returndef {
     private ServerTypeConverter typeConverter;
     private Format format;
 
@@ -394,7 +408,7 @@ class CallManagerImpl implements CallManager {
       return format;
     }
   }
-  private static class ParamdefImpl extends ValuedefImpl implements Paramdef {
+  static class ParamdefImpl extends ValuedefImpl implements Paramdef {
     private String         name;
     private BaseFieldifier fieldifier;
 
@@ -450,7 +464,44 @@ class CallManagerImpl implements CallManager {
     abstract CallableEndpointImpl getEndpoint();
   }
 
-  private static class NoneCallerImpl extends CallerImpl implements NoneCaller {
+  static class CallEventImpl extends BatchEventImpl implements CallEvent {
+    private CallArgs args;
+    CallEventImpl(DatabaseClient client, CallArgs args) {
+      this.args = args;
+      withClient(client);
+    }
+    @Override
+    public CallArgs getArgs() {
+      return args;
+    }
+  }
+  static class OneCallEventImpl<R> extends CallEventImpl implements OneCallEvent<R> {
+    private R item;
+    OneCallEventImpl(DatabaseClient client, CallArgs args, R item) {
+      super(client, args);
+      this.item = item;
+    }
+    @Override
+    public R getItem() {
+      return item;
+    }
+  }
+  static class ManyCallEventImpl<R> extends CallEventImpl implements ManyCallEvent<R> {
+    private Stream<R> items;
+    ManyCallEventImpl(DatabaseClient client, CallArgs args, Stream<R> items) {
+      super(client, args);
+      this.items = items;
+    }
+    @Override
+    public Stream<R> getItems() {
+      return items;
+    }
+  }
+
+  interface EventedCaller<E extends CallEvent> extends EndpointDefiner {
+    E callForEvent(DatabaseClient client, CallArgs args) throws Exception;
+  }
+  static class NoneCallerImpl extends CallerImpl implements NoneCaller, EventedCaller<CallEvent> {
     NoneCallerImpl(CallableEndpointImpl endpoint) {
        super(endpoint);
      }
@@ -461,13 +512,25 @@ class CallManagerImpl implements CallManager {
     }
     @Override
     public void call(CallArgs args) {
-       if (!(args instanceof CallArgsImpl)) {
-         throw new IllegalArgumentException("arguments not constructed by the builder");
-       }
-       startRequest((CallArgsImpl) args).responseNone();
+      callImpl(getEndpoint().getPrimaryClient(), args);
+    }
+    private void callImpl(DatabaseClient client, CallArgs args) {
+      if (!(args instanceof CallArgsImpl)) {
+        throw new IllegalArgumentException("arguments not constructed by the builder");
+      }
+      startRequest(client, (CallArgsImpl) args).responseNone();
+    }
+    @Override
+	public CallBatcher.CallBatcherBuilder<CallEvent> batcher() {
+      return new CallBatcherImpl.BuilderImpl(getEndpoint().getPrimaryClient(), this);
+	}
+    @Override
+    public CallEvent callForEvent(DatabaseClient client, CallArgs args) throws Exception {
+      callImpl(client, args);
+      return new CallEventImpl(client, args);
     }
   }
-  private static class OneCallerImpl<R> extends CallerImpl implements OneCaller<R> {
+  private static class OneCallerImpl<R> extends CallerImpl implements OneCaller<R>, EventedCaller<OneCallEvent<R>> {
     private ReturnConverter<R> converter;
     private Format             format;
 
@@ -483,13 +546,24 @@ class CallManagerImpl implements CallManager {
     }
     @Override
     public R call(CallArgs args) {
+      return callImpl(getEndpoint().getPrimaryClient(), args);
+    }
+    private R callImpl(DatabaseClient client, CallArgs args) {
       if (!(args instanceof CallArgsImpl)) {
         throw new IllegalArgumentException("arguments not constructed by the builder");
       }
-      return converter.one(startRequest((CallArgsImpl) args).responseSingle(getEndpoint().isNullable(), format));
+      return converter.one(startRequest(client, (CallArgsImpl) args).responseSingle(getEndpoint().isNullable(), format));
+    }
+    @Override
+	public CallBatcher.CallBatcherBuilder<OneCallEvent<R>> batcher() {
+      return new CallBatcherImpl.BuilderImpl(getEndpoint().getPrimaryClient(),this);
+	}
+    @Override
+    public OneCallEvent<R> callForEvent(DatabaseClient client, CallArgs args) throws Exception {
+      return new OneCallEventImpl(client, args, callImpl(client, args));
     }
   }
-  private static class ManyCallerImpl<R> extends CallerImpl implements ManyCaller<R> {
+  static class ManyCallerImpl<R> extends CallerImpl implements ManyCaller<R>, EventedCaller<ManyCallEvent<R>> {
     private ReturnConverter<R> converter;
     private Format             format;
 
@@ -505,19 +579,36 @@ class CallManagerImpl implements CallManager {
     }
     @Override
     public Stream<R> call(CallArgs args) {
+      return callImpl(getEndpoint().getPrimaryClient(), args);
+    }
+    private Stream<R> callImpl(DatabaseClient client, CallArgs args) {
       if (!(args instanceof CallArgsImpl)) {
         throw new IllegalArgumentException("arguments not constructed by the builder");
       }
-      return converter.many(startRequest((CallArgsImpl) args).responseMultiple(getEndpoint().isNullable(), format));
+      return converter.many(startRequest(client, (CallArgsImpl) args).responseMultiple(getEndpoint().isNullable(), format));
+    }
+    @Override
+	public CallBatcher.CallBatcherBuilder<ManyCallEvent<R>> batcher() {
+      return new CallBatcherImpl.BuilderImpl(getEndpoint().getPrimaryClient(),this);
+	}
+    @Override
+    public ManyCallEvent<R> callForEvent(DatabaseClient client, CallArgs args) throws Exception {
+      return new ManyCallEventImpl(client, args, callImpl(client, args));
     }
   }
-  private static abstract class CallerImpl extends EndpointDefinerImpl {
+  static abstract class CallerImpl extends EndpointDefinerImpl {
     private CallableEndpointImpl endpoint;
-    // an uncloned cache
-    private BaseProxy.DBFunctionRequest request;
-
     CallerImpl(CallableEndpointImpl endpoint) {
       this.endpoint = endpoint;
+    }
+
+    CallArgsImpl args(CallField field) {
+      CallArgsImpl args = (CallArgsImpl) args();
+      args.assignedParams = new HashSet<>();
+      args.assignedParams.add(field.getParamName());
+      args.callFields = new ArrayList<>();
+      args.callFields.add(field);
+      return args;
     }
 
     @Override
@@ -540,44 +631,40 @@ class CallManagerImpl implements CallManager {
     CallableEndpointImpl getEndpoint() {
       return endpoint;
     }
-    BaseProxy.DBFunctionRequest startRequest(CallArgsImpl callArgs) {
-      if (this.request == null) {
-        // no concern about a race condition because any thread will cache the same fully built value
-        BaseProxy.DBFunctionRequest request = endpoint.getBaseProxy()
-                .request(endpoint.getModule(), endpoint.getParameterValuesKind());
+    BaseProxy.DBFunctionRequest startRequest(DatabaseClient client, CallArgsImpl callArgs) {
+      BaseProxy.DBFunctionRequest request = BaseProxy.request(
+          client, endpoint.getEndpointDirectory(), endpoint.getModule(), endpoint.getParameterValuesKind()
+      );
 
-        Paramdef sessiondef = endpoint.getSessiondef();
-        request = (sessiondef == null) ?
-                request.withSession() :
-                request.withSession(sessiondef.getParamName(), callArgs.getSession(), sessiondef.isNullable());
+      Paramdef sessiondef = endpoint.getSessiondef();
+      request = (sessiondef == null) ?
+              request.withSession() :
+              request.withSession(sessiondef.getParamName(), callArgs.getSession(), sessiondef.isNullable());
 
-        List<CallField> callFields = callArgs.getCallFields();
-        int fieldSize = (callFields == null) ? 0 : callFields.size();
-        Set<String> requiredParams = endpoint.getRequiredParams();
-        if (fieldSize > 0) {
+      List<CallField> callFields = callArgs.getCallFields();
+      int fieldSize = (callFields == null) ? 0 : callFields.size();
+      Set<String> requiredParams = endpoint.getRequiredParams();
+      if (fieldSize > 0) {
           Set<String> assignedParams = callArgs.getAssignedParams();
           if (requiredParams != null && !assignedParams.containsAll(requiredParams)) {
-            throw new IllegalArgumentException(
-                    endpoint.getModule()+" called without some required parameters: "+
-                            requiredParams.stream().filter(assignedParams::contains).collect(Collectors.joining(", "))
-            );
+              throw new IllegalArgumentException(
+                      endpoint.getModule()+" called without some required parameters: "+
+                              requiredParams.stream().filter(assignedParams::contains).collect(Collectors.joining(", "))
+              );
           }
           request = request.withParams(callFields.toArray(new CallField[fieldSize]));
-        } else if (requiredParams != null) {
+      } else if (requiredParams != null) {
           throw new IllegalArgumentException(
                   endpoint.getModule()+" called without the required parameters: "+
                           requiredParams.stream().collect(Collectors.joining(", "))
           );
-        }
-
-        this.request = request.withMethod("POST");
       }
 
-      return this.request;
+      return request.withMethod("POST");
     }
   }
 
-  private static class CallArgsImpl implements CallArgs {
+  static class CallArgsImpl implements CallArgs {
     private CallableEndpointImpl endpoint;
     private List<CallField>      callFields;
     private SessionState         session;
@@ -595,6 +682,10 @@ class CallManagerImpl implements CallManager {
       }
       this.session = session;
     }
+    CallArgsImpl(CallableEndpointImpl endpoint, List<CallField> callFields) {
+    	this.endpoint = endpoint;
+    	this.callFields = callFields;
+    }
 
     SessionState getSession() {
       return session;
@@ -606,7 +697,7 @@ class CallManagerImpl implements CallManager {
       return assignedParams;
     }
 
-    private CallableEndpointImpl getEndpoint() {
+    CallableEndpointImpl getEndpoint() {
       return this.endpoint;
     }
     private ParamdefImpl getParamdef(String name) {
@@ -636,6 +727,14 @@ class CallManagerImpl implements CallManager {
       callFields.add(field);
 
       return this;
+    }
+
+    @Override
+    public String[] getAssignedParamNames() {
+      if (assignedParams == null) {
+        return new String[0];
+      }
+      return assignedParams.toArray(new String[assignedParams.size()]);
     }
 
     @Override
@@ -901,7 +1000,19 @@ class CallManagerImpl implements CallManager {
   }
 
   // conversion from request with Java data types to server data types
-  private static abstract class BaseFieldifier {
+  static abstract class ParamFieldifier<T> {
+    private String name;
+    ParamFieldifier(String name) {
+      this.name = name;
+    }
+    String getName() {
+      return name;
+    }
+    abstract CallField field(T value);
+    abstract CallField field(T[] values);
+    abstract CallField field(Stream<T> values);
+  }
+  static abstract class BaseFieldifier {
     private String typeName;
     BaseFieldifier(String typeName) {
       this.typeName = typeName;
@@ -1095,6 +1206,15 @@ class CallManagerImpl implements CallManager {
     CallField field(String name, boolean nullable, boolean multiple, XMLStreamReader[] values) {
       throw new IllegalArgumentException("XMLStreamReader values not accepted for "+name+" parameter");
     }
+    <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
+      if (type == null) {
+        throw new IllegalArgumentException("null type for "+name+" parameter");
+
+      }
+      throw new IllegalArgumentException(
+          "Cannot construct parameter of type "+type.getCanonicalName()+" for "+name+" parameter"
+      );
+    }
   }
   private static abstract class AtomicFieldifier extends BaseFieldifier {
     AtomicFieldifier(String typeName) {
@@ -1103,13 +1223,45 @@ class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, String value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleAtomicCallField(name, value);
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, String[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, Stream.of(values)) :
-              new SingleAtomicCallField(name, values[0]);
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
+    }
+    @Override
+    <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
+      return String.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new Stringifier(name, this) :
+             super.fieldifierFor(name, type);
+    }
+    CallField field(String name, String value) {
+      return new SingleAtomicCallField(name, value);
+    }
+    CallField field(String name, String[] values) {
+      return new UnbufferedMultipleAtomicCallField(name, Stream.of(values));
+    }
+    CallField field(String name, Stream<String> values) {
+      return new UnbufferedMultipleAtomicCallField(name, values);
+    }
+    private static class Stringifier extends ParamFieldifier<String> {
+      private AtomicFieldifier fieldifier;
+      Stringifier(String name, AtomicFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(String value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(String[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<String> values) {
+        return fieldifier.field(getName(), values);
+      }
     }
   }
   private static abstract class NodeFieldifier extends BaseFieldifier {
@@ -1136,49 +1288,159 @@ class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, AbstractWriteHandle value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, format(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, AbstractWriteHandle[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleNodeCallField(name, formatAll(values)) :
-              new SingleNodeCallField(name, format(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
     }
     @Override
     CallField field(String name, boolean nullable, byte[] value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, format(NodeConverter.BytesToHandle(value)));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, byte[][] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, formatAll(NodeConverter.BytesToHandle(Stream.of(values)))) :
-              new SingleNodeCallField(name, format(NodeConverter.BytesToHandle(values[0])));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
     }
     @Override
     CallField field(String name, boolean nullable, File value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, format(NodeConverter.FileToHandle(value)));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, File[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, formatAll(NodeConverter.FileToHandle(Stream.of(values)))) :
-              new SingleNodeCallField(name, format(NodeConverter.FileToHandle(values[0])));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
     }
     @Override
     CallField field(String name, boolean nullable, InputStream value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, format(NodeConverter.InputStreamToHandle(value)));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, InputStream[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, formatAll(NodeConverter.InputStreamToHandle(Stream.of(values)))) :
-              new SingleNodeCallField(name, format(NodeConverter.InputStreamToHandle(values[0])));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
+    }
+    @Override
+    <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
+      return AbstractWriteHandle.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new AbstractWriteHandlifier(name, this) :
+             byte[].class.isAssignableFrom(type)              ? (ParamFieldifier<T>) new Bytesifier(name, this) :
+             File.class.isAssignableFrom(type)                ? (ParamFieldifier<T>) new Filifier(name, this) :
+             InputStream.class.isAssignableFrom(type)         ? (ParamFieldifier<T>) new InputStreamifier(name, this) :
+             super.fieldifierFor(name, type);
+    }
+    CallField field(String name, AbstractWriteHandle value) {
+      return formattedField(name, format(value));
+    }
+    CallField formattedField(String name, AbstractWriteHandle value) {
+      return new UnbufferedSingleNodeCallField(name, value);
+    }
+    CallField field(String name, AbstractWriteHandle[] values) {
+      return field(name, Stream.of(values));
+    }
+    CallField field(String name, Stream<? extends AbstractWriteHandle> values) {
+      return formattedField(name, formatAll(values));
+    }
+    CallField formattedField(String name, Stream<? extends AbstractWriteHandle> values) {
+      return new UnbufferedMultipleNodeCallField(name, values);
+    }
+    CallField field(String name, byte[] value) {
+      return field(name, NodeConverter.BytesToHandle(value));
+    }
+    CallField field(String name, byte[][] values) {
+      return field(name, NodeConverter.BytesToHandle(Stream.of(values)));
+    }
+    CallField field(String name, File value) {
+      return field(name, NodeConverter.FileToHandle(value));
+    }
+    CallField field(String name, File[] values) {
+      return field(name, NodeConverter.FileToHandle(Stream.of(values)));
+    }
+    CallField field(String name, InputStream value) {
+      return field(name, NodeConverter.InputStreamToHandle(value));
+    }
+    CallField field(String name, InputStream[] values) {
+      return field(name, NodeConverter.InputStreamToHandle(Stream.of(values)));
+    }
+    private static class AbstractWriteHandlifier extends ParamFieldifier<AbstractWriteHandle> {
+      private NodeFieldifier fieldifier;
+      AbstractWriteHandlifier(String name, NodeFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(AbstractWriteHandle value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(AbstractWriteHandle[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<AbstractWriteHandle> values) {
+        return fieldifier.field(getName(), values);
+      }
+    }
+    private static class Bytesifier extends ParamFieldifier<byte[]> {
+      private NodeFieldifier fieldifier;
+      Bytesifier(String name, NodeFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(byte[] value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(byte[][] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<byte[]> values) {
+        return fieldifier.field(getName(), NodeConverter.BytesToHandle(values));
+      }
+    }
+    private static class Filifier extends ParamFieldifier<File> {
+      private NodeFieldifier fieldifier;
+      Filifier(String name, NodeFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(File value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(File[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<File> values) {
+        return fieldifier.field(getName(), NodeConverter.FileToHandle(values));
+      }
+    }
+    private static class InputStreamifier extends ParamFieldifier<InputStream> {
+      private NodeFieldifier fieldifier;
+      InputStreamifier(String name, NodeFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(InputStream value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(InputStream[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<InputStream> values) {
+        return fieldifier.field(getName(), NodeConverter.InputStreamToHandle(values));
+      }
     }
   }
   private static abstract class CharacterNodeFieldifier extends NodeFieldifier {
@@ -1188,26 +1450,78 @@ class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, Reader value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, format(NodeConverter.ReaderToHandle(value)));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Reader[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, formatAll(NodeConverter.ReaderToHandle(Stream.of(values)))) :
-              new SingleNodeCallField(name, format(NodeConverter.ReaderToHandle(values[0])));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
     }
     @Override
     CallField field(String name, boolean nullable, String value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, format(NodeConverter.StringToHandle(value)));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, String[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, formatAll(NodeConverter.StringToHandle(Stream.of(values)))) :
-              new SingleNodeCallField(name, format(NodeConverter.StringToHandle(values[0])));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
+    }
+    @Override
+    <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
+      return Reader.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new Readerfier(name, this) :
+             String.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new Stringifier(name, this) :
+             super.fieldifierFor(name, type);
+    }
+    CallField field(String name, Reader value) {
+      return field(name, NodeConverter.ReaderToHandle(value));
+    }
+    CallField field(String name, Reader[] values) {
+      return field(name, NodeConverter.ReaderToHandle(Stream.of(values)));
+    }
+    CallField field(String name, String value) {
+      return field(name, NodeConverter.StringToHandle(value));
+    }
+    CallField field(String name, String[] values) {
+      return field(name, NodeConverter.StringToHandle(Stream.of(values)));
+    }
+    private static class Readerfier extends ParamFieldifier<Reader> {
+      private CharacterNodeFieldifier fieldifier;
+      Readerfier(String name, CharacterNodeFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(Reader value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(Reader[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<Reader> values) {
+        return fieldifier.field(getName(), NodeConverter.ReaderToHandle(values));
+      }
+    }
+    private static class Stringifier extends ParamFieldifier<String> {
+      private CharacterNodeFieldifier fieldifier;
+      Stringifier(String name, CharacterNodeFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(String value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(String[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<String> values) {
+        return fieldifier.field(getName(), NodeConverter.StringToHandle(values));
+      }
     }
   }
   private static class BooleanFieldifier extends AtomicFieldifier {
@@ -1217,13 +1531,42 @@ class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, Boolean value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleAtomicCallField(name, BaseProxy.BooleanType.fromBoolean(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Boolean[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.BooleanType.fromBoolean(Stream.of(values))) :
-              new SingleAtomicCallField(name, BaseProxy.BooleanType.fromBoolean(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
+    }
+    @Override
+    <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
+      return Boolean.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new Booleanifier(name, this) :
+             super.fieldifierFor(name, type);
+    }
+    CallField field(String name, Boolean value) {
+      return field(name, BaseProxy.BooleanType.fromBoolean(value));
+    }
+    CallField field(String name, Boolean[] values) {
+      return field(name, BaseProxy.BooleanType.fromBoolean(Stream.of(values)));
+    }
+    private static class Booleanifier extends ParamFieldifier<Boolean> {
+      private BooleanFieldifier fieldifier;
+      Booleanifier(String name, BooleanFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(Boolean value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(Boolean[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<Boolean> values) {
+        return fieldifier.field(getName(), BaseProxy.BooleanType.fromBoolean(values));
+      }
     }
   }
   private static class DateFieldifier extends AtomicFieldifier {
@@ -1233,13 +1576,42 @@ class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, LocalDate value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleAtomicCallField(name, BaseProxy.DateType.fromLocalDate(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, LocalDate[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.DateType.fromLocalDate(Stream.of(values))) :
-              new SingleAtomicCallField(name, BaseProxy.DateType.fromLocalDate(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
+    }
+    @Override
+    <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
+      return LocalDate.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new LocalDatifier(name, this) :
+             super.fieldifierFor(name, type);
+    }
+    CallField field(String name, LocalDate value) {
+      return field(name, BaseProxy.DateType.fromLocalDate(value));
+    }
+    CallField field(String name, LocalDate[] values) {
+      return field(name, BaseProxy.DateType.fromLocalDate(Stream.of(values)));
+    }
+    private static class LocalDatifier extends ParamFieldifier<LocalDate> {
+      private DateFieldifier fieldifier;
+      LocalDatifier(String name, DateFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(LocalDate value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(LocalDate[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<LocalDate> values) {
+        return fieldifier.field(getName(), BaseProxy.DateType.fromLocalDate(values));
+      }
     }
   }
   private static class DateTimeFieldifier extends AtomicFieldifier {
@@ -1249,35 +1621,114 @@ class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, Date value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleAtomicCallField(name, BaseProxy.DateTimeType.fromDate(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Date[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.DateTimeType.fromDate(Stream.of(values))) :
-              new SingleAtomicCallField(name, BaseProxy.DateTimeType.fromDate(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
     }
     @Override
     CallField field(String name, boolean nullable, LocalDateTime value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleAtomicCallField(name, BaseProxy.DateTimeType.fromLocalDateTime(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, LocalDateTime[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.DateTimeType.fromLocalDateTime(Stream.of(values))) :
-              new SingleAtomicCallField(name, BaseProxy.DateTimeType.fromLocalDateTime(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
     }
     @Override
     CallField field(String name, boolean nullable, OffsetDateTime value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleAtomicCallField(name, BaseProxy.DateTimeType.fromOffsetDateTime(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, OffsetDateTime[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.DateTimeType.fromOffsetDateTime(Stream.of(values))) :
-              new SingleAtomicCallField(name, BaseProxy.DateTimeType.fromOffsetDateTime(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
+    }
+    @Override
+    <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
+      return Date.class.isAssignableFrom(type)           ? (ParamFieldifier<T>) new Datifier(name, this) :
+             LocalDateTime.class.isAssignableFrom(type)  ? (ParamFieldifier<T>) new LocalDateTimifier(name, this) :
+             OffsetDateTime.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new OffsetDateTimifier(name, this) :
+             super.fieldifierFor(name, type);
+    }
+    CallField field(String name, Date value) {
+      return field(name, BaseProxy.DateTimeType.fromDate(value));
+    }
+    CallField field(String name, Date[] values) {
+      return field(name, BaseProxy.DateTimeType.fromDate(Stream.of(values)));
+    }
+    CallField field(String name, LocalDateTime value) {
+      return field(name, BaseProxy.DateTimeType.fromLocalDateTime(value));
+    }
+    CallField field(String name, LocalDateTime[] values) {
+      return field(name, BaseProxy.DateTimeType.fromLocalDateTime(Stream.of(values)));
+    }
+    CallField field(String name, OffsetDateTime value) {
+      return field(name, BaseProxy.DateTimeType.fromOffsetDateTime(value));
+    }
+    CallField field(String name, OffsetDateTime[] values) {
+      return field(name, BaseProxy.DateTimeType.fromOffsetDateTime(Stream.of(values)));
+    }
+    private static class Datifier extends ParamFieldifier<Date> {
+      private DateTimeFieldifier fieldifier;
+      Datifier(String name, DateTimeFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(Date value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(Date[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<Date> values) {
+        return fieldifier.field(getName(), BaseProxy.DateTimeType.fromDate(values));
+      }
+    }
+    private static class LocalDateTimifier extends ParamFieldifier<LocalDateTime> {
+      private DateTimeFieldifier fieldifier;
+      LocalDateTimifier(String name, DateTimeFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(LocalDateTime value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(LocalDateTime[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<LocalDateTime> values) {
+        return fieldifier.field(getName(), BaseProxy.DateTimeType.fromLocalDateTime(values));
+      }
+    }
+    private static class OffsetDateTimifier extends ParamFieldifier<OffsetDateTime> {
+      private DateTimeFieldifier fieldifier;
+      OffsetDateTimifier(String name, DateTimeFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(OffsetDateTime value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(OffsetDateTime[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<OffsetDateTime> values) {
+        return fieldifier.field(getName(), BaseProxy.DateTimeType.fromOffsetDateTime(values));
+      }
     }
   }
   private static class DayTimeDurationFieldifier extends AtomicFieldifier {
@@ -1287,13 +1738,42 @@ class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, Duration value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleAtomicCallField(name, BaseProxy.DayTimeDurationType.fromDuration(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Duration[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.DayTimeDurationType.fromDuration(Stream.of(values))) :
-              new SingleAtomicCallField(name, BaseProxy.DayTimeDurationType.fromDuration(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
+    }
+    @Override
+    <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
+      return Duration.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new Durationifier(name, this) :
+             super.fieldifierFor(name, type);
+    }
+    CallField field(String name, Duration value) {
+      return field(name, BaseProxy.DayTimeDurationType.fromDuration(value));
+    }
+    CallField field(String name, Duration[] values) {
+      return field(name, BaseProxy.DayTimeDurationType.fromDuration(Stream.of(values)));
+    }
+    private static class Durationifier extends ParamFieldifier<Duration> {
+      private DayTimeDurationFieldifier fieldifier;
+      Durationifier(String name, DayTimeDurationFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(Duration value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(Duration[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<Duration> values) {
+        return fieldifier.field(getName(), BaseProxy.DayTimeDurationType.fromDuration(values));
+      }
     }
   }
   private static class DecimalFieldifier extends AtomicFieldifier {
@@ -1303,13 +1783,42 @@ class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, BigDecimal value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleAtomicCallField(name, BaseProxy.DecimalType.fromBigDecimal(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, BigDecimal[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.DecimalType.fromBigDecimal(Stream.of(values))) :
-              new SingleAtomicCallField(name, BaseProxy.DecimalType.fromBigDecimal(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
+    }
+    @Override
+    <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
+      return BigDecimal.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new BigDecimalifier(name, this) :
+             super.fieldifierFor(name, type);
+    }
+    CallField field(String name, BigDecimal value) {
+      return field(name, BaseProxy.DecimalType.fromBigDecimal(value));
+    }
+    CallField field(String name, BigDecimal[] values) {
+      return field(name, BaseProxy.DecimalType.fromBigDecimal(Stream.of(values)));
+    }
+    private static class BigDecimalifier extends ParamFieldifier<BigDecimal> {
+      private DecimalFieldifier fieldifier;
+      BigDecimalifier(String name, DecimalFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(BigDecimal value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(BigDecimal[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<BigDecimal> values) {
+        return fieldifier.field(getName(), BaseProxy.DecimalType.fromBigDecimal(values));
+      }
     }
   }
   private static class DoubleFieldifier extends AtomicFieldifier {
@@ -1319,13 +1828,42 @@ class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, Double value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleAtomicCallField(name, BaseProxy.DoubleType.fromDouble(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Double[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.DoubleType.fromDouble(Stream.of(values))) :
-              new SingleAtomicCallField(name, BaseProxy.DoubleType.fromDouble(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
+    }
+    @Override
+    <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
+      return Double.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new Doublifier(name, this) :
+             super.fieldifierFor(name, type);
+    }
+    CallField field(String name, Double value) {
+      return field(name, BaseProxy.DoubleType.fromDouble(value));
+    }
+    CallField field(String name, Double[] values) {
+      return field(name, BaseProxy.DoubleType.fromDouble(Stream.of(values)));
+    }
+    private static class Doublifier extends ParamFieldifier<Double> {
+      private DoubleFieldifier fieldifier;
+      Doublifier(String name, DoubleFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(Double value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(Double[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<Double> values) {
+        return fieldifier.field(getName(), BaseProxy.DoubleType.fromDouble(values));
+      }
     }
   }
   private static class FloatFieldifier extends AtomicFieldifier {
@@ -1335,13 +1873,42 @@ class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, Float value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleAtomicCallField(name, BaseProxy.FloatType.fromFloat(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Float[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.FloatType.fromFloat(Stream.of(values))) :
-              new SingleAtomicCallField(name, BaseProxy.FloatType.fromFloat(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
+    }
+    @Override
+    <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
+      return Float.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new Floatifier(name, this) :
+             super.fieldifierFor(name, type);
+    }
+    CallField field(String name, Float value) {
+      return field(name, BaseProxy.FloatType.fromFloat(value));
+    }
+    CallField field(String name, Float[] values) {
+      return field(name, BaseProxy.FloatType.fromFloat(Stream.of(values)));
+    }
+    private static class Floatifier extends ParamFieldifier<Float> {
+      private FloatFieldifier fieldifier;
+      Floatifier(String name, FloatFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(Float value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(Float[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<Float> values) {
+        return fieldifier.field(getName(), BaseProxy.FloatType.fromFloat(values));
+      }
     }
   }
   private static class IntegerFieldifier extends AtomicFieldifier {
@@ -1351,13 +1918,42 @@ class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, Integer value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleAtomicCallField(name, BaseProxy.IntegerType.fromInteger(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Integer[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.IntegerType.fromInteger(Stream.of(values))) :
-              new SingleAtomicCallField(name, BaseProxy.IntegerType.fromInteger(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
+    }
+    @Override
+    <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
+      return Integer.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new Integerifier(name, this) :
+             super.fieldifierFor(name, type);
+    }
+    CallField field(String name, Integer value) {
+      return field(name, BaseProxy.IntegerType.fromInteger(value));
+    }
+    CallField field(String name, Integer[] values) {
+      return field(name, BaseProxy.IntegerType.fromInteger(Stream.of(values)));
+    }
+    private static class Integerifier extends ParamFieldifier<Integer> {
+      private IntegerFieldifier fieldifier;
+      Integerifier(String name, IntegerFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(Integer value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(Integer[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<Integer> values) {
+        return fieldifier.field(getName(), BaseProxy.IntegerType.fromInteger(values));
+      }
     }
   }
   static public class LongFieldifier extends AtomicFieldifier {
@@ -1367,13 +1963,42 @@ class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, Long value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleAtomicCallField(name, BaseProxy.LongType.fromLong(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Long[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.LongType.fromLong(Stream.of(values))) :
-              new SingleAtomicCallField(name, BaseProxy.LongType.fromLong(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
+    }
+    @Override
+    <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
+      return Long.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new Longifier(name, this) :
+             super.fieldifierFor(name, type);
+    }
+    CallField field(String name, Long value) {
+      return field(name, BaseProxy.LongType.fromLong(value));
+    }
+    CallField field(String name, Long[] values) {
+      return field(name, BaseProxy.LongType.fromLong(Stream.of(values)));
+    }
+    private static class Longifier extends ParamFieldifier<Long> {
+      private LongFieldifier fieldifier;
+      Longifier(String name, LongFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(Long value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(Long[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<Long> values) {
+        return fieldifier.field(getName(), BaseProxy.LongType.fromLong(values));
+      }
     }
   }
   private static class StringFieldifier extends AtomicFieldifier {
@@ -1388,24 +2013,78 @@ class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, LocalTime value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleAtomicCallField(name, BaseProxy.TimeType.fromLocalTime(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, LocalTime[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.TimeType.fromLocalTime(Stream.of(values))) :
-              new SingleAtomicCallField(name, BaseProxy.TimeType.fromLocalTime(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
     }
     @Override
     CallField field(String name, boolean nullable, OffsetTime value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleAtomicCallField(name, BaseProxy.TimeType.fromOffsetTime(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, OffsetTime[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.TimeType.fromOffsetTime(Stream.of(values))) :
-              new SingleAtomicCallField(name, BaseProxy.TimeType.fromOffsetTime(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
+    }
+    @Override
+    <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
+      return LocalTime.class.isAssignableFrom(type)  ? (ParamFieldifier<T>) new LocalTimifier(name, this) :
+             OffsetTime.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new OffsetTimifier(name, this) :
+             super.fieldifierFor(name, type);
+    }
+    CallField field(String name, LocalTime value) {
+      return field(name, BaseProxy.TimeType.fromLocalTime(value));
+    }
+    CallField field(String name, LocalTime[] values) {
+      return field(name, BaseProxy.TimeType.fromLocalTime(Stream.of(values)));
+    }
+    CallField field(String name, OffsetTime value) {
+      return field(name, BaseProxy.TimeType.fromOffsetTime(value));
+    }
+    CallField field(String name, OffsetTime[] values) {
+      return field(name, BaseProxy.TimeType.fromOffsetTime(Stream.of(values)));
+    }
+    private static class LocalTimifier extends ParamFieldifier<LocalTime> {
+      private TimeFieldifier fieldifier;
+      LocalTimifier(String name, TimeFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(LocalTime value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(LocalTime[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<LocalTime> values) {
+        return fieldifier.field(getName(), BaseProxy.TimeType.fromLocalTime(values));
+      }
+    }
+    private static class OffsetTimifier extends ParamFieldifier<OffsetTime> {
+      private TimeFieldifier fieldifier;
+      OffsetTimifier(String name, TimeFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(OffsetTime value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(OffsetTime[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<OffsetTime> values) {
+        return fieldifier.field(getName(), BaseProxy.TimeType.fromOffsetTime(values));
+      }
     }
   }
   private static class UnsignedIntegerFieldifier extends AtomicFieldifier {
@@ -1415,13 +2094,42 @@ class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, Integer value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleAtomicCallField(name, BaseProxy.UnsignedIntegerType.fromInteger(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Integer[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.UnsignedIntegerType.fromInteger(Stream.of(values))) :
-              new SingleAtomicCallField(name, BaseProxy.UnsignedIntegerType.fromInteger(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
+    }
+    @Override
+    <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
+      return Integer.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new UnsignedIntegerifier(name, this) :
+             super.fieldifierFor(name, type);
+    }
+    CallField field(String name, Integer value) {
+      return field(name, BaseProxy.UnsignedIntegerType.fromInteger(value));
+    }
+    CallField field(String name, Integer[] values) {
+      return field(name, BaseProxy.UnsignedIntegerType.fromInteger(Stream.of(values)));
+    }
+    private static class UnsignedIntegerifier extends ParamFieldifier<Integer> {
+      private UnsignedIntegerFieldifier fieldifier;
+      UnsignedIntegerifier(String name, UnsignedIntegerFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(Integer value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(Integer[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<Integer> values) {
+        return fieldifier.field(getName(), BaseProxy.UnsignedIntegerType.fromInteger(values));
+      }
     }
   }
   private static class UnsignedLongFieldifier extends AtomicFieldifier {
@@ -1431,13 +2139,42 @@ class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, Long value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleAtomicCallField(name, BaseProxy.UnsignedLongType.fromLong(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Long[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ? new MultipleAtomicCallField(name, BaseProxy.UnsignedLongType.fromLong(Stream.of(values))) :
-              new SingleAtomicCallField(name, BaseProxy.UnsignedLongType.fromLong(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
+    }
+    @Override
+    <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
+      return Long.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new UnsignedLongifier(name, this) :
+             super.fieldifierFor(name, type);
+    }
+    CallField field(String name, Long value) {
+      return field(name, BaseProxy.UnsignedLongType.fromLong(value));
+    }
+    CallField field(String name, Long[] values) {
+      return field(name, BaseProxy.UnsignedLongType.fromLong(Stream.of(values)));
+    }
+    private static class UnsignedLongifier extends ParamFieldifier<Long> {
+      private UnsignedLongFieldifier fieldifier;
+      UnsignedLongifier(String name, UnsignedLongFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(Long value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(Long[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<Long> values) {
+        return fieldifier.field(getName(), BaseProxy.UnsignedLongType.fromLong(values));
+      }
     }
   }
   private static class BinaryDocumentFieldifier extends NodeFieldifier {
@@ -1455,26 +2192,78 @@ class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, JsonNode value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, BaseProxy.JsonDocumentType.fromJsonNode(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, JsonNode[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, BaseProxy.JsonDocumentType.fromJsonNode(Stream.of(values))) :
-              new SingleNodeCallField(name, BaseProxy.JsonDocumentType.fromJsonNode(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
     }
     @Override
     CallField field(String name, boolean nullable, JsonParser value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, BaseProxy.JsonDocumentType.fromJsonParser(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, JsonParser[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, BaseProxy.JsonDocumentType.fromJsonParser(Stream.of(values))) :
-              new SingleNodeCallField(name, BaseProxy.JsonDocumentType.fromJsonParser(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
+    }
+    @Override
+    <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
+      return JsonNode.class.isAssignableFrom(type)   ? (ParamFieldifier<T>) new JsonNodeifier(name, this) :
+             JsonParser.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new JsonParserfiier(name, this) :
+             super.fieldifierFor(name, type);
+    }
+    CallField field(String name, JsonNode value) {
+      return formattedField(name, BaseProxy.JsonDocumentType.fromJsonNode(value));
+    }
+    CallField field(String name, JsonNode[] values) {
+      return formattedField(name, BaseProxy.JsonDocumentType.fromJsonNode(Stream.of(values)));
+    }
+    CallField field(String name, JsonParser value) {
+      return formattedField(name, BaseProxy.JsonDocumentType.fromJsonParser(value));
+    }
+    CallField field(String name, JsonParser[] values) {
+      return formattedField(name, BaseProxy.JsonDocumentType.fromJsonParser(Stream.of(values)));
+    }
+    private static class JsonNodeifier extends ParamFieldifier<JsonNode> {
+      private JsonDocumentFieldifier fieldifier;
+      JsonNodeifier(String name, JsonDocumentFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(JsonNode value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(JsonNode[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<JsonNode> values) {
+        return fieldifier.formattedField(getName(), BaseProxy.JsonDocumentType.fromJsonNode(values));
+      }
+    }
+    private static class JsonParserfiier extends ParamFieldifier<JsonParser> {
+      private JsonDocumentFieldifier fieldifier;
+      JsonParserfiier(String name, JsonDocumentFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(JsonParser value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(JsonParser[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<JsonParser> values) {
+        return fieldifier.formattedField(getName(), BaseProxy.JsonDocumentType.fromJsonParser(values));
+      }
     }
   }
   static public class ArrayFieldifier extends JsonDocumentFieldifier {
@@ -1499,62 +2288,186 @@ class CallManagerImpl implements CallManager {
     @Override
     CallField field(String name, boolean nullable, Document value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromDocument(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Document[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, BaseProxy.XmlDocumentType.fromDocument(Stream.of(values))) :
-              new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromDocument(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
     }
     @Override
     CallField field(String name, boolean nullable, InputSource value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromInputSource(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, InputSource[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, BaseProxy.XmlDocumentType.fromInputSource(Stream.of(values))) :
-              new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromInputSource(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
     }
     @Override
     CallField field(String name, boolean nullable, Source value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromSource(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, Source[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, BaseProxy.XmlDocumentType.fromSource(Stream.of(values))) :
-              new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromSource(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
     }
     @Override
     CallField field(String name, boolean nullable, XMLEventReader value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, XMLEventReader[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(Stream.of(values))) :
-              new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
     }
     @Override
     CallField field(String name, boolean nullable, XMLStreamReader value) {
       if (isEmpty(name, nullable, value)) return null;
-      return new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(value));
+      return field(name, value);
     }
     @Override
     CallField field(String name, boolean nullable, boolean multiple, XMLStreamReader[] values) {
       if (isEmpty(name, nullable, values)) return null;
-      return isMultiple(name, multiple, values) ?
-              new MultipleNodeCallField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(Stream.of(values))) :
-              new SingleNodeCallField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(values[0]));
+      return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
+    }
+    @Override
+    <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
+      return Document.class.isAssignableFrom(type)        ? (ParamFieldifier<T>) new Documentifier(name, this) :
+             InputSource.class.isAssignableFrom(type)     ? (ParamFieldifier<T>) new InputSourcifier(name, this) :
+             Source.class.isAssignableFrom(type)          ? (ParamFieldifier<T>) new Sourcifier(name, this) :
+             XMLEventReader.class.isAssignableFrom(type)  ? (ParamFieldifier<T>) new XMLEventReaderifier(name, this) :
+             XMLStreamReader.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new XMLStreamReaderifier(name, this) :
+             super.fieldifierFor(name, type);
+    }
+    CallField field(String name, Document value) {
+      return formattedField(name, BaseProxy.XmlDocumentType.fromDocument(value));
+    }
+    CallField field(String name, Document[] values) {
+      return formattedField(name, BaseProxy.XmlDocumentType.fromDocument(Stream.of(values)));
+    }
+    CallField field(String name, InputSource value) {
+      return formattedField(name, BaseProxy.XmlDocumentType.fromInputSource(value));
+    }
+    CallField field(String name, InputSource[] values) {
+      return formattedField(name, BaseProxy.XmlDocumentType.fromInputSource(Stream.of(values)));
+    }
+    CallField field(String name, Source value) {
+      return formattedField(name, BaseProxy.XmlDocumentType.fromSource(value));
+    }
+    CallField field(String name, Source[] values) {
+      return formattedField(name, BaseProxy.XmlDocumentType.fromSource(Stream.of(values)));
+    }
+    CallField field(String name, XMLEventReader value) {
+      return formattedField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(value));
+    }
+    CallField field(String name, XMLEventReader[] values) {
+      return formattedField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(Stream.of(values)));
+    }
+    CallField field(String name, XMLStreamReader value) {
+      return formattedField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(value));
+    }
+    CallField field(String name, XMLStreamReader[] values) {
+      return formattedField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(Stream.of(values)));
+    }
+    private static class Documentifier extends ParamFieldifier<Document> {
+      private XmlDocumentFieldifier fieldifier;
+      Documentifier(String name, XmlDocumentFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(Document value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(Document[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<Document> values) {
+        return fieldifier.formattedField(getName(), BaseProxy.XmlDocumentType.fromDocument(values));
+      }
+    }
+    private static class InputSourcifier extends ParamFieldifier<InputSource> {
+      private XmlDocumentFieldifier fieldifier;
+      InputSourcifier(String name, XmlDocumentFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(InputSource value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(InputSource[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<InputSource> values) {
+        return fieldifier.formattedField(getName(), BaseProxy.XmlDocumentType.fromInputSource(values));
+      }
+    }
+    private static class Sourcifier extends ParamFieldifier<Source> {
+      private XmlDocumentFieldifier fieldifier;
+      Sourcifier(String name, XmlDocumentFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(Source value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(Source[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<Source> values) {
+        return fieldifier.formattedField(getName(), BaseProxy.XmlDocumentType.fromSource(values));
+      }
+    }
+    private static class XMLEventReaderifier extends ParamFieldifier<XMLEventReader> {
+      private XmlDocumentFieldifier fieldifier;
+      XMLEventReaderifier(String name, XmlDocumentFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(XMLEventReader value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(XMLEventReader[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<XMLEventReader> values) {
+        return fieldifier.formattedField(getName(), BaseProxy.XmlDocumentType.fromXMLEventReader(values));
+      }
+    }
+    private static class XMLStreamReaderifier extends ParamFieldifier<XMLStreamReader> {
+      private XmlDocumentFieldifier fieldifier;
+      XMLStreamReaderifier(String name, XmlDocumentFieldifier fieldifier) {
+        super(name);
+        this.fieldifier = fieldifier;
+      }
+      @Override
+      CallField field(XMLStreamReader value) {
+        return fieldifier.field(getName(), value);
+      }
+      @Override
+      CallField field(XMLStreamReader[] values) {
+        return fieldifier.field(getName(), values);
+      }
+      @Override
+      CallField field(Stream<XMLStreamReader> values) {
+        return fieldifier.formattedField(getName(), BaseProxy.XmlDocumentType.fromXMLStreamReader(values));
+      }
     }
   }
 
@@ -1594,7 +2507,7 @@ class CallManagerImpl implements CallManager {
       ReturnConverter<?> converter = converters.get(as);
       if (converter == null) {
         throw new IllegalArgumentException(
-                "cannot convert server type "+serverType+" to client type "+as.getCanonicalName()
+                "cannot convert server type "+serverType+" to primaryClient type "+as.getCanonicalName()
         );
       }
       return (ReturnConverter<T>) converter;

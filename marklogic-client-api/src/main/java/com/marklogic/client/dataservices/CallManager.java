@@ -19,6 +19,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
+import com.marklogic.client.datamovement.BatchEvent;
+import com.marklogic.client.dataservices.impl.CallManagerImpl;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.w3c.dom.Document;
@@ -100,6 +102,12 @@ public interface CallManager {
          * @return  a caller that may return more than one value
          */
         <R> ManyCaller<R> returningMany(Class<R> as);
+        /**
+         * Verifies if two different objects have the same endpoint definition
+         * @param other the CallableEndpoint to be compared with the current object.
+         * @return true if endpoints are same else returns false.
+         */
+        boolean isSameEndpoint(CallableEndpoint other); 
     }
 
     interface NoneCaller extends EndpointDefiner {
@@ -116,6 +124,11 @@ public interface CallManager {
          * @param args  the parameter input for the call
          */
         void call(CallArgs args);
+        /**
+         * Constructs a batcher of type CallEvent.
+         * @return the CallBatcherBuilder of type CallEvent.
+         */
+        CallBatcher.CallBatcherBuilder<CallEvent> batcher();
     }
     interface OneCaller<R> extends EndpointDefiner {
         /**
@@ -133,6 +146,11 @@ public interface CallManager {
          * @return  a Java value of the specified type as returned by the endpoint
          */
         R call(CallArgs args);
+        /**
+         * Constructs a batcher of type OneCallEvent.
+         * @return the CallBatcherBuilder of type OneCallEvent.
+         */
+        CallBatcher.CallBatcherBuilder<OneCallEvent<R>> batcher();
     }
     interface ManyCaller<R> extends EndpointDefiner {
         /**
@@ -150,6 +168,11 @@ public interface CallManager {
          * @return  a stream of Java values of the specified type as returned by the endpoint
          */
         Stream<R> call(CallArgs args);
+        /**
+         * Constructs a batcher of type ManyCallEvent.
+         * @return the CallBatcherBuilder of type ManyCallEvent.
+         */
+        CallBatcher.CallBatcherBuilder<ManyCallEvent<R>> batcher();
     }
     interface EndpointDefiner {
         /**
@@ -621,6 +644,12 @@ public interface CallManager {
          * @return  the CallArgs object for chained building of the arguments
          */
         CallArgs param(String name, XMLStreamReader[] values);
+
+        /**
+         * Get the names of the parameters that have been assigned arguments
+         * @return  the names of the assigned parameters
+         */
+        String[] getAssignedParamNames();
     }
 
     /**
@@ -668,5 +697,17 @@ public interface CallManager {
          * @return  whether the endpoint can return null
          */
         boolean isMultiple();
+    }
+
+    interface CallEvent extends BatchEvent {
+        CallArgs getArgs();
+    }
+
+    interface ManyCallEvent<R> extends CallEvent {
+        Stream<R> getItems();
+    }
+
+    interface OneCallEvent<R> extends CallEvent {
+        R getItem();
     }
 }

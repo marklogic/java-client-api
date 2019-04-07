@@ -22,64 +22,32 @@ import com.marklogic.client.datamovement.Batch;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.JobTicket;
 
-public class BatchImpl<T> implements Batch<T> {
+public class BatchImpl<T> extends BatchEventImpl implements Batch<T> {
   private T[] items;
-  private DatabaseClient client;
-  private long jobBatchNumber;
-  private Calendar timestamp;
-  private JobTicket jobTicket;
 
   public BatchImpl() {
-    timestamp = Calendar.getInstance();
+    super();
   }
 
   @Override
   public T[] getItems() {
     return items;
   }
-
   public BatchImpl<T> withItems(T[] items) {
     this.items = items;
     return this;
   }
 
-  @Override
-  public DatabaseClient getClient() {
-    return client;
-  }
-
   public BatchImpl<T> withClient(DatabaseClient client) {
-    this.client = client;
-    return this;
+    return (BatchImpl<T>) super.withClient(client);
   }
-
-  @Override
-  public Calendar getTimestamp() {
-    return timestamp;
-  }
-
   public BatchImpl<T> withTimestamp(Calendar timestamp) {
-    this.timestamp = timestamp;
-    return this;
+    return (BatchImpl<T>) super.withTimestamp(timestamp);
   }
-
-  @Override
-  public JobTicket getJobTicket() {
-    return jobTicket;
-  }
-
   public BatchImpl<T> withJobTicket(JobTicket jobTicket) {
-    this.jobTicket = jobTicket;
-    return this;
+    return (BatchImpl<T>) super.withJobTicket(jobTicket);
   }
-
-  @Override
-  public long getJobBatchNumber() {
-    return jobBatchNumber;
-  }
-
   public BatchImpl<T> withJobBatchNumber(long jobBatchNumber) {
-    this.jobBatchNumber = jobBatchNumber;
-    return this;
+    return (BatchImpl<T>) super.withJobBatchNumber(jobBatchNumber);
   }
 }

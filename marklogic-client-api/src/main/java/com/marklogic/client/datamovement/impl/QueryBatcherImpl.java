@@ -271,7 +271,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   @Override
   public QueryBatcher withJobId(String jobId) {
     requireNotStarted();
-    super.withJobId(jobId);
+    setJobId(jobId);
     return this;
   }
 
@@ -343,7 +343,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
   }
 
-  synchronized void start(JobTicket ticket) {
+  @Override
+  public synchronized void start(JobTicket ticket) {
     if ( threadPool != null ) {
       logger.warn("startJob called more than once");
       return;
@@ -424,7 +425,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   @Override
   public synchronized QueryBatcher withForestConfig(ForestConfiguration forestConfig) {
     super.withForestConfig(forestConfig);
-    Forest[] forests = forestConfig.listForests();
+    Forest[] forests = forests(forestConfig);
     Set<Forest> oldForests = new HashSet<>(forestResults.keySet());
     Map<String,Forest> hosts = new HashMap<>();
     for ( Forest forest : forests ) {
@@ -434,20 +435,16 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       if ( forestIsDone.get(forest) == null  ) forestIsDone.put(forest, new AtomicBoolean(false));
       if ( retryForestMap.get(forest) == null ) retryForestMap.put(forest, new AtomicInteger(0));
     }
-    logger.info("(withForestConfig) Using forests on {} hosts for \"{}\"", hosts.keySet(), forests[0].getDatabaseName());
-    List<DatabaseClient> newClientList = new ArrayList<>();
-    for ( String host : hosts.keySet() ) {
-      Forest forest = hosts.get(host);
-      DatabaseClient client = getMoveMgr().getForestClient(forest);
-      newClientList.add(client);
-    }
+    Set<String> hostNames = hosts.keySet();
+    logger.info("(withForestConfig) Using forests on {} hosts for \"{}\"", hostNames, forests[0].getDatabaseName());
+    List<DatabaseClient> newClientList = clients(hostNames);
     clientList.set(newClientList);
     boolean started = (threadPool != null);
-    if ( started == true && oldForests.size() > 0 ) calucluateDeltas(oldForests, forests);
+    if ( started == true && oldForests.size() > 0 ) calculateDeltas(oldForests, forests);
     return this;
   }
 
-  private synchronized void calucluateDeltas(Set<Forest> oldForests, Forest[] forests) {
+  private synchronized void calculateDeltas(Set<Forest> oldForests, Forest[] forests) {
     // the forests we haven't known about yet
     Set<Forest> addedForests = new HashSet<>();
     // the forests that we knew about but they were black-listed and are no longer black-listed
@@ -859,6 +856,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     threadPool.execute(new IteratorTask(this));
   }
 
+  @Override
   public void stop() {
     stopped.set(true);
     if ( threadPool != null ) threadPool.shutdownNow();
@@ -972,11 +970,6 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
         lock.notify();
       }
     }
-  }
-
-  @Override
-  public DatabaseClient getPrimaryClient() {
-    return getMoveMgr().getPrimaryClient();
   }
 
   @Override

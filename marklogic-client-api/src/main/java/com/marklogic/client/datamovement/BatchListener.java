@@ -21,7 +21,7 @@ package com.marklogic.client.datamovement;
  *
  * @see #processEvent processEvent
  */
-public interface BatchListener<T extends Batch<?>> {
+public interface BatchListener<T extends BatchEvent> {
   /**
    * <p>The method called by QueryBatcher or WriteBatcher to run your
    * custom code on this batch.  You usually implement this as a lambda expression.</p>

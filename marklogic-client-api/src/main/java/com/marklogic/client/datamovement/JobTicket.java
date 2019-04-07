@@ -38,5 +38,5 @@ public interface JobTicket {
    */
   Batcher getBatcher();
 
-  enum JobType { WRITE_BATCHER, QUERY_BATCHER };
+  enum JobType { WRITE_BATCHER, QUERY_BATCHER, CALL_BATCHER };
 }

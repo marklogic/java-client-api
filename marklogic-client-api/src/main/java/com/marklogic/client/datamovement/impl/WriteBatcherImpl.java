@@ -652,11 +652,13 @@ public class WriteBatcherImpl
     if ( message != null ) logger.warn(message, t.toString());
   }
 
+  @Override
   public void start(JobTicket ticket) {
     jobTicket = ticket;
     initialize();
   }
 
+  @Override
   public void stop() {
     jobEndTime = Calendar.getInstance();
     stopped.set(true);
@@ -744,7 +746,7 @@ public class WriteBatcherImpl
   @Override
   public WriteBatcher withJobId(String jobId) {
     requireNotInitialized();
-    super.withJobId(jobId);
+    setJobId(jobId);
     return this;
   }
 
@@ -792,11 +794,6 @@ public class WriteBatcherImpl
   }
 
   @Override
-  public DatabaseClient getPrimaryClient() {
-    return ((DataMovementManagerImpl) getMoveMgr()).getPrimaryClient();
-  }
-
-  @Override
   public ServerTransform getTransform() {
     return transform;
   }
@@ -804,25 +801,9 @@ public class WriteBatcherImpl
   @Override
   public synchronized WriteBatcher withForestConfig(ForestConfiguration forestConfig) {
     super.withForestConfig(forestConfig);
-    if (forestConfig == null) throw new IllegalArgumentException("forestConfig must not be null");
     // get the list of hosts to use
-    Forest[] forests = forestConfig.listForests();
-    if ( forests.length == 0 ) {
-      throw new IllegalStateException("WriteBatcher requires at least one writeable forest");
-    }
-    Map<String,Forest> hosts = new HashMap<>();
-    for ( Forest forest : forests ) {
-      if ( forest.getPreferredHost() == null ) {
-        throw new IllegalStateException("Hostname must not be null for any forest");
-      }
-      hosts.put(forest.getPreferredHost(), forest);
-    }
-    for ( Forest forest : forests ) {
-      if(forest.getPreferredHostType() == HostType.REQUEST_HOST &&
-          !forest.getHost().toLowerCase().equals(forest.getRequestHost().toLowerCase())) {
-        if(hosts.containsKey(forest.getHost())) hosts.remove(forest.getHost());
-      }
-    }
+    Forest[] forests = forests(forestConfig);
+    Set<String> hosts = hosts(forests);
     Map<String,HostInfo> existingHostInfos = new HashMap<>();
     Map<String,HostInfo> removedHostInfos = new HashMap<>();
     if ( hostInfos != null ) {
@@ -831,20 +812,19 @@ public class WriteBatcherImpl
         removedHostInfos.put(hostInfo.hostName, hostInfo);
       }
     }
-    logger.info("(withForestConfig) Using forests on {} hosts for \"{}\"", hosts.keySet(), forests[0].getDatabaseName());
+    logger.info("(withForestConfig) Using forests on {} hosts for \"{}\"", hosts, forests[0].getDatabaseName());
     // initialize a DatabaseClient for each host
     HostInfo[] newHostInfos = new HostInfo[hosts.size()];
     int i=0;
-    for ( String host : hosts.keySet() ) {
+    for (String host: hosts) {
       if ( existingHostInfos.get(host) != null ) {
         newHostInfos[i] = existingHostInfos.get(host);
         removedHostInfos.remove(host);
       } else {
         newHostInfos[i] = new HostInfo();
         newHostInfos[i].hostName = host;
-        Forest forest = hosts.get(host);
         // this is a host-specific client (no DatabaseClient is actually forest-specific)
-        newHostInfos[i].client = getMoveMgr().getForestClient(forest);
+        newHostInfos[i].client = getMoveMgr().getHostClient(host);
         if (getMoveMgr().getConnectionType() == DatabaseClient.ConnectionType.DIRECT) {
           logger.info("Adding DatabaseClient on port {} for host \"{}\" to the rotation",
                 newHostInfos[i].client.getPort(), host);

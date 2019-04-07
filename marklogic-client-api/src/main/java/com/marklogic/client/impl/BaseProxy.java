@@ -50,9 +50,10 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class BaseProxy {
-   private static ObjectMapper mapper = null;
+   static private ObjectMapper mapper = null;
    private String         endpointDir;
-   private RESTServices services;
+   private DatabaseClient db;
+
 
    static protected ObjectMapper getMapper() {
       // okay if one thread overwrites another during lazy initialization
@@ -62,7 +63,10 @@ public class BaseProxy {
       return mapper;
    }
 
+   public BaseProxy() {
+   }
    public BaseProxy(DatabaseClient db, String endpointDir) {
+      this();
       if (db == null) {
          throw new IllegalArgumentException("Cannot connect with null database client");
       } else if (db.getDatabase() != null) {
@@ -73,9 +77,7 @@ public class BaseProxy {
       }
 
       this.endpointDir = endpointDir;
-
-      DatabaseClientImpl dbImpl = (DatabaseClientImpl) db;
-      this.services = dbImpl.getServices();
+      this.db          = db;
    }
 
    public interface ServerDataType {
@@ -568,23 +570,35 @@ public class BaseProxy {
    }
 
    public DBFunctionRequest request(String module, ParameterValuesKind paramsKind) {
+      return request(db, endpointDir, module, paramsKind);
+   }
+   static public DBFunctionRequest request(DatabaseClient db, String endpointDir, String module, ParameterValuesKind paramsKind) {
+      if (db == null) {
+         throw new IllegalArgumentException("Cannot connect with null database client");
+      } else if (db.getDatabase() != null) {
+         throw new IllegalArgumentException("Client cannot specify a database - specified: "+db.getDatabase());
+      }
+      if (endpointDir == null || endpointDir.length() == 0) {
+         throw new IllegalArgumentException("Cannot make requests with null or empty endpoint directory");
+      }
       if (module == null) {
          throw new IllegalArgumentException("null module");
       }
-      return new DBFunctionRequest(this.services, this.endpointDir, module, paramsKind);
+
+      return new DBFunctionRequest(((DatabaseClientImpl) db).getServices(), endpointDir, module, paramsKind);
    }
 
    static public SingleAtomicCallField atomicParam(String paramName, boolean isNullable, String value) {
       return isParamNull(paramName, isNullable, value)  ? null : new SingleAtomicCallField(paramName, value);
    }
    static public MultipleAtomicCallField atomicParam(String paramName, boolean isNullable, Stream<String> values) {
-      return isParamNull(paramName, isNullable, values) ? null : new MultipleAtomicCallField(paramName, values);
+      return isParamNull(paramName, isNullable, values) ? null : new UnbufferedMultipleAtomicCallField(paramName, values);
    }
    static public SingleNodeCallField documentParam(String paramName, boolean isNullable, AbstractWriteHandle value) {
-      return isParamNull(paramName, isNullable, value)  ? null : new SingleNodeCallField(paramName, value);
+      return isParamNull(paramName, isNullable, value)  ? null : new UnbufferedSingleNodeCallField(paramName, value);
    }
    static public MultipleNodeCallField documentParam(String paramName, boolean isNullable, Stream<? extends AbstractWriteHandle> values) {
-      return isParamNull(paramName, isNullable, values) ? null : new MultipleNodeCallField(paramName, values);
+      return isParamNull(paramName, isNullable, values) ? null : new UnbufferedMultipleNodeCallField(paramName, values);
    }
    static protected boolean isParamNull(String paramName, boolean isNullable, Object value) {
       if (value != null) {
