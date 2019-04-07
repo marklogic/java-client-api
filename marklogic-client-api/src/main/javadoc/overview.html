@@ -50,8 +50,7 @@
 	By default, the IO representations supported in shortcut methods include byte[],
 	DOM Document, File, InputStream, SAX InputSource, Reader, Transformer Source, String,
 	StAX XMLEventReader, and StAX XMLEventWriter. You can enable shortcut support
-	for dom4j Document, JDOM Document, GSON JsonElement, Jackson JsonNode, JAXB POJOs, or
-	XOM Document.
+	for dom4j Document, JDOM Document, GSON JsonElement, Jackson JsonNode, or JAXB POJOs.
 </p>
 <p>
 	For instance, consider a binary JPEG file. To write this file to the database
@@ -287,9 +286,8 @@ Document results = client.newQueryManager().search(
 <p>
     To use extra IO handles like
     {@link com.marklogic.client.extra.dom4j.DOM4JHandle},
-    {@link com.marklogic.client.extra.gson.GSONHandle},
-    {@link com.marklogic.client.extra.jdom.JDOMHandle}, or
-    {@link com.marklogic.client.extra.xom.XOMHandle}, you download the
+    {@link com.marklogic.client.extra.gson.GSONHandle}, or
+    {@link com.marklogic.client.extra.jdom.JDOMHandle}, you download the
     library integrated by the handle and add the library to the classpath.
     You can enable support in shortcut methods for the IO representation
     provided by an extra library by registering a factory for the handle
@@ -336,8 +334,5 @@ Product product = docMgr.readAs(docId, Product.class);
     see and manage logging from the Java-client API.  This is especially
     important for long-running QueryBatcher and WriteBatcher jobs.
 </p>
-<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
 </body>
 </html>

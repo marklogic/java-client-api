@@ -73,7 +73,7 @@ javadoc {
     options.overview = "src/main/javadoc/overview.html"
     options.windowTitle = "$rootProject.describedName $rootProject.version"
     options.docTitle = "$rootProject.describedName $rootProject.version"
-    options.bottom = "Copyright &copy; 2013-2018 MarkLogic Corporation."
+    options.bottom = "Copyright &copy; 2013-2019 MarkLogic Corporation."
     options.links = [ 'http://docs.oracle.com/javase/8/docs/api/' ]
     options.use = true
     exclude([
