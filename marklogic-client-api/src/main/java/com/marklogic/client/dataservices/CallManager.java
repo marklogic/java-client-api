@@ -701,6 +701,7 @@ public interface CallManager {
 
     interface CallEvent extends BatchEvent {
         CallArgs getArgs();
+        CallManager.EndpointDefiner getEndpointDefiner();
     }
 
     interface ManyCallEvent<R> extends CallEvent {

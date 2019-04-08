@@ -453,11 +453,11 @@ public class CallManagerImpl implements CallManager {
 
   private static abstract class EndpointDefinerImpl implements EndpointDefiner {
     @Override
-    public CallArgs args() {
+    public CallArgsImpl args() {
       return new CallArgsImpl(getEndpoint());
     }
     @Override
-    public CallArgs args(SessionState session) {
+    public CallArgsImpl args(SessionState session) {
       return new CallArgsImpl(getEndpoint(), session);
     }
 
@@ -465,14 +465,24 @@ public class CallManagerImpl implements CallManager {
   }
 
   static class CallEventImpl extends BatchEventImpl implements CallEvent {
-    private CallArgs args;
+    private CallArgsImpl args;
     CallEventImpl(DatabaseClient client, CallArgs args) {
-      this.args = args;
+      if (args == null) {
+        throw new IllegalArgumentException("null arguments for call event");
+      } else if (!(args instanceof CallArgsImpl)) {
+        throw new IllegalArgumentException("unsupported implementation of arguments for call event: "+
+                args.getClass().getCanonicalName());
+      }
+      this.args = (CallArgsImpl) args;
       withClient(client);
     }
     @Override
-    public CallArgs getArgs() {
+    public CallArgsImpl getArgs() {
       return args;
+    }
+    @Override
+    public CallManagerImpl.EndpointDefinerImpl getEndpointDefiner() {
+      return args.getEndpoint();
     }
   }
   static class OneCallEventImpl<R> extends CallEventImpl implements OneCallEvent<R> {
@@ -498,10 +508,7 @@ public class CallManagerImpl implements CallManager {
     }
   }
 
-  interface EventedCaller<E extends CallEvent> extends EndpointDefiner {
-    E callForEvent(DatabaseClient client, CallArgs args) throws Exception;
-  }
-  static class NoneCallerImpl extends CallerImpl implements NoneCaller, EventedCaller<CallEvent> {
+  static class NoneCallerImpl extends CallerImpl<CallEvent> implements NoneCaller {
     NoneCallerImpl(CallableEndpointImpl endpoint) {
        super(endpoint);
      }
@@ -530,7 +537,7 @@ public class CallManagerImpl implements CallManager {
       return new CallEventImpl(client, args);
     }
   }
-  private static class OneCallerImpl<R> extends CallerImpl implements OneCaller<R>, EventedCaller<OneCallEvent<R>> {
+  private static class OneCallerImpl<R> extends CallerImpl<OneCallEvent<R>> implements OneCaller<R> {
     private ReturnConverter<R> converter;
     private Format             format;
 
@@ -563,7 +570,7 @@ public class CallManagerImpl implements CallManager {
       return new OneCallEventImpl(client, args, callImpl(client, args));
     }
   }
-  static class ManyCallerImpl<R> extends CallerImpl implements ManyCaller<R>, EventedCaller<ManyCallEvent<R>> {
+  static class ManyCallerImpl<R> extends CallerImpl<ManyCallEvent<R>> implements ManyCaller<R> {
     private ReturnConverter<R> converter;
     private Format             format;
 
@@ -596,14 +603,18 @@ public class CallManagerImpl implements CallManager {
       return new ManyCallEventImpl(client, args, callImpl(client, args));
     }
   }
-  static abstract class CallerImpl extends EndpointDefinerImpl {
+
+  interface EventedCaller<E extends CallEvent> extends EndpointDefiner {
+    E callForEvent(DatabaseClient client, CallArgs args) throws Exception;
+  }
+  static abstract class CallerImpl<E extends CallEvent> extends EndpointDefinerImpl implements EventedCaller<E> {
     private CallableEndpointImpl endpoint;
     CallerImpl(CallableEndpointImpl endpoint) {
       this.endpoint = endpoint;
     }
 
     CallArgsImpl args(CallField field) {
-      CallArgsImpl args = (CallArgsImpl) args();
+      CallArgsImpl args = args();
       args.assignedParams = new HashSet<>();
       args.assignedParams.add(field.getParamName());
       args.callFields = new ArrayList<>();
@@ -631,7 +642,29 @@ public class CallManagerImpl implements CallManager {
     CallableEndpointImpl getEndpoint() {
       return endpoint;
     }
+
+    void checkArgs(CallArgsImpl callArgs) {
+      Set<String> assignedParams = callArgs.getAssignedParams();
+      Set<String> requiredParams = endpoint.getRequiredParams();
+      if (assignedParams != null) {
+        if (requiredParams != null && !assignedParams.containsAll(requiredParams)) {
+          throw new IllegalArgumentException(
+                  endpoint.getModule()+" called without some required parameters: "+
+                          requiredParams.stream().filter(assignedParams::contains).collect(Collectors.joining(", "))
+          );
+        }
+      } else if (requiredParams != null) {
+        throw new IllegalArgumentException(
+                endpoint.getModule()+" called without the required parameters: "+
+                        requiredParams.stream().collect(Collectors.joining(", "))
+        );
+      }
+    }
     BaseProxy.DBFunctionRequest startRequest(DatabaseClient client, CallArgsImpl callArgs) {
+      checkArgs(callArgs);
+      return makeRequest(client, callArgs);
+    }
+    BaseProxy.DBFunctionRequest makeRequest(DatabaseClient client, CallArgsImpl callArgs) {
       BaseProxy.DBFunctionRequest request = BaseProxy.request(
           client, endpoint.getEndpointDirectory(), endpoint.getModule(), endpoint.getParameterValuesKind()
       );
@@ -643,21 +676,8 @@ public class CallManagerImpl implements CallManager {
 
       List<CallField> callFields = callArgs.getCallFields();
       int fieldSize = (callFields == null) ? 0 : callFields.size();
-      Set<String> requiredParams = endpoint.getRequiredParams();
       if (fieldSize > 0) {
-          Set<String> assignedParams = callArgs.getAssignedParams();
-          if (requiredParams != null && !assignedParams.containsAll(requiredParams)) {
-              throw new IllegalArgumentException(
-                      endpoint.getModule()+" called without some required parameters: "+
-                              requiredParams.stream().filter(assignedParams::contains).collect(Collectors.joining(", "))
-              );
-          }
           request = request.withParams(callFields.toArray(new CallField[fieldSize]));
-      } else if (requiredParams != null) {
-          throw new IllegalArgumentException(
-                  endpoint.getModule()+" called without the required parameters: "+
-                          requiredParams.stream().collect(Collectors.joining(", "))
-          );
       }
 
       return request.withMethod("POST");
@@ -682,9 +702,10 @@ public class CallManagerImpl implements CallManager {
       }
       this.session = session;
     }
-    CallArgsImpl(CallableEndpointImpl endpoint, List<CallField> callFields) {
-    	this.endpoint = endpoint;
-    	this.callFields = callFields;
+    CallArgsImpl(CallableEndpointImpl endpoint, List<CallField> callFields, Set<String> assignedParams) {
+    	this(endpoint);
+    	this.callFields     = callFields;
+    	this.assignedParams = assignedParams;
     }
 
     SessionState getSession() {
