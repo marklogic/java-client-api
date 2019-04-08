@@ -30,13 +30,14 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class CallBatchedParamTest {
     private final static String ENDPOINT_DIRECTORY = "/javaApi/test/callBatchedParam/";
@@ -61,6 +62,10 @@ public class CallBatchedParamTest {
 
         endpointUtil.setupEndpointSingleRequired(docMgr, docMeta, "singleAtomic", "dateTime");
         endpointUtil.setupEndpointSingleRequired(docMgr, docMeta, "singleNode", "object");
+
+        endpointUtil.setupTwoParamEndpoint(
+                docMgr, docMeta, "twoAtomic", "decimal", "date", true
+        );
     }
 
     @AfterClass
@@ -236,7 +241,56 @@ public class CallBatchedParamTest {
         assertEquals("for single batched parameter with single node values, output not equal to input", input, output);
         assertEquals("incorrect batch count for single batched parameter with single node values", max, batchCount.value);
     }
-    // TODO: other data types and client representations, negative cases
+    @Test
+    public void multipleAtomicDefaultedParamTest() {
+        String functionName = "twoAtomic";
+
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
+
+        CallManager.ManyCaller<BigDecimal> caller = endpointUtil.makeManyCaller(callableEndpoint, BigDecimal.class);
+
+        int max = 300;
+
+        Set<BigDecimal> input = Stream
+                .iterate(1, last -> last + 1)
+                .limit(max)
+                .map(i -> new BigDecimal(i+".1"))
+                .collect(Collectors.toSet());
+
+        SortedSet<BigDecimal> output = new TreeSet<>();
+
+        final String[] expectedParamNames = new String[]{"param1", "param2"};
+
+        final IntCounter batchCount = new IntCounter();
+
+        CallBatcher<BigDecimal, CallManager.ManyCallEvent<BigDecimal>> batcher = caller
+                .batcher()
+                .forBatchedParam("param1", BigDecimal.class)
+                .withdefaultArgs(caller.args().param("param2", LocalDate.parse("2019-01-02")))
+                .onCallSuccess(event -> {
+                    String[] paramNames = event.getArgs().getAssignedParamNames();
+                    assertEquals("param count not 2", 2, paramNames.length);
+                    Arrays.sort(paramNames);
+                    assertArrayEquals("param names not equal", expectedParamNames, paramNames);
+                    event.getItems().forEach(item -> output.add(item));
+                    batchCount.value++;
+                })
+                .onCallFailure((event, throwable) -> {
+                    throwable.printStackTrace();
+                    fail("atomic batcher failed");
+                });
+
+        batcher.addAll(input.stream());
+        batcher.flushAndWait();
+        batcher.getDataMovementManager().stopJob(batcher);
+
+        // System.out.println(output.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
+
+        assertEquals("for defaulted batched parameter with multiple atomic values, output not equal to input", input, output);
+        assertEquals("incorrect batch count for defaulted batched parameter with multiple atomic values", 3, batchCount.value);
+    }
+    // TODO: other data types and client representations
+    // TODO: negative cases such as missing required parameters and invalid parameters
 
     static class IntCounter {
         int value = 0;

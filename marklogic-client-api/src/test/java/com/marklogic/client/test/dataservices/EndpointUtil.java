@@ -86,8 +86,14 @@ class EndpointUtil {
     void setupTwoParamEndpoint(
             JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype, String paramType2
     ) {
-        JsonNode endpointdef = getEndpointdef(functionName, datatype, paramType2, datatype, false, false);
-        String script = getScript(datatype, paramType2, null, false, false);
+        setupTwoParamEndpoint(docMgr, docMeta, functionName, datatype, paramType2, false);
+    }
+    void setupTwoParamEndpoint(
+            JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype,
+            String paramType2, boolean isMultiple
+    ) {
+        JsonNode endpointdef = getEndpointdef(functionName, datatype, paramType2, datatype, isMultiple, false);
+        String script = getScript(datatype, paramType2, null, isMultiple, false);
         setupEndpoint(docMgr, docMeta, endpointdef, script);
     }
     void setupEndpointSingleNulled(
