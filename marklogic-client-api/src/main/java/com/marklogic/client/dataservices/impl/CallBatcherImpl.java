@@ -240,9 +240,12 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         caller.checkArgs(args);
 
 // TODO
+        submitCall(args);
+        return this;
+    }
+    void submitCall(CallArgs args) {
         long callNumber = callCount.incrementAndGet();
         threadPool.submit(new CallTask(this, callNumber, args));
-        return this;
     }
 
     @Override
