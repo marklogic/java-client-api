@@ -549,11 +549,10 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             CallManagerImpl.EventedCaller<E> caller = batcher.getCaller();
             DatabaseClient client = batcher.getClient(callNumber);
             Calendar callTime = Calendar.getInstance();
+
+            E output = null;
             try {
-                E output = caller.callForEvent(client, args);
-                initEvent(output, callTime);
-                batcher.sendSuccessToListeners(output);
-                return true;
+                output = caller.callForEvent(client, args);
             } catch (Throwable throwable) {
                 if (fireFailureListeners) {
                     CallManagerImpl.CallEventImpl input = new CallManagerImpl.CallEventImpl(client, args);
@@ -566,6 +565,10 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
                     throw new DataMovementException("Failed to retry call", throwable);
                 }
             }
+
+            initEvent(output, callTime);
+            batcher.sendSuccessToListeners(output);
+            return true;
         }
     }
 
