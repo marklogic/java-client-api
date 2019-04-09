@@ -2776,17 +2776,17 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		System.out.println("In addWithMetadata method");
 
 		final String query1 = "fn:count(fn:doc())";
-
+		DatabaseClient dbClientTmp = getDatabaseClient(user, password, getConnType());
 		try {
+			
 			DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("Sample Collection 1")
 					.withProperty("docMeta-1", "true").withQuality(1);
 			meta6.setFormat(Format.XML);
-			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+			Assert.assertTrue(dbClientTmp.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
 			Thread.currentThread().sleep(5000L);
-
-			DatabaseClient dbClient = getDatabaseClient(user, password, getConnType());
-			DataMovementManager dmManager = dbClient.newDataMovementManager();
+			
+			DataMovementManager dmManager = dbClientTmp.newDataMovementManager();
 
 			WriteBatcher ihb2 = dmManager.newWriteBatcher();
 			ihb2.withBatchSize(50).withThreadCount(1);
@@ -2807,6 +2807,9 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		finally {
+			dbClientTmp.release();
 		}
 	}
 	
