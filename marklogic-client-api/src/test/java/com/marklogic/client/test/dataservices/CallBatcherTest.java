@@ -68,7 +68,7 @@ public class CallBatcherTest {
 				  assignedParams[0] = event.getArgs().getAssignedParamNames()[0];
 		  });
 		  
-		  batcher.startJob​();
+		  batcher.startJob();
 		  assertNotNull(batcher.getJobStartTime());
 		  
 	      batcher.add(noneCaller.args().param("param1", 1.2));
@@ -96,7 +96,7 @@ public class CallBatcherTest {
 			  returnValue[0] = event.getItem();
 		  });
 		  
-		  batcher.startJob​();
+		  batcher.startJob();
 		  assertNotNull(batcher.getJobStartTime());
 		  
 	      batcher.add(oneCaller.args().param("param1", 1.2));
@@ -129,7 +129,7 @@ public class CallBatcherTest {
 			  
 		  });
 
-          batcher.startJob​();
+          batcher.startJob();
 		  assertNotNull(batcher.getJobStartTime());
 		  
 	      batcher.add(manyCaller.args().param("param1", values));
