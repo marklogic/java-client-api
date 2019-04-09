@@ -330,7 +330,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     }
 
     @Override
-    public JobTicket startJob​() {
+    public JobTicket startJob() {
         return getDataMovementManager().startJob(this);
     }
 
