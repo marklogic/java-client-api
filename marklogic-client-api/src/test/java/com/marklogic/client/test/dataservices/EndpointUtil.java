@@ -100,7 +100,7 @@ class EndpointUtil {
             JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype,
             String paramType2, boolean isMultiple, boolean isNullable
     ) {
-        JsonNode endpointdef = getEndpointdef(functionName, datatype, paramType2, datatype, isMultiple, isNullable);
+        JsonNode endpointdef = getEndpointdefWithDifferentParams(functionName, datatype, paramType2, datatype, isMultiple, isNullable);
         String script = getScript(datatype, paramType2, null, isMultiple, false);
         setupEndpoint(docMgr, docMeta, endpointdef, script);
     }

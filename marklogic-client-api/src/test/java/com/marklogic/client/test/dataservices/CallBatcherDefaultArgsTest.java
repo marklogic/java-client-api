@@ -98,8 +98,8 @@ public class CallBatcherDefaultArgsTest {
                     fail("atomic batcher failed");
                     });
 
-        batcher.startJob​();
-        batcher.add(caller.args().param("param1", 1.1));
+        batcher.getDataMovementManager().startJob(batcher);
+        batcher.add(caller.args());
         batcher.flushAndWait();
         batcher.getDataMovementManager().stopJob(batcher);
 
@@ -131,6 +131,7 @@ public class CallBatcherDefaultArgsTest {
                     fail("node batcher failed");
                     });
 
+        batcher.getDataMovementManager().startJob(batcher);
         batcher.add(caller.args());
         batcher.flushAndWait();
         batcher.getDataMovementManager().stopJob(batcher);
@@ -159,7 +160,7 @@ public class CallBatcherDefaultArgsTest {
                     });;
  
 
-        batcher.startJob​();
+        batcher.getDataMovementManager().startJob(batcher);
         batcher.add(manyCaller.args());
         batcher.flushAndWait();
         batcher.getDataMovementManager().stopJob(batcher);
@@ -191,7 +192,7 @@ public class CallBatcherDefaultArgsTest {
                     });;
  
 
-        batcher.startJob​();
+        batcher.getDataMovementManager().startJob(batcher);
         batcher.add(manyCaller.args());
         batcher.flushAndWait();
         batcher.getDataMovementManager().stopJob(batcher);
@@ -232,7 +233,7 @@ public class CallBatcherDefaultArgsTest {
                     fail("atomic batcher failed");
                 });
 
-        batcher.startJob​();
+        batcher.getDataMovementManager().startJob(batcher);
         batcher.add(caller.args());
         batcher.flushAndWait();
         batcher.getDataMovementManager().stopJob(batcher);
@@ -256,7 +257,7 @@ public class CallBatcherDefaultArgsTest {
                 .forArgs()
                 .withDefaultArgs(caller.args().param("param1", inputValues));
 
-        batcher.startJob​();
+        batcher.getDataMovementManager().startJob(batcher);
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(startsWith("twoAtomic.sjs called without some required parameters"));
         batcher.add(caller.args());
@@ -309,8 +310,7 @@ public class CallBatcherDefaultArgsTest {
         Double[] inputValues = {1.2, 2.4};
         Float floatValue = null;
 
-        CallBatcher<CallArgs, ManyCallEvent<Double>> batcher = caller
-                .batcher()
+        caller.batcher()
                 .forArgs()
                 .withDefaultArgs(caller.args().param("param1", inputValues).param("param2", floatValue))
                 .onCallSuccess(event -> {
@@ -321,10 +321,6 @@ public class CallBatcherDefaultArgsTest {
                     fail("atomic batcher failed");
                 });
 
-        batcher.startJob​();
-        batcher.add(caller.args());
-        batcher.flushAndWait();
-        batcher.getDataMovementManager().stopJob(batcher);
     }
     
     @Test
