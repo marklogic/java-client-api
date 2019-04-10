@@ -113,7 +113,7 @@ public class CallBatchedParamTest {
 
         batcher.addAll(input.stream());
         batcher.flushAndWait();
-        batcher.getDataMovementManager().stopJob(batcher);
+        batcher.stopJob();
 
         // System.out.println(output.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
 
@@ -154,7 +154,7 @@ public class CallBatchedParamTest {
 
         batcher.addAll(input.stream());
         batcher.flushAndWait();
-        batcher.getDataMovementManager().stopJob(batcher);
+        batcher.stopJob();
 
         // System.out.println(output.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
 
@@ -194,7 +194,7 @@ public class CallBatchedParamTest {
 
         batcher.addAll(input.stream().map(i -> mapper.createObjectNode().put("i", i)));
         batcher.flushAndWait();
-        batcher.getDataMovementManager().stopJob(batcher);
+        batcher.stopJob();
 
         // System.out.println(output.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
 
@@ -234,7 +234,7 @@ public class CallBatchedParamTest {
 
         batcher.addAll(input.stream().map(i -> mapper.createObjectNode().put("i", i)));
         batcher.flushAndWait();
-        batcher.getDataMovementManager().stopJob(batcher);
+        batcher.stopJob();
 
         // System.out.println(output.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
 
@@ -282,12 +282,62 @@ public class CallBatchedParamTest {
 
         batcher.addAll(input.stream());
         batcher.flushAndWait();
-        batcher.getDataMovementManager().stopJob(batcher);
+        batcher.stopJob();
 
         // System.out.println(output.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
 
         assertEquals("for defaulted batched parameter with multiple atomic values, output not equal to input", input, output);
         assertEquals("incorrect batch count for defaulted batched parameter with multiple atomic values", 3, batchCount.value);
+    }
+    @Test
+    public void queuingParamTest() {
+        String functionName = "double";
+
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName);
+
+        CallManager.ManyCaller<Double> caller = endpointUtil.makeManyCaller(callableEndpoint, Double.class);
+
+        int max = 300;
+
+        SortedSet<Double> input = Stream
+                .iterate(1.1, last -> last + 1)
+                .limit(max)
+                .collect(Collectors.toCollection(TreeSet::new));
+
+        SortedSet<Double> output = new TreeSet<>();
+
+        final IntCounter batchCount = new IntCounter();
+
+        CallBatcher<Double, CallManager.ManyCallEvent<Double>> batcher = caller
+                .batcher()
+                .forBatchedParam("param1", Double.class)
+                .onCallSuccess(event -> {
+                    event.getItems().forEach(item -> output.add(item));
+                    batchCount.value++;
+                })
+                .onCallFailure((event, throwable) -> {
+                    throwable.printStackTrace();
+                    fail("atomic batcher failed");
+                });
+
+        batcher.addAll(input.subSet(1.1, 111.1).stream());
+        batcher.flushAndWait();
+        assertEquals("incorrect output size for first flush", 110, output.size());
+        assertEquals("incorrect batch count for first flush", 2, batchCount.value);
+
+        batcher.addAll(input.subSet(111.1, 221.1).stream());
+        batcher.awaitCompletion();
+        assertEquals("incorrect output size for second await", 210, output.size());
+        assertEquals("incorrect batch count for second await", 3, batchCount.value);
+
+        batcher.addAll(input.tailSet(221.1).stream());
+        batcher.flushAndWait();
+        batcher.stopJob();
+
+        // System.out.println(output.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
+
+        assertEquals("final output not equal to input", input, output);
+        assertEquals("incorrect final batch count", 4, batchCount.value);
     }
     // TODO: other data types and client representations
     // TODO: negative cases such as missing required parameters and invalid parameters

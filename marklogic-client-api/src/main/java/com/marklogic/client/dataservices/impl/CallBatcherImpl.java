@@ -25,13 +25,11 @@ import com.marklogic.client.dataservices.CallManager;
 import com.marklogic.client.dataservices.CallManager.CallArgs;
 import com.marklogic.client.dataservices.CallSuccessListener;
 import com.marklogic.client.dataservices.impl.CallManagerImpl.CallArgsImpl;
-import com.marklogic.client.dataservices.impl.CallManagerImpl.CallerImpl;
 
 import com.marklogic.client.impl.RESTServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -178,6 +176,88 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     }
 
     @Override
+    public CallBatcherImpl<W, E> withdefaultArgs(CallArgs args) {
+        if (args == null) {
+            this.defaultArgs = null;
+            return this;
+        } else if (!(args instanceof CallArgsImpl)) {
+            throw new IllegalArgumentException("Unsupported implementation of arguments: " +
+                    args.getClass().getCanonicalName());
+        }
+        CallArgsImpl callArgsImpl = (CallArgsImpl) args;
+
+        if (callArgsImpl.getEndpoint().getEndpointPath() != caller.getEndpointPath())
+            throw new IllegalArgumentException("Endpoints are different");
+
+        if (callArgsImpl.getCallFields() == null || callArgsImpl.getCallFields().size() == 0) {
+            this.defaultArgs = null;
+            return this;
+        }
+
+        List<RESTServices.CallField> callFieldList = callArgsImpl.getCallFields().stream().map(p -> p.toBuffered()).collect(Collectors.toList());
+        this.defaultArgs = (callFieldList.size() == 0) ? null : callFieldList;
+
+        return this;
+    }
+
+    CallArgsImpl addDefaultArgs(RESTServices.CallField callField) {
+        if (callField == null) {
+            return makeDefaultArgs();
+        }
+
+        List<RESTServices.CallField> newCallFields = new ArrayList<>();
+        Set<String> assignedParams = new HashSet<>();
+
+        newCallFields.add(callField);
+        assignedParams.add(callField.getParamName());
+
+        if (defaultArgs == null) {
+            return new CallArgsImpl(caller.getEndpoint(), newCallFields, assignedParams);
+        }
+
+        return addDefaultArgs(newCallFields, assignedParams);
+    }
+    CallArgsImpl addDefaultArgs(CallArgsImpl callArgsImpl) {
+        if (callArgsImpl == null || callArgsImpl.getCallFields() == null ||
+                callArgsImpl.getCallFields().size() == 0) {
+            return makeDefaultArgs();
+        }
+
+        if (defaultArgs == null) {
+            return callArgsImpl;
+        }
+
+        List<RESTServices.CallField> newCallFields = new ArrayList<>();
+        Set<String> assignedParams = new HashSet<>();
+
+        newCallFields.addAll(callArgsImpl.getCallFields());
+        assignedParams.addAll(callArgsImpl.getAssignedParams());
+
+        return addDefaultArgs(newCallFields, assignedParams);
+    }
+    CallArgsImpl addDefaultArgs(List<RESTServices.CallField> newCallFields, Set<String> assignedParams) {
+        for (RESTServices.CallField i : defaultArgs) {
+            if (!assignedParams.contains(i.getParamName())) {
+                assignedParams.add(i.getParamName());
+                newCallFields.add(i);
+            }
+        }
+
+        return new CallArgsImpl(caller.getEndpoint(), newCallFields, assignedParams);
+    }
+    CallArgsImpl makeDefaultArgs() {
+        if (defaultArgs == null) {
+            return new CallArgsImpl(caller.getEndpoint());
+        }
+
+        return new CallArgsImpl(
+                caller.getEndpoint(),
+                defaultArgs,
+                defaultArgs.stream().map(RESTServices.CallField::getParamName).collect(Collectors.toSet())
+        );
+    }
+
+    @Override
     public CallSuccessListener<E>[] getCallSuccessListeners() {
         return successListeners.toArray(new CallSuccessListener[successListeners.size()]);
     }
@@ -243,9 +323,9 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         submitCall(args);
         return this;
     }
-    void submitCall(CallArgs args) {
+    void submitCall(CallManagerImpl.CallArgsImpl args) {
         long callNumber = callCount.incrementAndGet();
-        threadPool.submit(new CallTask(this, callNumber, args));
+        threadPool.execute(new CallTask(this, callNumber, args));
     }
 
     @Override
@@ -309,18 +389,20 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 
     private void flush(boolean waitForCompletion) {
         if (queue != null) {
-            List<W> batch = new ArrayList<>();
-            while (queue.drainTo(batch, getBatchSize()) > 0) {
-                Stream<W> paramValues = batch.stream();
-// TODO: construct CallArgsImpl with paramName, paramValues, and default arguments and assign to args
-                CallManager.CallArgs args = null;
-                long callNumber = callCount.incrementAndGet();
-                threadPool.submit(new CallTask(this, callNumber, args));
-                batch.clear();
+            for (
+                    List<W> batch = new ArrayList<>();
+                    queue.drainTo(batch, getBatchSize()) > 0;
+                    batch = new ArrayList<>()
+            ) {
+                RESTServices.CallField field = (batch.size() == 1) ?
+                        fieldifier.field(batch.get(0)) : fieldifier.field(batch.stream());
+                CallManagerImpl.CallArgsImpl args = addDefaultArgs(field);
+// TODO: skip check for batched parameter after first call?
+                caller.checkArgs(args);
+                submitCall(args);
             }
         }
 
-// TODO: different semantics for await completion in CallBatcher and WriteBatcher
         if (waitForCompletion == true) awaitCompletion();
     }
 
@@ -428,8 +510,14 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         }
         if (event == null) throw new IllegalArgumentException("event must not be null");
 
-        CallTask<W, E> callTask = new CallTask(this, event.getJobBatchNumber(), event.getArgs());
-        callTask.withFailureListeners(callFailListeners).call();
+        CallManager.CallArgs args = event.getArgs();
+        if (args != null && !(args instanceof CallManagerImpl.CallArgsImpl)) {
+            throw new IllegalArgumentException("unsupported implementation of call arguments");
+        }
+        CallTask<W, E> callTask = new CallTask(
+                this, event.getJobBatchNumber(), (CallManagerImpl.CallArgsImpl) args
+        );
+        callTask.withFailureListeners(callFailListeners).run();
     }
 
     static class BuilderImpl<E extends CallManager.CallEvent> implements CallBatcherBuilder<E> {
@@ -473,40 +561,57 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 
     static class CallingThreadPoolExecutor<W, E extends CallManager.CallEvent> extends ThreadPoolExecutor {
         private CallBatcherImpl<W, E> batcher;
+        private Set<CallTask<W, E>> queuedAndExecutingTasks;
 
-        // TODO review including whether CallerRunsPolicy requires a derivation
+// TODO review including whether CallerRunsPolicy requires a derivation and whether retry or shutdown affects queue
         CallingThreadPoolExecutor(CallBatcherImpl<W, E> batcher, int threadCount) {
             super(threadCount, threadCount, 1, TimeUnit.MINUTES,
-                    new LinkedBlockingQueue<Runnable>(threadCount * 25),
+                    new LinkedBlockingQueue<Runnable>(threadCount * 15),
                     new ThreadPoolExecutor.CallerRunsPolicy()
             );
             this.batcher = batcher;
+            // reserve capacity for all executing threads as well as executor queue
+            this.queuedAndExecutingTasks = ConcurrentHashMap.newKeySet(getQueue().size() + threadCount);
         }
 
         @Override
-        public Future<?> submit(Runnable task) {
-            throw new MarkLogicInternalException("must submit call");
+        public <T> Future<T> submit(Callable<T> callable) {
+            throw new MarkLogicInternalException("submit of callable not supported");
         }
-
         @Override
-        public <T> Future<T> submit(Runnable task, T result) {
-            throw new MarkLogicInternalException("must submit call");
+        public Future<Boolean> submit(Runnable command) {
+            throw new MarkLogicInternalException("submit of task not supported");
+        }
+        @Override
+        public <T> Future<T> submit(Runnable command, T result) {
+            throw new MarkLogicInternalException("submit of task with default result not supported");
+        }
+        @Override
+        public void execute(Runnable command) {
+            if (!(command instanceof CallTask<?,?>)) {
+                throw new MarkLogicInternalException("submitted unknown implementation of task");
+            }
+            queuedAndExecutingTasks.add((CallTask<W,E>) command);
+            super.execute(command);
+        }
+        @Override
+        protected void afterExecute(Runnable command, Throwable t) {
+            super.afterExecute(command, t);
+            queuedAndExecutingTasks.remove(command);
         }
 
         boolean awaitCompletion(long timeout, TimeUnit unit) {
-            // get the last runnable task in the queue and wait for its future
-            // guarantees that the current tail of the queue has drained
-            // but not that all threads have finished execution
             try {
                 if (isTerminated()) return true;
-                BlockingQueue<Runnable> queue = getQueue();
+                // take a snapshot of the queue at the current time
+                Set<CallTask<W,E>> queue = new HashSet<>();
+                queue.addAll(queuedAndExecutingTasks);
                 if (queue.isEmpty()) return true;
-                RunnableFuture<Boolean> future = null;
-                for (Runnable runnable : queue) {
-                    future = (RunnableFuture<Boolean>) runnable;
+                // wait for the future of every queued or executing task
+                for (CallTask<W,E> task : queue) {
+                    if (task.isCancelled() || task.isDone()) continue;
+                    task.get(timeout, unit);
                 }
-                if (future == null || future.isCancelled() || future.isDone()) return true;
-                future.get(timeout, unit);
                 return true;
             } catch (InterruptedException e) {
                 logger.warn("interrupted while awaiting completion", e);
@@ -519,22 +624,36 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         }
     }
 
-    static class CallTask<W, E extends CallManager.CallEvent> implements Callable<Boolean> {
-        private CallManager.CallArgs args;
+    static class CallTask<W, E extends CallManager.CallEvent> extends FutureTask<Boolean> {
+        private CallMaker<W, E> callMaker;
+        CallTask(CallBatcherImpl<W, E> batcher, long callNumber, CallManagerImpl.CallArgsImpl args) {
+            this(new CallMaker(batcher, callNumber, args));
+        }
+        CallTask(CallMaker<W, E> callMaker) {
+            super(callMaker);
+            this.callMaker = callMaker;
+        }
+        CallTask<W, E> withFailureListeners(boolean enable) {
+            callMaker.setFailureListeners(enable);
+            return this;
+        }
+    }
+
+    static class CallMaker<W, E extends CallManager.CallEvent> implements Callable<Boolean> {
+        private CallManagerImpl.CallArgsImpl args;
         private CallBatcherImpl<W, E> batcher;
         private long callNumber;
         private Future<Boolean> future;
         private boolean fireFailureListeners = true;
 
-        CallTask(CallBatcherImpl<W, E> batcher, long callNumber, CallManager.CallArgs args) {
+        CallMaker(CallBatcherImpl<W, E> batcher, long callNumber, CallManagerImpl.CallArgsImpl args) {
             this.batcher = batcher;
             this.callNumber = callNumber;
             this.args = args;
         }
 
-        CallTask<W, E> withFailureListeners(boolean enable) {
+        void setFailureListeners(boolean enable) {
             fireFailureListeners = enable;
-            return this;
         }
 
         void initEvent(CallManager.CallEvent event, Calendar callTime) {
@@ -570,87 +689,5 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             batcher.sendSuccessToListeners(output);
             return true;
         }
-    }
-
-    @Override
-    public CallBatcherImpl<W, E> withdefaultArgs(CallArgs args) {
-        if (args == null) {
-            this.defaultArgs = null;
-            return this;
-        } else if (!(args instanceof CallArgsImpl)) {
-            throw new IllegalArgumentException("Unsupported implementation of arguments: " +
-                    args.getClass().getCanonicalName());
-        }
-        CallArgsImpl callArgsImpl = (CallArgsImpl) args;
-
-        if (callArgsImpl.getEndpoint().getEndpointPath() != caller.getEndpointPath())
-            throw new IllegalArgumentException("Endpoints are different");
-
-        if (callArgsImpl.getCallFields() == null || callArgsImpl.getCallFields().size() == 0) {
-            this.defaultArgs = null;
-            return this;
-        }
-
-        List<RESTServices.CallField> callFieldList = callArgsImpl.getCallFields().stream().map(p -> p.toBuffered()).collect(Collectors.toList());
-        this.defaultArgs = (callFieldList.size() == 0) ? null : callFieldList;
-
-        return this;
-    }
-
-    CallArgsImpl addDefaultArgs(RESTServices.CallField callField) {
-        if (callField == null) {
-            return makeDefaultArgs();
-        }
-
-        List<RESTServices.CallField> newCallFields = new ArrayList<>();
-        Set<String> assignedParams = new HashSet<>();
-
-        newCallFields.add(callField);
-        assignedParams.add(callField.getParamName());
-
-        if (defaultArgs == null) {
-            return new CallArgsImpl(caller.getEndpoint(), newCallFields, assignedParams);
-        }
-
-        return addDefaultArgs(newCallFields, assignedParams);
-    }
-    CallArgsImpl addDefaultArgs(CallArgsImpl callArgsImpl) {
-        if (callArgsImpl == null || callArgsImpl.getCallFields() == null ||
-                callArgsImpl.getCallFields().size() == 0) {
-            return makeDefaultArgs();
-        }
-
-        if (defaultArgs == null) {
-            return callArgsImpl;
-        }
-
-        List<RESTServices.CallField> newCallFields = new ArrayList<>();
-        Set<String> assignedParams = new HashSet<>();
-
-        newCallFields.addAll(callArgsImpl.getCallFields());
-        assignedParams.addAll(callArgsImpl.getAssignedParams());
-
-        return addDefaultArgs(newCallFields, assignedParams);
-    }
-    CallArgsImpl addDefaultArgs(List<RESTServices.CallField> newCallFields, Set<String> assignedParams) {
-        for (RESTServices.CallField i : defaultArgs) {
-            if (!assignedParams.contains(i.getParamName())) {
-                assignedParams.add(i.getParamName());
-                newCallFields.add(i);
-            }
-        }
-
-        return new CallArgsImpl(caller.getEndpoint(), newCallFields, assignedParams);
-    }
-    CallArgsImpl makeDefaultArgs() {
-        if (defaultArgs == null) {
-            return new CallArgsImpl(caller.getEndpoint());
-        }
-
-        return new CallArgsImpl(
-                caller.getEndpoint(),
-                defaultArgs,
-                defaultArgs.stream().map(RESTServices.CallField::getParamName).collect(Collectors.toSet())
-        );
     }
 }
