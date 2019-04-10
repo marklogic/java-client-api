@@ -101,9 +101,14 @@ public class CallBatcherDefaultArgsTest {
         batcher.getDataMovementManager().startJob(batcher);
         batcher.add(caller.args());
         batcher.flushAndWait();
-        batcher.getDataMovementManager().stopJob(batcher);
 
         assertEquals("for single atomic callField, output not equal to input", Double.valueOf(1.2), output.expectedOutput);
+        
+        batcher.add(caller.args().param("param1", 1.1));
+        batcher.flushAndWait();
+        
+        assertEquals("for single atomic callField, output not equal to input", Double.valueOf(1.1), output.expectedOutput);
+        batcher.getDataMovementManager().stopJob(batcher);
     }
     
     @Test
