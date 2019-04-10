@@ -2,7 +2,6 @@ package com.marklogic.client.test.dataservices;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 
@@ -98,7 +97,6 @@ public class CallBatcherDefaultArgsTest {
                     fail("atomic batcher failed");
                     });
 
-        batcher.getDataMovementManager().startJob(batcher);
         batcher.add(caller.args());
         batcher.flushAndWait();
 
@@ -136,7 +134,6 @@ public class CallBatcherDefaultArgsTest {
                     fail("node batcher failed");
                     });
 
-        batcher.getDataMovementManager().startJob(batcher);
         batcher.add(caller.args());
         batcher.flushAndWait();
         batcher.getDataMovementManager().stopJob(batcher);
@@ -164,8 +161,6 @@ public class CallBatcherDefaultArgsTest {
                     fail("atomic batcher failed");
                     });;
  
-
-        batcher.getDataMovementManager().startJob(batcher);
         batcher.add(manyCaller.args());
         batcher.flushAndWait();
         batcher.getDataMovementManager().stopJob(batcher);
@@ -196,8 +191,6 @@ public class CallBatcherDefaultArgsTest {
                     fail("node batcher failed");
                     });;
  
-
-        batcher.getDataMovementManager().startJob(batcher);
         batcher.add(manyCaller.args());
         batcher.flushAndWait();
         batcher.getDataMovementManager().stopJob(batcher);
@@ -238,7 +231,6 @@ public class CallBatcherDefaultArgsTest {
                     fail("atomic batcher failed");
                 });
 
-        batcher.getDataMovementManager().startJob(batcher);
         batcher.add(caller.args());
         batcher.flushAndWait();
         batcher.getDataMovementManager().stopJob(batcher);
@@ -262,7 +254,6 @@ public class CallBatcherDefaultArgsTest {
                 .forArgs()
                 .withDefaultArgs(caller.args().param("param1", inputValues));
 
-        batcher.getDataMovementManager().startJob(batcher);
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(startsWith("twoAtomic.sjs called without some required parameters"));
         batcher.add(caller.args());
@@ -315,16 +306,7 @@ public class CallBatcherDefaultArgsTest {
         Double[] inputValues = {1.2, 2.4};
         Float floatValue = null;
 
-        caller.batcher()
-                .forArgs()
-                .withDefaultArgs(caller.args().param("param1", inputValues).param("param2", floatValue))
-                .onCallSuccess(event -> {
-                    assertNotNull(event.getItems().toArray(Double[]::new));
-                })
-                .onCallFailure((event, throwable) -> {
-                    throwable.printStackTrace();
-                    fail("atomic batcher failed");
-                });
+        caller.batcher().forArgs().withDefaultArgs(caller.args().param("param1", inputValues).param("param2", floatValue));
 
     }
     
@@ -340,15 +322,7 @@ public class CallBatcherDefaultArgsTest {
 
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(startsWith("null value for required parameter: param2"));
-        caller.batcher().forArgs()
-                .withDefaultArgs(caller.args().param("param1", inputValues).param("param2", floatValue))
-                .onCallSuccess(event -> {
-                    assertNotNull(event.getItems().toArray(Double[]::new));
-                })
-                .onCallFailure((event, throwable) -> {
-                    throwable.printStackTrace();
-                    fail("atomic batcher failed");
-                });
+        caller.batcher().forArgs().withDefaultArgs(caller.args().param("param1", inputValues).param("param2", floatValue));
     }
  
 }
