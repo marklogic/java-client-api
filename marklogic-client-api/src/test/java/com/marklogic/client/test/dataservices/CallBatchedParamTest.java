@@ -266,7 +266,7 @@ public class CallBatchedParamTest {
         CallBatcher<BigDecimal, CallManager.ManyCallEvent<BigDecimal>> batcher = caller
                 .batcher()
                 .forBatchedParam("param1", BigDecimal.class)
-                .withdefaultArgs(caller.args().param("param2", LocalDate.parse("2019-01-02")))
+                .withDefaultArgs(caller.args().param("param2", LocalDate.parse("2019-01-02")))
                 .onCallSuccess(event -> {
                     String[] paramNames = event.getArgs().getAssignedParamNames();
                     assertEquals("param count not 2", 2, paramNames.length);

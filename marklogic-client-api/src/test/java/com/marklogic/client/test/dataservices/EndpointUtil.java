@@ -96,6 +96,14 @@ class EndpointUtil {
         String script = getScript(datatype, paramType2, null, isMultiple, false);
         setupEndpoint(docMgr, docMeta, endpointdef, script);
     }
+    void setupTwoDifferentParamEndpoint(
+            JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype,
+            String paramType2, boolean isMultiple, boolean isNullable
+    ) {
+        JsonNode endpointdef = getEndpointdef(functionName, datatype, paramType2, datatype, isMultiple, isNullable);
+        String script = getScript(datatype, paramType2, null, isMultiple, false);
+        setupEndpoint(docMgr, docMeta, endpointdef, script);
+    }
     void setupEndpointSingleNulled(
             JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
     ) {
@@ -153,6 +161,39 @@ class EndpointUtil {
                 paramdef.put("datatype", paramType2);
                 paramdef.put("multiple", !isMultiple);
                 paramdef.put("nullable", isNullable);
+                paramdefs.add(paramdef);
+            }
+            endpointdef.set("params", paramdefs);
+        }
+        if (returnType != null) {
+            ObjectNode returndef = objectMapper.createObjectNode();
+            returndef.put("datatype", returnType);
+            returndef.put("multiple", isMultiple);
+            returndef.put("nullable", isNullable);
+            endpointdef.set("return", returndef);
+        }
+        return endpointdef;
+    }
+    
+    JsonNode getEndpointdefWithDifferentParams(
+            String functionName, String paramType1, String paramType2, String returnType, boolean isMultiple, boolean isNullable
+    ) {
+        ObjectNode endpointdef = objectMapper.createObjectNode();
+        endpointdef.put("functionName", functionName);
+        if (paramType1 != null) {
+            ArrayNode paramdefs  = objectMapper.createArrayNode();
+            ObjectNode paramdef = objectMapper.createObjectNode();
+            paramdef.put("name", "param1");
+            paramdef.put("datatype", paramType1);
+            paramdef.put("multiple", isMultiple);
+            paramdef.put("nullable", isNullable);
+            paramdefs.add(paramdef);
+            if (paramType2 != null) {
+                paramdef = objectMapper.createObjectNode();
+                paramdef.put("name", "param2");
+                paramdef.put("datatype", paramType2);
+                paramdef.put("multiple", !isMultiple);
+                paramdef.put("nullable", !isNullable);
                 paramdefs.add(paramdef);
             }
             endpointdef.set("params", paramdefs);

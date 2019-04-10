@@ -176,7 +176,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     }
 
     @Override
-    public CallBatcherImpl<W, E> withdefaultArgs(CallArgs args) {
+    public CallBatcherImpl<W, E> withDefaultArgs(CallArgs args) {
         if (args == null) {
             this.defaultArgs = null;
             return this;
