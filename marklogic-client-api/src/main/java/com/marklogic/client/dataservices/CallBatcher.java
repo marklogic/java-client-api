@@ -102,7 +102,6 @@ public interface CallBatcher<W,E extends CallManager.CallEvent> extends Batcher 
      * for a single parameter.
      * @param args  one or more parameters for the caller
      * @return  the CallBatcher for chaining with other configuration methods
-     */
     CallBatcher<W,E> withDefaultArgs(CallManager.CallArgs args);
 
     /**
