@@ -363,15 +363,11 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 
     @Override
     public boolean awaitCompletion() {
-        try {
-            return awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
-        } catch (InterruptedException e) {
-            return false;
-        }
+        return awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
     }
 
     @Override
-    public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
+    public boolean awaitCompletion(long timeout, TimeUnit unit) {
         requireNotStopped();
         requireInitialized(true);
         return threadPool.awaitCompletion(timeout, unit);
@@ -596,8 +592,8 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         }
         @Override
         protected void afterExecute(Runnable command, Throwable t) {
-            super.afterExecute(command, t);
             queuedAndExecutingTasks.remove(command);
+            super.afterExecute(command, t);
         }
 
         boolean awaitCompletion(long timeout, TimeUnit unit) {
