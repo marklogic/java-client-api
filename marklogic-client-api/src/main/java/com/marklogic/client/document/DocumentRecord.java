@@ -44,6 +44,13 @@ public interface DocumentRecord {
    */
   String getUri();
 
+  /**
+   * Returns a descriptor for the document content including the document version
+   * if enabled on the server.
+   * @return the descriptor
+   */
+  DocumentDescriptor getDescriptor();
+
   /** Returns the format of the document in the server
    * @return the format of the document in the server
    */
@@ -55,6 +62,12 @@ public interface DocumentRecord {
    * @return the mime-type
    */
   String getMimetype();
+
+  /**
+   * Returns the length of the document content.
+   * @return the content length
+   */
+  long getLenth();
 
   /**
    * Given a handle, populates the handle with the structured metadata directly from

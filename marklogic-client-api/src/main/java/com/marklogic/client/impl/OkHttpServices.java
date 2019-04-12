@@ -1877,12 +1877,12 @@ public class OkHttpServices implements RESTServices {
     return setupRequest("documents", queryParams);
   }
 
-  private boolean isExternalDescriptor(ContentDescriptor desc) {
+  static private boolean isExternalDescriptor(ContentDescriptor desc) {
     return desc != null && desc instanceof DocumentDescriptorImpl
       && !((DocumentDescriptorImpl) desc).isInternal();
   }
 
-  private void updateDescriptor(ContentDescriptor desc,
+  static private void updateDescriptor(ContentDescriptor desc,
                                 Headers headers) {
     if (desc == null || headers == null) return;
 
@@ -1892,7 +1892,7 @@ public class OkHttpServices implements RESTServices {
     updateServerTimestamp(desc, headers);
   }
 
-  private TemporalDescriptor updateTemporalSystemTime(DocumentDescriptor desc,
+  static private TemporalDescriptor updateTemporalSystemTime(DocumentDescriptor desc,
                                                       Headers headers)
   {
     if (headers == null) return null;
@@ -1907,7 +1907,7 @@ public class OkHttpServices implements RESTServices {
     return temporalDescriptor;
   }
 
-  private void copyDescriptor(DocumentDescriptor desc,
+  static private void copyDescriptor(DocumentDescriptor desc,
                               HandleImplementation handleBase) {
     if (handleBase == null) return;
 
@@ -1916,18 +1916,18 @@ public class OkHttpServices implements RESTServices {
     handleBase.setByteLength(desc.getByteLength());
   }
 
-  private void updateFormat(ContentDescriptor descriptor,
+  static private void updateFormat(ContentDescriptor descriptor,
                             Headers headers) {
     updateFormat(descriptor, getHeaderFormat(headers));
   }
 
-  private void updateFormat(ContentDescriptor descriptor, Format format) {
+  static private void updateFormat(ContentDescriptor descriptor, Format format) {
     if (format != null) {
       descriptor.setFormat(format);
     }
   }
 
-  private Format getHeaderFormat(Headers headers) {
+  static private Format getHeaderFormat(Headers headers) {
     String format = headers.get(HEADER_VND_MARKLOGIC_DOCUMENT_FORMAT);
     if (format != null) {
       return Format.valueOf(format.toUpperCase());
@@ -1935,7 +1935,7 @@ public class OkHttpServices implements RESTServices {
     return null;
   }
 
-  private Format getHeaderFormat(BodyPart part) {
+  static private Format getHeaderFormat(BodyPart part) {
     String contentDisposition = getHeader(part, HEADER_CONTENT_DISPOSITION);
     String formatRegex = ".* format=(text|binary|xml|json).*";
     String format = getHeader(part, HEADER_VND_MARKLOGIC_DOCUMENT_FORMAT);
@@ -1951,18 +1951,18 @@ public class OkHttpServices implements RESTServices {
     return null;
   }
 
-  private void updateMimetype(ContentDescriptor descriptor,
+  static private void updateMimetype(ContentDescriptor descriptor,
                               Headers headers) {
     updateMimetype(descriptor, getHeaderMimetype(headers.get(HEADER_CONTENT_TYPE)));
   }
 
-  private void updateMimetype(ContentDescriptor descriptor, String mimetype) {
+  static private void updateMimetype(ContentDescriptor descriptor, String mimetype) {
     if (mimetype != null) {
       descriptor.setMimetype(mimetype);
     }
   }
 
-  private String getHeader(Map<String, List<String>> headers, String name) {
+  static private String getHeader(Map<String, List<String>> headers, String name) {
     List<String> values = headers.get(name);
     if ( values != null && values.size() > 0 ) {
       return values.get(0);
@@ -1970,7 +1970,7 @@ public class OkHttpServices implements RESTServices {
     return null;
   }
 
-  private static String getHeader(BodyPart part, String name) {
+  static private String getHeader(BodyPart part, String name) {
     if ( part == null ) throw new MarkLogicInternalException("part must not be null");
     try {
       String[] values = part.getHeader(name);
@@ -1983,7 +1983,7 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  private String getHeaderMimetype(String contentType) {
+  static private String getHeaderMimetype(String contentType) {
     if (contentType != null) {
       String mimetype = contentType.contains(";")
                           ? contentType.substring(0, contentType.indexOf(";"))
@@ -1996,21 +1996,21 @@ public class OkHttpServices implements RESTServices {
     return null;
   }
 
-  private void updateLength(ContentDescriptor descriptor,
+  static private void updateLength(ContentDescriptor descriptor,
                             Headers headers) {
     updateLength(descriptor, getHeaderLength(headers.get(HEADER_CONTENT_LENGTH)));
   }
 
-  private void updateLength(ContentDescriptor descriptor, long length) {
+  static private void updateLength(ContentDescriptor descriptor, long length) {
     descriptor.setByteLength(length);
   }
 
-  private void updateServerTimestamp(ContentDescriptor descriptor,
+  static private void updateServerTimestamp(ContentDescriptor descriptor,
                                      Headers headers) {
     updateServerTimestamp(descriptor, getHeaderServerTimestamp(headers));
   }
 
-  private long getHeaderServerTimestamp(Headers headers) {
+  static private long getHeaderServerTimestamp(Headers headers) {
     String timestamp = headers.get(HEADER_ML_EFFECTIVE_TIMESTAMP);
     if (timestamp != null && timestamp.length() > 0) {
       return Long.parseLong(timestamp);
@@ -2018,7 +2018,7 @@ public class OkHttpServices implements RESTServices {
     return -1;
   }
 
-  private void updateServerTimestamp(ContentDescriptor descriptor, long timestamp) {
+  static private void updateServerTimestamp(ContentDescriptor descriptor, long timestamp) {
     if ( descriptor instanceof HandleImplementation ) {
       if ( descriptor != null && timestamp != -1 ) {
         ((HandleImplementation) descriptor).setResponseServerTimestamp(timestamp);
@@ -2026,14 +2026,14 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  private long getHeaderLength(String length) {
+  static private long getHeaderLength(String length) {
     if (length != null) {
       return Long.parseLong(length);
     }
     return ContentDescriptor.UNKNOWN_LENGTH;
   }
 
-  private String getHeaderUri(BodyPart part) {
+  static private String getHeaderUri(BodyPart part) {
     try {
       if ( part != null ) {
         return part.getFileName();
@@ -2045,17 +2045,24 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  private void updateVersion(DocumentDescriptor descriptor, Headers headers) {
-    long version = DocumentDescriptor.UNKNOWN_VERSION;
-    String value = headers.get(HEADER_ETAG);
-    if (value != null && value.length() > 0) {
-      // trim the double quotes
-      version = Long.parseLong(value.substring(1, value.length() - 1));
-    }
+  static private void updateVersion(DocumentDescriptor descriptor, Headers headers) {
+      updateVersion(descriptor, extractVersion(headers.get(HEADER_ETAG)));
+  }
+  static private void updateVersion(DocumentDescriptor descriptor, String header) {
+      updateVersion(descriptor, extractVersion(header));
+  }
+  static private void updateVersion(DocumentDescriptor descriptor, long version) {
     descriptor.setVersion(version);
   }
+  static private long extractVersion(String header) {
+    if (header != null && header.length() > 0) {
+      // trim the double quotes
+      return Long.parseLong(header.substring(1, header.length() - 1));
+    }
+    return DocumentDescriptor.UNKNOWN_VERSION;
+  }
 
-  private Request.Builder addVersionHeader(DocumentDescriptor desc, Request.Builder requestBldr, String name) {
+  static private Request.Builder addVersionHeader(DocumentDescriptor desc, Request.Builder requestBldr, String name) {
     if ( desc != null &&
          desc instanceof DocumentDescriptorImpl &&
          !((DocumentDescriptorImpl) desc).isInternal())
@@ -4747,18 +4754,45 @@ public class OkHttpServices implements RESTServices {
     }
 
     @Override
+    public DocumentDescriptor getDescriptor() {
+      if (content == null) {
+        throw new IllegalStateException("getDescriptor() called when no content is available");
+      }
+      DocumentDescriptorImpl descriptor = new DocumentDescriptorImpl(getUri(), false);
+      updateFormat(descriptor, getFormat());
+      updateMimetype(descriptor, getMimetype());
+      updateLength(descriptor, getLenth());
+      updateVersion(descriptor, content.getHeader(HEADER_ETAG));
+      return descriptor;
+    }
+
+    @Override
     public Format getFormat() {
+      if (content == null) {
+        throw new IllegalStateException("getFormat() called when no content is available");
+      }
       return content.getFormat();
     }
 
     @Override
     public String getMimetype() {
+      if (content == null) {
+        throw new IllegalStateException("getMimetype() called when no content is available");
+      }
       return content.getMimetype();
     }
 
     @Override
+    public long getLenth() {
+      if (content == null) {
+        throw new IllegalStateException("getLenth() called when no content is available");
+      }
+      return content.getLength();
+    }
+
+    @Override
     public <T extends DocumentMetadataReadHandle> T getMetadata(T metadataHandle) {
-      if ( metadata == null ) {
+      if (metadata == null) {
         throw new IllegalStateException("getMetadata called when no metadata is available");
       }
       return metadata.getContent(metadataHandle);

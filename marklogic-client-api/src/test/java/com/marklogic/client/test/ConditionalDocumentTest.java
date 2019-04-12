@@ -20,7 +20,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
+import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentRecord;
+import com.marklogic.client.query.StructuredQueryBuilder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -197,5 +202,30 @@ public class ConditionalDocumentTest {
 
     desc.setVersion(goodVersion);
     docMgr.delete(desc);
+  }
+
+  @Test
+  public void testConditionalMultiple() {
+    String[] docIds = {"/sample/first.xml", "/sample/fourth.xml"};
+    List<String> docList = Arrays.asList(docIds);
+
+    XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+
+    verifyDescriptors(docList, docMgr.read(docIds));
+
+    verifyDescriptors(
+            docList,
+            docMgr.search(new StructuredQueryBuilder().document(docIds), 1)
+    );
+  }
+  void verifyDescriptors(List<String> docList, DocumentPage page) {
+    for (DocumentRecord record: page) {
+      DocumentDescriptor desc = record.getDescriptor();
+      assertTrue("bad document URI when reading multiple descriptors", docList.contains(desc.getUri()));
+      assertEquals("bad content format when reading multiple descriptors", Format.XML, desc.getFormat());
+      assertTrue("bad content mime type when reading multiple descriptors", desc.getMimetype().startsWith("application/xml"));
+      assertTrue("bad content length when reading multiple descriptors", desc.getByteLength() >= 0);
+      assertTrue("bad content version when reading multiple descriptors", desc.getVersion() >= -1);
+    }
   }
 }
