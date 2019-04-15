@@ -280,7 +280,7 @@ public interface CallBatcher<W,E extends CallManager.CallEvent> extends Batcher 
          */
         CallBatcher<CallManager.CallArgs,E> forArgs();
         
-        CallBatcher<CallArgs,E> forArgsGenerator(CallArgsGenerator<E> generator);
+        CallBatcher<Void,E> forArgsGenerator(CallArgsGenerator<E> generator);
     }
     
     @FunctionalInterface

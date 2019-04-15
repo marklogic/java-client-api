@@ -294,7 +294,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         CallManagerImpl.CallArgsImpl args = null;
         if (input == null) {
             if(inputType == Void.class)
-                throw new IllegalArgumentException("Input type is void");
+                throw new IllegalArgumentException("Cannot call add() when supplying arguments with generator.");
             args = makeDefaultArgs();
         // batched param taking multiple values
         } else if (queue != null) {
@@ -466,7 +466,11 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         }
         if (initialized.getAndSet(true)) return;
         
-        if(inputType == Void.class) {
+        threadPool = new CallingThreadPoolExecutor(this, getThreadCount());
+        jobStartTime = Calendar.getInstance();
+        started.set(true);
+        
+        if(callArgsGenerator != null) {
             for (int i=0;i<getThreadCount(); i++) {
                     CallArgs newInput = callArgsGenerator.apply(null);
                     if(newInput != null) {
@@ -474,10 +478,6 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
                     }
             }
         }
-        
-        threadPool = new CallingThreadPoolExecutor(this, getThreadCount());
-        jobStartTime = Calendar.getInstance();
-        started.set(true);
     }
 
     @Override
@@ -572,8 +572,8 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         }
 
         @Override
-        public CallBatcher<CallArgs, E> forArgsGenerator(CallArgsGenerator<E> generator) {
-            return new CallBatcherImpl(client, caller, java.lang.Void.class, generator);
+        public CallBatcher<Void, E> forArgsGenerator(CallArgsGenerator<E> generator) {
+            return new CallBatcherImpl(client, caller, Void.class, generator);
         }
     }
 
@@ -705,7 +705,8 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 
             initEvent(output, callTime);
             batcher.sendSuccessToListeners(output);
-            if(batcher.inputType == Void.class) {
+            if(batcher.callArgsGenerator != null) {
+                // TODO:check how WriteBatcher and QueryBatcher tolerate listener errors.
                 CallArgs newInput = batcher.callArgsGenerator.apply(output);
                 if(newInput != null) {
                     batcher.submitCall((CallArgsImpl) newInput);
