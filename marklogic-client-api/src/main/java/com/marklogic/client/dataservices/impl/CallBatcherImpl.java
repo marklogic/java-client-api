@@ -54,6 +54,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     private Calendar jobStartTime;
     private Calendar jobEndTime;
     private List<RESTServices.CallField> defaultArgs;
+    private CallArgsGenerator<E> callArgsGenerator;
 
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private final AtomicBoolean stopped = new AtomicBoolean(false);
@@ -85,6 +86,11 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         if (this.isMultiple) {
             this.queue = new LinkedBlockingQueue<>();
         }
+    }
+    
+    CallBatcherImpl(DatabaseClient client, CallManagerImpl.CallerImpl<E> caller, Class<W> inputType, CallArgsGenerator<E> generator) {
+        this(client, caller, inputType);
+        this.callArgsGenerator = generator;
     }
 
     private CallBatcherImpl finishConstruction() {
@@ -287,6 +293,8 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 
         CallManagerImpl.CallArgsImpl args = null;
         if (input == null) {
+            if(inputType == Void.class)
+                throw new IllegalArgumentException("Input type is void");
             args = makeDefaultArgs();
         // batched param taking multiple values
         } else if (queue != null) {
@@ -457,7 +465,16 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             logger.warn("threadCount should be 1 or greater -- setting threadCount to number of hosts: " + threadCount);
         }
         if (initialized.getAndSet(true)) return;
-// TODO
+        
+        if(inputType == Void.class) {
+            for (int i=0;i<getThreadCount(); i++) {
+                    CallArgs newInput = callArgsGenerator.apply(null);
+                    if(newInput != null) {
+                        submitCall((CallArgsImpl) newInput);
+                    }
+            }
+        }
+        
         threadPool = new CallingThreadPoolExecutor(this, getThreadCount());
         jobStartTime = Calendar.getInstance();
         started.set(true);
@@ -552,6 +569,11 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         @Override
         public CallBatcherImpl<CallManager.CallArgs, E> forArgs() {
             return new CallBatcherImpl(client, caller, CallManager.CallArgs.class).finishConstruction();
+        }
+
+        @Override
+        public CallBatcher<CallArgs, E> forArgsGenerator(CallArgsGenerator<E> generator) {
+            return new CallBatcherImpl(client, caller, java.lang.Void.class, generator);
         }
     }
 
@@ -683,6 +705,12 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 
             initEvent(output, callTime);
             batcher.sendSuccessToListeners(output);
+            if(batcher.inputType == Void.class) {
+                CallArgs newInput = batcher.callArgsGenerator.apply(output);
+                if(newInput != null) {
+                    batcher.submitCall((CallArgsImpl) newInput);
+                }
+            }
             return true;
         }
     }
