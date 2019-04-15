@@ -16,12 +16,15 @@
 package com.marklogic.client.dataservices;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.marklogic.client.datamovement.Batcher;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.datamovement.JobTicket;
+import com.marklogic.client.dataservices.CallManager.CallArgs;
+import com.marklogic.client.dataservices.CallManager.CallEvent;
 
 /**
  * A CallBatcher executes multiple concurrent calls to a Data Service endpoint
@@ -276,5 +279,11 @@ public interface CallBatcher<W,E extends CallManager.CallEvent> extends Batcher 
          * @return  a CallBatcher that accepts the input and makes calls with the caller
          */
         CallBatcher<CallManager.CallArgs,E> forArgs();
+        
+        CallBatcher<CallArgs,E> forArgsGenerator(CallArgsGenerator<E> generator);
+    }
+    
+    @FunctionalInterface
+    public interface CallArgsGenerator<E extends CallEvent> extends Function<E, CallArgs> {
     }
 }
