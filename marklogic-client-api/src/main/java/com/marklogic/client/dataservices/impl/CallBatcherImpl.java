@@ -474,6 +474,8 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             for (int i=0;i<getThreadCount(); i++) {
                     CallArgs newInput = callArgsGenerator.apply(null);
                     if(newInput != null) {
+                        if(!(newInput instanceof CallArgsImpl))
+                            throw new MarkLogicInternalException("Unsupported implementation of call arguments.");
                         submitCall((CallArgsImpl) newInput);
                     }
             }
@@ -709,6 +711,8 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
                 // TODO:check how WriteBatcher and QueryBatcher tolerate listener errors.
                 CallArgs newInput = batcher.callArgsGenerator.apply(output);
                 if(newInput != null) {
+                    if(!(newInput instanceof CallArgsImpl))
+                        throw new MarkLogicInternalException("Unsupported implementation of call arguments.");
                     batcher.submitCall((CallArgsImpl) newInput);
                 }
             }
