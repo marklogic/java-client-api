@@ -607,9 +607,9 @@ public class CallManagerImpl implements CallManager {
   interface EventedCaller<E extends CallEvent> extends EndpointDefiner {
     E callForEvent(DatabaseClient client, CallArgs args) throws Exception;
   }
-  static abstract class CallerImpl<E extends CallEvent> extends EndpointDefinerImpl implements EventedCaller<E> {
+  public static abstract class CallerImpl<E extends CallEvent> extends EndpointDefinerImpl implements EventedCaller<E> {
     private CallableEndpointImpl endpoint;
-    CallerImpl(CallableEndpointImpl endpoint) {
+    public CallerImpl(CallableEndpointImpl endpoint) {
       this.endpoint = endpoint;
     }
 

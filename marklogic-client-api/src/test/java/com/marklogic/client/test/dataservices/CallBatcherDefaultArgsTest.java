@@ -58,6 +58,7 @@ public class CallBatcherDefaultArgsTest {
         
         endpointUtil.setupTwoDifferentParamEndpoint(docMgr, docMeta, "twoDiffAtomic", "double", "float", true, false);
         endpointUtil.setupTwoDifferentParamEndpoint(docMgr, docMeta, "twoDiffAtomic2", "double", "float", true, true);
+        adminClient.release();
     }
 
     @AfterClass

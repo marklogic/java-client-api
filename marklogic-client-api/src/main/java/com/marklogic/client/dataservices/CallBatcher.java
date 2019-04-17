@@ -279,7 +279,16 @@ public interface CallBatcher<W,E extends CallManager.CallEvent> extends Batcher 
          * @return  a CallBatcher that accepts the input and makes calls with the caller
          */
         CallBatcher<CallManager.CallArgs,E> forArgs();
-        
+        /**
+         * Takes a callback for generating the arguments for calls. 
+         * The callback takes the CallArgs from the previous call in the thread and returns 
+         *  the CallArgs for the next call in the thread. On the first call, the args consist 
+         *  of default arguments. If the args for the next call is null, work in the thread 
+         *  is considered complete. 
+         * 
+         * @param generator instance implementing {@link CallArgsGenerator}
+         * @return a CallBatcher for chaining with other methods.
+         */
         CallBatcher<Void,E> forArgsGenerator(CallArgsGenerator<E> generator);
     }
     
