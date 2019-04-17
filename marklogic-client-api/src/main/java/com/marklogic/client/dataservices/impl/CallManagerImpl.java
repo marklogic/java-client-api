@@ -650,7 +650,7 @@ public class CallManagerImpl implements CallManager {
         if (requiredParams != null && !assignedParams.containsAll(requiredParams)) {
           throw new IllegalArgumentException(
                   endpoint.getModule()+" called without some required parameters: "+
-                          requiredParams.stream().filter(assignedParams::contains).collect(Collectors.joining(", "))
+                          requiredParams.stream().filter(item-> !(assignedParams.contains(item))).collect(Collectors.joining(", "))
           );
         }
       } else if (requiredParams != null) {
