@@ -60,7 +60,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     private final AtomicBoolean stopped = new AtomicBoolean(false);
     private final AtomicBoolean started = new AtomicBoolean(false);
 
-    CallBatcherImpl(DatabaseClient client, CallManagerImpl.CallerImpl<E> caller, Class<W> inputType) {
+    public CallBatcherImpl(DatabaseClient client, CallManagerImpl.CallerImpl<E> caller, Class<W> inputType) {
         super(client.newDataMovementManager());
         if (caller == null) {
             throw new IllegalArgumentException("null caller");
@@ -88,7 +88,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         }
     }
     
-    CallBatcherImpl(DatabaseClient client, CallManagerImpl.CallerImpl<E> caller, Class<W> inputType, CallArgsGenerator<E> generator) {
+    public CallBatcherImpl(DatabaseClient client, CallManagerImpl.CallerImpl<E> caller, Class<W> inputType, CallArgsGenerator<E> generator) {
         this(client, caller, inputType);
         this.callArgsGenerator = generator;
     }
@@ -535,11 +535,11 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         callTask.withFailureListeners(callFailListeners).run();
     }
 
-    static class BuilderImpl<E extends CallManager.CallEvent> implements CallBatcherBuilder<E> {
+    public static class BuilderImpl<E extends CallManager.CallEvent> implements CallBatcherBuilder<E> {
         private CallManagerImpl.CallerImpl<E> caller;
         private DatabaseClient client;
 
-        BuilderImpl(DatabaseClient client, CallManagerImpl.CallerImpl<E> caller) {
+        public BuilderImpl(DatabaseClient client, CallManagerImpl.CallerImpl<E> caller) {
             this.caller = caller;
             this.client = client;
         }
