@@ -60,7 +60,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     private final AtomicBoolean stopped = new AtomicBoolean(false);
     private final AtomicBoolean started = new AtomicBoolean(false);
 
-    public CallBatcherImpl(DatabaseClient client, CallManagerImpl.CallerImpl<E> caller, Class<W> inputType) {
+    CallBatcherImpl(DatabaseClient client, CallManagerImpl.CallerImpl<E> caller, Class<W> inputType) {
         super(client.newDataMovementManager());
         if (caller == null) {
             throw new IllegalArgumentException("null caller");
@@ -88,7 +88,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         }
     }
     
-    public CallBatcherImpl(DatabaseClient client, CallManagerImpl.CallerImpl<E> caller, Class<W> inputType, CallArgsGenerator<E> generator) {
+    CallBatcherImpl(DatabaseClient client, CallManagerImpl.CallerImpl<E> caller, Class<W> inputType, CallArgsGenerator<E> generator) {
         this(client, caller, inputType);
         this.callArgsGenerator = generator;
     }
