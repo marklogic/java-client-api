@@ -109,7 +109,7 @@ public class CallbackGeneratorTest {
         expectedException.expectMessage(startsWith("Unsupported implementation of call arguments."));
         batcher = caller
                 .batcher()
-                .forArgsGenerator(result -> (result == null) ? initializeTest.apply(result) : result.getArgs());
+                .forArgsGenerator(result -> initializeTest.apply(result));
         ((CallBatcherImpl) batcher).start(null);
     }
     
