@@ -535,11 +535,11 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         callTask.withFailureListeners(callFailListeners).run();
     }
 
-    public static class BuilderImpl<E extends CallManager.CallEvent> implements CallBatcherBuilder<E> {
+    static class BuilderImpl<E extends CallManager.CallEvent> implements CallBatcherBuilder<E> {
         private CallManagerImpl.CallerImpl<E> caller;
         private DatabaseClient client;
 
-        public BuilderImpl(DatabaseClient client, CallManagerImpl.CallerImpl<E> caller) {
+        BuilderImpl(DatabaseClient client, CallManagerImpl.CallerImpl<E> caller) {
             this.caller = caller;
             this.client = client;
         }
