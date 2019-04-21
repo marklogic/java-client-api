@@ -15,21 +15,30 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.MarkLogicInternalException;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSParser;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLOutputFactory;
-import java.lang.ref.SoftReference;
 
 public final class XmlFactories {
 
   private static final CachedInstancePerThreadSupplier<XMLOutputFactory> cachedOutputFactory =
-    new CachedInstancePerThreadSupplier<XMLOutputFactory>(new Supplier<XMLOutputFactory>() {
-      @Override
-      public XMLOutputFactory get() {
-        return makeNewOutputFactory();
-      }
-    });
+    new CachedInstancePerThreadSupplier<>(XmlFactories::makeNewOutputFactory);
 
-  private XmlFactories() {} // preventing instances of utility class
+  private static final DocumentBuilderFactory documentBuilderFactory = makeDocumentBuilderFactory();
+  private static final CachedInstancePerThreadSupplier<DocumentBuilder> cachedDocumentBuilder =
+    new CachedInstancePerThreadSupplier<>(XmlFactories::makeDocumentBuilder);
+
+  private static final CachedInstancePerThreadFunction<DocumentBuilder, LSParser> cachedLsParser =
+    new CachedInstancePerThreadFunction<>(XmlFactories::makeLSParser);
+
+  private XmlFactories() {
+  } // preventing instances of utility class
 
   /**
    * Returns a new {@link XMLOutputFactory}. This factory will have its
@@ -38,10 +47,8 @@ public final class XmlFactories {
    * CAUTION: Creating XML factories is potentially a pretty expensive operation. If possible, consider using a shared
    * instance ({@link #getOutputFactory()}) to amortize this initialization cost via reuse.
    *
-   * @return  a namespace-repairing {@link XMLOutputFactory}
-   *
-   * @throws FactoryConfigurationError  see {@link XMLOutputFactory#newInstance()}
-   *
+   * @return a namespace-repairing {@link XMLOutputFactory}
+   * @throws FactoryConfigurationError see {@link XMLOutputFactory#newInstance()}
    * @see #getOutputFactory()
    */
   public static XMLOutputFactory makeNewOutputFactory() {
@@ -57,94 +64,58 @@ public final class XmlFactories {
    * Creating XML factories is potentially a pretty expensive operation. Using a shared instance helps to amortize
    * this initialization cost via reuse.
    *
-   * @return  a namespace-repairing {@link XMLOutputFactory}
-   *
-   * @throws FactoryConfigurationError  see {@link XMLOutputFactory#newInstance()}
-   *
+   * @return a namespace-repairing {@link XMLOutputFactory}
+   * @throws FactoryConfigurationError see {@link XMLOutputFactory#newInstance()}
    * @see #makeNewOutputFactory()  if you really (really?) need an non-shared instance
    */
   public static XMLOutputFactory getOutputFactory() {
     return cachedOutputFactory.get();
   }
 
-  /**
-   * Represents a supplier of results.
-   *
-   * <p>There is no requirement that a new or distinct result be returned each
-   * time the supplier is invoked.
-   *
-   * @param <T> the type of results supplied by this supplier
-   */
-   // TODO replace with java.util.function.Supplier<T> after Java 8 migration
-  interface Supplier<T> {
+  private static DocumentBuilderFactory makeDocumentBuilderFactory() {
+    final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setValidating(false);
 
-    /**
-     * Gets a result.
-     *
-     * @return a result
-     */
-    T get();
+    return factory;
+  }
+
+  private static DocumentBuilder makeDocumentBuilder() {
+    try {
+      return documentBuilderFactory.newDocumentBuilder();
+    } catch (final ParserConfigurationException e) {
+      throw new MarkLogicInternalException("Failed to create a document builder.", e);
+    }
   }
 
   /**
-   * A supplier that caches results per thread.
+   * Returns a shared {@link DocumentBuilder}. This DocumentBuilder is created <b>namespace-aware</b> and <b>not validating</b>.
    * <p>
-   * The supplier is thread safe.
-   * <p>
-   * Upon first invocation from a certain thread it is guaranteed to invoke the {@code supplier}'s {@code get()}
-   * method to obtain a thread-specific result.
-   * <p>
-   * Cached values are wrapped in a {@link java.lang.ref.SoftReference} to allow them to be garbage collected upon low
-   * memory. This may lead to multiple calls to the {@code delegate}'s {@code get()} method over the lifetime of a
-   * certain thread if a previous result was cleared due to low memory.
+   * Creating a DocumentBuilder is potentially a pretty expensive operation. Using a shared instance helps to amortize
+   * this initialization cost via reuse.
    *
-   * @param <T>  the supplier's value type
+   * @return a namespace-aware, non-validating {@link DocumentBuilder}
    */
-  private static class CachedInstancePerThreadSupplier<T> implements Supplier<T> {
+  public static DocumentBuilder getNsAwareNotValidatingDocBuilder() {
+    return cachedDocumentBuilder.get();
+  }
 
-    private final ThreadLocal<SoftReference<T>> cachedInstances = new ThreadLocal<SoftReference<T>>();
+  /**
+   * Returns a shared {@link LSParser}. This LSParser will have {@link DOMImplementationLS#MODE_SYNCHRONOUS} and no {@code schemaType} set.
+   * <p>
+   * Every first usage per {@code documentBuilder} instance will create a new {@link LSParser}.
+   * Further usages might return a cached LSParser instance.
+   *
+   * @param documentBuilder DocumentBuilder from which the LSParser is created.
+   * @return a synchronous LSParser
+   */
+  public static LSParser getSynchronousLSParser(final DocumentBuilder documentBuilder) {
+    return cachedLsParser.apply(documentBuilder);
+  }
 
-    /**
-     * The underlying supplier, invoked to originally retrieve the per-thread result
-     */
-    private final Supplier<T> delegate;
+  private static LSParser makeLSParser(final DocumentBuilder documentBuilder) {
+    final DOMImplementationLS domImpl = (DOMImplementationLS) documentBuilder.getDOMImplementation();
 
-    CachedInstancePerThreadSupplier(Supplier<T> delegate) {
-      this.delegate = delegate;
-
-      if (null == delegate) {
-        throw new IllegalArgumentException("Delegate must not be null");
-      }
-    }
-
-    /**
-     * Returns the thread-specific instance, possibly creating a new one if there is none exists.
-     *
-     * @return  a thread specific instance of {@code <T>}. Never {@literal null}.
-     */
-    @Override
-    public T get() {
-
-      SoftReference<T> cachedInstanceReference = cachedInstances.get();
-
-      // careful, either the reference itself may be null (upon first access from a thread), or the referred-to
-      // instance may be null (after a GC run that cleared it out)
-      T cachedInstance = (null != cachedInstanceReference) ? cachedInstanceReference.get() : null;
-
-      if (null == cachedInstance) {
-        // no instance for the current thread, create a new one ...
-        cachedInstance = delegate.get();
-        if (null == cachedInstance) {
-          throw new IllegalStateException("Must not return null from " + delegate.getClass().getName()
-            + "::get() (" + delegate + ")");
-        }
-
-        // ... and retain it for later re-use
-        cachedInstances.set(new SoftReference<T>(cachedInstance));
-      }
-
-      return cachedInstance;
-    }
-
+    return domImpl.createLSParser(DOMImplementationLS.MODE_SYNCHRONOUS, null);
   }
 }
