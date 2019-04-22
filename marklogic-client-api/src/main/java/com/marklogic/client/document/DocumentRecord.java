@@ -67,7 +67,7 @@ public interface DocumentRecord {
    * Returns the length of the document content.
    * @return the content length
    */
-  long getLenth();
+  long getLength();
 
   /**
    * Given a handle, populates the handle with the structured metadata directly from

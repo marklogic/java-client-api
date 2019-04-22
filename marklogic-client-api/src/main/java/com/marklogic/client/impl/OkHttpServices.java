@@ -4761,7 +4761,7 @@ public class OkHttpServices implements RESTServices {
       DocumentDescriptorImpl descriptor = new DocumentDescriptorImpl(getUri(), false);
       updateFormat(descriptor, getFormat());
       updateMimetype(descriptor, getMimetype());
-      updateLength(descriptor, getLenth());
+      updateLength(descriptor, getLength());
       updateVersion(descriptor, content.getHeader(HEADER_ETAG));
       return descriptor;
     }
@@ -4783,7 +4783,7 @@ public class OkHttpServices implements RESTServices {
     }
 
     @Override
-    public long getLenth() {
+    public long getLength() {
       if (content == null) {
         throw new IllegalStateException("getLenth() called when no content is available");
       }
