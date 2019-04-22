@@ -1,6 +1,7 @@
 package com.marklogic.client.test.dataservices;
 
 import static org.hamcrest.core.StringStartsWith.startsWith;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.InputStream;
@@ -66,6 +67,7 @@ public class CallbackGeneratorTest {
         JSONDocumentManager docMgr = adminClient.newJSONDocumentManager();
 
         DocumentMetadataHandle docMeta = new DocumentMetadataHandle();
+        docMeta.getPermissions().add("rest-reader", DocumentMetadataHandle.Capability.EXECUTE);
         endpointUtil.setupEndpointSingleRequired(docMgr, docMeta, "singleAtomic", "double");
         adminClient.release();
         
@@ -81,7 +83,7 @@ public class CallbackGeneratorTest {
                 .batcher()
                 .forArgsGenerator(result -> (result == null) ? caller.args().param("param1", 1.1) : result.getArgs())
                 .onCallSuccess(event -> {
-                    System.out.println(event.getItem());
+                   assertEquals(event.getItem(), Double.valueOf(1.1));
                     })
                 .onCallFailure((event, throwable) -> throwable.printStackTrace());
 
