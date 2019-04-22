@@ -286,4 +286,19 @@ public interface CallBatcher<W,E extends CallManager.CallEvent> extends Batcher 
     @FunctionalInterface
     public interface CallArgsGenerator<E extends CallEvent> extends Function<E, CallArgs> {
     }
+
+    /**
+     * Passed to a call failure listener when a call generator throws an exception.
+     *
+     * The getCause() method can be used to access the exception.
+     */
+    class CallArgsGenerationException extends RuntimeException {
+        /**
+         * Constructs the wrapper for an exception thrown by a call generator.
+         * @param throwable
+         */
+        public CallArgsGenerationException(Throwable throwable) {
+            super(throwable);
+        }
+    }
 }

@@ -696,7 +696,9 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
                 if (fireFailureListeners) {
                     CallManagerImpl.CallEventImpl input = new CallManagerImpl.CallEventImpl(client, args);
                     initEvent(input, callTime);
-                    batcher.sendThrowableToListeners(throwable, "failure calling " + caller.getEndpointPath() + " {}", input);
+                    batcher.sendThrowableToListeners(
+                            throwable, "failure calling " + caller.getEndpointPath() + " {}", input
+                    );
                     return false;
                 } else if (throwable instanceof RuntimeException) {
                     throw (RuntimeException) throwable;
@@ -707,10 +709,26 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 
             initEvent(output, callTime);
             batcher.sendSuccessToListeners(output);
-            if(batcher.callArgsGenerator != null) {
+            if (batcher.callArgsGenerator != null) {
                 // TODO:check how WriteBatcher and QueryBatcher tolerate listener errors.
-                CallArgs newInput = batcher.callArgsGenerator.apply(output);
-                if(newInput != null) {
+                CallArgs newInput = null;
+                try {
+                    newInput = batcher.callArgsGenerator.apply(output);
+                } catch (Throwable throwable) {
+                    if (fireFailureListeners) {
+                        batcher.sendThrowableToListeners(
+                                new CallArgsGenerationException(throwable),
+                                "failure constructing arguments for " + caller.getEndpointPath() + " {}",
+                                output
+                        );
+                        return false;
+                    } else if (throwable instanceof RuntimeException) {
+                        throw (RuntimeException) throwable;
+                    } else {
+                        throw new DataMovementException("Failed to generate call arguments", throwable);
+                    }
+                }
+                if (newInput != null) {
                     if(!(newInput instanceof CallArgsImpl))
                         throw new MarkLogicInternalException("Unsupported implementation of call arguments.");
                     batcher.submitCall((CallArgsImpl) newInput);
