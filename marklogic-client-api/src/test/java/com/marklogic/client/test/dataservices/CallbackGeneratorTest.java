@@ -1,3 +1,18 @@
+/*
+ * Copyright 2019 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.marklogic.client.test.dataservices;
 
 import static org.hamcrest.core.StringStartsWith.startsWith;
@@ -13,7 +28,12 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamReader;
@@ -76,20 +96,36 @@ public class CallbackGeneratorTest {
        
     }
 
-    @Test(expected = Test.None.class)
+    @Test
     public void forArgsGeneratorTest() {
-        
+        List<Double> outputValues = new ArrayList<Double>();
+        class Output {
+            List<Double> inputValues = new ArrayList<Double>();
+            int i;
+            Output() {
+                inputValues = Stream
+                        .iterate(10.0, last -> last - Double.valueOf(1))
+                        .limit(10)
+                        .collect(Collectors.toList());
+                Collections.sort(inputValues);
+                i = 0;
+            }
+        }
+        final Output output = new Output();
         batcher = caller
                 .batcher()
-                .forArgsGenerator(result -> (result == null) ? caller.args().param("param1", 1.1) : result.getArgs())
+                .forArgsGenerator(result -> (result == null || output.i<output.inputValues.size()) ? caller.args().param("param1", output.inputValues.get(output.i)) : null)
                 .onCallSuccess(event -> {
-                   assertEquals(event.getItem(), Double.valueOf(1.1));
+                    output.i+= 1;
+                    outputValues.add(event.getItem());
                     })
                 .onCallFailure((event, throwable) -> throwable.printStackTrace());
 
         batcher.startJob();
-        batcher.flushAndWait();
+        batcher.awaitCompletion();
         batcher.stopJob();
+        Collections.sort(outputValues);
+        assertEquals("forArgsGenerator input not equal to output.", outputValues, output.inputValues);
     }
     
     @Test

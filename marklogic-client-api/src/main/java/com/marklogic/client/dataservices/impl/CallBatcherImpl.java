@@ -30,6 +30,7 @@ import com.marklogic.client.impl.RESTServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -582,6 +583,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     static class CallingThreadPoolExecutor<W, E extends CallManager.CallEvent> extends ThreadPoolExecutor {
         private CallBatcherImpl<W, E> batcher;
         private Set<CallTask<W, E>> queuedAndExecutingTasks;
+        private CountDownLatch idleLatch;
 
 // TODO review including whether CallerRunsPolicy requires a derivation and whether retry or shutdown affects queue
         CallingThreadPoolExecutor(CallBatcherImpl<W, E> batcher, int threadCount) {
@@ -592,6 +594,9 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             this.batcher = batcher;
             // reserve capacity for all executing threads as well as executor queue
             this.queuedAndExecutingTasks = ConcurrentHashMap.newKeySet(getQueue().size() + threadCount);
+            if (batcher.callArgsGenerator != null) {
+                idleLatch = new CountDownLatch(threadCount);
+            }
         }
 
         @Override
@@ -619,18 +624,29 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             queuedAndExecutingTasks.remove(command);
             super.afterExecute(command, t);
         }
+        
+        void threadIdling() {
+            idleLatch.countDown();
+        }
 
         boolean awaitCompletion(long timeout, TimeUnit unit) {
             try {
                 if (isTerminated()) return true;
-                // take a snapshot of the queue at the current time
-                Set<CallTask<W,E>> queue = new HashSet<>();
-                queue.addAll(queuedAndExecutingTasks);
-                if (queue.isEmpty()) return true;
-                // wait for the future of every queued or executing task
-                for (CallTask<W,E> task : queue) {
-                    if (task.isCancelled() || task.isDone()) continue;
-                    task.get(timeout, unit);
+                
+                if (batcher.callArgsGenerator != null) {
+                   idleLatch.await(timeout, unit);
+                } else {
+                    // take a snapshot of the queue at the current time
+                    Set<CallTask<W, E>> queue = new HashSet<>();
+                    queue.addAll(queuedAndExecutingTasks);
+                    if (queue.isEmpty())
+                        return true;
+                    // wait for the future of every queued or executing task
+                    for (CallTask<W, E> task : queue) {
+                        if (task.isCancelled() || task.isDone())
+                            continue;
+                        task.get(timeout, unit);
+                    }
                 }
                 return true;
             } catch (InterruptedException e) {
@@ -714,6 +730,8 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
                     if(!(newInput instanceof CallArgsImpl))
                         throw new MarkLogicInternalException("Unsupported implementation of call arguments.");
                     batcher.submitCall((CallArgsImpl) newInput);
+                } else {
+                    batcher.threadPool.threadIdling();
                 }
             }
             return true;
