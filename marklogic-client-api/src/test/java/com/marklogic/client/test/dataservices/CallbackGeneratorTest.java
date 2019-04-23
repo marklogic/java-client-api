@@ -99,22 +99,18 @@ public class CallbackGeneratorTest {
     @Test
     public void forArgsGeneratorTest() {
         List<Double> outputValues = new ArrayList<Double>();
+        final List<Double> inputValues = Stream
+                .iterate(10.0, last -> last - Double.valueOf(1))
+                .limit(10)
+                .collect(Collectors.toList());
+        Collections.sort(inputValues);
         class Output {
-            List<Double> inputValues = new ArrayList<Double>();
-            int i;
-            Output() {
-                inputValues = Stream
-                        .iterate(10.0, last -> last - Double.valueOf(1))
-                        .limit(10)
-                        .collect(Collectors.toList());
-                Collections.sort(inputValues);
-                i = 0;
-            }
+            int i = 0;
         }
         final Output output = new Output();
         batcher = caller
                 .batcher()
-                .forArgsGenerator(result -> (result == null || output.i<output.inputValues.size()) ? caller.args().param("param1", output.inputValues.get(output.i)) : null)
+                .forArgsGenerator(result -> (result == null || output.i<inputValues.size()) ? caller.args().param("param1", inputValues.get(output.i)) : null)
                 .onCallSuccess(event -> {
                     output.i+= 1;
                     outputValues.add(event.getItem());
@@ -125,7 +121,7 @@ public class CallbackGeneratorTest {
         batcher.awaitCompletion();
         batcher.stopJob();
         Collections.sort(outputValues);
-        assertEquals("forArgsGenerator input not equal to output.", outputValues, output.inputValues);
+        assertEquals("forArgsGenerator input not equal to output.", outputValues, inputValues);
     }
     
     @Test
