@@ -422,9 +422,9 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
   }
 
   /*
-   * Linestring crosses Box - TODO to be handled in 9.0-2 as of 04/112/2017.
+   * Linestring crosses Box.
    */
-  @Ignore
+  @Test
   public void testLinestringCrossesBox() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
       TransformerException
   {
