@@ -27,6 +27,9 @@ import com.marklogic.client.dataservices.CallSuccessListener;
 import com.marklogic.client.dataservices.impl.CallManagerImpl.CallArgsImpl;
 
 import com.marklogic.client.impl.RESTServices;
+import com.marklogic.client.impl.RESTServices.CallField;
+import com.marklogic.client.impl.RESTServices.SingleAtomicCallField;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +58,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     private Calendar jobEndTime;
     private List<RESTServices.CallField> defaultArgs;
     private CallArgsGenerator<E> callArgsGenerator;
+    private String forestParamName;
 
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private final AtomicBoolean stopped = new AtomicBoolean(false);
@@ -91,6 +95,21 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     CallBatcherImpl(DatabaseClient client, CallManagerImpl.CallerImpl<E> caller, Class<W> inputType, CallArgsGenerator<E> generator) {
         this(client, caller, inputType);
         this.callArgsGenerator = generator;
+    }
+    
+    CallBatcherImpl(DatabaseClient client, CallManagerImpl.CallerImpl<E> caller, Class<W> inputType, CallArgsGenerator<E> generator, String forestName) {
+        this(client, caller, inputType, generator);
+        if(forestName == null || forestName.length() == 0)
+            throw new IllegalArgumentException("Forest name cannot be null or empty.");
+        CallManager.Paramdef paramdef = caller.getParamdefs().get(forestName);
+        if(paramdef == null)
+            throw new IllegalArgumentException("Forest name parameter of caller cannot be null.");
+        if(!"string".equals(paramdef.getDataType()) || paramdef.isMultiple())
+            throw new IllegalArgumentException("Forest name parameter cannot be multiple and needs to be a string.");
+        
+        finishConstruction();
+        this.forestParamName = forestName;
+        super.withThreadCount(super.getForestConfig().listForests().length);
     }
 
     private CallBatcherImpl finishConstruction() {
@@ -177,6 +196,8 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     @Override
     public CallBatcher withThreadCount(int threadCount) {
         requireInitialized(false);
+        if(forestParamName != null)
+            throw new MarkLogicInternalException("The number of threads will be based on the number of forests.");
         super.withThreadCount(threadCount);
         return this;
     }
@@ -471,8 +492,21 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         started.set(true);
         
         if(callArgsGenerator != null) {
+            Forest[] forests;
+            String[] forestNames = null;
+            if(forestParamName!=null) {
+                forests = super.getForestConfig().listForests();
+                forestNames = new String[forests.length];
+                int j=0;
+                for(Forest i:forests) {
+                    forestNames[j] = i.getForestName();
+                    j++;
+                }
+            }
             for (int i=0;i<getThreadCount(); i++) {
                     CallArgs newInput = callArgsGenerator.apply(null);
+                    if(forestNames!=null && forestNames[i]!=null)
+                        newInput.param(forestParamName, forestNames[i]);
                     if(newInput != null) {
                         if(!(newInput instanceof CallArgsImpl))
                             throw new MarkLogicInternalException("Unsupported implementation of call arguments.");
@@ -575,7 +609,12 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 
         @Override
         public CallBatcher<Void, E> forArgsGenerator(CallArgsGenerator<E> generator) {
-            return new CallBatcherImpl(client, caller, Void.class, generator);
+            return new CallBatcherImpl(client, caller, Void.class, generator).finishConstruction();
+        }
+
+        @Override
+        public CallBatcher<Void, E> forArgsGenerator(CallArgsGenerator<E> generator, String forestName) {
+            return new CallBatcherImpl(client, caller, Void.class, generator, forestName);
         }
     }
 
@@ -728,6 +767,14 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
                 if(newInput != null) {
                     if(!(newInput instanceof CallArgsImpl))
                         throw new MarkLogicInternalException("Unsupported implementation of call arguments.");
+                    List<CallField> callFieldList = ((CallArgsImpl)output.getArgs()).getCallFields();
+                    for(int i=0; i<callFieldList.size(); i++) {
+                        CallField callField= callFieldList.get(i);
+                        if(callField.getParamName().equals(batcher.forestParamName)) {
+                            newInput.param(batcher.forestParamName,((SingleAtomicCallField)callField).getParamValue());
+                            break;
+                        }
+                    }
                     batcher.submitCall((CallArgsImpl) newInput);
                 } else {
                     batcher.threadPool.threadIdling();

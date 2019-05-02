@@ -153,6 +153,12 @@ class EndpointUtil {
 
         endpointdefs.put(functionName, endpointdef);
     }
+    void setupSingleEndpointWithForestParam( JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype,
+            String paramType2, boolean isMultiple, boolean isNullable, String returnType) {
+        JsonNode endpointdef = getEndpointdefWithForestParamName(functionName, datatype, paramType2, returnType, isMultiple, isNullable);
+        String script = getScript(datatype, paramType2, returnType, isMultiple, false);
+        setupEndpoint(docMgr, docMeta, endpointdef, script);
+    }
 
     JsonNode getEndpointdef(String functionName, String datatype, boolean isMultiple, boolean isNullable) {
         return getEndpointdef(functionName, datatype, null, datatype, isMultiple, isNullable);
@@ -206,6 +212,39 @@ class EndpointUtil {
             if (paramType2 != null) {
                 paramdef = objectMapper.createObjectNode();
                 paramdef.put("name", "param2");
+                paramdef.put("datatype", paramType2);
+                paramdef.put("multiple", !isMultiple);
+                paramdef.put("nullable", !isNullable);
+                paramdefs.add(paramdef);
+            }
+            endpointdef.set("params", paramdefs);
+        }
+        if (returnType != null) {
+            ObjectNode returndef = objectMapper.createObjectNode();
+            returndef.put("datatype", returnType);
+            returndef.put("multiple", isMultiple);
+            returndef.put("nullable", isNullable);
+            endpointdef.set("return", returndef);
+        }
+        return endpointdef;
+    }
+    
+    JsonNode getEndpointdefWithForestParamName(
+            String functionName, String paramType1, String paramType2, String returnType, boolean isMultiple, boolean isNullable
+    ) {
+        ObjectNode endpointdef = objectMapper.createObjectNode();
+        endpointdef.put("functionName", functionName);
+        if (paramType1 != null) {
+            ArrayNode paramdefs  = objectMapper.createArrayNode();
+            ObjectNode paramdef = objectMapper.createObjectNode();
+            paramdef.put("name", "forestParamName");
+            paramdef.put("datatype", paramType1);
+            paramdef.put("multiple", isMultiple);
+            paramdef.put("nullable", isNullable);
+            paramdefs.add(paramdef);
+            if (paramType2 != null) {
+                paramdef = objectMapper.createObjectNode();
+                paramdef.put("name", "forestParamName2");
                 paramdef.put("datatype", paramType2);
                 paramdef.put("multiple", !isMultiple);
                 paramdef.put("nullable", !isNullable);
