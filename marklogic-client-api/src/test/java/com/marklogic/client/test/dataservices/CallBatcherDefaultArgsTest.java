@@ -45,7 +45,7 @@ import com.marklogic.client.test.Common;
 
 public class CallBatcherDefaultArgsTest {
 
-    private final static String ENDPOINT_DIRECTORY = "/javaApi/test/callBatchedParam/";
+    private final static String ENDPOINT_DIRECTORY = "/javaApi/test/callBatcherWithDefaultParam/";
 
     private static DatabaseClient db = Common.connect();
     private static CallManager callMgr = CallManager.on(db);
