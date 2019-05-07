@@ -613,15 +613,6 @@ public class CallManagerImpl implements CallManager {
       this.endpoint = endpoint;
     }
 
-    CallArgsImpl args(CallField field) {
-      CallArgsImpl args = args();
-      args.assignedParams = new HashSet<>();
-      args.assignedParams.add(field.getParamName());
-      args.callFields = new HashSet<>();
-      args.callFields.add(field);
-      return args;
-    }
-
     @Override
     public String getEndpointPath() {
       return endpoint.getEndpointPath();
@@ -644,9 +635,10 @@ public class CallManagerImpl implements CallManager {
     }
 
     void checkArgs(CallArgsImpl callArgs) {
-      Set<String> assignedParams = callArgs.getAssignedParams();
+      Map<String, CallField> callFields = callArgs.getCallFields();
       Set<String> requiredParams = endpoint.getRequiredParams();
-      if (assignedParams != null) {
+      if (callFields != null && callFields.size() > 0) {
+        Set<String> assignedParams = callFields.keySet();
         if (requiredParams != null && !assignedParams.containsAll(requiredParams)) {
           throw new IllegalArgumentException(
                   endpoint.getModule()+" called without some required parameters: "+
@@ -674,10 +666,10 @@ public class CallManagerImpl implements CallManager {
               request.withSession() :
               request.withSession(sessiondef.getParamName(), callArgs.getSession(), sessiondef.isNullable());
 
-      Set<CallField> callFields = callArgs.getCallFields();
+      Map<String,CallField> callFields = callArgs.getCallFields();
       int fieldSize = (callFields == null) ? 0 : callFields.size();
       if (fieldSize > 0) {
-          request = request.withParams(callFields.toArray(new CallField[fieldSize]));
+          request = request.withParams(callFields.values().toArray(new CallField[fieldSize]));
       }
 
       return request.withMethod("POST");
@@ -685,10 +677,9 @@ public class CallManagerImpl implements CallManager {
   }
 
   static class CallArgsImpl implements CallArgs {
-    private CallableEndpointImpl endpoint;
-    private Set<CallField>      callFields;
-    private SessionState         session;
-    private Set<String>          assignedParams;
+    private CallableEndpointImpl  endpoint;
+    private Map<String,CallField> callFields;
+    private SessionState          session;
 
     CallArgsImpl(CallableEndpointImpl endpoint) {
       this.endpoint = endpoint;
@@ -702,20 +693,16 @@ public class CallManagerImpl implements CallManager {
       }
       this.session = session;
     }
-    CallArgsImpl(CallableEndpointImpl endpoint, Set<CallField> callFields, Set<String> assignedParams) {
+    CallArgsImpl(CallableEndpointImpl endpoint, Map<String,CallField> callFields) {
         this(endpoint);
-        this.callFields     = callFields;
-        this.assignedParams = assignedParams;
+        this.callFields = callFields;
     }
 
     SessionState getSession() {
       return session;
     }
-    Set<CallField> getCallFields() {
+    Map<String,CallField> getCallFields() {
       return this.callFields;
-    }
-    Set<String> getAssignedParams() {
-      return assignedParams;
     }
 
     CallableEndpointImpl getEndpoint() {
@@ -735,29 +722,17 @@ public class CallManagerImpl implements CallManager {
     private CallArgs addField(CallField field) {
       if (field == null) return this;
 
-      if (getEndpoint().getRequiredParams() != null) {
-        if (assignedParams == null) {
-          assignedParams = new HashSet<>();
-        }
-        assignedParams.add(field.getParamName());
-      }
-
       if (callFields == null) {
-        callFields = new HashSet<>();
+        callFields = new HashMap<>();
       }
-      if(callFields.contains(field))
-          callFields.remove(field);
-      callFields.add(field);
+      callFields.put(field.getParamName(), field);
 
       return this;
     }
 
     @Override
     public String[] getAssignedParamNames() {
-      if (assignedParams == null) {
-        return new String[0];
-      }
-      return assignedParams.toArray(new String[assignedParams.size()]);
+      return callFields.keySet().toArray(new String[callFields.size()]);
     }
 
     @Override
