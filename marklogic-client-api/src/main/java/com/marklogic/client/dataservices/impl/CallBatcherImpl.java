@@ -220,12 +220,14 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         if (callArgsImpl.getEndpoint().getEndpointPath() != caller.getEndpointPath())
             throw new IllegalArgumentException("Endpoints are different");
 
-        if (callArgsImpl.getCallFields() == null || callArgsImpl.getCallFields().size() == 0) {
+        Map<String,CallField> callFields = callArgsImpl.getCallFields();
+        if (callFields == null || callFields.size() == 0) {
             this.defaultArgs = null;
             return this;
         }
 
-        Set<RESTServices.CallField> callFieldList = callArgsImpl.getCallFields().stream().map(p -> p.toBuffered()).collect(Collectors.toSet());
+        Set<RESTServices.CallField> callFieldList =
+            callFields.values().stream().map(p -> p.toBuffered()).collect(Collectors.toSet());
         this.defaultArgs = (callFieldList.size() == 0) ? null : callFieldList;
 
         return this;
@@ -236,21 +238,22 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             return makeDefaultArgs();
         }
 
-        Set<RESTServices.CallField> newCallFields = new HashSet<>();
-        Set<String> assignedParams = new HashSet<>();
-
-        newCallFields.add(callField);
-        assignedParams.add(callField.getParamName());
+        Map<String, RESTServices.CallField> newCallFields = new HashMap<>();
+        newCallFields.put(callField.getParamName(), callField);
 
         if (defaultArgs == null) {
-            return new CallArgsImpl(caller.getEndpoint(), newCallFields, assignedParams);
+            return new CallArgsImpl(caller.getEndpoint(), newCallFields);
         }
 
-        return addDefaultArgs(newCallFields, assignedParams);
+        return addDefaultArgs(newCallFields);
     }
     CallArgsImpl addDefaultArgs(CallArgsImpl callArgsImpl) {
-        if (callArgsImpl == null || callArgsImpl.getCallFields() == null ||
-                callArgsImpl.getCallFields().size() == 0) {
+        if (callArgsImpl == null) {
+            return makeDefaultArgs();
+        }
+
+        Map<String, CallField> callFields = callArgsImpl.getCallFields();
+        if (callFields == null || callFields.size() == 0) {
             return makeDefaultArgs();
         }
 
@@ -258,34 +261,21 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             return callArgsImpl;
         }
 
-        Set<RESTServices.CallField> newCallFields = new HashSet<>();
-        Set<String> assignedParams = new HashSet<>();
-
-        newCallFields.addAll(callArgsImpl.getCallFields());
-        assignedParams.addAll(callArgsImpl.getAssignedParams());
-
-        return addDefaultArgs(newCallFields, assignedParams);
+        return addDefaultArgs(new HashMap<>(callFields));
     }
-    CallArgsImpl addDefaultArgs(Set<RESTServices.CallField> newCallFields, Set<String> assignedParams) {
-        for (RESTServices.CallField i : defaultArgs) {
-            if (!assignedParams.contains(i.getParamName())) {
-                assignedParams.add(i.getParamName());
-                newCallFields.add(i);
-            }
+    CallArgsImpl addDefaultArgs(Map<String, RESTServices.CallField> newCallFields) {
+        for (RESTServices.CallField defaultArg: defaultArgs) {
+            newCallFields.putIfAbsent(defaultArg.getParamName(), defaultArg);
         }
 
-        return new CallArgsImpl(caller.getEndpoint(), newCallFields, assignedParams);
+        return new CallArgsImpl(caller.getEndpoint(), newCallFields);
     }
     CallArgsImpl makeDefaultArgs() {
         if (defaultArgs == null) {
             return new CallArgsImpl(caller.getEndpoint());
         }
 
-        return new CallArgsImpl(
-                caller.getEndpoint(),
-                defaultArgs,
-                defaultArgs.stream().map(RESTServices.CallField::getParamName).collect(Collectors.toSet())
-        );
+        return addDefaultArgs(new HashMap<>());
     }
 
     @Override
@@ -772,14 +762,11 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
                 if(newInput != null) {
                     if(!(newInput instanceof CallArgsImpl))
                         throw new MarkLogicInternalException("Unsupported implementation of call arguments.");
-                    Set<CallField> callFieldSet = ((CallArgsImpl)output.getArgs()).getCallFields();
-                    CallField[] callFieldList = callFieldSet.stream().toArray(CallField[]::new);
-                    for(int i=0; i<callFieldList.length; i++) {
-                        CallField callField= callFieldList[i];
-                        if(callField.getParamName().equals(batcher.forestParamName)) {
-                            newInput.param(batcher.forestParamName,((SingleAtomicCallField)callField).getParamValue());
-                            break;
-                        }
+                    String forestParamName = batcher.forestParamName;
+                    if (forestParamName != null) {
+                        CallField forestField  = ((CallArgsImpl) output.getArgs()).getCallFields().get(forestParamName);
+                        String forestNameValue = ((SingleAtomicCallField) forestField).getParamValue();
+                        newInput.param(forestParamName, forestNameValue);
                     }
                     batcher.submitCall((CallArgsImpl) newInput);
                 } else {
