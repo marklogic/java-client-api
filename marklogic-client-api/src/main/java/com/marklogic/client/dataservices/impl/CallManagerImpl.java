@@ -617,7 +617,7 @@ public class CallManagerImpl implements CallManager {
       CallArgsImpl args = args();
       args.assignedParams = new HashSet<>();
       args.assignedParams.add(field.getParamName());
-      args.callFields = new ArrayList<>();
+      args.callFields = new HashSet<>();
       args.callFields.add(field);
       return args;
     }
@@ -674,7 +674,7 @@ public class CallManagerImpl implements CallManager {
               request.withSession() :
               request.withSession(sessiondef.getParamName(), callArgs.getSession(), sessiondef.isNullable());
 
-      List<CallField> callFields = callArgs.getCallFields();
+      Set<CallField> callFields = callArgs.getCallFields();
       int fieldSize = (callFields == null) ? 0 : callFields.size();
       if (fieldSize > 0) {
           request = request.withParams(callFields.toArray(new CallField[fieldSize]));
@@ -686,7 +686,7 @@ public class CallManagerImpl implements CallManager {
 
   static class CallArgsImpl implements CallArgs {
     private CallableEndpointImpl endpoint;
-    private List<CallField>      callFields;
+    private Set<CallField>      callFields;
     private SessionState         session;
     private Set<String>          assignedParams;
 
@@ -702,16 +702,16 @@ public class CallManagerImpl implements CallManager {
       }
       this.session = session;
     }
-    CallArgsImpl(CallableEndpointImpl endpoint, List<CallField> callFields, Set<String> assignedParams) {
-    	this(endpoint);
-    	this.callFields     = callFields;
-    	this.assignedParams = assignedParams;
+    CallArgsImpl(CallableEndpointImpl endpoint, Set<CallField> callFields, Set<String> assignedParams) {
+        this(endpoint);
+        this.callFields     = callFields;
+        this.assignedParams = assignedParams;
     }
 
     SessionState getSession() {
       return session;
     }
-    List<CallField> getCallFields() {
+    Set<CallField> getCallFields() {
       return this.callFields;
     }
     Set<String> getAssignedParams() {
@@ -743,8 +743,10 @@ public class CallManagerImpl implements CallManager {
       }
 
       if (callFields == null) {
-        callFields = new ArrayList<>();
+        callFields = new HashSet<>();
       }
+      if(callFields.contains(field))
+          callFields.remove(field);
       callFields.add(field);
 
       return this;

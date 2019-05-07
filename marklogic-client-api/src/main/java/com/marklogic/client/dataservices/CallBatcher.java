@@ -290,6 +290,16 @@ public interface CallBatcher<W,E extends CallManager.CallEvent> extends Batcher 
          * @return a CallBatcher for chaining with other methods.
          */
         CallBatcher<Void,E> forArgsGenerator(CallArgsGenerator<E> generator);
+        /**
+         * Takes a callback and the forest name for generating the arguments for calls. 
+         * The callback takes the CallEvent and the forest name from the previous call in 
+         * the thread and returns the CallArgs for the next call in the thread.
+         * 
+         * @param generator instance implementing {@link CallArgsGenerator}
+         * @param forestName is the name of the forest.
+         * @return a CallBatcher for chaining with other methods.
+         */
+        CallBatcher<Void,E> forArgsGenerator(CallArgsGenerator<E> generator, String forestName);
     }
     
     @FunctionalInterface

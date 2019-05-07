@@ -440,6 +440,20 @@ public interface RESTServices {
     public CallField toBuffered() {
     	return this;
     }
+    
+    @Override
+    public int hashCode() {
+        return getParamName().hashCode();
+    }
+    
+    @Override
+    public boolean equals(Object arg0) {
+        CallField callField = (CallField)arg0;
+        if(this.getParamName()!=null && callField.getParamName()!=null && 
+                this.getParamName().equals(callField.getParamName()))
+            return true;
+        return false;
+    }
   }
   public static abstract class MultipleAtomicCallField extends CallField {
     MultipleAtomicCallField(String paramName) {
