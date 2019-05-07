@@ -363,27 +363,32 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
    *          HostAvailabilityListener is returned
    * @return the first HostAvailabilityListener instance with the batcher or
    *         null if there is no HostAvailabilityListener registered
-   * @throws IllegalStateException if the passed Batcher is neither a
-   *           QueryBatcher nor a WriteBatcher
    */
   public static HostAvailabilityListener getInstance(Batcher batcher) {
     if ( batcher instanceof WriteBatcher ) {
-      WriteFailureListener[] writeFailureListeners = ((WriteBatcher) batcher).getBatchFailureListeners();
-      for(WriteFailureListener writeFailureListener : writeFailureListeners) {
-        if ( writeFailureListener instanceof HostAvailabilityListener ) {
-          return (HostAvailabilityListener) writeFailureListener;
-        }
-      }
+      return getInstance((WriteBatcher) batcher);
     } else if ( batcher instanceof QueryBatcher ) {
-      QueryFailureListener[] queryFailureListeners = ((QueryBatcher) batcher).getQueryFailureListeners();
-      for(QueryFailureListener queryFailureListener : queryFailureListeners) {
-        if ( queryFailureListener instanceof HostAvailabilityListener ) {
-          return (HostAvailabilityListener) queryFailureListener;
-        }
-      }
+      return getInstance((QueryBatcher) batcher);
     } else {
       throw new IllegalStateException(
           "The Batcher should be either a QueryBatcher instance or a WriteBatcher instance");
+    }
+  }
+  private static HostAvailabilityListener getInstance(WriteBatcher batcher) {
+    WriteFailureListener[] writeFailureListeners = batcher.getBatchFailureListeners();
+    for (WriteFailureListener writeFailureListener : writeFailureListeners) {
+      if (writeFailureListener instanceof HostAvailabilityListener) {
+        return (HostAvailabilityListener) writeFailureListener;
+      }
+    }
+    return null;
+  }
+  private static HostAvailabilityListener getInstance(QueryBatcher batcher) {
+    QueryFailureListener[] queryFailureListeners = batcher.getQueryFailureListeners();
+    for (QueryFailureListener queryFailureListener : queryFailureListeners) {
+      if (queryFailureListener instanceof HostAvailabilityListener) {
+        return (HostAvailabilityListener) queryFailureListener;
+      }
     }
     return null;
   }

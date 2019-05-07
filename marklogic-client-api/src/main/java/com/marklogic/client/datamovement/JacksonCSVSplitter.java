@@ -16,6 +16,7 @@
 
 package com.marklogic.client.datamovement;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.Iterator;
@@ -100,10 +101,10 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
      *  and wrapping the JsonNode into JacksonHandle.
      * @param input the input stream passed in.
      * @return a stream of JacksonHandle.
+     * @throws IOException if the input cannot be split
      */
     @Override
-    public Stream<JacksonHandle> split(InputStream input) throws Exception { 
-
+    public Stream<JacksonHandle> split(InputStream input) throws IOException {
         if(input == null) {
             throw new IllegalArgumentException("InputSteam cannot be null.");
         }
@@ -115,9 +116,9 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
      *  and wrapping the JsonNode into JacksonHandle.
      * @param input the Reader stream passed in.
      * @return a stream of JacksonHandle.
+     * @throws IOException if the input cannot be split
      */
-    public Stream<JacksonHandle> split(Reader input) throws Exception  { 
-
+    public Stream<JacksonHandle> split(Reader input) throws IOException {
         if(input == null) {
             throw new IllegalArgumentException("Input cannot be null.");
         }

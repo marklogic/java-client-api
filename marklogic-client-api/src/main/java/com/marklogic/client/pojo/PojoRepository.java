@@ -215,7 +215,7 @@ public interface PojoRepository<T, ID extends Serializable> {
   long count(String[] collections, Transaction transaction)
     throws ForbiddenUserException, FailedRequestException;
 
-  /** @return the number of documents of the type managed by this PojoRepository persisted in the database which match
+  /** The number of documents of the type managed by this PojoRepository persisted in the database which match
    * the query
    * @param query the query to perform to determine the number of matching instance in the db
    * @return the number of instance in the db matching the query

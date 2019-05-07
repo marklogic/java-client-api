@@ -572,98 +572,150 @@ public class DatabaseClientFactory {
 		private ExpiringSAMLAuth authorization;
 		private RenewerCallback renewer;
 
-        /**
-         * @return the X509TrustManagerused for authentication.
-         */
-		public X509TrustManager getTrustManager() {
-			return trustManager;
-		}
-		
-		/**
-         * Replaces the token with new SAML authorization token.
-         */
+      /**
+       * Constructs a context for authorization using a SAML assertions token.
+       * @param authorizationToken the token with the SAML assertions
+       */
 		public SAMLAuthContext(String authorizationToken) {
 			this.token = authorizationToken;
 		}
+      /**
+       * Constructs a context for authorization using an authorizer callback.
+       * The authorizer must get a SAML assertions token from the IDP (Identity Provider)
+       * for the first request and when the current SAML assertions token is expiring.
+       * @param authorizer the callback returning the assertions token
+       */
 		public SAMLAuthContext(AuthorizerCallback authorizer) {
 			this.authorizer = authorizer;
 		}
+      /**
+       * Constructs a context for authorization using a SAML assertions token
+       * and a renewer callback. The renewer callback must renew the SAML
+       * assertions token with the IDP (Identity Provider) when the SAML assertions
+       * token is expiring.
+       * @param authorization the expiring object with the SAML assertions token and expiry
+       * @param renewer the renewer callback
+       */
 		public SAMLAuthContext(ExpiringSAMLAuth authorization, RenewerCallback renewer) {
 		    this.authorization = authorization;
 		    this.renewer = renewer;
 		}
-		
-		/**
+
+		/** Gets the SAML authentication token
 		 * @return the SAML authentication token.
 		 */
 		public String getToken() {
+			if (token == null && authorization != null)
+			    return authorization.getAuthorizationToken();
 			return token;
 		}
+
+      /**
+       * Gets the authorizer callback when specified during construction of the SAMLAuthContext.
+       * @return the callback
+       */
 		public AuthorizerCallback getAuthorizer() {
             return authorizer;
         }
+      /**
+       * Gets the renewer callback when specified during construction of the SAMLAuthContext.
+       * @return the callback
+       */
         public RenewerCallback getRenewer() {
             return renewer;
         }
+      /**
+       * Gets the object with the SAML assertions token and expiration when specified during
+       * construction of the SAMLAuthContext or renewed by the renewer callback.
+       * @return the object with the assertions token and expiration
+       */
         public ExpiringSAMLAuth getAuthorization() {
             return authorization;
         }
 		
 		/**
-		 * ExpiringSAMLAuth is used by SAMLAuthContext for reauthorization.
+		 * ExpiringSAMLAuth is used by SAMLAuthContext when renewing a SAML assertions token.
 		 */
 		public interface ExpiringSAMLAuth {
 		    /**
-		     * @return a new SAML assertion token.
+             * Gets the SAML assertions token
+		     * @return the token.
 		     */
 	        public String getAuthorizationToken();
-	        
 	        /**
-	         * @return the expiration time stamp of the newly generated SAML assertion token.
+             * Gets the expiration time stamp specified for the SAML assertions token
+	         * @return the expiration time stamp
 	         */
 	        public Instant getExpiry();
 	    }
 		
 		/**
-         * newExpiringSAMLAuth is used to provide a new token with a new expiration time stamp.
+         * Constructs an ExpiringSAMLAuth with a SAML assertions token and the expiration time stamp
+         * for the token.
          * @param authorizationToken refers to the new SAML token.
          * @param expiry refers to the expiration time stamp of authorizationToken.
          * @return an ExpiringSAMLAuth instance.
          */
 		public static ExpiringSAMLAuth newExpiringSAMLAuth(final String authorizationToken, final Instant expiry) {
             return new ExpiringSAMLAuth() {
-                
                 @Override
                 public Instant getExpiry() {
                     return expiry;
                 }
-                
                 @Override
                 public String getAuthorizationToken() {
                     return authorizationToken;
                 }
             };
         }
-		
-		 @FunctionalInterface
-		 public interface AuthorizerCallback extends Function<ExpiringSAMLAuth, ExpiringSAMLAuth> { }
-		 
-		 @FunctionalInterface
-		 public interface RenewerCallback extends Function<ExpiringSAMLAuth, Instant> { }
 
+      /**
+       * A callback for getting a SAML assertions token from the IDP (Identity Provider).
+       */
+      @FunctionalInterface
+      public interface AuthorizerCallback extends Function<ExpiringSAMLAuth, ExpiringSAMLAuth> { }
+
+      /**
+       * A callback for renewing the SAML assertions token with the IDP (Identity Provider)
+       * by extending the expiration time.
+       */
+      @FunctionalInterface
+      public interface RenewerCallback extends Function<ExpiringSAMLAuth, Instant> { }
+
+      /**
+       * Configures the SSL context and trust manager for a SAML authorization context
+       * @param context - the SSLContext object required for the SSL connection
+       * @param trustManager - X509TrustManager with which we initialize the SSLContext
+       * @return this SAML authorization context for chained configuration
+       */
 		@Override
 		public SAMLAuthContext withSSLContext(SSLContext context, X509TrustManager trustManager) {
 			this.sslContext = context;
 			this.trustManager = trustManager;
 			return this;
 		}
-
+      /**
+       * Configures the SSL hostname verifier for a SAML authorization context
+       * @param verifier	the host verifier
+       * @return this SAML authorization context for chained configuration
+       */
 		@Override
 		public SAMLAuthContext withSSLHostnameVerifier(SSLHostnameVerifier verifier) {
 			this.sslVerifier = verifier;
 			return this;
 		}
 
+      /**
+       * Gets the trust manager when using SSL.
+       * @return the X509TrustManager used for authentication
+       */
+      public X509TrustManager getTrustManager() {
+          return trustManager;
+      }
+      /**
+       * Gets the SSL context when using SSL.
+       * @return the SSLContext used for authentication
+       */
 		@Override
 		public SSLContext getSSLContext() {
 			return sslContext;
@@ -676,6 +728,10 @@ public class DatabaseClientFactory {
 
 		}
 
+      /**
+       * Gets the hostname verifier when using SSL.
+       * @return the hostname verifier used for authentication
+       */
 		@Override
 		public SSLHostnameVerifier getSSLHostnameVerifier() {
 			return sslVerifier;
