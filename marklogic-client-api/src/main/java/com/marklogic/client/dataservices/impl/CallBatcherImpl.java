@@ -94,6 +94,8 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     
     CallBatcherImpl(DatabaseClient client, CallManagerImpl.CallerImpl<E> caller, Class<W> inputType, CallArgsGenerator<E> generator) {
         this(client, caller, inputType);
+        if(generator == null)
+            throw new IllegalArgumentException("Call Argument Generator cannot be null.");
         this.callArgsGenerator = generator;
     }
     
@@ -107,14 +109,16 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         if(!"string".equals(paramdef.getDataType()) || paramdef.isMultiple())
             throw new IllegalArgumentException("Forest name parameter cannot be multiple and needs to be a string.");
         
-        finishConstruction();
         this.forestParamName = forestName;
-        super.withThreadCount(super.getForestConfig().listForests().length);
     }
 
     private CallBatcherImpl finishConstruction() {
         withForestConfig(getDataMovementManager().readForestConfig());
-        withThreadCount(clients.size());
+        
+        if(forestParamName!=null)
+            super.withThreadCount(super.getForestConfig().listForests().length);
+        else 
+            withThreadCount(clients.size());
         withBatchSize(isMultiple ? 100 : 1);
         return this;
     }
@@ -492,9 +496,9 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         started.set(true);
         
         if(callArgsGenerator != null) {
-            Forest[] forests;
             String[] forestNames = null;
             if(forestParamName!=null) {
+                Forest[] forests;
                 forests = super.getForestConfig().listForests();
                 forestNames = new String[forests.length];
                 int j=0;
@@ -615,7 +619,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 
         @Override
         public CallBatcher<Void, E> forArgsGenerator(CallArgsGenerator<E> generator, String forestName) {
-            return new CallBatcherImpl(client, caller, Void.class, generator, forestName);
+            return new CallBatcherImpl(client, caller, Void.class, generator, forestName).finishConstruction();
         }
     }
 
