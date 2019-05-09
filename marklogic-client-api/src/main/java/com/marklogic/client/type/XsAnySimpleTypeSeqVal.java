@@ -18,6 +18,6 @@ package com.marklogic.client.type;
 /**
  * A sequence of server simple values.
  */
-public interface XsAnySimpleTypeSeqVal extends XsAnySimpleTypeSeqExpr, ItemSeqVal {
+public interface XsAnySimpleTypeSeqVal extends ItemSeqVal {
     public XsAnySimpleTypeVal[] getAnySimpleTypeItems();
 }

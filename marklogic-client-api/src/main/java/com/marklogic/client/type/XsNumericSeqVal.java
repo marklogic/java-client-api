@@ -20,6 +20,6 @@ package com.marklogic.client.type;
 /**
  * A sequence of server numeric values.
  */
-public interface XsNumericSeqVal extends XsNumericSeqExpr, XsAnyAtomicTypeSeqVal {
+public interface XsNumericSeqVal extends XsAnyAtomicTypeSeqVal {
     public XsNumericVal[] getNumericItems();
 }

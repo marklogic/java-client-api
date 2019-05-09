@@ -15,19 +15,11 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.type.ElementNodeExpr;
-import com.marklogic.client.type.ItemExpr;
-import com.marklogic.client.type.ItemSeqExpr;
-import com.marklogic.client.type.XsBooleanExpr;
-import com.marklogic.client.type.XsNumericExpr;
-import com.marklogic.client.type.XsStringSeqExpr;
-import com.marklogic.client.type.XsUnsignedLongExpr;
+import com.marklogic.client.type.XsBooleanVal;
+import com.marklogic.client.type.XsStringSeqVal;
+import com.marklogic.client.type.XsUnsignedLongVal;
 
 import com.marklogic.client.type.ServerExpression;
-import com.marklogic.client.type.JsonArrayExpr;
-import com.marklogic.client.type.JsonArraySeqExpr;
-import com.marklogic.client.type.JsonObjectExpr;
-import com.marklogic.client.type.JsonObjectSeqExpr;
 
 import com.marklogic.client.expression.JsonExpr;
 import com.marklogic.client.impl.BaseTypeImpl;
@@ -44,13 +36,13 @@ class JsonExprImpl implements JsonExpr {
 
     
   @Override
-  public JsonArrayExpr array() {
+  public ServerExpression array() {
     return new ArrayCallImpl("json", "array", new Object[]{  });
   }
 
   
   @Override
-  public JsonArrayExpr array(ServerExpression array) {
+  public ServerExpression array(ServerExpression array) {
     if (array == null) {
       throw new IllegalArgumentException("array parameter for array() cannot be null");
     }
@@ -59,13 +51,13 @@ class JsonExprImpl implements JsonExpr {
 
   
   @Override
-  public XsUnsignedLongExpr arraySize(ServerExpression array) {
+  public ServerExpression arraySize(ServerExpression array) {
     return new XsExprImpl.UnsignedLongCallImpl("json", "array-size", new Object[]{ array });
   }
 
   
   @Override
-  public ItemSeqExpr arrayValues(ServerExpression array) {
+  public ServerExpression arrayValues(ServerExpression array) {
     if (array == null) {
       throw new IllegalArgumentException("array parameter for arrayValues() cannot be null");
     }
@@ -74,13 +66,13 @@ class JsonExprImpl implements JsonExpr {
 
   
   @Override
-  public ItemSeqExpr arrayValues(ServerExpression array, boolean flatten) {
+  public ServerExpression arrayValues(ServerExpression array, boolean flatten) {
     return arrayValues(array, xs.booleanVal(flatten));
   }
 
   
   @Override
-  public ItemSeqExpr arrayValues(ServerExpression array, ServerExpression flatten) {
+  public ServerExpression arrayValues(ServerExpression array, ServerExpression flatten) {
     if (array == null) {
       throw new IllegalArgumentException("array parameter for arrayValues() cannot be null");
     }
@@ -89,13 +81,13 @@ class JsonExprImpl implements JsonExpr {
 
   
   @Override
-  public JsonObjectExpr object() {
+  public ServerExpression object() {
     return new ObjectCallImpl("json", "object", new Object[]{  });
   }
 
   
   @Override
-  public JsonObjectExpr object(ServerExpression map) {
+  public ServerExpression object(ServerExpression map) {
     if (map == null) {
       throw new IllegalArgumentException("map parameter for object() cannot be null");
     }
@@ -104,25 +96,25 @@ class JsonExprImpl implements JsonExpr {
 
   
   @Override
-  public JsonObjectExpr objectDefine() {
+  public ServerExpression objectDefine() {
     return new ObjectCallImpl("json", "object-define", new Object[]{  });
   }
 
   
   @Override
-  public JsonObjectExpr objectDefine(ServerExpression keys) {
+  public ServerExpression objectDefine(ServerExpression keys) {
     return new ObjectCallImpl("json", "object-define", new Object[]{ keys });
   }
 
   
   @Override
-  public JsonArrayExpr subarray(ServerExpression array, double startingLoc) {
+  public ServerExpression subarray(ServerExpression array, double startingLoc) {
     return subarray(array, xs.doubleVal(startingLoc));
   }
 
   
   @Override
-  public JsonArrayExpr subarray(ServerExpression array, ServerExpression startingLoc) {
+  public ServerExpression subarray(ServerExpression array, ServerExpression startingLoc) {
     if (array == null) {
       throw new IllegalArgumentException("array parameter for subarray() cannot be null");
     }
@@ -134,13 +126,13 @@ class JsonExprImpl implements JsonExpr {
 
   
   @Override
-  public JsonArrayExpr subarray(ServerExpression array, double startingLoc, double length) {
+  public ServerExpression subarray(ServerExpression array, double startingLoc, double length) {
     return subarray(array, xs.doubleVal(startingLoc), xs.doubleVal(length));
   }
 
   
   @Override
-  public JsonArrayExpr subarray(ServerExpression array, ServerExpression startingLoc, ServerExpression length) {
+  public ServerExpression subarray(ServerExpression array, ServerExpression startingLoc, ServerExpression length) {
     if (array == null) {
       throw new IllegalArgumentException("array parameter for subarray() cannot be null");
     }
@@ -155,75 +147,57 @@ class JsonExprImpl implements JsonExpr {
 
   
   @Override
-  public JsonArrayExpr toArray() {
+  public ServerExpression toArray() {
     return new ArrayCallImpl("json", "to-array", new Object[]{  });
   }
 
   
   @Override
-  public JsonArrayExpr toArray(ServerExpression items) {
+  public ServerExpression toArray(ServerExpression items) {
     return new ArrayCallImpl("json", "to-array", new Object[]{ items });
   }
 
   
   @Override
-  public JsonArrayExpr toArray(ServerExpression items, double limit) {
+  public ServerExpression toArray(ServerExpression items, double limit) {
     return toArray(items, xs.doubleVal(limit));
   }
 
   
   @Override
-  public JsonArrayExpr toArray(ServerExpression items, ServerExpression limit) {
+  public ServerExpression toArray(ServerExpression items, ServerExpression limit) {
     return new ArrayCallImpl("json", "to-array", new Object[]{ items, limit });
   }
 
   
   @Override
-  public JsonArrayExpr toArray(ServerExpression items, double limit, ServerExpression zero) {
+  public ServerExpression toArray(ServerExpression items, double limit, ServerExpression zero) {
     return toArray(items, xs.doubleVal(limit), zero);
   }
 
   
   @Override
-  public JsonArrayExpr toArray(ServerExpression items, ServerExpression limit, ServerExpression zero) {
+  public ServerExpression toArray(ServerExpression items, ServerExpression limit, ServerExpression zero) {
     return new ArrayCallImpl("json", "to-array", new Object[]{ items, limit, zero });
   }
 
-  @Override
-  public JsonArraySeqExpr arraySeq(JsonArrayExpr... items) {
-    return new ArraySeqListImpl(items);
-  }
-  static class ArraySeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements JsonArraySeqExpr {
-    ArraySeqListImpl(Object[] items) {
-      super(items);
-    }
-  }
-  static class ArraySeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements JsonArraySeqExpr {
+  static class ArraySeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
     ArraySeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class ArrayCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements JsonArrayExpr {
+  static class ArrayCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
     ArrayCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
  
-  @Override
-  public JsonObjectSeqExpr objectSeq(JsonObjectExpr... items) {
-    return new ObjectSeqListImpl(items);
-  }
-  static class ObjectSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements JsonObjectSeqExpr {
-    ObjectSeqListImpl(Object[] items) {
-      super(items);
-    }
-  }
-  static class ObjectSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements JsonObjectSeqExpr {
+  static class ObjectSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
     ObjectSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class ObjectCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements JsonObjectExpr {
+  static class ObjectCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
     ObjectCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }

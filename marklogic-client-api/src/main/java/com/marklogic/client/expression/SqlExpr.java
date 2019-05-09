@@ -15,15 +15,12 @@
  */
 package com.marklogic.client.expression;
 
-import com.marklogic.client.type.ItemExpr;
-import com.marklogic.client.type.ItemSeqExpr;
-import com.marklogic.client.type.XsDecimalExpr;
-import com.marklogic.client.type.XsIntegerExpr;
-import com.marklogic.client.type.XsIntExpr;
-import com.marklogic.client.type.XsNumericExpr;
-import com.marklogic.client.type.XsStringExpr;
-import com.marklogic.client.type.XsUnsignedIntExpr;
-import com.marklogic.client.type.XsUnsignedLongExpr;
+import com.marklogic.client.type.XsDecimalVal;
+import com.marklogic.client.type.XsIntegerVal;
+import com.marklogic.client.type.XsIntVal;
+import com.marklogic.client.type.XsStringVal;
+import com.marklogic.client.type.XsUnsignedIntVal;
+import com.marklogic.client.type.XsUnsignedLongVal;
 
 import com.marklogic.client.type.ServerExpression;
 
@@ -44,7 +41,7 @@ public interface SqlExpr {
   * @param str  The string to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr bitLength(ServerExpression str);
+  public ServerExpression bitLength(ServerExpression str);
 /**
   * Returns an rdf:collatedString value with the given value and collation tag. The rdf:collatedString type extends xs:string , and represents a collation tagged string in RDF. 
   * <p>
@@ -53,7 +50,7 @@ public interface SqlExpr {
   * @param collationURI  The collation URI.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr collatedString(ServerExpression string, String collationURI);
+  public ServerExpression collatedString(ServerExpression string, String collationURI);
 /**
   * Returns an rdf:collatedString value with the given value and collation tag. The rdf:collatedString type extends xs:string , and represents a collation tagged string in RDF. 
   *
@@ -65,7 +62,7 @@ public interface SqlExpr {
   * @param collationURI  The collation URI.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr collatedString(ServerExpression string, ServerExpression collationURI);
+  public ServerExpression collatedString(ServerExpression string, ServerExpression collationURI);
 /**
   * Returns a specified date with the specified number interval (signed integer) added to a specified datepart of that date 
   * <p>
@@ -75,7 +72,7 @@ public interface SqlExpr {
   * @param date  Is an expression that can be resolved to a time, date or datetime, value. date can be an expression, column expression, user-defined variable or string literal. startdate is subtracted from enddate.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemExpr dateadd(ServerExpression datepart, int number, ServerExpression date);
+  public ServerExpression dateadd(ServerExpression datepart, int number, ServerExpression date);
 /**
   * Returns a specified date with the specified number interval (signed integer) added to a specified datepart of that date 
   *
@@ -88,7 +85,7 @@ public interface SqlExpr {
   * @param date  Is an expression that can be resolved to a time, date or datetime, value. date can be an expression, column expression, user-defined variable or string literal. startdate is subtracted from enddate.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemExpr dateadd(ServerExpression datepart, ServerExpression number, ServerExpression date);
+  public ServerExpression dateadd(ServerExpression datepart, ServerExpression number, ServerExpression date);
 /**
   * Returns the count (signed integer) of the specified datepart boundaries crossed between the specified startdate and enddate. 
   *
@@ -101,7 +98,7 @@ public interface SqlExpr {
   * @param enddate  Same as startdate.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr datediff(ServerExpression datepart, ServerExpression startdate, ServerExpression enddate);
+  public ServerExpression datediff(ServerExpression datepart, ServerExpression startdate, ServerExpression enddate);
 /**
   * Returns an integer that represents the specified datepart of the specified date. 
   *
@@ -113,7 +110,7 @@ public interface SqlExpr {
   * @param date  Is an expression that can be resolved to a xs:date, xs:time, xs:dateTime. date can be an expression, column expression,user-defined variable, or string literal.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr datepart(ServerExpression datepart, ServerExpression date);
+  public ServerExpression datepart(ServerExpression datepart, ServerExpression date);
 /**
   * Returns an xs:integer between 1 and 31, both inclusive, representing the day component in the localized value of arg. 
   *
@@ -124,7 +121,7 @@ public interface SqlExpr {
   * @param arg  The xs:genericDateTimeArg whose day component will be returned.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr day(ServerExpression arg);
+  public ServerExpression day(ServerExpression arg);
 /**
   * Returns an xs:string representing the dayname value in the localized value of arg. 
   *
@@ -135,7 +132,7 @@ public interface SqlExpr {
   * @param arg  The date whose dayname value will be returned.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr dayname(ServerExpression arg);
+  public ServerExpression dayname(ServerExpression arg);
 /**
   * Returns an xs:integer between 0 and 23, both inclusive, representing the value of the hours component in the localized value of arg. 
   *
@@ -146,7 +143,7 @@ public interface SqlExpr {
   * @param arg  The genericDateTime whose hours component will be returned.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr hours(ServerExpression arg);
+  public ServerExpression hours(ServerExpression arg);
 /**
   * Returns a string that that is the first argument with length characters removed starting at start and the second string has been inserted beginning at start.
   * <p>
@@ -157,7 +154,7 @@ public interface SqlExpr {
   * @param str2  The string to insert.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr insert(ServerExpression str, double start, double length, String str2);
+  public ServerExpression insert(ServerExpression str, double start, double length, String str2);
 /**
   * Returns a string that that is the first argument with length characters removed starting at start and the second string has been inserted beginning at start.
   *
@@ -171,7 +168,7 @@ public interface SqlExpr {
   * @param str2  The string to insert.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr insert(ServerExpression str, ServerExpression start, ServerExpression length, ServerExpression str2);
+  public ServerExpression insert(ServerExpression str, ServerExpression start, ServerExpression length, ServerExpression str2);
 /**
   * Find the starting location of a pattern in a string.
   * <p>
@@ -180,7 +177,7 @@ public interface SqlExpr {
   * @param n  The pattern to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a> server data type
   */
-  public XsUnsignedIntExpr instr(ServerExpression str, String n);
+  public ServerExpression instr(ServerExpression str, String n);
 /**
   * Find the starting location of a pattern in a string.
   *
@@ -192,7 +189,7 @@ public interface SqlExpr {
   * @param n  The pattern to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a> server data type
   */
-  public XsUnsignedIntExpr instr(ServerExpression str, ServerExpression n);
+  public ServerExpression instr(ServerExpression str, ServerExpression n);
 /**
   * Returns a string that is the leftmost characters of the target string. The number of characters to return is specified by the second argument.
   * <p>
@@ -201,7 +198,7 @@ public interface SqlExpr {
   * @param n  The number of leftmost characters of the string to return.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr left(ServerExpression str, double n);
+  public ServerExpression left(ServerExpression str, double n);
 /**
   * Returns a string that is the leftmost characters of the target string. The number of characters to return is specified by the second argument.
   *
@@ -213,7 +210,7 @@ public interface SqlExpr {
   * @param n  The number of leftmost characters of the string to return.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr left(ServerExpression str, ServerExpression n);
+  public ServerExpression left(ServerExpression str, ServerExpression n);
 /**
   * Return a string that removes leading empty spaces in the input string.
   *
@@ -224,7 +221,7 @@ public interface SqlExpr {
   * @param str  The string to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr ltrim(ServerExpression str);
+  public ServerExpression ltrim(ServerExpression str);
 /**
   * Returns an xs:integer value between 0 to 59, both inclusive, representing the value of the minutes component in the localized value of arg. 
   *
@@ -235,7 +232,7 @@ public interface SqlExpr {
   * @param arg  The genericDateTime whose minutes component will be returned.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr minutes(ServerExpression arg);
+  public ServerExpression minutes(ServerExpression arg);
 /**
   * Returns an xs:integer between 1 and 12, both inclusive, representing the month component in the localized value of arg. 
   *
@@ -246,7 +243,7 @@ public interface SqlExpr {
   * @param arg  The genericDateTime whose month component will be returned.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr month(ServerExpression arg);
+  public ServerExpression month(ServerExpression arg);
 /**
   * Returns month name, calculated from the localized value of arg. 
   *
@@ -257,7 +254,7 @@ public interface SqlExpr {
   * @param arg  The date whose month-name will be returned.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr monthname(ServerExpression arg);
+  public ServerExpression monthname(ServerExpression arg);
 /**
   * Returns the length of the string "str" in bits.
   *
@@ -268,7 +265,7 @@ public interface SqlExpr {
   * @param x  The string to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr octetLength(ServerExpression x);
+  public ServerExpression octetLength(ServerExpression x);
 /**
   * Returns an xs:integer between 1 and 4, both inclusive, calculating the quarter component in the localized value of arg. 
   *
@@ -279,7 +276,7 @@ public interface SqlExpr {
   * @param arg  The genericDateTime whose quarter component will be returned.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr quarter(ServerExpression arg);
+  public ServerExpression quarter(ServerExpression arg);
 /**
   * Return a random number. This differs from xdmp:random in that the argument is a seed.
   *
@@ -290,7 +287,7 @@ public interface SqlExpr {
   * @param n  The random seed. Currently this parameter is ignored.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr rand(ServerExpression n);
+  public ServerExpression rand(ServerExpression n);
 /**
   * Returns a string that concatenates the first argument as many times as specified by the second argument.
   * <p>
@@ -299,7 +296,7 @@ public interface SqlExpr {
   * @param n  The number of times to repeat the string.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr repeat(ServerExpression str, double n);
+  public ServerExpression repeat(ServerExpression str, double n);
 /**
   * Returns a string that concatenates the first argument as many times as specified by the second argument.
   *
@@ -311,7 +308,7 @@ public interface SqlExpr {
   * @param n  The number of times to repeat the string.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr repeat(ServerExpression str, ServerExpression n);
+  public ServerExpression repeat(ServerExpression str, ServerExpression n);
 /**
   * Returns a string that is the rightmost characters of the target string. The number of characters to return is specified by the second argument.
   * <p>
@@ -320,7 +317,7 @@ public interface SqlExpr {
   * @param n  The number of rightmost characters of the string to return.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr right(ServerExpression str, double n);
+  public ServerExpression right(ServerExpression str, double n);
 /**
   * Returns a string that is the rightmost characters of the target string. The number of characters to return is specified by the second argument.
   *
@@ -332,7 +329,7 @@ public interface SqlExpr {
   * @param n  The number of rightmost characters of the string to return.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr right(ServerExpression str, ServerExpression n);
+  public ServerExpression right(ServerExpression str, ServerExpression n);
 /**
   * Return a string that removes trailing empty spaces in the input string.
   *
@@ -343,7 +340,7 @@ public interface SqlExpr {
   * @param str  The string to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr rtrim(ServerExpression str);
+  public ServerExpression rtrim(ServerExpression str);
 /**
   * Returns an xs:decimal value between 0 and 60.999..., both inclusive, representing the seconds and fractional seconds in the localized value of arg. Note that the value can be greater than 60 seconds to accommodate occasional leap seconds used to keep human time synchronized with the rotation of the planet. 
   *
@@ -354,7 +351,7 @@ public interface SqlExpr {
   * @param arg  The time whose seconds component will be returned.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_decimal.html">xs:decimal</a> server data type
   */
-  public XsDecimalExpr seconds(ServerExpression arg);
+  public ServerExpression seconds(ServerExpression arg);
 /**
   * Returns the sign of number x.
   *
@@ -365,7 +362,7 @@ public interface SqlExpr {
   * @param x  The number to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr sign(ServerExpression x);
+  public ServerExpression sign(ServerExpression x);
 /**
   * Returns a string that is the given number of spaces.
   *
@@ -376,7 +373,7 @@ public interface SqlExpr {
   * @param n  The number of spaces to return as a string.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr space(ServerExpression n);
+  public ServerExpression space(ServerExpression n);
 /**
   * Returns a xs:string? timestamp created by adding a number to the given dateTimeType field of a given timestamp.
   * <p>
@@ -386,7 +383,7 @@ public interface SqlExpr {
   * @param timestamp  The xs:dateTime timestamp to which addition has to take place.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemExpr timestampadd(ServerExpression dateTimeType, int value, ServerExpression timestamp);
+  public ServerExpression timestampadd(ServerExpression dateTimeType, int value, ServerExpression timestamp);
 /**
   * Returns a xs:string? timestamp created by adding a number to the given dateTimeType field of a given timestamp.
   *
@@ -399,7 +396,7 @@ public interface SqlExpr {
   * @param timestamp  The xs:dateTime timestamp to which addition has to take place.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemExpr timestampadd(ServerExpression dateTimeType, ServerExpression value, ServerExpression timestamp);
+  public ServerExpression timestampadd(ServerExpression dateTimeType, ServerExpression value, ServerExpression timestamp);
 /**
   * Returns the difference in dateTimeType field of two given timestamps.
   *
@@ -412,7 +409,7 @@ public interface SqlExpr {
   * @param timestamp2  The xs:dateTime timestamp to which addition has to take place.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr timestampdiff(ServerExpression dateTimeType, ServerExpression timestamp1, ServerExpression timestamp2);
+  public ServerExpression timestampdiff(ServerExpression dateTimeType, ServerExpression timestamp1, ServerExpression timestamp2);
 /**
   * Return a string that removes leading empty spaces in the input string.
   *
@@ -423,7 +420,7 @@ public interface SqlExpr {
   * @param str  The string to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr trim(ServerExpression str);
+  public ServerExpression trim(ServerExpression str);
 /**
   * Returns an xs:integer between 1 and 53, both inclusive, representing the week value in the localized value of arg. 
   *
@@ -434,8 +431,8 @@ public interface SqlExpr {
   * @param arg  The dateTime/date/string whose day component will be returned.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr week(ServerExpression arg);
-public XsIntegerExpr weekday(ServerExpression arg1);
+  public ServerExpression week(ServerExpression arg);
+public ServerExpression weekday(ServerExpression arg1);
 /**
   * Returns an xs:integer representing the year component in the localized value of arg. The result may be negative. 
   *
@@ -446,7 +443,7 @@ public XsIntegerExpr weekday(ServerExpression arg1);
   * @param arg  The dateTime/date/string whose day component will be returned.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr year(ServerExpression arg);
+  public ServerExpression year(ServerExpression arg);
 /**
   * Returns an xs:integer between 1 and 366, both inclusive, representing the yearday value in the localized value of arg. 
   *
@@ -457,5 +454,5 @@ public XsIntegerExpr weekday(ServerExpression arg1);
   * @param arg  The xs:genericDateTimeArg whose days of the year will be returned.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr yearday(ServerExpression arg);
+  public ServerExpression yearday(ServerExpression arg);
 }

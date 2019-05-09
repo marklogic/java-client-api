@@ -20,5 +20,5 @@ package com.marklogic.client.type;
 /**
  * An instance of a cts.reference expression.
  */
-public interface CtsReferenceExpr extends CtsReferenceSeqExpr, ItemExpr {
+public interface CtsReferenceExpr extends CtsReferenceSeqExpr {
 }

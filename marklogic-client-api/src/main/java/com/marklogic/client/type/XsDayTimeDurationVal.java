@@ -20,6 +20,6 @@ import javax.xml.datatype.Duration;
 /**
  * An instance of a server day-time duration value.
  */
-public interface XsDayTimeDurationVal extends XsDayTimeDurationExpr, XsDurationVal, XsDayTimeDurationSeqVal {
+public interface XsDayTimeDurationVal extends XsDurationVal, XsDayTimeDurationSeqVal {
     public Duration getDuration();
 }

@@ -15,25 +15,18 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.type.ElementNodeExpr;
-import com.marklogic.client.type.ItemExpr;
-import com.marklogic.client.type.ItemSeqExpr;
-import com.marklogic.client.type.MapMapExpr;
-import com.marklogic.client.type.NodeExpr;
-import com.marklogic.client.type.XsAnyAtomicTypeExpr;
-import com.marklogic.client.type.XsAnyURIExpr;
-import com.marklogic.client.type.XsBooleanExpr;
-import com.marklogic.client.type.XsDateExpr;
-import com.marklogic.client.type.XsDateTimeExpr;
-import com.marklogic.client.type.XsIntegerExpr;
-import com.marklogic.client.type.XsLongExpr;
-import com.marklogic.client.type.XsNumericExpr;
-import com.marklogic.client.type.XsNumericSeqExpr;
-import com.marklogic.client.type.XsQNameExpr;
-import com.marklogic.client.type.XsStringExpr;
-import com.marklogic.client.type.XsStringSeqExpr;
-import com.marklogic.client.type.XsUnsignedIntExpr;
-import com.marklogic.client.type.XsUnsignedLongExpr;
+import com.marklogic.client.type.XsAnyAtomicTypeVal;
+import com.marklogic.client.type.XsAnyURIVal;
+import com.marklogic.client.type.XsBooleanVal;
+import com.marklogic.client.type.XsDateTimeVal;
+import com.marklogic.client.type.XsDateVal;
+import com.marklogic.client.type.XsIntegerVal;
+import com.marklogic.client.type.XsLongVal;
+import com.marklogic.client.type.XsQNameVal;
+import com.marklogic.client.type.XsStringSeqVal;
+import com.marklogic.client.type.XsStringVal;
+import com.marklogic.client.type.XsUnsignedIntVal;
+import com.marklogic.client.type.XsUnsignedLongVal;
 
 import com.marklogic.client.type.ServerExpression;
 
@@ -52,7 +45,7 @@ class XdmpExprImpl implements XdmpExpr {
 
     
   @Override
-  public XsUnsignedLongExpr add64(ServerExpression x, ServerExpression y) {
+  public ServerExpression add64(ServerExpression x, ServerExpression y) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for add64() cannot be null");
     }
@@ -64,7 +57,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsUnsignedLongExpr and64(ServerExpression x, ServerExpression y) {
+  public ServerExpression and64(ServerExpression x, ServerExpression y) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for and64() cannot be null");
     }
@@ -76,7 +69,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr base64Decode(ServerExpression encoded) {
+  public ServerExpression base64Decode(ServerExpression encoded) {
     if (encoded == null) {
       throw new IllegalArgumentException("encoded parameter for base64Decode() cannot be null");
     }
@@ -85,7 +78,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr base64Encode(ServerExpression plaintext) {
+  public ServerExpression base64Encode(ServerExpression plaintext) {
     if (plaintext == null) {
       throw new IllegalArgumentException("plaintext parameter for base64Encode() cannot be null");
     }
@@ -94,13 +87,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsBooleanExpr castableAs(ServerExpression namespaceUri, String localName, ServerExpression item) {
-    return castableAs(namespaceUri, (localName == null) ? (XsStringExpr) null : xs.string(localName), item);
+  public ServerExpression castableAs(ServerExpression namespaceUri, String localName, ServerExpression item) {
+    return castableAs(namespaceUri, (localName == null) ? (ServerExpression) null : xs.string(localName), item);
   }
 
   
   @Override
-  public XsBooleanExpr castableAs(ServerExpression namespaceUri, ServerExpression localName, ServerExpression item) {
+  public ServerExpression castableAs(ServerExpression namespaceUri, ServerExpression localName, ServerExpression item) {
     if (namespaceUri == null) {
       throw new IllegalArgumentException("namespaceUri parameter for castableAs() cannot be null");
     }
@@ -112,13 +105,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr crypt(ServerExpression password, String salt) {
-    return crypt(password, (salt == null) ? (XsStringExpr) null : xs.string(salt));
+  public ServerExpression crypt(ServerExpression password, String salt) {
+    return crypt(password, (salt == null) ? (ServerExpression) null : xs.string(salt));
   }
 
   
   @Override
-  public XsStringExpr crypt(ServerExpression password, ServerExpression salt) {
+  public ServerExpression crypt(ServerExpression password, ServerExpression salt) {
     if (password == null) {
       throw new IllegalArgumentException("password parameter for crypt() cannot be null");
     }
@@ -130,7 +123,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr crypt2(ServerExpression password) {
+  public ServerExpression crypt2(ServerExpression password) {
     if (password == null) {
       throw new IllegalArgumentException("password parameter for crypt2() cannot be null");
     }
@@ -139,13 +132,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr daynameFromDate(ServerExpression arg) {
+  public ServerExpression daynameFromDate(ServerExpression arg) {
     return new XsExprImpl.StringCallImpl("xdmp", "dayname-from-date", new Object[]{ arg });
   }
 
   
   @Override
-  public XsStringExpr decodeFromNCName(ServerExpression name) {
+  public ServerExpression decodeFromNCName(ServerExpression name) {
     if (name == null) {
       throw new IllegalArgumentException("name parameter for decodeFromNCName() cannot be null");
     }
@@ -154,25 +147,25 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr describe(ServerExpression item) {
+  public ServerExpression describe(ServerExpression item) {
     return new XsExprImpl.StringCallImpl("xdmp", "describe", new Object[]{ item });
   }
 
   
   @Override
-  public XsStringExpr describe(ServerExpression item, ServerExpression maxSequenceLength) {
+  public ServerExpression describe(ServerExpression item, ServerExpression maxSequenceLength) {
     return new XsExprImpl.StringCallImpl("xdmp", "describe", new Object[]{ item, maxSequenceLength });
   }
 
   
   @Override
-  public XsStringExpr describe(ServerExpression item, ServerExpression maxSequenceLength, ServerExpression maxItemLength) {
+  public ServerExpression describe(ServerExpression item, ServerExpression maxSequenceLength, ServerExpression maxItemLength) {
     return new XsExprImpl.StringCallImpl("xdmp", "describe", new Object[]{ item, maxSequenceLength, maxItemLength });
   }
 
   
   @Override
-  public XsStringExpr diacriticLess(ServerExpression string) {
+  public ServerExpression diacriticLess(ServerExpression string) {
     if (string == null) {
       throw new IllegalArgumentException("string parameter for diacriticLess() cannot be null");
     }
@@ -181,7 +174,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr elementContentType(ServerExpression element) {
+  public ServerExpression elementContentType(ServerExpression element) {
     if (element == null) {
       throw new IllegalArgumentException("element parameter for elementContentType() cannot be null");
     }
@@ -190,7 +183,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr encodeForNCName(ServerExpression name) {
+  public ServerExpression encodeForNCName(ServerExpression name) {
     if (name == null) {
       throw new IllegalArgumentException("name parameter for encodeForNCName() cannot be null");
     }
@@ -199,103 +192,97 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr formatNumber(XsNumericExpr... value) {
-    return formatNumber(new XsExprImpl.NumericSeqListImpl(value));
-  }
-
-  
-  @Override
-  public XsStringExpr formatNumber(ServerExpression value) {
+  public ServerExpression formatNumber(ServerExpression value) {
     return new XsExprImpl.StringCallImpl("xdmp", "format-number", new Object[]{ value });
   }
 
   
   @Override
-  public XsStringExpr formatNumber(ServerExpression value, String picture) {
-    return formatNumber(value, (picture == null) ? (XsStringExpr) null : xs.string(picture));
+  public ServerExpression formatNumber(ServerExpression value, String picture) {
+    return formatNumber(value, (picture == null) ? (ServerExpression) null : xs.string(picture));
   }
 
   
   @Override
-  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture) {
+  public ServerExpression formatNumber(ServerExpression value, ServerExpression picture) {
     return new XsExprImpl.StringCallImpl("xdmp", "format-number", new Object[]{ value, picture });
   }
 
   
   @Override
-  public XsStringExpr formatNumber(ServerExpression value, String picture, String language) {
-    return formatNumber(value, (picture == null) ? (XsStringExpr) null : xs.string(picture), (language == null) ? (XsStringExpr) null : xs.string(language));
+  public ServerExpression formatNumber(ServerExpression value, String picture, String language) {
+    return formatNumber(value, (picture == null) ? (ServerExpression) null : xs.string(picture), (language == null) ? (ServerExpression) null : xs.string(language));
   }
 
   
   @Override
-  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language) {
+  public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language) {
     return new XsExprImpl.StringCallImpl("xdmp", "format-number", new Object[]{ value, picture, language });
   }
 
   
   @Override
-  public XsStringExpr formatNumber(ServerExpression value, String picture, String language, String letterValue) {
-    return formatNumber(value, (picture == null) ? (XsStringExpr) null : xs.string(picture), (language == null) ? (XsStringExpr) null : xs.string(language), (letterValue == null) ? (XsStringExpr) null : xs.string(letterValue));
+  public ServerExpression formatNumber(ServerExpression value, String picture, String language, String letterValue) {
+    return formatNumber(value, (picture == null) ? (ServerExpression) null : xs.string(picture), (language == null) ? (ServerExpression) null : xs.string(language), (letterValue == null) ? (ServerExpression) null : xs.string(letterValue));
   }
 
   
   @Override
-  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue) {
+  public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue) {
     return new XsExprImpl.StringCallImpl("xdmp", "format-number", new Object[]{ value, picture, language, letterValue });
   }
 
   
   @Override
-  public XsStringExpr formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar) {
-    return formatNumber(value, (picture == null) ? (XsStringExpr) null : xs.string(picture), (language == null) ? (XsStringExpr) null : xs.string(language), (letterValue == null) ? (XsStringExpr) null : xs.string(letterValue), (ordchar == null) ? (XsStringExpr) null : xs.string(ordchar));
+  public ServerExpression formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar) {
+    return formatNumber(value, (picture == null) ? (ServerExpression) null : xs.string(picture), (language == null) ? (ServerExpression) null : xs.string(language), (letterValue == null) ? (ServerExpression) null : xs.string(letterValue), (ordchar == null) ? (ServerExpression) null : xs.string(ordchar));
   }
 
   
   @Override
-  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar) {
+  public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar) {
     return new XsExprImpl.StringCallImpl("xdmp", "format-number", new Object[]{ value, picture, language, letterValue, ordchar });
   }
 
   
   @Override
-  public XsStringExpr formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar, String zeroPadding) {
-    return formatNumber(value, (picture == null) ? (XsStringExpr) null : xs.string(picture), (language == null) ? (XsStringExpr) null : xs.string(language), (letterValue == null) ? (XsStringExpr) null : xs.string(letterValue), (ordchar == null) ? (XsStringExpr) null : xs.string(ordchar), (zeroPadding == null) ? (XsStringExpr) null : xs.string(zeroPadding));
+  public ServerExpression formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar, String zeroPadding) {
+    return formatNumber(value, (picture == null) ? (ServerExpression) null : xs.string(picture), (language == null) ? (ServerExpression) null : xs.string(language), (letterValue == null) ? (ServerExpression) null : xs.string(letterValue), (ordchar == null) ? (ServerExpression) null : xs.string(ordchar), (zeroPadding == null) ? (ServerExpression) null : xs.string(zeroPadding));
   }
 
   
   @Override
-  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar, ServerExpression zeroPadding) {
+  public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar, ServerExpression zeroPadding) {
     return new XsExprImpl.StringCallImpl("xdmp", "format-number", new Object[]{ value, picture, language, letterValue, ordchar, zeroPadding });
   }
 
   
   @Override
-  public XsStringExpr formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar, String zeroPadding, String groupingSeparator) {
-    return formatNumber(value, (picture == null) ? (XsStringExpr) null : xs.string(picture), (language == null) ? (XsStringExpr) null : xs.string(language), (letterValue == null) ? (XsStringExpr) null : xs.string(letterValue), (ordchar == null) ? (XsStringExpr) null : xs.string(ordchar), (zeroPadding == null) ? (XsStringExpr) null : xs.string(zeroPadding), (groupingSeparator == null) ? (XsStringExpr) null : xs.string(groupingSeparator));
+  public ServerExpression formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar, String zeroPadding, String groupingSeparator) {
+    return formatNumber(value, (picture == null) ? (ServerExpression) null : xs.string(picture), (language == null) ? (ServerExpression) null : xs.string(language), (letterValue == null) ? (ServerExpression) null : xs.string(letterValue), (ordchar == null) ? (ServerExpression) null : xs.string(ordchar), (zeroPadding == null) ? (ServerExpression) null : xs.string(zeroPadding), (groupingSeparator == null) ? (ServerExpression) null : xs.string(groupingSeparator));
   }
 
   
   @Override
-  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar, ServerExpression zeroPadding, ServerExpression groupingSeparator) {
+  public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar, ServerExpression zeroPadding, ServerExpression groupingSeparator) {
     return new XsExprImpl.StringCallImpl("xdmp", "format-number", new Object[]{ value, picture, language, letterValue, ordchar, zeroPadding, groupingSeparator });
   }
 
   
   @Override
-  public XsStringExpr formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar, String zeroPadding, String groupingSeparator, long groupingSize) {
-    return formatNumber(value, (picture == null) ? (XsStringExpr) null : xs.string(picture), (language == null) ? (XsStringExpr) null : xs.string(language), (letterValue == null) ? (XsStringExpr) null : xs.string(letterValue), (ordchar == null) ? (XsStringExpr) null : xs.string(ordchar), (zeroPadding == null) ? (XsStringExpr) null : xs.string(zeroPadding), (groupingSeparator == null) ? (XsStringExpr) null : xs.string(groupingSeparator), xs.integer(groupingSize));
+  public ServerExpression formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar, String zeroPadding, String groupingSeparator, long groupingSize) {
+    return formatNumber(value, (picture == null) ? (ServerExpression) null : xs.string(picture), (language == null) ? (ServerExpression) null : xs.string(language), (letterValue == null) ? (ServerExpression) null : xs.string(letterValue), (ordchar == null) ? (ServerExpression) null : xs.string(ordchar), (zeroPadding == null) ? (ServerExpression) null : xs.string(zeroPadding), (groupingSeparator == null) ? (ServerExpression) null : xs.string(groupingSeparator), xs.integer(groupingSize));
   }
 
   
   @Override
-  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar, ServerExpression zeroPadding, ServerExpression groupingSeparator, ServerExpression groupingSize) {
+  public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar, ServerExpression zeroPadding, ServerExpression groupingSeparator, ServerExpression groupingSize) {
     return new XsExprImpl.StringCallImpl("xdmp", "format-number", new Object[]{ value, picture, language, letterValue, ordchar, zeroPadding, groupingSeparator, groupingSize });
   }
 
   
   @Override
-  public ItemSeqExpr fromJson(ServerExpression arg) {
+  public ServerExpression fromJson(ServerExpression arg) {
     if (arg == null) {
       throw new IllegalArgumentException("arg parameter for fromJson() cannot be null");
     }
@@ -304,13 +291,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr getCurrentUser() {
+  public ServerExpression getCurrentUser() {
     return new XsExprImpl.StringCallImpl("xdmp", "get-current-user", new Object[]{  });
   }
 
   
   @Override
-  public XsUnsignedIntExpr hash32(ServerExpression string) {
+  public ServerExpression hash32(ServerExpression string) {
     if (string == null) {
       throw new IllegalArgumentException("string parameter for hash32() cannot be null");
     }
@@ -319,7 +306,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsUnsignedLongExpr hash64(ServerExpression string) {
+  public ServerExpression hash64(ServerExpression string) {
     if (string == null) {
       throw new IllegalArgumentException("string parameter for hash64() cannot be null");
     }
@@ -328,7 +315,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsIntegerExpr hexToInteger(ServerExpression hex) {
+  public ServerExpression hexToInteger(ServerExpression hex) {
     if (hex == null) {
       throw new IllegalArgumentException("hex parameter for hexToInteger() cannot be null");
     }
@@ -337,7 +324,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr hmacMd5(ServerExpression secretkey, ServerExpression message) {
+  public ServerExpression hmacMd5(ServerExpression secretkey, ServerExpression message) {
     if (secretkey == null) {
       throw new IllegalArgumentException("secretkey parameter for hmacMd5() cannot be null");
     }
@@ -349,13 +336,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr hmacMd5(ServerExpression secretkey, ServerExpression message, String encoding) {
-    return hmacMd5(secretkey, message, (encoding == null) ? (XsStringExpr) null : xs.string(encoding));
+  public ServerExpression hmacMd5(ServerExpression secretkey, ServerExpression message, String encoding) {
+    return hmacMd5(secretkey, message, (encoding == null) ? (ServerExpression) null : xs.string(encoding));
   }
 
   
   @Override
-  public XsStringExpr hmacMd5(ServerExpression secretkey, ServerExpression message, ServerExpression encoding) {
+  public ServerExpression hmacMd5(ServerExpression secretkey, ServerExpression message, ServerExpression encoding) {
     if (secretkey == null) {
       throw new IllegalArgumentException("secretkey parameter for hmacMd5() cannot be null");
     }
@@ -370,7 +357,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr hmacSha1(ServerExpression secretkey, ServerExpression message) {
+  public ServerExpression hmacSha1(ServerExpression secretkey, ServerExpression message) {
     if (secretkey == null) {
       throw new IllegalArgumentException("secretkey parameter for hmacSha1() cannot be null");
     }
@@ -382,13 +369,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr hmacSha1(ServerExpression secretkey, ServerExpression message, String encoding) {
-    return hmacSha1(secretkey, message, (encoding == null) ? (XsStringExpr) null : xs.string(encoding));
+  public ServerExpression hmacSha1(ServerExpression secretkey, ServerExpression message, String encoding) {
+    return hmacSha1(secretkey, message, (encoding == null) ? (ServerExpression) null : xs.string(encoding));
   }
 
   
   @Override
-  public XsStringExpr hmacSha1(ServerExpression secretkey, ServerExpression message, ServerExpression encoding) {
+  public ServerExpression hmacSha1(ServerExpression secretkey, ServerExpression message, ServerExpression encoding) {
     if (secretkey == null) {
       throw new IllegalArgumentException("secretkey parameter for hmacSha1() cannot be null");
     }
@@ -403,7 +390,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr hmacSha256(ServerExpression secretkey, ServerExpression message) {
+  public ServerExpression hmacSha256(ServerExpression secretkey, ServerExpression message) {
     if (secretkey == null) {
       throw new IllegalArgumentException("secretkey parameter for hmacSha256() cannot be null");
     }
@@ -415,13 +402,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr hmacSha256(ServerExpression secretkey, ServerExpression message, String encoding) {
-    return hmacSha256(secretkey, message, (encoding == null) ? (XsStringExpr) null : xs.string(encoding));
+  public ServerExpression hmacSha256(ServerExpression secretkey, ServerExpression message, String encoding) {
+    return hmacSha256(secretkey, message, (encoding == null) ? (ServerExpression) null : xs.string(encoding));
   }
 
   
   @Override
-  public XsStringExpr hmacSha256(ServerExpression secretkey, ServerExpression message, ServerExpression encoding) {
+  public ServerExpression hmacSha256(ServerExpression secretkey, ServerExpression message, ServerExpression encoding) {
     if (secretkey == null) {
       throw new IllegalArgumentException("secretkey parameter for hmacSha256() cannot be null");
     }
@@ -436,7 +423,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr hmacSha512(ServerExpression secretkey, ServerExpression message) {
+  public ServerExpression hmacSha512(ServerExpression secretkey, ServerExpression message) {
     if (secretkey == null) {
       throw new IllegalArgumentException("secretkey parameter for hmacSha512() cannot be null");
     }
@@ -448,13 +435,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr hmacSha512(ServerExpression secretkey, ServerExpression message, String encoding) {
-    return hmacSha512(secretkey, message, (encoding == null) ? (XsStringExpr) null : xs.string(encoding));
+  public ServerExpression hmacSha512(ServerExpression secretkey, ServerExpression message, String encoding) {
+    return hmacSha512(secretkey, message, (encoding == null) ? (ServerExpression) null : xs.string(encoding));
   }
 
   
   @Override
-  public XsStringExpr hmacSha512(ServerExpression secretkey, ServerExpression message, ServerExpression encoding) {
+  public ServerExpression hmacSha512(ServerExpression secretkey, ServerExpression message, ServerExpression encoding) {
     if (secretkey == null) {
       throw new IllegalArgumentException("secretkey parameter for hmacSha512() cannot be null");
     }
@@ -469,13 +456,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr initcap(ServerExpression string) {
+  public ServerExpression initcap(ServerExpression string) {
     return new XsExprImpl.StringCallImpl("xdmp", "initcap", new Object[]{ string });
   }
 
   
   @Override
-  public XsStringExpr integerToHex(ServerExpression val) {
+  public ServerExpression integerToHex(ServerExpression val) {
     if (val == null) {
       throw new IllegalArgumentException("val parameter for integerToHex() cannot be null");
     }
@@ -484,7 +471,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr integerToOctal(ServerExpression val) {
+  public ServerExpression integerToOctal(ServerExpression val) {
     if (val == null) {
       throw new IllegalArgumentException("val parameter for integerToOctal() cannot be null");
     }
@@ -493,7 +480,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr keyFromQName(ServerExpression name) {
+  public ServerExpression keyFromQName(ServerExpression name) {
     if (name == null) {
       throw new IllegalArgumentException("name parameter for keyFromQName() cannot be null");
     }
@@ -502,13 +489,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsUnsignedLongExpr lshift64(ServerExpression x, long y) {
+  public ServerExpression lshift64(ServerExpression x, long y) {
     return lshift64(x, xs.longVal(y));
   }
 
   
   @Override
-  public XsUnsignedLongExpr lshift64(ServerExpression x, ServerExpression y) {
+  public ServerExpression lshift64(ServerExpression x, ServerExpression y) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for lshift64() cannot be null");
     }
@@ -520,7 +507,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr md5(ServerExpression data) {
+  public ServerExpression md5(ServerExpression data) {
     if (data == null) {
       throw new IllegalArgumentException("data parameter for md5() cannot be null");
     }
@@ -529,13 +516,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr md5(ServerExpression data, String encoding) {
-    return md5(data, (encoding == null) ? (XsStringExpr) null : xs.string(encoding));
+  public ServerExpression md5(ServerExpression data, String encoding) {
+    return md5(data, (encoding == null) ? (ServerExpression) null : xs.string(encoding));
   }
 
   
   @Override
-  public XsStringExpr md5(ServerExpression data, ServerExpression encoding) {
+  public ServerExpression md5(ServerExpression data, ServerExpression encoding) {
     if (data == null) {
       throw new IllegalArgumentException("data parameter for md5() cannot be null");
     }
@@ -547,13 +534,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr monthNameFromDate(ServerExpression arg) {
+  public ServerExpression monthNameFromDate(ServerExpression arg) {
     return new XsExprImpl.StringCallImpl("xdmp", "month-name-from-date", new Object[]{ arg });
   }
 
   
   @Override
-  public XsUnsignedLongExpr mul64(ServerExpression x, ServerExpression y) {
+  public ServerExpression mul64(ServerExpression x, ServerExpression y) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for mul64() cannot be null");
     }
@@ -565,7 +552,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringSeqExpr nodeCollections(ServerExpression node) {
+  public ServerExpression nodeCollections(ServerExpression node) {
     if (node == null) {
       throw new IllegalArgumentException("node parameter for nodeCollections() cannot be null");
     }
@@ -574,7 +561,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr nodeKind(ServerExpression node) {
+  public ServerExpression nodeKind(ServerExpression node) {
     if (node == null) {
       throw new IllegalArgumentException("node parameter for nodeKind() cannot be null");
     }
@@ -583,7 +570,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public MapMapExpr nodeMetadata(ServerExpression node) {
+  public ServerExpression nodeMetadata(ServerExpression node) {
     if (node == null) {
       throw new IllegalArgumentException("node parameter for nodeMetadata() cannot be null");
     }
@@ -592,13 +579,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr nodeMetadataValue(ServerExpression uri, String keyName) {
-    return nodeMetadataValue(uri, (keyName == null) ? (XsStringExpr) null : xs.string(keyName));
+  public ServerExpression nodeMetadataValue(ServerExpression uri, String keyName) {
+    return nodeMetadataValue(uri, (keyName == null) ? (ServerExpression) null : xs.string(keyName));
   }
 
   
   @Override
-  public XsStringExpr nodeMetadataValue(ServerExpression uri, ServerExpression keyName) {
+  public ServerExpression nodeMetadataValue(ServerExpression uri, ServerExpression keyName) {
     if (uri == null) {
       throw new IllegalArgumentException("uri parameter for nodeMetadataValue() cannot be null");
     }
@@ -610,7 +597,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public ItemSeqExpr nodePermissions(ServerExpression node) {
+  public ServerExpression nodePermissions(ServerExpression node) {
     if (node == null) {
       throw new IllegalArgumentException("node parameter for nodePermissions() cannot be null");
     }
@@ -619,13 +606,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public ItemSeqExpr nodePermissions(ServerExpression node, String outputKind) {
-    return nodePermissions(node, (outputKind == null) ? (XsStringExpr) null : xs.string(outputKind));
+  public ServerExpression nodePermissions(ServerExpression node, String outputKind) {
+    return nodePermissions(node, (outputKind == null) ? (ServerExpression) null : xs.string(outputKind));
   }
 
   
   @Override
-  public ItemSeqExpr nodePermissions(ServerExpression node, ServerExpression outputKind) {
+  public ServerExpression nodePermissions(ServerExpression node, ServerExpression outputKind) {
     if (node == null) {
       throw new IllegalArgumentException("node parameter for nodePermissions() cannot be null");
     }
@@ -637,7 +624,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr nodeUri(ServerExpression node) {
+  public ServerExpression nodeUri(ServerExpression node) {
     if (node == null) {
       throw new IllegalArgumentException("node parameter for nodeUri() cannot be null");
     }
@@ -646,7 +633,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsUnsignedLongExpr not64(ServerExpression x) {
+  public ServerExpression not64(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for not64() cannot be null");
     }
@@ -655,7 +642,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsIntegerExpr octalToInteger(ServerExpression octal) {
+  public ServerExpression octalToInteger(ServerExpression octal) {
     if (octal == null) {
       throw new IllegalArgumentException("octal parameter for octalToInteger() cannot be null");
     }
@@ -664,7 +651,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsUnsignedLongExpr or64(ServerExpression x, ServerExpression y) {
+  public ServerExpression or64(ServerExpression x, ServerExpression y) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for or64() cannot be null");
     }
@@ -676,13 +663,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsDateTimeExpr parseDateTime(ServerExpression picture, String value) {
-    return parseDateTime(picture, (value == null) ? (XsStringExpr) null : xs.string(value));
+  public ServerExpression parseDateTime(ServerExpression picture, String value) {
+    return parseDateTime(picture, (value == null) ? (ServerExpression) null : xs.string(value));
   }
 
   
   @Override
-  public XsDateTimeExpr parseDateTime(ServerExpression picture, ServerExpression value) {
+  public ServerExpression parseDateTime(ServerExpression picture, ServerExpression value) {
     if (picture == null) {
       throw new IllegalArgumentException("picture parameter for parseDateTime() cannot be null");
     }
@@ -694,13 +681,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsDateTimeExpr parseDateTime(ServerExpression picture, String value, String language) {
-    return parseDateTime(picture, (value == null) ? (XsStringExpr) null : xs.string(value), (language == null) ? (XsStringExpr) null : xs.string(language));
+  public ServerExpression parseDateTime(ServerExpression picture, String value, String language) {
+    return parseDateTime(picture, (value == null) ? (ServerExpression) null : xs.string(value), (language == null) ? (ServerExpression) null : xs.string(language));
   }
 
   
   @Override
-  public XsDateTimeExpr parseDateTime(ServerExpression picture, ServerExpression value, ServerExpression language) {
+  public ServerExpression parseDateTime(ServerExpression picture, ServerExpression value, ServerExpression language) {
     if (picture == null) {
       throw new IllegalArgumentException("picture parameter for parseDateTime() cannot be null");
     }
@@ -712,13 +699,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsDateTimeExpr parseDateTime(ServerExpression picture, String value, String language, String calendar) {
-    return parseDateTime(picture, (value == null) ? (XsStringExpr) null : xs.string(value), (language == null) ? (XsStringExpr) null : xs.string(language), (calendar == null) ? (XsStringExpr) null : xs.string(calendar));
+  public ServerExpression parseDateTime(ServerExpression picture, String value, String language, String calendar) {
+    return parseDateTime(picture, (value == null) ? (ServerExpression) null : xs.string(value), (language == null) ? (ServerExpression) null : xs.string(language), (calendar == null) ? (ServerExpression) null : xs.string(calendar));
   }
 
   
   @Override
-  public XsDateTimeExpr parseDateTime(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar) {
+  public ServerExpression parseDateTime(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar) {
     if (picture == null) {
       throw new IllegalArgumentException("picture parameter for parseDateTime() cannot be null");
     }
@@ -730,13 +717,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsDateTimeExpr parseDateTime(ServerExpression picture, String value, String language, String calendar, String country) {
-    return parseDateTime(picture, (value == null) ? (XsStringExpr) null : xs.string(value), (language == null) ? (XsStringExpr) null : xs.string(language), (calendar == null) ? (XsStringExpr) null : xs.string(calendar), (country == null) ? (XsStringExpr) null : xs.string(country));
+  public ServerExpression parseDateTime(ServerExpression picture, String value, String language, String calendar, String country) {
+    return parseDateTime(picture, (value == null) ? (ServerExpression) null : xs.string(value), (language == null) ? (ServerExpression) null : xs.string(language), (calendar == null) ? (ServerExpression) null : xs.string(calendar), (country == null) ? (ServerExpression) null : xs.string(country));
   }
 
   
   @Override
-  public XsDateTimeExpr parseDateTime(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar, ServerExpression country) {
+  public ServerExpression parseDateTime(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar, ServerExpression country) {
     if (picture == null) {
       throw new IllegalArgumentException("picture parameter for parseDateTime() cannot be null");
     }
@@ -748,13 +735,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsDateTimeExpr parseYymmdd(ServerExpression picture, String value) {
-    return parseYymmdd(picture, (value == null) ? (XsStringExpr) null : xs.string(value));
+  public ServerExpression parseYymmdd(ServerExpression picture, String value) {
+    return parseYymmdd(picture, (value == null) ? (ServerExpression) null : xs.string(value));
   }
 
   
   @Override
-  public XsDateTimeExpr parseYymmdd(ServerExpression picture, ServerExpression value) {
+  public ServerExpression parseYymmdd(ServerExpression picture, ServerExpression value) {
     if (picture == null) {
       throw new IllegalArgumentException("picture parameter for parseYymmdd() cannot be null");
     }
@@ -766,13 +753,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsDateTimeExpr parseYymmdd(ServerExpression picture, String value, String language) {
-    return parseYymmdd(picture, (value == null) ? (XsStringExpr) null : xs.string(value), (language == null) ? (XsStringExpr) null : xs.string(language));
+  public ServerExpression parseYymmdd(ServerExpression picture, String value, String language) {
+    return parseYymmdd(picture, (value == null) ? (ServerExpression) null : xs.string(value), (language == null) ? (ServerExpression) null : xs.string(language));
   }
 
   
   @Override
-  public XsDateTimeExpr parseYymmdd(ServerExpression picture, ServerExpression value, ServerExpression language) {
+  public ServerExpression parseYymmdd(ServerExpression picture, ServerExpression value, ServerExpression language) {
     if (picture == null) {
       throw new IllegalArgumentException("picture parameter for parseYymmdd() cannot be null");
     }
@@ -784,13 +771,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsDateTimeExpr parseYymmdd(ServerExpression picture, String value, String language, String calendar) {
-    return parseYymmdd(picture, (value == null) ? (XsStringExpr) null : xs.string(value), (language == null) ? (XsStringExpr) null : xs.string(language), (calendar == null) ? (XsStringExpr) null : xs.string(calendar));
+  public ServerExpression parseYymmdd(ServerExpression picture, String value, String language, String calendar) {
+    return parseYymmdd(picture, (value == null) ? (ServerExpression) null : xs.string(value), (language == null) ? (ServerExpression) null : xs.string(language), (calendar == null) ? (ServerExpression) null : xs.string(calendar));
   }
 
   
   @Override
-  public XsDateTimeExpr parseYymmdd(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar) {
+  public ServerExpression parseYymmdd(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar) {
     if (picture == null) {
       throw new IllegalArgumentException("picture parameter for parseYymmdd() cannot be null");
     }
@@ -802,13 +789,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsDateTimeExpr parseYymmdd(ServerExpression picture, String value, String language, String calendar, String country) {
-    return parseYymmdd(picture, (value == null) ? (XsStringExpr) null : xs.string(value), (language == null) ? (XsStringExpr) null : xs.string(language), (calendar == null) ? (XsStringExpr) null : xs.string(calendar), (country == null) ? (XsStringExpr) null : xs.string(country));
+  public ServerExpression parseYymmdd(ServerExpression picture, String value, String language, String calendar, String country) {
+    return parseYymmdd(picture, (value == null) ? (ServerExpression) null : xs.string(value), (language == null) ? (ServerExpression) null : xs.string(language), (calendar == null) ? (ServerExpression) null : xs.string(calendar), (country == null) ? (ServerExpression) null : xs.string(country));
   }
 
   
   @Override
-  public XsDateTimeExpr parseYymmdd(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar, ServerExpression country) {
+  public ServerExpression parseYymmdd(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar, ServerExpression country) {
     if (picture == null) {
       throw new IllegalArgumentException("picture parameter for parseYymmdd() cannot be null");
     }
@@ -820,7 +807,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr path(ServerExpression node) {
+  public ServerExpression path(ServerExpression node) {
     if (node == null) {
       throw new IllegalArgumentException("node parameter for path() cannot be null");
     }
@@ -829,13 +816,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr path(ServerExpression node, boolean includeDocument) {
+  public ServerExpression path(ServerExpression node, boolean includeDocument) {
     return path(node, xs.booleanVal(includeDocument));
   }
 
   
   @Override
-  public XsStringExpr path(ServerExpression node, ServerExpression includeDocument) {
+  public ServerExpression path(ServerExpression node, ServerExpression includeDocument) {
     if (node == null) {
       throw new IllegalArgumentException("node parameter for path() cannot be null");
     }
@@ -844,31 +831,31 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsIntegerExpr position(ServerExpression test, String target) {
-    return position(test, (target == null) ? (XsStringExpr) null : xs.string(target));
+  public ServerExpression position(ServerExpression test, String target) {
+    return position(test, (target == null) ? (ServerExpression) null : xs.string(target));
   }
 
   
   @Override
-  public XsIntegerExpr position(ServerExpression test, ServerExpression target) {
+  public ServerExpression position(ServerExpression test, ServerExpression target) {
     return new XsExprImpl.IntegerCallImpl("xdmp", "position", new Object[]{ test, target });
   }
 
   
   @Override
-  public XsIntegerExpr position(ServerExpression test, String target, String collation) {
-    return position(test, (target == null) ? (XsStringExpr) null : xs.string(target), (collation == null) ? (XsStringExpr) null : xs.string(collation));
+  public ServerExpression position(ServerExpression test, String target, String collation) {
+    return position(test, (target == null) ? (ServerExpression) null : xs.string(target), (collation == null) ? (ServerExpression) null : xs.string(collation));
   }
 
   
   @Override
-  public XsIntegerExpr position(ServerExpression test, ServerExpression target, ServerExpression collation) {
+  public ServerExpression position(ServerExpression test, ServerExpression target, ServerExpression collation) {
     return new XsExprImpl.IntegerCallImpl("xdmp", "position", new Object[]{ test, target, collation });
   }
 
   
   @Override
-  public XsQNameExpr QNameFromKey(ServerExpression key) {
+  public ServerExpression QNameFromKey(ServerExpression key) {
     if (key == null) {
       throw new IllegalArgumentException("key parameter for QNameFromKey() cannot be null");
     }
@@ -877,19 +864,19 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsIntegerExpr quarterFromDate(ServerExpression arg) {
+  public ServerExpression quarterFromDate(ServerExpression arg) {
     return new XsExprImpl.IntegerCallImpl("xdmp", "quarter-from-date", new Object[]{ arg });
   }
 
   
   @Override
-  public XsUnsignedLongExpr random() {
+  public ServerExpression random() {
     return new XsExprImpl.UnsignedLongCallImpl("xdmp", "random", new Object[]{  });
   }
 
   
   @Override
-  public XsUnsignedLongExpr random(ServerExpression max) {
+  public ServerExpression random(ServerExpression max) {
     if (max == null) {
       throw new IllegalArgumentException("max parameter for random() cannot be null");
     }
@@ -898,13 +885,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsAnyURIExpr resolveUri(ServerExpression relative, String base) {
-    return resolveUri(relative, (base == null) ? (XsStringExpr) null : xs.string(base));
+  public ServerExpression resolveUri(ServerExpression relative, String base) {
+    return resolveUri(relative, (base == null) ? (ServerExpression) null : xs.string(base));
   }
 
   
   @Override
-  public XsAnyURIExpr resolveUri(ServerExpression relative, ServerExpression base) {
+  public ServerExpression resolveUri(ServerExpression relative, ServerExpression base) {
     if (base == null) {
       throw new IllegalArgumentException("base parameter for resolveUri() cannot be null");
     }
@@ -913,13 +900,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsUnsignedLongExpr rshift64(ServerExpression x, long y) {
+  public ServerExpression rshift64(ServerExpression x, long y) {
     return rshift64(x, xs.longVal(y));
   }
 
   
   @Override
-  public XsUnsignedLongExpr rshift64(ServerExpression x, ServerExpression y) {
+  public ServerExpression rshift64(ServerExpression x, ServerExpression y) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for rshift64() cannot be null");
     }
@@ -931,7 +918,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr sha1(ServerExpression data) {
+  public ServerExpression sha1(ServerExpression data) {
     if (data == null) {
       throw new IllegalArgumentException("data parameter for sha1() cannot be null");
     }
@@ -940,13 +927,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr sha1(ServerExpression data, String encoding) {
-    return sha1(data, (encoding == null) ? (XsStringExpr) null : xs.string(encoding));
+  public ServerExpression sha1(ServerExpression data, String encoding) {
+    return sha1(data, (encoding == null) ? (ServerExpression) null : xs.string(encoding));
   }
 
   
   @Override
-  public XsStringExpr sha1(ServerExpression data, ServerExpression encoding) {
+  public ServerExpression sha1(ServerExpression data, ServerExpression encoding) {
     if (data == null) {
       throw new IllegalArgumentException("data parameter for sha1() cannot be null");
     }
@@ -958,7 +945,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr sha256(ServerExpression data) {
+  public ServerExpression sha256(ServerExpression data) {
     if (data == null) {
       throw new IllegalArgumentException("data parameter for sha256() cannot be null");
     }
@@ -967,13 +954,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr sha256(ServerExpression data, String encoding) {
-    return sha256(data, (encoding == null) ? (XsStringExpr) null : xs.string(encoding));
+  public ServerExpression sha256(ServerExpression data, String encoding) {
+    return sha256(data, (encoding == null) ? (ServerExpression) null : xs.string(encoding));
   }
 
   
   @Override
-  public XsStringExpr sha256(ServerExpression data, ServerExpression encoding) {
+  public ServerExpression sha256(ServerExpression data, ServerExpression encoding) {
     if (data == null) {
       throw new IllegalArgumentException("data parameter for sha256() cannot be null");
     }
@@ -985,7 +972,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr sha384(ServerExpression data) {
+  public ServerExpression sha384(ServerExpression data) {
     if (data == null) {
       throw new IllegalArgumentException("data parameter for sha384() cannot be null");
     }
@@ -994,13 +981,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr sha384(ServerExpression data, String encoding) {
-    return sha384(data, (encoding == null) ? (XsStringExpr) null : xs.string(encoding));
+  public ServerExpression sha384(ServerExpression data, String encoding) {
+    return sha384(data, (encoding == null) ? (ServerExpression) null : xs.string(encoding));
   }
 
   
   @Override
-  public XsStringExpr sha384(ServerExpression data, ServerExpression encoding) {
+  public ServerExpression sha384(ServerExpression data, ServerExpression encoding) {
     if (data == null) {
       throw new IllegalArgumentException("data parameter for sha384() cannot be null");
     }
@@ -1012,7 +999,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr sha512(ServerExpression data) {
+  public ServerExpression sha512(ServerExpression data) {
     if (data == null) {
       throw new IllegalArgumentException("data parameter for sha512() cannot be null");
     }
@@ -1021,13 +1008,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr sha512(ServerExpression data, String encoding) {
-    return sha512(data, (encoding == null) ? (XsStringExpr) null : xs.string(encoding));
+  public ServerExpression sha512(ServerExpression data, String encoding) {
+    return sha512(data, (encoding == null) ? (ServerExpression) null : xs.string(encoding));
   }
 
   
   @Override
-  public XsStringExpr sha512(ServerExpression data, ServerExpression encoding) {
+  public ServerExpression sha512(ServerExpression data, ServerExpression encoding) {
     if (data == null) {
       throw new IllegalArgumentException("data parameter for sha512() cannot be null");
     }
@@ -1039,7 +1026,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsUnsignedLongExpr step64(ServerExpression initial, ServerExpression step) {
+  public ServerExpression step64(ServerExpression initial, ServerExpression step) {
     if (initial == null) {
       throw new IllegalArgumentException("initial parameter for step64() cannot be null");
     }
@@ -1051,13 +1038,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr strftime(ServerExpression format, String value) {
-    return strftime(format, (value == null) ? (XsDateTimeExpr) null : xs.dateTime(value));
+  public ServerExpression strftime(ServerExpression format, String value) {
+    return strftime(format, (value == null) ? (ServerExpression) null : xs.dateTime(value));
   }
 
   
   @Override
-  public XsStringExpr strftime(ServerExpression format, ServerExpression value) {
+  public ServerExpression strftime(ServerExpression format, ServerExpression value) {
     if (format == null) {
       throw new IllegalArgumentException("format parameter for strftime() cannot be null");
     }
@@ -1069,7 +1056,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsDateTimeExpr timestampToWallclock(ServerExpression timestamp) {
+  public ServerExpression timestampToWallclock(ServerExpression timestamp) {
     if (timestamp == null) {
       throw new IllegalArgumentException("timestamp parameter for timestampToWallclock() cannot be null");
     }
@@ -1078,13 +1065,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public NodeExpr toJson(ServerExpression item) {
+  public ServerExpression toJson(ServerExpression item) {
     return new BaseTypeImpl.NodeCallImpl("xdmp", "to-json", new Object[]{ item });
   }
 
   
   @Override
-  public XsQNameExpr type(ServerExpression value) {
+  public ServerExpression type(ServerExpression value) {
     if (value == null) {
       throw new IllegalArgumentException("value parameter for type() cannot be null");
     }
@@ -1093,7 +1080,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr urlDecode(ServerExpression encoded) {
+  public ServerExpression urlDecode(ServerExpression encoded) {
     if (encoded == null) {
       throw new IllegalArgumentException("encoded parameter for urlDecode() cannot be null");
     }
@@ -1102,7 +1089,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr urlEncode(ServerExpression plaintext) {
+  public ServerExpression urlEncode(ServerExpression plaintext) {
     if (plaintext == null) {
       throw new IllegalArgumentException("plaintext parameter for urlEncode() cannot be null");
     }
@@ -1111,13 +1098,13 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsStringExpr urlEncode(ServerExpression plaintext, boolean noSpacePlus) {
+  public ServerExpression urlEncode(ServerExpression plaintext, boolean noSpacePlus) {
     return urlEncode(plaintext, xs.booleanVal(noSpacePlus));
   }
 
   
   @Override
-  public XsStringExpr urlEncode(ServerExpression plaintext, ServerExpression noSpacePlus) {
+  public ServerExpression urlEncode(ServerExpression plaintext, ServerExpression noSpacePlus) {
     if (plaintext == null) {
       throw new IllegalArgumentException("plaintext parameter for urlEncode() cannot be null");
     }
@@ -1126,7 +1113,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsUnsignedLongExpr wallclockToTimestamp(ServerExpression timestamp) {
+  public ServerExpression wallclockToTimestamp(ServerExpression timestamp) {
     if (timestamp == null) {
       throw new IllegalArgumentException("timestamp parameter for wallclockToTimestamp() cannot be null");
     }
@@ -1135,19 +1122,19 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsIntegerExpr weekFromDate(ServerExpression arg) {
+  public ServerExpression weekFromDate(ServerExpression arg) {
     return new XsExprImpl.IntegerCallImpl("xdmp", "week-from-date", new Object[]{ arg });
   }
 
   
   @Override
-  public XsIntegerExpr weekdayFromDate(ServerExpression arg) {
+  public ServerExpression weekdayFromDate(ServerExpression arg) {
     return new XsExprImpl.IntegerCallImpl("xdmp", "weekday-from-date", new Object[]{ arg });
   }
 
   
   @Override
-  public XsUnsignedLongExpr xor64(ServerExpression x, ServerExpression y) {
+  public ServerExpression xor64(ServerExpression x, ServerExpression y) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for xor64() cannot be null");
     }
@@ -1159,7 +1146,7 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public XsIntegerExpr yeardayFromDate(ServerExpression arg) {
+  public ServerExpression yeardayFromDate(ServerExpression arg) {
     return new XsExprImpl.IntegerCallImpl("xdmp", "yearday-from-date", new Object[]{ arg });
   }
 

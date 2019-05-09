@@ -18,6 +18,6 @@ package com.marklogic.client.type;
 /**
  * An instance of a server unsigned short value.
  */
-public interface XsUnsignedShortVal extends XsUnsignedShortExpr, XsUnsignedIntVal, XsUnsignedShortSeqVal, PlanParamBindingVal {
+public interface XsUnsignedShortVal extends XsUnsignedIntVal, XsUnsignedShortSeqVal, PlanParamBindingVal {
     public short getShort();
 }

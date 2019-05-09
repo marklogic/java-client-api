@@ -20,6 +20,6 @@ package com.marklogic.client.type;
 /**
  * A sequence of server double values.
  */
-public interface XsDoubleSeqVal extends XsDoubleSeqExpr, XsAnyAtomicTypeSeqVal, XsNumericSeqVal {
+public interface XsDoubleSeqVal extends XsAnyAtomicTypeSeqVal, XsNumericSeqVal {
     public XsDoubleVal[] getDoubleItems();
 }

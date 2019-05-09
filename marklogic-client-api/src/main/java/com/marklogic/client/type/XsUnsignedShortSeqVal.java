@@ -20,6 +20,6 @@ package com.marklogic.client.type;
 /**
  * A sequence of server unsigned short values.
  */
-public interface XsUnsignedShortSeqVal extends XsUnsignedShortSeqExpr, XsUnsignedIntSeqVal {
+public interface XsUnsignedShortSeqVal extends XsUnsignedIntSeqVal {
     public XsUnsignedShortVal[] getUnsignedShortItems();
 }

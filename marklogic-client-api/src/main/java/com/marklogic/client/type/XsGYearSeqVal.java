@@ -20,6 +20,6 @@ package com.marklogic.client.type;
 /**
  * A sequence of server GYear values.
  */
-public interface XsGYearSeqVal extends XsGYearSeqExpr, XsAnyAtomicTypeSeqVal {
+public interface XsGYearSeqVal extends XsAnyAtomicTypeSeqVal {
     public XsGYearVal[] getGYearItems();
 }

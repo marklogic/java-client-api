@@ -20,6 +20,6 @@ package com.marklogic.client.type;
 /**
  * A sequence of server GDay values.
  */
-public interface XsGDaySeqVal extends XsGDaySeqExpr, XsAnyAtomicTypeSeqVal {
+public interface XsGDaySeqVal extends XsAnyAtomicTypeSeqVal {
     public XsGDayVal[] getGDayItems();
 }

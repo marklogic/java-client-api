@@ -25,38 +25,12 @@ import com.marklogic.client.type.PlanValueOption;
 import java.util.Map;
 import java.util.Map;
 
-import com.marklogic.client.type.ArrayNodeExpr;
-import com.marklogic.client.type.AttributeNodeExpr;
-import com.marklogic.client.type.AttributeNodeSeqExpr;
-import com.marklogic.client.type.BooleanNodeExpr;
-import com.marklogic.client.type.CommentNodeExpr;
-import com.marklogic.client.type.DocumentNodeExpr;
-import com.marklogic.client.type.ElementNodeExpr;
-import com.marklogic.client.type.ItemSeqExpr;
-import com.marklogic.client.type.JsonContentNodeExpr;
-import com.marklogic.client.type.JsonRootNodeExpr;
-import com.marklogic.client.type.NodeSeqExpr;
-import com.marklogic.client.type.NullNodeExpr;
-import com.marklogic.client.type.NumberNodeExpr;
-import com.marklogic.client.type.ObjectNodeExpr;
-import com.marklogic.client.type.ProcessingInstructionNodeExpr;
-import com.marklogic.client.type.SemIriExpr;
 import com.marklogic.client.type.SemIriVal;
-import com.marklogic.client.type.TextNodeExpr;
-import com.marklogic.client.type.XmlContentNodeExpr;
-import com.marklogic.client.type.XmlRootNodeExpr;
-import com.marklogic.client.type.XsAnyAtomicTypeExpr;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
-import com.marklogic.client.type.XsBooleanExpr;
 import com.marklogic.client.type.XsBooleanVal;
-import com.marklogic.client.type.XsIntExpr;
 import com.marklogic.client.type.XsIntVal;
-import com.marklogic.client.type.XsNumericExpr;
 import com.marklogic.client.type.XsNumericVal;
-import com.marklogic.client.type.XsQNameExpr;
 import com.marklogic.client.type.XsQNameVal;
-import com.marklogic.client.type.XsStringExpr;
-import com.marklogic.client.type.XsStringSeqExpr;
 import com.marklogic.client.type.XsStringSeqVal;
 import com.marklogic.client.type.XsStringVal;
 
@@ -176,7 +150,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public abstract XsNumericExpr add(ServerExpression... left);
+  public abstract ServerExpression add(ServerExpression... left);
   /**
   * This function returns true if the specified expressions all return true. Otherwise, it returns false. You can either compair 
   * <p>
@@ -184,7 +158,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr and(ServerExpression... left);
+  public abstract ServerExpression and(ServerExpression... left);
   /**
   * This function divides the left numericExpression by the right numericExpression and returns the value.
   * <p>
@@ -193,7 +167,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param right  The right numeric expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public abstract XsNumericExpr divide(ServerExpression left, ServerExpression right);
+  public abstract ServerExpression divide(ServerExpression left, ServerExpression right);
   /**
   * This function returns true if the left and right expressions return the same value. Otherwise, it returns false. In expressions, the call should pass the result from an op:col function to identify a column.
   * <p>
@@ -202,7 +176,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param right  The right value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr eq(ServerExpression left, ServerExpression right);
+  public abstract ServerExpression eq(ServerExpression left, ServerExpression right);
   /**
   * This function returns true if the value of the left expression is greater than or equal to the value of the right expression. Otherwise, it returns false.
   * <p>
@@ -211,7 +185,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param right  The right value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr ge(ServerExpression left, ServerExpression right);
+  public abstract ServerExpression ge(ServerExpression left, ServerExpression right);
   /**
   * This function returns true if the value of the left expression is greater than the value of the right expression. Otherwise, it returns false.
   * <p>
@@ -220,7 +194,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param right  The right value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr gt(ServerExpression left, ServerExpression right);
+  public abstract ServerExpression gt(ServerExpression left, ServerExpression right);
   /**
   * This function tests whether the value of an expression is null in the row where the expression might be as simple as a column identified by op:col.
   * <p>
@@ -228,7 +202,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param operand  A boolean expression, such as op:eq or op:not, that might be null.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr isDefined(ServerExpression operand);
+  public abstract ServerExpression isDefined(ServerExpression operand);
   /**
   * This function returns true if the value of the left expression is less than or equal to the value of the right expression. Otherwise, it returns false.
   * <p>
@@ -237,7 +211,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param right  The right value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr le(ServerExpression left, ServerExpression right);
+  public abstract ServerExpression le(ServerExpression left, ServerExpression right);
   /**
   * This function returns true if the value of the left expression is less than the value of the right expression. Otherwise, it returns false.
   * <p>
@@ -246,7 +220,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param right  The right value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr lt(ServerExpression left, ServerExpression right);
+  public abstract ServerExpression lt(ServerExpression left, ServerExpression right);
   /**
   * This function multipies the left numericExpression by the right numericExpression and returns the value. 
   * <p>
@@ -254,7 +228,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param left  The left numeric expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public abstract XsNumericExpr multiply(ServerExpression... left);
+  public abstract ServerExpression multiply(ServerExpression... left);
   /**
   * This function returns true if the value of the left expression is not equal to the value of the right expression. Otherwise, it returns false.
   * <p>
@@ -263,7 +237,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param right  The right value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr ne(ServerExpression left, ServerExpression right);
+  public abstract ServerExpression ne(ServerExpression left, ServerExpression right);
   /**
   * This function returns true if neither of the specified boolean expressions return true. Otherwise, it returns false.
   * <p>
@@ -271,7 +245,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param operand  Exactly one boolean expression, such as op:and or op:or, or op:is-defined.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr not(ServerExpression operand);
+  public abstract ServerExpression not(ServerExpression operand);
   /**
   * This function returns true if the specified expressions all return true. Otherwise, it returns false. 
   * <p>
@@ -279,7 +253,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr or(ServerExpression... left);
+  public abstract ServerExpression or(ServerExpression... left);
   /**
   * This function subtracts the right numericExpression from the left numericExpression and returns the value.
   * <p>
@@ -288,7 +262,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param right  The right numeric expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public abstract XsNumericExpr subtract(ServerExpression left, ServerExpression right);
+  public abstract ServerExpression subtract(ServerExpression left, ServerExpression right);
   /**
   * This function creates a placeholder for a literal value in an expression or as the offset or max for a limit. The op:result function throws in an error if the binding parameter does not specify a literal value for the parameter.
   * <p>
@@ -951,7 +925,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param right  The divisor numeric expression.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public abstract XsNumericExpr modulo(double left, double right);
+  public abstract ServerExpression modulo(double left, double right);
   /**
   * This function returns the remainder afer the division of the dividend and divisor expressions. For example, op:modulo(5, 2) returns 1.
   * <p>
@@ -960,7 +934,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param right  The divisor numeric expression.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public abstract XsNumericExpr modulo(ServerExpression left, ServerExpression right);
+  public abstract ServerExpression modulo(ServerExpression left, ServerExpression right);
   /**
   * This function executes the specified expression if the specified condition is true for the row. Otherwise, the expression is not executed and the next 'when' test is checked or, if there is no next 'when' text, the otherwise expression for the op:case expression is executed.
   * @param condition  A boolean expression.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
@@ -983,7 +957,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param path  An XPath (specified as a string) to apply to each node.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/node.html">node</a> server data type
   */
-  public abstract NodeSeqExpr xpath(String column, String path);
+  public abstract ServerExpression xpath(String column, String path);
   /**
   * This function extracts a sequence of child nodes from a column with node values -- especially, the document nodes from a document join. The path is an XPath (specified as a string) to apply to each node to generate a sequence of nodes as an expression value.
   * <p>
@@ -992,7 +966,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param path  An XPath (specified as a string) to apply to each node.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/node.html">node</a> server data type
   */
-  public abstract NodeSeqExpr xpath(PlanColumn column, ServerExpression path);
+  public abstract ServerExpression xpath(PlanColumn column, ServerExpression path);
   /**
   * This function constructs a JSON document with the root content, which must be exactly one JSON object or array node.
   * <p>
@@ -1000,7 +974,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param root  The JSON object or array node used to construct the JSON document.  (of <a href="{@docRoot}/doc-files/types/json-root-node.html">json-root-node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/document-node.html">document-node</a> server data type
   */
-  public abstract DocumentNodeExpr jsonDocument(ServerExpression root);
+  public abstract ServerExpression jsonDocument(ServerExpression root);
   /**
   * This function specifies the key expression and value content for a JSON property of a JSON object contructed by the op:json-object function.
   * @param key  The key expression. This must evaluate to a string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1022,7 +996,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param value  The value of the JSON text node.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/text-node.html">text-node</a> server data type
   */
-  public abstract TextNodeExpr jsonString(String value);
+  public abstract ServerExpression jsonString(String value);
   /**
   * This function constructs a JSON text node with the specified value.
   * <p>
@@ -1030,7 +1004,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param value  The value of the JSON text node.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/text-node.html">text-node</a> server data type
   */
-  public abstract TextNodeExpr jsonString(ServerExpression value);
+  public abstract ServerExpression jsonString(ServerExpression value);
   /**
   * This function constructs a JSON number node with the specified value.
   * <p>
@@ -1038,7 +1012,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param value  The value of the JSON number node.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/number-node.html">number-node</a> server data type
   */
-  public abstract NumberNodeExpr jsonNumber(double value);
+  public abstract ServerExpression jsonNumber(double value);
   /**
   * This function constructs a JSON number node with the specified value.
   * <p>
@@ -1046,7 +1020,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param value  The value of the JSON number node.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/number-node.html">number-node</a> server data type
   */
-  public abstract NumberNodeExpr jsonNumber(ServerExpression value);
+  public abstract ServerExpression jsonNumber(ServerExpression value);
   /**
   * This function constructs a JSON boolean node with the specified value.
   * <p>
@@ -1054,7 +1028,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param value  The value of the JSON boolean node.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/boolean-node.html">boolean-node</a> server data type
   */
-  public abstract BooleanNodeExpr jsonBoolean(boolean value);
+  public abstract ServerExpression jsonBoolean(boolean value);
   /**
   * This function constructs a JSON boolean node with the specified value.
   * <p>
@@ -1062,14 +1036,14 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param value  The value of the JSON boolean node.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/boolean-node.html">boolean-node</a> server data type
   */
-  public abstract BooleanNodeExpr jsonBoolean(ServerExpression value);
+  public abstract ServerExpression jsonBoolean(ServerExpression value);
   /**
   * This function constructs a JSON null node.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:json-null" target="mlserverdoc">op:json-null</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/null-node.html">null-node</a> server data type
   */
-  public abstract NullNodeExpr jsonNull();
+  public abstract ServerExpression jsonNull();
   /**
   * This function constructs an XML document with the root content, which must be exactly one node.
   * <p>
@@ -1077,7 +1051,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param root  The XML node used to construct the XML document.  (of <a href="{@docRoot}/doc-files/types/xml-root-node.html">xml-root-node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/document-node.html">document-node</a> server data type
   */
-  public abstract DocumentNodeExpr xmlDocument(ServerExpression root);
+  public abstract ServerExpression xmlDocument(ServerExpression root);
   /**
   * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
   * <p>
@@ -1085,7 +1059,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param name  The string or QName for the constructed element.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a> server data type
   */
-  public abstract ElementNodeExpr xmlElement(String name);
+  public abstract ServerExpression xmlElement(String name);
   /**
   * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
   * <p>
@@ -1093,17 +1067,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param name  The string or QName for the constructed element.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a> server data type
   */
-  public abstract ElementNodeExpr xmlElement(ServerExpression name);
-  /**
-  * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
-  * <p>
-  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a> server function.
-  * @param name  The string or QName for the constructed element.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
-  * @param attributes  Any element attributes returned from op:xml-attribute, or null if no attributes.  (of <a href="{@docRoot}/doc-files/types/attribute-node.html">attribute-node</a>)
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a> server data type
-  * @deprecated (as of 4.2) pass a {@link com.marklogic.client.type.ServerExpression} for the last parameter
-  */
-  public abstract ElementNodeExpr xmlElement(String name, AttributeNodeExpr... attributes);
+  public abstract ServerExpression xmlElement(ServerExpression name);
   /**
   * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
   * <p>
@@ -1112,7 +1076,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param attributes  Any element attributes returned from op:xml-attribute, or null if no attributes.  (of <a href="{@docRoot}/doc-files/types/attribute-node.html">attribute-node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a> server data type
   */
-  public abstract ElementNodeExpr xmlElement(String name, ServerExpression attributes);
+  public abstract ServerExpression xmlElement(String name, ServerExpression attributes);
   /**
   * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
   * <p>
@@ -1121,7 +1085,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param attributes  Any element attributes returned from op:xml-attribute, or null if no attributes.  (of <a href="{@docRoot}/doc-files/types/attribute-node.html">attribute-node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a> server data type
   */
-  public abstract ElementNodeExpr xmlElement(ServerExpression name, ServerExpression attributes);
+  public abstract ServerExpression xmlElement(ServerExpression name, ServerExpression attributes);
   /**
   * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
   * <p>
@@ -1131,7 +1095,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param content  A sequence or array of atomic values or an element, a comment from op:xml-comment, or processing instruction nodes from op:xml-pi.  (of <a href="{@docRoot}/doc-files/types/xml-content-node.html">xml-content-node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a> server data type
   */
-  public abstract ElementNodeExpr xmlElement(String name, ServerExpression attributes, ServerExpression... content);
+  public abstract ServerExpression xmlElement(String name, ServerExpression attributes, ServerExpression... content);
   /**
   * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
   * <p>
@@ -1141,7 +1105,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param content  A sequence or array of atomic values or an element, a comment from op:xml-comment, or processing instruction nodes from op:xml-pi.  (of <a href="{@docRoot}/doc-files/types/xml-content-node.html">xml-content-node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a> server data type
   */
-  public abstract ElementNodeExpr xmlElement(ServerExpression name, ServerExpression attributes, ServerExpression... content);
+  public abstract ServerExpression xmlElement(ServerExpression name, ServerExpression attributes, ServerExpression... content);
   /**
   * This function constructs an XML attribute with the name (which can be a string or QName) and atomic value.
   * <p>
@@ -1150,7 +1114,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param value  The attribute value.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/attribute-node.html">attribute-node</a> server data type
   */
-  public abstract AttributeNodeExpr xmlAttribute(String name, String value);
+  public abstract ServerExpression xmlAttribute(String name, String value);
   /**
   * This function constructs an XML attribute with the name (which can be a string or QName) and atomic value.
   * <p>
@@ -1159,7 +1123,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param value  The attribute value.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/attribute-node.html">attribute-node</a> server data type
   */
-  public abstract AttributeNodeExpr xmlAttribute(ServerExpression name, ServerExpression value);
+  public abstract ServerExpression xmlAttribute(ServerExpression name, ServerExpression value);
   /**
   * This function constructs an XML text node with the specified value.
   * <p>
@@ -1167,7 +1131,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param value  The value of the XML text node.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/text-node.html">text-node</a> server data type
   */
-  public abstract TextNodeExpr xmlText(String value);
+  public abstract ServerExpression xmlText(String value);
   /**
   * This function constructs an XML text node with the specified value.
   * <p>
@@ -1175,7 +1139,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param value  The value of the XML text node.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/text-node.html">text-node</a> server data type
   */
-  public abstract TextNodeExpr xmlText(ServerExpression value);
+  public abstract ServerExpression xmlText(ServerExpression value);
   /**
   * This function constructs an XML comment with the atomic value.
   * <p>
@@ -1183,7 +1147,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param content  The comment text.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/comment-node.html">comment-node</a> server data type
   */
-  public abstract CommentNodeExpr xmlComment(String content);
+  public abstract ServerExpression xmlComment(String content);
   /**
   * This function constructs an XML comment with the atomic value.
   * <p>
@@ -1191,7 +1155,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param content  The comment text.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/comment-node.html">comment-node</a> server data type
   */
-  public abstract CommentNodeExpr xmlComment(ServerExpression content);
+  public abstract ServerExpression xmlComment(ServerExpression content);
   /**
   * This function constructs an XML processing instruction with the atomic value.
   * <p>
@@ -1200,7 +1164,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param value  The value of the processing instruction.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/processing-instruction-node.html">processing-instruction-node</a> server data type
   */
-  public abstract ProcessingInstructionNodeExpr xmlPi(String name, String value);
+  public abstract ServerExpression xmlPi(String name, String value);
   /**
   * This function constructs an XML processing instruction with the atomic value.
   * <p>
@@ -1209,8 +1173,8 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @param value  The value of the processing instruction.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/processing-instruction-node.html">processing-instruction-node</a> server data type
   */
-  public abstract ProcessingInstructionNodeExpr xmlPi(ServerExpression name, ServerExpression value);
-  public abstract AttributeNodeSeqExpr xmlAttributeSeq(ServerExpression... attribute);
+  public abstract ServerExpression xmlPi(ServerExpression name, ServerExpression value);
+  public abstract ServerExpression xmlAttributeSeq(ServerExpression... attribute);
   public abstract PlanFunction resolveFunction(String functionName, String modulePath);
   public abstract PlanFunction resolveFunction(XsQNameVal functionName, XsStringVal modulePath);
 /**

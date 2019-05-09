@@ -20,6 +20,6 @@ package com.marklogic.client.type;
 /**
  * An instance of an RDF language string value.
  */
-public interface RdfLangStringSeqVal extends RdfLangStringSeqExpr, XsStringSeqVal {
+public interface RdfLangStringSeqVal extends XsStringSeqVal {
     public RdfLangStringVal[] getLangStringItems();
 }

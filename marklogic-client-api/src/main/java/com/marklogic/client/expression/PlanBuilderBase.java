@@ -54,7 +54,7 @@ public interface PlanBuilderBase {
      * @param property  The properties to be used to contruct the object. This is constructed by the <a>op:prop</a> function.
      * @return  a ObjectNodeExpr expression
      */
-    public abstract ObjectNodeExpr jsonObject(PlanJsonProperty... property);
+    public abstract ServerExpression jsonObject(PlanJsonProperty... property);
     /**
      * This function constructs a JSON array during row processing. The array can be used as the value of a column in a row or passed to a builtin expression function. The node is constructed during processing of the plan, rather than when building the plan.
      * <p>
@@ -62,7 +62,7 @@ public interface PlanBuilderBase {
      * @param property  The JSON nodes for the array.
      * @return  a ArrayNodeExpr expression
      */
-    public abstract ArrayNodeExpr jsonArray(ServerExpression... property);
+    public abstract ServerExpression jsonArray(ServerExpression... property);
 
     /**
      * This function returns the specified value expression if the specified value expression is true. Otherwise, it returns null.
@@ -71,7 +71,7 @@ public interface PlanBuilderBase {
      * @param cases  One or more when or else expressions.
      * @return  a ItemSeqExpr expression sequence
      */
-    public ItemSeqExpr caseExpr(PlanCase... cases);
+    public ServerExpression caseExpr(PlanCase... cases);
 
     /**
      * This function returns the specified value if none of the preceeding when() conditions are true.

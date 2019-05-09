@@ -15,25 +15,18 @@
  */
 package com.marklogic.client.expression;
 
-import com.marklogic.client.type.ElementNodeExpr;
-import com.marklogic.client.type.ItemExpr;
-import com.marklogic.client.type.ItemSeqExpr;
-import com.marklogic.client.type.MapMapExpr;
-import com.marklogic.client.type.NodeExpr;
-import com.marklogic.client.type.XsAnyAtomicTypeExpr;
-import com.marklogic.client.type.XsAnyURIExpr;
-import com.marklogic.client.type.XsBooleanExpr;
-import com.marklogic.client.type.XsDateExpr;
-import com.marklogic.client.type.XsDateTimeExpr;
-import com.marklogic.client.type.XsIntegerExpr;
-import com.marklogic.client.type.XsLongExpr;
-import com.marklogic.client.type.XsNumericExpr;
-import com.marklogic.client.type.XsNumericSeqExpr;
-import com.marklogic.client.type.XsQNameExpr;
-import com.marklogic.client.type.XsStringExpr;
-import com.marklogic.client.type.XsStringSeqExpr;
-import com.marklogic.client.type.XsUnsignedIntExpr;
-import com.marklogic.client.type.XsUnsignedLongExpr;
+import com.marklogic.client.type.XsAnyAtomicTypeVal;
+import com.marklogic.client.type.XsAnyURIVal;
+import com.marklogic.client.type.XsBooleanVal;
+import com.marklogic.client.type.XsDateTimeVal;
+import com.marklogic.client.type.XsDateVal;
+import com.marklogic.client.type.XsIntegerVal;
+import com.marklogic.client.type.XsLongVal;
+import com.marklogic.client.type.XsQNameVal;
+import com.marklogic.client.type.XsStringSeqVal;
+import com.marklogic.client.type.XsStringVal;
+import com.marklogic.client.type.XsUnsignedIntVal;
+import com.marklogic.client.type.XsUnsignedLongVal;
 
 import com.marklogic.client.type.ServerExpression;
 
@@ -55,7 +48,7 @@ public interface XdmpExpr {
   * @param y  The second value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr add64(ServerExpression x, ServerExpression y);
+  public ServerExpression add64(ServerExpression x, ServerExpression y);
 /**
   * AND two 64-bit integer values.
   *
@@ -67,7 +60,7 @@ public interface XdmpExpr {
   * @param y  The second value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr and64(ServerExpression x, ServerExpression y);
+  public ServerExpression and64(ServerExpression x, ServerExpression y);
 /**
   * Converts base64-encoded string to plaintext.
   *
@@ -78,7 +71,7 @@ public interface XdmpExpr {
   * @param encoded  Encoded text to be decoded.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr base64Decode(ServerExpression encoded);
+  public ServerExpression base64Decode(ServerExpression encoded);
 /**
   * Converts plaintext into base64-encoded string.
   *
@@ -89,7 +82,7 @@ public interface XdmpExpr {
   * @param plaintext  Plaintext to be encoded.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr base64Encode(ServerExpression plaintext);
+  public ServerExpression base64Encode(ServerExpression plaintext);
 /**
   * Returns true if a value is castable. This is similar to the "castable as" XQuery predicate, except that the type is determined at runtime.
   * <p>
@@ -99,7 +92,7 @@ public interface XdmpExpr {
   * @param item  The item to be cast.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr castableAs(ServerExpression namespaceUri, String localName, ServerExpression item);
+  public ServerExpression castableAs(ServerExpression namespaceUri, String localName, ServerExpression item);
 /**
   * Returns true if a value is castable. This is similar to the "castable as" XQuery predicate, except that the type is determined at runtime.
   *
@@ -112,7 +105,7 @@ public interface XdmpExpr {
   * @param item  The item to be cast.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr castableAs(ServerExpression namespaceUri, ServerExpression localName, ServerExpression item);
+  public ServerExpression castableAs(ServerExpression namespaceUri, ServerExpression localName, ServerExpression item);
 /**
   * Calculates the password hash for the given password and salt.
   * <p>
@@ -121,7 +114,7 @@ public interface XdmpExpr {
   * @param salt  Salt to avoid 1:1 mapping from passwords to hashes. Only the first 8 characters of the salt are significant; any characters beyond the eighth are ignored.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr crypt(ServerExpression password, String salt);
+  public ServerExpression crypt(ServerExpression password, String salt);
 /**
   * Calculates the password hash for the given password and salt.
   *
@@ -133,7 +126,7 @@ public interface XdmpExpr {
   * @param salt  Salt to avoid 1:1 mapping from passwords to hashes. Only the first 8 characters of the salt are significant; any characters beyond the eighth are ignored.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr crypt(ServerExpression password, ServerExpression salt);
+  public ServerExpression crypt(ServerExpression password, ServerExpression salt);
 /**
   * Calculates the password hash for the given plain-text password.
   *
@@ -144,7 +137,7 @@ public interface XdmpExpr {
   * @param password  String to be hashed.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr crypt2(ServerExpression password);
+  public ServerExpression crypt2(ServerExpression password);
 /**
   * Returns an xs:string representing the dayname value in the localized value of arg. 
   *
@@ -155,7 +148,7 @@ public interface XdmpExpr {
   * @param arg  The date whose dayname value will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr daynameFromDate(ServerExpression arg);
+  public ServerExpression daynameFromDate(ServerExpression arg);
 /**
   * Invertible function that decodes characters an NCName produced by xdmp:encode-for-NCName. Given the NCName produced by xdmp:encode-for-NCName this function returns the original string.
   *
@@ -166,7 +159,7 @@ public interface XdmpExpr {
   * @param name  A string representing an NCName. This string must have been the result of a previous call to xdmp:decode-from-NCName or undefined results will occur.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr decodeFromNCName(ServerExpression name);
+  public ServerExpression decodeFromNCName(ServerExpression name);
 /**
   * Returns a string representing the description of a given item sequence. If you take the output of this function and evaluate it as an XQuery program, it returns the item(s) input to the function.
   *
@@ -177,7 +170,7 @@ public interface XdmpExpr {
   * @param item  The item sequence whose description is returned.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr describe(ServerExpression item);
+  public ServerExpression describe(ServerExpression item);
 /**
   * Returns a string representing the description of a given item sequence. If you take the output of this function and evaluate it as an XQuery program, it returns the item(s) input to the function.
   * <p>
@@ -186,7 +179,7 @@ public interface XdmpExpr {
   * @param maxSequenceLength  Represents the maximum number of items per sequence to print. The default is 3. () means no maximum.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr describe(ServerExpression item, ServerExpression maxSequenceLength);
+  public ServerExpression describe(ServerExpression item, ServerExpression maxSequenceLength);
 /**
   * Returns a string representing the description of a given item sequence. If you take the output of this function and evaluate it as an XQuery program, it returns the item(s) input to the function.
   * <p>
@@ -196,7 +189,7 @@ public interface XdmpExpr {
   * @param maxItemLength  Represents the maximum number of characters per item to print. The default is 64. The minimum is 8. () means no limit.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr describe(ServerExpression item, ServerExpression maxSequenceLength, ServerExpression maxItemLength);
+  public ServerExpression describe(ServerExpression item, ServerExpression maxSequenceLength, ServerExpression maxItemLength);
 /**
   * Returns the specified string, converting all of the characters with diacritics to characters without diacritics.
   *
@@ -207,7 +200,7 @@ public interface XdmpExpr {
   * @param string  The string to convert.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr diacriticLess(ServerExpression string);
+  public ServerExpression diacriticLess(ServerExpression string);
 /**
   * Returns the schema-defined content-type of an element ("empty", "simple", "element-only", or "mixed").
   *
@@ -218,7 +211,7 @@ public interface XdmpExpr {
   * @param element  An element node.  (of <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr elementContentType(ServerExpression element);
+  public ServerExpression elementContentType(ServerExpression element);
 /**
   * Invertible function that escapes characters required to be part of an NCName. This is useful when translating names from other representations such as JSON to XML. Given any string, the result is always a valid NCName. Providing all names are passed through this function the result is distinct NCNames so the results can be used for searching as well as name generation. The inverse function is xdmp:decode-for-NCName.
   *
@@ -229,16 +222,7 @@ public interface XdmpExpr {
   * @param name  A string which is used as an NCName (such as the localname for an element or attribute).  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr encodeForNCName(ServerExpression name);
-/**
-  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
-  * <p>
-  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
-  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
-  * @deprecated (as of 4.2) pass a {@link com.marklogic.client.type.ServerExpression} for the last parameter
-  */
-  public XsStringExpr formatNumber(XsNumericExpr... value);
+  public ServerExpression encodeForNCName(ServerExpression name);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   *
@@ -249,7 +233,7 @@ public interface XdmpExpr {
   * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(ServerExpression value);
+  public ServerExpression formatNumber(ServerExpression value);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
@@ -258,7 +242,7 @@ public interface XdmpExpr {
   * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(ServerExpression value, String picture);
+  public ServerExpression formatNumber(ServerExpression value, String picture);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
@@ -267,17 +251,7 @@ public interface XdmpExpr {
   * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture);
-/**
-  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
-  * <p>
-  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
-  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
-  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
-  */
-  public XsStringExpr formatNumber(ServerExpression value, String picture, String language);
+  public ServerExpression formatNumber(ServerExpression value, ServerExpression picture);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
@@ -287,7 +261,7 @@ public interface XdmpExpr {
   * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language);
+  public ServerExpression formatNumber(ServerExpression value, String picture, String language);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
@@ -295,10 +269,9 @@ public interface XdmpExpr {
   * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(ServerExpression value, String picture, String language, String letterValue);
+  public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
@@ -309,7 +282,7 @@ public interface XdmpExpr {
   * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue);
+  public ServerExpression formatNumber(ServerExpression value, String picture, String language, String letterValue);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
@@ -318,10 +291,9 @@ public interface XdmpExpr {
   * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar);
+  public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
@@ -333,7 +305,7 @@ public interface XdmpExpr {
   * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar);
+  public ServerExpression formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
@@ -343,10 +315,9 @@ public interface XdmpExpr {
   * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar, String zeroPadding);
+  public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
@@ -359,7 +330,7 @@ public interface XdmpExpr {
   * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar, ServerExpression zeroPadding);
+  public ServerExpression formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar, String zeroPadding);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
@@ -370,10 +341,9 @@ public interface XdmpExpr {
   * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param groupingSeparator  Value of $grouping-separator is a character, used to groups of digits, especially useful in making long sequence of digits more readable. For example, 10,000,000- here "," is used as a separator after each group of three digits. An empty sequence must be passed in even if a user doesn't want to specify this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar, String zeroPadding, String groupingSeparator);
+  public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar, ServerExpression zeroPadding);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
@@ -387,7 +357,7 @@ public interface XdmpExpr {
   * @param groupingSeparator  Value of $grouping-separator is a character, used to groups of digits, especially useful in making long sequence of digits more readable. For example, 10,000,000- here "," is used as a separator after each group of three digits. An empty sequence must be passed in even if a user doesn't want to specify this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar, ServerExpression zeroPadding, ServerExpression groupingSeparator);
+  public ServerExpression formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar, String zeroPadding, String groupingSeparator);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
@@ -399,10 +369,9 @@ public interface XdmpExpr {
   * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param groupingSeparator  Value of $grouping-separator is a character, used to groups of digits, especially useful in making long sequence of digits more readable. For example, 10,000,000- here "," is used as a separator after each group of three digits. An empty sequence must be passed in even if a user doesn't want to specify this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param groupingSize  Represents size of the group, i.e. the number of digits before after which grouping separator is inserted. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar, String zeroPadding, String groupingSeparator, long groupingSize);
+  public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar, ServerExpression zeroPadding, ServerExpression groupingSeparator);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
@@ -417,7 +386,22 @@ public interface XdmpExpr {
   * @param groupingSize  Represents size of the group, i.e. the number of digits before after which grouping separator is inserted. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar, ServerExpression zeroPadding, ServerExpression groupingSeparator, ServerExpression groupingSize);
+  public ServerExpression formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar, String zeroPadding, String groupingSeparator, long groupingSize);
+/**
+  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
+  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param groupingSeparator  Value of $grouping-separator is a character, used to groups of digits, especially useful in making long sequence of digits more readable. For example, 10,000,000- here "," is used as a separator after each group of three digits. An empty sequence must be passed in even if a user doesn't want to specify this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param groupingSize  Represents size of the group, i.e. the number of digits before after which grouping separator is inserted. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
+  */
+  public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar, ServerExpression zeroPadding, ServerExpression groupingSeparator, ServerExpression groupingSize);
 /**
   * Atomizes a JSON node, returning a JSON value.
   *
@@ -428,7 +412,7 @@ public interface XdmpExpr {
   * @param arg  A node of kind object-node(), array-node(), text(), number-node(), boolean-node(), null-node(), or document-node().  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr fromJson(ServerExpression arg);
+  public ServerExpression fromJson(ServerExpression arg);
 /**
   * Returns the name of the current user.
   *
@@ -438,7 +422,7 @@ public interface XdmpExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:get-current-user" target="mlserverdoc">xdmp:get-current-user</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr getCurrentUser();
+  public ServerExpression getCurrentUser();
 /**
   * Returns the 32-bit hash of a string.
   *
@@ -449,7 +433,7 @@ public interface XdmpExpr {
   * @param string  The string to be hashed.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a> server data type
   */
-  public XsUnsignedIntExpr hash32(ServerExpression string);
+  public ServerExpression hash32(ServerExpression string);
 /**
   * Returns the 64-bit hash of a string.
   *
@@ -460,7 +444,7 @@ public interface XdmpExpr {
   * @param string  The string to be hashed.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr hash64(ServerExpression string);
+  public ServerExpression hash64(ServerExpression string);
 /**
   * Parses a hexadecimal string, returning an integer.
   *
@@ -471,7 +455,7 @@ public interface XdmpExpr {
   * @param hex  The hexadecimal string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr hexToInteger(ServerExpression hex);
+  public ServerExpression hexToInteger(ServerExpression hex);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the md5 hash function of the given secret key and message arguments.
   *
@@ -483,7 +467,7 @@ public interface XdmpExpr {
   * @param message  Message to be authenticated. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacMd5(ServerExpression secretkey, ServerExpression message);
+  public ServerExpression hmacMd5(ServerExpression secretkey, ServerExpression message);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the md5 hash function of the given secret key and message arguments.
   * <p>
@@ -493,7 +477,7 @@ public interface XdmpExpr {
   * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacMd5(ServerExpression secretkey, ServerExpression message, String encoding);
+  public ServerExpression hmacMd5(ServerExpression secretkey, ServerExpression message, String encoding);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the md5 hash function of the given secret key and message arguments.
   * <p>
@@ -503,7 +487,7 @@ public interface XdmpExpr {
   * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacMd5(ServerExpression secretkey, ServerExpression message, ServerExpression encoding);
+  public ServerExpression hmacMd5(ServerExpression secretkey, ServerExpression message, ServerExpression encoding);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA1 hash function of the given secret key and message arguments.
   *
@@ -515,7 +499,7 @@ public interface XdmpExpr {
   * @param message  Message to be authenticated. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacSha1(ServerExpression secretkey, ServerExpression message);
+  public ServerExpression hmacSha1(ServerExpression secretkey, ServerExpression message);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA1 hash function of the given secret key and message arguments.
   * <p>
@@ -525,7 +509,7 @@ public interface XdmpExpr {
   * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacSha1(ServerExpression secretkey, ServerExpression message, String encoding);
+  public ServerExpression hmacSha1(ServerExpression secretkey, ServerExpression message, String encoding);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA1 hash function of the given secret key and message arguments.
   * <p>
@@ -535,7 +519,7 @@ public interface XdmpExpr {
   * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacSha1(ServerExpression secretkey, ServerExpression message, ServerExpression encoding);
+  public ServerExpression hmacSha1(ServerExpression secretkey, ServerExpression message, ServerExpression encoding);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA256 hash function of the given secret key and message arguments.
   *
@@ -547,7 +531,7 @@ public interface XdmpExpr {
   * @param message  Message to be authenticated. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacSha256(ServerExpression secretkey, ServerExpression message);
+  public ServerExpression hmacSha256(ServerExpression secretkey, ServerExpression message);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA256 hash function of the given secret key and message arguments.
   * <p>
@@ -557,7 +541,7 @@ public interface XdmpExpr {
   * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacSha256(ServerExpression secretkey, ServerExpression message, String encoding);
+  public ServerExpression hmacSha256(ServerExpression secretkey, ServerExpression message, String encoding);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA256 hash function of the given secret key and message arguments.
   * <p>
@@ -567,7 +551,7 @@ public interface XdmpExpr {
   * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacSha256(ServerExpression secretkey, ServerExpression message, ServerExpression encoding);
+  public ServerExpression hmacSha256(ServerExpression secretkey, ServerExpression message, ServerExpression encoding);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA512 hash function of the given secret key and message arguments.
   *
@@ -579,7 +563,7 @@ public interface XdmpExpr {
   * @param message  Message to be authenticated. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacSha512(ServerExpression secretkey, ServerExpression message);
+  public ServerExpression hmacSha512(ServerExpression secretkey, ServerExpression message);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA512 hash function of the given secret key and message arguments.
   * <p>
@@ -589,7 +573,7 @@ public interface XdmpExpr {
   * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacSha512(ServerExpression secretkey, ServerExpression message, String encoding);
+  public ServerExpression hmacSha512(ServerExpression secretkey, ServerExpression message, String encoding);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA512 hash function of the given secret key and message arguments.
   * <p>
@@ -599,7 +583,7 @@ public interface XdmpExpr {
   * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacSha512(ServerExpression secretkey, ServerExpression message, ServerExpression encoding);
+  public ServerExpression hmacSha512(ServerExpression secretkey, ServerExpression message, ServerExpression encoding);
 /**
   * Returns the string where the first letter of each token has been uppercased.
   *
@@ -610,7 +594,7 @@ public interface XdmpExpr {
   * @param string  The string to modify.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr initcap(ServerExpression string);
+  public ServerExpression initcap(ServerExpression string);
 /**
   * Returns a hexadecimal representation of an integer.
   *
@@ -621,7 +605,7 @@ public interface XdmpExpr {
   * @param val  The integer value.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr integerToHex(ServerExpression val);
+  public ServerExpression integerToHex(ServerExpression val);
 /**
   * Returns an octal representation of an integer.
   *
@@ -632,7 +616,7 @@ public interface XdmpExpr {
   * @param val  The integer value.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr integerToOctal(ServerExpression val);
+  public ServerExpression integerToOctal(ServerExpression val);
 /**
   * Construct a context-independent string from a QName. This string is of the form "{namespaceURI}localname" and is suitable for use as a map key.
   *
@@ -643,7 +627,7 @@ public interface XdmpExpr {
   * @param name  The QName to compute a key for.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr keyFromQName(ServerExpression name);
+  public ServerExpression keyFromQName(ServerExpression name);
 /**
   * Left-shift a 64-bit integer value.
   * <p>
@@ -652,7 +636,7 @@ public interface XdmpExpr {
   * @param y  The left shift to perform. This value may be negative.  (of <a href="{@docRoot}/doc-files/types/xs_long.html">xs:long</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr lshift64(ServerExpression x, long y);
+  public ServerExpression lshift64(ServerExpression x, long y);
 /**
   * Left-shift a 64-bit integer value.
   *
@@ -664,7 +648,7 @@ public interface XdmpExpr {
   * @param y  The left shift to perform. This value may be negative.  (of <a href="{@docRoot}/doc-files/types/xs_long.html">xs:long</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr lshift64(ServerExpression x, ServerExpression y);
+  public ServerExpression lshift64(ServerExpression x, ServerExpression y);
 /**
   * Calculates the md5 hash of the given argument.
   *
@@ -675,7 +659,7 @@ public interface XdmpExpr {
   * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr md5(ServerExpression data);
+  public ServerExpression md5(ServerExpression data);
 /**
   * Calculates the md5 hash of the given argument.
   * <p>
@@ -684,7 +668,7 @@ public interface XdmpExpr {
   * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr md5(ServerExpression data, String encoding);
+  public ServerExpression md5(ServerExpression data, String encoding);
 /**
   * Calculates the md5 hash of the given argument.
   * <p>
@@ -693,7 +677,7 @@ public interface XdmpExpr {
   * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr md5(ServerExpression data, ServerExpression encoding);
+  public ServerExpression md5(ServerExpression data, ServerExpression encoding);
 /**
   * Returns month name, calculated from the localized value of arg. 
   *
@@ -704,7 +688,7 @@ public interface XdmpExpr {
   * @param arg  The date whose month-name will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr monthNameFromDate(ServerExpression arg);
+  public ServerExpression monthNameFromDate(ServerExpression arg);
 /**
   * Muliply two 64-bit integer values, discarding overflow.
   *
@@ -716,7 +700,7 @@ public interface XdmpExpr {
   * @param y  The second value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr mul64(ServerExpression x, ServerExpression y);
+  public ServerExpression mul64(ServerExpression x, ServerExpression y);
 /**
   * Returns any collections for the node's document in the database. If the specified node does not come from a document in a database, then xdmp:node-collections returns an empty sequence.
   *
@@ -727,7 +711,7 @@ public interface XdmpExpr {
   * @param node  The node whose collections are to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringSeqExpr nodeCollections(ServerExpression node);
+  public ServerExpression nodeCollections(ServerExpression node);
 /**
   * Returns an xs:string representing the node's kind: either "document", "element", "attribute", "text", "namespace", "processing-instruction", "binary", or "comment".  
   *
@@ -738,7 +722,7 @@ public interface XdmpExpr {
   * @param node  The node whose kind is to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr nodeKind(ServerExpression node);
+  public ServerExpression nodeKind(ServerExpression node);
 /**
   * Returns the metadata value of a given node.
   *
@@ -749,7 +733,7 @@ public interface XdmpExpr {
   * @param node  The node whose metadata are to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/map_map.html">map:map</a> server data type
   */
-  public MapMapExpr nodeMetadata(ServerExpression node);
+  public ServerExpression nodeMetadata(ServerExpression node);
 /**
   * Returns the metadata value of a node for a particular key.
   * <p>
@@ -758,7 +742,7 @@ public interface XdmpExpr {
   * @param keyName  Name of the key for the metadata.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr nodeMetadataValue(ServerExpression uri, String keyName);
+  public ServerExpression nodeMetadataValue(ServerExpression uri, String keyName);
 /**
   * Returns the metadata value of a node for a particular key.
   *
@@ -770,7 +754,7 @@ public interface XdmpExpr {
   * @param keyName  Name of the key for the metadata.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr nodeMetadataValue(ServerExpression uri, ServerExpression keyName);
+  public ServerExpression nodeMetadataValue(ServerExpression uri, ServerExpression keyName);
 /**
   * Returns the permissions to a node's document.
   *
@@ -781,7 +765,7 @@ public interface XdmpExpr {
   * @param node  The node.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr nodePermissions(ServerExpression node);
+  public ServerExpression nodePermissions(ServerExpression node);
 /**
   * Returns the permissions to a node's document.
   * <p>
@@ -790,7 +774,7 @@ public interface XdmpExpr {
   * @param outputKind  The output kind. It can be either "elements" or "objects". With "elements", the built-in returns a sequence of XML elements. With "objects", the built-in returns a sequence of map:map. The default is "elements".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr nodePermissions(ServerExpression node, String outputKind);
+  public ServerExpression nodePermissions(ServerExpression node, String outputKind);
 /**
   * Returns the permissions to a node's document.
   * <p>
@@ -799,7 +783,7 @@ public interface XdmpExpr {
   * @param outputKind  The output kind. It can be either "elements" or "objects". With "elements", the built-in returns a sequence of XML elements. With "objects", the built-in returns a sequence of map:map. The default is "elements".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr nodePermissions(ServerExpression node, ServerExpression outputKind);
+  public ServerExpression nodePermissions(ServerExpression node, ServerExpression outputKind);
 /**
   * Returns the document-uri property of the parameter or its ancestor.
   *
@@ -810,7 +794,7 @@ public interface XdmpExpr {
   * @param node  The node whose URI is returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr nodeUri(ServerExpression node);
+  public ServerExpression nodeUri(ServerExpression node);
 /**
   * NOT a 64-bit integer value.
   *
@@ -821,7 +805,7 @@ public interface XdmpExpr {
   * @param x  The input value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr not64(ServerExpression x);
+  public ServerExpression not64(ServerExpression x);
 /**
   * Parses an octal string, returning an integer.
   *
@@ -832,7 +816,7 @@ public interface XdmpExpr {
   * @param octal  The octal string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr octalToInteger(ServerExpression octal);
+  public ServerExpression octalToInteger(ServerExpression octal);
 /**
   * OR two 64-bit integer values.
   *
@@ -844,7 +828,7 @@ public interface XdmpExpr {
   * @param y  The second value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr or64(ServerExpression x, ServerExpression y);
+  public ServerExpression or64(ServerExpression x, ServerExpression y);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
@@ -853,7 +837,7 @@ public interface XdmpExpr {
   * @param value  The given string $value representing the dateTime value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseDateTime(ServerExpression picture, String value);
+  public ServerExpression parseDateTime(ServerExpression picture, String value);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   *
@@ -865,7 +849,7 @@ public interface XdmpExpr {
   * @param value  The given string $value representing the dateTime value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseDateTime(ServerExpression picture, ServerExpression value);
+  public ServerExpression parseDateTime(ServerExpression picture, ServerExpression value);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
@@ -875,7 +859,7 @@ public interface XdmpExpr {
   * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseDateTime(ServerExpression picture, String value, String language);
+  public ServerExpression parseDateTime(ServerExpression picture, String value, String language);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
@@ -885,18 +869,7 @@ public interface XdmpExpr {
   * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseDateTime(ServerExpression picture, ServerExpression value, ServerExpression language);
-/**
-  * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
-  * <p>
-  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a> server function.
-  * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param value  The given string $value representing the dateTime value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
-  */
-  public XsDateTimeExpr parseDateTime(ServerExpression picture, String value, String language, String calendar);
+  public ServerExpression parseDateTime(ServerExpression picture, ServerExpression value, ServerExpression language);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
@@ -907,7 +880,7 @@ public interface XdmpExpr {
   * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseDateTime(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar);
+  public ServerExpression parseDateTime(ServerExpression picture, String value, String language, String calendar);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
@@ -916,10 +889,9 @@ public interface XdmpExpr {
   * @param value  The given string $value representing the dateTime value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param country  $country is used to take into account if there any country specific interpretation of the string while converting it into dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseDateTime(ServerExpression picture, String value, String language, String calendar, String country);
+  public ServerExpression parseDateTime(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
@@ -931,7 +903,19 @@ public interface XdmpExpr {
   * @param country  $country is used to take into account if there any country specific interpretation of the string while converting it into dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseDateTime(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar, ServerExpression country);
+  public ServerExpression parseDateTime(ServerExpression picture, String value, String language, String calendar, String country);
+/**
+  * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a> server function.
+  * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The given string $value representing the dateTime value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param country  $country is used to take into account if there any country specific interpretation of the string while converting it into dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
+  */
+  public ServerExpression parseDateTime(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar, ServerExpression country);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
@@ -940,7 +924,7 @@ public interface XdmpExpr {
   * @param value  The given string $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseYymmdd(ServerExpression picture, String value);
+  public ServerExpression parseYymmdd(ServerExpression picture, String value);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   *
@@ -952,7 +936,7 @@ public interface XdmpExpr {
   * @param value  The given string $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseYymmdd(ServerExpression picture, ServerExpression value);
+  public ServerExpression parseYymmdd(ServerExpression picture, ServerExpression value);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
@@ -962,7 +946,7 @@ public interface XdmpExpr {
   * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseYymmdd(ServerExpression picture, String value, String language);
+  public ServerExpression parseYymmdd(ServerExpression picture, String value, String language);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
@@ -972,18 +956,7 @@ public interface XdmpExpr {
   * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseYymmdd(ServerExpression picture, ServerExpression value, ServerExpression language);
-/**
-  * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
-  * <p>
-  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a> server function.
-  * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param value  The given string $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
-  */
-  public XsDateTimeExpr parseYymmdd(ServerExpression picture, String value, String language, String calendar);
+  public ServerExpression parseYymmdd(ServerExpression picture, ServerExpression value, ServerExpression language);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
@@ -994,7 +967,7 @@ public interface XdmpExpr {
   * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseYymmdd(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar);
+  public ServerExpression parseYymmdd(ServerExpression picture, String value, String language, String calendar);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
@@ -1003,10 +976,9 @@ public interface XdmpExpr {
   * @param value  The given string $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param country  $country is used to take into account if there any country specific interpretation of the string while converting it into dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseYymmdd(ServerExpression picture, String value, String language, String calendar, String country);
+  public ServerExpression parseYymmdd(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
@@ -1018,7 +990,19 @@ public interface XdmpExpr {
   * @param country  $country is used to take into account if there any country specific interpretation of the string while converting it into dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseYymmdd(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar, ServerExpression country);
+  public ServerExpression parseYymmdd(ServerExpression picture, String value, String language, String calendar, String country);
+/**
+  * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a> server function.
+  * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The given string $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param country  $country is used to take into account if there any country specific interpretation of the string while converting it into dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
+  */
+  public ServerExpression parseYymmdd(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar, ServerExpression country);
 /**
   * Returns a string whose value corresponds to the path of the node.
   *
@@ -1029,7 +1013,7 @@ public interface XdmpExpr {
   * @param node  The node whose path is returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr path(ServerExpression node);
+  public ServerExpression path(ServerExpression node);
 /**
   * Returns a string whose value corresponds to the path of the node.
   * <p>
@@ -1038,7 +1022,7 @@ public interface XdmpExpr {
   * @param includeDocument  If true, then the path is presented with a leading doc(..)/.., otherwise the path is presented as /...  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr path(ServerExpression node, boolean includeDocument);
+  public ServerExpression path(ServerExpression node, boolean includeDocument);
 /**
   * Returns a string whose value corresponds to the path of the node.
   * <p>
@@ -1047,7 +1031,7 @@ public interface XdmpExpr {
   * @param includeDocument  If true, then the path is presented with a leading doc(..)/.., otherwise the path is presented as /...  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr path(ServerExpression node, ServerExpression includeDocument);
+  public ServerExpression path(ServerExpression node, ServerExpression includeDocument);
 /**
   * Returns an integer value representing the starting position of a string within the search string. Note, the string starting position is 1. If the first parameter is empty, the result is the empty sequence.
   * <p>
@@ -1056,7 +1040,7 @@ public interface XdmpExpr {
   * @param target  The string from which to test.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr position(ServerExpression test, String target);
+  public ServerExpression position(ServerExpression test, String target);
 /**
   * Returns an integer value representing the starting position of a string within the search string. Note, the string starting position is 1. If the first parameter is empty, the result is the empty sequence.
   *
@@ -1068,7 +1052,7 @@ public interface XdmpExpr {
   * @param target  The string from which to test.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr position(ServerExpression test, ServerExpression target);
+  public ServerExpression position(ServerExpression test, ServerExpression target);
 /**
   * Returns an integer value representing the starting position of a string within the search string. Note, the string starting position is 1. If the first parameter is empty, the result is the empty sequence.
   * <p>
@@ -1078,7 +1062,7 @@ public interface XdmpExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr position(ServerExpression test, String target, String collation);
+  public ServerExpression position(ServerExpression test, String target, String collation);
 /**
   * Returns an integer value representing the starting position of a string within the search string. Note, the string starting position is 1. If the first parameter is empty, the result is the empty sequence.
   * <p>
@@ -1088,7 +1072,7 @@ public interface XdmpExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr position(ServerExpression test, ServerExpression target, ServerExpression collation);
+  public ServerExpression position(ServerExpression test, ServerExpression target, ServerExpression collation);
 /**
   * Construct a QName from a string of the form "{namespaceURI}localname". This function is useful for constructing Clark notation parameters for the xdmp:xslt-eval and xdmp:xslt-invoke functions.
   *
@@ -1099,7 +1083,7 @@ public interface XdmpExpr {
   * @param key  The string from which to construct a QName.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a> server data type
   */
-  public XsQNameExpr QNameFromKey(ServerExpression key);
+  public ServerExpression QNameFromKey(ServerExpression key);
 /**
   * Returns an xs:integer between 1 and 4, both inclusive, calculating the quarter component in the localized value of arg. 
   *
@@ -1110,7 +1094,7 @@ public interface XdmpExpr {
   * @param arg  The date whose quarter component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr quarterFromDate(ServerExpression arg);
+  public ServerExpression quarterFromDate(ServerExpression arg);
 /**
   * Returns a random unsigned integer between 0 and a number up to 64 bits long.
   *
@@ -1120,7 +1104,7 @@ public interface XdmpExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:random" target="mlserverdoc">xdmp:random</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr random();
+  public ServerExpression random();
 /**
   * Returns a random unsigned integer between 0 and a number up to 64 bits long.
   * <p>
@@ -1128,7 +1112,7 @@ public interface XdmpExpr {
   * @param max  The optional maximum value (inclusive).  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr random(ServerExpression max);
+  public ServerExpression random(ServerExpression max);
 /**
   * Resolves a relative URI against an absolute URI. If base is specified, the URI is resolved relative to that base. If base is not specified, the base is set to the base-uri property from the static context, if the property exists; if it does not exist, an error is thrown.
   * <p>
@@ -1137,7 +1121,7 @@ public interface XdmpExpr {
   * @param base  An absolute URI to use as the base of the resolution.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyURI.html">xs:anyURI</a> server data type
   */
-  public XsAnyURIExpr resolveUri(ServerExpression relative, String base);
+  public ServerExpression resolveUri(ServerExpression relative, String base);
 /**
   * Resolves a relative URI against an absolute URI. If base is specified, the URI is resolved relative to that base. If base is not specified, the base is set to the base-uri property from the static context, if the property exists; if it does not exist, an error is thrown.
   *
@@ -1149,7 +1133,7 @@ public interface XdmpExpr {
   * @param base  An absolute URI to use as the base of the resolution.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyURI.html">xs:anyURI</a> server data type
   */
-  public XsAnyURIExpr resolveUri(ServerExpression relative, ServerExpression base);
+  public ServerExpression resolveUri(ServerExpression relative, ServerExpression base);
 /**
   * Right-shift a 64-bit integer value.
   * <p>
@@ -1158,7 +1142,7 @@ public interface XdmpExpr {
   * @param y  The right shift to perform. This value may be negative.  (of <a href="{@docRoot}/doc-files/types/xs_long.html">xs:long</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr rshift64(ServerExpression x, long y);
+  public ServerExpression rshift64(ServerExpression x, long y);
 /**
   * Right-shift a 64-bit integer value.
   *
@@ -1170,7 +1154,7 @@ public interface XdmpExpr {
   * @param y  The right shift to perform. This value may be negative.  (of <a href="{@docRoot}/doc-files/types/xs_long.html">xs:long</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr rshift64(ServerExpression x, ServerExpression y);
+  public ServerExpression rshift64(ServerExpression x, ServerExpression y);
 /**
   * Calculates the SHA1 hash of the given argument.
   *
@@ -1181,7 +1165,7 @@ public interface XdmpExpr {
   * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha1(ServerExpression data);
+  public ServerExpression sha1(ServerExpression data);
 /**
   * Calculates the SHA1 hash of the given argument.
   * <p>
@@ -1190,7 +1174,7 @@ public interface XdmpExpr {
   * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha1(ServerExpression data, String encoding);
+  public ServerExpression sha1(ServerExpression data, String encoding);
 /**
   * Calculates the SHA1 hash of the given argument.
   * <p>
@@ -1199,7 +1183,7 @@ public interface XdmpExpr {
   * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha1(ServerExpression data, ServerExpression encoding);
+  public ServerExpression sha1(ServerExpression data, ServerExpression encoding);
 /**
   * Calculates the SHA256 hash of the given argument.
   *
@@ -1210,7 +1194,7 @@ public interface XdmpExpr {
   * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha256(ServerExpression data);
+  public ServerExpression sha256(ServerExpression data);
 /**
   * Calculates the SHA256 hash of the given argument.
   * <p>
@@ -1219,7 +1203,7 @@ public interface XdmpExpr {
   * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha256(ServerExpression data, String encoding);
+  public ServerExpression sha256(ServerExpression data, String encoding);
 /**
   * Calculates the SHA256 hash of the given argument.
   * <p>
@@ -1228,7 +1212,7 @@ public interface XdmpExpr {
   * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha256(ServerExpression data, ServerExpression encoding);
+  public ServerExpression sha256(ServerExpression data, ServerExpression encoding);
 /**
   * Calculates the SHA384 hash of the given argument.
   *
@@ -1239,7 +1223,7 @@ public interface XdmpExpr {
   * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha384(ServerExpression data);
+  public ServerExpression sha384(ServerExpression data);
 /**
   * Calculates the SHA384 hash of the given argument.
   * <p>
@@ -1248,7 +1232,7 @@ public interface XdmpExpr {
   * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha384(ServerExpression data, String encoding);
+  public ServerExpression sha384(ServerExpression data, String encoding);
 /**
   * Calculates the SHA384 hash of the given argument.
   * <p>
@@ -1257,7 +1241,7 @@ public interface XdmpExpr {
   * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha384(ServerExpression data, ServerExpression encoding);
+  public ServerExpression sha384(ServerExpression data, ServerExpression encoding);
 /**
   * Calculates the SHA512 hash of the given argument.
   *
@@ -1268,7 +1252,7 @@ public interface XdmpExpr {
   * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha512(ServerExpression data);
+  public ServerExpression sha512(ServerExpression data);
 /**
   * Calculates the SHA512 hash of the given argument.
   * <p>
@@ -1277,7 +1261,7 @@ public interface XdmpExpr {
   * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha512(ServerExpression data, String encoding);
+  public ServerExpression sha512(ServerExpression data, String encoding);
 /**
   * Calculates the SHA512 hash of the given argument.
   * <p>
@@ -1286,7 +1270,7 @@ public interface XdmpExpr {
   * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha512(ServerExpression data, ServerExpression encoding);
+  public ServerExpression sha512(ServerExpression data, ServerExpression encoding);
 /**
   * Combines an initial hash with a subsequent hash.
   *
@@ -1298,7 +1282,7 @@ public interface XdmpExpr {
   * @param step  A step hash to be combined with the initial hash.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr step64(ServerExpression initial, ServerExpression step);
+  public ServerExpression step64(ServerExpression initial, ServerExpression step);
 /**
   * Formats a dateTime value using POSIX strftime. This function uses the POSIX strftime system call in the way it is implemented on each platform. For other XQuery functions that have more functionality (for example, for things like timezones), use one or more if the various XQuery or XSLT standard functions such as fn:format-dateTime.
   * <p>
@@ -1307,7 +1291,7 @@ public interface XdmpExpr {
   * @param value  The dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr strftime(ServerExpression format, String value);
+  public ServerExpression strftime(ServerExpression format, String value);
 /**
   * Formats a dateTime value using POSIX strftime. This function uses the POSIX strftime system call in the way it is implemented on each platform. For other XQuery functions that have more functionality (for example, for things like timezones), use one or more if the various XQuery or XSLT standard functions such as fn:format-dateTime.
   *
@@ -1319,7 +1303,7 @@ public interface XdmpExpr {
   * @param value  The dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr strftime(ServerExpression format, ServerExpression value);
+  public ServerExpression strftime(ServerExpression format, ServerExpression value);
 /**
   * Converts a 64 bit timestamp value to an xs:dateTime.
   *
@@ -1330,7 +1314,7 @@ public interface XdmpExpr {
   * @param timestamp  The timestamp.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr timestampToWallclock(ServerExpression timestamp);
+  public ServerExpression timestampToWallclock(ServerExpression timestamp);
 /**
   * Constructs a JSON document.
   *
@@ -1341,7 +1325,7 @@ public interface XdmpExpr {
   * @param item  A sequence of items from which the JSON document is to be constructed. The item sequence from which the JSON document is constructed.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/node.html">node</a> server data type
   */
-  public NodeExpr toJson(ServerExpression item);
+  public ServerExpression toJson(ServerExpression item);
 /**
   * Returns the name of the simple type of the atomic value argument as an xs:QName. 
   *
@@ -1352,7 +1336,7 @@ public interface XdmpExpr {
   * @param value  The value to return the type of.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a> server data type
   */
-  public XsQNameExpr type(ServerExpression value);
+  public ServerExpression type(ServerExpression value);
 /**
   * Converts URL-encoded string to plaintext. This decodes the string created with xdmp:url-encode.
   *
@@ -1363,7 +1347,7 @@ public interface XdmpExpr {
   * @param encoded  Encoded text to be decoded.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr urlDecode(ServerExpression encoded);
+  public ServerExpression urlDecode(ServerExpression encoded);
 /**
   * Converts plaintext into URL-encoded string. To decode the string, use xdmp:url-decode. 
   *
@@ -1374,7 +1358,7 @@ public interface XdmpExpr {
   * @param plaintext  Plaintext to be encoded.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr urlEncode(ServerExpression plaintext);
+  public ServerExpression urlEncode(ServerExpression plaintext);
 /**
   * Converts plaintext into URL-encoded string. To decode the string, use xdmp:url-decode. 
   * <p>
@@ -1383,7 +1367,7 @@ public interface XdmpExpr {
   * @param noSpacePlus  True to encode space as "%20" instead of "+".  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr urlEncode(ServerExpression plaintext, boolean noSpacePlus);
+  public ServerExpression urlEncode(ServerExpression plaintext, boolean noSpacePlus);
 /**
   * Converts plaintext into URL-encoded string. To decode the string, use xdmp:url-decode. 
   * <p>
@@ -1392,7 +1376,7 @@ public interface XdmpExpr {
   * @param noSpacePlus  True to encode space as "%20" instead of "+".  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr urlEncode(ServerExpression plaintext, ServerExpression noSpacePlus);
+  public ServerExpression urlEncode(ServerExpression plaintext, ServerExpression noSpacePlus);
 /**
   * Converts an xs:dateTime to a 64 bit timestamp value.
   *
@@ -1403,7 +1387,7 @@ public interface XdmpExpr {
   * @param timestamp  The xs:datetime value.  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr wallclockToTimestamp(ServerExpression timestamp);
+  public ServerExpression wallclockToTimestamp(ServerExpression timestamp);
 /**
   * Returns an xs:integer between 1 and 53, both inclusive, representing the week value in the localized value of arg. 
   *
@@ -1414,7 +1398,7 @@ public interface XdmpExpr {
   * @param arg  The date whose weeks of the year will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr weekFromDate(ServerExpression arg);
+  public ServerExpression weekFromDate(ServerExpression arg);
 /**
   * Returns an xs:integer in the range 1 to 7, inclusive, representing the weekday value in the localized value of arg. Monday is the first weekday value (value of 1), and Sunday is the last (value of 7). 
   *
@@ -1425,7 +1409,7 @@ public interface XdmpExpr {
   * @param arg  The date whose weekday value will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr weekdayFromDate(ServerExpression arg);
+  public ServerExpression weekdayFromDate(ServerExpression arg);
 /**
   * XOR two 64-bit integer values.
   *
@@ -1437,7 +1421,7 @@ public interface XdmpExpr {
   * @param y  The second value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr xor64(ServerExpression x, ServerExpression y);
+  public ServerExpression xor64(ServerExpression x, ServerExpression y);
 /**
   * Returns an xs:integer between 1 and 366, both inclusive, representing the yearday value in the localized value of arg. 
   *
@@ -1448,5 +1432,5 @@ public interface XdmpExpr {
   * @param arg  The date whose days of the year will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr yeardayFromDate(ServerExpression arg);
+  public ServerExpression yeardayFromDate(ServerExpression arg);
 }

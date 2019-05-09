@@ -20,6 +20,6 @@ package com.marklogic.client.type;
 /**
  * A sequence of server URI values.
  */
-public interface XsAnyURISeqVal extends XsAnyURISeqExpr, XsAnyAtomicTypeSeqVal {
+public interface XsAnyURISeqVal extends XsAnyAtomicTypeSeqVal {
     public XsAnyURIVal[] getAnyURIItems();
 }

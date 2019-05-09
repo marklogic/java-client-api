@@ -20,6 +20,6 @@ package com.marklogic.client.type;
 /**
  * A sequence of server time values.
  */
-public interface XsTimeSeqVal extends XsTimeSeqExpr, XsAnyAtomicTypeSeqVal {
+public interface XsTimeSeqVal extends XsAnyAtomicTypeSeqVal {
     public XsTimeVal[] getTimeItems();
 }

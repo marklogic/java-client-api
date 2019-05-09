@@ -18,4 +18,4 @@ package com.marklogic.client.type;
 /**
  * An instance of a server duration value.
  */
-public interface XsDurationVal extends XsDurationExpr, XsAnyAtomicTypeVal, XsDurationSeqVal { }
+public interface XsDurationVal extends XsAnyAtomicTypeVal, XsDurationSeqVal { }

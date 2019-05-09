@@ -157,148 +157,148 @@ public class BaseTypeImpl {
     }
   }
 
-  static class ItemSeqListImpl extends ServerExpressionListImpl implements ItemSeqExpr {
+  static class ItemSeqListImpl extends ServerExpressionListImpl {
     ItemSeqListImpl(Object[] items) {
       super(items);
     }
   }
-  static class ItemSeqCallImpl extends ServerExpressionCallImpl implements ItemSeqExpr {
+  static class ItemSeqCallImpl extends ServerExpressionCallImpl {
     ItemSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class ItemCallImpl extends ServerExpressionCallImpl implements ItemExpr {
+  static class ItemCallImpl extends ServerExpressionCallImpl {
     ItemCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class NodeSeqListImpl extends ItemSeqListImpl implements NodeSeqExpr {
+  static class NodeSeqListImpl extends ItemSeqListImpl {
     NodeSeqListImpl(Object[] items) {
       super(items);
     }
   }
-  static class NodeSeqCallImpl extends ServerExpressionCallImpl implements NodeSeqExpr {
+  static class NodeSeqCallImpl extends ServerExpressionCallImpl {
     NodeSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class NodeCallImpl extends ItemCallImpl implements NodeExpr {
+  static class NodeCallImpl extends ItemCallImpl {
     NodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class ArrayNodeSeqListImpl extends ItemSeqListImpl implements ArrayNodeSeqExpr {
+  static class ArrayNodeSeqListImpl extends ItemSeqListImpl {
     ArrayNodeSeqListImpl(Object[] items) {
       super(items);
     }
   }
-  static class ArrayNodeCallImpl extends ItemCallImpl implements ArrayNodeExpr {
+  static class ArrayNodeCallImpl extends ItemCallImpl {
     ArrayNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class AttributeNodeSeqListImpl extends ItemSeqListImpl implements AttributeNodeSeqExpr {
+  static class AttributeNodeSeqListImpl extends ItemSeqListImpl {
     AttributeNodeSeqListImpl(Object[] items) {
       super(items);
     }
   }
-  static class AttributeNodeCallImpl extends ItemCallImpl implements AttributeNodeExpr {
+  static class AttributeNodeCallImpl extends ItemCallImpl {
     AttributeNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class BooleanNodeSeqListImpl extends ItemSeqListImpl implements BooleanNodeSeqExpr {
+  static class BooleanNodeSeqListImpl extends ItemSeqListImpl {
     BooleanNodeSeqListImpl(Object[] items) {
       super(items);
     }
   }
-  static class BooleanNodeCallImpl extends ItemCallImpl implements BooleanNodeExpr {
+  static class BooleanNodeCallImpl extends ItemCallImpl {
     BooleanNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class CommentNodeSeqListImpl extends ItemSeqListImpl implements CommentNodeSeqExpr {
+  static class CommentNodeSeqListImpl extends ItemSeqListImpl {
     CommentNodeSeqListImpl(Object[] items) {
       super(items);
     }
   }
-  static class CommentNodeCallImpl extends ItemCallImpl implements CommentNodeExpr {
+  static class CommentNodeCallImpl extends ItemCallImpl {
     CommentNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class DocumentNodeSeqListImpl extends ItemSeqListImpl implements DocumentNodeSeqExpr {
+  static class DocumentNodeSeqListImpl extends ItemSeqListImpl {
     DocumentNodeSeqListImpl(Object[] items) {
       super(items);
     }
   }
-  static class DocumentNodeCallImpl extends ItemCallImpl implements DocumentNodeExpr {
+  static class DocumentNodeCallImpl extends ItemCallImpl {
     DocumentNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class ElementNodeSeqListImpl extends ItemSeqListImpl implements ElementNodeSeqExpr {
+  static class ElementNodeSeqListImpl extends ItemSeqListImpl {
     ElementNodeSeqListImpl(Object[] items) {
       super(items);
     }
   }
-  static class ElementNodeCallImpl extends ItemCallImpl implements ElementNodeExpr {
+  static class ElementNodeCallImpl extends ItemCallImpl {
     ElementNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class NullNodeSeqListImpl extends ItemSeqListImpl implements NullNodeSeqExpr {
+  static class NullNodeSeqListImpl extends ItemSeqListImpl {
     NullNodeSeqListImpl(Object[] items) {
       super(items);
     }
   }
-  static class NullNodeCallImpl extends ItemCallImpl implements NullNodeExpr {
+  static class NullNodeCallImpl extends ItemCallImpl {
     NullNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class NumberNodeSeqListImpl extends ItemSeqListImpl implements NumberNodeSeqExpr {
+  static class NumberNodeSeqListImpl extends ItemSeqListImpl {
     NumberNodeSeqListImpl(Object[] items) {
       super(items);
     }
   }
-  static class NumberNodeCallImpl extends ItemCallImpl implements NumberNodeExpr {
+  static class NumberNodeCallImpl extends ItemCallImpl {
     NumberNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class ObjectNodeSeqListImpl extends ItemSeqListImpl implements ObjectNodeSeqExpr {
+  static class ObjectNodeSeqListImpl extends ItemSeqListImpl {
     ObjectNodeSeqListImpl(Object[] items) {
       super(items);
     }
   }
-  static class ObjectNodeCallImpl extends ItemCallImpl implements ObjectNodeExpr {
+  static class ObjectNodeCallImpl extends ItemCallImpl {
     ObjectNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class ProcessingInstructionNodeSeqListImpl extends ItemSeqListImpl implements ProcessingInstructionNodeSeqExpr {
+  static class ProcessingInstructionNodeSeqListImpl extends ItemSeqListImpl {
     ProcessingInstructionNodeSeqListImpl(Object[] items) {
       super(items);
     }
   }
-  static class ProcessingInstructionNodeCallImpl extends ItemCallImpl implements ProcessingInstructionNodeExpr {
+  static class ProcessingInstructionNodeCallImpl extends ItemCallImpl {
     ProcessingInstructionNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class TextNodeSeqListImpl extends ItemSeqListImpl implements TextNodeSeqExpr {
+  static class TextNodeSeqListImpl extends ItemSeqListImpl {
     TextNodeSeqListImpl(Object[] items) {
       super(items);
     }
   }
-  static class TextNodeCallImpl extends ItemCallImpl implements TextNodeExpr {
+  static class TextNodeCallImpl extends ItemCallImpl {
     TextNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
 
-  static class XmlContentNodeSeqListImpl extends ItemSeqListImpl implements XmlContentNodeSeqExpr {
+  static class XmlContentNodeSeqListImpl extends ItemSeqListImpl {
     XmlContentNodeSeqListImpl(Object[] items) {
       super(items);
     }

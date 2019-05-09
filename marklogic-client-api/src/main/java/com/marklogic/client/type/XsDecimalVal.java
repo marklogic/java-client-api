@@ -20,6 +20,6 @@ import java.math.BigDecimal;
 /**
  * An instance of a server decimal value.
  */
-public interface XsDecimalVal extends XsDecimalExpr, XsAnyAtomicTypeVal, XsNumericVal, XsDecimalSeqVal, PlanParamBindingVal { 
+public interface XsDecimalVal extends XsAnyAtomicTypeVal, XsNumericVal, XsDecimalSeqVal, PlanParamBindingVal { 
     public BigDecimal getBigDecimal();
 }

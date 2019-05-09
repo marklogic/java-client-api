@@ -15,9 +15,9 @@
  */
 package com.marklogic.client.expression;
 
-import com.marklogic.client.type.XsIntegerExpr;
-import com.marklogic.client.type.XsStringExpr;
-import com.marklogic.client.type.XsStringSeqExpr;
+import com.marklogic.client.type.XsIntegerVal;
+import com.marklogic.client.type.XsStringSeqVal;
+import com.marklogic.client.type.XsStringVal;
 
 import com.marklogic.client.type.ServerExpression;
 
@@ -38,7 +38,7 @@ public interface SpellExpr {
   * @param word  The word for phonetic matching.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringSeqExpr doubleMetaphone(ServerExpression word);
+  public ServerExpression doubleMetaphone(ServerExpression word);
 /**
   * Given two strings, returns the Levenshtein distance between those strings. The Levenshtein distance is a measure of how many operations it takes to transform a string into another string, and it is useful in determining if a word is spelled correctly, or in simply comparing how "different" two words are.
   * <p>
@@ -47,7 +47,7 @@ public interface SpellExpr {
   * @param str2  The second input string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr levenshteinDistance(ServerExpression str1, String str2);
+  public ServerExpression levenshteinDistance(ServerExpression str1, String str2);
 /**
   * Given two strings, returns the Levenshtein distance between those strings. The Levenshtein distance is a measure of how many operations it takes to transform a string into another string, and it is useful in determining if a word is spelled correctly, or in simply comparing how "different" two words are.
   *
@@ -59,7 +59,7 @@ public interface SpellExpr {
   * @param str2  The second input string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr levenshteinDistance(ServerExpression str1, ServerExpression str2);
+  public ServerExpression levenshteinDistance(ServerExpression str1, ServerExpression str2);
 /**
   * Returns the romanization of the string, substituting basic Latin letters for the letters in the string, according to their sound. Unsupported characters will be mapped to '?' for compatibility with the double metaphone algorithm. We support romanization of the scripts of the languages with advanced support in MarkLogic except for Chinese characters and Hangul.
   *
@@ -70,5 +70,5 @@ public interface SpellExpr {
   * @param string  The input string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr romanize(ServerExpression string);
+  public ServerExpression romanize(ServerExpression string);
 }

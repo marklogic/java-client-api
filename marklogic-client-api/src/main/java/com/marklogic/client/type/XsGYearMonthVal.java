@@ -20,6 +20,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 /**
  * An instance of a server GYearMonth value.
  */
-public interface XsGYearMonthVal extends XsGYearMonthExpr, XsAnyAtomicTypeVal, XsGYearMonthSeqVal, PlanParamBindingVal {
+public interface XsGYearMonthVal extends XsAnyAtomicTypeVal, XsGYearMonthSeqVal, PlanParamBindingVal {
     public XMLGregorianCalendar getXMLGregorianCalendar();
 }
