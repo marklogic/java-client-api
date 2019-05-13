@@ -68,7 +68,7 @@ public interface CallManager {
      * The declarations are often maintained as files in a project directory.
      * @param serviceDeclaration  the service.json data structure declaring the common properties of a bundle of data services
      * @param endpointDeclaration  the *.api data structure declaring the functional signature for a data service
-     * @param extension  either "sjs" or "xqy" depending on whether the endpoint is implemented in server-side JavaScript or XQuery
+     * @param extension  "mjs", "sjs", or "xqy" depending on whether the endpoint is implemented in server-side JavaScript or XQuery
      * @return  an endpoint object for building calls
      */
     CallableEndpoint endpoint(JSONWriteHandle serviceDeclaration, JSONWriteHandle endpointDeclaration, String extension);

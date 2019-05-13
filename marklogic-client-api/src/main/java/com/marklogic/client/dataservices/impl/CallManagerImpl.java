@@ -132,8 +132,8 @@ public class CallManagerImpl implements CallManager {
       throw new IllegalArgumentException("cannot construct CallableEndpoint with null endpointDeclaration");
     } else if (extension == null || extension.length() == 0) {
       throw new IllegalArgumentException("cannot construct CallableEndpoint with null or empty extension");
-    } else if (!"sjs".equals(extension) && !"xqy".equals(extension)) {
-      throw new IllegalArgumentException("extension must be sjs or xqy: "+extension);
+    } else if (!"mjs".equals(extension) && !"sjs".equals(extension) && !"xqy".equals(extension)) {
+      throw new IllegalArgumentException("extension must be mjs, sjs, or xqy: "+extension);
     }
 
     return new CallableEndpointImpl(client, serviceDecl, endpointDecl, extension);
