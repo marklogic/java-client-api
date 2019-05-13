@@ -63,101 +63,167 @@ class EndpointUtil {
     }
 
     CallManager.CallableEndpoint makeCallableEndpoint(String functionName) {
+        return makeCallableEndpoint(functionName, "sjs");
+    }
+    CallManager.CallableEndpoint makeCallableEndpoint(String functionName, String extension) {
         JsonNode endpointdef = endpointdefs.get(functionName);
         assertNotNull("no endpoint definition found for "+functionName, endpointdef);
-        return callMgr.endpoint(serviceHandle, new JacksonHandle(endpointdef), "sjs");
+        return callMgr.endpoint(serviceHandle, new JacksonHandle(endpointdef), extension);
     }
 
     CallManager.CallableEndpoint installEndpoint(String functionName) {
+        return installEndpoint(functionName, "sjs");
+    }
+    CallManager.CallableEndpoint installEndpoint(String functionName, String extension) {
         if (functionName == null || functionName.length() == 0)
             throw new IllegalArgumentException("Null or empty function name");
         JsonNode endpointdef = endpointdefs.get(functionName);
         if (endpointdef == null)
             throw new IllegalArgumentException("No endpoint definition of name: "+functionName);
-        return callMgr.endpoint(serviceHandle, new JacksonHandle(endpointdef), "sjs");
+        return callMgr.endpoint(serviceHandle, new JacksonHandle(endpointdef), extension);
     }
 
     void setupParamNoReturnEndpoint(
             JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
     ) {
+        setupParamNoReturnEndpoint(docMgr, docMeta, functionName, "sjs", datatype);
+    }
+    void setupParamNoReturnEndpoint(
+            JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String extension, String datatype
+    ) {
         JsonNode endpointdef = getEndpointdef(functionName, datatype, null, null, false, false);
-        String script = getScript(datatype, null, null, false, false);
-        setupEndpoint(docMgr, docMeta, endpointdef, script);
+        String script = getScript(extension, datatype, null, null, false, false);
+        setupEndpoint(docMgr, docMeta, endpointdef, extension, script);
     }
     void setupNoParamReturnEndpoint(
             JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype, String returnVal
     ) {
+        setupNoParamReturnEndpoint(docMgr, docMeta, functionName, "sjs", datatype, returnVal);
+    }
+    void setupNoParamReturnEndpoint(
+            JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String extension, String datatype, String returnVal
+    ) {
         JsonNode endpointdef = getEndpointdef(functionName, null, null, datatype, false, false);
-        String script = getScript(null, null, returnVal, false, false);
-        setupEndpoint(docMgr, docMeta, endpointdef, script);
+        String script = getScript(extension, null, null, returnVal, false, false);
+        setupEndpoint(docMgr, docMeta, endpointdef, extension, script);
     }
     void setupNoParamNoReturnEndpoint(
             JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName
     ) {
+        setupNoParamNoReturnEndpoint(docMgr, docMeta, functionName, "sjs");
+    }
+    void setupNoParamNoReturnEndpoint(
+            JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String extension
+            ) {
         JsonNode endpointdef = getEndpointdef(functionName, null, null, null, false, false);
-        String script = getScript(null, null, null, false, false);
-        setupEndpoint(docMgr, docMeta, endpointdef, script);
+        String script = getScript(extension, null, null, null, false, false);
+        setupEndpoint(docMgr, docMeta, endpointdef, extension, script);
     }
     void setupTwoParamEndpoint(
             JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype, String paramType2
     ) {
-        setupTwoParamEndpoint(docMgr, docMeta, functionName, datatype, paramType2, false);
+        setupTwoParamEndpoint(docMgr, docMeta, functionName, "sjs", datatype, paramType2);
+    }
+    void setupTwoParamEndpoint(
+            JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String extension, String datatype, String paramType2
+    ) {
+        setupTwoParamEndpoint(docMgr, docMeta, functionName, extension, datatype, paramType2, false);
     }
     void setupTwoParamEndpoint(
             JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype,
             String paramType2, boolean isMultiple
     ) {
+        setupTwoParamEndpoint(docMgr, docMeta, functionName, "sjs", datatype, paramType2, isMultiple);
+    }
+    void setupTwoParamEndpoint(
+            JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String extension, String datatype,
+            String paramType2, boolean isMultiple
+    ) {
         JsonNode endpointdef = getEndpointdef(functionName, datatype, paramType2, datatype, isMultiple, false);
-        String script = getScript(datatype, paramType2, null, isMultiple, false);
-        setupEndpoint(docMgr, docMeta, endpointdef, script);
+        String script = getScript(extension, datatype, paramType2, null, isMultiple, false);
+        setupEndpoint(docMgr, docMeta, endpointdef, extension, script);
     }
     void setupTwoDifferentParamEndpoint(
             JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype,
             String paramType2, boolean isMultiple, boolean isNullable
     ) {
+        setupTwoDifferentParamEndpoint(docMgr, docMeta, functionName, "sjs", datatype, paramType2, isMultiple, isNullable);
+    }
+    void setupTwoDifferentParamEndpoint(
+            JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String extension, String datatype,
+            String paramType2, boolean isMultiple, boolean isNullable
+    ) {
         JsonNode endpointdef = getEndpointdefWithDifferentParams(functionName, datatype, paramType2, datatype, isMultiple, isNullable);
-        String script = getScript(datatype, paramType2, null, isMultiple, false);
-        setupEndpoint(docMgr, docMeta, endpointdef, script);
+        String script = getScript(extension, datatype, paramType2, null, isMultiple, false);
+        setupEndpoint(docMgr, docMeta, endpointdef, extension, script);
     }
     void setupEndpointSingleNulled(
             JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
     ) {
+        setupEndpointSingleNulled(docMgr, docMeta, functionName, "sjs", datatype);
+    }
+    void setupEndpointSingleNulled(
+            JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String extension, String datatype
+    ) {
         JsonNode endpointdef = getEndpointdef(functionName, datatype, false, true);
-        String script = getScript(datatype, false, true);
-        setupEndpoint(docMgr, docMeta, endpointdef, script);
+        String script = getScript(extension, datatype, false, true);
+        setupEndpoint(docMgr, docMeta, endpointdef, extension, script);
     }
     void setupEndpointSingleRequired(
             JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
     ) {
+        setupEndpointSingleRequired(docMgr, docMeta, functionName, "sjs", datatype);
+    }
+    void setupEndpointSingleRequired(
+            JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String extension, String datatype
+    ) {
         JsonNode endpointdef = getEndpointdef(functionName, datatype, false, false);
-        String script = getScript(datatype, false, false);
-        setupEndpoint(docMgr, docMeta, endpointdef, script);
+        String script = getScript(extension, datatype, false, false);
+        setupEndpoint(docMgr, docMeta, endpointdef, extension, script);
     }
     void setupEndpointMultipleNulled(
             JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype
     ) {
+        setupEndpointMultipleNulled(docMgr, docMeta, functionName, "sjs", datatype);
+    }
+    void setupEndpointMultipleNulled(
+            JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String extension, String datatype
+    ) {
         JsonNode endpointdef = getEndpointdef(functionName, datatype, true, true);
-        String script = getScript(datatype, true, true);
-        setupEndpoint(docMgr, docMeta, endpointdef, script);
+        String script = getScript(extension, datatype, true, true);
+        setupEndpoint(docMgr, docMeta, endpointdef, extension, script);
     }
     void setupEndpointMultipleRequired(JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String datatype) {
-        JsonNode endpointdef = getEndpointdef(datatype, datatype, true, false);
-        String script = getScript(datatype, true, false);
-        setupEndpoint(docMgr, docMeta, endpointdef, script);
+        setupEndpointMultipleRequired(docMgr, docMeta, datatype, "sjs", datatype);
     }
-    void setupEndpoint(JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, JsonNode endpointdef, String script) {
+    void setupEndpointMultipleRequired(JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String extension, String datatype) {
+        setupEndpointMultipleRequired(docMgr, docMeta, datatype, "sjs", datatype);
+    }
+    void setupEndpointMultipleRequired(JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName,
+            String extension, String datatype) {
+        JsonNode endpointdef = getEndpointdef(functionName, datatype, true, false);
+        String script = getScript(extension, datatype, true, false);
+        setupEndpoint(docMgr, docMeta, endpointdef, extension, script);
+    }
+    void setupEndpoint(JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, JsonNode endpointdef, String extension, String script) {
         String functionName = endpointdef.get("functionName").asText();
         String baseUri      = endpointDirectory + functionName;
         docMgr.write(baseUri+".api", docMeta, new JacksonHandle(endpointdef));
-        docMgr.write(baseUri+".sjs", docMeta, new StringHandle(script));
+        docMgr.write(baseUri+"."+extension, docMeta, new StringHandle(script));
 
         endpointdefs.put(functionName, endpointdef);
     }
-    void setupSingleEndpointWithForestParam( JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName, String datatype,
-            String paramType2, boolean isMultiple, boolean isNullable) {
+    void setupSingleEndpointWithForestParam( JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName,
+            String datatype, String paramType2, boolean isMultiple, boolean isNullable) {
+        setupSingleEndpointWithForestParam(
+                docMgr, docMeta, functionName, "sjs", datatype, paramType2, isMultiple, isNullable
+        );
+    }
+    void setupSingleEndpointWithForestParam( JSONDocumentManager docMgr, DocumentMetadataHandle docMeta, String functionName,
+            String extension, String datatype, String paramType2, boolean isMultiple, boolean isNullable) {
         JsonNode endpointdef = getEndpointdefWithForestParamName(functionName, datatype, paramType2, datatype, isMultiple, isNullable);
-        String script = getScriptWithForestParam(datatype, paramType2, datatype, isMultiple, false);
-        setupEndpoint(docMgr, docMeta, endpointdef, script);
+        String script = getScriptWithForestParam(extension, datatype, paramType2, datatype, isMultiple, false);
+        setupEndpoint(docMgr, docMeta, endpointdef, extension, script);
     }
 
     JsonNode getEndpointdef(String functionName, String datatype, boolean isMultiple, boolean isNullable) {
@@ -262,21 +328,21 @@ class EndpointUtil {
         return endpointdef;
     }
 
-    String getScript(String datatype, boolean isMultiple, boolean isNullable) {
-        return getScript(datatype, null, null, isMultiple, isNullable);
+    String getScript(String extension, String datatype, boolean isMultiple, boolean isNullable) {
+        return getScript(extension, datatype, null, null, isMultiple, isNullable);
     }
 
     String getScript(
-            String paramType1, String paramType2, String returnVal, boolean isMultiple, boolean isNullable
+            String extension, String paramType1, String paramType2, String returnVal, boolean isMultiple, boolean isNullable
     ) {
         StringBuilder scriptBldr = new StringBuilder()
                 .append("'use strict';\n");
         if (paramType1 != null) {
             scriptBldr = scriptBldr
-                    .append("var param1;\n");
+                    .append((extension == "sjs") ? "var param1;\n" : "const param1 = external.param1;\n");
             if (paramType2 != null) {
                 scriptBldr = scriptBldr
-                        .append("var param2;\n");
+                        .append((extension == "sjs") ? "var param2;\n" : "const param2 = external.param2;\n" );
             }
         }
 
@@ -368,16 +434,16 @@ class EndpointUtil {
     }
     
     String getScriptWithForestParam(
-            String paramType1, String paramType2, String returnVal, boolean isMultiple, boolean isNullable
+            String extension, String paramType1, String paramType2, String returnVal, boolean isMultiple, boolean isNullable
     ) {
         StringBuilder scriptBldr = new StringBuilder()
                 .append("'use strict';\n");
         if (paramType1 != null) {
             scriptBldr = scriptBldr
-                    .append("var forestParamName;\n");
+                    .append((extension == "sjs") ? "var forestParamName;\n" : "const forestParamName = external.forestParamName;\n");
             if (paramType2 != null) {
                 scriptBldr = scriptBldr
-                        .append("var forestParamName2;\n");
+                        .append((extension == "sjs") ? "var forestParamName2;\n" : "const forestParamName2 = external.forestParamName2;\n");
             }
         }
 
