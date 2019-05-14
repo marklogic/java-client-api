@@ -519,4 +519,18 @@ public class NodeConverter {
               "Could not convert JSON of class: "+jsonTree.getClass().getCanonicalName()+"\n"+jsonTree.toString()
       );
    }
+   
+   public static BytesHandle copyToBytesHandle(BufferableHandle handle) {
+       return (handle == null? null: new BytesHandle(handle));
+   }
+   
+   public static BytesHandle[] copyToBytesHandle(BufferableHandle[] handles) {
+       if(handles == null || handles.length==0)
+           return null;
+       BytesHandle[] bytesHandleArray = new BytesHandle[handles.length];
+       for(int i=0; i<handles.length; i++)
+           bytesHandleArray[i] = copyToBytesHandle(handles[i]);
+       
+       return bytesHandleArray;
+   }
 }
