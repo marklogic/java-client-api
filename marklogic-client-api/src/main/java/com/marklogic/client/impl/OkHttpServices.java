@@ -50,6 +50,7 @@ import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.CtsQueryWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
@@ -5759,17 +5760,22 @@ public class OkHttpServices implements RESTServices {
                 );
           }
         } else if (param instanceof SingleNodeCallField) {
-          AbstractWriteHandle paramValue = ((SingleNodeCallField) param).getParamValue();
+          AbstractWriteHandle paramValue = (AbstractWriteHandle) ((SingleNodeCallField) param).getParamValue();
           if (paramValue != null) {
             HandleImplementation handleBase = HandleAccessor.as(paramValue);
             if(! handleBase.isResendable()) {
-              hasStreamingPartCondition.set();
+                if(param instanceof BufferedSingleNodeCallField) {
+                    ((BufferedSingleNodeCallField) param).setParamValue(new BytesHandle((BufferableHandle) paramValue));
+                    handleBase = HandleAccessor.as(((SingleNodeCallField) param).getParamValue());
+                }
+                else
+                    hasStreamingPartCondition.set();
             }
             hasValue.set();
             multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue));
           }
-        } else if (param instanceof MultipleNodeCallField) {
-          Stream<? extends AbstractWriteHandle> paramValues = ((MultipleNodeCallField) param).getParamValues();
+        } else if (param instanceof UnbufferedMultipleNodeCallField) {
+          Stream<? extends AbstractWriteHandle> paramValues = ((UnbufferedMultipleNodeCallField) param).getParamValues();
           if (paramValues != null) {
             paramValues
                 .filter(paramValue -> paramValue != null)
@@ -5782,7 +5788,23 @@ public class OkHttpServices implements RESTServices {
                   multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue));
                 });
           }
-        } else {
+        } else if (param instanceof BufferedMultipleNodeCallField) {
+            BufferableHandle[] paramValues = ((BufferedMultipleNodeCallField) param).getParamValuesArray();
+            if(paramValues != null) {
+                Stream<BufferableHandle> bufferableHandleStream = Stream.of(paramValues);
+                bufferableHandleStream
+                        .filter(paramValue -> paramValue != null)
+                        .forEachOrdered(paramValue -> {
+                            HandleImplementation handleBase = HandleAccessor.as(paramValue);
+                            if(!handleBase.isResendable()) {
+                                paramValue = new BytesHandle(paramValue);
+                            }
+                            hasValue.set();
+                            multiBldr.addFormDataPart(paramName, null, makeRequestBody(NodeConverter.copyToBytesHandle(paramValue)));
+                          });
+            }
+        } 
+        else {
           throw new IllegalStateException(
               "unknown multipart "+paramName+" param of: "+param.getClass().getName()
           );

@@ -26,11 +26,13 @@ import com.marklogic.client.impl.BaseProxy;
 import com.marklogic.client.impl.NodeConverter;
 import com.marklogic.client.impl.RESTServices.CallField;
 import com.marklogic.client.impl.RESTServices.UnbufferedMultipleAtomicCallField;
+import com.marklogic.client.impl.RESTServices.BufferedMultipleAtomicCallField;
 import com.marklogic.client.impl.RESTServices.MultipleCallResponse;
 import com.marklogic.client.impl.RESTServices.UnbufferedMultipleNodeCallField;
+import com.marklogic.client.impl.RESTServices.BufferedMultipleNodeCallField;
 import com.marklogic.client.impl.RESTServices.SingleAtomicCallField;
 import com.marklogic.client.impl.RESTServices.SingleCallResponse;
-import com.marklogic.client.impl.RESTServices.UnbufferedSingleNodeCallField;
+import com.marklogic.client.impl.RESTServices.BufferedSingleNodeCallField;
 import com.marklogic.client.impl.SessionStateImpl;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.*;
@@ -1237,7 +1239,7 @@ public class CallManagerImpl implements CallManager {
       return new SingleAtomicCallField(name, value);
     }
     CallField field(String name, String[] values) {
-      return new UnbufferedMultipleAtomicCallField(name, Stream.of(values));
+      return new BufferedMultipleAtomicCallField(name, Stream.of(values));
     }
     CallField field(String name, Stream<String> values) {
       return new UnbufferedMultipleAtomicCallField(name, values);
@@ -1274,11 +1276,15 @@ public class CallManagerImpl implements CallManager {
     AbstractWriteHandle format(AbstractWriteHandle value) {
       return NodeConverter.withFormat(value, getFormat());
     }
-    Stream<? extends AbstractWriteHandle> formatAll(AbstractWriteHandle[] value) {
-      for (AbstractWriteHandle handle: value) {
-        NodeConverter.withFormat(handle, getFormat());
+    BufferableHandle[] formatAll(AbstractWriteHandle[] value) {
+        BufferableHandle[] bufferableHandle = new BufferableHandle[value.length];
+      for (int i=0; i<value.length; i++) {
+          if(!(value[i] instanceof BufferableHandle))
+              throw new IllegalArgumentException("BufferableHandle array cannot be created.");
+        NodeConverter.withFormat(value[i], getFormat());
+        bufferableHandle[i] = (BufferableHandle) value[i];
       }
-      return Stream.of(value);
+      return bufferableHandle;
     }
     Stream<? extends AbstractWriteHandle> formatAll(Stream<? extends AbstractWriteHandle> value) {
       return NodeConverter.streamWithFormat(value, getFormat());
@@ -1335,10 +1341,13 @@ public class CallManagerImpl implements CallManager {
       return formattedField(name, format(value));
     }
     CallField formattedField(String name, AbstractWriteHandle value) {
-      return new UnbufferedSingleNodeCallField(name, value);
+      return new BufferedSingleNodeCallField(name, (BufferableHandle) value);
+    }
+    CallField formattedField(String name, BufferableHandle[] values) {
+        return new BufferedMultipleNodeCallField(name, values);
     }
     CallField field(String name, AbstractWriteHandle[] values) {
-      return field(name, Stream.of(values));
+      return formattedField(name, formatAll(values));
     }
     CallField field(String name, Stream<? extends AbstractWriteHandle> values) {
       return formattedField(name, formatAll(values));
