@@ -471,7 +471,7 @@ public interface RESTServices {
     SingleNodeCallField(String paramName) {
             super(paramName);
         }
-    abstract BufferableHandle getParamValue();
+    abstract AbstractWriteHandle getParamValue();
   }
   static public class SingleAtomicCallField extends CallField {
     private String paramValue;
@@ -511,8 +511,8 @@ public interface RESTServices {
       this.paramValue = paramValue;
     }
     @Override
-    public BufferableHandle getParamValue() {
-      return (BufferableHandle) paramValue;
+    public AbstractWriteHandle getParamValue() {
+      return paramValue;
     }
     @Override
     public BufferedSingleNodeCallField toBuffered() {
@@ -541,7 +541,7 @@ public interface RESTServices {
         Stream<BufferableHandle> bufferableHandleStream = paramValues.map(handle ->{
     		if(!(handle instanceof BufferableHandle))
         		throw new IllegalArgumentException("Default parameter must implement BufferableHandle.");
-    		return new BytesHandle((BufferableHandle) handle);
+    		return ((BufferableHandle) handle);
         });
     	return new BufferedMultipleNodeCallField(super.getParamName(), bufferableHandleStream);
     }
@@ -576,9 +576,9 @@ public interface RESTServices {
 	      this.paramValues = paramValues;
 	  }
 	  @Override
-	  public Stream<BytesHandle> getParamValues() {
-			return Stream.of(NodeConverter.copyToBytesHandle(paramValues));
-			}
+	  public Stream<BufferableHandle> getParamValues() {
+			return Stream.of(paramValues);
+	  }
 	  public BufferableHandle[] getParamValuesArray() {
 	      return this.paramValues;
 	  }
