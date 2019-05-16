@@ -5760,13 +5760,14 @@ public class OkHttpServices implements RESTServices {
                 );
           }
         } else if (param instanceof SingleNodeCallField) {
-          AbstractWriteHandle paramValue = (AbstractWriteHandle) ((SingleNodeCallField) param).getParamValue();
+          AbstractWriteHandle paramValue = ((SingleNodeCallField) param).getParamValue();
           if (paramValue != null) {
             HandleImplementation handleBase = HandleAccessor.as(paramValue);
             if(! handleBase.isResendable()) {
                 if(param instanceof BufferedSingleNodeCallField) {
-                    ((BufferedSingleNodeCallField) param).setParamValue(new BytesHandle((BufferableHandle) paramValue));
-                    handleBase = HandleAccessor.as(((SingleNodeCallField) param).getParamValue());
+                    BytesHandle bytesHandle = new BytesHandle((BufferableHandle) handleBase);
+                    ((BufferedSingleNodeCallField) param).setParamValue(bytesHandle);
+                   handleBase = bytesHandle;
                 }
                 else
                     hasStreamingPartCondition.set();
@@ -5791,17 +5792,16 @@ public class OkHttpServices implements RESTServices {
         } else if (param instanceof BufferedMultipleNodeCallField) {
             BufferableHandle[] paramValues = ((BufferedMultipleNodeCallField) param).getParamValuesArray();
             if(paramValues != null) {
-                Stream<BufferableHandle> bufferableHandleStream = Stream.of(paramValues);
-                bufferableHandleStream
-                        .filter(paramValue -> paramValue != null)
-                        .forEachOrdered(paramValue -> {
-                            HandleImplementation handleBase = HandleAccessor.as(paramValue);
-                            if(!handleBase.isResendable()) {
-                                paramValue = new BytesHandle(paramValue);
-                            }
-                            hasValue.set();
-                            multiBldr.addFormDataPart(paramName, null, makeRequestBody(NodeConverter.copyToBytesHandle(paramValue)));
-                          });
+                for(BufferableHandle paramValue: paramValues) {
+                    if(paramValue != null) {
+                        HandleImplementation handleBase = HandleAccessor.as(paramValue);
+                        if(!handleBase.isResendable()) {
+                            paramValue = new BytesHandle(paramValue);
+                        }
+                        hasValue.set();
+                        multiBldr.addFormDataPart(paramName, null, makeRequestBody(NodeConverter.copyToBytesHandle(paramValue)));
+                    }
+                }
             }
         } 
         else {

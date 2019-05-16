@@ -18,6 +18,7 @@ package com.marklogic.client.test.dataservices;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -37,6 +38,7 @@ import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.impl.NodeConverter;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.ReaderHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
@@ -91,6 +93,13 @@ public class MultipleValuesAsArrayTest {
         handleArray[0] = handle;
         assertNotNull(NodeConverter.copyToBytesHandle(handleArray));
         assertNull(NodeConverter.copyToBytesHandle(handleArray)[0]);
+        
+        BufferableHandle[] newHandleArray = {new StringHandle("test1"), new StringHandle("test2"), new StringHandle("test3")};
+        BufferableHandle[] output = NodeConverter.copyToBytesHandle(newHandleArray);
+        assertNotNull(output);
+        assertTrue("First value in array not as expected", output[0].toString().equals("test1"));
+        assertTrue("Second value in array not as expected", output[1].toString().equals("test2"));
+        assertTrue("Third value in array not as expected", output[2].toString().equals("test3"));
     }
 
     @Test
@@ -132,6 +141,8 @@ public class MultipleValuesAsArrayTest {
         batcher.startJob();
         batcher.flushAndWait();
         batcher.stopJob();
+        
+        assertTrue("Counter value not as expected.", output.counter == 2);
     }
 
 }

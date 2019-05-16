@@ -1239,7 +1239,7 @@ public class CallManagerImpl implements CallManager {
       return new SingleAtomicCallField(name, value);
     }
     CallField field(String name, String[] values) {
-      return new BufferedMultipleAtomicCallField(name, Stream.of(values));
+      return new BufferedMultipleAtomicCallField(name, values);
     }
     CallField field(String name, Stream<String> values) {
       return new UnbufferedMultipleAtomicCallField(name, values);
@@ -1277,14 +1277,14 @@ public class CallManagerImpl implements CallManager {
       return NodeConverter.withFormat(value, getFormat());
     }
     BufferableHandle[] formatAll(AbstractWriteHandle[] value) {
-        BufferableHandle[] bufferableHandle = new BufferableHandle[value.length];
+        BufferableHandle[] bufferableHandles = new BufferableHandle[value.length];
       for (int i=0; i<value.length; i++) {
           if(!(value[i] instanceof BufferableHandle))
-              throw new IllegalArgumentException("BufferableHandle array cannot be created.");
+              throw new IllegalArgumentException("AbstractWriteHandle value is not an instance of BufferableHandle.");
         NodeConverter.withFormat(value[i], getFormat());
-        bufferableHandle[i] = (BufferableHandle) value[i];
+        bufferableHandles[i] = (BufferableHandle) value[i];
       }
-      return bufferableHandle;
+      return bufferableHandles;
     }
     Stream<? extends AbstractWriteHandle> formatAll(Stream<? extends AbstractWriteHandle> value) {
       return NodeConverter.streamWithFormat(value, getFormat());
@@ -1341,6 +1341,8 @@ public class CallManagerImpl implements CallManager {
       return formattedField(name, format(value));
     }
     CallField formattedField(String name, AbstractWriteHandle value) {
+        if(!(value instanceof BufferableHandle))
+            throw new IllegalArgumentException("AbstractWriteHandle value is not an instance of BufferableHandle.");
       return new BufferedSingleNodeCallField(name, (BufferableHandle) value);
     }
     CallField formattedField(String name, BufferableHandle[] values) {
