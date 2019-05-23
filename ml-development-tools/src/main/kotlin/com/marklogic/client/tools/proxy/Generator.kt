@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.tools.proxy
 
+import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -259,8 +260,8 @@ class Generator {
     servDeclFile.parentFile.listFiles().forEach{file ->
       val basename = file.nameWithoutExtension
       when(file.extension) {
-        "api"        -> endpointDeclFiles[basename] = file
-        "sjs", "xqy" ->
+        "api"               -> endpointDeclFiles[basename] = file
+        "mjs", "sjs", "xqy" ->
           if (!moduleFiles.containsKey(basename))
           moduleFiles[basename] = file
           else throw IllegalArgumentException(
@@ -647,7 +648,7 @@ ${funcDecls}
       throw IllegalArgumentException("declaration file doesn't exist: "+endpointDeclFilename)
     }
 
-    if(moduleExtension != "sjs" && moduleExtension != "xqy") {
+    if(moduleExtension != "mjs" && moduleExtension != "sjs" && moduleExtension != "xqy") {
       throw IllegalArgumentException("invalid module extension: "+moduleExtension)
     }
 
@@ -677,43 +678,60 @@ ${funcDecls}
         if (returnType === null) ""
         else getServerType(returnType, atomicTypes, documentTypes, moduleExtension)
 
-    val prologSource   =
-        if (moduleExtension == "sjs")
-          """'use strict';
-// declareUpdate(); // Note: uncomment if changing the database state
-"""
-        else """xquery version "1.0-ml";
-
-declare option xdmp:mapping "false";
-"""
-    val paramsSource   =
-        if (funcParams === null) ""
-        else funcParams.map{funcParam ->
-          val paramName   = funcParam.get("name").asText()
-          val paramType   = funcParam.get("datatype").asText()
-          val isMultiple  = funcParam.get("multiple")?.asBoolean() == true
-          val isNullable  = funcParam.get("nullable")?.asBoolean() == true
-          val cardinality = getServerCardinality(isMultiple, isNullable)
-          val typeName    = getServerType(paramType, atomicTypes, documentTypes, moduleExtension)
-          val paramdef    =
-              if (moduleExtension == "sjs")
-                "var ${paramName}; // instance of ${typeName}${cardinality}"
-              else "declare variable $${paramName} as ${typeName}${cardinality} external;"
-          paramdef
-        }.filterNotNull().joinToString("""
-""")
-    val returnSource   =
-        if (moduleExtension == "sjs") """
-// TODO:  produce the ${returnTypeName}${returnCardinal} output from the input variables
-"""
-        else """
-(: TODO:  produce the ${returnTypeName}${returnCardinal} output from the input variables :)
-"""
+    val prologSource   = getEndpointProlog(moduleExtension)
+    val paramsSource   = getEndpointParamSource(atomicTypes, documentTypes, moduleExtension, funcParams)
+    val returnSource   = getEndpointReturnSource(moduleExtension, returnTypeName, returnCardinal)
     val moduleSource   = """${prologSource}
 ${paramsSource}
 ${returnSource}
 """
     moduleFile.writeText(moduleSource)
+  }
+  fun getEndpointProlog(moduleExtension: String): String {
+    val prolog =
+      if (moduleExtension == "mjs" || moduleExtension == "sjs")
+        """'use strict';
+// declareUpdate(); // Note: uncomment if changing the database state
+"""
+      else
+        """xquery version "1.0-ml";
+
+declare option xdmp:mapping "false";
+"""
+    return prolog
+  }
+  fun getEndpointParamSource(atomicTypes: Map<String,String>, documentTypes: Map<String,String>,
+                    moduleExtension: String, funcParams: ArrayNode?
+  ): String {
+    val paramsSource =
+            if (funcParams === null) ""
+            else funcParams.map{funcParam ->
+              val paramName   = funcParam.get("name").asText()
+              val paramType   = funcParam.get("datatype").asText()
+              val isMultiple  = funcParam.get("multiple")?.asBoolean() == true
+              val isNullable  = funcParam.get("nullable")?.asBoolean() == true
+              val cardinality = getServerCardinality(isMultiple, isNullable)
+              val typeName    = getServerType(paramType, atomicTypes, documentTypes, moduleExtension)
+              val paramdef    =
+                      if (moduleExtension == "mjs")
+                        "const ${paramName} = external.${paramName}; // instanceof ${typeName}${cardinality}"
+                      else if (moduleExtension == "sjs")
+                        "var ${paramName}; // instanceof ${typeName}${cardinality}"
+                      else "declare variable $${paramName} as ${typeName}${cardinality} external := ();"
+              paramdef
+            }.filterNotNull().joinToString("""
+""")
+    return paramsSource
+  }
+  fun getEndpointReturnSource(moduleExtension: String, returnTypeName: String?, returnCardinal: String): String {
+    val returnSource   =
+            if (moduleExtension == "mjs" || moduleExtension == "sjs") """
+// TODO:  produce the ${returnTypeName}${returnCardinal} output from the input variables
+"""
+            else """
+(: TODO:  produce the ${returnTypeName}${returnCardinal} output from the input variables :)
+"""
+    return returnSource
   }
   fun getServerType(paramType: String, atomicTypes: Map<String,String>,
                     documentTypes: Map<String,String>, moduleExtension: String
@@ -722,16 +740,20 @@ ${returnSource}
         if (paramType == "session")
           null
         else if (atomicTypes.containsKey(paramType))
-          if (moduleExtension == "sjs") "xs."+paramType
-          else                          "xs:"+paramType
+          if (moduleExtension == "mjs" || moduleExtension == "sjs") "xs."+paramType
+          else                                                      "xs:"+paramType
         else if (documentTypes.containsKey(paramType))
           when (paramType) {
             "array","object" ->
-              if (moduleExtension == "sjs") paramType.capitalize()+"Node"
-              else                          paramType+"-node()"
+              if (moduleExtension == "mjs" || moduleExtension == "sjs")
+                paramType.capitalize()+"Node"
+              else
+                paramType+"-node()"
             else ->
-              if (moduleExtension == "sjs") "DocumentNode"
-              else                          "document-node()"
+              if (moduleExtension == "mjs" || moduleExtension == "sjs")
+                "DocumentNode"
+              else
+                "document-node()"
           }
         else throw IllegalArgumentException("invalid datatype: $paramType")
     return typeName

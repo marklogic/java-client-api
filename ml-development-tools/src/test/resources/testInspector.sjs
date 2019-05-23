@@ -438,41 +438,14 @@ function checkRequest(funcTestPath, funcdef, fields, errorList) {
 
   return output;
 }
-function getFunctiondef(funcTestPath, errorList) {
-  if (funcTestPath === null) {
-    return makeError(
-        400, 'Bad Request', 'rewritten without FuncTestPath parameter for test path'
-        );
-  }
-
-  const funcTestDoc = cts.doc(funcTestPath+'.api');
-  if (funcTestDoc === void 0 || funcTestDoc === null) {
-    return makeError(
-        404, 'Not Found', `no such function declaration document: ${funcTestPath}.api`
-        );
-  }
-
-  const funcdef = funcTestDoc.toObject();
-  if (funcdef === void 0 || funcdef === null) {
-    return makeError(
-        400, 'Bad Request', `function declaration document without definition: ${funcTestPath}.api`
-        );
-  }
-
-  return funcdef;
-}
-function addField(testName, fields, fieldName, fieldValues, fallback) {
-  // TODO: delete fallback
-  if (fn.count(fallback) !== 0 && fn.count(fieldValues) === 0) {
-//    console.log(`fallback in ${testName} for ${fieldName}`);
-    fieldValues = fallback;
-  }
+function addField(testName, fields, fieldName, fieldValues) {
   fields[fieldName] = {
     name:   fieldName,
     values:
-      (fn.count(fieldValues) === 0)     ? null                  :
-      Array.isArray(fieldValues)        ? fieldValues           :
-      (fieldValues instanceof Sequence) ? fieldValues.toArray() :
+      (fn.count(fieldValues) === 0)      ? null                   :
+      (fieldValues instanceof ArrayNode) ? fieldValues.toObject() :
+      Array.isArray(fieldValues)         ? fieldValues            :
+      (fieldValues instanceof Sequence)  ? fieldValues.toArray()  :
       [fieldValues]
     };
   return fields;
@@ -496,7 +469,6 @@ function makeResult(funcTestPath, funcdef, fields, errorList) {
   return result;
 }
 module.exports = {
-  getFunctiondef: getFunctiondef,
   getFields:      getFields,
   addField:       addField,
   makeResult:     makeResult
