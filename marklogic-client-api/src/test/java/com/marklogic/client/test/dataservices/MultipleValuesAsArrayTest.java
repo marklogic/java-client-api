@@ -115,11 +115,11 @@ public class MultipleValuesAsArrayTest {
         final Output output = new Output();
 
         ReaderHandle[] handles = { (new ReaderHandle(new StringReader(s1))), (new ReaderHandle(new StringReader(s2))) };
-        // Reader[] input = {stringReader1, stringReader2};
+       //  Reader[] input = {new StringReader(s1), new StringReader(s2)};
 
         CallManager.ManyCaller<Reader> manyCaller = callableEndpoint.returningMany(Reader.class);
 
-        CallBatcher<Void, CallManager.ManyCallEvent<Reader>> batcher = manyCaller.batcher().forArgsGenerator(result -> {
+        CallBatcher<Void, CallBatcher.ManyCallEvent<Reader>> batcher = manyCaller.batcher().forArgsGenerator(result -> {
             if (result == null && output.counter == 0) {
                 output.counter++;
                 output.args = manyCaller.args().param("param1", handles);

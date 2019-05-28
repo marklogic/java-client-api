@@ -99,7 +99,7 @@ public class CallBatchedParamTest {
 
         final IntCounter batchCount = new IntCounter();
 
-        CallBatcher<Double, CallManager.ManyCallEvent<Double>> batcher = caller
+        CallBatcher<Double, CallBatcher.ManyCallEvent<Double>> batcher = caller
                 .batcher()
                 .forBatchedParam("param1", Double.class)
                 .onCallSuccess(event -> {
@@ -140,7 +140,7 @@ public class CallBatchedParamTest {
 
         final IntCounter batchCount = new IntCounter();
 
-        CallBatcher<LocalDateTime, CallManager.OneCallEvent<LocalDateTime>> batcher = caller
+        CallBatcher<LocalDateTime, CallBatcher.OneCallEvent<LocalDateTime>> batcher = caller
                 .batcher()
                 .forBatchedParam("param1", LocalDateTime.class)
                 .onCallSuccess(event -> {
@@ -180,7 +180,7 @@ public class CallBatchedParamTest {
 
         final IntCounter batchCount = new IntCounter();
 
-        CallBatcher<JsonNode, CallManager.ManyCallEvent<JsonNode>> batcher = caller
+        CallBatcher<JsonNode, CallBatcher.ManyCallEvent<JsonNode>> batcher = caller
                 .batcher()
                 .forBatchedParam("param1", JsonNode.class)
                 .onCallSuccess(event -> {
@@ -220,7 +220,7 @@ public class CallBatchedParamTest {
 
         final IntCounter batchCount = new IntCounter();
 
-        CallBatcher<JsonNode, CallManager.OneCallEvent<JsonNode>> batcher = caller
+        CallBatcher<JsonNode, CallBatcher.OneCallEvent<JsonNode>> batcher = caller
                 .batcher()
                 .forBatchedParam("param1", JsonNode.class)
                 .onCallSuccess(event -> {
@@ -263,7 +263,7 @@ public class CallBatchedParamTest {
 
         final IntCounter batchCount = new IntCounter();
 
-        CallBatcher<BigDecimal, CallManager.ManyCallEvent<BigDecimal>> batcher = caller
+        CallBatcher<BigDecimal, CallBatcher.ManyCallEvent<BigDecimal>> batcher = caller
                 .batcher()
                 .forBatchedParam("param1", BigDecimal.class)
                 .withDefaultArgs(caller.args().param("param2", LocalDate.parse("2019-01-02")))
@@ -308,7 +308,7 @@ public class CallBatchedParamTest {
 
         final IntCounter batchCount = new IntCounter();
 
-        CallBatcher<Double, CallManager.ManyCallEvent<Double>> batcher = caller
+        CallBatcher<Double, CallBatcher.ManyCallEvent<Double>> batcher = caller
                 .batcher()
                 .forBatchedParam("param1", Double.class)
                 .onCallSuccess(event -> {

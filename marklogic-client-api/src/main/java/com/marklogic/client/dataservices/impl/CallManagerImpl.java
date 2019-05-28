@@ -453,7 +453,7 @@ public class CallManagerImpl implements CallManager {
     return property.asText();
   }
 
-  private static abstract class EndpointDefinerImpl implements EndpointDefiner {
+  static abstract class EndpointDefinerImpl implements EndpointDefiner {
     @Override
     public CallArgsImpl args() {
       return new CallArgsImpl(getEndpoint());
@@ -466,51 +466,7 @@ public class CallManagerImpl implements CallManager {
     abstract CallableEndpointImpl getEndpoint();
   }
 
-  static class CallEventImpl extends BatchEventImpl implements CallEvent {
-    private CallArgsImpl args;
-    CallEventImpl(DatabaseClient client, CallArgs args) {
-      if (args == null) {
-        throw new IllegalArgumentException("null arguments for call event");
-      } else if (!(args instanceof CallArgsImpl)) {
-        throw new IllegalArgumentException("unsupported implementation of arguments for call event: "+
-                args.getClass().getCanonicalName());
-      }
-      this.args = (CallArgsImpl) args;
-      withClient(client);
-    }
-    @Override
-    public CallArgsImpl getArgs() {
-      return args;
-    }
-    @Override
-    public CallManagerImpl.EndpointDefinerImpl getEndpointDefiner() {
-      return args.getEndpoint();
-    }
-  }
-  static class OneCallEventImpl<R> extends CallEventImpl implements OneCallEvent<R> {
-    private R item;
-    OneCallEventImpl(DatabaseClient client, CallArgs args, R item) {
-      super(client, args);
-      this.item = item;
-    }
-    @Override
-    public R getItem() {
-      return item;
-    }
-  }
-  static class ManyCallEventImpl<R> extends CallEventImpl implements ManyCallEvent<R> {
-    private Stream<R> items;
-    ManyCallEventImpl(DatabaseClient client, CallArgs args, Stream<R> items) {
-      super(client, args);
-      this.items = items;
-    }
-    @Override
-    public Stream<R> getItems() {
-      return items;
-    }
-  }
-
-  static class NoneCallerImpl extends CallerImpl<CallEvent> implements NoneCaller {
+  static class NoneCallerImpl extends CallerImpl<CallBatcher.CallEvent> implements NoneCaller {
     NoneCallerImpl(CallableEndpointImpl endpoint) {
        super(endpoint);
      }
@@ -530,16 +486,16 @@ public class CallManagerImpl implements CallManager {
       startRequest(client, (CallArgsImpl) args).responseNone();
     }
     @Override
-	public CallBatcher.CallBatcherBuilder<CallEvent> batcher() {
+	public CallBatcher.CallBatcherBuilder<CallBatcher.CallEvent> batcher() {
       return new CallBatcherImpl.BuilderImpl(getEndpoint().getPrimaryClient(), this);
 	}
     @Override
-    public CallEvent callForEvent(DatabaseClient client, CallArgs args) throws Exception {
+    public CallBatcher.CallEvent callForEvent(DatabaseClient client, CallArgs args) throws Exception {
       callImpl(client, args);
-      return new CallEventImpl(client, args);
+      return new CallBatcherImpl.CallEventImpl(client, args);
     }
   }
-  private static class OneCallerImpl<R> extends CallerImpl<OneCallEvent<R>> implements OneCaller<R> {
+  private static class OneCallerImpl<R> extends CallerImpl<CallBatcher.OneCallEvent<R>> implements OneCaller<R> {
     private ReturnConverter<R> converter;
     private Format             format;
 
@@ -564,15 +520,15 @@ public class CallManagerImpl implements CallManager {
       return converter.one(startRequest(client, (CallArgsImpl) args).responseSingle(getEndpoint().isNullable(), format));
     }
     @Override
-	public CallBatcher.CallBatcherBuilder<OneCallEvent<R>> batcher() {
+	public CallBatcher.CallBatcherBuilder<CallBatcher.OneCallEvent<R>> batcher() {
       return new CallBatcherImpl.BuilderImpl(getEndpoint().getPrimaryClient(),this);
 	}
     @Override
-    public OneCallEvent<R> callForEvent(DatabaseClient client, CallArgs args) throws Exception {
-      return new OneCallEventImpl(client, args, callImpl(client, args));
+    public CallBatcher.OneCallEvent<R> callForEvent(DatabaseClient client, CallArgs args) throws Exception {
+      return new CallBatcherImpl.OneCallEventImpl(client, args, callImpl(client, args));
     }
   }
-  static class ManyCallerImpl<R> extends CallerImpl<ManyCallEvent<R>> implements ManyCaller<R> {
+  static class ManyCallerImpl<R> extends CallerImpl<CallBatcher.ManyCallEvent<R>> implements ManyCaller<R> {
     private ReturnConverter<R> converter;
     private Format             format;
 
@@ -597,19 +553,19 @@ public class CallManagerImpl implements CallManager {
       return converter.many(startRequest(client, (CallArgsImpl) args).responseMultiple(getEndpoint().isNullable(), format));
     }
     @Override
-	public CallBatcher.CallBatcherBuilder<ManyCallEvent<R>> batcher() {
+	public CallBatcher.CallBatcherBuilder<CallBatcher.ManyCallEvent<R>> batcher() {
       return new CallBatcherImpl.BuilderImpl(getEndpoint().getPrimaryClient(),this);
 	}
     @Override
-    public ManyCallEvent<R> callForEvent(DatabaseClient client, CallArgs args) throws Exception {
-      return new ManyCallEventImpl(client, args, callImpl(client, args));
+    public CallBatcher.ManyCallEvent<R> callForEvent(DatabaseClient client, CallArgs args) throws Exception {
+      return new CallBatcherImpl.ManyCallEventImpl(client, args, callImpl(client, args));
     }
   }
 
-  interface EventedCaller<E extends CallEvent> extends EndpointDefiner {
+  interface EventedCaller<E extends CallBatcher.CallEvent> extends EndpointDefiner {
     E callForEvent(DatabaseClient client, CallArgs args) throws Exception;
   }
-  static abstract class CallerImpl<E extends CallEvent> extends EndpointDefinerImpl implements EventedCaller<E> {
+  static abstract class CallerImpl<E extends CallBatcher.CallEvent> extends EndpointDefinerImpl implements EventedCaller<E> {
     private CallableEndpointImpl endpoint;
     CallerImpl(CallableEndpointImpl endpoint) {
       this.endpoint = endpoint;

@@ -35,8 +35,8 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.dataservices.CallBatcher;
 import com.marklogic.client.dataservices.CallManager;
 import com.marklogic.client.dataservices.CallManager.CallArgs;
-import com.marklogic.client.dataservices.CallManager.ManyCallEvent;
-import com.marklogic.client.dataservices.CallManager.OneCallEvent;
+import com.marklogic.client.dataservices.CallBatcher.ManyCallEvent;
+import com.marklogic.client.dataservices.CallBatcher.OneCallEvent;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
@@ -167,7 +167,7 @@ public class CallBatcherDefaultArgsTest {
         }
 
         final Output output = new Output();
-        CallBatcher<CallManager.CallArgs,CallManager.ManyCallEvent<Float>> batcher = manyCaller.batcher().forArgs()
+        CallBatcher<CallManager.CallArgs, ManyCallEvent<Float>> batcher = manyCaller.batcher().forArgs()
                 .withDefaultArgs(manyCaller.args().param("param1", values))
                 .onCallSuccess(event -> {
                     output.expectedOutput = event.getItems().toArray(Float[]::new);
@@ -195,7 +195,7 @@ public class CallBatcherDefaultArgsTest {
         }
 
         final Output output = new Output();
-        CallBatcher<CallManager.CallArgs,CallManager.ManyCallEvent<JsonNode>> batcher = manyCaller.batcher().forArgs()
+        CallBatcher<CallManager.CallArgs,ManyCallEvent<JsonNode>> batcher = manyCaller.batcher().forArgs()
                 .withDefaultArgs(manyCaller.args().param("param1", values))
                 .onCallSuccess(event -> {
                     JsonNode[] outputs = event.getItems().toArray(JsonNode[]::new);

@@ -55,8 +55,8 @@ import com.marklogic.client.dataservices.CallBatcher;
 import com.marklogic.client.dataservices.CallBatcher.CallArgsGenerator;
 import com.marklogic.client.dataservices.CallManager;
 import com.marklogic.client.dataservices.CallManager.CallArgs;
-import com.marklogic.client.dataservices.CallManager.CallEvent;
-import com.marklogic.client.dataservices.CallManager.OneCallEvent;
+import com.marklogic.client.dataservices.CallBatcher.CallEvent;
+import com.marklogic.client.dataservices.CallBatcher.OneCallEvent;
 import com.marklogic.client.dataservices.impl.CallBatcherImpl;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
@@ -147,7 +147,7 @@ public class CallbackGeneratorTest {
         ((CallBatcherImpl) batcher).start(null);
     }
     
-    private class InitializeTest implements CallArgsGenerator<CallManager.CallEvent> {
+    private class InitializeTest implements CallArgsGenerator<CallBatcher.CallEvent> {
 
         @Override
         public CallArgs apply(CallEvent t) {

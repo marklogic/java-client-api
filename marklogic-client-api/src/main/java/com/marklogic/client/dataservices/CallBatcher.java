@@ -19,12 +19,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import com.marklogic.client.datamovement.BatchEvent;
 import com.marklogic.client.datamovement.Batcher;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.dataservices.CallManager.CallArgs;
-import com.marklogic.client.dataservices.CallManager.CallEvent;
 
 /**
  * A CallBatcher executes multiple concurrent calls to a Data Service endpoint
@@ -45,7 +45,7 @@ import com.marklogic.client.dataservices.CallManager.CallEvent;
  * @param <W>  the type of the input passed to the add() method of the CallBatcher
  * @param <E>  the CallEvent subinterface for the results of a successful call
  */
-public interface CallBatcher<W,E extends CallManager.CallEvent> extends Batcher {
+public interface CallBatcher<W,E extends CallBatcher.CallEvent> extends Batcher {
     /**
      * Registers a lambda function for processing the CallEvent for a successful call.
      * @param listener  the lambda function for a successful result
@@ -258,7 +258,7 @@ public interface CallBatcher<W,E extends CallManager.CallEvent> extends Batcher 
      * then call the batcher() method on the caller to use the CallBatcherBuilder.
      * @param <E>  the CallEvent subinterface for the results of a successful call
      */
-    interface CallBatcherBuilder<E extends CallManager.CallEvent> {
+    interface CallBatcherBuilder<E extends CallEvent> {
         /**
          * Builds a CallBatcher that takes input values for a parameter, making
          * a call after accumulating a batch of values for the parameter.
@@ -304,5 +304,18 @@ public interface CallBatcher<W,E extends CallManager.CallEvent> extends Batcher 
     
     @FunctionalInterface
     public interface CallArgsGenerator<E extends CallEvent> extends Function<E, CallArgs> {
+    }
+    
+    interface CallEvent extends BatchEvent {
+        CallArgs getArgs();
+        CallManager.EndpointDefiner getEndpointDefiner();
+    }
+
+    interface ManyCallEvent<R> extends CallEvent {
+        Stream<R> getItems();
+    }
+
+    interface OneCallEvent<R> extends CallEvent {
+        R getItem();
     }
 }
