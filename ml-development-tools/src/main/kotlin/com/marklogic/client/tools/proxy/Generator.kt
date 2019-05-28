@@ -714,10 +714,17 @@ declare option xdmp:mapping "false";
               val typeName    = getServerType(paramType, atomicTypes, documentTypes, moduleExtension)
               val paramdef    =
                       if (moduleExtension == "mjs")
-                        "const ${paramName} = external.${paramName}; // instanceof ${typeName}${cardinality}"
+                        if (isNullable)
+                          "const ${paramName} = (external.${paramName} === void 0) ? null : external.${paramName}; // instanceof ${typeName}${cardinality}"
+                        else
+                          "const ${paramName} = external.${paramName}; // instanceof ${typeName}${cardinality}"
                       else if (moduleExtension == "sjs")
                         "var ${paramName}; // instanceof ${typeName}${cardinality}"
-                      else "declare variable $${paramName} as ${typeName}${cardinality} external := ();"
+                      else
+                        if (isNullable)
+                          "declare variable $${paramName} as ${typeName}${cardinality} external := ();"
+                        else
+                          "declare variable $${paramName} as ${typeName}${cardinality} external;"
               paramdef
             }.filterNotNull().joinToString("""
 """)

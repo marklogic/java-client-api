@@ -5410,16 +5410,34 @@ public class OkHttpServices implements RESTServices {
         String suffix = ".unknown";
         boolean isBinary = true;
         MediaType mediaType = body.contentType();
-        if ( mediaType != null ) {
-          suffix = "." + mediaType.subtype();
-          for ( String type : new String[] {"json", "xml", "xquery", "sjs", "javascript", "html"} ) {
-            if ( type.equalsIgnoreCase(mediaType.subtype()) ) {
-              isBinary = false;
-            }
-          }
-          if ( isBinary == true && "text".equalsIgnoreCase(mediaType.type()) ) {
+        if (mediaType != null) {
+          String subtype = mediaType.subtype().toLowerCase();
+          if (subtype == "json" || subtype.endsWith("+json")) {
+            suffix = ".json";
+            isBinary = false;
+          } else if (subtype == "xml" || subtype.endsWith("+xml")) {
+            suffix = ".xml";
+            isBinary = false;
+          } else if (subtype == "vnd.marklogic-js-module") {
+            suffix = ".mjs";
+            isBinary = false;
+          } else if (subtype == "vnd.marklogic-javascript" || subtype == "sjs") {
+            suffix = ".sjs";
+            isBinary = false;
+          } else if (subtype == "vnd.marklogic-xdmp" || subtype == "xquery") {
+            suffix = ".xqy";
+            isBinary = false;
+          } else if (subtype == "javascript") {
+            suffix = ".js";
+            isBinary = false;
+          } else if (subtype == "html") {
+            suffix = ".html";
+            isBinary = false;
+          } else if (mediaType.type().toLowerCase() == "text") {
             suffix = ".txt";
             isBinary = false;
+          } else {
+            suffix = "." + subtype;
           }
         }
         Path path = Files.createTempFile("tmp", suffix);
