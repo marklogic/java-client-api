@@ -17,5 +17,5 @@ package com.marklogic.client.dataservices;
 
 import com.marklogic.client.datamovement.BatchFailureListener;
 
-public interface CallFailureListener extends BatchFailureListener<CallManager.CallEvent> {
+public interface CallFailureListener extends BatchFailureListener<CallBatcher.CallEvent> {
 }

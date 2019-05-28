@@ -128,7 +128,7 @@ public interface CallManager {
          * Constructs a batcher of type CallEvent.
          * @return the CallBatcherBuilder of type CallEvent.
          */
-        CallBatcher.CallBatcherBuilder<CallEvent> batcher();
+        CallBatcher.CallBatcherBuilder<CallBatcher.CallEvent> batcher();
     }
     interface OneCaller<R> extends EndpointDefiner {
         /**
@@ -150,7 +150,7 @@ public interface CallManager {
          * Constructs a batcher of type OneCallEvent.
          * @return the CallBatcherBuilder of type OneCallEvent.
          */
-        CallBatcher.CallBatcherBuilder<OneCallEvent<R>> batcher();
+        CallBatcher.CallBatcherBuilder<CallBatcher.OneCallEvent<R>> batcher();
     }
     interface ManyCaller<R> extends EndpointDefiner {
         /**
@@ -172,7 +172,7 @@ public interface CallManager {
          * Constructs a batcher of type ManyCallEvent.
          * @return the CallBatcherBuilder of type ManyCallEvent.
          */
-        CallBatcher.CallBatcherBuilder<ManyCallEvent<R>> batcher();
+        CallBatcher.CallBatcherBuilder<CallBatcher.ManyCallEvent<R>> batcher();
     }
     interface EndpointDefiner {
         /**
@@ -699,16 +699,4 @@ public interface CallManager {
         boolean isMultiple();
     }
 
-    interface CallEvent extends BatchEvent {
-        CallArgs getArgs();
-        CallManager.EndpointDefiner getEndpointDefiner();
-    }
-
-    interface ManyCallEvent<R> extends CallEvent {
-        Stream<R> getItems();
-    }
-
-    interface OneCallEvent<R> extends CallEvent {
-        R getItem();
-    }
 }
