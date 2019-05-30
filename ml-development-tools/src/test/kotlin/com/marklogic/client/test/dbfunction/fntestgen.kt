@@ -1648,7 +1648,7 @@ if (true) {
 }
 
 if (true) {
-  for (testName in listOf("sessions", "described")) {
+  for (testName in listOf("sessions", "described", "mimetype")) {
     val manualBundleJSONPath = "${testDir}ml-modules/root/dbfunctiondef/positive/${testName}/"
     val manualBundleEndpoint = endpointBase+testName+"/"
     val manualBundleFilename = manualBundleJSONPath+"service.json"

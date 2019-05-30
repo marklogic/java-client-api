@@ -1,0 +1,14 @@
+{
+  "functionName": "apiReader",
+  "params": [ {
+      "name":     "endpointDirectory",
+      "datatype": "string"
+    }, {
+      "name":     "functionName",
+      "datatype": "string"
+    } ],
+  "return": {
+    "datatype": "jsonDocument",
+    "nullable": true
+  }
+}

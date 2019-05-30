@@ -5785,7 +5785,7 @@ public class OkHttpServices implements RESTServices {
                 if(param instanceof BufferedSingleNodeCallField) {
                     BytesHandle bytesHandle = new BytesHandle((BufferableHandle) handleBase);
                     ((BufferedSingleNodeCallField) param).setParamValue(bytesHandle);
-                   handleBase = bytesHandle;
+                    paramValue = bytesHandle;
                 }
                 else
                     hasStreamingPartCondition.set();
@@ -5810,11 +5810,13 @@ public class OkHttpServices implements RESTServices {
         } else if (param instanceof BufferedMultipleNodeCallField) {
             BufferableHandle[] paramValues = ((BufferedMultipleNodeCallField) param).getParamValuesArray();
             if(paramValues != null) {
-                for(BufferableHandle paramValue: paramValues) {
-                    if(paramValue != null) {
+                for(int i=0; i < paramValues.length; i++) {
+                    BufferableHandle paramValue = paramValues[i];
+                    if (paramValue != null) {
                         HandleImplementation handleBase = HandleAccessor.as(paramValue);
                         if(!handleBase.isResendable()) {
                             paramValue = new BytesHandle(paramValue);
+                            paramValues[i] = paramValue;
                         }
                         hasValue.set();
                         multiBldr.addFormDataPart(paramName, null, makeRequestBody(NodeConverter.copyToBytesHandle(paramValue)));
@@ -6188,23 +6190,23 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  static protected boolean checkNull(ResponseBody body, Format format) {
+  static protected boolean checkNull(ResponseBody body, Format expectedFormat) {
     if (body != null) {
       if (body.contentLength() == 0) {
         body.close();
       } else {
-        MediaType actualType  = body.contentType();
-        String    defaultType = (format == Format.BINARY) ?
-            "application/x-unknown-content-type" : format.getDefaultMimetype();
+        MediaType actualType = body.contentType();
         if (actualType == null) {
           body.close();
           throw new RuntimeException(
-              "Returned document with unknown mime type instead of "+defaultType
+              "Returned document with unknown mime type instead of "+expectedFormat.getDefaultMimetype()
           );
-        } else if (!actualType.toString().startsWith(defaultType)) {
+        }
+        Format actualFormat = Format.getFromMimetype(actualType.toString());
+        if (expectedFormat != actualFormat) {
           body.close();
           throw new RuntimeException(
-              "Returned document as "+actualType.toString()+" instead of "+defaultType
+              "Mime type "+actualType.toString()+" for returned document not recognized for "+expectedFormat.name()
           );
         }
         return false;
@@ -6212,18 +6214,21 @@ public class OkHttpServices implements RESTServices {
     }
     return true;
   }
-
-  static protected boolean checkNull(MimeMultipart multipart, Format format) {
+  static protected boolean checkNull(MimeMultipart multipart, Format expectedFormat) {
     if (multipart != null) {
       try {
         if (multipart.getCount() != 0) {
           BodyPart firstPart   = multipart.getBodyPart(0);
           String   actualType  = (firstPart == null) ? null : firstPart.getContentType();
-          String   defaultType = (format == Format.BINARY) ?
-              "application/x-unknown-content-type" : format.getDefaultMimetype();
-          if (actualType == null || !actualType.startsWith(defaultType)) {
+          if (actualType == null) {
             throw new RuntimeException(
-                "Returned document as "+actualType+" instead of "+defaultType
+                "Returned document with unknown mime type instead of "+expectedFormat.getDefaultMimetype()
+            );
+          }
+          Format actualFormat = Format.getFromMimetype(actualType);
+          if (expectedFormat != actualFormat) {
+            throw new RuntimeException(
+                "Mime type "+actualType+" for returned document not recognized for "+expectedFormat.name()
             );
           }
           return false;
