@@ -1293,9 +1293,6 @@ public class CallManagerImpl implements CallManager {
              InputStream.class.isAssignableFrom(type)         ? (ParamFieldifier<T>) new InputStreamifier(name, this) :
              super.fieldifierFor(name, type);
     }
-    CallField field(String name, AbstractWriteHandle value) {
-      return formattedField(name, format(value));
-    }
     CallField formattedField(String name, AbstractWriteHandle value) {
         if(!(value instanceof BufferableHandle))
             throw new IllegalArgumentException("AbstractWriteHandle value is not an instance of BufferableHandle.");
@@ -1304,14 +1301,18 @@ public class CallManagerImpl implements CallManager {
     CallField formattedField(String name, BufferableHandle[] values) {
         return new BufferedMultipleNodeCallField(name, values);
     }
+    CallField formattedField(String name, Stream<? extends AbstractWriteHandle> values) {
+        return new UnbufferedMultipleNodeCallField(name, values);
+    }
+    
+    CallField field(String name, AbstractWriteHandle value) {
+        return formattedField(name, format(value));
+    }
     CallField field(String name, AbstractWriteHandle[] values) {
       return formattedField(name, formatAll(values));
     }
     CallField field(String name, Stream<? extends AbstractWriteHandle> values) {
       return formattedField(name, formatAll(values));
-    }
-    CallField formattedField(String name, Stream<? extends AbstractWriteHandle> values) {
-      return new UnbufferedMultipleNodeCallField(name, values);
     }
     CallField field(String name, byte[] value) {
       return field(name, NodeConverter.BytesToHandle(value));

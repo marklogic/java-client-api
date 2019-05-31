@@ -115,7 +115,6 @@ public class MultipleValuesAsArrayTest {
         final Output output = new Output();
 
         ReaderHandle[] handles = { (new ReaderHandle(new StringReader(s1))), (new ReaderHandle(new StringReader(s2))) };
-       //  Reader[] input = {new StringReader(s1), new StringReader(s2)};
 
         CallManager.ManyCaller<Reader> manyCaller = callableEndpoint.returningMany(Reader.class);
 
@@ -144,5 +143,47 @@ public class MultipleValuesAsArrayTest {
         
         assertTrue("Counter value not as expected.", output.counter == 2);
     }
+    
+    @Test
+    public void MultipleValueArrayWithReaderInputTest() throws IOException {
 
+        callableEndpoint = endpointUtil.makeCallableEndpoint("textDocument");
+        class Output {
+            int counter = 0;
+            CallManager.CallArgs args;
+        }
+        String s1 = "{\"key1\":\"value1\"}";
+        String s2 = "{\"key2\":\"value2\"}";
+        final Output output = new Output();
+
+        Reader[] input = { new StringReader(s1), new StringReader(s2)};
+
+        CallManager.ManyCaller<Reader> manyCaller = callableEndpoint.returningMany(Reader.class);
+
+        CallBatcher<Void, CallBatcher.ManyCallEvent<Reader>> batcher = manyCaller.batcher().forArgsGenerator(result -> {
+            if (result == null && output.counter == 0) {
+                output.counter++;
+                output.args = manyCaller.args().param("param1", input);
+                return output.args;
+            } else if (output.counter == 1) {
+                output.counter++;
+                assertEquals(output.args, result.getArgs());
+                return result.getArgs();
+            } else {
+                assertEquals(output.args, result.getArgs());
+                return null;
+            }
+        }).onCallSuccess(event -> {
+            assertEquals(output.args, event.getArgs());
+        }).onCallFailure((event, throwable) -> {
+            throwable.printStackTrace();
+            fail("Batcher failed");
+        });
+        batcher.startJob();
+        batcher.flushAndWait();
+        batcher.stopJob();
+
+        assertTrue("Counter value not as expected.", output.counter == 2);
+    }
+    
 }
