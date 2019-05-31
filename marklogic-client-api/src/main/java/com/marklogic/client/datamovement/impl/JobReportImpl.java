@@ -18,7 +18,7 @@ package com.marklogic.client.datamovement.impl;
 import java.util.Calendar;
 
 import com.marklogic.client.datamovement.*;
-import com.marklogic.client.dataservices.CallBatcher;
+import com.marklogic.client.dataservices.impl.CallBatcher;
 
 public class JobReportImpl implements JobReport {
 

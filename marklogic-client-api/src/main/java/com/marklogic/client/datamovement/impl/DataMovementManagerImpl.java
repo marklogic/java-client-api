@@ -17,7 +17,7 @@ package com.marklogic.client.datamovement.impl;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.dataservices.CallBatcher;
+import com.marklogic.client.dataservices.impl.CallBatcher;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryDefinition;

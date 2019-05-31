@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.dataservices.CallBatcher;
+import com.marklogic.client.dataservices.impl.CallBatcher;
 import com.marklogic.client.dataservices.impl.CallBatcherImpl;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.JacksonHandle;
