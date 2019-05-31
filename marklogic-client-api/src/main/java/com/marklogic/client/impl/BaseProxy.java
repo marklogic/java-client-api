@@ -23,9 +23,20 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
-
+import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.InputSourceHandle;
+import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.JacksonParserHandle;
+import com.marklogic.client.io.OutputStreamHandle;
 import com.marklogic.client.io.OutputStreamSender;
+import com.marklogic.client.io.ReaderHandle;
+import com.marklogic.client.io.SourceHandle;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.XMLEventReaderHandle;
+import com.marklogic.client.io.XMLStreamReaderHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
@@ -93,8 +104,7 @@ public class BaseProxy {
       static final public String         fromBoolean(Boolean value)                    { return ValueConverter.BooleanToString(value);  }
       static final public Stream<String> fromBoolean(Stream<? extends Boolean> values) { return ValueConverter.BooleanToString(values); }
       static final public String[] fromBoolean(Boolean[] values) { 
-          String[] stringValues = Stream.of(values).map(value->ValueConverter.BooleanToString(value)).toArray(String[]::new);
-          return NodeConverter.arrayWithFormat(stringValues , Format.getFromMimetype(NAME)); 
+          return (Stream.of(values).map(value->ValueConverter.BooleanToString(value)).toArray(String[]::new)); 
       }
       static final public String         fromString(String value)                      { return value;                                  }
       static final public Stream<String> fromString(Stream<String> values)             { return values;                                 }
@@ -108,8 +118,7 @@ public class BaseProxy {
       static final public String         fromLocalDate(LocalDate value)                    { return ValueConverter.LocalDateToString(value);  }
       static final public Stream<String> fromLocalDate(Stream<? extends LocalDate> values) { return ValueConverter.LocalDateToString(values); }
       static final public String[] fromLocalDate(LocalDate[] values) { 
-          String[] stringValues = Stream.of(values).map(value->ValueConverter.LocalDateToString(value)).toArray(String[]::new);
-          return NodeConverter.arrayWithFormat(stringValues , Format.getFromMimetype(NAME)); 
+          return (Stream.of(values).map(value->ValueConverter.LocalDateToString(value)).toArray(String[]::new)); 
       }
       static final public String         fromString(String value)                          { return value;                                    }
       static final public Stream<String> fromString(Stream<String> values)                 { return values;                                   }
@@ -123,20 +132,17 @@ public class BaseProxy {
       static final public String         fromDate(Date value)                                         { return ValueConverter.DateToString(value);            }
       static final public Stream<String> fromDate(Stream<? extends Date> values)                      { return ValueConverter.DateToString(values);           }
       static final public String[] fromDate(Date[] values) { 
-          String[] stringValues = Stream.of(values).map(value->ValueConverter.DateToString(value)).toArray(String[]::new);
-          return NodeConverter.arrayWithFormat(stringValues , Format.getFromMimetype(NAME)); 
+          return (Stream.of(values).map(value->ValueConverter.DateToString(value)).toArray(String[]::new)); 
       }
       static final public String         fromLocalDateTime(LocalDateTime value)                       { return ValueConverter.LocalDateTimeToString(value);   }
       static final public Stream<String> fromLocalDateTime(Stream<? extends LocalDateTime> values)    { return ValueConverter.LocalDateTimeToString(values);  }
       static final public String[] fromLocalDateTime(LocalDateTime[] values) { 
-          String[] stringValues = Stream.of(values).map(value->ValueConverter.LocalDateTimeToString(value)).toArray(String[]::new);
-          return NodeConverter.arrayWithFormat(stringValues , Format.getFromMimetype(NAME)); 
+          return (Stream.of(values).map(value->ValueConverter.LocalDateTimeToString(value)).toArray(String[]::new)); 
       }
       static final public String         fromOffsetDateTime(OffsetDateTime value)                     { return ValueConverter.OffsetDateTimeToString(value);  }
       static final public Stream<String> fromOffsetDateTime(Stream<? extends OffsetDateTime> values)  { return ValueConverter.OffsetDateTimeToString(values); }
       static final public String[] fromOffsetDateTime(OffsetDateTime[] values) { 
-          String[] stringValues = Stream.of(values).map(value->ValueConverter.OffsetDateTimeToString(value)).toArray(String[]::new);
-          return NodeConverter.arrayWithFormat(stringValues , Format.getFromMimetype(NAME)); 
+          return (Stream.of(values).map(value->ValueConverter.OffsetDateTimeToString(value)).toArray(String[]::new)); 
       }
       static final public String         fromString(String value)                                     { return value;                                         }
       static final public Stream<String> fromString(Stream<String> values)                            { return values;                                        }
@@ -154,8 +160,7 @@ public class BaseProxy {
       static final public String         fromDuration(Duration value)                    { return ValueConverter.DurationToString(value);  }
       static final public Stream<String> fromDuration(Stream<? extends Duration> values) { return ValueConverter.DurationToString(values); }
       static final public String[] fromDuration(Duration[] values) { 
-          String[] stringValues = Stream.of(values).map(value->ValueConverter.DurationToString(value)).toArray(String[]::new);
-          return NodeConverter.arrayWithFormat(stringValues , Format.getFromMimetype(NAME)); 
+          return (Stream.of(values).map(value->ValueConverter.DurationToString(value)).toArray(String[]::new)); 
       }
       static final public String         fromString(String value)                        { return value;                                   }
       static final public Stream<String> fromString(Stream<String> values)               { return values;                                  }
@@ -169,8 +174,7 @@ public class BaseProxy {
       static final public String         fromBigDecimal(BigDecimal value)                    { return ValueConverter.BigDecimalToString(value);  }
       static final public Stream<String> fromBigDecimal(Stream<? extends BigDecimal> values) { return ValueConverter.BigDecimalToString(values); }
       static final public String[] fromBigDecimal(BigDecimal[] values) { 
-          String[] stringValues = Stream.of(values).map(value->ValueConverter.BigDecimalToString(value)).toArray(String[]::new);
-          return NodeConverter.arrayWithFormat(stringValues , Format.getFromMimetype(NAME)); 
+          return (Stream.of(values).map(value->ValueConverter.BigDecimalToString(value)).toArray(String[]::new)); 
       }
       static final public String         fromString(String value)                            { return value;                                     }
       static final public Stream<String> fromString(Stream<String> values)                   { return values;                                    }
@@ -184,8 +188,7 @@ public class BaseProxy {
       static final public String         fromDouble(Double value)                    { return ValueConverter.DoubleToString(value);  }
       static final public Stream<String> fromDouble(Stream<? extends Double> values) { return ValueConverter.DoubleToString(values); }
       static final public String[] fromDouble(Double[] values) { 
-          String[] stringValues = Stream.of(values).map(value->ValueConverter.DoubleToString(value)).toArray(String[]::new);
-          return NodeConverter.arrayWithFormat(stringValues , Format.getFromMimetype(NAME)); 
+          return (Stream.of(values).map(value->ValueConverter.DoubleToString(value)).toArray(String[]::new)); 
       }
       static final public String         fromString(String value)                    { return value;                                 }
       static final public Stream<String> fromString(Stream<String> values)           { return values;                                }
@@ -199,8 +202,7 @@ public class BaseProxy {
       static final public String         fromFloat(Float value)                    { return ValueConverter.FloatToString(value);  }
       static final public Stream<String> fromFloat(Stream<? extends Float> values) { return ValueConverter.FloatToString(values); }
       static final public String[] fromFloat(Float[] values) { 
-          String[] stringValues = Stream.of(values).map(value->ValueConverter.FloatToString(value)).toArray(String[]::new);
-          return NodeConverter.arrayWithFormat(stringValues , Format.getFromMimetype(NAME)); 
+          return (Stream.of(values).map(value->ValueConverter.FloatToString(value)).toArray(String[]::new)); 
       }
       static final public String         fromString(String value)                  { return value;                                }
       static final public Stream<String> fromString(Stream<String> values)         { return values;                               }
@@ -214,8 +216,7 @@ public class BaseProxy {
       static final public String         fromInteger(Integer value)                    { return ValueConverter.IntegerToString(value);  }
       static final public Stream<String> fromInteger(Stream<? extends Integer> values) { return ValueConverter.IntegerToString(values); }
       static final public String[] fromInteger(Integer[] values) { 
-          String[] stringValues = Stream.of(values).map(value->ValueConverter.IntegerToString(value)).toArray(String[]::new);
-          return NodeConverter.arrayWithFormat(stringValues , Format.getFromMimetype(NAME)); 
+          return (Stream.of(values).map(value->ValueConverter.IntegerToString(value)).toArray(String[]::new)); 
       }
       static final public String         fromString(String value)                      { return value;                                  }
       static final public Stream<String> fromString(Stream<String> values)             { return values;                                 }
@@ -229,8 +230,7 @@ public class BaseProxy {
       static final public String         fromLong(Long value)                    { return ValueConverter.LongToString(value);  }
       static final public Stream<String> fromLong(Stream<? extends Long> values) { return ValueConverter.LongToString(values); }
       static final public String[] fromLong(Long[] values) { 
-          String[] stringValues = Stream.of(values).map(value->ValueConverter.LongToString(value)).toArray(String[]::new);
-          return NodeConverter.arrayWithFormat(stringValues , Format.getFromMimetype(NAME)); 
+          return (Stream.of(values).map(value->ValueConverter.LongToString(value)).toArray(String[]::new)); 
       }
       static final public String         fromString(String value)                { return value;                               }
       static final public Stream<String> fromString(Stream<String> values)       { return values;                              }
@@ -251,14 +251,12 @@ public class BaseProxy {
       static final public String         fromLocalTime(LocalTime value)                      { return ValueConverter.LocalTimeToString(value);   }
       static final public Stream<String> fromLocalTime(Stream<? extends LocalTime> values)   { return ValueConverter.LocalTimeToString(values);  }
       static final public String[] fromLocalTime(LocalTime[] values) { 
-          String[] stringValues = Stream.of(values).map(value->ValueConverter.LocalTimeToString(value)).toArray(String[]::new);
-          return NodeConverter.arrayWithFormat(stringValues , Format.getFromMimetype(NAME)); 
+          return (Stream.of(values).map(value->ValueConverter.LocalTimeToString(value)).toArray(String[]::new)); 
       }
       static final public String         fromOffsetTime(OffsetTime value)                    { return ValueConverter.OffsetTimeToString(value);  }
       static final public Stream<String> fromOffsetTime(Stream<? extends OffsetTime> values) { return ValueConverter.OffsetTimeToString(values); }
       static final public String[] fromOffsetTime(OffsetTime[] values) { 
-          String[] stringValues = Stream.of(values).map(value->ValueConverter.OffsetTimeToString(value)).toArray(String[]::new);
-          return NodeConverter.arrayWithFormat(stringValues , Format.getFromMimetype(NAME)); 
+          return (Stream.of(values).map(value->ValueConverter.OffsetTimeToString(value)).toArray(String[]::new)); 
       }
       static final public String         fromString(String value)                            { return value;                                     }
       static final public Stream<String> fromString(Stream<String> values)                   { return values;                                    }
@@ -274,8 +272,7 @@ public class BaseProxy {
       static final public String         fromInteger(Integer value)                    { return ValueConverter.UnsignedIntegerToString(value);  }
       static final public Stream<String> fromInteger(Stream<? extends Integer> values) { return ValueConverter.UnsignedIntegerToString(values); }
       static final public String[] fromInteger(Integer[] values) { 
-          String[] stringValues = Stream.of(values).map(value->ValueConverter.UnsignedIntegerToString(value)).toArray(String[]::new);
-          return NodeConverter.arrayWithFormat(stringValues , Format.getFromMimetype(NAME)); 
+          return (Stream.of(values).map(value->ValueConverter.UnsignedIntegerToString(value)).toArray(String[]::new)); 
       }
       static final public String         fromString(String value)                      { return value;                                          }
       static final public Stream<String> fromString(Stream<String> values)             { return values;                                         }
@@ -289,8 +286,7 @@ public class BaseProxy {
       static final public String         fromLong(Long value)                    { return ValueConverter.UnsignedLongToString(value);  }
       static final public Stream<String> fromLong(Stream<? extends Long> values) { return ValueConverter.UnsignedLongToString(values); }
       static final public String[] fromLong(Long[] values) { 
-          String[] stringValues = Stream.of(values).map(value->ValueConverter.UnsignedLongToString(value)).toArray(String[]::new);
-          return NodeConverter.arrayWithFormat(stringValues , Format.getFromMimetype(NAME)); 
+          return (Stream.of(values).map(value->ValueConverter.UnsignedLongToString(value)).toArray(String[]::new)); 
       }
       static final public String         fromString(String value)                { return value;                                       }
       static final public Stream<String> fromString(Stream<String> values)       { return values;                                      }
@@ -377,7 +373,7 @@ public class BaseProxy {
       static final public Stream<JSONWriteHandle> fromJsonNode(Stream<? extends JsonNode> values) {
          return NodeConverter.JSONWriter(NodeConverter.JsonNodeToHandle(values));
       }
-      static final public JSONWriteHandle[] fromJsonNode(JsonNode[] values) {
+      static final public JacksonHandle[] fromJsonNode(JsonNode[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.JsonNodeToHandle(values), FORMAT);
       }
       static final public JSONWriteHandle fromArrayNode(ArrayNode value) {
@@ -386,7 +382,7 @@ public class BaseProxy {
       static final public Stream<JSONWriteHandle> fromArrayNode(Stream<? extends ArrayNode> values) {
          return NodeConverter.JSONWriter(NodeConverter.JsonNodeToHandle(values));
       }
-      static final public JSONWriteHandle[] fromArrayNode(ArrayNode[] values) {
+      static final public JacksonHandle[] fromArrayNode(ArrayNode[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.JsonNodeToHandle(values), FORMAT);
       }
       static final public JSONWriteHandle fromObjectNode(ObjectNode value) {
@@ -395,7 +391,7 @@ public class BaseProxy {
       static final public Stream<JSONWriteHandle> fromObjectNode(Stream<? extends ObjectNode> values) {
          return NodeConverter.JSONWriter(NodeConverter.JsonNodeToHandle(values));
       }
-      static final public JSONWriteHandle[] fromObjectNode(ObjectNode[] values) {
+      static final public JacksonHandle[] fromObjectNode(ObjectNode[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.JsonNodeToHandle(values), FORMAT);
       }
       static final public JSONWriteHandle fromJsonParser(JsonParser value) {
@@ -404,7 +400,7 @@ public class BaseProxy {
       static final public Stream<JSONWriteHandle> fromJsonParser(Stream<? extends JsonParser> values) {
          return NodeConverter.JSONWriter(NodeConverter.JsonParserToHandle(values));
       }
-      static final public JSONWriteHandle[] fromJsonParser(JsonParser[] values) {
+      static final public JacksonParserHandle[] fromJsonParser(JsonParser[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.JsonParserToHandle(values), FORMAT);
       }
       static final public JSONWriteHandle fromFile(File value) {
@@ -413,7 +409,7 @@ public class BaseProxy {
       static final public Stream<JSONWriteHandle> fromFile(Stream<? extends File> values) {
          return NodeConverter.JSONWriter(NodeConverter.FileToHandle(values));
       }
-      static final public JSONWriteHandle[] fromFile(File[] values) {
+      static final public FileHandle[] fromFile(File[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.FileToHandle(values), FORMAT);
       }
       static final public JSONWriteHandle fromInputStream(InputStream value) {
@@ -422,7 +418,7 @@ public class BaseProxy {
       static final public Stream<JSONWriteHandle> fromInputStream(Stream<? extends InputStream> values) {
          return NodeConverter.JSONWriter(NodeConverter.InputStreamToHandle(values));
       }
-      static final public JSONWriteHandle[] fromInputStream(InputStream[] values) {
+      static final public InputStreamHandle[] fromInputStream(InputStream[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.InputStreamToHandle(values), FORMAT);
       }
       static final public JSONWriteHandle fromOutputStreamSender(OutputStreamSender value) {
@@ -431,7 +427,7 @@ public class BaseProxy {
       static final public Stream<JSONWriteHandle> fromOutputStreamSender(Stream<? extends OutputStreamSender> values) {
          return NodeConverter.JSONWriter(NodeConverter.OutputStreamSenderToHandle(values));
       }
-      static final public JSONWriteHandle[] fromOutputStreamSender(OutputStreamSender[] values) {
+      static final public OutputStreamHandle[] fromOutputStreamSender(OutputStreamSender[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.OutputStreamSenderToHandle(values), FORMAT);
       }
       static final public JSONWriteHandle fromReader(Reader value)                            {
@@ -440,7 +436,7 @@ public class BaseProxy {
       static final public Stream<JSONWriteHandle> fromReader(Stream<? extends Reader> values) {
          return NodeConverter.JSONWriter(NodeConverter.ReaderToHandle(values));
       }
-      static final public JSONWriteHandle[] fromReader(Reader[] values) {
+      static final public ReaderHandle[] fromReader(Reader[] values) {
          return NodeConverter.arrayWithFormat (NodeConverter.ReaderToHandle(values) , FORMAT);
       }
       static final public JSONWriteHandle fromString(String value)                            {
@@ -449,7 +445,7 @@ public class BaseProxy {
       static final public Stream<JSONWriteHandle> fromString(Stream<? extends String> values) {
          return NodeConverter.JSONWriter(NodeConverter.StringToHandle(values));
       }
-      static final public JSONWriteHandle[] fromString(String[] values) {
+      static final public StringHandle[] fromString(String[] values) {
           return NodeConverter.arrayWithFormat (NodeConverter.StringToHandle(values) , FORMAT);
       }
 
@@ -590,7 +586,7 @@ public class BaseProxy {
       static final public Stream<XMLWriteHandle> fromDocument(Stream<? extends Document> values) {
          return NodeConverter.XMLWriter(NodeConverter.DocumentToHandle(values));
       }
-      static final public XMLWriteHandle[] fromDocument(Document[] values) {
+      static final public DOMHandle[] fromDocument(Document[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.DocumentToHandle(values), FORMAT);
       }
       static final public XMLWriteHandle fromInputSource(InputSource value) {
@@ -599,7 +595,7 @@ public class BaseProxy {
       static final public Stream<XMLWriteHandle> fromInputSource(Stream<? extends InputSource> values) {
          return NodeConverter.XMLWriter(NodeConverter.InputSourceToHandle(values));
       }
-      static final public XMLWriteHandle[] fromInputSource(InputSource[] values) {
+      static final public InputSourceHandle[] fromInputSource(InputSource[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.InputSourceToHandle(values), FORMAT);
       }
       static final public XMLWriteHandle fromSource(Source value) {
@@ -608,7 +604,7 @@ public class BaseProxy {
       static final public Stream<XMLWriteHandle> fromSource(Stream<? extends Source> values) {
          return NodeConverter.XMLWriter(NodeConverter.SourceToHandle(values));
       }
-      static final public XMLWriteHandle[] fromSource(Source[] values) {
+      static final public SourceHandle[] fromSource(Source[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.SourceToHandle(values), FORMAT);
       }
       static final public XMLWriteHandle fromXMLEventReader(XMLEventReader value) {
@@ -617,7 +613,7 @@ public class BaseProxy {
       static final public Stream<XMLWriteHandle> fromXMLEventReader(Stream<? extends XMLEventReader> values) {
          return NodeConverter.XMLWriter(NodeConverter.XMLEventReaderToHandle(values));
       }
-      static final public XMLWriteHandle[] fromXMLEventReader(XMLEventReader[] values) {
+      static final public XMLEventReaderHandle[] fromXMLEventReader(XMLEventReader[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.XMLEventReaderToHandle(values), FORMAT);
       }
       static final public XMLWriteHandle fromXMLStreamReader(XMLStreamReader value) {
@@ -626,7 +622,7 @@ public class BaseProxy {
       static final public Stream<XMLWriteHandle> fromXMLStreamReader(Stream<? extends XMLStreamReader> values) {
          return NodeConverter.XMLWriter(NodeConverter.XMLStreamReaderToHandle(values));
       }
-      static final public XMLWriteHandle[] fromXMLStreamReader(XMLStreamReader[] values) {
+      static final public XMLStreamReaderHandle[] fromXMLStreamReader(XMLStreamReader[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.XMLStreamReaderToHandle(values), FORMAT);
       }
       static final public XMLWriteHandle fromFile(File value) {
@@ -635,7 +631,7 @@ public class BaseProxy {
       static final public Stream<XMLWriteHandle> fromFile(Stream<? extends File> values) {
          return NodeConverter.XMLWriter(NodeConverter.FileToHandle(values));
       }
-      static final public XMLWriteHandle[] fromFile(File[] values) {
+      static final public FileHandle[] fromFile(File[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.FileToHandle(values), FORMAT);
       }
       static final public XMLWriteHandle fromInputStream(InputStream value) {
@@ -644,7 +640,7 @@ public class BaseProxy {
       static final public Stream<XMLWriteHandle> fromInputStream(Stream<? extends InputStream> values)  {
          return NodeConverter.XMLWriter(NodeConverter.InputStreamToHandle(values));
       }
-      static final public XMLWriteHandle[] fromInputStream(InputStream[] values) {
+      static final public InputStreamHandle[] fromInputStream(InputStream[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.InputStreamToHandle(values), FORMAT);
       }
       static final public XMLWriteHandle fromOutputStreamSender(OutputStreamSender value) {
@@ -653,7 +649,7 @@ public class BaseProxy {
       static final public Stream<XMLWriteHandle> fromOutputStreamSender(Stream<? extends OutputStreamSender> values) {
          return NodeConverter.XMLWriter(NodeConverter.OutputStreamSenderToHandle(values));
       }
-      static final public XMLWriteHandle[] fromOutputStreamSender(OutputStreamSender[] values) {
+      static final public OutputStreamHandle[] fromOutputStreamSender(OutputStreamSender[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.OutputStreamSenderToHandle(values), FORMAT);
       }
       static final public XMLWriteHandle fromReader(Reader value) {
@@ -662,7 +658,7 @@ public class BaseProxy {
       static final public Stream<XMLWriteHandle> fromReader(Stream<? extends Reader> values) {
          return NodeConverter.XMLWriter(NodeConverter.ReaderToHandle(values));
       }
-      static final public XMLWriteHandle[] fromReader(Reader[] values) {
+      static final public ReaderHandle[] fromReader(Reader[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.ReaderToHandle(values), FORMAT);
       }
       static final public XMLWriteHandle fromString(String value) {
@@ -671,7 +667,7 @@ public class BaseProxy {
       static final public Stream<XMLWriteHandle> fromString(Stream<? extends String> values) {
          return NodeConverter.XMLWriter(NodeConverter.StringToHandle(values));
       }
-      static final public XMLWriteHandle[] fromString(String[] values) {
+      static final public StringHandle[] fromString(String[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.StringToHandle(values), FORMAT);
       }
 
