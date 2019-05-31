@@ -20,6 +20,6 @@ package com.marklogic.client.type;
 /**
  * A sequence of server atomic values.
  */
-public interface XsAnyAtomicTypeSeqVal extends XsAnyAtomicTypeSeqExpr, XsAnySimpleTypeSeqVal, PlanTriplePositionSeq {
+public interface XsAnyAtomicTypeSeqVal extends XsAnySimpleTypeSeqVal, PlanTriplePositionSeq {
     public XsAnyAtomicTypeVal[] getAnyAtomicTypeItems();
 }

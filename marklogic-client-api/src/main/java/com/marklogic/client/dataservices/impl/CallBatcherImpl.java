@@ -18,15 +18,15 @@ package com.marklogic.client.dataservices.impl;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.datamovement.*;
+import com.marklogic.client.datamovement.impl.BatchEventImpl;
 import com.marklogic.client.datamovement.impl.BatcherImpl;
-import com.marklogic.client.dataservices.CallBatcher;
-import com.marklogic.client.dataservices.CallFailureListener;
-import com.marklogic.client.dataservices.CallManager;
-import com.marklogic.client.dataservices.CallManager.CallArgs;
-import com.marklogic.client.dataservices.CallSuccessListener;
+import com.marklogic.client.dataservices.impl.CallManager.CallArgs;
 import com.marklogic.client.dataservices.impl.CallManagerImpl.CallArgsImpl;
 
 import com.marklogic.client.impl.RESTServices;
+import com.marklogic.client.impl.RESTServices.CallField;
+import com.marklogic.client.impl.RESTServices.SingleAtomicCallField;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends BatcherImpl implements CallBatcher<W,E> {
+public class CallBatcherImpl<W, E extends CallBatcher.CallEvent> extends BatcherImpl implements CallBatcher<W,E> {
     private static Logger logger = LoggerFactory.getLogger(CallBatcherImpl.class);
 
     private CallManagerImpl.CallerImpl<E> caller;
@@ -53,8 +53,9 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     private AtomicLong callCount = new AtomicLong();
     private Calendar jobStartTime;
     private Calendar jobEndTime;
-    private List<RESTServices.CallField> defaultArgs;
+    private Set<RESTServices.CallField> defaultArgs;
     private CallArgsGenerator<E> callArgsGenerator;
+    private String forestParamName;
 
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private final AtomicBoolean stopped = new AtomicBoolean(false);
@@ -90,12 +91,31 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     
     CallBatcherImpl(DatabaseClient client, CallManagerImpl.CallerImpl<E> caller, Class<W> inputType, CallArgsGenerator<E> generator) {
         this(client, caller, inputType);
+        if(generator == null)
+            throw new IllegalArgumentException("Call Argument Generator cannot be null.");
         this.callArgsGenerator = generator;
+    }
+    
+    CallBatcherImpl(DatabaseClient client, CallManagerImpl.CallerImpl<E> caller, Class<W> inputType, CallArgsGenerator<E> generator, String forestName) {
+        this(client, caller, inputType, generator);
+        if(forestName == null || forestName.length() == 0)
+            throw new IllegalArgumentException("Forest name cannot be null or empty.");
+        CallManager.Paramdef paramdef = caller.getParamdefs().get(forestName);
+        if(paramdef == null)
+            throw new IllegalArgumentException("Forest name parameter of caller cannot be null.");
+        if(!"string".equals(paramdef.getDataType()) || paramdef.isMultiple())
+            throw new IllegalArgumentException("Forest name parameter cannot be multiple and needs to be a string.");
+        
+        this.forestParamName = forestName;
     }
 
     private CallBatcherImpl finishConstruction() {
         withForestConfig(getDataMovementManager().readForestConfig());
-        withThreadCount(clients.size());
+        
+        if(forestParamName!=null)
+            super.withThreadCount(super.getForestConfig().listForests().length);
+        else 
+            withThreadCount(clients.size());
         withBatchSize(isMultiple ? 100 : 1);
         return this;
     }
@@ -107,7 +127,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         }
     }
 
-    private void sendThrowableToListeners(Throwable t, String message, CallManagerImpl.CallEvent event) {
+    private void sendThrowableToListeners(Throwable t, String message, CallBatcherImpl.CallEvent event) {
 // TODO: other actions
         for (CallFailureListener listener : failureListeners) {
             listener.processFailure(event, t);
@@ -177,6 +197,8 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     @Override
     public CallBatcher withThreadCount(int threadCount) {
         requireInitialized(false);
+        if(forestParamName != null)
+            throw new MarkLogicInternalException("The number of threads will be based on the number of forests.");
         super.withThreadCount(threadCount);
         return this;
     }
@@ -195,12 +217,14 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         if (callArgsImpl.getEndpoint().getEndpointPath() != caller.getEndpointPath())
             throw new IllegalArgumentException("Endpoints are different");
 
-        if (callArgsImpl.getCallFields() == null || callArgsImpl.getCallFields().size() == 0) {
+        Map<String,CallField> callFields = callArgsImpl.getCallFields();
+        if (callFields == null || callFields.size() == 0) {
             this.defaultArgs = null;
             return this;
         }
 
-        List<RESTServices.CallField> callFieldList = callArgsImpl.getCallFields().stream().map(p -> p.toBuffered()).collect(Collectors.toList());
+        Set<RESTServices.CallField> callFieldList =
+            callFields.values().stream().map(p -> p.toBuffered()).collect(Collectors.toSet());
         this.defaultArgs = (callFieldList.size() == 0) ? null : callFieldList;
 
         return this;
@@ -211,21 +235,22 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             return makeDefaultArgs();
         }
 
-        List<RESTServices.CallField> newCallFields = new ArrayList<>();
-        Set<String> assignedParams = new HashSet<>();
-
-        newCallFields.add(callField);
-        assignedParams.add(callField.getParamName());
+        Map<String, RESTServices.CallField> newCallFields = new HashMap<>();
+        newCallFields.put(callField.getParamName(), callField);
 
         if (defaultArgs == null) {
-            return new CallArgsImpl(caller.getEndpoint(), newCallFields, assignedParams);
+            return new CallArgsImpl(caller.getEndpoint(), newCallFields);
         }
 
-        return addDefaultArgs(newCallFields, assignedParams);
+        return addDefaultArgs(newCallFields);
     }
     CallArgsImpl addDefaultArgs(CallArgsImpl callArgsImpl) {
-        if (callArgsImpl == null || callArgsImpl.getCallFields() == null ||
-                callArgsImpl.getCallFields().size() == 0) {
+        if (callArgsImpl == null) {
+            return makeDefaultArgs();
+        }
+
+        Map<String, CallField> callFields = callArgsImpl.getCallFields();
+        if (callFields == null || callFields.size() == 0) {
             return makeDefaultArgs();
         }
 
@@ -233,34 +258,21 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             return callArgsImpl;
         }
 
-        List<RESTServices.CallField> newCallFields = new ArrayList<>();
-        Set<String> assignedParams = new HashSet<>();
-
-        newCallFields.addAll(callArgsImpl.getCallFields());
-        assignedParams.addAll(callArgsImpl.getAssignedParams());
-
-        return addDefaultArgs(newCallFields, assignedParams);
+        return addDefaultArgs(new HashMap<>(callFields));
     }
-    CallArgsImpl addDefaultArgs(List<RESTServices.CallField> newCallFields, Set<String> assignedParams) {
-        for (RESTServices.CallField i : defaultArgs) {
-            if (!assignedParams.contains(i.getParamName())) {
-                assignedParams.add(i.getParamName());
-                newCallFields.add(i);
-            }
+    CallArgsImpl addDefaultArgs(Map<String, RESTServices.CallField> newCallFields) {
+        for (RESTServices.CallField defaultArg: defaultArgs) {
+            newCallFields.putIfAbsent(defaultArg.getParamName(), defaultArg);
         }
 
-        return new CallArgsImpl(caller.getEndpoint(), newCallFields, assignedParams);
+        return new CallArgsImpl(caller.getEndpoint(), newCallFields);
     }
     CallArgsImpl makeDefaultArgs() {
         if (defaultArgs == null) {
             return new CallArgsImpl(caller.getEndpoint());
         }
 
-        return new CallArgsImpl(
-                caller.getEndpoint(),
-                defaultArgs,
-                defaultArgs.stream().map(RESTServices.CallField::getParamName).collect(Collectors.toSet())
-        );
+        return addDefaultArgs(new HashMap<>());
     }
 
     @Override
@@ -471,8 +483,22 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         started.set(true);
         
         if(callArgsGenerator != null) {
+            String[] forestNames = null;
+            if(forestParamName!=null) {
+                Forest[] forests;
+                forests = super.getForestConfig().listForests();
+                forestNames = new String[forests.length];
+                int j=0;
+                for(Forest i:forests) {
+                    forestNames[j] = i.getForestName();
+                    j++;
+                }
+            }
             for (int i=0;i<getThreadCount(); i++) {
                     CallArgs newInput = callArgsGenerator.apply(null);
+                    if(forestNames!=null && forestNames[i]!=null) {
+                        newInput.param(forestParamName, forestNames[i]);
+                    }
                     if(newInput != null) {
                         if(!(newInput instanceof CallArgsImpl))
                             throw new MarkLogicInternalException("Unsupported implementation of call arguments.");
@@ -509,16 +535,16 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
     }
 
     @Override
-    public void retry(CallManager.CallEvent event) {
+    public void retry(CallBatcher.CallEvent event) {
         retry(event, false);
     }
 
     @Override
-    public void retryWithFailureListeners(CallManager.CallEvent event) {
+    public void retryWithFailureListeners(CallBatcher.CallEvent event) {
         retry(event, true);
     }
 
-    private void retry(CallManager.CallEvent event, boolean callFailListeners) {
+    private void retry(CallBatcher.CallEvent event, boolean callFailListeners) {
         if (isStopped()) {
             logger.warn("Job is now stopped, aborting the retry");
             return;
@@ -535,7 +561,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         callTask.withFailureListeners(callFailListeners).run();
     }
 
-    static class BuilderImpl<E extends CallManager.CallEvent> implements CallBatcherBuilder<E> {
+    static class BuilderImpl<E extends CallBatcher.CallEvent> implements CallBatcherBuilder<E> {
         private CallManagerImpl.CallerImpl<E> caller;
         private DatabaseClient client;
 
@@ -575,11 +601,16 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
 
         @Override
         public CallBatcher<Void, E> forArgsGenerator(CallArgsGenerator<E> generator) {
-            return new CallBatcherImpl(client, caller, Void.class, generator);
+            return new CallBatcherImpl(client, caller, Void.class, generator).finishConstruction();
+        }
+
+        @Override
+        public CallBatcher<Void, E> forArgsGenerator(CallArgsGenerator<E> generator, String forestName) {
+            return new CallBatcherImpl(client, caller, Void.class, generator, forestName).finishConstruction();
         }
     }
 
-    static class CallingThreadPoolExecutor<W, E extends CallManager.CallEvent> extends ThreadPoolExecutor {
+    static class CallingThreadPoolExecutor<W, E extends CallBatcher.CallEvent> extends ThreadPoolExecutor {
         private CallBatcherImpl<W, E> batcher;
         private Set<CallTask<W, E>> queuedAndExecutingTasks;
         private CountDownLatch idleLatch;
@@ -659,7 +690,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         }
     }
 
-    static class CallTask<W, E extends CallManager.CallEvent> extends FutureTask<Boolean> {
+    static class CallTask<W, E extends CallBatcher.CallEvent> extends FutureTask<Boolean> {
         private CallMaker<W, E> callMaker;
         CallTask(CallBatcherImpl<W, E> batcher, long callNumber, CallManagerImpl.CallArgsImpl args) {
             this(new CallMaker(batcher, callNumber, args));
@@ -674,7 +705,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
         }
     }
 
-    static class CallMaker<W, E extends CallManager.CallEvent> implements Callable<Boolean> {
+    static class CallMaker<W, E extends CallBatcher.CallEvent> implements Callable<Boolean> {
         private CallManagerImpl.CallArgsImpl args;
         private CallBatcherImpl<W, E> batcher;
         private long callNumber;
@@ -691,8 +722,8 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             fireFailureListeners = enable;
         }
 
-        void initEvent(CallManager.CallEvent event, Calendar callTime) {
-            ((CallManagerImpl.CallEventImpl) event)
+        void initEvent(CallEvent event, Calendar callTime) {
+            ((CallEventImpl) event)
                     .withJobBatchNumber(callNumber)
                     .withJobTicket(batcher.getJobTicket())
                     .withTimestamp(callTime);
@@ -709,7 +740,7 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
                 output = caller.callForEvent(client, args);
             } catch (Throwable throwable) {
                 if (fireFailureListeners) {
-                    CallManagerImpl.CallEventImpl input = new CallManagerImpl.CallEventImpl(client, args);
+                    CallEventImpl input = new CallEventImpl(client, args);
                     initEvent(input, callTime);
                     batcher.sendThrowableToListeners(throwable, "failure calling " + caller.getEndpointPath() + " {}", input);
                     return false;
@@ -728,6 +759,12 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
                 if(newInput != null) {
                     if(!(newInput instanceof CallArgsImpl))
                         throw new MarkLogicInternalException("Unsupported implementation of call arguments.");
+                    String forestParamName = batcher.forestParamName;
+                    if (forestParamName != null) {
+                        CallField forestField  = ((CallArgsImpl) output.getArgs()).getCallFields().get(forestParamName);
+                        String forestNameValue = ((SingleAtomicCallField) forestField).getParamValue();
+                        newInput.param(forestParamName, forestNameValue);
+                    }
                     batcher.submitCall((CallArgsImpl) newInput);
                 } else {
                     batcher.threadPool.threadIdling();
@@ -736,4 +773,48 @@ public class CallBatcherImpl<W, E extends CallManager.CallEvent> extends Batcher
             return true;
         }
     }
+    
+    static class CallEventImpl extends BatchEventImpl implements CallEvent {
+        private CallArgsImpl args;
+        CallEventImpl(DatabaseClient client, CallArgs args) {
+          if (args == null) {
+            throw new IllegalArgumentException("null arguments for call event");
+          } else if (!(args instanceof CallArgsImpl)) {
+            throw new IllegalArgumentException("unsupported implementation of arguments for call event: "+
+                    args.getClass().getCanonicalName());
+          }
+          this.args = (CallArgsImpl) args;
+          withClient(client);
+        }
+        @Override
+        public CallArgsImpl getArgs() {
+          return args;
+        }
+        @Override
+        public CallManagerImpl.EndpointDefinerImpl getEndpointDefiner() {
+          return args.getEndpoint();
+        }
+      }
+      static class OneCallEventImpl<R> extends CallEventImpl implements OneCallEvent<R> {
+        private R item;
+        OneCallEventImpl(DatabaseClient client, CallArgs args, R item) {
+          super(client, args);
+          this.item = item;
+        }
+        @Override
+        public R getItem() {
+          return item;
+        }
+      }
+      static class ManyCallEventImpl<R> extends CallEventImpl implements ManyCallEvent<R> {
+        private Stream<R> items;
+        ManyCallEventImpl(DatabaseClient client, CallArgs args, Stream<R> items) {
+          super(client, args);
+          this.items = items;
+        }
+        @Override
+        public Stream<R> getItems() {
+          return items;
+        }
+      }
 }

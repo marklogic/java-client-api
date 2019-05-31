@@ -440,6 +440,20 @@ public interface RESTServices {
     public CallField toBuffered() {
     	return this;
     }
+    
+    @Override
+    public int hashCode() {
+        return getParamName().hashCode();
+    }
+    
+    @Override
+    public boolean equals(Object arg0) {
+        CallField callField = (CallField)arg0;
+        if(this.getParamName()!=null && callField.getParamName()!=null && 
+                this.getParamName().equals(callField.getParamName()))
+            return true;
+        return false;
+    }
   }
   public static abstract class MultipleAtomicCallField extends CallField {
     MultipleAtomicCallField(String paramName) {
@@ -524,12 +538,12 @@ public interface RESTServices {
     
     @Override
     public BufferedMultipleNodeCallField toBuffered() {
-    	Stream<BytesHandle> bytesHandleStream = paramValues.map(handle ->{
+        Stream<BufferableHandle> bufferableHandleStream = paramValues.map(handle ->{
     		if(!(handle instanceof BufferableHandle))
         		throw new IllegalArgumentException("Default parameter must implement BufferableHandle.");
-    		return new BytesHandle((BufferableHandle) handle);
+    		return ((BufferableHandle) handle);
         });
-    	return new BufferedMultipleNodeCallField(super.getParamName(), bytesHandleStream);
+    	return new BufferedMultipleNodeCallField(super.getParamName(), bufferableHandleStream);
     }
     
   }
@@ -537,9 +551,13 @@ public interface RESTServices {
 	  
 	private String[] paramValues;
 	public BufferedMultipleAtomicCallField(String paramName, Stream<String> paramValues) {
-		super(paramName);
-        this.paramValues = paramValues.toArray(size -> new String[size]);
+        this(paramName, paramValues.toArray(size -> new String[size]));
     }
+	
+	public BufferedMultipleAtomicCallField(String paramName, String[] paramValues) {
+	    super(paramName);
+	    this.paramValues = paramValues;
+	}
   
 	@Override
 	public Stream<String> getParamValues() {
@@ -549,28 +567,49 @@ public interface RESTServices {
 	
   static public class BufferedMultipleNodeCallField extends MultipleNodeCallField {
 	  
-	  private BytesHandle[] paramValues;
-	  public BufferedMultipleNodeCallField(String paramName, Stream<BytesHandle> paramValues) {
-			super(paramName);
-	        this.paramValues = paramValues.toArray(size -> new BytesHandle[size]);
+	  private BufferableHandle[] paramValues;
+	  public BufferedMultipleNodeCallField(String paramName, Stream<BufferableHandle> paramValues) {
+	        this(paramName, paramValues.toArray(size -> new BufferableHandle[size]));
+	  }
+	  public BufferedMultipleNodeCallField(String paramName, BufferableHandle[] paramValues) {
+	      super(paramName);
+	      this.paramValues = paramValues;
 	  }
 	  @Override
-	  public Stream<BytesHandle> getParamValues() {
+	  public Stream<BufferableHandle> getParamValues() {
 			return Stream.of(paramValues);
-			}
+	  }
+	  public BufferableHandle[] getParamValuesArray() {
+	      return this.paramValues;
+	  }
+	  void setParamValues(BufferableHandle[] paramValues) {
+	      this.paramValues = paramValues;
+	  }
+	  
+	  public BufferedMultipleNodeCallField toBuffered() {
+          return new BufferedMultipleNodeCallField(super.getParamName(), NodeConverter.copyToBytesHandle(paramValues));
+      }
   }
   
   static public class BufferedSingleNodeCallField extends SingleNodeCallField {
 	  
-		private BytesHandle paramValue;
-		public BufferedSingleNodeCallField(String paramName, BytesHandle paramValue) {
+		private BufferableHandle paramValue;
+		public BufferedSingleNodeCallField(String paramName, BufferableHandle paramValue) {
 			super(paramName);
 	        this.paramValue = paramValue;
 	    }
 	  
 		@Override
-		public BytesHandle getParamValue() {
-			return paramValue;
+		public BufferableHandle getParamValue() {
+            return paramValue;
+        }
+		
+		void setParamValue(BufferableHandle paramValue) {
+		    this.paramValue = paramValue;
+		}
+		
+		public BufferedSingleNodeCallField toBuffered() {
+		    return new BufferedSingleNodeCallField(super.getParamName(), NodeConverter.copyToBytesHandle(paramValue));
 		}
   }
 

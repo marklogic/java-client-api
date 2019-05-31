@@ -17,6 +17,8 @@ package com.marklogic.client.io;
 
 import com.marklogic.client.MarkLogicInternalException;
 
+import java.util.regex.Pattern;
+
 /**
  * The Format enumerates different kinds of document content.
  */
@@ -41,6 +43,14 @@ public enum Format {
    * Used for documents with unknown or multiple formats.
    */
   UNKNOWN;
+
+  static final private Pattern BINARY_MIMETYPE_PATTERN =
+          Pattern.compile("^\\s*application/([^+]+\\+)?(octet-stream|x-unknown-content-type)(\\s*;.*)?$");
+  static final private Pattern JSON_MIMETYPE_PATTERN =
+          Pattern.compile("^\\s*(application|text)/([^+;]+\\+)?json(\\s*;.*)?$");
+  static final private Pattern XML_MIMETYPE_PATTERN  =
+          Pattern.compile("^\\s*(application|text)/([^+;]+\\+)?xml(\\s*;.*)?$");
+
   /**
    * Returns the default mime type for the format.
    * @return	the default mime type
@@ -63,14 +73,22 @@ public enum Format {
     }
   }
 
+  /**
+   * Returns the format implied by the mime type
+   * @param mimeType  the mime type
+   * @return  the format
+   */
   public static Format getFromMimetype(String mimeType) {
-    if      ( mimeType == null ) return UNKNOWN;
-    else if ( mimeType.startsWith("application/xml") ) return XML;
-    else if ( mimeType.startsWith("text/xml") ) return XML;
-    else if ( mimeType.startsWith("application/json") ) return JSON;
-    else if ( mimeType.startsWith("text/xml") ) return JSON;
-    else if ( mimeType.startsWith("application/octet-stream") ) return BINARY;
-    else if ( mimeType.startsWith("text/") ) return TEXT;
+    if (mimeType == null)
+      return UNKNOWN;
+    else if (JSON_MIMETYPE_PATTERN.matcher(mimeType).matches())
+      return JSON;
+    else if (XML_MIMETYPE_PATTERN.matcher(mimeType).matches())
+      return XML;
+    else if (BINARY_MIMETYPE_PATTERN.matcher(mimeType).matches())
+      return BINARY;
+    else if (mimeType.startsWith("text/"))
+      return TEXT;
     else return UNKNOWN;
   }
 }

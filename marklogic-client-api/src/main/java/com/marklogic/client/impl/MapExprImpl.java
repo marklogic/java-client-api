@@ -15,16 +15,12 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.type.ElementNodeExpr;
-import com.marklogic.client.type.ItemSeqExpr;
-import com.marklogic.client.type.XsBooleanExpr;
-import com.marklogic.client.type.XsStringExpr;
-import com.marklogic.client.type.XsStringSeqExpr;
-import com.marklogic.client.type.XsUnsignedIntExpr;
+import com.marklogic.client.type.XsBooleanVal;
+import com.marklogic.client.type.XsStringSeqVal;
+import com.marklogic.client.type.XsStringVal;
+import com.marklogic.client.type.XsUnsignedIntVal;
 
 import com.marklogic.client.type.ServerExpression;
-import com.marklogic.client.type.MapMapExpr;
-import com.marklogic.client.type.MapMapSeqExpr;
 
 import com.marklogic.client.expression.MapExpr;
 import com.marklogic.client.impl.BaseTypeImpl;
@@ -41,13 +37,13 @@ class MapExprImpl implements MapExpr {
 
     
   @Override
-  public XsBooleanExpr contains(ServerExpression map, String key) {
-    return contains(map, (key == null) ? (XsStringExpr) null : xs.string(key));
+  public ServerExpression contains(ServerExpression map, String key) {
+    return contains(map, (key == null) ? (ServerExpression) null : xs.string(key));
   }
 
   
   @Override
-  public XsBooleanExpr contains(ServerExpression map, ServerExpression key) {
+  public ServerExpression contains(ServerExpression map, ServerExpression key) {
     if (map == null) {
       throw new IllegalArgumentException("map parameter for contains() cannot be null");
     }
@@ -59,7 +55,7 @@ class MapExprImpl implements MapExpr {
 
   
   @Override
-  public XsUnsignedIntExpr count(ServerExpression map) {
+  public ServerExpression count(ServerExpression map) {
     if (map == null) {
       throw new IllegalArgumentException("map parameter for count() cannot be null");
     }
@@ -68,7 +64,7 @@ class MapExprImpl implements MapExpr {
 
   
   @Override
-  public MapMapExpr entry(ServerExpression key, ServerExpression value) {
+  public ServerExpression entry(ServerExpression key, ServerExpression value) {
     if (key == null) {
       throw new IllegalArgumentException("key parameter for entry() cannot be null");
     }
@@ -77,13 +73,13 @@ class MapExprImpl implements MapExpr {
 
   
   @Override
-  public ItemSeqExpr get(ServerExpression map, String key) {
-    return get(map, (key == null) ? (XsStringExpr) null : xs.string(key));
+  public ServerExpression get(ServerExpression map, String key) {
+    return get(map, (key == null) ? (ServerExpression) null : xs.string(key));
   }
 
   
   @Override
-  public ItemSeqExpr get(ServerExpression map, ServerExpression key) {
+  public ServerExpression get(ServerExpression map, ServerExpression key) {
     if (map == null) {
       throw new IllegalArgumentException("map parameter for get() cannot be null");
     }
@@ -95,7 +91,7 @@ class MapExprImpl implements MapExpr {
 
   
   @Override
-  public XsStringSeqExpr keys(ServerExpression map) {
+  public ServerExpression keys(ServerExpression map) {
     if (map == null) {
       throw new IllegalArgumentException("map parameter for keys() cannot be null");
     }
@@ -104,34 +100,25 @@ class MapExprImpl implements MapExpr {
 
   
   @Override
-  public MapMapExpr map() {
+  public ServerExpression map() {
     return new MapCallImpl("map", "map", new Object[]{  });
   }
 
   
   @Override
-  public MapMapExpr map(ServerExpression map) {
+  public ServerExpression map(ServerExpression map) {
     if (map == null) {
       throw new IllegalArgumentException("map parameter for map() cannot be null");
     }
     return new MapCallImpl("map", "map", new Object[]{ map });
   }
 
-  @Override
-  public MapMapSeqExpr mapSeq(MapMapExpr... items) {
-    return new MapSeqListImpl(items);
-  }
-  static class MapSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements MapMapSeqExpr {
-    MapSeqListImpl(Object[] items) {
-      super(items);
-    }
-  }
-  static class MapSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements MapMapSeqExpr {
+  static class MapSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
     MapSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class MapCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements MapMapExpr {
+  static class MapCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
     MapCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }

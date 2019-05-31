@@ -20,6 +20,6 @@ package com.marklogic.client.type;
 /**
  * A sequence of server year-month duration values.
  */
-public interface XsYearMonthDurationSeqVal extends XsYearMonthDurationSeqExpr, XsDurationSeqVal {
+public interface XsYearMonthDurationSeqVal extends XsDurationSeqVal {
     public XsYearMonthDurationVal[] getYearMonthDurationItems();
 }

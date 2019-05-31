@@ -17,10 +17,9 @@ package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.dataservices.CallBatcher;
-import com.marklogic.client.dataservices.CallManager;
+import com.marklogic.client.dataservices.impl.CallBatcher;
+import com.marklogic.client.dataservices.impl.CallManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
@@ -99,7 +98,7 @@ public class CallBatchedParamTest {
 
         final IntCounter batchCount = new IntCounter();
 
-        CallBatcher<Double, CallManager.ManyCallEvent<Double>> batcher = caller
+        CallBatcher<Double, CallBatcher.ManyCallEvent<Double>> batcher = caller
                 .batcher()
                 .forBatchedParam("param1", Double.class)
                 .onCallSuccess(event -> {
@@ -140,7 +139,7 @@ public class CallBatchedParamTest {
 
         final IntCounter batchCount = new IntCounter();
 
-        CallBatcher<LocalDateTime, CallManager.OneCallEvent<LocalDateTime>> batcher = caller
+        CallBatcher<LocalDateTime, CallBatcher.OneCallEvent<LocalDateTime>> batcher = caller
                 .batcher()
                 .forBatchedParam("param1", LocalDateTime.class)
                 .onCallSuccess(event -> {
@@ -180,7 +179,7 @@ public class CallBatchedParamTest {
 
         final IntCounter batchCount = new IntCounter();
 
-        CallBatcher<JsonNode, CallManager.ManyCallEvent<JsonNode>> batcher = caller
+        CallBatcher<JsonNode, CallBatcher.ManyCallEvent<JsonNode>> batcher = caller
                 .batcher()
                 .forBatchedParam("param1", JsonNode.class)
                 .onCallSuccess(event -> {
@@ -220,7 +219,7 @@ public class CallBatchedParamTest {
 
         final IntCounter batchCount = new IntCounter();
 
-        CallBatcher<JsonNode, CallManager.OneCallEvent<JsonNode>> batcher = caller
+        CallBatcher<JsonNode, CallBatcher.OneCallEvent<JsonNode>> batcher = caller
                 .batcher()
                 .forBatchedParam("param1", JsonNode.class)
                 .onCallSuccess(event -> {
@@ -263,7 +262,7 @@ public class CallBatchedParamTest {
 
         final IntCounter batchCount = new IntCounter();
 
-        CallBatcher<BigDecimal, CallManager.ManyCallEvent<BigDecimal>> batcher = caller
+        CallBatcher<BigDecimal, CallBatcher.ManyCallEvent<BigDecimal>> batcher = caller
                 .batcher()
                 .forBatchedParam("param1", BigDecimal.class)
                 .withDefaultArgs(caller.args().param("param2", LocalDate.parse("2019-01-02")))
@@ -308,7 +307,7 @@ public class CallBatchedParamTest {
 
         final IntCounter batchCount = new IntCounter();
 
-        CallBatcher<Double, CallManager.ManyCallEvent<Double>> batcher = caller
+        CallBatcher<Double, CallBatcher.ManyCallEvent<Double>> batcher = caller
                 .batcher()
                 .forBatchedParam("param1", Double.class)
                 .onCallSuccess(event -> {

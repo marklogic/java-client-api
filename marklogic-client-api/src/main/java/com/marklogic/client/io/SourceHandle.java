@@ -25,11 +25,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.XMLConstants;
+import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
@@ -179,7 +176,7 @@ public class SourceHandle
       } else {
         if (logger.isWarnEnabled())
           logger.warn("No transformer, so using identity transform");
-        transformer = TransformerFactory.newInstance().newTransformer();
+        transformer = makeTransformer().newTransformer();
       }
 
       transformer.transform(content, result);
@@ -187,6 +184,21 @@ public class SourceHandle
       logger.error("Failed to transform source into result",e);
       throw new MarkLogicIOException(e);
     }
+  }
+  private TransformerFactory makeTransformer() {
+    TransformerFactory factory = TransformerFactory.newInstance();
+    // default to best practices for conservative security including recommendations per
+    // https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md
+    try {
+      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+    } catch (TransformerConfigurationException e) {}
+    try {
+      factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+    } catch (IllegalArgumentException e) {}
+    try {
+      factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+    } catch (IllegalArgumentException e) {}
+    return factory;
   }
 
   /**

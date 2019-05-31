@@ -15,21 +15,15 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
+import com.marklogic.client.*;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.io.Format;
 import org.junit.Test;
 import org.junit.Ignore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.StringHandle;
@@ -39,6 +33,8 @@ import java.io.StringWriter;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+
+import static org.junit.Assert.*;
 
 public class FailedRequestTest {
   private static final Logger logger = LoggerFactory.getLogger(FailedRequestTest.class);
@@ -58,8 +54,8 @@ public class FailedRequestTest {
       assertEquals(
           "Local message: User is not allowed to write /config/query. Server Message: You do not have permission to this method and URL.",
           e.getMessage());
-      assertEquals(403, e.getFailedRequest().getStatusCode());
-      assertEquals("Forbidden", e.getFailedRequest().getStatus());
+      assertEquals(403, e.getServerStatusCode());
+      assertEquals("Forbidden", e.getServerStatus());
     }
     mgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
 
@@ -97,16 +93,33 @@ public class FailedRequestTest {
       assertEquals(
         "Local message: /config/query write failed: Bad Request. Server Message: RESTAPI-INVALIDCONTENT: (err:FOER0000) Invalid content: Operation results in invalid Options: Operator or constraint name \"blah\" is used more than once (must be unique).",
         e.getMessage());
-      assertEquals(400, e.getFailedRequest().getStatusCode());
-      assertEquals("Bad Request", e.getFailedRequest().getStatus());
-      assertEquals("RESTAPI-INVALIDCONTENT", e.getFailedRequest()
-        .getMessageCode());
+      assertEquals(400, e.getServerStatusCode());
+      assertEquals("Bad Request", e.getServerStatus());
+      assertEquals("RESTAPI-INVALIDCONTENT", e.getServerMessageCode());
     }
 
   }
 
-  // Test testErrorOnNonREST commented out because of Git issue #865
-  @Ignore
+  @Test
+  public void testFailedRequestParsing() {
+    DatabaseClient client = Common.connect();
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
+    try {
+      docMgr.write("/failed.xml", new StringHandle("{\"json\":\"object\"}").withFormat(Format.XML));
+      fail("Invalid call succeeded");
+    } catch (MarkLogicServerException e) {
+      assertEquals(400, e.getServerStatusCode());
+      assertEquals("Bad Request", e.getServerStatus());
+      assertEquals("XDMP-DOCROOTTEXT", e.getServerMessageCode());
+      assertEquals("XDMP-DOCROOTTEXT: Invalid root text \"{&quot;json&quot;:&quot;object&quot;}\" at  line 1", e.getServerMessage());
+      assertNull(e.getServerStackTrace());
+    } catch (Exception e) {
+      fail("Call failed with unexpected exception: "+e.getMessage());
+    }
+
+  }
+
+  @Test
   public void testErrorOnNonREST() throws ForbiddenUserException {
     DatabaseClient badClient = DatabaseClientFactory.newClient(Common.HOST,
       8001, new DigestAuthContext(Common.USER, Common.PASS));
@@ -115,16 +128,12 @@ public class FailedRequestTest {
 
     try {
       serverConfig.readConfiguration();
-    } catch (FailedRequestException e) {
-
-
+    } catch (ForbiddenUserException e) {
       assertEquals(
-        "Local message: config/properties read failed: Not Found. Server Message: Server (not a REST instance?) did not respond with an expected REST Error message.",
+        "Local message: User is not allowed to read config/properties. Server Message: SEC-NOADMIN: (err:FOER0000) User does not have admin role.",
         e.getMessage());
-      assertEquals(404, e.getFailedRequest().getStatusCode());
-      assertEquals("UNKNOWN", e.getFailedRequest().getStatus());
-    } finally {
-      badClient.release();
+      assertEquals(403, e.getServerStatusCode());
+      assertEquals("Forbidden", e.getServerStatus());
     }
 
   }

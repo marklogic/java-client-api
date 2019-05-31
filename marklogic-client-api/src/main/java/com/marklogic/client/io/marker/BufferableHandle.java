@@ -25,7 +25,7 @@ package com.marklogic.client.io.marker;
  * Where possible, the handle uses the byte array directly as a backing store.
  * Otherwise, the handle makes a copy into its own store from the byte array.
  */
-public interface BufferableHandle {
+public interface BufferableHandle extends AbstractWriteHandle, AbstractReadHandle {
   /**
    * Sets the content of the handle by copying from a byte array buffer
    * encoded in UTF-8.

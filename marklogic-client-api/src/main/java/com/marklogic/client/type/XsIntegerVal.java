@@ -20,6 +20,6 @@ import java.math.BigInteger;
 /**
  * An instance of a server integer value.
  */
-public interface XsIntegerVal extends XsIntegerExpr, XsDecimalVal, XsIntegerSeqVal, PlanParamBindingVal {
+public interface XsIntegerVal extends XsDecimalVal, XsIntegerSeqVal, PlanParamBindingVal {
     public BigInteger getBigInteger();
 }

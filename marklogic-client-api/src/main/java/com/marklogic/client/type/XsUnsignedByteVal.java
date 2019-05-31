@@ -20,6 +20,6 @@ package com.marklogic.client.type;
 /**
  * An instance of a server unsigned byte value.
  */
-public interface XsUnsignedByteVal extends XsUnsignedByteExpr, XsUnsignedShortVal, XsUnsignedByteSeqVal, PlanParamBindingVal {
+public interface XsUnsignedByteVal extends XsUnsignedShortVal, XsUnsignedByteSeqVal, PlanParamBindingVal {
     public byte getByte();
 }

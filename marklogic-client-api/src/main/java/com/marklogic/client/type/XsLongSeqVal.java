@@ -20,6 +20,6 @@ package com.marklogic.client.type;
 /**
  * A sequence of server long values.
  */
-public interface XsLongSeqVal extends XsLongSeqExpr, XsIntegerSeqVal {
+public interface XsLongSeqVal extends XsIntegerSeqVal {
     public XsLongVal[] getLongItems();
 }

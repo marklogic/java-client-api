@@ -19,18 +19,17 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
-import com.marklogic.client.datamovement.impl.BatchEventImpl;
-import com.marklogic.client.dataservices.CallBatcher;
-import com.marklogic.client.dataservices.CallManager;
 import com.marklogic.client.impl.BaseProxy;
 import com.marklogic.client.impl.NodeConverter;
 import com.marklogic.client.impl.RESTServices.CallField;
 import com.marklogic.client.impl.RESTServices.UnbufferedMultipleAtomicCallField;
+import com.marklogic.client.impl.RESTServices.BufferedMultipleAtomicCallField;
 import com.marklogic.client.impl.RESTServices.MultipleCallResponse;
 import com.marklogic.client.impl.RESTServices.UnbufferedMultipleNodeCallField;
+import com.marklogic.client.impl.RESTServices.BufferedMultipleNodeCallField;
 import com.marklogic.client.impl.RESTServices.SingleAtomicCallField;
 import com.marklogic.client.impl.RESTServices.SingleCallResponse;
-import com.marklogic.client.impl.RESTServices.UnbufferedSingleNodeCallField;
+import com.marklogic.client.impl.RESTServices.BufferedSingleNodeCallField;
 import com.marklogic.client.impl.SessionStateImpl;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.*;
@@ -132,8 +131,8 @@ public class CallManagerImpl implements CallManager {
       throw new IllegalArgumentException("cannot construct CallableEndpoint with null endpointDeclaration");
     } else if (extension == null || extension.length() == 0) {
       throw new IllegalArgumentException("cannot construct CallableEndpoint with null or empty extension");
-    } else if (!"sjs".equals(extension) && !"xqy".equals(extension)) {
-      throw new IllegalArgumentException("extension must be sjs or xqy: "+extension);
+    } else if (!"mjs".equals(extension) && !"sjs".equals(extension) && !"xqy".equals(extension)) {
+      throw new IllegalArgumentException("extension must be mjs, sjs, or xqy: "+extension);
     }
 
     return new CallableEndpointImpl(client, serviceDecl, endpointDecl, extension);
@@ -451,7 +450,7 @@ public class CallManagerImpl implements CallManager {
     return property.asText();
   }
 
-  private static abstract class EndpointDefinerImpl implements EndpointDefiner {
+  static abstract class EndpointDefinerImpl implements EndpointDefiner {
     @Override
     public CallArgsImpl args() {
       return new CallArgsImpl(getEndpoint());
@@ -464,51 +463,7 @@ public class CallManagerImpl implements CallManager {
     abstract CallableEndpointImpl getEndpoint();
   }
 
-  static class CallEventImpl extends BatchEventImpl implements CallEvent {
-    private CallArgsImpl args;
-    CallEventImpl(DatabaseClient client, CallArgs args) {
-      if (args == null) {
-        throw new IllegalArgumentException("null arguments for call event");
-      } else if (!(args instanceof CallArgsImpl)) {
-        throw new IllegalArgumentException("unsupported implementation of arguments for call event: "+
-                args.getClass().getCanonicalName());
-      }
-      this.args = (CallArgsImpl) args;
-      withClient(client);
-    }
-    @Override
-    public CallArgsImpl getArgs() {
-      return args;
-    }
-    @Override
-    public CallManagerImpl.EndpointDefinerImpl getEndpointDefiner() {
-      return args.getEndpoint();
-    }
-  }
-  static class OneCallEventImpl<R> extends CallEventImpl implements OneCallEvent<R> {
-    private R item;
-    OneCallEventImpl(DatabaseClient client, CallArgs args, R item) {
-      super(client, args);
-      this.item = item;
-    }
-    @Override
-    public R getItem() {
-      return item;
-    }
-  }
-  static class ManyCallEventImpl<R> extends CallEventImpl implements ManyCallEvent<R> {
-    private Stream<R> items;
-    ManyCallEventImpl(DatabaseClient client, CallArgs args, Stream<R> items) {
-      super(client, args);
-      this.items = items;
-    }
-    @Override
-    public Stream<R> getItems() {
-      return items;
-    }
-  }
-
-  static class NoneCallerImpl extends CallerImpl<CallEvent> implements NoneCaller {
+  static class NoneCallerImpl extends CallerImpl<CallBatcher.CallEvent> implements NoneCaller {
     NoneCallerImpl(CallableEndpointImpl endpoint) {
        super(endpoint);
      }
@@ -528,16 +483,16 @@ public class CallManagerImpl implements CallManager {
       startRequest(client, (CallArgsImpl) args).responseNone();
     }
     @Override
-	public CallBatcher.CallBatcherBuilder<CallEvent> batcher() {
+	public CallBatcher.CallBatcherBuilder<CallBatcher.CallEvent> batcher() {
       return new CallBatcherImpl.BuilderImpl(getEndpoint().getPrimaryClient(), this);
 	}
     @Override
-    public CallEvent callForEvent(DatabaseClient client, CallArgs args) throws Exception {
+    public CallBatcher.CallEvent callForEvent(DatabaseClient client, CallArgs args) throws Exception {
       callImpl(client, args);
-      return new CallEventImpl(client, args);
+      return new CallBatcherImpl.CallEventImpl(client, args);
     }
   }
-  private static class OneCallerImpl<R> extends CallerImpl<OneCallEvent<R>> implements OneCaller<R> {
+  private static class OneCallerImpl<R> extends CallerImpl<CallBatcher.OneCallEvent<R>> implements OneCaller<R> {
     private ReturnConverter<R> converter;
     private Format             format;
 
@@ -562,15 +517,15 @@ public class CallManagerImpl implements CallManager {
       return converter.one(startRequest(client, (CallArgsImpl) args).responseSingle(getEndpoint().isNullable(), format));
     }
     @Override
-	public CallBatcher.CallBatcherBuilder<OneCallEvent<R>> batcher() {
+	public CallBatcher.CallBatcherBuilder<CallBatcher.OneCallEvent<R>> batcher() {
       return new CallBatcherImpl.BuilderImpl(getEndpoint().getPrimaryClient(),this);
 	}
     @Override
-    public OneCallEvent<R> callForEvent(DatabaseClient client, CallArgs args) throws Exception {
-      return new OneCallEventImpl(client, args, callImpl(client, args));
+    public CallBatcher.OneCallEvent<R> callForEvent(DatabaseClient client, CallArgs args) throws Exception {
+      return new CallBatcherImpl.OneCallEventImpl(client, args, callImpl(client, args));
     }
   }
-  static class ManyCallerImpl<R> extends CallerImpl<ManyCallEvent<R>> implements ManyCaller<R> {
+  static class ManyCallerImpl<R> extends CallerImpl<CallBatcher.ManyCallEvent<R>> implements ManyCaller<R> {
     private ReturnConverter<R> converter;
     private Format             format;
 
@@ -595,31 +550,22 @@ public class CallManagerImpl implements CallManager {
       return converter.many(startRequest(client, (CallArgsImpl) args).responseMultiple(getEndpoint().isNullable(), format));
     }
     @Override
-	public CallBatcher.CallBatcherBuilder<ManyCallEvent<R>> batcher() {
+	public CallBatcher.CallBatcherBuilder<CallBatcher.ManyCallEvent<R>> batcher() {
       return new CallBatcherImpl.BuilderImpl(getEndpoint().getPrimaryClient(),this);
 	}
     @Override
-    public ManyCallEvent<R> callForEvent(DatabaseClient client, CallArgs args) throws Exception {
-      return new ManyCallEventImpl(client, args, callImpl(client, args));
+    public CallBatcher.ManyCallEvent<R> callForEvent(DatabaseClient client, CallArgs args) throws Exception {
+      return new CallBatcherImpl.ManyCallEventImpl(client, args, callImpl(client, args));
     }
   }
 
-  interface EventedCaller<E extends CallEvent> extends EndpointDefiner {
+  interface EventedCaller<E extends CallBatcher.CallEvent> extends EndpointDefiner {
     E callForEvent(DatabaseClient client, CallArgs args) throws Exception;
   }
-  static abstract class CallerImpl<E extends CallEvent> extends EndpointDefinerImpl implements EventedCaller<E> {
+  static abstract class CallerImpl<E extends CallBatcher.CallEvent> extends EndpointDefinerImpl implements EventedCaller<E> {
     private CallableEndpointImpl endpoint;
     CallerImpl(CallableEndpointImpl endpoint) {
       this.endpoint = endpoint;
-    }
-
-    CallArgsImpl args(CallField field) {
-      CallArgsImpl args = args();
-      args.assignedParams = new HashSet<>();
-      args.assignedParams.add(field.getParamName());
-      args.callFields = new ArrayList<>();
-      args.callFields.add(field);
-      return args;
     }
 
     @Override
@@ -644,9 +590,10 @@ public class CallManagerImpl implements CallManager {
     }
 
     void checkArgs(CallArgsImpl callArgs) {
-      Set<String> assignedParams = callArgs.getAssignedParams();
+      Map<String, CallField> callFields = callArgs.getCallFields();
       Set<String> requiredParams = endpoint.getRequiredParams();
-      if (assignedParams != null) {
+      if (callFields != null && callFields.size() > 0) {
+        Set<String> assignedParams = callFields.keySet();
         if (requiredParams != null && !assignedParams.containsAll(requiredParams)) {
           throw new IllegalArgumentException(
                   endpoint.getModule()+" called without some required parameters: "+
@@ -674,10 +621,10 @@ public class CallManagerImpl implements CallManager {
               request.withSession() :
               request.withSession(sessiondef.getParamName(), callArgs.getSession(), sessiondef.isNullable());
 
-      List<CallField> callFields = callArgs.getCallFields();
+      Map<String,CallField> callFields = callArgs.getCallFields();
       int fieldSize = (callFields == null) ? 0 : callFields.size();
       if (fieldSize > 0) {
-          request = request.withParams(callFields.toArray(new CallField[fieldSize]));
+          request = request.withParams(callFields.values().toArray(new CallField[fieldSize]));
       }
 
       return request.withMethod("POST");
@@ -685,10 +632,9 @@ public class CallManagerImpl implements CallManager {
   }
 
   static class CallArgsImpl implements CallArgs {
-    private CallableEndpointImpl endpoint;
-    private List<CallField>      callFields;
-    private SessionState         session;
-    private Set<String>          assignedParams;
+    private CallableEndpointImpl  endpoint;
+    private Map<String,CallField> callFields;
+    private SessionState          session;
 
     CallArgsImpl(CallableEndpointImpl endpoint) {
       this.endpoint = endpoint;
@@ -702,20 +648,16 @@ public class CallManagerImpl implements CallManager {
       }
       this.session = session;
     }
-    CallArgsImpl(CallableEndpointImpl endpoint, List<CallField> callFields, Set<String> assignedParams) {
-    	this(endpoint);
-    	this.callFields     = callFields;
-    	this.assignedParams = assignedParams;
+    CallArgsImpl(CallableEndpointImpl endpoint, Map<String,CallField> callFields) {
+        this(endpoint);
+        this.callFields = callFields;
     }
 
     SessionState getSession() {
       return session;
     }
-    List<CallField> getCallFields() {
+    Map<String,CallField> getCallFields() {
       return this.callFields;
-    }
-    Set<String> getAssignedParams() {
-      return assignedParams;
     }
 
     CallableEndpointImpl getEndpoint() {
@@ -735,27 +677,17 @@ public class CallManagerImpl implements CallManager {
     private CallArgs addField(CallField field) {
       if (field == null) return this;
 
-      if (getEndpoint().getRequiredParams() != null) {
-        if (assignedParams == null) {
-          assignedParams = new HashSet<>();
-        }
-        assignedParams.add(field.getParamName());
-      }
-
       if (callFields == null) {
-        callFields = new ArrayList<>();
+        callFields = new HashMap<>();
       }
-      callFields.add(field);
+      callFields.put(field.getParamName(), field);
 
       return this;
     }
 
     @Override
     public String[] getAssignedParamNames() {
-      if (assignedParams == null) {
-        return new String[0];
-      }
-      return assignedParams.toArray(new String[assignedParams.size()]);
+      return callFields.keySet().toArray(new String[callFields.size()]);
     }
 
     @Override
@@ -1260,7 +1192,7 @@ public class CallManagerImpl implements CallManager {
       return new SingleAtomicCallField(name, value);
     }
     CallField field(String name, String[] values) {
-      return new UnbufferedMultipleAtomicCallField(name, Stream.of(values));
+      return new BufferedMultipleAtomicCallField(name, values);
     }
     CallField field(String name, Stream<String> values) {
       return new UnbufferedMultipleAtomicCallField(name, values);
@@ -1297,11 +1229,15 @@ public class CallManagerImpl implements CallManager {
     AbstractWriteHandle format(AbstractWriteHandle value) {
       return NodeConverter.withFormat(value, getFormat());
     }
-    Stream<? extends AbstractWriteHandle> formatAll(AbstractWriteHandle[] value) {
-      for (AbstractWriteHandle handle: value) {
-        NodeConverter.withFormat(handle, getFormat());
+    BufferableHandle[] formatAll(AbstractWriteHandle[] value) {
+        BufferableHandle[] bufferableHandles = new BufferableHandle[value.length];
+      for (int i=0; i<value.length; i++) {
+          if(!(value[i] instanceof BufferableHandle))
+              throw new IllegalArgumentException("AbstractWriteHandle value is not an instance of BufferableHandle.");
+        NodeConverter.withFormat(value[i], getFormat());
+        bufferableHandles[i] = (BufferableHandle) value[i];
       }
-      return Stream.of(value);
+      return bufferableHandles;
     }
     Stream<? extends AbstractWriteHandle> formatAll(Stream<? extends AbstractWriteHandle> value) {
       return NodeConverter.streamWithFormat(value, getFormat());
@@ -1354,20 +1290,26 @@ public class CallManagerImpl implements CallManager {
              InputStream.class.isAssignableFrom(type)         ? (ParamFieldifier<T>) new InputStreamifier(name, this) :
              super.fieldifierFor(name, type);
     }
-    CallField field(String name, AbstractWriteHandle value) {
-      return formattedField(name, format(value));
-    }
     CallField formattedField(String name, AbstractWriteHandle value) {
-      return new UnbufferedSingleNodeCallField(name, value);
+        if(!(value instanceof BufferableHandle))
+            throw new IllegalArgumentException("AbstractWriteHandle value is not an instance of BufferableHandle.");
+      return new BufferedSingleNodeCallField(name, (BufferableHandle) value);
+    }
+    CallField formattedField(String name, BufferableHandle[] values) {
+        return new BufferedMultipleNodeCallField(name, values);
+    }
+    CallField formattedField(String name, Stream<? extends AbstractWriteHandle> values) {
+        return new UnbufferedMultipleNodeCallField(name, values);
+    }
+    
+    CallField field(String name, AbstractWriteHandle value) {
+        return formattedField(name, format(value));
     }
     CallField field(String name, AbstractWriteHandle[] values) {
-      return field(name, Stream.of(values));
+      return formattedField(name, formatAll(values));
     }
     CallField field(String name, Stream<? extends AbstractWriteHandle> values) {
       return formattedField(name, formatAll(values));
-    }
-    CallField formattedField(String name, Stream<? extends AbstractWriteHandle> values) {
-      return new UnbufferedMultipleNodeCallField(name, values);
     }
     CallField field(String name, byte[] value) {
       return field(name, NodeConverter.BytesToHandle(value));
@@ -1379,13 +1321,13 @@ public class CallManagerImpl implements CallManager {
       return field(name, NodeConverter.FileToHandle(value));
     }
     CallField field(String name, File[] values) {
-      return field(name, NodeConverter.FileToHandle(Stream.of(values)));
+      return field(name, NodeConverter.FileToHandle(values));
     }
     CallField field(String name, InputStream value) {
       return field(name, NodeConverter.InputStreamToHandle(value));
     }
     CallField field(String name, InputStream[] values) {
-      return field(name, NodeConverter.InputStreamToHandle(Stream.of(values)));
+      return field(name, NodeConverter.InputStreamToHandle(values));
     }
     private static class AbstractWriteHandlifier extends ParamFieldifier<AbstractWriteHandle> {
       private NodeFieldifier fieldifier;
@@ -1498,13 +1440,13 @@ public class CallManagerImpl implements CallManager {
       return field(name, NodeConverter.ReaderToHandle(value));
     }
     CallField field(String name, Reader[] values) {
-      return field(name, NodeConverter.ReaderToHandle(Stream.of(values)));
+      return field(name, NodeConverter.ReaderToHandle(values));
     }
     CallField field(String name, String value) {
       return field(name, NodeConverter.StringToHandle(value));
     }
     CallField field(String name, String[] values) {
-      return field(name, NodeConverter.StringToHandle(Stream.of(values)));
+      return field(name, NodeConverter.StringToHandle(values));
     }
     private static class Readerfier extends ParamFieldifier<Reader> {
       private CharacterNodeFieldifier fieldifier;
@@ -1568,7 +1510,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.BooleanType.fromBoolean(value));
     }
     CallField field(String name, Boolean[] values) {
-      return field(name, BaseProxy.BooleanType.fromBoolean(Stream.of(values)));
+      return field(name, BaseProxy.BooleanType.fromBoolean(values));
     }
     private static class Booleanifier extends ParamFieldifier<Boolean> {
       private BooleanFieldifier fieldifier;
@@ -1613,7 +1555,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.DateType.fromLocalDate(value));
     }
     CallField field(String name, LocalDate[] values) {
-      return field(name, BaseProxy.DateType.fromLocalDate(Stream.of(values)));
+      return field(name, BaseProxy.DateType.fromLocalDate(values));
     }
     private static class LocalDatifier extends ParamFieldifier<LocalDate> {
       private DateFieldifier fieldifier;
@@ -1680,19 +1622,19 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.DateTimeType.fromDate(value));
     }
     CallField field(String name, Date[] values) {
-      return field(name, BaseProxy.DateTimeType.fromDate(Stream.of(values)));
+      return field(name, BaseProxy.DateTimeType.fromDate(values));
     }
     CallField field(String name, LocalDateTime value) {
       return field(name, BaseProxy.DateTimeType.fromLocalDateTime(value));
     }
     CallField field(String name, LocalDateTime[] values) {
-      return field(name, BaseProxy.DateTimeType.fromLocalDateTime(Stream.of(values)));
+      return field(name, BaseProxy.DateTimeType.fromLocalDateTime(values));
     }
     CallField field(String name, OffsetDateTime value) {
       return field(name, BaseProxy.DateTimeType.fromOffsetDateTime(value));
     }
     CallField field(String name, OffsetDateTime[] values) {
-      return field(name, BaseProxy.DateTimeType.fromOffsetDateTime(Stream.of(values)));
+      return field(name, BaseProxy.DateTimeType.fromOffsetDateTime(values));
     }
     private static class Datifier extends ParamFieldifier<Date> {
       private DateTimeFieldifier fieldifier;
@@ -1775,7 +1717,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.DayTimeDurationType.fromDuration(value));
     }
     CallField field(String name, Duration[] values) {
-      return field(name, BaseProxy.DayTimeDurationType.fromDuration(Stream.of(values)));
+      return field(name, BaseProxy.DayTimeDurationType.fromDuration(values));
     }
     private static class Durationifier extends ParamFieldifier<Duration> {
       private DayTimeDurationFieldifier fieldifier;
@@ -1820,7 +1762,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.DecimalType.fromBigDecimal(value));
     }
     CallField field(String name, BigDecimal[] values) {
-      return field(name, BaseProxy.DecimalType.fromBigDecimal(Stream.of(values)));
+      return field(name, BaseProxy.DecimalType.fromBigDecimal(values));
     }
     private static class BigDecimalifier extends ParamFieldifier<BigDecimal> {
       private DecimalFieldifier fieldifier;
@@ -1865,7 +1807,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.DoubleType.fromDouble(value));
     }
     CallField field(String name, Double[] values) {
-      return field(name, BaseProxy.DoubleType.fromDouble(Stream.of(values)));
+      return field(name, BaseProxy.DoubleType.fromDouble(values));
     }
     private static class Doublifier extends ParamFieldifier<Double> {
       private DoubleFieldifier fieldifier;
@@ -1910,7 +1852,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.FloatType.fromFloat(value));
     }
     CallField field(String name, Float[] values) {
-      return field(name, BaseProxy.FloatType.fromFloat(Stream.of(values)));
+      return field(name, BaseProxy.FloatType.fromFloat(values));
     }
     private static class Floatifier extends ParamFieldifier<Float> {
       private FloatFieldifier fieldifier;
@@ -1955,7 +1897,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.IntegerType.fromInteger(value));
     }
     CallField field(String name, Integer[] values) {
-      return field(name, BaseProxy.IntegerType.fromInteger(Stream.of(values)));
+      return field(name, BaseProxy.IntegerType.fromInteger(values));
     }
     private static class Integerifier extends ParamFieldifier<Integer> {
       private IntegerFieldifier fieldifier;
@@ -2000,7 +1942,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.LongType.fromLong(value));
     }
     CallField field(String name, Long[] values) {
-      return field(name, BaseProxy.LongType.fromLong(Stream.of(values)));
+      return field(name, BaseProxy.LongType.fromLong(values));
     }
     private static class Longifier extends ParamFieldifier<Long> {
       private LongFieldifier fieldifier;
@@ -2061,13 +2003,13 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.TimeType.fromLocalTime(value));
     }
     CallField field(String name, LocalTime[] values) {
-      return field(name, BaseProxy.TimeType.fromLocalTime(Stream.of(values)));
+      return field(name, BaseProxy.TimeType.fromLocalTime(values));
     }
     CallField field(String name, OffsetTime value) {
       return field(name, BaseProxy.TimeType.fromOffsetTime(value));
     }
     CallField field(String name, OffsetTime[] values) {
-      return field(name, BaseProxy.TimeType.fromOffsetTime(Stream.of(values)));
+      return field(name, BaseProxy.TimeType.fromOffsetTime(values));
     }
     private static class LocalTimifier extends ParamFieldifier<LocalTime> {
       private TimeFieldifier fieldifier;
@@ -2131,7 +2073,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.UnsignedIntegerType.fromInteger(value));
     }
     CallField field(String name, Integer[] values) {
-      return field(name, BaseProxy.UnsignedIntegerType.fromInteger(Stream.of(values)));
+      return field(name, BaseProxy.UnsignedIntegerType.fromInteger(values));
     }
     private static class UnsignedIntegerifier extends ParamFieldifier<Integer> {
       private UnsignedIntegerFieldifier fieldifier;
@@ -2176,7 +2118,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.UnsignedLongType.fromLong(value));
     }
     CallField field(String name, Long[] values) {
-      return field(name, BaseProxy.UnsignedLongType.fromLong(Stream.of(values)));
+      return field(name, BaseProxy.UnsignedLongType.fromLong(values));
     }
     private static class UnsignedLongifier extends ParamFieldifier<Long> {
       private UnsignedLongFieldifier fieldifier;
@@ -2240,13 +2182,13 @@ public class CallManagerImpl implements CallManager {
       return formattedField(name, BaseProxy.JsonDocumentType.fromJsonNode(value));
     }
     CallField field(String name, JsonNode[] values) {
-      return formattedField(name, BaseProxy.JsonDocumentType.fromJsonNode(Stream.of(values)));
+      return formattedField(name, BaseProxy.JsonDocumentType.fromJsonNode(values));
     }
     CallField field(String name, JsonParser value) {
       return formattedField(name, BaseProxy.JsonDocumentType.fromJsonParser(value));
     }
     CallField field(String name, JsonParser[] values) {
-      return formattedField(name, BaseProxy.JsonDocumentType.fromJsonParser(Stream.of(values)));
+      return formattedField(name, BaseProxy.JsonDocumentType.fromJsonParser(values));
     }
     private static class JsonNodeifier extends ParamFieldifier<JsonNode> {
       private JsonDocumentFieldifier fieldifier;
@@ -2369,31 +2311,31 @@ public class CallManagerImpl implements CallManager {
       return formattedField(name, BaseProxy.XmlDocumentType.fromDocument(value));
     }
     CallField field(String name, Document[] values) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromDocument(Stream.of(values)));
+      return formattedField(name, BaseProxy.XmlDocumentType.fromDocument(values));
     }
     CallField field(String name, InputSource value) {
       return formattedField(name, BaseProxy.XmlDocumentType.fromInputSource(value));
     }
     CallField field(String name, InputSource[] values) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromInputSource(Stream.of(values)));
+      return formattedField(name, BaseProxy.XmlDocumentType.fromInputSource(values));
     }
     CallField field(String name, Source value) {
       return formattedField(name, BaseProxy.XmlDocumentType.fromSource(value));
     }
     CallField field(String name, Source[] values) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromSource(Stream.of(values)));
+      return formattedField(name, BaseProxy.XmlDocumentType.fromSource(values));
     }
     CallField field(String name, XMLEventReader value) {
       return formattedField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(value));
     }
     CallField field(String name, XMLEventReader[] values) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(Stream.of(values)));
+      return formattedField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(values));
     }
     CallField field(String name, XMLStreamReader value) {
       return formattedField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(value));
     }
     CallField field(String name, XMLStreamReader[] values) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(Stream.of(values)));
+      return formattedField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(values));
     }
     private static class Documentifier extends ParamFieldifier<Document> {
       private XmlDocumentFieldifier fieldifier;

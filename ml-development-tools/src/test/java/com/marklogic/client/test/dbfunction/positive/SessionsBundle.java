@@ -35,32 +35,6 @@ public interface SessionsBundle {
             }
 
             @Override
-            public void setSessionFieldNoSession(String fieldName) {
-              baseProxy
-                .request("setSessionFieldNoSession.sjs", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC)
-                .withSession()
-                .withParams(
-                    BaseProxy.atomicParam("fieldName", false, BaseProxy.StringType.fromString(fieldName)))
-                .withMethod("POST")
-                .responseNone();
-            }
-
-
-            @Override
-            public Long setSessionField(SessionState timestamper, String fieldName) {
-              return BaseProxy.UnsignedLongType.toLong(
-                baseProxy
-                .request("setSessionField.sjs", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC)
-                .withSession("timestamper", timestamper, false)
-                .withParams(
-                    BaseProxy.atomicParam("fieldName", false, BaseProxy.StringType.fromString(fieldName)))
-                .withMethod("POST")
-                .responseSingle(false, null)
-                );
-            }
-
-
-            @Override
             public void beginTransactionNoSession(String uri, String text) {
               baseProxy
                 .request("beginTransactionNoSession.sjs", BaseProxy.ParameterValuesKind.MULTIPLE_ATOMICS)
@@ -70,20 +44,6 @@ public interface SessionsBundle {
                     BaseProxy.atomicParam("text", false, BaseProxy.StringType.fromString(text)))
                 .withMethod("POST")
                 .responseNone();
-            }
-
-
-            @Override
-            public Boolean sleepify(SessionState sleeper, Integer sleeptime) {
-              return BaseProxy.BooleanType.toBoolean(
-                baseProxy
-                .request("sleepify.sjs", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC)
-                .withSession("sleeper", sleeper, false)
-                .withParams(
-                    BaseProxy.atomicParam("sleeptime", false, BaseProxy.UnsignedIntegerType.fromInteger(sleeptime)))
-                .withMethod("POST")
-                .responseSingle(false, null)
-                );
             }
 
 
@@ -102,6 +62,20 @@ public interface SessionsBundle {
 
 
             @Override
+            public Boolean sleepify(SessionState sleeper, Integer sleeptime) {
+              return BaseProxy.BooleanType.toBoolean(
+                baseProxy
+                .request("sleepify.sjs", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC)
+                .withSession("sleeper", sleeper, false)
+                .withParams(
+                    BaseProxy.atomicParam("sleeptime", false, BaseProxy.UnsignedIntegerType.fromInteger(sleeptime)))
+                .withMethod("POST")
+                .responseSingle(false, null)
+                );
+            }
+
+
+            @Override
             public void rollbackTransaction(SessionState transaction) {
               baseProxy
                 .request("rollbackTransaction.sjs", BaseProxy.ParameterValuesKind.NONE)
@@ -110,6 +84,20 @@ public interface SessionsBundle {
                     )
                 .withMethod("POST")
                 .responseNone();
+            }
+
+
+            @Override
+            public Long setSessionField(SessionState timestamper, String fieldName) {
+              return BaseProxy.UnsignedLongType.toLong(
+                baseProxy
+                .request("setSessionField.sjs", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC)
+                .withSession("timestamper", timestamper, false)
+                .withParams(
+                    BaseProxy.atomicParam("fieldName", false, BaseProxy.StringType.fromString(fieldName)))
+                .withMethod("POST")
+                .responseSingle(false, null)
+                );
             }
 
 
@@ -140,6 +128,18 @@ public interface SessionsBundle {
                 .responseNone();
             }
 
+
+            @Override
+            public void setSessionFieldNoSession(String fieldName) {
+              baseProxy
+                .request("setSessionFieldNoSession.sjs", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC)
+                .withSession()
+                .withParams(
+                    BaseProxy.atomicParam("fieldName", false, BaseProxy.StringType.fromString(fieldName)))
+                .withMethod("POST")
+                .responseNone();
+            }
+
         }
 
         return new SessionsBundleImpl(db);
@@ -153,23 +153,6 @@ public interface SessionsBundle {
     SessionState newSessionState();
 
   /**
-   * Invokes the setSessionFieldNoSession operation on the database server
-   *
-   * @param fieldName	provides input
-   * 
-   */
-    void setSessionFieldNoSession(String fieldName);
-
-  /**
-   * Invokes the setSessionField operation on the database server
-   *
-   * @param timestamper	provides input
-   * @param fieldName	provides input
-   * @return	as output
-   */
-    Long setSessionField(SessionState timestamper, String fieldName);
-
-  /**
    * Invokes the beginTransactionNoSession operation on the database server
    *
    * @param uri	provides input
@@ -177,15 +160,6 @@ public interface SessionsBundle {
    * 
    */
     void beginTransactionNoSession(String uri, String text);
-
-  /**
-   * Invokes the sleepify operation on the database server
-   *
-   * @param sleeper	provides input
-   * @param sleeptime	provides input
-   * @return	as output
-   */
-    Boolean sleepify(SessionState sleeper, Integer sleeptime);
 
   /**
    * Invokes the checkTransaction operation on the database server
@@ -197,12 +171,30 @@ public interface SessionsBundle {
     Boolean checkTransaction(SessionState transaction, String uri);
 
   /**
+   * Invokes the sleepify operation on the database server
+   *
+   * @param sleeper	provides input
+   * @param sleeptime	provides input
+   * @return	as output
+   */
+    Boolean sleepify(SessionState sleeper, Integer sleeptime);
+
+  /**
    * Invokes the rollbackTransaction operation on the database server
    *
    * @param transaction	provides input
    * 
    */
     void rollbackTransaction(SessionState transaction);
+
+  /**
+   * Invokes the setSessionField operation on the database server
+   *
+   * @param timestamper	provides input
+   * @param fieldName	provides input
+   * @return	as output
+   */
+    Long setSessionField(SessionState timestamper, String fieldName);
 
   /**
    * Invokes the getSessionField operation on the database server
@@ -223,5 +215,13 @@ public interface SessionsBundle {
    * 
    */
     void beginTransaction(SessionState transaction, String uri, String text);
+
+  /**
+   * Invokes the setSessionFieldNoSession operation on the database server
+   *
+   * @param fieldName	provides input
+   * 
+   */
+    void setSessionFieldNoSession(String fieldName);
 
 }

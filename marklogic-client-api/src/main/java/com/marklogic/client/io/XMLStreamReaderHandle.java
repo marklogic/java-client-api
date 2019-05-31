@@ -255,8 +255,23 @@ public class XMLStreamReaderHandle
   }
   protected XMLInputFactory makeXMLInputFactory() {
     XMLInputFactory factory = XMLInputFactory.newFactory();
-    factory.setProperty("javax.xml.stream.isNamespaceAware", true);
-    factory.setProperty("javax.xml.stream.isValidating",     false);
+    // default to best practices for conservative security including recommendations per
+    // https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md
+    try {
+      factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+    } catch (IllegalArgumentException e) {}
+    try {
+      factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+    } catch (IllegalArgumentException e) {}
+    try {
+      factory.setProperty(XMLInputFactory.IS_REPLACING_ENTITY_REFERENCES, false);
+    } catch (IllegalArgumentException e) {}
+    try {
+      factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
+    } catch (IllegalArgumentException e) {}
+    try {
+      factory.setProperty(XMLInputFactory.IS_VALIDATING, false);
+    } catch (IllegalArgumentException e) {}
 
     return factory;
   }

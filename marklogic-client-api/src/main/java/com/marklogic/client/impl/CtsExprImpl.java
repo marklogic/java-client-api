@@ -15,21 +15,12 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.type.MapMapExpr;
-import com.marklogic.client.type.XsAnyAtomicTypeExpr;
-import com.marklogic.client.type.XsAnyAtomicTypeSeqExpr;
 import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
-import com.marklogic.client.type.XsDateTimeExpr;
 import com.marklogic.client.type.XsDateTimeVal;
-import com.marklogic.client.type.XsDoubleExpr;
 import com.marklogic.client.type.XsDoubleVal;
-import com.marklogic.client.type.XsQNameExpr;
-import com.marklogic.client.type.XsQNameSeqExpr;
 import com.marklogic.client.type.XsQNameSeqVal;
 import com.marklogic.client.type.XsQNameVal;
-import com.marklogic.client.type.XsStringExpr;
-import com.marklogic.client.type.XsStringSeqExpr;
 import com.marklogic.client.type.XsStringSeqVal;
 import com.marklogic.client.type.XsStringVal;
 
@@ -1398,13 +1389,13 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public CtsReferenceExpr pathReference(String pathExpression, String options, MapMapExpr map) {
+  public CtsReferenceExpr pathReference(String pathExpression, String options, ServerExpression map) {
     return pathReference((pathExpression == null) ? (XsStringVal) null : xs.string(pathExpression), (options == null) ? (XsStringVal) null : xs.string(options), map);
   }
 
   
   @Override
-  public CtsReferenceExpr pathReference(XsStringVal pathExpression, XsStringSeqVal options, MapMapExpr map) {
+  public CtsReferenceExpr pathReference(XsStringVal pathExpression, XsStringSeqVal options, ServerExpression map) {
     if (pathExpression == null) {
       throw new IllegalArgumentException("pathExpression parameter for pathReference() cannot be null");
     }
@@ -1551,7 +1542,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public XsStringSeqExpr stem(ServerExpression text) {
+  public ServerExpression stem(ServerExpression text) {
     if (text == null) {
       throw new IllegalArgumentException("text parameter for stem() cannot be null");
     }
@@ -1560,13 +1551,13 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public XsStringSeqExpr stem(ServerExpression text, String language) {
-    return stem(text, (language == null) ? (XsStringExpr) null : xs.string(language));
+  public ServerExpression stem(ServerExpression text, String language) {
+    return stem(text, (language == null) ? (ServerExpression) null : xs.string(language));
   }
 
   
   @Override
-  public XsStringSeqExpr stem(ServerExpression text, ServerExpression language) {
+  public ServerExpression stem(ServerExpression text, ServerExpression language) {
     if (text == null) {
       throw new IllegalArgumentException("text parameter for stem() cannot be null");
     }
@@ -1575,13 +1566,13 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public XsStringSeqExpr stem(ServerExpression text, String language, String partOfSpeech) {
-    return stem(text, (language == null) ? (XsStringExpr) null : xs.string(language), (partOfSpeech == null) ? (XsStringExpr) null : xs.string(partOfSpeech));
+  public ServerExpression stem(ServerExpression text, String language, String partOfSpeech) {
+    return stem(text, (language == null) ? (ServerExpression) null : xs.string(language), (partOfSpeech == null) ? (ServerExpression) null : xs.string(partOfSpeech));
   }
 
   
   @Override
-  public XsStringSeqExpr stem(ServerExpression text, ServerExpression language, ServerExpression partOfSpeech) {
+  public ServerExpression stem(ServerExpression text, ServerExpression language, ServerExpression partOfSpeech) {
     if (text == null) {
       throw new IllegalArgumentException("text parameter for stem() cannot be null");
     }
@@ -1590,7 +1581,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public XsStringSeqExpr tokenize(ServerExpression text) {
+  public ServerExpression tokenize(ServerExpression text) {
     if (text == null) {
       throw new IllegalArgumentException("text parameter for tokenize() cannot be null");
     }
@@ -1599,13 +1590,13 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public XsStringSeqExpr tokenize(ServerExpression text, String language) {
-    return tokenize(text, (language == null) ? (XsStringExpr) null : xs.string(language));
+  public ServerExpression tokenize(ServerExpression text, String language) {
+    return tokenize(text, (language == null) ? (ServerExpression) null : xs.string(language));
   }
 
   
   @Override
-  public XsStringSeqExpr tokenize(ServerExpression text, ServerExpression language) {
+  public ServerExpression tokenize(ServerExpression text, ServerExpression language) {
     if (text == null) {
       throw new IllegalArgumentException("text parameter for tokenize() cannot be null");
     }
@@ -1614,13 +1605,13 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public XsStringSeqExpr tokenize(ServerExpression text, String language, String field) {
-    return tokenize(text, (language == null) ? (XsStringExpr) null : xs.string(language), (field == null) ? (XsStringExpr) null : xs.string(field));
+  public ServerExpression tokenize(ServerExpression text, String language, String field) {
+    return tokenize(text, (language == null) ? (ServerExpression) null : xs.string(language), (field == null) ? (ServerExpression) null : xs.string(field));
   }
 
   
   @Override
-  public XsStringSeqExpr tokenize(ServerExpression text, ServerExpression language, ServerExpression field) {
+  public ServerExpression tokenize(ServerExpression text, ServerExpression language, ServerExpression field) {
     if (text == null) {
       throw new IllegalArgumentException("text parameter for tokenize() cannot be null");
     }

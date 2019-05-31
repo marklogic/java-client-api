@@ -32,11 +32,11 @@ import org.junit.rules.ExpectedException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.dataservices.CallBatcher;
-import com.marklogic.client.dataservices.CallManager;
-import com.marklogic.client.dataservices.CallManager.CallArgs;
-import com.marklogic.client.dataservices.CallManager.ManyCallEvent;
-import com.marklogic.client.dataservices.CallManager.OneCallEvent;
+import com.marklogic.client.dataservices.impl.CallBatcher;
+import com.marklogic.client.dataservices.impl.CallManager;
+import com.marklogic.client.dataservices.impl.CallManager.CallArgs;
+import com.marklogic.client.dataservices.impl.CallBatcher.ManyCallEvent;
+import com.marklogic.client.dataservices.impl.CallBatcher.OneCallEvent;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
@@ -45,7 +45,7 @@ import com.marklogic.client.test.Common;
 
 public class CallBatcherDefaultArgsTest {
 
-    private final static String ENDPOINT_DIRECTORY = "/javaApi/test/callBatchedParam/";
+    private final static String ENDPOINT_DIRECTORY = "/javaApi/test/callBatcherWithDefaultParam/";
 
     private static DatabaseClient db = Common.connect();
     private static CallManager callMgr = CallManager.on(db);
@@ -167,7 +167,7 @@ public class CallBatcherDefaultArgsTest {
         }
 
         final Output output = new Output();
-        CallBatcher<CallManager.CallArgs,CallManager.ManyCallEvent<Float>> batcher = manyCaller.batcher().forArgs()
+        CallBatcher<CallManager.CallArgs, ManyCallEvent<Float>> batcher = manyCaller.batcher().forArgs()
                 .withDefaultArgs(manyCaller.args().param("param1", values))
                 .onCallSuccess(event -> {
                     output.expectedOutput = event.getItems().toArray(Float[]::new);
@@ -195,7 +195,7 @@ public class CallBatcherDefaultArgsTest {
         }
 
         final Output output = new Output();
-        CallBatcher<CallManager.CallArgs,CallManager.ManyCallEvent<JsonNode>> batcher = manyCaller.batcher().forArgs()
+        CallBatcher<CallManager.CallArgs,ManyCallEvent<JsonNode>> batcher = manyCaller.batcher().forArgs()
                 .withDefaultArgs(manyCaller.args().param("param1", values))
                 .onCallSuccess(event -> {
                     JsonNode[] outputs = event.getItems().toArray(JsonNode[]::new);

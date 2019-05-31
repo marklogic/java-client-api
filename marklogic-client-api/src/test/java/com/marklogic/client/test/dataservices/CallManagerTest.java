@@ -19,7 +19,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.dataservices.CallManager;
+import com.marklogic.client.dataservices.impl.CallManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.impl.NodeConverter;
 import com.marklogic.client.io.*;
@@ -116,6 +116,9 @@ public class CallManagerTest {
         endpointUtil.setupParamNoReturnEndpoint(docMgr, docMeta, "paramNoReturn", "double");
         endpointUtil.setupNoParamReturnEndpoint(docMgr, docMeta, "noParamReturn", "double", "5.6");
         endpointUtil.setupNoParamNoReturnEndpoint(docMgr, docMeta, "noParamNoReturn");
+
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "int2", "mjs", "int");
+        endpointUtil.setupEndpointMultipleRequired(docMgr, docMeta, "jsonDocument2", "mjs", "jsonDocument");
 
         adminClient.release();
     }
@@ -486,6 +489,18 @@ public class CallManagerTest {
         testAtomicCall(functionName, callableEndpoint, stringify(values));
     }
     @Test
+    public void testMJSInteger() {
+        String functionName = "int2";
+
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName, "mjs");
+
+        Integer[] values = new Integer[]{5, 6};
+        CallManager.ManyCaller<Integer> caller = endpointUtil.makeManyCaller(callableEndpoint, Integer.class);
+        testCall(functionName, caller, caller.args().param("param1", values), values);
+
+        testAtomicCall(functionName, callableEndpoint, stringify(values));
+    }
+    @Test
     public void testLong() {
         String functionName = "long";
 
@@ -620,7 +635,6 @@ public class CallManagerTest {
                 functionName, caller4, caller4.args().param("param1", values4), values, CallManagerTest::string
         );
 
-
         String functionName5 = "singleJson";
         CallManager.CallableEndpoint callableEndpoint5 = endpointUtil.makeCallableEndpoint(functionName5);
 
@@ -629,6 +643,34 @@ public class CallManagerTest {
         testConvertedCall(
                 functionName5, caller5, caller5.args().param("param1", value5),
                 CallManagerTest.string(value5).trim(), CallManagerTest::string
+        );
+    }
+    @Test
+    public void testMJSJsonDocument() {
+        String functionName = "jsonDocument2";
+
+        CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint(functionName, "mjs");
+
+        String[] values = new String[]{"{\"root\":{\"child\":\"text1\"}}", "{\"root\":{\"child\":\"text2\"}}"};
+
+        testCharacterNode(functionName, callableEndpoint, values);
+
+        JsonNode[] values2 = convert(values, CallManagerTest::jsonNode, JsonNode.class);
+        CallManager.ManyCaller<JsonNode> caller2 = endpointUtil.makeManyCaller(callableEndpoint, JsonNode.class);
+        testConvertedCall(
+                functionName, caller2, caller2.args().param("param1", values2), values, CallManagerTest::string
+        );
+
+        JsonParser[] values3 = convert(values, CallManagerTest::jsonParser, JsonParser.class);
+        CallManager.ManyCaller<JsonParser> caller3 = endpointUtil.makeManyCaller(callableEndpoint, JsonParser.class);
+        testConvertedCall(
+                functionName, caller3, caller3.args().param("param1", values3), values, CallManagerTest::string
+        );
+
+        StringHandle[] values4 = convert(values, StringHandle::new, StringHandle.class);
+        CallManager.ManyCaller<JSONReadHandle> caller4 = endpointUtil.makeManyCaller(callableEndpoint, JSONReadHandle.class);
+        testConvertedCall(
+                functionName, caller4, caller4.args().param("param1", values4), values, CallManagerTest::string
         );
     }
     @Test

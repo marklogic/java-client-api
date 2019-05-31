@@ -50,6 +50,7 @@ import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.CtsQueryWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
@@ -217,9 +218,9 @@ public class OkHttpServices implements RESTServices {
   }
 
   private FailedRequest extractErrorFields(Response response) {
-    if ( response == null ) return null;
+    if (response == null) return null;
     try {
-      if ( response.code() == STATUS_UNAUTHORIZED ) {
+      if (response.code() == STATUS_UNAUTHORIZED) {
         FailedRequest failure = new FailedRequest();
         failure.setMessageString("Unauthorized");
         failure.setStatusString("Failed Auth");
@@ -228,7 +229,7 @@ public class OkHttpServices implements RESTServices {
       String responseBody = getEntity(response.body(), String.class);
       InputStream is = new ByteArrayInputStream(responseBody.getBytes("UTF-8"));
       FailedRequest handler = FailedRequest.getFailedRequest(response.code(), response.header(HEADER_CONTENT_TYPE), is);
-      if ( handler.getMessage() == null ) {
+      if (handler.getMessage() == null) {
         handler.setMessageString(responseBody);
       }
       return handler;
@@ -5409,16 +5410,37 @@ public class OkHttpServices implements RESTServices {
         String suffix = ".unknown";
         boolean isBinary = true;
         MediaType mediaType = body.contentType();
-        if ( mediaType != null ) {
-          suffix = "." + mediaType.subtype();
-          for ( String type : new String[] {"json", "xml", "xquery", "sjs", "javascript", "html"} ) {
-            if ( type.equalsIgnoreCase(mediaType.subtype()) ) {
+        if (mediaType != null) {
+          String subtype = mediaType.subtype();
+          if (subtype != null) {
+            subtype = subtype.toLowerCase();
+            if (subtype.endsWith("json")) {
+              suffix = ".json";
               isBinary = false;
+            } else if (subtype.endsWith("xml")) {
+              suffix = ".xml";
+              isBinary = false;
+            } else if (subtype.equals("vnd.marklogic-js-module")) {
+              suffix = ".mjs";
+              isBinary = false;
+            } else if (subtype.equals("vnd.marklogic-javascript")) {
+              suffix = ".sjs";
+              isBinary = false;
+            } else if (subtype.equals("vnd.marklogic-xdmp") || subtype.endsWith("xquery")) {
+              suffix = ".xqy";
+              isBinary = false;
+            } else if (subtype.endsWith("javascript")) {
+              suffix = ".js";
+              isBinary = false;
+            } else if (subtype.endsWith("html")) {
+              suffix = ".html";
+              isBinary = false;
+            } else if (mediaType.type().toLowerCase() == "text") {
+              suffix = ".txt";
+              isBinary = false;
+            } else {
+              suffix = "." + subtype;
             }
-          }
-          if ( isBinary == true && "text".equalsIgnoreCase(mediaType.type()) ) {
-            suffix = ".txt";
-            isBinary = false;
           }
         }
         Path path = Files.createTempFile("tmp", suffix);
@@ -5659,26 +5681,29 @@ public class OkHttpServices implements RESTServices {
       if (statusCode >= 300) {
         FailedRequest failure = null;
         MediaType mediaType = MediaType.parse(response.header(HEADER_CONTENT_TYPE));
-        if ( "json".equals(mediaType.subtype()) ) {
-          failure = extractErrorFields(response);
-        } else if ( statusCode == STATUS_UNAUTHORIZED ) {
-          failure = new FailedRequest();
-          failure.setMessageString("Unauthorized");
-          failure.setStatusString("Failed Auth");
-        } else if (statusCode == STATUS_NOT_FOUND) {
-          ResourceNotFoundException ex = failure == null ? new ResourceNotFoundException("Could not " + method  + " at " + endpoint) :
-              new ResourceNotFoundException("Could not " + method  + " at " + endpoint, failure);
-          throw ex;
-        } else if (statusCode == STATUS_FORBIDDEN) {
-          ForbiddenUserException ex = failure == null ? new ForbiddenUserException("User is not allowed to " + method + " at " + endpoint) :
-              new ForbiddenUserException("User is not allowed to " + method + " at " + endpoint, failure);
-          throw ex;
-        } else {
-          failure = new FailedRequest();
-          failure.setStatusCode(statusCode);
-          failure.setMessageCode("UNKNOWN");
-          failure.setMessageString("Server did not respond with an expected Error message.");
-          failure.setStatusString("UNKNOWN");
+        String subtype = mediaType.subtype();
+        if (subtype != null) {
+          subtype = subtype.toLowerCase();
+          if (subtype.endsWith("json") || subtype.endsWith("xml")) {
+            failure = extractErrorFields(response);
+          }
+        }
+        if (failure == null) {
+          if (statusCode == STATUS_UNAUTHORIZED) {
+            failure = new FailedRequest();
+            failure.setMessageString("Unauthorized");
+            failure.setStatusString("Failed Auth");
+          } else if (statusCode == STATUS_NOT_FOUND) {
+            throw new ResourceNotFoundException("Could not " + method  + " at " + endpoint);
+          } else if (statusCode == STATUS_FORBIDDEN) {
+            throw new ForbiddenUserException("User is not allowed to " + method + " at " + endpoint);
+          } else {
+            failure = new FailedRequest();
+            failure.setStatusCode(statusCode);
+            failure.setMessageCode("UNKNOWN");
+            failure.setMessageString("Server did not respond with an expected Error message.");
+            failure.setStatusString("UNKNOWN");
+          }
         }
         FailedRequestException ex = failure == null ? new FailedRequestException("failed to " + method + " at " + endpoint + ": "
             + getReasonPhrase(response)) : new FailedRequestException("failed to " + method + " at " + endpoint + ": "
@@ -5763,13 +5788,19 @@ public class OkHttpServices implements RESTServices {
           if (paramValue != null) {
             HandleImplementation handleBase = HandleAccessor.as(paramValue);
             if(! handleBase.isResendable()) {
-              hasStreamingPartCondition.set();
+                if(param instanceof BufferedSingleNodeCallField) {
+                    BytesHandle bytesHandle = new BytesHandle((BufferableHandle) handleBase);
+                    ((BufferedSingleNodeCallField) param).setParamValue(bytesHandle);
+                    paramValue = bytesHandle;
+                }
+                else
+                    hasStreamingPartCondition.set();
             }
             hasValue.set();
             multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue));
           }
-        } else if (param instanceof MultipleNodeCallField) {
-          Stream<? extends AbstractWriteHandle> paramValues = ((MultipleNodeCallField) param).getParamValues();
+        } else if (param instanceof UnbufferedMultipleNodeCallField) {
+          Stream<? extends AbstractWriteHandle> paramValues = ((UnbufferedMultipleNodeCallField) param).getParamValues();
           if (paramValues != null) {
             paramValues
                 .filter(paramValue -> paramValue != null)
@@ -5782,7 +5813,24 @@ public class OkHttpServices implements RESTServices {
                   multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue));
                 });
           }
-        } else {
+        } else if (param instanceof BufferedMultipleNodeCallField) {
+            BufferableHandle[] paramValues = ((BufferedMultipleNodeCallField) param).getParamValuesArray();
+            if(paramValues != null) {
+                for(int i=0; i < paramValues.length; i++) {
+                    BufferableHandle paramValue = paramValues[i];
+                    if (paramValue != null) {
+                        HandleImplementation handleBase = HandleAccessor.as(paramValue);
+                        if(!handleBase.isResendable()) {
+                            paramValue = new BytesHandle(paramValue);
+                            paramValues[i] = paramValue;
+                        }
+                        hasValue.set();
+                        multiBldr.addFormDataPart(paramName, null, makeRequestBody(NodeConverter.copyToBytesHandle(paramValue)));
+                    }
+                }
+            }
+        } 
+        else {
           throw new IllegalStateException(
               "unknown multipart "+paramName+" param of: "+param.getClass().getName()
           );
@@ -5904,8 +5952,8 @@ public class OkHttpServices implements RESTServices {
         if (errorBody.contentLength() > 0) {
           MediaType errorType = errorBody.contentType();
           if (errorType != null) {
-            String errorContentType = errorType.toString();
-            if (errorContentType != null && errorContentType.startsWith("application/") && errorContentType.contains("json")) {
+            String subtype = errorType.subtype();
+            if (subtype != null && subtype.toLowerCase().endsWith("json")) {
               return errorBody.string();
             }
           }
@@ -6148,23 +6196,23 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  static protected boolean checkNull(ResponseBody body, Format format) {
+  static protected boolean checkNull(ResponseBody body, Format expectedFormat) {
     if (body != null) {
       if (body.contentLength() == 0) {
         body.close();
       } else {
-        MediaType actualType  = body.contentType();
-        String    defaultType = (format == Format.BINARY) ?
-            "application/x-unknown-content-type" : format.getDefaultMimetype();
+        MediaType actualType = body.contentType();
         if (actualType == null) {
           body.close();
           throw new RuntimeException(
-              "Returned document with unknown mime type instead of "+defaultType
+              "Returned document with unknown mime type instead of "+expectedFormat.getDefaultMimetype()
           );
-        } else if (!actualType.toString().startsWith(defaultType)) {
+        }
+        Format actualFormat = Format.getFromMimetype(actualType.toString());
+        if (expectedFormat != actualFormat) {
           body.close();
           throw new RuntimeException(
-              "Returned document as "+actualType.toString()+" instead of "+defaultType
+              "Mime type "+actualType.toString()+" for returned document not recognized for "+expectedFormat.name()
           );
         }
         return false;
@@ -6172,18 +6220,21 @@ public class OkHttpServices implements RESTServices {
     }
     return true;
   }
-
-  static protected boolean checkNull(MimeMultipart multipart, Format format) {
+  static protected boolean checkNull(MimeMultipart multipart, Format expectedFormat) {
     if (multipart != null) {
       try {
         if (multipart.getCount() != 0) {
           BodyPart firstPart   = multipart.getBodyPart(0);
           String   actualType  = (firstPart == null) ? null : firstPart.getContentType();
-          String   defaultType = (format == Format.BINARY) ?
-              "application/x-unknown-content-type" : format.getDefaultMimetype();
-          if (actualType == null || !actualType.startsWith(defaultType)) {
+          if (actualType == null) {
             throw new RuntimeException(
-                "Returned document as "+actualType+" instead of "+defaultType
+                "Returned document with unknown mime type instead of "+expectedFormat.getDefaultMimetype()
+            );
+          }
+          Format actualFormat = Format.getFromMimetype(actualType);
+          if (expectedFormat != actualFormat) {
+            throw new RuntimeException(
+                "Mime type "+actualType+" for returned document not recognized for "+expectedFormat.name()
             );
           }
           return false;

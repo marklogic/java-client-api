@@ -20,6 +20,6 @@ package com.marklogic.client.type;
 /**
  * A sequence of server qualified name values.
  */
-public interface XsQNameSeqVal extends XsQNameSeqExpr, XsAnyAtomicTypeSeqVal {
+public interface XsQNameSeqVal extends XsAnyAtomicTypeSeqVal {
     public XsQNameVal[] getQNameItems();
 }

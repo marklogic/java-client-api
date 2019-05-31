@@ -15,10 +15,15 @@
  */
 package com.marklogic.client.io;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
+import com.marklogic.client.impl.NodeConverter;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.io.marker.CtsQueryWriteHandle;
@@ -57,7 +62,7 @@ public class FileHandle
     XMLReadHandle, XMLWriteHandle,
     StructureReadHandle, StructureWriteHandle, CtsQueryWriteHandle,
     QuadsWriteHandle,
-    TriplesReadHandle, TriplesWriteHandle
+    TriplesReadHandle, TriplesWriteHandle, BufferableHandle
 {
   private File content;
 
@@ -165,4 +170,22 @@ public class FileHandle
 
     return content;
   }
+
+@Override
+public void fromBuffer(byte[] buffer) {
+    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(buffer);
+    NodeConverter.InputStreamToFile(byteArrayInputStream);
+    
+}
+
+@Override
+public byte[] toBuffer() {
+    try(InputStreamHandle inputStreamHandle = new InputStreamHandle(new FileInputStream(content))) {
+        return inputStreamHandle.toBuffer();
+        
+    } catch (FileNotFoundException e) {
+        e.printStackTrace();
+    }
+    return null;
+}
 }

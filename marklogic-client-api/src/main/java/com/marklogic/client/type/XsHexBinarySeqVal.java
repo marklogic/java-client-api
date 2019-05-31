@@ -20,6 +20,6 @@ package com.marklogic.client.type;
 /**
  * A sequence of server hex binary values.
  */
-public interface XsHexBinarySeqVal extends XsHexBinarySeqExpr, XsAnyAtomicTypeSeqVal {
+public interface XsHexBinarySeqVal extends XsAnyAtomicTypeSeqVal {
     public XsHexBinaryVal[] getHexBinaryItems();
 }

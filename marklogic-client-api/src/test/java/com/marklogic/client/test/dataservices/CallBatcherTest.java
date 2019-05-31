@@ -24,8 +24,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.dataservices.CallBatcher;
-import com.marklogic.client.dataservices.CallManager;
+import com.marklogic.client.dataservices.impl.CallBatcher;
+import com.marklogic.client.dataservices.impl.CallManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
@@ -61,7 +61,7 @@ public class CallBatcherTest {
 		  CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint("paramNoReturn");
 		  CallManager.NoneCaller noneCaller = callableEndpoint.returningNone();
 		  
-		  CallBatcher<CallManager.CallArgs,CallManager.CallEvent> batcher = noneCaller.batcher().forArgs();
+		  CallBatcher<CallManager.CallArgs,CallBatcher.CallEvent> batcher = noneCaller.batcher().forArgs();
 		  assertNotNull(batcher);
 		  String[] assignedParams = {""};
 		  batcher.onCallSuccess(event-> {
@@ -87,7 +87,7 @@ public class CallBatcherTest {
 		  CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint("oneParam");
 		  CallManager.OneCaller<Double> oneCaller = callableEndpoint.returningOne(Double.class);
 		  
-		  CallBatcher<CallManager.CallArgs,CallManager.OneCallEvent<Double>> batcher = oneCaller.batcher().forArgs();
+		  CallBatcher<CallManager.CallArgs,CallBatcher.OneCallEvent<Double>> batcher = oneCaller.batcher().forArgs();
 		  assertNotNull(batcher);
 		  String[] assignedParams = {""};
 		  Double[] returnValue = {0.0};
@@ -116,7 +116,7 @@ public class CallBatcherTest {
 		  CallManager.CallableEndpoint callableEndpoint = endpointUtil.makeCallableEndpoint("float");
 		  CallManager.ManyCaller<Float> manyCaller = callableEndpoint.returningMany(Float.class);
 		  
-		  CallBatcher<CallManager.CallArgs,CallManager.ManyCallEvent<Float>> batcher = manyCaller.batcher().forArgs();
+		  CallBatcher<CallManager.CallArgs,CallBatcher.ManyCallEvent<Float>> batcher = manyCaller.batcher().forArgs();
 		  assertNotNull(batcher);
 		  Float[] values = new Float[]{1.8f, 2.4f};
 		  Float[] returnValues =  {0f,0f};

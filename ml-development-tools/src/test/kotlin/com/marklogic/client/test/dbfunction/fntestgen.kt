@@ -16,6 +16,7 @@
 package com.marklogic.client.test.dbfunction
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -32,7 +33,14 @@ import java.lang.IllegalStateException
 
 val TEST_PACKAGE = "com.marklogic.client.test.dbfunction.generated"
 
-val generator = Generator()
+val generator     = Generator()
+val atomicMap     = generator.getAtomicDataTypes()
+val documentMap   = generator.getDocumentDataTypes()
+
+val mapper        = jacksonObjectMapper()
+val serializer    = mapper.writerWithDefaultPrettyPrinter()
+
+val modExtensions = listOf("mjs", "sjs", "xqy")
 
 enum class TestVariant {
   VALUE, NULL, EMPTY
@@ -602,9 +610,6 @@ fun dbfTestGenerate(testDir: String) {
   File(testPath).mkdirs()
   File(jsonPath).mkdirs()
 
-  val mapper     = jacksonObjectMapper()
-  val serializer = mapper.writerWithDefaultPrettyPrinter()
-
   val host = System.getenv("TEST_HOST") ?: "localhost"
 
   val db = DatabaseClientFactory.newClient(
@@ -636,13 +641,14 @@ fun dbfTestGenerate(testDir: String) {
   val mappedTestdefs    = mapper.readValue<ObjectNode>(mappedTestdefFile)
   docMgr.write("/dbf/mappedTest.json", docMeta, FileHandle(mappedTestdefFile))
 
-  val atomicMap   = generator.getAtomicDataTypes()
   val atomicNames = atomicMap.keys.toTypedArray()
   val atomicMax   = atomicNames.size - 1
 
-  val documentMap   = generator.getDocumentDataTypes()
   val documentNames = documentMap.keys.toTypedArray()
   val documentMax   = documentNames.size - 1
+// TODO: remove after fix for internal bug 52334
+  val multiDocNames = documentNames.filterNot{documentName -> (documentName == "object")}.toTypedArray()
+  val multiDocMax   = documentMax - 1
 
   val multipleTestTypes    = listOf(
       mapOf("nullable" to false, "multiple" to true),
@@ -670,7 +676,9 @@ fun dbfTestGenerate(testDir: String) {
     }
   val allDocumentParams = documentNames.indices.map{i ->
     val documentCurr = documentNames[i]
-    val testMultiple = (i % 3) == 0
+// TODO: restore after fix for internal bug 52334
+//  val testMultiple = (i % 3) == 0
+    val testMultiple =  if (documentCurr == "object") false else ((i % 3) == 0)
     val testNullable = (i % 2) == 0
     mapOf(
         "name"     to "param"+(i + 1), "datatype" to documentCurr,
@@ -688,9 +696,9 @@ if (true) {
     for (requestBodyNum in requestBodyTypes.indices) {
       val requestBodyType = requestBodyTypes[requestBodyNum]
       val requestBody     = requestBodyType.capitalize()
-      val isSJS           = ((responseBodyNum + requestBodyNum) % 2) == 0
+      val modExtension    = modExtensions[(responseBodyNum + requestBodyNum) % modExtensions.size]
 
-      val requestParams =
+      val requestParams   =
         if (responseBodyType === "none")
           null
         else
@@ -702,7 +710,7 @@ if (true) {
             "multiple" to true,     "nullable" to false
             ))
           "multipart"  -> listOf(mapOf(
-            "name"     to "param1", "datatype" to documentNames[responseBodyNum % documentMax],
+            "name"     to "param1", "datatype" to multiDocNames[responseBodyNum % multiDocMax],
             "multiple" to true,     "nullable" to false
             ))
           else -> throw IllegalStateException("""unknown request body type ${requestBodyType}""")
@@ -722,7 +730,7 @@ if (true) {
             "multiple" to false, "nullable" to false
             )
           "multipart" -> mapOf(
-            "datatype" to documentNames[requestBodyNum % documentMax],
+            "datatype" to multiDocNames[requestBodyNum % multiDocMax],
             "multiple" to true, "nullable" to false
             )
           else -> throw IllegalStateException("""unknown response body type ${responseBodyType}""")
@@ -758,10 +766,10 @@ if (true) {
                 )
 
                 persistServerdef(
-                    docMgr, modMgr, bundleEndpoint, testName, docMeta, noneJSONString, null, isSJS
+                    modMgr, bundleEndpoint, testName, docMeta, noneJSONString, null, modExtension
                 )
                 generateClientdef(
-                    bundleJSONPath, bundleEndpoint, testName, noneJSONString, null, isSJS
+                    bundleJSONPath, bundleEndpoint, testName, noneJSONString, null, modExtension
                 )
                 testingFuncs.add(
                     generateJUnitCallTest(testName, null, responseReturnValue, testdefs)
@@ -782,10 +790,10 @@ if (true) {
                     )
                   )
                 persistServerdef(
-                  docMgr, modMgr, bundleEndpoint, allParamFuncName, docMeta, allParamJSONString, allAtomicParams, isSJS
+                  modMgr, bundleEndpoint, allParamFuncName, docMeta, allParamJSONString, allAtomicParams, modExtension
                   )
                 generateClientdef(
-                  bundleJSONPath, bundleEndpoint, allParamFuncName, allParamJSONString, allAtomicParams, isSJS
+                  bundleJSONPath, bundleEndpoint, allParamFuncName, allParamJSONString, allAtomicParams, modExtension
                   )
                 testingFuncs.add(
                   generateJUnitCallTest(allParamFuncName, allAtomicParams, responseReturnValue, testdefs)
@@ -823,10 +831,10 @@ if (true) {
                     val testJSONString = serializer.writeValueAsString(testdef)
 
                     persistServerdef(
-                      docMgr, modMgr, bundleEndpoint, testName, docMeta, testJSONString, funcParams, isSJS
+                      modMgr, bundleEndpoint, testName, docMeta, testJSONString, funcParams, modExtension
                       )
                     generateClientdef(
-                      bundleJSONPath, bundleEndpoint, testName, testJSONString, funcParams, isSJS
+                      bundleJSONPath, bundleEndpoint, testName, testJSONString, funcParams, modExtension
                       )
                     testingFuncs.add(
                       generateJUnitCallTest(testName, funcParams, responseReturnValue, testdefs)
@@ -846,14 +854,14 @@ if (true) {
                       val nullErrName      = testName+"NullErr"
                       val nullErrServerdef = replaceFuncName(testdef, nullErrName)
                       persistServerdef(
-                          docMgr, modMgr, bundleEndpoint, nullErrName, docMeta,
-                          serializer.writeValueAsString(nullErrServerdef), funcParams, isSJS
+                          modMgr, bundleEndpoint, nullErrName, docMeta,
+                          serializer.writeValueAsString(nullErrServerdef), funcParams, modExtension
                         )
                       val nullErrClientParams = replaceParamValue(funcParams, "nullable", true)
                       val nullErrClientdef    = replaceFuncParams(nullErrServerdef, nullErrClientParams)
                       generateClientdef(
                           bundleJSONPath, bundleEndpoint, nullErrName,
-                          serializer.writeValueAsString(nullErrClientdef), nullErrClientParams, isSJS
+                          serializer.writeValueAsString(nullErrClientdef), nullErrClientParams, modExtension
                         )
                       testingFuncs.add(
                         generateJUnitCallTest(
@@ -866,14 +874,14 @@ if (true) {
                         val multiErrName = testName+"MultiErr"
                         val multiErrServerdef = replaceFuncName(testdef, multiErrName)
                         persistServerdef(
-                            docMgr, modMgr, bundleEndpoint, multiErrName, docMeta,
-                            serializer.writeValueAsString(multiErrServerdef), funcParams, isSJS
+                            modMgr, bundleEndpoint, multiErrName, docMeta,
+                            serializer.writeValueAsString(multiErrServerdef), funcParams, modExtension
                           )
                         val multiErrClientParams = replaceParamValue(funcParams, "multiple", true)
                         val multiErrClientdef    = replaceFuncParams(multiErrServerdef, multiErrClientParams)
                         generateClientdef(
                             bundleJSONPath, bundleEndpoint, multiErrName,
-                            serializer.writeValueAsString(multiErrClientdef), multiErrClientParams, isSJS
+                            serializer.writeValueAsString(multiErrClientdef), multiErrClientParams, modExtension
                           )
                         testingFuncs.add(
                           generateJUnitCallTest(
@@ -887,8 +895,8 @@ if (true) {
                         val typeErrName      = testName+"TypeErr"
                         val typeErrServerdef = replaceFuncName(testdef, typeErrName)
                         persistServerdef(
-                            docMgr, modMgr, bundleEndpoint, typeErrName, docMeta,
-                            serializer.writeValueAsString(typeErrServerdef), funcParams, isSJS
+                            modMgr, bundleEndpoint, typeErrName, docMeta,
+                            serializer.writeValueAsString(typeErrServerdef), funcParams, modExtension
                           )
                         val typeErrClientParams = replaceParamValue(
                             funcParams, "datatype", uncastableAtomicType(testdefs, atomicCurr)
@@ -896,7 +904,7 @@ if (true) {
                         val typeErrClientdef    = replaceFuncParams(typeErrServerdef, typeErrClientParams)
                         generateClientdef(
                             bundleJSONPath, bundleEndpoint, typeErrName,
-                            serializer.writeValueAsString(typeErrClientdef), typeErrClientParams, isSJS
+                            serializer.writeValueAsString(typeErrClientdef), typeErrClientParams, modExtension
                           )
                         testingFuncs.add(
                           generateJUnitCallTest(
@@ -910,14 +918,14 @@ if (true) {
                       val arityErrName      = testName+"ArityErr"
                       val arityErrServerdef = replaceFuncName(testdef, arityErrName)
                       persistServerdef(
-                          docMgr, modMgr, bundleEndpoint, arityErrName, docMeta,
-                          serializer.writeValueAsString(arityErrServerdef), funcParams, isSJS
+                          modMgr, bundleEndpoint, arityErrName, docMeta,
+                          serializer.writeValueAsString(arityErrServerdef), funcParams, modExtension
                        )
                       val arityErrClientParams = funcParams.plus(mapOf("name" to "param2", "datatype" to atomicOther))
                       val arityErrClientdef    = replaceFuncParams(arityErrServerdef, arityErrClientParams)
                       generateClientdef(
                           bundleJSONPath, bundleEndpoint, arityErrName,
-                          serializer.writeValueAsString(arityErrClientdef), arityErrClientParams, isSJS
+                          serializer.writeValueAsString(arityErrClientdef), arityErrClientParams, modExtension
                         )
                       testingFuncs.add(
                         generateJUnitCallTest(
@@ -940,10 +948,10 @@ if (true) {
                     )
                   )
                 persistServerdef(
-                  docMgr, modMgr, bundleEndpoint, allParamFuncName, docMeta, allParamJSONString, allDocumentParams, isSJS
+                  modMgr, bundleEndpoint, allParamFuncName, docMeta, allParamJSONString, allDocumentParams, modExtension
                   )
                 generateClientdef(
-                  bundleJSONPath, bundleEndpoint, allParamFuncName, allParamJSONString, allDocumentParams, isSJS
+                  bundleJSONPath, bundleEndpoint, allParamFuncName, allParamJSONString, allDocumentParams, modExtension
                   )
                 testingFuncs.add(
                   generateJUnitCallTest(allParamFuncName, allDocumentParams, responseReturnValue, testdefs)
@@ -966,7 +974,9 @@ if (true) {
                   val docTestTypes = allTestTypes
                   for (testNum in docTestTypes.indices) {
                     val testType      = docTestTypes[testNum]
-                    val testMultiple  = testType.get("multiple") as Boolean
+// TODO: restore after fix for internal bug 52334
+//                  val testMultiple = testType.get("multiple") as Boolean
+                    val testMultiple = if (docCurr == "object") false else (testType.get("multiple") as Boolean)
                     val testNullable  = testType.get("nullable") as Boolean
                     val docFuncParams = listOf(mapOf(
                         "name"     to "param1",     "datatype" to docCurr,
@@ -998,10 +1008,10 @@ if (true) {
                       val testJSONString = serializer.writeValueAsString(testdef2)
 
                       persistServerdef(
-                        docMgr, modMgr, bundleEndpoint, testName, docMeta, testJSONString, funcParams, isSJS
+                        modMgr, bundleEndpoint, testName, docMeta, testJSONString, funcParams, modExtension
                         )
                       generateClientdef(
-                        bundleJSONPath, bundleEndpoint, testName, testJSONString, funcParams, isSJS
+                        bundleJSONPath, bundleEndpoint, testName, testJSONString, funcParams, modExtension
                         )
                       testingFuncs.add(
                         generateJUnitCallTest(testName, funcParams, responseReturnValue, testdefs)
@@ -1026,14 +1036,14 @@ if (true) {
                       val nullErrName      = docTestName+"NullErr"
                       val nullErrServerdef = replaceFuncName(docTestdef, nullErrName)
                       persistServerdef(
-                          docMgr, modMgr, bundleEndpoint, nullErrName, docMeta,
-                          serializer.writeValueAsString(nullErrServerdef), docFuncParams, isSJS
+                          modMgr, bundleEndpoint, nullErrName, docMeta,
+                          serializer.writeValueAsString(nullErrServerdef), docFuncParams, modExtension
                         )
                       val nullErrClientParams = replaceParamValue(docFuncParams, "nullable", true)
                       val nullErrClientdef    = replaceFuncParams(nullErrServerdef, nullErrClientParams)
                       generateClientdef(
                           bundleJSONPath, bundleEndpoint, nullErrName,
-                          serializer.writeValueAsString(nullErrClientdef), nullErrClientParams, isSJS
+                          serializer.writeValueAsString(nullErrClientdef), nullErrClientParams, modExtension
                         )
                       testingFuncs.add(
                         generateJUnitCallTest(
@@ -1046,14 +1056,14 @@ if (true) {
                         val multiErrName = docTestName+"MultiErr"
                         val multiErrServerdef = replaceFuncName(docTestdef, multiErrName)
                         persistServerdef(
-                            docMgr, modMgr, bundleEndpoint, multiErrName, docMeta,
-                            serializer.writeValueAsString(multiErrServerdef), docFuncParams, isSJS
+                            modMgr, bundleEndpoint, multiErrName, docMeta,
+                            serializer.writeValueAsString(multiErrServerdef), docFuncParams, modExtension
                           )
                         val multiErrClientParams = replaceParamValue(docFuncParams, "multiple", true)
                         val multiErrClientdef    = replaceFuncParams(multiErrServerdef, multiErrClientParams)
                         generateClientdef(
                             bundleJSONPath, bundleEndpoint, multiErrName,
-                            serializer.writeValueAsString(multiErrClientdef), multiErrClientParams, isSJS
+                            serializer.writeValueAsString(multiErrClientdef), multiErrClientParams, modExtension
                           )
                         testingFuncs.add(
                           generateJUnitCallTest(
@@ -1073,14 +1083,14 @@ if (true) {
                         val typeErrName      = docTestName+"TypeErr"
                         val typeErrServerdef = replaceFuncName(docTestdef, typeErrName)
                         persistServerdef(
-                            docMgr, modMgr, bundleEndpoint, typeErrName, docMeta,
-                            serializer.writeValueAsString(typeErrServerdef), docFuncParams, isSJS
+                            modMgr, bundleEndpoint, typeErrName, docMeta,
+                            serializer.writeValueAsString(typeErrServerdef), docFuncParams, modExtension
                         )
                         val typeErrClientParams = replaceParamValue(docFuncParams, "datatype", docOther)
                         val typeErrClientdef    = replaceFuncParams(typeErrServerdef, typeErrClientParams)
                         generateClientdef(
                             bundleJSONPath, bundleEndpoint, typeErrName,
-                            serializer.writeValueAsString(typeErrClientdef), typeErrClientParams, isSJS
+                            serializer.writeValueAsString(typeErrClientdef), typeErrClientParams, modExtension
                         )
                         testingFuncs.add(
                             generateJUnitCallTest(
@@ -1094,14 +1104,14 @@ if (true) {
                       val arityErrName      = docTestName+"ArityErr"
                       val arityErrServerdef = replaceFuncName(docTestdef, arityErrName)
                       persistServerdef(
-                          docMgr, modMgr, bundleEndpoint, arityErrName, docMeta,
-                          serializer.writeValueAsString(arityErrServerdef), docFuncParams, isSJS
+                          modMgr, bundleEndpoint, arityErrName, docMeta,
+                          serializer.writeValueAsString(arityErrServerdef), docFuncParams, modExtension
                         )
                       val arityErrClientParams = docFuncParams.plus(mapOf("name" to "param2", "datatype" to atomicOther))
                       val arityErrClientdef    = replaceFuncParams(arityErrServerdef, arityErrClientParams)
                       generateClientdef(
                           bundleJSONPath, bundleEndpoint, arityErrName,
-                          serializer.writeValueAsString(arityErrClientdef), arityErrClientParams, isSJS
+                          serializer.writeValueAsString(arityErrClientdef), arityErrClientParams, modExtension
                         )
                       testingFuncs.add(
                         generateJUnitCallTest(
@@ -1135,10 +1145,10 @@ if (true) {
                 val testJSONString = serializer.writeValueAsString(testdef)
 
                 persistServerdef(
-                  docMgr, modMgr, bundleEndpoint, testName, docMeta, testJSONString, requestParams, isSJS
+                  modMgr, bundleEndpoint, testName, docMeta, testJSONString, requestParams, modExtension
                   )
                 generateClientdef(
-                  bundleJSONPath, bundleEndpoint, testName, testJSONString, requestParams, isSJS
+                  bundleJSONPath, bundleEndpoint, testName, testJSONString, requestParams, modExtension
                   )
                 testingFuncs.add(
                   generateJUnitCallTest(testName, requestParams, funcReturn, testdefs)
@@ -1150,10 +1160,10 @@ if (true) {
                   val nulledTestdef        = replaceFuncName(testdef, nulledTestName)
                   val nulledTestJSONString = serializer.writeValueAsString(nulledTestdef)
                   persistServerdef(
-                    docMgr, modMgr, bundleEndpoint, nulledTestName, docMeta, nulledTestJSONString, requestParams, isSJS
+                    modMgr, bundleEndpoint, nulledTestName, docMeta, nulledTestJSONString, requestParams, modExtension
                     )
                   generateClientdef(
-                    bundleJSONPath, bundleEndpoint, nulledTestName, nulledTestJSONString, requestParams, isSJS
+                    bundleJSONPath, bundleEndpoint, nulledTestName, nulledTestJSONString, requestParams, modExtension
                     )
                   testingFuncs.add(
                     generateJUnitCallTest(
@@ -1172,13 +1182,13 @@ if (true) {
                       val nulledTestName       = testName+"ErrReturnNull"
                       val nulledTestdef        = replaceFuncName(testdef, nulledTestName)
                       val nulledTestJSONString = serializer.writeValueAsString(nulledTestdef)
-                      generateClientdef(bundleJSONPath, bundleEndpoint, nulledTestName, nulledTestJSONString, isSJS)
+                      generateClientdef(bundleJSONPath, bundleEndpoint, nulledTestName, nulledTestJSONString, modExtension)
                       testingFuncs.add(
                         generateJUnitCallTest(
                           nulledTestName, requestParams, funcReturn, testdefs, expectError=true
                           )
                         )
-                      persistServerdef(docMgr, modMgr, bundleEndpoint, nulledTestName, docMeta, nulledTestJSONString, isSJS)
+                      persistServerdef(modMgr, bundleEndpoint, nulledTestName, docMeta, nulledTestJSONString, modExtension)
 
 // TODO: return one for testMultiple of true
 
@@ -1189,7 +1199,7 @@ if (true) {
                         val typeErrClientdef  = replaceFuncName(testdef, typeErrName)
                         generateClientdef(
                           bundleJSONPath, bundleEndpoint, typeErrName,
-                          serializer.writeValueAsString(typeErrClientdef), isSJS
+                          serializer.writeValueAsString(typeErrClientdef), modExtension
                           )
                         testingFuncs.add(
                           generateJUnitCallTest(
@@ -1199,8 +1209,8 @@ if (true) {
                         val typeErrFuncReturn = replaceDataType(funcReturn, uncastableAtomicType(testdefs, atomicCurr))
                         val typeErrServerdef  = replaceFuncReturn(typeErrClientdef, typeErrFuncReturn)
                         persistServerdef(
-                          docMgr, modMgr, bundleEndpoint, typeErrName, docMeta,
-                          serializer.writeValueAsString(typeErrServerdef), isSJS
+                          modMgr, bundleEndpoint, typeErrName, docMeta,
+                          serializer.writeValueAsString(typeErrServerdef), modExtension
                           )
                       }
                     }
@@ -1210,7 +1220,7 @@ if (true) {
                     val multiErrClientdef = replaceFuncName(testdef, multiErrName)
                     generateClientdef(
                       bundleJSONPath, bundleEndpoint, multiErrName,
-                      serializer.writeValueAsString(multiErrClientdef), isSJS
+                      serializer.writeValueAsString(multiErrClientdef), modExtension
                       )
                     testingFuncs.add(
                       generateJUnitCallTest(
@@ -1220,8 +1230,8 @@ if (true) {
                     val multiErrServerReturn = replaceMultiple(funcReturn, true)
                     val multiErrServerdef    = replaceFuncReturn(multiErrClientdef, multiErrServerReturn)
                     persistServerdef(
-                      docMgr, modMgr, bundleEndpoint, multiErrName, docMeta,
-                      serializer.writeValueAsString(multiErrServerdef), isSJS
+                      modMgr, bundleEndpoint, multiErrName, docMeta,
+                      serializer.writeValueAsString(multiErrServerdef), modExtension
                     )
                   } */
                 }
@@ -1237,7 +1247,9 @@ if (true) {
               val docTestTypes = nonMultipleTestTypes
               for (testNum in docTestTypes.indices) {
                 val testType = docTestTypes[testNum]
-                val testMultiple = testType.get("multiple") as Boolean
+// TODO: restore after fix for internal bug 52334
+//              val testMultiple = testType.get("multiple") as Boolean
+                val testMultiple = if (docCurr == "object") false else (testType.get("multiple") as Boolean)
                 val testNullable = testType.get("nullable") as Boolean
                 val funcReturn   = mapOf(
                   "datatype" to docCurr,
@@ -1254,8 +1266,8 @@ if (true) {
 
                 val testJSONString = serializer.writeValueAsString(testdef)
 
-                persistServerdef(docMgr, modMgr, bundleEndpoint, testName, docMeta, testJSONString, requestParams, isSJS)
-                generateClientdef(bundleJSONPath, bundleEndpoint, testName, testJSONString, requestParams, isSJS)
+                persistServerdef(modMgr, bundleEndpoint, testName, docMeta, testJSONString, requestParams, modExtension)
+                generateClientdef(bundleJSONPath, bundleEndpoint, testName, testJSONString, requestParams, modExtension)
 
                 testingFuncs.add(
                   generateJUnitCallTest(testName, requestParams, funcReturn, testdefs)
@@ -1267,10 +1279,10 @@ if (true) {
                   val nulledTestdef        = replaceFuncName(testdef, nulledTestName)
                   val nulledTestJSONString = serializer.writeValueAsString(nulledTestdef)
                   persistServerdef(
-                    docMgr, modMgr, bundleEndpoint, nulledTestName, docMeta, nulledTestJSONString, requestParams, isSJS
+                    modMgr, bundleEndpoint, nulledTestName, docMeta, nulledTestJSONString, requestParams, modExtension
                     )
                   generateClientdef(
-                    bundleJSONPath, bundleEndpoint, nulledTestName, nulledTestJSONString, requestParams, isSJS
+                    bundleJSONPath, bundleEndpoint, nulledTestName, nulledTestJSONString, requestParams, modExtension
                     )
                   testingFuncs.add(
                     generateJUnitCallTest(
@@ -1284,7 +1296,7 @@ if (true) {
                   val nulledTestdef        = replaceFuncName(testdef, nulledTestName)
                   val nulledTestJSONString = serializer.writeValueAsString(nulledTestdef)
                   generateClientdef(
-                    bundleJSONPath, bundleEndpoint, nulledTestName, nulledTestJSONString, requestParams, isSJS
+                    bundleJSONPath, bundleEndpoint, nulledTestName, nulledTestJSONString, requestParams, modExtension
                     )
                   testingFuncs.add(
                     generateJUnitCallTest(
@@ -1292,18 +1304,18 @@ if (true) {
                       )
                     )
                   persistServerdef(
-                    docMgr, modMgr, bundleEndpoint, nulledTestName, docMeta, nulledTestJSONString, requestParams, isSJS
+                    modMgr, bundleEndpoint, nulledTestName, docMeta, nulledTestJSONString, requestParams, modExtension
                     )
 
 // TODO: return one for testMultiple of true
 
                   // negative test of actual uncastable data type for expected current data type
-                  val docOther         = pickDocOther(documentNames, documentMax, docCurr, i)
+                  val docOther         = pickDocOther(multiDocNames, multiDocMax, docCurr, i)
                   val typeErrName      = testName+"TypeErr"
                   val typeErrClientdef = replaceFuncName(testdef, typeErrName)
                   generateClientdef(
                     bundleJSONPath, bundleEndpoint, typeErrName,
-                    serializer.writeValueAsString(typeErrClientdef), requestParams, isSJS
+                    serializer.writeValueAsString(typeErrClientdef), requestParams, modExtension
                     )
                   testingFuncs.add(
                     generateJUnitCallTest(
@@ -1313,15 +1325,15 @@ if (true) {
                   val typeErrFuncReturn = replaceDataType(funcReturn, docOther)
                   val typeErrServerdef  = replaceFuncReturn(typeErrClientdef, typeErrFuncReturn)
                   persistServerdef(
-                      docMgr, modMgr, bundleEndpoint, typeErrName, docMeta,
-                      serializer.writeValueAsString(typeErrServerdef), requestParams, isSJS
+                      modMgr, bundleEndpoint, typeErrName, docMeta,
+                      serializer.writeValueAsString(typeErrServerdef), requestParams, modExtension
                     )
                 }
               }
             }}
           "multipart" -> {
-            for (i in documentNames.indices) {
-              val docCurr = documentNames[i]
+            for (i in multiDocNames.indices) {
+              val docCurr = multiDocNames[i]
 // TODO: atomics as well as documents
 //            val atomic1 = atomicNames[i]
 //            val atomic2 = atomicNames[if (i == atomicMax) 0 else i + 1]
@@ -1329,7 +1341,9 @@ if (true) {
               val docTestTypes = multipleTestTypes
               for (testNum in docTestTypes.indices) {
                 val testType = docTestTypes[testNum]
-                val testMultiple = testType.get("multiple") as Boolean
+// TODO: restore after fix for internal bug 52334
+//              val testMultiple = testType.get("multiple") as Boolean
+                val testMultiple = if (docCurr == "object") false else (testType.get("multiple") as Boolean)
                 val testNullable = testType.get("nullable") as Boolean
                 val funcReturn   = mapOf(
                     "datatype" to docCurr,
@@ -1347,10 +1361,10 @@ if (true) {
                 val testJSONString = serializer.writeValueAsString(testdef)
 
                 persistServerdef(
-                  docMgr, modMgr, bundleEndpoint, testName, docMeta, testJSONString, requestParams, isSJS
+                  modMgr, bundleEndpoint, testName, docMeta, testJSONString, requestParams, modExtension
                   )
                 generateClientdef(
-                  bundleJSONPath, bundleEndpoint, testName, testJSONString, requestParams, isSJS
+                  bundleJSONPath, bundleEndpoint, testName, testJSONString, requestParams, modExtension
                   )
 
                 testingFuncs.add(
@@ -1363,10 +1377,10 @@ if (true) {
                   val nulledTestdef        = replaceFuncName(testdef, nulledTestName)
                   val nulledTestJSONString = serializer.writeValueAsString(nulledTestdef)
                   persistServerdef(
-                    docMgr, modMgr, bundleEndpoint, nulledTestName, docMeta, nulledTestJSONString, requestParams, isSJS
+                    modMgr, bundleEndpoint, nulledTestName, docMeta, nulledTestJSONString, requestParams, modExtension
                     )
                   generateClientdef(
-                    bundleJSONPath, bundleEndpoint, nulledTestName, nulledTestJSONString, requestParams, isSJS
+                    bundleJSONPath, bundleEndpoint, nulledTestName, nulledTestJSONString, requestParams, modExtension
                     )
                   testingFuncs.add(
                     generateJUnitCallTest(
@@ -1381,7 +1395,7 @@ if (true) {
                     val nulledTestdef        = replaceFuncName(testdef, nulledTestName)
                     val nulledTestJSONString = serializer.writeValueAsString(nulledTestdef)
                     generateClientdef(
-                      bundleJSONPath, bundleEndpoint, nulledTestName, nulledTestJSONString, requestParams, isSJS
+                      bundleJSONPath, bundleEndpoint, nulledTestName, nulledTestJSONString, requestParams, modExtension
                       )
                     testingFuncs.add(
                       generateJUnitCallTest(
@@ -1389,16 +1403,16 @@ if (true) {
                         )
                       )
                     persistServerdef(
-                      docMgr, modMgr, bundleEndpoint, nulledTestName, docMeta, nulledTestJSONString, requestParams, isSJS
+                      modMgr, bundleEndpoint, nulledTestName, docMeta, nulledTestJSONString, requestParams, modExtension
                       )
 
                     // negative test of actual uncastable data type for expected current data type
-                    val docOther          = pickDocOther(documentNames, documentMax, docCurr, i)
+                    val docOther          = pickDocOther(multiDocNames, multiDocMax, docCurr, i)
                     val typeErrName       = testName+"TypeErr"
                     val typeErrClientdef  = replaceFuncName(testdef, typeErrName)
                     generateClientdef(
                       bundleJSONPath, bundleEndpoint, typeErrName,
-                      serializer.writeValueAsString(typeErrClientdef), requestParams, isSJS
+                      serializer.writeValueAsString(typeErrClientdef), requestParams, modExtension
                       )
                     testingFuncs.add(
                       generateJUnitCallTest(
@@ -1408,8 +1422,8 @@ if (true) {
                     val typeErrFuncReturn = replaceDataType(funcReturn, docOther)
                     val typeErrServerdef  = replaceFuncReturn(typeErrClientdef, typeErrFuncReturn)
                     persistServerdef(
-                      docMgr, modMgr, bundleEndpoint, typeErrName, docMeta,
-                      serializer.writeValueAsString(typeErrServerdef), requestParams, isSJS
+                      modMgr, bundleEndpoint, typeErrName, docMeta,
+                      serializer.writeValueAsString(typeErrServerdef), requestParams, modExtension
                       )
 
                     // negative test of actual multiple values for expected single value
@@ -1417,7 +1431,7 @@ if (true) {
                     val multiErrClientdef = replaceFuncName(testdef, multiErrName)
                     generateClientdef(
                       bundleJSONPath, bundleEndpoint, multiErrName,
-                      serializer.writeValueAsString(multiErrClientdef), requestParams, isSJS
+                      serializer.writeValueAsString(multiErrClientdef), requestParams, modExtension
                       )
                     testingFuncs.add(
                       generateJUnitCallTest(
@@ -1427,8 +1441,8 @@ if (true) {
                     val multiErrServerReturn = replaceMultiple(funcReturn, true)
                     val multiErrServerdef    = replaceFuncReturn(multiErrClientdef, multiErrServerReturn)
                     persistServerdef(
-                      docMgr, modMgr, bundleEndpoint, multiErrName, docMeta,
-                      serializer.writeValueAsString(multiErrServerdef), requestParams, isSJS
+                      modMgr, bundleEndpoint, multiErrName, docMeta,
+                      serializer.writeValueAsString(multiErrServerdef), requestParams, modExtension
                       )
                   }
                 }
@@ -1470,7 +1484,7 @@ if (true) {
     val datatype             = atomicMappingDatatypes[datatypeNum]
     val testBaseStart        = atomicMappingBundle+datatype.capitalize()
     val datatypeConstructors = atomicMappingConstructors[datatype] as Map<String,String>
-    val isSJS                = (datatypeNum % 2) == 0
+    val modExtension         = modExtensions[datatypeNum % modExtensions.size]
     for (mappedType in datatypeConstructors.keys) {
       // mappedType.capitalize().replace('.', '_')
       val testMapped        = mappedType.split('.').map{word -> word.capitalize()}.joinToString("")
@@ -1478,7 +1492,9 @@ if (true) {
       val typeConstructors  = mapOf(datatype to mappedConstructor)
       for (testNum in allTestTypes.indices) {
         val testType       = allTestTypes[testNum]
-        val testMultiple   = testType.get("multiple") as Boolean
+// TODO: restore after fix for internal bug 52334
+//      val testMultiple   = testType.get("multiple") as Boolean
+        val testMultiple   = if (datatype == "object") false else (testType.get("multiple") as Boolean)
         val testNullable   = testType.get("nullable") as Boolean
         val funcParams     = listOf(mapOf(
             "name"        to "param1",     "datatype" to datatype,
@@ -1491,10 +1507,10 @@ if (true) {
         var testJSONString = serializer.writeValueAsString(testdef)
 
         persistServerdef(
-          docMgr, modMgr, atomicMappingBundleEndpoint, testName, docMeta, testJSONString, funcParams, isSJS
+          modMgr, atomicMappingBundleEndpoint, testName, docMeta, testJSONString, funcParams, modExtension
           )
         generateClientdef(
-          atomicMappingBundleJSONPath, atomicMappingBundleEndpoint, testName, testJSONString, funcParams, isSJS
+          atomicMappingBundleJSONPath, atomicMappingBundleEndpoint, testName, testJSONString, funcParams, modExtension
           )
         atomicMappingTestingFuncs.add(
             generateJUnitCallTest(
@@ -1513,10 +1529,10 @@ if (true) {
         testJSONString = serializer.writeValueAsString(testdef)
 
         persistServerdef(
-          docMgr, modMgr, atomicMappingBundleEndpoint, testName, docMeta, testJSONString, null, isSJS
+          modMgr, atomicMappingBundleEndpoint, testName, docMeta, testJSONString, null, modExtension
           )
         generateClientdef(
-          atomicMappingBundleJSONPath, atomicMappingBundleEndpoint, testName, testJSONString, null, isSJS
+          atomicMappingBundleJSONPath, atomicMappingBundleEndpoint, testName, testJSONString, null, modExtension
           )
         atomicMappingTestingFuncs.add(
             generateJUnitCallTest(
@@ -1558,14 +1574,16 @@ if (true) {
     val datatype             = documentMappedDatatypes[datatypeNum]
     val testBaseStart        = documentMappingBundle+datatype.capitalize()
     val datatypeConstructors = documentMappingConstructors[datatype] as Map<String,String>
-    val isSJS                = (datatypeNum % 2) == 0
+    val modExtension         = modExtensions[datatypeNum % modExtensions.size]
     for (mappedType in datatypeConstructors.keys) {
       val testMapped        = mappedType.split('.').map{word -> word.capitalize()}.joinToString("")
       val mappedConstructor = datatypeConstructors[mappedType] as String
       val typeConstructors  = mapOf(datatype to mappedConstructor)
       for (testNum in allTestTypes.indices) {
         val testType = allTestTypes[testNum]
-        val testMultiple = testType.get("multiple") as Boolean
+// TODO: restore after fix for internal bug 52334
+//      val testMultiple = testType.get("multiple") as Boolean
+        val testMultiple   = if (datatype == "object") false else (testType.get("multiple") as Boolean)
         val testNullable = testType.get("nullable") as Boolean
 
         if (!mappedType.endsWith("ReadHandle")) {
@@ -1580,10 +1598,10 @@ if (true) {
           val testJSONString = serializer.writeValueAsString(testdef)
 
           persistServerdef(
-              docMgr, modMgr, documentMappingBundleEndpoint, testName, docMeta, testJSONString, funcParams, isSJS
+              modMgr, documentMappingBundleEndpoint, testName, docMeta, testJSONString, funcParams, modExtension
           )
           generateClientdef(
-              documentMappingBundleJSONPath, documentMappingBundleEndpoint, testName, testJSONString, funcParams, isSJS
+              documentMappingBundleJSONPath, documentMappingBundleEndpoint, testName, testJSONString, funcParams, modExtension
           )
           documentMappingTestingFuncs.add(
               generateJUnitCallTest(
@@ -1604,10 +1622,10 @@ if (true) {
           val testJSONString = serializer.writeValueAsString(testdef)
 
           persistServerdef(
-              docMgr, modMgr, documentMappingBundleEndpoint, testName, docMeta, testJSONString, null, isSJS
+              modMgr, documentMappingBundleEndpoint, testName, docMeta, testJSONString, null, modExtension
           )
           generateClientdef(
-              documentMappingBundleJSONPath, documentMappingBundleEndpoint, testName, testJSONString, null, isSJS
+              documentMappingBundleJSONPath, documentMappingBundleEndpoint, testName, testJSONString, null, modExtension
           )
           documentMappingTestingFuncs.add(
               generateJUnitCallTest(
@@ -1630,7 +1648,7 @@ if (true) {
 }
 
 if (true) {
-  for (testName in listOf("sessions", "described")) {
+  for (testName in listOf("sessions", "described", "mimetype")) {
     val manualBundleJSONPath = "${testDir}ml-modules/root/dbfunctiondef/positive/${testName}/"
     val manualBundleEndpoint = endpointBase+testName+"/"
     val manualBundleFilename = manualBundleJSONPath+"service.json"
@@ -1667,7 +1685,7 @@ if (true) {
       "return"       to moduleInitReturn
       )
   val moduleInitTestString = serializer.writeValueAsString(moduleInitTestdef)
-  for (modExtension in listOf("sjs", "xqy")) {
+  for (modExtension in modExtensions) {
     val moduleInitBundle           = "moduleInit"+modExtension.capitalize()
     val moduleInitBundleTested     = moduleInitBundle.capitalize()+"Bundle"
     val moduleInitBundleTester     = moduleInitBundleTested+"Test"
@@ -1698,9 +1716,9 @@ if (true) {
     moduleInitModFile.appendText("""
 ${
     when (modExtension) {
-      "sjs" -> "true;"
-      "xqy" -> "fn:true()"
-      else  -> IllegalArgumentException("unknown module extension: "+modExtension)
+      "mjs", "sjs" -> "true;"
+      "xqy"        -> "fn:true()"
+      else         -> IllegalArgumentException("unknown module extension: "+modExtension)
     }}
 """, Charsets.UTF_8)
 
@@ -1760,63 +1778,55 @@ fun replaceKeyValue(originalMap: Map<String,*>, key: String, value: Any) : Map<S
 fun uncastableAtomicType(testdefs: ObjectNode, dataType: String) : String {
   return if (testdefs.withArray(dataType)[0].isBoolean) "double" else "boolean"
 }
-fun persistServerdef(docMgr: JSONDocumentManager, modMgr: TextDocumentManager, endpointBase: String,
-      funcName: String, docMeta: DocumentMetadataHandle, funcdef: String, funcParams: List<Map<String,*>>?,
-      isSJS: Boolean) {
+fun persistServerdef(modMgr: TextDocumentManager, endpointBase: String, funcName: String,
+      docMeta: DocumentMetadataHandle, funcdef: String, funcParams: List<Map<String,*>>?, modExtension: String
+) {
   val docIdBase = endpointBase+funcName
   val apiId     = docIdBase+".api"
-  val moduleId  = makeModulePath(docIdBase, isSJS)
+  val moduleId  = docIdBase+"."+modExtension
   val apiHandle = StringHandle(funcdef)
-  val moduleDoc = makeModuleDoc(docIdBase, funcParams, isSJS)
-  docMgr.write(apiId, docMeta, apiHandle)
+  val moduleDoc = makeModuleDoc(docIdBase, funcParams, funcdef, modExtension)
   modMgr.write(
     modMgr.newWriteSet().add(apiId, docMeta, apiHandle).add(moduleId, docMeta, StringHandle(moduleDoc))
     )
 }
 fun generateClientdef(jsonPath: String, endpointBase: String, funcName: String,
-                      funcdef: String, funcParams: List<Map<String,*>>?, isSJS: Boolean) {
+                      funcdef: String, funcParams: List<Map<String,*>>?, modExtension: String) {
   val funcPathBase     = jsonPath+funcName
   val funcClientJSON   = funcPathBase+".api"
-  val moduleClientPath = makeModulePath(funcPathBase, isSJS)
-  val moduleClientDoc  = makeModuleDoc(endpointBase+funcName, funcParams, isSJS)
+  val moduleClientPath = funcPathBase+"."+modExtension
+  val moduleClientDoc  = makeModuleDoc(endpointBase+funcName, funcParams, funcdef, modExtension)
   File(funcClientJSON).writeText(funcdef, Charsets.UTF_8)
   File(moduleClientPath).writeText(moduleClientDoc, Charsets.UTF_8)
 }
-fun makeModulePath(basePath: String, isSJS: Boolean) : String {
-  val modulePath =
-      if (isSJS) basePath+".sjs"
-      else       basePath+".xqy"
-  return modulePath;
-}
-fun makeModuleDoc(docIdBase: String, funcParams: List<Map<String,*>>?, isSJS: Boolean) : String {
+// TODO: call makeModuleDoc() only once per definition and use for both project filesystem and modules database
+fun makeModuleDoc(docIdBase: String, funcParams: List<Map<String,*>>?, funcdef: String, modExtension: String
+) : String {
+  var convertedParams = mapper.convertValue<ArrayNode>(funcParams, ArrayNode::class.java)
+  val prologSource = generator.getEndpointProlog(modExtension)
+  val paramSource = generator.getEndpointParamSource(atomicMap, documentMap, modExtension, convertedParams)
   val paramNames = funcParams?.map{param -> param["name"] as String} ?: emptyList<String>()
   val moduleDoc  =
-      if (isSJS) """'use strict';
-${paramNames.map{paramName -> """var ${paramName};
-"""}.joinToString("")}
+      if (modExtension === "mjs" || modExtension === "sjs") """${prologSource}
+${paramSource}
 const inspector = require('/dbf/test/testInspector.sjs');
 const errorList = [];
-const funcdef   = inspector.getFunctiondef('${docIdBase}', errorList);
+const funcdef   = ${funcdef};
 let fields = {};
 ${paramNames.map{paramName -> """fields = inspector.addField(
-  '${docIdBase}', fields, '${paramName}', ${paramName}, xdmp.getRequestField('${paramName}', null)
+  '${docIdBase}', fields, '${paramName}', ${paramName}
   );
 """}.joinToString("")}
 fields = inspector.getFields(funcdef, fields, errorList);
 inspector.makeResult('${docIdBase}', funcdef, fields, errorList);
 """
-      else       """xquery version "1.0-ml";
-declare default function namespace "http://www.w3.org/2005/xpath-functions";
-declare option xdmp:mapping "false";
-${paramNames.map{paramName -> """declare variable ${'$'}${paramName} external := ();
-"""}.joinToString("")}
+      else       """${prologSource}
+${paramSource}
 let ${'$'}errorList := json:array()
-let ${'$'}funcdef   := xdmp:apply(xdmp:function(xs:QName("getFunctiondef"), "/dbf/test/testInspector.sjs"),
-    "${docIdBase}", ${'$'}errorList
-    )
+let ${'$'}funcdef   := xdmp:from-json-string('${funcdef}')
 let ${'$'}fields   := map:map()
 ${paramNames.map{paramName -> """let ${'$'}fields   := xdmp:apply(xdmp:function(xs:QName("addField"), "/dbf/test/testInspector.sjs"),
-    "${docIdBase}", ${'$'}fields, "${paramName}", ${'$'}${paramName}, xdmp:get-request-field("${paramName}")
+    "${docIdBase}", ${'$'}fields, "${paramName}", ${'$'}${paramName}
     )
 """}.joinToString("")}
 let ${'$'}fields   := xdmp:apply(xdmp:function(xs:QName("getFields"), "/dbf/test/testInspector.sjs"),
