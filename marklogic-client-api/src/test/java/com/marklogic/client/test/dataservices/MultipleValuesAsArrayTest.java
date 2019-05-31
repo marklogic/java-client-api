@@ -32,8 +32,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.dataservices.CallBatcher;
-import com.marklogic.client.dataservices.CallManager;
+import com.marklogic.client.dataservices.impl.CallBatcher;
+import com.marklogic.client.dataservices.impl.CallManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.impl.NodeConverter;
 import com.marklogic.client.io.DocumentMetadataHandle;

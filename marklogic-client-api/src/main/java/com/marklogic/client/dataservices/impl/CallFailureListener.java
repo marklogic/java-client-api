@@ -1,12 +1,3 @@
-/**
- * The package provides classes for making calls to Data Service endpoints.
- * Use {@link com.marklogic.client.DatabaseClient} to create the call manager.
- * Create a caller and either make single calls with the caller or build
- * a call batcher to make multiple concurrent calls.
- *
- * Note that the ml-development-tools generates interfaces to make it
- * easy to call Data Service endpoints.
- */
 /*
  * Copyright 2019 MarkLogic Corporation
  *
@@ -22,4 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.dataservices;
+package com.marklogic.client.dataservices.impl;
+
+import com.marklogic.client.datamovement.BatchFailureListener;
+
+public interface CallFailureListener extends BatchFailureListener<CallBatcher.CallEvent> {
+}

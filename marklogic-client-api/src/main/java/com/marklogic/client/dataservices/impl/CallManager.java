@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.dataservices;
+package com.marklogic.client.dataservices.impl;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
-import com.marklogic.client.datamovement.BatchEvent;
-import com.marklogic.client.dataservices.impl.CallManagerImpl;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.w3c.dom.Document;

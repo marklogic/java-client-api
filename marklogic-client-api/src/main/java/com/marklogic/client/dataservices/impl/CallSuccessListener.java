@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.dataservices;
+package com.marklogic.client.dataservices.impl;
 
 import com.marklogic.client.datamovement.BatchListener;
 

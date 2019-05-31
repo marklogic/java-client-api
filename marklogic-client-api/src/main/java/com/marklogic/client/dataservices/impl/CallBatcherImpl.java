@@ -20,11 +20,7 @@ import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.datamovement.*;
 import com.marklogic.client.datamovement.impl.BatchEventImpl;
 import com.marklogic.client.datamovement.impl.BatcherImpl;
-import com.marklogic.client.dataservices.CallBatcher;
-import com.marklogic.client.dataservices.CallFailureListener;
-import com.marklogic.client.dataservices.CallManager;
-import com.marklogic.client.dataservices.CallManager.CallArgs;
-import com.marklogic.client.dataservices.CallSuccessListener;
+import com.marklogic.client.dataservices.impl.CallManager.CallArgs;
 import com.marklogic.client.dataservices.impl.CallManagerImpl.CallArgsImpl;
 
 import com.marklogic.client.impl.RESTServices;

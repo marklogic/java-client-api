@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.dataservices;
+package com.marklogic.client.dataservices.impl;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -24,7 +24,7 @@ import com.marklogic.client.datamovement.Batcher;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.dataservices.CallManager.CallArgs;
+import com.marklogic.client.dataservices.impl.CallManager.CallArgs;
 
 /**
  * A CallBatcher executes multiple concurrent calls to a Data Service endpoint
