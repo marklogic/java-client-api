@@ -145,6 +145,13 @@ public class NodeConverter {
       final Formatter<T> formatter = new Formatter(format);
       return handles.map(formatter);
    }
+   static public <T> T[] arrayWithFormat(T[] handles, Format format) {
+       if (handles == null) return handles;
+       for (T handle: handles) {
+          withFormat(handle, format);
+       }
+       return handles;
+    }
    static private class Formatter<T extends AbstractWriteHandle> implements Function<T,T> {
       private Format format;
       Formatter(Format format) {
@@ -255,11 +262,17 @@ public class NodeConverter {
    static public Stream<DOMHandle> DocumentToHandle(Stream<? extends Document> values) {
       return (values == null) ? null : values.map(NodeConverter::DocumentToHandle);
    }
+   static public DOMHandle[] DocumentToHandle(Document[] values) {
+       return (values == null) ? null : convert(values, new DOMHandle[values.length], NodeConverter::DocumentToHandle);
+    }
    static public FileHandle FileToHandle(File value) {
       return (value == null) ? null : new FileHandle(value);
    }
    static public Stream<FileHandle> FileToHandle(Stream<? extends File> values) {
       return (values == null) ? null : values.map(NodeConverter::FileToHandle);
+   }
+   static public FileHandle[] FileToHandle(File[] values) {
+       return (values == null) ? null : convert(values, new FileHandle[values.length], NodeConverter::FileToHandle);
    }
    static public InputStreamHandle InputStreamToHandle(InputStream value) {
       return (value == null) ? null : new InputStreamHandle(value);
@@ -267,17 +280,26 @@ public class NodeConverter {
    static public Stream<InputStreamHandle> InputStreamToHandle(Stream<? extends InputStream> values) {
       return (values == null) ? null : values.map(NodeConverter::InputStreamToHandle);
    }
+   static public InputStreamHandle[] InputStreamToHandle(InputStream[] values) {
+       return (values == null) ? null : convert(values, new InputStreamHandle[values.length], NodeConverter::InputStreamToHandle);
+   }
    static public InputSourceHandle InputSourceToHandle(InputSource value) {
       return (value == null) ? null : new InputSourceHandle(value);
    }
    static public Stream<InputSourceHandle> InputSourceToHandle(Stream<? extends InputSource> values) {
       return (values == null) ? null : values.map(NodeConverter::InputSourceToHandle);
    }
+   static public InputSourceHandle[] InputSourceToHandle(InputSource[] values) {
+       return (values == null) ? null : convert(values, new InputSourceHandle[values.length], NodeConverter::InputSourceToHandle);
+   }
    static public JacksonHandle JsonNodeToHandle(JsonNode value) {
       return (value == null) ? null : new JacksonHandle(value);
    }
    static public Stream<JacksonHandle> JsonNodeToHandle(Stream<? extends JsonNode> values) {
       return (values == null) ? null : values.map(NodeConverter::JsonNodeToHandle);
+   }
+   static public JacksonHandle[] JsonNodeToHandle(JsonNode[] values) {
+       return (values == null) ? null : convert(values, new JacksonHandle[values.length], NodeConverter::JsonNodeToHandle);
    }
    static public JacksonParserHandle JsonParserToHandle(JsonParser value) {
       if (value == null) {
@@ -290,6 +312,9 @@ public class NodeConverter {
    static public Stream<JacksonParserHandle> JsonParserToHandle(Stream<? extends JsonParser> values) {
       return (values == null) ? null : values.map(NodeConverter::JsonParserToHandle);
    }
+   static public JacksonParserHandle[] JsonParserToHandle(JsonParser[] values) {
+       return (values == null) ? null : convert(values, new JacksonParserHandle[values.length], NodeConverter::JsonParserToHandle);
+   }
    static public ArrayNode ReaderToArrayNode(Reader value) {
       try {
          return (value == null) ? null : getMapper().readValue(value, ArrayNode.class);
@@ -299,6 +324,9 @@ public class NodeConverter {
    }
    static public Stream<ArrayNode> ReaderToArrayNode(Stream<? extends Reader> values) {
       return (values == null) ? null : values.map(NodeConverter::ReaderToArrayNode);
+   }
+   static public ArrayNode[] ReaderToArrayNode(Reader[] values) {
+       return (values == null) ? null : convert(values, new ArrayNode[values.length], NodeConverter::ReaderToArrayNode);
    }
    static public JsonNode ReaderToJsonNode(Reader value) {
       try {
@@ -310,6 +338,9 @@ public class NodeConverter {
    static public Stream<JsonNode> ReaderToJsonNode(Stream<? extends Reader> values) {
       return (values == null) ? null : values.map(NodeConverter::ReaderToJsonNode);
    }
+   static public JsonNode[] ReaderToJsonNode(Reader[] values) {
+       return (values == null) ? null : convert(values, new JsonNode[values.length], NodeConverter::ReaderToJsonNode);
+   }
    static public ObjectNode ReaderToObjectNode(Reader value) {
       try {
          return (value == null) ? null : getMapper().readValue(value, ObjectNode.class);
@@ -320,6 +351,9 @@ public class NodeConverter {
    static public Stream<ObjectNode> ReaderToObjectNode(Stream<? extends Reader> values) {
       return (values == null) ? null : values.map(NodeConverter::ReaderToObjectNode);
    }
+   static public ObjectNode[] ReaderToObjectNode(Reader[] values) {
+       return (values == null) ? null : convert(values, new ObjectNode[values.length], NodeConverter::ReaderToObjectNode);
+   }
    static public JsonParser ReaderToJsonParser(Reader value) {
       try {
          return (value == null) ? null : getMapper().getFactory().createParser(value);
@@ -329,6 +363,9 @@ public class NodeConverter {
    }
    static public Stream<JsonParser> ReaderToJsonParser(Stream<? extends Reader> values) {
       return (values == null) ? null : values.map(NodeConverter::ReaderToJsonParser);
+   }
+   static public JsonParser[] ReaderToJsonParser(Reader[] values) {
+       return (values == null) ? null : convert(values, new JsonParser[values.length], NodeConverter::ReaderToJsonParser);
    }
 
    static public Document InputStreamToDocument(InputStream inputStream) {
@@ -345,6 +382,9 @@ public class NodeConverter {
    static public Stream<Document> InputStreamToDocument(Stream<? extends InputStream> values) {
       return (values == null) ? null : values.map(NodeConverter::InputStreamToDocument);
    }
+   static public Document[] InputStreamToDocument(InputStream[] values) {
+       return (values == null) ? null : convert(values, new Document[values.length], NodeConverter::InputStreamToDocument);
+   }
    static public File InputStreamToFile(InputStream inputStream) {
       if (inputStream == null) {
          return null;
@@ -360,17 +400,26 @@ public class NodeConverter {
    static public Stream<File> InputStreamToFile(Stream<? extends InputStream> values) {
       return (values == null) ? null : values.map(NodeConverter::InputStreamToFile);
    }
+   static public File[] InputStreamToFile(InputStream[] values) {
+       return (values == null) ? null : convert(values, new File[values.length], NodeConverter::InputStreamToFile);
+   }
    static public InputSource ReaderToInputSource(Reader reader) {
       return (reader == null) ? null : new InputSource(reader);
    }
    static public Stream<InputSource> ReaderToInputSource(Stream<? extends Reader> values) {
       return (values == null) ? null : values.map(NodeConverter::ReaderToInputSource);
    }
+   static public InputSource[] ReaderToInputSource(Reader[] values) {
+       return (values == null) ? null : convert(values, new InputSource[values.length], NodeConverter::ReaderToInputSource);
+   }
    static public Source ReaderToSource(Reader reader) {
       return (reader == null) ? null : new StreamSource(reader);
    }
    static public Stream<Source> ReaderToSource(Stream<? extends Reader> values) {
       return (values == null) ? null : values.map(NodeConverter::ReaderToSource);
+   }
+   static public Source[] ReaderToSource(Reader[] values) {
+       return (values == null) ? null : convert(values, new Source[values.length], NodeConverter::ReaderToSource);
    }
    static public XMLEventReader ReaderToXMLEventReader(Reader reader) {
       try {
@@ -384,6 +433,9 @@ public class NodeConverter {
    static public Stream<XMLEventReader> ReaderToXMLEventReader(Stream<? extends Reader> values) {
       return (values == null) ? null : values.map(NodeConverter::ReaderToXMLEventReader);
    }
+   static public XMLEventReader[] ReaderToXMLEventReader(Reader[] values) {
+       return (values == null) ? null : convert(values, new XMLEventReader[values.length], NodeConverter::ReaderToXMLEventReader);
+   }
    static public XMLStreamReader ReaderToXMLStreamReader(Reader reader) {
       try {
          return (reader == null) ? null : getXMLInputFactory().createXMLStreamReader(reader);
@@ -396,6 +448,9 @@ public class NodeConverter {
    static public Stream<XMLStreamReader> ReaderToXMLStreamReader(Stream<? extends Reader> values) {
       return (values == null) ? null : values.map(NodeConverter::ReaderToXMLStreamReader);
    }
+   static public XMLStreamReader[] ReaderToXMLStreamReader(Reader[] values) {
+       return (values == null) ? null : convert(values, new XMLStreamReader[values.length], NodeConverter::ReaderToXMLStreamReader);
+   }
 
    static public OutputStreamHandle OutputStreamSenderToHandle(OutputStreamSender value) {
       return (value == null) ? null : new OutputStreamHandle(value);
@@ -403,17 +458,26 @@ public class NodeConverter {
    static public Stream<OutputStreamHandle> OutputStreamSenderToHandle(Stream<? extends OutputStreamSender> values) {
       return (values == null) ? null : values.map(NodeConverter::OutputStreamSenderToHandle);
    }
+   static public OutputStreamHandle[] OutputStreamSenderToHandle(OutputStreamSender[] values) {
+       return (values == null) ? null : convert(values, new OutputStreamHandle[values.length], NodeConverter::OutputStreamSenderToHandle);
+   }
    static public ReaderHandle ReaderToHandle(Reader value) {
       return (value == null) ? null : new ReaderHandle(value);
    }
    static public Stream<ReaderHandle> ReaderToHandle(Stream<? extends Reader> values) {
       return (values == null) ? null : values.map(NodeConverter::ReaderToHandle);
    }
+   static public ReaderHandle[] ReaderToHandle(Reader[] values) {
+       return (values == null) ? null : convert(values, new ReaderHandle[values.length], NodeConverter::ReaderToHandle);
+    }
    static public StringHandle StringToHandle(String value) {
       return (value == null) ? null : new StringHandle(value);
    }
    static public Stream<StringHandle> StringToHandle(Stream<? extends String> values) {
       return (values == null) ? null : values.map(NodeConverter::StringToHandle);
+   }
+   static public StringHandle[] StringToHandle(String[] values) {
+       return (values == null) ? null : convert(values, new StringHandle[values.length], NodeConverter::StringToHandle);
    }
    static public SourceHandle SourceToHandle(Source value) {
       return (value == null) ? null : new SourceHandle(value);
@@ -421,17 +485,26 @@ public class NodeConverter {
    static public Stream<SourceHandle> SourceToHandle(Stream<? extends Source> values) {
       return (values == null) ? null : values.map(NodeConverter::SourceToHandle);
    }
+   static public SourceHandle[] SourceToHandle(Source[] values) {
+       return (values == null) ? null : convert(values, new SourceHandle[values.length], NodeConverter::SourceToHandle);
+   }
    static public XMLEventReaderHandle XMLEventReaderToHandle(XMLEventReader value) {
       return (value == null) ? null : new XMLEventReaderHandle(value);
    }
    static public Stream<XMLEventReaderHandle> XMLEventReaderToHandle(Stream<? extends XMLEventReader> values) {
       return (values == null) ? null : values.map(NodeConverter::XMLEventReaderToHandle);
    }
+   static public XMLEventReaderHandle[] XMLEventReaderToHandle(XMLEventReader[] values) {
+       return (values == null) ? null : convert(values, new XMLEventReaderHandle[values.length], NodeConverter::XMLEventReaderToHandle);
+   }
    static public XMLStreamReaderHandle XMLStreamReaderToHandle(XMLStreamReader value) {
       return (value == null) ? null : new XMLStreamReaderHandle(value);
    }
    static public Stream<XMLStreamReaderHandle> XMLStreamReaderToHandle(Stream<? extends XMLStreamReader> values) {
       return (values == null) ? null : values.map(NodeConverter::XMLStreamReaderToHandle);
+   }
+   static public XMLStreamReaderHandle[] XMLStreamReaderToHandle(XMLStreamReader[] values) {
+       return (values == null) ? null : convert(values, new XMLStreamReaderHandle[values.length], NodeConverter::XMLStreamReaderToHandle);
    }
 
    static public byte[] InputStreamToBytes(InputStream inputStream) {
@@ -533,4 +606,11 @@ public class NodeConverter {
        
        return bytesHandleArray;
    }
+   
+   static public <I, O> O[] convert(I[] in, O[] out, Function<I, O> converter) {
+       for (int i=0; i < in.length; i++) {
+          out[i] = converter.apply(in[i]);
+       }
+       return out;
+    }
 }
