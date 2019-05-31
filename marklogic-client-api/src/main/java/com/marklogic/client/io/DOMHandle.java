@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -227,9 +228,27 @@ public class DOMHandle
   }
   protected DocumentBuilderFactory makeDocumentBuilderFactory() throws ParserConfigurationException {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    // default to best practices for conservative security including recommendations per
+    // https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md
+    try {
+      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+    } catch (ParserConfigurationException e) {}
+    try {
+      factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+    } catch (ParserConfigurationException e) {}
+    try {
+      factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+    } catch (ParserConfigurationException e) {}
+    try {
+      factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+    } catch (ParserConfigurationException e) {}
+    try {
+      factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+    } catch (ParserConfigurationException e) {}
+    factory.setXIncludeAware(false);
+    factory.setExpandEntityReferences(false);
     factory.setNamespaceAware(true);
     factory.setValidating(false);
-    // TODO: XInclude
 
     return factory;
   }

@@ -114,7 +114,13 @@ public class JDOMHandle
     this.builder = builder;
   }
   protected SAXBuilder makeBuilder() {
-    return new SAXBuilder(XMLReaders.NONVALIDATING);
+    SAXBuilder builder = new SAXBuilder(XMLReaders.NONVALIDATING);
+    // default to best practices for conservative security including recommendations per
+    // https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md
+    builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl",true);
+    builder.setFeature("http://xml.org/sax/features/external-general-entities", false);
+    builder.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+    return builder;
   }
 
   /**

@@ -49,6 +49,9 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * The JAXB Handle must be initialized with a JAXB Context with which the root POJO classes
  * have been registered.
  *
+ * Important:  Do not use the JAXB unmarshaller to parse XML from an untrusted source
+ * as it is vulnerable to XXE attacks.
+ *
  * @param	<C>	one of the classes (or the &lt;?&gt; wildcard for any of the classes) registered with the JAXB Context
  */
 public class JAXBHandle<C>

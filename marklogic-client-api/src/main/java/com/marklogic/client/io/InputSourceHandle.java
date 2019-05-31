@@ -25,8 +25,10 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
@@ -35,13 +37,7 @@ import javax.xml.validation.Schema;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
 
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
@@ -279,9 +275,26 @@ public class InputSourceHandle
   }
   protected SAXParserFactory makeSAXParserFactory() throws SAXException, ParserConfigurationException {
     SAXParserFactory factory = SAXParserFactory.newInstance();
+    // default to best practices for conservative security including recommendations per
+    // https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md
+    try {
+      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+    } catch (ParserConfigurationException | SAXNotRecognizedException | SAXNotSupportedException e) {}
+    try {
+      factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+    } catch (ParserConfigurationException | SAXNotRecognizedException | SAXNotSupportedException e) {}
+    try {
+      factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtds", false);
+    } catch (ParserConfigurationException | SAXNotRecognizedException | SAXNotSupportedException e) {}
+    try {
+      factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+    } catch (ParserConfigurationException | SAXNotRecognizedException | SAXNotSupportedException e) {}
+    try {
+      factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+    } catch (ParserConfigurationException | SAXNotRecognizedException | SAXNotSupportedException e) {}
+    factory.setXIncludeAware(false);
     factory.setNamespaceAware(true);
     factory.setValidating(false);
-    // TODO: XInclude
 
     return factory;
   }
@@ -322,6 +335,20 @@ public class InputSourceHandle
       }
 
       XMLReader reader = factory.newSAXParser().getXMLReader();
+      // default to best practices for conservative security including recommendations per
+      // https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md
+      try {
+        reader.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+      } catch (SAXNotRecognizedException | SAXNotSupportedException e) {}
+      try {
+        reader.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtds", false);
+      } catch (SAXNotRecognizedException | SAXNotSupportedException e) {}
+      try {
+        reader.setFeature("http://xml.org/sax/features/external-general-entities", false);
+      } catch (SAXNotRecognizedException | SAXNotSupportedException e) {}
+      try {
+        reader.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+      } catch (SAXNotRecognizedException | SAXNotSupportedException e) {}
 
       if (useDefaultSchema) {
         factory.setSchema(null);
@@ -373,7 +400,7 @@ public class InputSourceHandle
   @Override
   public void write(OutputStream out) throws IOException {
     try {
-      TransformerFactory.newInstance().newTransformer().transform(
+      makeTransformer().newTransformer().transform(
         new SAXSource(makeReader(true), content),
         new StreamResult(new OutputStreamWriter(out, "UTF-8"))
       );
@@ -381,6 +408,21 @@ public class InputSourceHandle
       logger.error("Failed to transform input source into result",e);
       throw new MarkLogicIOException(e);
     }
+  }
+  private TransformerFactory makeTransformer() {
+    TransformerFactory factory = TransformerFactory.newInstance();
+    // default to best practices for conservative security including recommendations per
+    // https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md
+    try {
+      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+    } catch (TransformerConfigurationException e) {}
+    try {
+      factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+    } catch (IllegalArgumentException e) {}
+    try {
+      factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+    } catch (IllegalArgumentException e) {}
+    return factory;
   }
 
   /**
