@@ -1323,13 +1323,13 @@ public class CallManagerImpl implements CallManager {
       return field(name, NodeConverter.FileToHandle(value));
     }
     CallField field(String name, File[] values) {
-      return field(name, NodeConverter.FileToHandle(Stream.of(values)));
+      return field(name, NodeConverter.FileToHandle(values));
     }
     CallField field(String name, InputStream value) {
       return field(name, NodeConverter.InputStreamToHandle(value));
     }
     CallField field(String name, InputStream[] values) {
-      return field(name, NodeConverter.InputStreamToHandle(Stream.of(values)));
+      return field(name, NodeConverter.InputStreamToHandle(values));
     }
     private static class AbstractWriteHandlifier extends ParamFieldifier<AbstractWriteHandle> {
       private NodeFieldifier fieldifier;
@@ -1442,13 +1442,13 @@ public class CallManagerImpl implements CallManager {
       return field(name, NodeConverter.ReaderToHandle(value));
     }
     CallField field(String name, Reader[] values) {
-      return field(name, NodeConverter.ReaderToHandle(Stream.of(values)));
+      return field(name, NodeConverter.ReaderToHandle(values));
     }
     CallField field(String name, String value) {
       return field(name, NodeConverter.StringToHandle(value));
     }
     CallField field(String name, String[] values) {
-      return field(name, NodeConverter.StringToHandle(Stream.of(values)));
+      return field(name, NodeConverter.StringToHandle(values));
     }
     private static class Readerfier extends ParamFieldifier<Reader> {
       private CharacterNodeFieldifier fieldifier;
@@ -1512,7 +1512,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.BooleanType.fromBoolean(value));
     }
     CallField field(String name, Boolean[] values) {
-      return field(name, BaseProxy.BooleanType.fromBoolean(Stream.of(values)));
+      return field(name, BaseProxy.BooleanType.fromBoolean(values));
     }
     private static class Booleanifier extends ParamFieldifier<Boolean> {
       private BooleanFieldifier fieldifier;
@@ -1557,7 +1557,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.DateType.fromLocalDate(value));
     }
     CallField field(String name, LocalDate[] values) {
-      return field(name, BaseProxy.DateType.fromLocalDate(Stream.of(values)));
+      return field(name, BaseProxy.DateType.fromLocalDate(values));
     }
     private static class LocalDatifier extends ParamFieldifier<LocalDate> {
       private DateFieldifier fieldifier;
@@ -1624,19 +1624,19 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.DateTimeType.fromDate(value));
     }
     CallField field(String name, Date[] values) {
-      return field(name, BaseProxy.DateTimeType.fromDate(Stream.of(values)));
+      return field(name, BaseProxy.DateTimeType.fromDate(values));
     }
     CallField field(String name, LocalDateTime value) {
       return field(name, BaseProxy.DateTimeType.fromLocalDateTime(value));
     }
     CallField field(String name, LocalDateTime[] values) {
-      return field(name, BaseProxy.DateTimeType.fromLocalDateTime(Stream.of(values)));
+      return field(name, BaseProxy.DateTimeType.fromLocalDateTime(values));
     }
     CallField field(String name, OffsetDateTime value) {
       return field(name, BaseProxy.DateTimeType.fromOffsetDateTime(value));
     }
     CallField field(String name, OffsetDateTime[] values) {
-      return field(name, BaseProxy.DateTimeType.fromOffsetDateTime(Stream.of(values)));
+      return field(name, BaseProxy.DateTimeType.fromOffsetDateTime(values));
     }
     private static class Datifier extends ParamFieldifier<Date> {
       private DateTimeFieldifier fieldifier;
@@ -1719,7 +1719,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.DayTimeDurationType.fromDuration(value));
     }
     CallField field(String name, Duration[] values) {
-      return field(name, BaseProxy.DayTimeDurationType.fromDuration(Stream.of(values)));
+      return field(name, BaseProxy.DayTimeDurationType.fromDuration(values));
     }
     private static class Durationifier extends ParamFieldifier<Duration> {
       private DayTimeDurationFieldifier fieldifier;
@@ -1764,7 +1764,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.DecimalType.fromBigDecimal(value));
     }
     CallField field(String name, BigDecimal[] values) {
-      return field(name, BaseProxy.DecimalType.fromBigDecimal(Stream.of(values)));
+      return field(name, BaseProxy.DecimalType.fromBigDecimal(values));
     }
     private static class BigDecimalifier extends ParamFieldifier<BigDecimal> {
       private DecimalFieldifier fieldifier;
@@ -1809,7 +1809,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.DoubleType.fromDouble(value));
     }
     CallField field(String name, Double[] values) {
-      return field(name, BaseProxy.DoubleType.fromDouble(Stream.of(values)));
+      return field(name, BaseProxy.DoubleType.fromDouble(values));
     }
     private static class Doublifier extends ParamFieldifier<Double> {
       private DoubleFieldifier fieldifier;
@@ -1854,7 +1854,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.FloatType.fromFloat(value));
     }
     CallField field(String name, Float[] values) {
-      return field(name, BaseProxy.FloatType.fromFloat(Stream.of(values)));
+      return field(name, BaseProxy.FloatType.fromFloat(values));
     }
     private static class Floatifier extends ParamFieldifier<Float> {
       private FloatFieldifier fieldifier;
@@ -1899,7 +1899,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.IntegerType.fromInteger(value));
     }
     CallField field(String name, Integer[] values) {
-      return field(name, BaseProxy.IntegerType.fromInteger(Stream.of(values)));
+      return field(name, BaseProxy.IntegerType.fromInteger(values));
     }
     private static class Integerifier extends ParamFieldifier<Integer> {
       private IntegerFieldifier fieldifier;
@@ -1944,7 +1944,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.LongType.fromLong(value));
     }
     CallField field(String name, Long[] values) {
-      return field(name, BaseProxy.LongType.fromLong(Stream.of(values)));
+      return field(name, BaseProxy.LongType.fromLong(values));
     }
     private static class Longifier extends ParamFieldifier<Long> {
       private LongFieldifier fieldifier;
@@ -2005,13 +2005,13 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.TimeType.fromLocalTime(value));
     }
     CallField field(String name, LocalTime[] values) {
-      return field(name, BaseProxy.TimeType.fromLocalTime(Stream.of(values)));
+      return field(name, BaseProxy.TimeType.fromLocalTime(values));
     }
     CallField field(String name, OffsetTime value) {
       return field(name, BaseProxy.TimeType.fromOffsetTime(value));
     }
     CallField field(String name, OffsetTime[] values) {
-      return field(name, BaseProxy.TimeType.fromOffsetTime(Stream.of(values)));
+      return field(name, BaseProxy.TimeType.fromOffsetTime(values));
     }
     private static class LocalTimifier extends ParamFieldifier<LocalTime> {
       private TimeFieldifier fieldifier;
@@ -2075,7 +2075,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.UnsignedIntegerType.fromInteger(value));
     }
     CallField field(String name, Integer[] values) {
-      return field(name, BaseProxy.UnsignedIntegerType.fromInteger(Stream.of(values)));
+      return field(name, BaseProxy.UnsignedIntegerType.fromInteger(values));
     }
     private static class UnsignedIntegerifier extends ParamFieldifier<Integer> {
       private UnsignedIntegerFieldifier fieldifier;
@@ -2120,7 +2120,7 @@ public class CallManagerImpl implements CallManager {
       return field(name, BaseProxy.UnsignedLongType.fromLong(value));
     }
     CallField field(String name, Long[] values) {
-      return field(name, BaseProxy.UnsignedLongType.fromLong(Stream.of(values)));
+      return field(name, BaseProxy.UnsignedLongType.fromLong(values));
     }
     private static class UnsignedLongifier extends ParamFieldifier<Long> {
       private UnsignedLongFieldifier fieldifier;
@@ -2184,13 +2184,13 @@ public class CallManagerImpl implements CallManager {
       return formattedField(name, BaseProxy.JsonDocumentType.fromJsonNode(value));
     }
     CallField field(String name, JsonNode[] values) {
-      return formattedField(name, BaseProxy.JsonDocumentType.fromJsonNode(Stream.of(values)));
+      return formattedField(name, BaseProxy.JsonDocumentType.fromJsonNode(values));
     }
     CallField field(String name, JsonParser value) {
       return formattedField(name, BaseProxy.JsonDocumentType.fromJsonParser(value));
     }
     CallField field(String name, JsonParser[] values) {
-      return formattedField(name, BaseProxy.JsonDocumentType.fromJsonParser(Stream.of(values)));
+      return formattedField(name, BaseProxy.JsonDocumentType.fromJsonParser(values));
     }
     private static class JsonNodeifier extends ParamFieldifier<JsonNode> {
       private JsonDocumentFieldifier fieldifier;
@@ -2313,31 +2313,31 @@ public class CallManagerImpl implements CallManager {
       return formattedField(name, BaseProxy.XmlDocumentType.fromDocument(value));
     }
     CallField field(String name, Document[] values) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromDocument(Stream.of(values)));
+      return formattedField(name, BaseProxy.XmlDocumentType.fromDocument(values));
     }
     CallField field(String name, InputSource value) {
       return formattedField(name, BaseProxy.XmlDocumentType.fromInputSource(value));
     }
     CallField field(String name, InputSource[] values) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromInputSource(Stream.of(values)));
+      return formattedField(name, BaseProxy.XmlDocumentType.fromInputSource(values));
     }
     CallField field(String name, Source value) {
       return formattedField(name, BaseProxy.XmlDocumentType.fromSource(value));
     }
     CallField field(String name, Source[] values) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromSource(Stream.of(values)));
+      return formattedField(name, BaseProxy.XmlDocumentType.fromSource(values));
     }
     CallField field(String name, XMLEventReader value) {
       return formattedField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(value));
     }
     CallField field(String name, XMLEventReader[] values) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(Stream.of(values)));
+      return formattedField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(values));
     }
     CallField field(String name, XMLStreamReader value) {
       return formattedField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(value));
     }
     CallField field(String name, XMLStreamReader[] values) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(Stream.of(values)));
+      return formattedField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(values));
     }
     private static class Documentifier extends ParamFieldifier<Document> {
       private XmlDocumentFieldifier fieldifier;
