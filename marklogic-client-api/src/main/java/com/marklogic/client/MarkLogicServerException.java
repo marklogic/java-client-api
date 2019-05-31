@@ -23,8 +23,6 @@ import com.marklogic.client.impl.FailedRequest;
  * the FailedRequest Java object.  The MarkLogicServerException contains the FailedRequest object which
  * is incorporated into getMessage() or can be examined via getFailedRequest()
  *
- * @see FailedRequest
- *
  */
 @SuppressWarnings("serial")
 public abstract class MarkLogicServerException extends RuntimeException {
@@ -60,6 +58,43 @@ public abstract class MarkLogicServerException extends RuntimeException {
     else return super.getMessage();
   }
 
+  /**
+   * Gets the HTTP status code (if any) associated with the error on the server.
+   * @return  the status code
+   */
+  public int getServerStatusCode() {
+    return (failedRequest == null) ? null : failedRequest.getStatusCode();
+  }
+  /**
+   * Gets the HTTP status message (if any) associated with the error on the server.
+   * @return  the status message
+   */
+  public String getServerStatus() {
+    return (failedRequest == null) ? null : failedRequest.getStatus();
+  }
+  /**
+   * Gets the error code (if any) specific to the error on the server.
+   * @return  the error code
+   */
+  public String getServerMessageCode() {
+    return (failedRequest == null) ? null : failedRequest.getMessageCode();
+  }
+  /**
+   * Gets the error message (if any) specific to the error on the server.
+   * @return  the error message
+   */
+  public String getServerMessage() {
+    return (failedRequest == null) ? null : failedRequest.getMessage();
+  }
+  /**
+   * Gets the stack trace (if any) specific to the error on the server.
+   * @return  the server stack trace
+   */
+  public String getServerStackTrace() {
+    return (failedRequest == null) ? null : failedRequest.getStackTrace();
+  }
+
+  @Deprecated
   public FailedRequest getFailedRequest() {
     return failedRequest;
   }

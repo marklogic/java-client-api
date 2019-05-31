@@ -218,9 +218,9 @@ public class OkHttpServices implements RESTServices {
   }
 
   private FailedRequest extractErrorFields(Response response) {
-    if ( response == null ) return null;
+    if (response == null) return null;
     try {
-      if ( response.code() == STATUS_UNAUTHORIZED ) {
+      if (response.code() == STATUS_UNAUTHORIZED) {
         FailedRequest failure = new FailedRequest();
         failure.setMessageString("Unauthorized");
         failure.setStatusString("Failed Auth");
@@ -229,7 +229,7 @@ public class OkHttpServices implements RESTServices {
       String responseBody = getEntity(response.body(), String.class);
       InputStream is = new ByteArrayInputStream(responseBody.getBytes("UTF-8"));
       FailedRequest handler = FailedRequest.getFailedRequest(response.code(), response.header(HEADER_CONTENT_TYPE), is);
-      if ( handler.getMessage() == null ) {
+      if (handler.getMessage() == null) {
         handler.setMessageString(responseBody);
       }
       return handler;
@@ -5411,33 +5411,36 @@ public class OkHttpServices implements RESTServices {
         boolean isBinary = true;
         MediaType mediaType = body.contentType();
         if (mediaType != null) {
-          String subtype = mediaType.subtype().toLowerCase();
-          if (subtype == "json" || subtype.endsWith("+json")) {
-            suffix = ".json";
-            isBinary = false;
-          } else if (subtype == "xml" || subtype.endsWith("+xml")) {
-            suffix = ".xml";
-            isBinary = false;
-          } else if (subtype == "vnd.marklogic-js-module") {
-            suffix = ".mjs";
-            isBinary = false;
-          } else if (subtype == "vnd.marklogic-javascript" || subtype == "sjs") {
-            suffix = ".sjs";
-            isBinary = false;
-          } else if (subtype == "vnd.marklogic-xdmp" || subtype == "xquery") {
-            suffix = ".xqy";
-            isBinary = false;
-          } else if (subtype == "javascript") {
-            suffix = ".js";
-            isBinary = false;
-          } else if (subtype == "html") {
-            suffix = ".html";
-            isBinary = false;
-          } else if (mediaType.type().toLowerCase() == "text") {
-            suffix = ".txt";
-            isBinary = false;
-          } else {
-            suffix = "." + subtype;
+          String subtype = mediaType.subtype();
+          if (subtype != null) {
+            subtype = subtype.toLowerCase();
+            if (subtype.endsWith("json")) {
+              suffix = ".json";
+              isBinary = false;
+            } else if (subtype.endsWith("xml")) {
+              suffix = ".xml";
+              isBinary = false;
+            } else if (subtype.equals("vnd.marklogic-js-module")) {
+              suffix = ".mjs";
+              isBinary = false;
+            } else if (subtype.equals("vnd.marklogic-javascript")) {
+              suffix = ".sjs";
+              isBinary = false;
+            } else if (subtype.equals("vnd.marklogic-xdmp") || subtype.endsWith("xquery")) {
+              suffix = ".xqy";
+              isBinary = false;
+            } else if (subtype.endsWith("javascript")) {
+              suffix = ".js";
+              isBinary = false;
+            } else if (subtype.endsWith("html")) {
+              suffix = ".html";
+              isBinary = false;
+            } else if (mediaType.type().toLowerCase() == "text") {
+              suffix = ".txt";
+              isBinary = false;
+            } else {
+              suffix = "." + subtype;
+            }
           }
         }
         Path path = Files.createTempFile("tmp", suffix);
@@ -5678,26 +5681,29 @@ public class OkHttpServices implements RESTServices {
       if (statusCode >= 300) {
         FailedRequest failure = null;
         MediaType mediaType = MediaType.parse(response.header(HEADER_CONTENT_TYPE));
-        if ( "json".equals(mediaType.subtype()) ) {
-          failure = extractErrorFields(response);
-        } else if ( statusCode == STATUS_UNAUTHORIZED ) {
-          failure = new FailedRequest();
-          failure.setMessageString("Unauthorized");
-          failure.setStatusString("Failed Auth");
-        } else if (statusCode == STATUS_NOT_FOUND) {
-          ResourceNotFoundException ex = failure == null ? new ResourceNotFoundException("Could not " + method  + " at " + endpoint) :
-              new ResourceNotFoundException("Could not " + method  + " at " + endpoint, failure);
-          throw ex;
-        } else if (statusCode == STATUS_FORBIDDEN) {
-          ForbiddenUserException ex = failure == null ? new ForbiddenUserException("User is not allowed to " + method + " at " + endpoint) :
-              new ForbiddenUserException("User is not allowed to " + method + " at " + endpoint, failure);
-          throw ex;
-        } else {
-          failure = new FailedRequest();
-          failure.setStatusCode(statusCode);
-          failure.setMessageCode("UNKNOWN");
-          failure.setMessageString("Server did not respond with an expected Error message.");
-          failure.setStatusString("UNKNOWN");
+        String subtype = mediaType.subtype();
+        if (subtype != null) {
+          subtype = subtype.toLowerCase();
+          if (subtype.endsWith("json") || subtype.endsWith("xml")) {
+            failure = extractErrorFields(response);
+          }
+        }
+        if (failure == null) {
+          if (statusCode == STATUS_UNAUTHORIZED) {
+            failure = new FailedRequest();
+            failure.setMessageString("Unauthorized");
+            failure.setStatusString("Failed Auth");
+          } else if (statusCode == STATUS_NOT_FOUND) {
+            throw new ResourceNotFoundException("Could not " + method  + " at " + endpoint);
+          } else if (statusCode == STATUS_FORBIDDEN) {
+            throw new ForbiddenUserException("User is not allowed to " + method + " at " + endpoint);
+          } else {
+            failure = new FailedRequest();
+            failure.setStatusCode(statusCode);
+            failure.setMessageCode("UNKNOWN");
+            failure.setMessageString("Server did not respond with an expected Error message.");
+            failure.setStatusString("UNKNOWN");
+          }
         }
         FailedRequestException ex = failure == null ? new FailedRequestException("failed to " + method + " at " + endpoint + ": "
             + getReasonPhrase(response)) : new FailedRequestException("failed to " + method + " at " + endpoint + ": "
@@ -5946,8 +5952,8 @@ public class OkHttpServices implements RESTServices {
         if (errorBody.contentLength() > 0) {
           MediaType errorType = errorBody.contentType();
           if (errorType != null) {
-            String errorContentType = errorType.toString();
-            if (errorContentType != null && errorContentType.startsWith("application/") && errorContentType.contains("json")) {
+            String subtype = errorType.subtype();
+            if (subtype != null && subtype.toLowerCase().endsWith("json")) {
               return errorBody.string();
             }
           }

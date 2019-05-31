@@ -22,6 +22,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.marklogic.client.io.Format;
 import okhttp3.MediaType;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -121,16 +122,15 @@ public class FailedRequest {
    */
   public static FailedRequest getFailedRequest(int httpStatus, String contentType, InputStream content) {
     FailedRequest failure = null;
-
-    // by default XML is supported
-    if ( contentType != null ) {
-      MediaType mediaType = MediaType.parse(contentType);
-      if ( "xml".equals(mediaType.subtype()) ) {
-        FailedRequestParser xmlParser = new FailedRequestXMLParser();
-
-        failure = xmlParser.parseFailedRequest(httpStatus, content);
-      } else if ( "json".equals(mediaType.subtype()) ) {
+    if (contentType != null) {
+      Format format = Format.getFromMimetype(contentType);
+      switch(format) {
+      case XML:
+        failure = xmlFailedRequest(httpStatus, content);
+        break;
+      case JSON:
         failure = jsonFailedRequest(httpStatus, content);
+        break;
       }
     } else if (httpStatus == 404) {
       failure = new FailedRequest();
@@ -138,7 +138,7 @@ public class FailedRequest {
       failure.setMessageString("");
       failure.setStatusString("Not Found");
     }
-    if ( failure == null ) {
+    if (failure == null) {
       failure = new FailedRequest();
       failure.setStatusCode(httpStatus);
       failure.setMessageCode("UNKNOWN");
@@ -150,14 +150,14 @@ public class FailedRequest {
       failure.setStatusString("Failed Auth");
     }
     return failure;
-
   }
-  
+
+  private static FailedRequest xmlFailedRequest(int httpStatus, InputStream content) {
+    return new FailedRequestXMLParser().parseFailedRequest(httpStatus, content);
+  }
   private static FailedRequest jsonFailedRequest(int httpStatus, InputStream content) {
     return new JSONErrorParser().parseFailedRequest(httpStatus, content);
   }
-  
-  
 
   /**
    * No argument constructor so an external class can generate FailedRequest objects.
