@@ -21,6 +21,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -640,4 +641,13 @@ public class ValueConverter {
     }
     return instantPattern;
   }
+  
+  static public <I> String[] convert(I[] in, Function<I, String> converter) {
+      if (in == null) return null;
+      String[] out = new String[in.length];
+      for (int i=0; i < in.length; i++) {
+        out[i] = converter.apply(in[i]);
+      }
+      return out;
+    }
 }
