@@ -16,8 +16,7 @@
 package com.marklogic.client.test.dataservices;
 
 import static org.hamcrest.core.StringStartsWith.startsWith;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,23 +102,24 @@ public class DataservicesPerForestTest {
     
     @Test
     public void endpointReceivesForestName() {
-
-        List<String> outputValues = new ArrayList<String>();
+        List<String> outputValues = new ArrayList<>();
         
-        batcher = caller.batcher().forArgsGenerator((result -> (result == null) ? caller.args().param("forestParamName", "test") : null), "forestParamName")
-        .onCallSuccess(event-> {
-                    outputValues.add(event.getItem());
-                    })
-                .onCallFailure((event, throwable) -> throwable.printStackTrace()
-                ); 
+        batcher = caller.batcher()
+            .forArgsGenerator(
+                result -> (result == null) ? caller.args().param("forestParamName", "test") : null,
+                "forestParamName"
+                )
+            .onCallSuccess(event-> outputValues.add(event.getItem()))
+            .onCallFailure((event, throwable) -> throwable.printStackTrace());
         batcher.startJob();
         batcher.awaitCompletion();
         batcher.stopJob();
         
-        assertNotNull(outputValues);
-        assertTrue(outputValues.contains("java-unittest-1"));
-        assertTrue(outputValues.contains("java-unittest-2"));
-        assertTrue(outputValues.contains("java-unittest-3"));
+        assertNotNull("null forests", outputValues);
+        assertEquals("unexpected number of forests", 3, outputValues.size());
+        assertTrue("missing first forest", outputValues.contains("java-unittest-1"));
+        assertTrue("missing second forest", outputValues.contains("java-unittest-2"));
+        assertTrue("missing third forest", outputValues.contains("java-unittest-3"));
     }
     
     @AfterClass

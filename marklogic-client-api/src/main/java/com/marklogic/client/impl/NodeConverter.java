@@ -256,6 +256,9 @@ public class NodeConverter {
    static public Stream<BytesHandle> BytesToHandle(Stream<? extends byte[]> values) {
       return (values == null) ? null : values.map(NodeConverter::BytesToHandle);
    }
+   static public BufferableHandle[] BytesToBufferableHandle(byte[][] values) {
+      return convert(values, NodeConverter::BytesToHandle);
+   }
    static public DOMHandle DocumentToHandle(Document value) {
       return (value == null) ? null : new DOMHandle(value);
    }
@@ -263,7 +266,10 @@ public class NodeConverter {
       return (values == null) ? null : values.map(NodeConverter::DocumentToHandle);
    }
    static public DOMHandle[] DocumentToHandle(Document[] values) {
-       return (values == null) ? null : convert(values, new DOMHandle[values.length], NodeConverter::DocumentToHandle);
+      return (values == null) ? null : convert(values, new DOMHandle[values.length], NodeConverter::DocumentToHandle);
+   }
+   static public BufferableHandle[] DocumentToBufferableHandle(Document[] values) {
+       return convert(values, NodeConverter::DocumentToHandle);
     }
    static public FileHandle FileToHandle(File value) {
       return (value == null) ? null : new FileHandle(value);
@@ -272,7 +278,10 @@ public class NodeConverter {
       return (values == null) ? null : values.map(NodeConverter::FileToHandle);
    }
    static public FileHandle[] FileToHandle(File[] values) {
-       return (values == null) ? null : convert(values, new FileHandle[values.length], NodeConverter::FileToHandle);
+      return (values == null) ? null : convert(values, new FileHandle[values.length], NodeConverter::FileToHandle);
+   }
+   static public BufferableHandle[] FileToBufferableHandle(File[] values) {
+       return convert(values, NodeConverter::FileToHandle);
    }
    static public InputStreamHandle InputStreamToHandle(InputStream value) {
       return (value == null) ? null : new InputStreamHandle(value);
@@ -281,7 +290,10 @@ public class NodeConverter {
       return (values == null) ? null : values.map(NodeConverter::InputStreamToHandle);
    }
    static public InputStreamHandle[] InputStreamToHandle(InputStream[] values) {
-       return (values == null) ? null : convert(values, new InputStreamHandle[values.length], NodeConverter::InputStreamToHandle);
+      return (values == null) ? null : convert(values, new InputStreamHandle[values.length], NodeConverter::InputStreamToHandle);
+   }
+   static public BufferableHandle[] InputStreamToBufferableHandle(InputStream[] values) {
+       return convert(values, NodeConverter::InputStreamToHandle);
    }
    static public InputSourceHandle InputSourceToHandle(InputSource value) {
       return (value == null) ? null : new InputSourceHandle(value);
@@ -290,7 +302,10 @@ public class NodeConverter {
       return (values == null) ? null : values.map(NodeConverter::InputSourceToHandle);
    }
    static public InputSourceHandle[] InputSourceToHandle(InputSource[] values) {
-       return (values == null) ? null : convert(values, new InputSourceHandle[values.length], NodeConverter::InputSourceToHandle);
+      return (values == null) ? null : convert(values, new InputSourceHandle[values.length], NodeConverter::InputSourceToHandle);
+   }
+   static public BufferableHandle[] InputSourceToBufferableHandle(InputSource[] values) {
+       return convert(values, NodeConverter::InputSourceToHandle);
    }
    static public JacksonHandle JsonNodeToHandle(JsonNode value) {
       return (value == null) ? null : new JacksonHandle(value);
@@ -299,7 +314,10 @@ public class NodeConverter {
       return (values == null) ? null : values.map(NodeConverter::JsonNodeToHandle);
    }
    static public JacksonHandle[] JsonNodeToHandle(JsonNode[] values) {
-       return (values == null) ? null : convert(values, new JacksonHandle[values.length], NodeConverter::JsonNodeToHandle);
+      return (values == null) ? null : convert(values, new JacksonHandle[values.length], NodeConverter::JsonNodeToHandle);
+   }
+   static public BufferableHandle[] JsonNodeToBufferableHandle(JsonNode[] values) {
+       return convert(values, NodeConverter::JsonNodeToHandle);
    }
    static public JacksonParserHandle JsonParserToHandle(JsonParser value) {
       if (value == null) {
@@ -313,7 +331,10 @@ public class NodeConverter {
       return (values == null) ? null : values.map(NodeConverter::JsonParserToHandle);
    }
    static public JacksonParserHandle[] JsonParserToHandle(JsonParser[] values) {
-       return (values == null) ? null : convert(values, new JacksonParserHandle[values.length], NodeConverter::JsonParserToHandle);
+      return (values == null) ? null : convert(values, new JacksonParserHandle[values.length], NodeConverter::JsonParserToHandle);
+   }
+   static public BufferableHandle[] JsonParserToBufferableHandle(JsonParser[] values) {
+       return convert(values, NodeConverter::JsonParserToHandle);
    }
    static public ArrayNode ReaderToArrayNode(Reader value) {
       try {
@@ -468,7 +489,10 @@ public class NodeConverter {
       return (values == null) ? null : values.map(NodeConverter::ReaderToHandle);
    }
    static public ReaderHandle[] ReaderToHandle(Reader[] values) {
-       return (values == null) ? null : convert(values, new ReaderHandle[values.length], NodeConverter::ReaderToHandle);
+      return (values == null) ? null : convert(values, new ReaderHandle[values.length], NodeConverter::ReaderToHandle);
+   }
+   static public BufferableHandle[] ReaderToBufferableHandle(Reader[] values) {
+       return convert(values, NodeConverter::ReaderToHandle);
     }
    static public StringHandle StringToHandle(String value) {
       return (value == null) ? null : new StringHandle(value);
@@ -477,7 +501,10 @@ public class NodeConverter {
       return (values == null) ? null : values.map(NodeConverter::StringToHandle);
    }
    static public StringHandle[] StringToHandle(String[] values) {
-       return (values == null) ? null : convert(values, new StringHandle[values.length], NodeConverter::StringToHandle);
+      return (values == null) ? null : convert(values, new StringHandle[values.length], NodeConverter::StringToHandle);
+   }
+   static public BufferableHandle[] StringToBufferableHandle(String[] values) {
+       return convert(values, NodeConverter::StringToHandle);
    }
    static public SourceHandle SourceToHandle(Source value) {
       return (value == null) ? null : new SourceHandle(value);
@@ -486,7 +513,10 @@ public class NodeConverter {
       return (values == null) ? null : values.map(NodeConverter::SourceToHandle);
    }
    static public SourceHandle[] SourceToHandle(Source[] values) {
-       return (values == null) ? null : convert(values, new SourceHandle[values.length], NodeConverter::SourceToHandle);
+      return (values == null) ? null : convert(values, new SourceHandle[values.length], NodeConverter::SourceToHandle);
+   }
+   static public BufferableHandle[] SourceToBufferableHandle(Source[] values) {
+       return convert(values, NodeConverter::SourceToHandle);
    }
    static public XMLEventReaderHandle XMLEventReaderToHandle(XMLEventReader value) {
       return (value == null) ? null : new XMLEventReaderHandle(value);
@@ -495,7 +525,10 @@ public class NodeConverter {
       return (values == null) ? null : values.map(NodeConverter::XMLEventReaderToHandle);
    }
    static public XMLEventReaderHandle[] XMLEventReaderToHandle(XMLEventReader[] values) {
-       return (values == null) ? null : convert(values, new XMLEventReaderHandle[values.length], NodeConverter::XMLEventReaderToHandle);
+      return (values == null) ? null : convert(values, new XMLEventReaderHandle[values.length], NodeConverter::XMLEventReaderToHandle);
+   }
+   static public BufferableHandle[] XMLEventReaderToBufferableHandle(XMLEventReader[] values) {
+       return convert(values, NodeConverter::XMLEventReaderToHandle);
    }
    static public XMLStreamReaderHandle XMLStreamReaderToHandle(XMLStreamReader value) {
       return (value == null) ? null : new XMLStreamReaderHandle(value);
@@ -504,7 +537,10 @@ public class NodeConverter {
       return (values == null) ? null : values.map(NodeConverter::XMLStreamReaderToHandle);
    }
    static public XMLStreamReaderHandle[] XMLStreamReaderToHandle(XMLStreamReader[] values) {
-       return (values == null) ? null : convert(values, new XMLStreamReaderHandle[values.length], NodeConverter::XMLStreamReaderToHandle);
+      return (values == null) ? null : convert(values, new XMLStreamReaderHandle[values.length], NodeConverter::XMLStreamReaderToHandle);
+   }
+   static public BufferableHandle[] XMLStreamReaderToBufferableHandle(XMLStreamReader[] values) {
+       return convert(values, NodeConverter::XMLStreamReaderToHandle);
    }
 
    static public byte[] InputStreamToBytes(InputStream inputStream) {
@@ -593,24 +629,32 @@ public class NodeConverter {
       );
    }
    
-   public static BytesHandle copyToBytesHandle(BufferableHandle handle) {
-       return (handle == null? null: new BytesHandle(handle));
+   public static BufferableHandle bufferAsBytes(BufferableHandle handle) {
+       return handle == null ? null: new BytesHandle(handle);
    }
    
-   public static BytesHandle[] copyToBytesHandle(BufferableHandle[] handles) {
-       if(handles == null || handles.length==0)
-           return null;
-       BytesHandle[] bytesHandleArray = new BytesHandle[handles.length];
-       for(int i=0; i<handles.length; i++)
-           bytesHandleArray[i] = copyToBytesHandle(handles[i]);
-       
-       return bytesHandleArray;
+   public static BufferableHandle[] bufferAsBytes(BufferableHandle[] handles) {
+      if (handles == null || handles.length == 0)
+         return null;
+      BufferableHandle[] bufferableBytesHandles = new BufferableHandle[handles.length];
+      for(int i=0; i < handles.length; i++) {
+         bufferableBytesHandles[i] = bufferAsBytes(handles[i]);
+      }
+      return bufferableBytesHandles;
    }
-   
+
    static public <I, O> O[] convert(I[] in, O[] out, Function<I, O> converter) {
-       for (int i=0; i < in.length; i++) {
-          out[i] = converter.apply(in[i]);
-       }
-       return out;
-    }
+      for (int i=0; i < in.length; i++) {
+         out[i] = converter.apply(in[i]);
+      }
+      return out;
+   }
+   static public <I> BufferableHandle[] convert(I[] in, Function<I, BufferableHandle> converter) {
+     if (in == null) return null;
+     BufferableHandle[] out = new BufferableHandle[in.length];
+     for (int i=0; i < in.length; i++) {
+       out[i] = converter.apply(in[i]);
+     }
+     return out;
+   }
 }

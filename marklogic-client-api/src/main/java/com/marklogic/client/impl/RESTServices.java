@@ -587,7 +587,7 @@ public interface RESTServices {
 	  }
 	  
 	  public BufferedMultipleNodeCallField toBuffered() {
-          return new BufferedMultipleNodeCallField(super.getParamName(), NodeConverter.copyToBytesHandle(paramValues));
+          return new BufferedMultipleNodeCallField(super.getParamName(), NodeConverter.bufferAsBytes(paramValues));
       }
   }
   
@@ -609,7 +609,7 @@ public interface RESTServices {
 		}
 		
 		public BufferedSingleNodeCallField toBuffered() {
-		    return new BufferedSingleNodeCallField(super.getParamName(), NodeConverter.copyToBytesHandle(paramValue));
+		    return new BufferedSingleNodeCallField(super.getParamName(), NodeConverter.bufferAsBytes(paramValue));
 		}
   }
 

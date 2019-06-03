@@ -691,12 +691,12 @@ public class CallManagerImpl implements CallManager {
     }
 
     @Override
-    public CallArgs param(String name, AbstractWriteHandle value) {
+    public CallArgs param(String name, BufferableHandle value) {
       ParamdefImpl paramdef = getParamdef(name);
       return addField(paramdef.getFielder().field(name, paramdef.isNullable(), value));
     }
     @Override
-    public CallArgs param(String name, AbstractWriteHandle[] values) {
+    public CallArgs param(String name, BufferableHandle[] values) {
       ParamdefImpl paramdef = getParamdef(name);
       return addField(paramdef.getFielder().field(name, paramdef.isNullable(), paramdef.isMultiple(), values));
     }
@@ -1003,11 +1003,11 @@ public class CallManagerImpl implements CallManager {
     }
 
     // overridden where the Java input type is valid for the server data type
-    CallField field(String name, boolean nullable, AbstractWriteHandle value) {
-      throw new IllegalArgumentException("AbstractWriteHandle value not accepted for "+name+" parameter");
+    CallField field(String name, boolean nullable, BufferableHandle value) {
+      throw new IllegalArgumentException("BufferableHandle value not accepted for "+name+" parameter");
     }
-    CallField field(String name, boolean nullable, boolean multiple, AbstractWriteHandle[] values) {
-      throw new IllegalArgumentException("AbstractWriteHandle values not accepted for "+name+" parameter");
+    CallField field(String name, boolean nullable, boolean multiple, BufferableHandle[] values) {
+      throw new IllegalArgumentException("BufferableHandle values not accepted for "+name+" parameter");
     }
     CallField field(String name, boolean nullable, BigDecimal value) {
       throw new IllegalArgumentException("BigDecimal value not accepted for "+name+" parameter");
@@ -1226,29 +1226,22 @@ public class CallManagerImpl implements CallManager {
     Format getFormat() {
       return format;
     }
-    AbstractWriteHandle format(AbstractWriteHandle value) {
+    BufferableHandle format(BufferableHandle value) {
       return NodeConverter.withFormat(value, getFormat());
     }
-    BufferableHandle[] formatAll(AbstractWriteHandle[] value) {
-        BufferableHandle[] bufferableHandles = new BufferableHandle[value.length];
-      for (int i=0; i<value.length; i++) {
-          if(!(value[i] instanceof BufferableHandle))
-              throw new IllegalArgumentException("AbstractWriteHandle value is not an instance of BufferableHandle.");
-        NodeConverter.withFormat(value[i], getFormat());
-        bufferableHandles[i] = (BufferableHandle) value[i];
-      }
-      return bufferableHandles;
+    BufferableHandle[] formatAll(BufferableHandle[] values) {
+      return NodeConverter.arrayWithFormat(values, getFormat());
     }
-    Stream<? extends AbstractWriteHandle> formatAll(Stream<? extends AbstractWriteHandle> value) {
+    Stream<? extends BufferableHandle> formatAll(Stream<? extends BufferableHandle> value) {
       return NodeConverter.streamWithFormat(value, getFormat());
     }
     @Override
-    CallField field(String name, boolean nullable, AbstractWriteHandle value) {
+    CallField field(String name, boolean nullable, BufferableHandle value) {
       if (isEmpty(name, nullable, value)) return null;
       return field(name, value);
     }
     @Override
-    CallField field(String name, boolean nullable, boolean multiple, AbstractWriteHandle[] values) {
+    CallField field(String name, boolean nullable, boolean multiple, BufferableHandle[] values) {
       if (isEmpty(name, nullable, values)) return null;
       return isMultiple(name, multiple, values) ? field(name, values) : field(name, values[0]);
     }
@@ -1284,67 +1277,65 @@ public class CallManagerImpl implements CallManager {
     }
     @Override
     <T> ParamFieldifier<T> fieldifierFor(String name, Class<T> type) {
-      return AbstractWriteHandle.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new AbstractWriteHandlifier(name, this) :
-             byte[].class.isAssignableFrom(type)              ? (ParamFieldifier<T>) new Bytesifier(name, this) :
-             File.class.isAssignableFrom(type)                ? (ParamFieldifier<T>) new Filifier(name, this) :
-             InputStream.class.isAssignableFrom(type)         ? (ParamFieldifier<T>) new InputStreamifier(name, this) :
+      return BufferableHandle.class.isAssignableFrom(type) ? (ParamFieldifier<T>) new BufferableHandlifier(name, this) :
+             byte[].class.isAssignableFrom(type)           ? (ParamFieldifier<T>) new Bytesifier(name, this) :
+             File.class.isAssignableFrom(type)             ? (ParamFieldifier<T>) new Filifier(name, this) :
+             InputStream.class.isAssignableFrom(type)      ? (ParamFieldifier<T>) new InputStreamifier(name, this) :
              super.fieldifierFor(name, type);
     }
-    CallField formattedField(String name, AbstractWriteHandle value) {
-        if(!(value instanceof BufferableHandle))
-            throw new IllegalArgumentException("AbstractWriteHandle value is not an instance of BufferableHandle.");
-      return new BufferedSingleNodeCallField(name, (BufferableHandle) value);
+    CallField formattedField(String name, BufferableHandle value) {
+      return new BufferedSingleNodeCallField(name, value);
     }
     CallField formattedField(String name, BufferableHandle[] values) {
         return new BufferedMultipleNodeCallField(name, values);
     }
-    CallField formattedField(String name, Stream<? extends AbstractWriteHandle> values) {
+    CallField formattedField(String name, Stream<? extends BufferableHandle> values) {
         return new UnbufferedMultipleNodeCallField(name, values);
     }
     
-    CallField field(String name, AbstractWriteHandle value) {
+    CallField field(String name, BufferableHandle value) {
         return formattedField(name, format(value));
     }
-    CallField field(String name, AbstractWriteHandle[] values) {
+    CallField field(String name, BufferableHandle[] values) {
       return formattedField(name, formatAll(values));
     }
-    CallField field(String name, Stream<? extends AbstractWriteHandle> values) {
+    CallField field(String name, Stream<? extends BufferableHandle> values) {
       return formattedField(name, formatAll(values));
     }
     CallField field(String name, byte[] value) {
       return field(name, NodeConverter.BytesToHandle(value));
     }
     CallField field(String name, byte[][] values) {
-      return field(name, NodeConverter.BytesToHandle(Stream.of(values)));
+      return field(name, NodeConverter.BytesToBufferableHandle(values));
     }
     CallField field(String name, File value) {
       return field(name, NodeConverter.FileToHandle(value));
     }
     CallField field(String name, File[] values) {
-      return field(name, NodeConverter.FileToHandle(values));
+      return field(name, NodeConverter.FileToBufferableHandle(values));
     }
     CallField field(String name, InputStream value) {
       return field(name, NodeConverter.InputStreamToHandle(value));
     }
     CallField field(String name, InputStream[] values) {
-      return field(name, NodeConverter.InputStreamToHandle(values));
+      return field(name, NodeConverter.InputStreamToBufferableHandle(values));
     }
-    private static class AbstractWriteHandlifier extends ParamFieldifier<AbstractWriteHandle> {
+    private static class BufferableHandlifier extends ParamFieldifier<BufferableHandle> {
       private NodeFieldifier fieldifier;
-      AbstractWriteHandlifier(String name, NodeFieldifier fieldifier) {
+      BufferableHandlifier(String name, NodeFieldifier fieldifier) {
         super(name);
         this.fieldifier = fieldifier;
       }
       @Override
-      CallField field(AbstractWriteHandle value) {
+      CallField field(BufferableHandle value) {
         return fieldifier.field(getName(), value);
       }
       @Override
-      CallField field(AbstractWriteHandle[] values) {
+      CallField field(BufferableHandle[] values) {
         return fieldifier.field(getName(), values);
       }
       @Override
-      CallField field(Stream<AbstractWriteHandle> values) {
+      CallField field(Stream<BufferableHandle> values) {
         return fieldifier.field(getName(), values);
       }
     }
@@ -1440,13 +1431,13 @@ public class CallManagerImpl implements CallManager {
       return field(name, NodeConverter.ReaderToHandle(value));
     }
     CallField field(String name, Reader[] values) {
-      return field(name, NodeConverter.ReaderToHandle(values));
+      return field(name, NodeConverter.ReaderToBufferableHandle(values));
     }
     CallField field(String name, String value) {
       return field(name, NodeConverter.StringToHandle(value));
     }
     CallField field(String name, String[] values) {
-      return field(name, NodeConverter.StringToHandle(values));
+      return field(name, NodeConverter.StringToBufferableHandle(values));
     }
     private static class Readerfier extends ParamFieldifier<Reader> {
       private CharacterNodeFieldifier fieldifier;
@@ -2179,16 +2170,16 @@ public class CallManagerImpl implements CallManager {
              super.fieldifierFor(name, type);
     }
     CallField field(String name, JsonNode value) {
-      return formattedField(name, BaseProxy.JsonDocumentType.fromJsonNode(value));
+      return formattedField(name, NodeConverter.JsonNodeToHandle(value));
     }
     CallField field(String name, JsonNode[] values) {
-      return formattedField(name, BaseProxy.JsonDocumentType.fromJsonNode(values));
+      return formattedField(name, NodeConverter.JsonNodeToBufferableHandle(values));
     }
     CallField field(String name, JsonParser value) {
-      return formattedField(name, BaseProxy.JsonDocumentType.fromJsonParser(value));
+      return formattedField(name, NodeConverter.JsonParserToHandle(value));
     }
     CallField field(String name, JsonParser[] values) {
-      return formattedField(name, BaseProxy.JsonDocumentType.fromJsonParser(values));
+      return formattedField(name, NodeConverter.JsonParserToBufferableHandle(values));
     }
     private static class JsonNodeifier extends ParamFieldifier<JsonNode> {
       private JsonDocumentFieldifier fieldifier;
@@ -2206,7 +2197,7 @@ public class CallManagerImpl implements CallManager {
       }
       @Override
       CallField field(Stream<JsonNode> values) {
-        return fieldifier.formattedField(getName(), BaseProxy.JsonDocumentType.fromJsonNode(values));
+        return fieldifier.formattedField(getName(), NodeConverter.JsonNodeToHandle(values));
       }
     }
     private static class JsonParserfiier extends ParamFieldifier<JsonParser> {
@@ -2225,7 +2216,7 @@ public class CallManagerImpl implements CallManager {
       }
       @Override
       CallField field(Stream<JsonParser> values) {
-        return fieldifier.formattedField(getName(), BaseProxy.JsonDocumentType.fromJsonParser(values));
+        return fieldifier.formattedField(getName(), NodeConverter.JsonParserToHandle(values));
       }
     }
   }
@@ -2308,34 +2299,34 @@ public class CallManagerImpl implements CallManager {
              super.fieldifierFor(name, type);
     }
     CallField field(String name, Document value) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromDocument(value));
+      return formattedField(name, NodeConverter.DocumentToHandle(value));
     }
     CallField field(String name, Document[] values) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromDocument(values));
+      return formattedField(name, NodeConverter.DocumentToBufferableHandle(values));
     }
     CallField field(String name, InputSource value) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromInputSource(value));
+      return formattedField(name, NodeConverter.InputSourceToHandle(value));
     }
     CallField field(String name, InputSource[] values) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromInputSource(values));
+      return formattedField(name, NodeConverter.InputSourceToBufferableHandle(values));
     }
     CallField field(String name, Source value) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromSource(value));
+      return formattedField(name, NodeConverter.SourceToHandle(value));
     }
     CallField field(String name, Source[] values) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromSource(values));
+      return formattedField(name, NodeConverter.SourceToBufferableHandle(values));
     }
     CallField field(String name, XMLEventReader value) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(value));
+      return formattedField(name, NodeConverter.XMLEventReaderToHandle(value));
     }
     CallField field(String name, XMLEventReader[] values) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromXMLEventReader(values));
+      return formattedField(name, NodeConverter.XMLEventReaderToBufferableHandle(values));
     }
     CallField field(String name, XMLStreamReader value) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(value));
+      return formattedField(name, NodeConverter.XMLStreamReaderToHandle(value));
     }
     CallField field(String name, XMLStreamReader[] values) {
-      return formattedField(name, BaseProxy.XmlDocumentType.fromXMLStreamReader(values));
+      return formattedField(name, NodeConverter.XMLStreamReaderToBufferableHandle(values));
     }
     private static class Documentifier extends ParamFieldifier<Document> {
       private XmlDocumentFieldifier fieldifier;
@@ -2353,7 +2344,7 @@ public class CallManagerImpl implements CallManager {
       }
       @Override
       CallField field(Stream<Document> values) {
-        return fieldifier.formattedField(getName(), BaseProxy.XmlDocumentType.fromDocument(values));
+        return fieldifier.formattedField(getName(), NodeConverter.DocumentToHandle(values));
       }
     }
     private static class InputSourcifier extends ParamFieldifier<InputSource> {
@@ -2372,7 +2363,7 @@ public class CallManagerImpl implements CallManager {
       }
       @Override
       CallField field(Stream<InputSource> values) {
-        return fieldifier.formattedField(getName(), BaseProxy.XmlDocumentType.fromInputSource(values));
+        return fieldifier.formattedField(getName(), NodeConverter.InputSourceToHandle(values));
       }
     }
     private static class Sourcifier extends ParamFieldifier<Source> {
@@ -2391,7 +2382,7 @@ public class CallManagerImpl implements CallManager {
       }
       @Override
       CallField field(Stream<Source> values) {
-        return fieldifier.formattedField(getName(), BaseProxy.XmlDocumentType.fromSource(values));
+        return fieldifier.formattedField(getName(), NodeConverter.SourceToHandle(values));
       }
     }
     private static class XMLEventReaderifier extends ParamFieldifier<XMLEventReader> {
@@ -2410,7 +2401,7 @@ public class CallManagerImpl implements CallManager {
       }
       @Override
       CallField field(Stream<XMLEventReader> values) {
-        return fieldifier.formattedField(getName(), BaseProxy.XmlDocumentType.fromXMLEventReader(values));
+        return fieldifier.formattedField(getName(), NodeConverter.XMLEventReaderToHandle(values));
       }
     }
     private static class XMLStreamReaderifier extends ParamFieldifier<XMLStreamReader> {
@@ -2429,7 +2420,7 @@ public class CallManagerImpl implements CallManager {
       }
       @Override
       CallField field(Stream<XMLStreamReader> values) {
-        return fieldifier.formattedField(getName(), BaseProxy.XmlDocumentType.fromXMLStreamReader(values));
+        return fieldifier.formattedField(getName(), NodeConverter.XMLStreamReaderToHandle(values));
       }
     }
   }

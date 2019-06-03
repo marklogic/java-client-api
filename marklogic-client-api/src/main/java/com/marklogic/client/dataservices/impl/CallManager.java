@@ -19,7 +19,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
-import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -229,7 +229,7 @@ public interface CallManager {
          * @param value  the value to assign to the parameter
          * @return  the CallArgs object for chained building of the arguments
          */
-        CallArgs param(String name, AbstractWriteHandle value);
+        CallArgs param(String name, BufferableHandle value);
         /**
          * Sets a node parameter of the data service endpoint by means of multiple handles.
          * Handles provide adapters for Java IO representations and are thus
@@ -241,7 +241,7 @@ public interface CallManager {
          * @param values  the value to assign to the parameter
          * @return  the CallArgs object for chained building of the arguments
          */
-        CallArgs param(String name, AbstractWriteHandle[] values);
+        CallArgs param(String name, BufferableHandle[] values);
         /**
          * Sets a decimal parameter of the data service endpoint to a Java BigDecimal value.
          * @param name  the name of the parameter

@@ -5816,16 +5816,25 @@ public class OkHttpServices implements RESTServices {
         } else if (param instanceof BufferedMultipleNodeCallField) {
             BufferableHandle[] paramValues = ((BufferedMultipleNodeCallField) param).getParamValuesArray();
             if(paramValues != null) {
+                boolean checkedBuffer = false;
                 for(int i=0; i < paramValues.length; i++) {
                     BufferableHandle paramValue = paramValues[i];
                     if (paramValue != null) {
                         HandleImplementation handleBase = HandleAccessor.as(paramValue);
-                        if(!handleBase.isResendable()) {
+                        if (!handleBase.isResendable()) {
                             paramValue = new BytesHandle(paramValue);
+                            if (!checkedBuffer) {
+                                Class<?> actualClass = paramValues.getClass().getComponentType();
+                                if (actualClass != BufferableHandle.class && actualClass != BytesHandle.class) {
+                                    paramValues =
+                                        Arrays.copyOf(paramValues, paramValues.length, BufferableHandle[].class);
+                                }
+                                checkedBuffer = true;
+                            }
                             paramValues[i] = paramValue;
                         }
                         hasValue.set();
-                        multiBldr.addFormDataPart(paramName, null, makeRequestBody(NodeConverter.copyToBytesHandle(paramValue)));
+                        multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue));
                     }
                 }
             }

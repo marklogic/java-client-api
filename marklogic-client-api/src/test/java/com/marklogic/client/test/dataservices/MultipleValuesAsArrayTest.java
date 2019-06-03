@@ -82,20 +82,20 @@ public class MultipleValuesAsArrayTest {
     }
 
     @Test
-    public void copyToBytesHandleTest() {
+    public void bufferAsBytesTest() {
         BufferableHandle handle = null;
-        assertNull(NodeConverter.copyToBytesHandle(handle));
+        assertNull(NodeConverter.bufferAsBytes(handle));
 
         BufferableHandle[] handleArray = null;
-        assertNull(NodeConverter.copyToBytesHandle(handleArray));
+        assertNull(NodeConverter.bufferAsBytes(handleArray));
 
         handleArray = new BufferableHandle[1];
         handleArray[0] = handle;
-        assertNotNull(NodeConverter.copyToBytesHandle(handleArray));
-        assertNull(NodeConverter.copyToBytesHandle(handleArray)[0]);
+        assertNotNull(NodeConverter.bufferAsBytes(handleArray));
+        assertNull(NodeConverter.bufferAsBytes(handleArray)[0]);
         
         BufferableHandle[] newHandleArray = {new StringHandle("test1"), new StringHandle("test2"), new StringHandle("test3")};
-        BufferableHandle[] output = NodeConverter.copyToBytesHandle(newHandleArray);
+        BufferableHandle[] output = NodeConverter.bufferAsBytes(newHandleArray);
         assertNotNull(output);
         assertTrue("First value in array not as expected", output[0].toString().equals("test1"));
         assertTrue("Second value in array not as expected", output[1].toString().equals("test2"));
