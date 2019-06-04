@@ -3,7 +3,6 @@ package com.marklogic.client.test.dbfunction.positive;
 // IMPORTANT: Do not edit. This file is generated.
 
 import com.marklogic.client.io.Format;
-import java.io.Reader;
 
 
 import com.marklogic.client.DatabaseClient;
@@ -14,9 +13,9 @@ import com.marklogic.client.impl.BaseProxy;
 /**
  * Provides a set of operations on the database server
  */
-public interface MimetypeBundle {
+public interface DecoratorDefaultBundle {
     /**
-     * Creates a MimetypeBundle object for executing operations on the database server.
+     * Creates a DecoratorDefaultBundle object for executing operations on the database server.
      *
      * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
      * client object can be used for any number of requests and in multiple threads.
@@ -24,11 +23,11 @@ public interface MimetypeBundle {
      * @param db	provides a client for communicating with the database server
      * @return	an object for executing database operations
      */
-    static MimetypeBundle on(DatabaseClient db) {
+    static DecoratorDefaultBundle on(DatabaseClient db) {
       return on(db, null);
     }
     /**
-     * Creates a MimetypeBundle object for executing operations on the database server.
+     * Creates a DecoratorDefaultBundle object for executing operations on the database server.
      *
      * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
      * client object can be used for any number of requests and in multiple threads.
@@ -43,23 +42,22 @@ public interface MimetypeBundle {
      * @param serviceDeclaration	substitutes a custom implementation of the service
      * @return	an object for executing database operations
      */
-    static MimetypeBundle on(DatabaseClient db, JSONWriteHandle serviceDeclaration) {
-        final class MimetypeBundleImpl implements MimetypeBundle {
+    static DecoratorDefaultBundle on(DatabaseClient db, JSONWriteHandle serviceDeclaration) {
+        final class DecoratorDefaultBundleImpl implements DecoratorDefaultBundle {
             private BaseProxy baseProxy;
 
-            private MimetypeBundleImpl(DatabaseClient dbClient, JSONWriteHandle servDecl) {
-                baseProxy = new BaseProxy(dbClient, "/dbf/test/mimetype/", servDecl);
+            private DecoratorDefaultBundleImpl(DatabaseClient dbClient, JSONWriteHandle servDecl) {
+                baseProxy = new BaseProxy(dbClient, "/dbf/test/decoratorDefault/", servDecl);
             }
 
             @Override
-            public Reader apiReader(String endpointDirectory, String functionName) {
-              return BaseProxy.JsonDocumentType.toReader(
+            public com.fasterxml.jackson.databind.JsonNode docify(String value) {
+              return BaseProxy.JsonDocumentType.toJsonNode(
                 baseProxy
-                .request("apiReader.sjs", BaseProxy.ParameterValuesKind.MULTIPLE_ATOMICS)
+                .request("docify.sjs", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC)
                 .withSession()
                 .withParams(
-                    BaseProxy.atomicParam("endpointDirectory", false, BaseProxy.StringType.fromString(endpointDirectory)),
-                    BaseProxy.atomicParam("functionName", false, BaseProxy.StringType.fromString(functionName)))
+                    BaseProxy.atomicParam("value", true, BaseProxy.StringType.fromString(value)))
                 .withMethod("POST")
                 .responseSingle(true, Format.JSON)
                 );
@@ -67,16 +65,15 @@ public interface MimetypeBundle {
 
         }
 
-        return new MimetypeBundleImpl(db, serviceDeclaration);
+        return new DecoratorDefaultBundleImpl(db, serviceDeclaration);
     }
 
   /**
-   * Invokes the apiReader operation on the database server
+   * Invokes the docify operation on the database server
    *
-   * @param endpointDirectory	provides input
-   * @param functionName	provides input
+   * @param value	provides input
    * @return	as output
    */
-    Reader apiReader(String endpointDirectory, String functionName);
+    com.fasterxml.jackson.databind.JsonNode docify(String value);
 
 }

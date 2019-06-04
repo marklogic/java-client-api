@@ -26,25 +26,17 @@ class Generator {
 
   fun getJavaConverterName(): Map<String,String> {
     return mapOf(
-        "com.marklogic.client.io.marker.BinaryReadHandle"  to "BinaryHandle",
-        "com.marklogic.client.io.marker.BinaryWriteHandle" to "BinaryHandle",
         "java.io.InputStream"                              to "InputStream",
         "java.io.Reader"                                   to "Reader",
         "com.fasterxml.jackson.databind.JsonNode"          to "JacksonJsonNode",
         "com.fasterxml.jackson.core.JsonParser"            to "JacksonJsonParser",
         "com.fasterxml.jackson.databind.node.ArrayNode"    to "JacksonArrayNode",
         "com.fasterxml.jackson.databind.node.ObjectNode"   to "JacksonObjectNode",
-        "com.marklogic.client.io.marker.JSONReadHandle"    to "JSONHandle",
-        "com.marklogic.client.io.marker.JSONWriteHandle"   to "JSONHandle",
-        "com.marklogic.client.io.marker.TextReadHandle"    to "TextHandle",
-        "com.marklogic.client.io.marker.TextWriteHandle"   to "TextHandle",
         "org.w3c.dom.Document"                             to "XMLDOMDocument",
         "org.xml.sax.InputSource"                          to "XMLSaxInputSource",
         "javax.xml.transform.Source"                       to "XMLTransformSource",
         "javax.xml.stream.XMLEventReader"                  to "XMLEventReader",
         "javax.xml.stream.XMLStreamReader"                 to "XMLStreamReader",
-        "com.marklogic.client.io.marker.XMLReadHandle"     to "XMLHandle",
-        "com.marklogic.client.io.marker.XMLWriteHandle"    to "XMLHandle",
 
         "java.math.BigDecimal"                             to "BigDecimal",
         "java.lang.Boolean"                                to "Boolean",
@@ -156,35 +148,25 @@ class Generator {
             "java.io.Reader",
             "java.lang.String",
             "com.fasterxml.jackson.databind.node.ArrayNode",
-            "com.fasterxml.jackson.core.JsonParser",
-            "com.marklogic.client.io.marker.JSONReadHandle",
-            "com.marklogic.client.io.marker.JSONWriteHandle"),
+            "com.fasterxml.jackson.core.JsonParser"),
         "binaryDocument"    to setOf(
-            "java.io.InputStream",
-            "com.marklogic.client.io.marker.BinaryReadHandle",
-            "com.marklogic.client.io.marker.BinaryWriteHandle"),
+            "java.io.InputStream"),
         "jsonDocument"      to setOf(
             "java.io.InputStream",
             "java.io.Reader",
             "java.lang.String",
             "com.fasterxml.jackson.databind.JsonNode",
-            "com.fasterxml.jackson.core.JsonParser",
-            "com.marklogic.client.io.marker.JSONReadHandle",
-            "com.marklogic.client.io.marker.JSONWriteHandle"),
+            "com.fasterxml.jackson.core.JsonParser"),
         "object"            to setOf(
             "java.io.InputStream",
             "java.io.Reader",
             "java.lang.String",
             "com.fasterxml.jackson.databind.node.ObjectNode",
-            "com.fasterxml.jackson.core.JsonParser",
-            "com.marklogic.client.io.marker.JSONReadHandle",
-            "com.marklogic.client.io.marker.JSONWriteHandle"),
+            "com.fasterxml.jackson.core.JsonParser"),
         "textDocument"      to setOf(
             "java.io.InputStream",
             "java.io.Reader",
-            "java.lang.String",
-            "com.marklogic.client.io.marker.TextReadHandle",
-            "com.marklogic.client.io.marker.TextWriteHandle"),
+            "java.lang.String"),
         "xmlDocument"       to setOf(
             "java.io.InputStream",
             "java.io.Reader",
@@ -193,9 +175,7 @@ class Generator {
             "org.xml.sax.InputSource",
             "javax.xml.transform.Source",
             "javax.xml.stream.XMLEventReader",
-            "javax.xml.stream.XMLStreamReader",
-            "com.marklogic.client.io.marker.XMLReadHandle",
-            "com.marklogic.client.io.marker.XMLWriteHandle")
+            "javax.xml.stream.XMLStreamReader")
     )
   }
   fun getAllDataTypes(): Map<String,String> {
@@ -503,9 +483,7 @@ ${funcDecls}
       when (paramKind) {
         "document" -> {
           funcDepend.add("com.marklogic.client.io.Format")
-          if (mappedType.contains(".") == true) {
-            funcDepend.add("com.marklogic.client.io.marker.AbstractWriteHandle")
-          } else {
+          if (mappedType.contains(".") != true) {
             funcDepend.add("java.io.$mappedType")
           }
         }
@@ -521,9 +499,7 @@ ${funcDecls}
 
     if (returnKind == "document") {
       funcDepend.add("com.marklogic.client.io.Format")
-      if (returnMapped?.contains(".") == true) {
-        funcDepend.add("com.marklogic.client.io.marker.AbstractWriteHandle")
-      } else {
+      if (returnMapped?.contains(".") != true) {
         funcDepend.add("java.io.$returnMapped")
       }
     }

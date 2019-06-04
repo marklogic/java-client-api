@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.marklogic.client.DatabaseClientFactory
-import com.marklogic.client.document.JSONDocumentManager
 import com.marklogic.client.document.TextDocumentManager
 import com.marklogic.client.io.DocumentMetadataHandle
 import com.marklogic.client.io.FileHandle
@@ -39,8 +38,6 @@ val documentMap   = generator.getDocumentDataTypes()
 
 val mapper        = jacksonObjectMapper()
 val serializer    = mapper.writerWithDefaultPrettyPrinter()
-
-val modExtensions = listOf("mjs", "sjs", "xqy")
 
 enum class TestVariant {
   VALUE, NULL, EMPTY
@@ -198,21 +195,6 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.FactoryConfigurationError;
-
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.marker.AbstractReadHandle;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.BinaryReadHandle;
-import com.marklogic.client.io.marker.BinaryWriteHandle;
-import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.TextReadHandle;
-import com.marklogic.client.io.marker.TextWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
 """
 }
 fun getDocumentMappingMembers(): String {
@@ -235,28 +217,6 @@ fun getDocumentMappingMembers(): String {
       }
    }
    private Pattern xmlPrologPattern = Pattern.compile("^\\s*<\\?xml[^>]*>\\s*");
-
-   private Stream<byte[]> BinaryReadHandleAsBytes(Stream<BinaryReadHandle> items) {
-      return items.map(this::asBytes);
-   }
-   private byte[] asBytes(AbstractReadHandle item) {
-      if (item == null) return null;
-      return ((BufferableHandle) item).toBuffer();
-   }
-
-   private Stream<String> JSONReadHandleAsString(Stream<JSONReadHandle> items) {
-      return items.map(this::asString);
-   }
-   private Stream<String> TextReadHandleAsString(Stream<TextReadHandle> items) {
-      return items.map(this::asString);
-   }
-   private Stream<String> XMLReadHandleAsString(Stream<XMLReadHandle> items) {
-      return items.map(this::asString);
-   }
-   private String asString(AbstractReadHandle item) {
-      if (item == null) return null;
-      return item.toString();
-   }
 
    private Stream<String> InputStreamAsString(Stream<InputStream> items) {
       return items.map(this::asString);
@@ -388,9 +348,6 @@ fun getDocumentMappingMembers(): String {
    private InputStream binaryDocumentAsInputStream(String value) {
       return new ByteArrayInputStream(binaryDocumentAsByteArray(value));
       }
-   private BinaryWriteHandle binaryDocumentAsBinaryWriteHandle(String value) {
-      return new InputStreamHandle(binaryDocumentAsInputStream(value)).withFormat(Format.BINARY);
-      }
    private ArrayNode arrayAsArrayNode(String value) {
       try {
          return mapper.readValue(value, ArrayNode.class);
@@ -403,9 +360,6 @@ fun getDocumentMappingMembers(): String {
       }
    private InputStream arrayAsInputStream(String value) {
       return jsonDocumentAsInputStream(value);
-      }
-   private JSONWriteHandle arrayAsJSONWriteHandle(String value) {
-      return jsonDocumentAsJSONWriteHandle(value);
       }
    private Reader arrayAsReader(String value) {
       return jsonDocumentAsReader(value);
@@ -425,9 +379,6 @@ fun getDocumentMappingMembers(): String {
       }
    private InputStream objectAsInputStream(String value) {
       return jsonDocumentAsInputStream(value);
-      }
-   private JSONWriteHandle objectAsJSONWriteHandle(String value) {
-      return jsonDocumentAsJSONWriteHandle(value);
       }
    private Reader objectAsReader(String value) {
       return jsonDocumentAsReader(value);
@@ -466,9 +417,6 @@ fun getDocumentMappingMembers(): String {
    private InputStream jsonDocumentAsInputStream(String value) {
       return new ByteArrayInputStream(value.getBytes(Charset.forName("UTF-8")));
       }
-   private JSONWriteHandle jsonDocumentAsJSONWriteHandle(String value) {
-      return new StringHandle(value).withFormat(Format.JSON);
-      }
    private Reader jsonDocumentAsReader(String value) {
       return new StringReader(value);
       }
@@ -483,9 +431,6 @@ fun getDocumentMappingMembers(): String {
       }
    private String textDocumentAsString(String value) {
       return value;
-      }
-   private TextWriteHandle textDocumentAsTextWriteHandle(String value) {
-      return new StringHandle(value).withFormat(Format.TEXT);
       }
    private Document xmlDocumentAsDocument(String value) {
       try {
@@ -537,46 +482,31 @@ fun getDocumentMappingMembers(): String {
          throw new RuntimeException(e);
          }
       }
-   private XMLWriteHandle xmlDocumentAsXMLWriteHandle(String value) {
-      return new StringHandle(value).withFormat(Format.XML);
-      }
 """
 }
 fun getDocumentMappingConstructors(): Map<String,Map<String,String>> {
   return mapOf(
-      "binaryDocument" to mapOf(
-          "com.marklogic.client.io.marker.BinaryReadHandle"  to "binaryDocumentAsBinaryReadHandle",
-          "com.marklogic.client.io.marker.BinaryWriteHandle" to "binaryDocumentAsBinaryWriteHandle"
-          ),
       "array"          to mapOf(
           "java.io.InputStream"                              to "arrayAsInputStream",
           "java.lang.String"                                 to "arrayAsString",
           "com.fasterxml.jackson.databind.node.ArrayNode"    to "arrayAsArrayNode",
-          "com.fasterxml.jackson.core.JsonParser"            to "arrayAsJsonParser",
-          "com.marklogic.client.io.marker.JSONReadHandle"    to "arrayAsJSONReadHandle",
-          "com.marklogic.client.io.marker.JSONWriteHandle"   to "arrayAsJSONWriteHandle"
+          "com.fasterxml.jackson.core.JsonParser"            to "arrayAsJsonParser"
       ),
       "object"         to mapOf(
           "java.io.InputStream"                              to "objectAsInputStream",
           "java.lang.String"                                 to "objectAsString",
           "com.fasterxml.jackson.databind.node.ObjectNode"   to "objectAsObjectNode",
-          "com.fasterxml.jackson.core.JsonParser"            to "objectAsJsonParser",
-          "com.marklogic.client.io.marker.JSONReadHandle"    to "objectAsJSONReadHandle",
-          "com.marklogic.client.io.marker.JSONWriteHandle"   to "objectAsJSONWriteHandle"
+          "com.fasterxml.jackson.core.JsonParser"            to "objectAsJsonParser"
       ),
       "jsonDocument"   to mapOf(
           "java.io.InputStream"                              to "jsonDocumentAsInputStream",
           "java.lang.String"                                 to "jsonDocumentAsString",
           "com.fasterxml.jackson.databind.JsonNode"          to "jsonDocumentAsJsonNode",
-          "com.fasterxml.jackson.core.JsonParser"            to "jsonDocumentAsJsonParser",
-          "com.marklogic.client.io.marker.JSONReadHandle"    to "jsonDocumentAsJSONReadHandle",
-          "com.marklogic.client.io.marker.JSONWriteHandle"   to "jsonDocumentAsJSONWriteHandle"
+          "com.fasterxml.jackson.core.JsonParser"            to "jsonDocumentAsJsonParser"
           ),
       "textDocument"   to mapOf(
           "java.io.InputStream"                              to "textDocumentAsInputStream",
-          "java.lang.String"                                 to "textDocumentAsString",
-          "com.marklogic.client.io.marker.TextReadHandle"    to "textDocumentAsTextReadHandle",
-          "com.marklogic.client.io.marker.TextWriteHandle"   to "textDocumentAsTextWriteHandle"
+          "java.lang.String"                                 to "textDocumentAsString"
           ),
       "xmlDocument"    to mapOf(
           "org.w3c.dom.Document"                             to "xmlDocumentAsDocument",
@@ -585,23 +515,38 @@ fun getDocumentMappingConstructors(): Map<String,Map<String,String>> {
           "javax.xml.transform.Source"                       to "xmlDocumentAsSource",
           "java.lang.String"                                 to "xmlDocumentAsString",
           "javax.xml.stream.XMLEventReader"                  to "xmlDocumentAsXMLEventReader",
-          "javax.xml.stream.XMLStreamReader"                 to "xmlDocumentAsXMLStreamReader",
-          "com.marklogic.client.io.marker.XMLReadHandle"     to "xmlDocumentAsXMLReadHandle",
-          "com.marklogic.client.io.marker.XMLWriteHandle"    to "xmlDocumentAsXMLWriteHandle"
+          "javax.xml.stream.XMLStreamReader"                 to "xmlDocumentAsXMLStreamReader"
           )
   )
 }
 
 fun main(args: Array<String>) {
-  if (args.size == 1) {
-    dbfTestGenerate(args[0])
-  } else {
-    System.err.println("usage: fntestgen testDir")
-    System.exit(-1)
+    when (args.size) {
+    1 -> dbfTestGenerate(args[0], "latest")
+    2 -> dbfTestGenerate(args[0], args[1])
+    else -> {
+        System.err.println("usage: fntestgen testDir [release]")
+        System.exit(-1)
+    }
   }
 }
+fun getExtensions(release: String) : List<String> {
+  return when (release) {
+        "release4" -> listOf("sjs", "xqy")
+        "release5",
+        "latest"   -> listOf("mjs", "sjs", "xqy")
+        else       -> {
+            System.err.println("unknown release: "+release)
+            System.err.println("valid releases are one of release4, release5, or latest")
+            System.exit(-1)
+            listOf()
+        }
+    }
+}
 
-fun dbfTestGenerate(testDir: String) {
+fun dbfTestGenerate(testDir: String, release: String) {
+  val modExtensions = getExtensions(release)
+
   val javaBaseDir  = testDir+"java/"
   val testPath     = javaBaseDir+TEST_PACKAGE.replace(".", "/")+"/"
   val jsonPath     = testDir+"ml-modules/root/dbfunctiondef/generated/"
@@ -1586,54 +1531,50 @@ if (true) {
         val testMultiple   = if (datatype == "object") false else (testType.get("multiple") as Boolean)
         val testNullable = testType.get("nullable") as Boolean
 
-        if (!mappedType.endsWith("ReadHandle")) {
-          val funcParams = listOf(mapOf(
-              "name" to "param1", "datatype" to datatype,
-              "multiple" to testMultiple, "nullable" to testNullable,
-              "\$javaClass" to mappedType
-          ))
-          val testName = testBaseStart + "Of" + testMapped + "ForNone" + testNum
-          val testdef = mapOf("functionName" to testName, "params" to funcParams)
+        val funcParams = listOf(mapOf(
+            "name" to "param1", "datatype" to datatype,
+            "multiple" to testMultiple, "nullable" to testNullable,
+            "\$javaClass" to mappedType
+            ))
+        var testName = testBaseStart + "Of" + testMapped + "ForNone" + testNum
+        var testdef = mapOf("functionName" to testName, "params" to funcParams)
 
-          val testJSONString = serializer.writeValueAsString(testdef)
+        var testJSONString = serializer.writeValueAsString(testdef)
 
-          persistServerdef(
-              modMgr, documentMappingBundleEndpoint, testName, docMeta, testJSONString, funcParams, modExtension
-          )
-          generateClientdef(
-              documentMappingBundleJSONPath, documentMappingBundleEndpoint, testName, testJSONString, funcParams, modExtension
-          )
-          documentMappingTestingFuncs.add(
-              generateJUnitCallTest(
-                  testName, funcParams, null, testdefs,
-                  typeConstructors = typeConstructors, mappedTestdefs = mappedTestdefs
-              )
-          )
-        }
+        persistServerdef(
+            modMgr, documentMappingBundleEndpoint, testName, docMeta, testJSONString, funcParams, modExtension
+            )
+        generateClientdef(
+            documentMappingBundleJSONPath, documentMappingBundleEndpoint, testName, testJSONString, funcParams, modExtension
+            )
+        documentMappingTestingFuncs.add(
+            generateJUnitCallTest(
+                testName, funcParams, null, testdefs,
+                typeConstructors = typeConstructors, mappedTestdefs = mappedTestdefs
+                )
+            )
 
-        if (!mappedType.endsWith("WriteHandle")) {
-          val funcReturn = mapOf(
-              "datatype" to datatype, "multiple" to testMultiple, "nullable" to testNullable,
-              "\$javaClass" to mappedType
-          )
-          val testName       = testBaseStart+"OfNoneForText"+testMapped+testNum
-          val testdef        = mapOf("functionName" to testName, "return" to funcReturn)
+        val funcReturn = mapOf(
+            "datatype" to datatype, "multiple" to testMultiple, "nullable" to testNullable,
+            "\$javaClass" to mappedType
+            )
+        testName       = testBaseStart+"OfNoneForText"+testMapped+testNum
+        testdef        = mapOf("functionName" to testName, "return" to funcReturn)
 
-          val testJSONString = serializer.writeValueAsString(testdef)
+        testJSONString = serializer.writeValueAsString(testdef)
 
-          persistServerdef(
-              modMgr, documentMappingBundleEndpoint, testName, docMeta, testJSONString, null, modExtension
-          )
-          generateClientdef(
-              documentMappingBundleJSONPath, documentMappingBundleEndpoint, testName, testJSONString, null, modExtension
-          )
-          documentMappingTestingFuncs.add(
-              generateJUnitCallTest(
-                  testName, null, funcReturn, testdefs,
-                  typeConstructors = typeConstructors, mappedTestdefs = mappedTestdefs
-              )
-          )
-        }
+        persistServerdef(
+            modMgr, documentMappingBundleEndpoint, testName, docMeta, testJSONString, null, modExtension
+            )
+        generateClientdef(
+            documentMappingBundleJSONPath, documentMappingBundleEndpoint, testName, testJSONString, null, modExtension
+            )
+        documentMappingTestingFuncs.add(
+            generateJUnitCallTest(
+                testName, null, funcReturn, testdefs,
+                typeConstructors = typeConstructors, mappedTestdefs = mappedTestdefs
+                )
+            )
       }
     }
   }
@@ -1648,7 +1589,7 @@ if (true) {
 }
 
 if (true) {
-  for (testName in listOf("sessions", "described", "mimetype")) {
+  for (testName in listOf("decoratorCustom", "decoratorDefault", "described", "mimetype", "sessions")) {
     val manualBundleJSONPath = "${testDir}ml-modules/root/dbfunctiondef/positive/${testName}/"
     val manualBundleEndpoint = endpointBase+testName+"/"
     val manualBundleFilename = manualBundleJSONPath+"service.json"

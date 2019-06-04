@@ -76,6 +76,22 @@ public class BaseProxy {
 
    public BaseProxy() {
    }
+   public BaseProxy(DatabaseClient db, String endpointDir, JSONWriteHandle serviceDeclaration) {
+      this();
+      if (serviceDeclaration == null) {
+         init(db, endpointDir);
+      } else {
+         JsonNode serviceDecl = NodeConverter.handleToJsonNode(serviceDeclaration);
+
+         JsonNode endpointDirProp = serviceDecl.get("endpointDirectory");
+         if (endpointDirProp == null) {
+            throw new IllegalArgumentException("Service declaration without endpointDirectory property");
+         }
+
+         init(db, endpointDirProp.asText());
+      }
+   }
+   // backward-compatible constructor for 4.x legacy
    public BaseProxy(DatabaseClient db, String endpointDir) {
       this();
       if (db == null) {
