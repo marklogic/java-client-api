@@ -72,7 +72,7 @@ task generateTests(type: JavaExec) {
     dependsOn setupTestServer
     classpath = sourceSets.test.runtimeClasspath
     main = 'com.marklogic.client.test.dbfunction.FntestgenKt'
-    args = [ './src/test/' ]
+    args = [ './src/test/', 'latest' ]
 }
 task teardownTestServer(type: JavaExec) {
     dependsOn test
