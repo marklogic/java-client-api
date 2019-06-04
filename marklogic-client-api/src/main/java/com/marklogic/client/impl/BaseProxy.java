@@ -93,7 +93,9 @@ public class BaseProxy {
    }
    // backward-compatible constructor for 4.x legacy
    public BaseProxy(DatabaseClient db, String endpointDir) {
-      this();
+      this(db, endpointDir, null);
+   }
+   private void init(DatabaseClient db, String endpointDir) {
       if (db == null) {
          throw new IllegalArgumentException("Cannot connect with null database client");
       } else if (db.getDatabase() != null) {
