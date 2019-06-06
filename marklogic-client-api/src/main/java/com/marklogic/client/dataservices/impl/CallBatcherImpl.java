@@ -20,6 +20,7 @@ import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.datamovement.*;
 import com.marklogic.client.datamovement.impl.BatchEventImpl;
 import com.marklogic.client.datamovement.impl.BatcherImpl;
+import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
 import com.marklogic.client.dataservices.impl.CallManager.CallArgs;
 import com.marklogic.client.dataservices.impl.CallManagerImpl.CallArgsImpl;
 
@@ -423,7 +424,7 @@ public class CallBatcherImpl<W, E extends CallBatcher.CallEvent> extends Batcher
     }
 
     @Override
-    public DataMovementManager getDataMovementManager() {
+    public DataMovementManagerImpl getDataMovementManager() {
         return super.getMoveMgr();
     }
 
