@@ -89,6 +89,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private JobTicket jobTicket;
   private Calendar jobStartTime;
   private Calendar jobEndTime;
+  private long maxUris;
 
   public QueryBatcherImpl(QueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super(moveMgr);
@@ -127,8 +128,11 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   @Override
   public QueryBatcherImpl onUrisReady(QueryBatchListener listener) {
     if ( listener == null ) throw new IllegalArgumentException("listener must not be null");
-    urisReadyListeners.add(listener);
-    return this;
+    if(resultsSoFar.longValue()< getMaxUris()) {
+        urisReadyListeners.add(listener);
+        return this;
+    }
+    return null;
   }
 
   @Override
@@ -1012,4 +1016,21 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       return jobEndTime;
     }
   }
+
+@Override
+public void setMaxUris(long results) {
+    this.maxUris = results;
+    
+}
+
+@Override
+public void setMaxUris() {
+    this.maxUris = -1L;
+    
+}
+
+@Override
+public long getMaxUris() {
+    return this.maxUris;
+}
 }
