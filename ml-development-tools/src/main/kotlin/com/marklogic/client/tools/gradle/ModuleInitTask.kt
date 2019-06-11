@@ -34,7 +34,8 @@ open class ModuleInitTask : DefaultTask() {
         throw IllegalArgumentException("endpointDeclarationFile not specified")
       }
     }
-    if (moduleExtension== "") {
+    if (moduleExtension
+            == "") {
       if (project.hasProperty("moduleExtension")) {
         moduleExtension = project.property("moduleExtension") as String
       } else {

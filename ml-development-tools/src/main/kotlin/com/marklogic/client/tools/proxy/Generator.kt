@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.tools.proxy
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -214,45 +216,68 @@ class Generator {
     }
     return mapping
   }
+
+  // entry point for EndpointProxiesGenTask
   fun serviceBundleToJava(servDeclFilename: String, javaBaseDir: String) {
-    val warnings = mutableListOf<String>()
-    val mapper   = jacksonObjectMapper()
+    val mapper = jacksonObjectMapper()
 
     val servDeclFile = File(servDeclFilename)
     val servdef      = mapper.readValue<ObjectNode>(servDeclFile)
 
-    var endpointDirectory = servdef.get("endpointDirectory")?.asText()
-    if (endpointDirectory === null) {
-      throw IllegalArgumentException("no endpointDirectory property in $servDeclFilename")
-    } else if (endpointDirectory.length == 0) {
-      throw IllegalArgumentException("empty endpointDirectory property in $servDeclFilename")
-    } else if (!endpointDirectory.endsWith("/")) {
-      endpointDirectory = endpointDirectory+"/"
-    }
+    val endpointDirectory = getEndpointDirectory(servDeclFilename, servdef)
 
-    val fullClassName = servdef.get("\$javaClass")?.asText()
-    if (fullClassName === null) {
-      throw IllegalArgumentException("no \$javaClass property in $servDeclFilename")
-    }
+    val moduleFiles = mutableMapOf<String, File>()
+    val funcdefs    = getFuncdefs(mapper, endpointDirectory, servDeclFile, servdef, moduleFiles)
 
-    val moduleFiles   = mutableMapOf<String, File>()
+    val fullClassName = getFullClassName(servDeclFilename, servdef)
+
+    val funcDecl    = mutableListOf<String>()
+    val funcDepend  = mutableSetOf<String>()
+    val funcSrc     = funcdefs.map{(root, funcdef) ->
+      generateFuncSrc(funcDecl, funcDepend, servdef, moduleFiles[root]!!.name, funcdef)
+    }.joinToString("\n")
+    val funcImports =
+        if (funcDepend.isEmpty()) ""
+        else "import "+funcDepend.joinToString(";\nimport ")+";\n"
+    val funcDecls   =
+        if (funcDecl.isEmpty()) ""
+        else funcDecl.joinToString("")
+
+    val classSrc = generateServClass(
+        servdef, endpointDirectory, fullClassName, funcImports, funcDecls, funcSrc
+    )
+
+    writeClass(fullClassName, classSrc, javaBaseDir)
+  }
+  fun getFuncdefs(
+          mapper: ObjectMapper, endpointDirectory: String, servDeclFile: File,
+          servdef: ObjectNode, moduleFiles: MutableMap<String, File>
+  ): Map<String, ObjectNode> {
+    var servExtsn = servdef.get("endpointExtension")?.asText()
+    if (servExtsn != null && servExtsn.startsWith("."))
+      servExtsn = servExtsn.substring(1)
+    val warnings = mutableListOf<String>()
     val endpointDeclFiles = mutableMapOf<String, File>()
     servDeclFile.parentFile.listFiles().forEach{file ->
       val basename = file.nameWithoutExtension
       when(file.extension) {
         "api"               -> endpointDeclFiles[basename] = file
         "mjs", "sjs", "xqy" ->
-          if (!moduleFiles.containsKey(basename))
-          moduleFiles[basename] = file
-          else throw IllegalArgumentException(
+          if (moduleFiles.containsKey(basename)) {
+            throw IllegalArgumentException(
                 "can have only one of the ${file.name} and ${moduleFiles[basename]?.name} files"
             )
+          } else if (servExtsn != null && file.extension != servExtsn) {
+            throw IllegalArgumentException("${file.name} must have ${servExtsn} extension")
+          } else {
+            moduleFiles[basename] = file
+          }
       }
     }
     val moduleRoots   = moduleFiles.keys
     val functionRoots = endpointDeclFiles.keys
     unpairedWarnings(warnings, moduleFiles, functionRoots,
-        "endpoint main module without function declaration")
+            "endpoint main module without function declaration")
 
     val funcdefs    = endpointDeclFiles.filter{entry ->
       if (moduleRoots.contains(entry.key)) {
@@ -272,27 +297,29 @@ class Generator {
 
     if (funcdefs.size == 0) {
       throw IllegalArgumentException(
-          "no proxy declaration with endpoint module found in ${endpointDirectory}"
-          )
+              "no proxy declaration with endpoint module found in ${endpointDirectory}"
+      )
     }
 
-    val funcDecl    = mutableListOf<String>()
-    val funcDepend  = mutableSetOf<String>()
-    val funcSrc     = funcdefs.map{(root, funcdef) ->
-      generateFuncSrc(funcDecl, funcDepend, servdef, moduleFiles[root]!!.name, funcdef)
-    }.joinToString("\n")
-    val funcImports =
-        if (funcDepend.isEmpty()) ""
-        else "import "+funcDepend.joinToString(";\nimport ")+";\n"
-    val funcDecls   =
-        if (funcDecl.isEmpty()) ""
-        else funcDecl.joinToString("")
-
-    val classSrc = generateServClass(
-        servdef, endpointDirectory, fullClassName, funcImports, funcDecls, funcSrc
-    )
-
-    writeClass(fullClassName, classSrc, javaBaseDir)
+    return funcdefs
+  }
+  fun getEndpointDirectory(servDeclFilename: String, servdef: ObjectNode): String {
+    var endpointDirectory = servdef.get("endpointDirectory")?.asText()
+    if (endpointDirectory === null) {
+      throw IllegalArgumentException("no endpointDirectory property in $servDeclFilename")
+    } else if (endpointDirectory.length == 0) {
+      throw IllegalArgumentException("empty endpointDirectory property in $servDeclFilename")
+    } else if (!endpointDirectory.endsWith("/")) {
+      endpointDirectory += "/"
+    }
+    return endpointDirectory
+  }
+  fun getFullClassName(servDeclFilename: String, servdef: ObjectNode): String {
+    val fullClassName = servdef.get("\$javaClass")?.asText()
+    if (fullClassName === null) {
+      throw IllegalArgumentException("no \$javaClass property in $servDeclFilename")
+    }
+    return fullClassName
   }
   fun unpairedWarnings(
       warnings: MutableList<String>, files: Map<String, File>, other: Set<String>, msg: String
@@ -634,6 +661,7 @@ ${funcDecls}
     return nextCardinality
   }
 
+  // entry point for ModuleInitTask
   fun endpointDeclToModStubImpl(endpointDeclFilename: String, moduleExtension: String) {
     if (endpointDeclFilename.length == 0) {
       throw IllegalArgumentException("null declaration file")
@@ -768,5 +796,208 @@ declare option xdmp:mapping "false";
         else if (!isMultiple && isNullable)  "?"
         else                                 ""
     return cardinality
+  }
+
+  // entry point for ServiceCompareTask
+  fun compareServices(customServDeclFilename: String, baseServDeclFilename: String? = null) {
+    val mapper = jacksonObjectMapper()
+
+    val customServDeclFile = File(customServDeclFilename)
+    val customServdef = mapper.readValue<ObjectNode>(customServDeclFile)
+
+    val customEndpointDirectory = getEndpointDirectory(customServDeclFilename, customServdef)
+
+    var baseServDeclFilename =
+        if (baseServDeclFilename != null)
+            baseServDeclFilename
+        else resolveBaseEndpointDirectory(
+            customServDeclFilename, customServDeclFile, customServdef, customEndpointDirectory
+            )
+
+    val baseServDeclFile = File(baseServDeclFilename)
+    val baseServdef = mapper.readValue<ObjectNode>(baseServDeclFile)
+
+    val customModuleFiles = mutableMapOf<String, File>()
+    val customFuncdefs    = getFuncdefs(
+        mapper, customEndpointDirectory, customServDeclFile, customServdef, customModuleFiles
+    )
+
+    val baseEndpointDirectory = getEndpointDirectory(baseServDeclFilename, baseServdef)
+
+    val baseModuleFiles = mutableMapOf<String, File>()
+    val baseFuncdefs    = getFuncdefs(
+        mapper, baseEndpointDirectory, baseServDeclFile, baseServdef, baseModuleFiles
+    )
+
+    val errors = mutableListOf<String>()
+
+    val keepBaseExtsn = !customServdef.has("endpointExtension")
+    customFuncdefs.forEach{(root, customFuncdef) ->
+      if (!baseFuncdefs.containsKey(root)) {
+        errors.add("function ${root} exists in custom service but not base service")
+      } else {
+        val baseFuncdef = baseFuncdefs[root]
+        if (baseFuncdef == null) {
+          errors.add("function ${root} is null in base service but not custom service")
+        } else {
+          if (keepBaseExtsn) {
+            val baseExtsn = baseModuleFiles[root]?.extension
+            val customExtsn = customModuleFiles[root]?.extension
+            if (baseExtsn != customExtsn) {
+              errors.add(
+                  "function ${root} has $baseExtsn extension in base service but $customExtsn in custom service"
+              )
+            }
+          }
+          checkObjectsEqual(errors, root, customFuncdef, baseFuncdef)
+        }
+      }
+    }
+    baseFuncdefs.keys.forEach{root ->
+      if (!customFuncdefs.containsKey(root)) {
+        errors.add("function ${root} exists in base service but not custom service")
+      }
+    }
+
+    if (errors.size > 0) {
+      val errorReport = errors.joinToString("""
+""")
+      throw IllegalArgumentException(
+          """custom declaration inconsistent with base declaration:
+${errorReport}"""
+      )
+    }
+  }
+  fun resolveBaseEndpointDirectory(
+      customServDeclFilename: String, customServDeclFile: File, customServdef: ObjectNode, customEndpointDirectory: String
+  ): String {
+    var baseEndpointDirectory = customServdef.get("baseEndpointDirectory")?.asText()
+    if (baseEndpointDirectory === null) {
+      throw IllegalArgumentException(
+          "baseEndpointDirectory argument empty and no baseEndpointDirectory property in $customServDeclFilename"
+      )
+    } else if (baseEndpointDirectory.length == 0) {
+      throw IllegalArgumentException(
+          "baseEndpointDirectory argument empty and empty baseEndpointDirectory property in $customServDeclFilename"
+      )
+    } else if (!baseEndpointDirectory.endsWith("/")) {
+      baseEndpointDirectory += "/"
+    }
+    if (customEndpointDirectory == baseEndpointDirectory) {
+      throw IllegalArgumentException(
+          "custom directory $customEndpointDirectory specifies itself as the base directory"
+      )
+    }
+
+    /* Example
+      file:             /ml-modules/root/dbfunctiondef/positive/decoratorCustom/service.json
+      custom directory:                               /dbf/test/decoratorCustom/
+      base directory:                                 /dbf/test/decoratorBase/
+     */
+    // the leading database directories (if any) that the custom and base declaration files have in common
+    val commonPrefix = customEndpointDirectory
+                .commonPrefixWith(baseEndpointDirectory)
+                .replaceFirst(Regex("""([/\\])[^\/\\]+$"""), "$1")
+
+    // the trailing database path that's unique to the custom declaration file
+    var trimSuffix   =
+      if (commonPrefix.length == 0)
+        customEndpointDirectory
+      else
+        customEndpointDirectory.substring(commonPrefix.length)
+    trimSuffix = trimSuffix.replace(Regex("""[/\\]+"""), File.separator) + "service.json"
+
+    // the filesystem path of the custom declaration file
+    val customServDeclPath = customServDeclFile.absolutePath
+    if (!customServDeclPath.endsWith(trimSuffix)) {
+      throw IllegalArgumentException(
+          "cannot determine relative path for $customEndpointDirectory within $customServDeclPath"
+      )
+    }
+
+    // the leading directories from the filesystem path of the custom declaration file
+    val rootPath = customServDeclPath.substring(0, customServDeclPath.length - trimSuffix.length)
+
+    // the trailing database path that's unique to the base declaration file
+    var appendSuffix =
+        if (commonPrefix.length == 0)
+          baseEndpointDirectory
+        else
+          baseEndpointDirectory.substring(commonPrefix.length)
+    appendSuffix = appendSuffix.replace(Regex("""[/\\]+"""), File.separator)+"service.json"
+
+    // concatenate the leading filesystem directories and trailing database path for the base declaration file
+    return rootPath+appendSuffix
+  }
+  fun checkObjectsEqual(errors: MutableList<String>, parentKey: String, customObj: ObjectNode, baseObj: ObjectNode) {
+    customObj.fields().forEach{(key, customVal) ->
+      if (key.startsWith("$")) {
+      } else if (!baseObj.has(key)) {
+        errors.add("${key} property of ${parentKey} exists in custom service but not base service")
+      } else {
+        checkValuesEqual(errors, key, customVal, baseObj.get(key))
+      }
+    }
+    baseObj.fields().forEach{(key, value) ->
+      if (!customObj.has(key)) {
+        errors.add("${key} property of ${parentKey} exists in base service but not custom service")
+      }
+    }
+  }
+  fun checkArraysEqual(errors: MutableList<String>, key: String, customArr: ArrayNode, baseArr: ArrayNode) {
+    if (customArr.size() != baseArr.size()) {
+      errors.add(
+          "${key} property has ${baseArr.size()} items in base service but ${customArr.size()} in custom service"
+      )
+      return
+    }
+    for (i in 0..customArr.size()) {
+      checkValuesEqual(errors, key, customArr[i], baseArr[i])
+    }
+  }
+  fun checkValuesEqual(errors: MutableList<String>, key: String, customVal: JsonNode?, baseVal: JsonNode?) {
+    if (customVal == null) {
+      if (baseVal != null) {
+        errors.add("${key} property is null in custom service but not base service")
+      }
+      return
+    }
+    if (baseVal == null) {
+      errors.add("${key} property is null in base service but not custom service")
+      return
+    }
+    if (customVal.isObject) {
+      if (baseVal.isObject) {
+        checkObjectsEqual(errors, key, customVal as ObjectNode, baseVal as ObjectNode)
+      } else {
+        errors.add("${key} property is object in custom service but not base service")
+      }
+      return
+    }
+    if (baseVal.isObject) {
+      errors.add("${key} property is object in base service but not custom service")
+      return
+    }
+    if (customVal.isArray) {
+      val customArr = customVal as ArrayNode
+      if (baseVal.isArray) {
+        checkArraysEqual(errors, key, customArr, baseVal as ArrayNode)
+      } else if (customArr.size() == 1) {
+        checkValuesEqual(errors, key, customArr[0], baseVal)
+      } else {
+        errors.add("${key} property is array in custom service but not base service")
+      }
+      return
+    }
+    if (baseVal.isArray) {
+      errors.add("${key} property is array in base service but not custom service")
+      return
+    }
+    if (customVal != baseVal) {
+      errors.add(
+          "${key} property of ${baseVal} in base service is not equal to ${customVal} in custom service"
+      )
+      return
+    }
   }
 }

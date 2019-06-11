@@ -1,4 +1,6 @@
 {
-  "endpointDirectory" : "/dbf/test/decoratorCustom/",
-  "$javaClass" : "com.marklogic.client.test.dbfunction.positive.DecoratorCustomBundle"
+  "endpointDirectory"     : "/dbf/test/decoratorCustom/",
+  "baseEndpointDirectory" : "/dbf/test/decoratorBase/",
+  "endpointExtension"     : "xqy",
+  "$javaClass"            : "com.marklogic.client.test.dbfunction.positive.DecoratorCustomBundle"
 }

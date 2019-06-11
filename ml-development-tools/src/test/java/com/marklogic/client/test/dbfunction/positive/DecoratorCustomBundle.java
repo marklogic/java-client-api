@@ -54,7 +54,7 @@ public interface DecoratorCustomBundle {
             public com.fasterxml.jackson.databind.JsonNode docify(String value) {
               return BaseProxy.JsonDocumentType.toJsonNode(
                 baseProxy
-                .request("docify.sjs", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC)
+                .request("docify.xqy", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC)
                 .withSession()
                 .withParams(
                     BaseProxy.atomicParam("value", true, BaseProxy.StringType.fromString(value)))

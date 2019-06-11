@@ -58,11 +58,14 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class BaseProxy {
+   final static private Pattern EXTENSION_PATTERN = Pattern.compile("\\.\\w+$");
    static private ObjectMapper mapper = null;
    private String         endpointDir;
+   private String         endpointExtension;
    private DatabaseClient db;
 
 
@@ -86,6 +89,30 @@ public class BaseProxy {
          JsonNode endpointDirProp = serviceDecl.get("endpointDirectory");
          if (endpointDirProp == null) {
             throw new IllegalArgumentException("Service declaration without endpointDirectory property");
+         }
+
+         JsonNode endpointExtsnProp = serviceDecl.get("endpointExtension");
+         if (endpointExtsnProp != null) {
+            endpointExtension = endpointExtsnProp.asText();
+            if (endpointExtension == null) {
+            } else if (endpointExtension.length() == 0) {
+               endpointExtension = null;
+            } else {
+               endpointExtension = endpointExtension.toLowerCase();
+               if (!endpointExtension.startsWith(".")) {
+                  endpointExtension = "."+endpointExtension;
+               }
+               boolean isValid = false;
+               for (String extension: new String[]{".mjs", ".sjs", ".xqy"}) {
+                  if (!extension.equals(endpointExtension)) continue;
+                  isValid = true;
+                  break;
+               }
+               if (!isValid)
+                  throw new IllegalArgumentException(
+                          "endpoint extension must be mjs, sjs, or xqy and not: "+endpointExtension
+                  );
+            }
          }
 
          init(db, endpointDirProp.asText());
@@ -737,7 +764,9 @@ public class BaseProxy {
       NONE, SINGLE_ATOMIC, SINGLE_NODE, MULTIPLE_ATOMICS, MULTIPLE_NODES, MULTIPLE_MIXED;
    }
 
-   public DBFunctionRequest request(String module, ParameterValuesKind paramsKind) {
+   public DBFunctionRequest request(String defaultModule, ParameterValuesKind paramsKind) {
+      final String module = (endpointExtension == null) ? defaultModule :
+              EXTENSION_PATTERN.matcher(defaultModule).replaceFirst(endpointExtension);
       return request(db, endpointDir, module, paramsKind);
    }
    static public DBFunctionRequest request(DatabaseClient db, String endpointDir, String module, ParameterValuesKind paramsKind) {

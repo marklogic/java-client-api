@@ -13,9 +13,9 @@ import com.marklogic.client.impl.BaseProxy;
 /**
  * Provides a set of operations on the database server
  */
-public interface DecoratorDefaultBundle {
+public interface DecoratorBaseBundle {
     /**
-     * Creates a DecoratorDefaultBundle object for executing operations on the database server.
+     * Creates a DecoratorBaseBundle object for executing operations on the database server.
      *
      * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
      * client object can be used for any number of requests and in multiple threads.
@@ -23,11 +23,11 @@ public interface DecoratorDefaultBundle {
      * @param db	provides a client for communicating with the database server
      * @return	an object for executing database operations
      */
-    static DecoratorDefaultBundle on(DatabaseClient db) {
+    static DecoratorBaseBundle on(DatabaseClient db) {
       return on(db, null);
     }
     /**
-     * Creates a DecoratorDefaultBundle object for executing operations on the database server.
+     * Creates a DecoratorBaseBundle object for executing operations on the database server.
      *
      * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
      * client object can be used for any number of requests and in multiple threads.
@@ -42,12 +42,12 @@ public interface DecoratorDefaultBundle {
      * @param serviceDeclaration	substitutes a custom implementation of the service
      * @return	an object for executing database operations
      */
-    static DecoratorDefaultBundle on(DatabaseClient db, JSONWriteHandle serviceDeclaration) {
-        final class DecoratorDefaultBundleImpl implements DecoratorDefaultBundle {
+    static DecoratorBaseBundle on(DatabaseClient db, JSONWriteHandle serviceDeclaration) {
+        final class DecoratorBaseBundleImpl implements DecoratorBaseBundle {
             private BaseProxy baseProxy;
 
-            private DecoratorDefaultBundleImpl(DatabaseClient dbClient, JSONWriteHandle servDecl) {
-                baseProxy = new BaseProxy(dbClient, "/dbf/test/decoratorDefault/", servDecl);
+            private DecoratorBaseBundleImpl(DatabaseClient dbClient, JSONWriteHandle servDecl) {
+                baseProxy = new BaseProxy(dbClient, "/dbf/test/decoratorBase/", servDecl);
             }
 
             @Override
@@ -65,7 +65,7 @@ public interface DecoratorDefaultBundle {
 
         }
 
-        return new DecoratorDefaultBundleImpl(db, serviceDeclaration);
+        return new DecoratorBaseBundleImpl(db, serviceDeclaration);
     }
 
   /**

@@ -1589,7 +1589,7 @@ if (true) {
 }
 
 if (true) {
-  for (testName in listOf("decoratorCustom", "decoratorDefault", "described", "mimetype", "sessions")) {
+  for (testName in listOf("decoratorBase", "decoratorCustom", "described", "mimetype", "sessions")) {
     val manualBundleJSONPath = "${testDir}ml-modules/root/dbfunctiondef/positive/${testName}/"
     val manualBundleEndpoint = endpointBase+testName+"/"
     val manualBundleFilename = manualBundleJSONPath+"service.json"
@@ -1601,11 +1601,27 @@ if (true) {
         .forEach{apiFile ->
           val baseName = apiFile.nameWithoutExtension
           val apiName  = baseName +".api"
-          val modName  = baseName +".sjs"
+          val modFile  = listOf(".sjs", ".xqy", ".mjs").fold(null as File?, {found: File?, extension: String ->
+                  if (found != null) {
+                      found
+                  } else {
+                      val candidate = File(manualBundleJSONPath + baseName + extension)
+                      if (candidate.exists()) {
+                          candidate
+                      } else {
+                          null
+                      }
+                  }
+              })
+          if (modFile == null) {
+              throw IllegalArgumentException("could not find module for ${apiName}")
+          }
+
+          val modName = modFile.name
           modMgr.write(
               modMgr.newWriteSet()
                   .add(manualBundleEndpoint+apiName, docMeta, FileHandle(apiFile))
-                  .add(manualBundleEndpoint+modName, docMeta, FileHandle(File(manualBundleJSONPath+modName)))
+                  .add(manualBundleEndpoint+modName, docMeta, FileHandle(modFile))
           )
         }
   }

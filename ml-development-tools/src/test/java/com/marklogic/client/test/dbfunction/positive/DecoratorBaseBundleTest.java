@@ -16,18 +16,13 @@
 package com.marklogic.client.test.dbfunction.positive;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.marklogic.client.impl.NodeConverter;
 import com.marklogic.client.test.dbfunction.DBFunctionTestUtil;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.Reader;
-
 import static org.junit.Assert.*;
 
-public class DecoratorDefaultBundleTest {
-    DecoratorDefaultBundle testObj = DecoratorDefaultBundle.on(DBFunctionTestUtil.db);
+public class DecoratorBaseBundleTest {
+    DecoratorBaseBundle testObj = DecoratorBaseBundle.on(DBFunctionTestUtil.db);
 
     @Test
     public void testDocify() {
