@@ -38,8 +38,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.Set;
+import java.util.UUID;
 
-import com.marklogic.client.datamovement.*;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.query.RawCtsQueryDefinition;
 import org.junit.AfterClass;
@@ -48,8 +48,6 @@ import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.SearchHandle;
@@ -78,14 +76,9 @@ import com.marklogic.client.datamovement.QueryBatchException;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.QueryFailureListener;
 import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.impl.DatabaseClientImpl;
-import com.marklogic.client.impl.GenericDocumentImpl;
 import com.marklogic.client.datamovement.impl.QueryBatchImpl;
 
 import com.marklogic.client.test.Common;
-
-import java.util.Map;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,6 +107,8 @@ public class QueryBatcherTest {
     QueryManager queryMgr = client.newQueryManager();
     DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
     deleteQuery.setCollections(collection);
+    queryMgr.delete(deleteQuery);
+    deleteQuery.setCollections("maxUrisTest");
     queryMgr.delete(deleteQuery);
   }
 
@@ -811,4 +806,78 @@ public class QueryBatcherTest {
     assertTrue(successCount.get() < 200);
     assertTrue(batchCount.get() == moveMgr.getJobReport(queryTicket.get()).getSuccessBatchesCount());
   }
+  
+  @Test
+  public void maxUrisTestWithIteratorTask() {
+      DataMovementManager dmManager = client.newDataMovementManager();
+      List<String> uris = new ArrayList<String>();
+      List<String> outputUris = new ArrayList<String>();
+      
+      class Output {
+          int counter = 0;
+      }
+      for(int i=0; i<40; i++)
+          uris.add(UUID.randomUUID().toString());
+      
+      QueryBatcher  queryBatcher = dmManager.newQueryBatcher(uris.iterator());
+      final Output output = new Output();
+      queryBatcher.setMaxUris(20);
+      queryBatcher.withBatchSize(10).withThreadCount(2)
+              .onUrisReady(batch -> {
+                  outputUris.addAll(Arrays.asList(batch.getItems()));
+                  output.counter++;
+              })
+              .onQueryFailure((QueryBatchException failure) -> {
+                  System.out.println(failure.getMessage());
+              });
+
+          dmManager.startJob(queryBatcher);
+          queryBatcher.awaitCompletion();
+          dmManager.stopJob(queryBatcher);
+          assertTrue("Counter value not as expected", output.counter == 2);
+          assertTrue("Output list does not contain expected number of outputs", outputUris.size() == 20);
+  }
+  
+  @Test
+  public void maxUrisTestWithQueryTask() {
+      DataMovementManager dmManager = client.newDataMovementManager();
+      List<String> outputUris = new ArrayList<String>();
+      
+      DocumentMetadataHandle documentMetadata = new DocumentMetadataHandle().withCollections("maxUrisTest");
+      WriteBatcher batcher = moveMgr.newWriteBatcher().withDefaultMetadata(documentMetadata);
+
+      moveMgr.startJob(batcher);
+      for(int i=0; i<100; i++) {
+          batcher.addAs("test"+i+".txt", new StringHandle().with("Test"+i));
+      }
+
+      batcher.flushAndWait();
+      moveMgr.stopJob(batcher);
+      
+      class Output {
+          int counter = 0;
+      }
+      
+      QueryBatcher  queryBatcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("maxUrisTest"));
+      final Output output = new Output();
+      queryBatcher.setMaxUris(20);
+      queryBatcher.withBatchSize(10)
+              .onUrisReady(batch -> {
+                  outputUris.addAll(Arrays.asList(batch.getItems()));
+                  output.counter++;
+              })
+              .onQueryFailure((QueryBatchException failure) -> {
+                  System.out.println(failure.getMessage());
+              });
+
+          dmManager.startJob(queryBatcher);
+          queryBatcher.awaitCompletion();
+          dmManager.stopJob(queryBatcher);
+          
+          assertTrue("Counter value not as expected", (output.counter >= 2) && (output.counter<5));
+          
+          // The number of documents should be more than maxuris but less than (maxuris+ threadcount*batchsize)
+          assertTrue("Output list does not contain expected number of outputs", (outputUris.size() >= 20) && outputUris.size()<50);
+  }
+
 }

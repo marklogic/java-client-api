@@ -89,7 +89,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private JobTicket jobTicket;
   private Calendar jobStartTime;
   private Calendar jobEndTime;
-  private long maxUris;
+  private long maxUris = Long.MAX_VALUE;
+  private AtomicBoolean jobDone = new AtomicBoolean(false);
 
   public QueryBatcherImpl(QueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super(moveMgr);
@@ -128,11 +129,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   @Override
   public QueryBatcherImpl onUrisReady(QueryBatchListener listener) {
     if ( listener == null ) throw new IllegalArgumentException("listener must not be null");
-    if(resultsSoFar.longValue()< getMaxUris()) {
-        urisReadyListeners.add(listener);
-        return this;
-    }
-    return null;
+    urisReadyListeners.add(listener);
+    return this;
   }
 
   @Override
@@ -610,7 +608,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     public void run() {
       // don't proceed if this forest is marked as done (because we already got the last batch)
       AtomicBoolean isDone = forestIsDone.get(forest);
-      if ( isDone.get() == true ) {
+      if ( isDone.get() == true || jobDone.get()) {
         logger.error("Attempt to query forest '{}' forestBatchNum {} with start {} after the last batch " +
           "for that forest has already been retrieved", forest.getForestName(), forestBatchNum, start);
         return;
@@ -666,6 +664,11 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
             .withServerTimestamp(serverTimestamp.get())
             .withJobResultsSoFar(resultsSoFar.addAndGet(uris.size()))
             .withForestResultsSoFar(forestResults.get(forest).addAndGet(uris.size()));
+          
+          if(maxUris <= (resultsSoFar.longValue())) {
+              jobDone.set(true);
+              isDone.set(true);
+          }
 
           logger.trace("batch size={}, jobBatchNumber={}, jobResultsSoFar={}, forest={}", uris.size(),
             batch.getJobBatchNumber(), batch.getJobResultsSoFar(), forest.getForestName());
@@ -764,13 +767,16 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       try {
         boolean lastBatch = false;
         List<String> uriQueue = new ArrayList<>(getBatchSize());
-        while (iterator.hasNext()) {
+        while (iterator.hasNext() && !lastBatch) {
           uriQueue.add(iterator.next());
           if(!iterator.hasNext()) lastBatch = true;
           // if we've hit batchSize or the end of the iterator
-          if (uriQueue.size() == getBatchSize() || !iterator.hasNext()) {
+          if (uriQueue.size() == getBatchSize() || !iterator.hasNext() || lastBatch) {
             final List<String> uris = uriQueue;
             final boolean finalLastBatch = lastBatch;
+            final long results = resultsSoFar.addAndGet(uris.size());
+            if(maxUris <= results) 
+                lastBatch = true;
             uriQueue = new ArrayList<>(getBatchSize());
             Runnable processBatch = new Runnable() {
               public void run() {
