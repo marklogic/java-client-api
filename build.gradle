@@ -11,8 +11,8 @@ subprojects {
  	tasks.withType(JavaCompile) {
     	options.encoding = 'UTF-8'
   	}
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
+    sourceCompatibility = "9"
+    targetCompatibility = "9"
 
     sourceSets {
         test.compileClasspath += configurations.compileOnly
