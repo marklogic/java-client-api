@@ -554,7 +554,7 @@ License Text (http://spdx.org/licenses/Apache-2.0)
 Made available under the Apache License 2.0. See Appendix for full text.
 
 Source materials are available for download at: https://github.com/FasterXML/jackson-dataformat-xml 
-Jackson Module Kotlin 2.9.3 
+Jackson Module Kotlin 2.9.9 
 Attribution Statements
 https://github.com/FasterXML/jackson-module-kotlin
 
@@ -676,7 +676,7 @@ License Text (http://spdx.org/licenses/EPL-1.0)
 Made available under the Eclipse Public License 1.0. See Appendix for full text.
 
 Source materials are available for download at: https://github.com/junit-team/junit4 
-Kotlin Standard Library JDK 1.2.51 
+Kotlin Standard Library JDK 1.3.31 
 Attribution Statements
 http://kotlinlang.org/
 
