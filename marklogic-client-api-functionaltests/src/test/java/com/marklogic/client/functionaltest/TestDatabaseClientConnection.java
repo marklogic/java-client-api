@@ -29,13 +29,19 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyManagementException;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.text.DecimalFormat;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -49,6 +55,7 @@ import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
@@ -158,6 +165,52 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     // release client
     client.release();
   }
+  
+  // To test getters of SecurityContext
+  @Test
+  public void testDatabaseClientGetters() throws KeyManagementException, NoSuchAlgorithmException, IOException
+  {
+    System.out.println("Running testDatabaseClientGetters");
+  
+    DatabaseClient client = null;
+	SSLContext sslcontext = null;
+	SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-reader", "x");
+	
+		try {
+			sslcontext = getSslContext();
+		} catch (UnrecoverableKeyException | KeyStoreException | CertificateException e) {
+			e.printStackTrace();
+		}
+		
+		secContext.withSSLContext(sslcontext, new X509TrustManager() {
+			public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+				// nothing to do
+			}
+
+			public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+				// nothing to do
+			}
+
+			public X509Certificate[] getAcceptedIssuers() {
+				return new X509Certificate[0];
+			}
+		})
+		.withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
+	
+		client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(),
+				secContext, getConnType());
+	SecurityContext readSecContext = client.getSecurityContext();
+	String verifier = readSecContext.getSSLHostnameVerifier().toString();
+	String protocol = readSecContext.getSSLContext().getProtocol();
+	boolean needClient = readSecContext.getSSLContext().getSupportedSSLParameters().getNeedClientAuth();    
+    
+    assertTrue("Verifier not Builtin", verifier.contains("Builtin"));
+    assertTrue("Protocol incorrect", protocol.contains("TLSv1.2"));
+    assertTrue("NeedClientAuth incorrect", needClient == false);
+    // release client
+    client.release();
+  }
+  
 
   @Test
   public void testDatabaseClientConnectionInvalidPort() throws IOException
