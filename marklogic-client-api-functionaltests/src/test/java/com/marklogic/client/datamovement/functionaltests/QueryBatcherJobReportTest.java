@@ -25,6 +25,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +41,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -52,6 +54,7 @@ import com.marklogic.client.datamovement.ApplyTransformListener;
 import com.marklogic.client.datamovement.ApplyTransformListener.ApplyResult;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.JobTicket;
+import com.marklogic.client.datamovement.QueryBatch;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.document.DocumentPage;
@@ -595,6 +598,137 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		
 		System.out.println("stopTransformJobTest : successCount.get() " + successCount.get());
 		Assert.assertEquals(successCount.get(), successBatch.size());
+	}
+	
+	// Remove Ignore and add setMaxUris()
+	/* Test 1 setMaxUris(1895) - Complete this test.
+	 * Test 2 setMaxUris() -- reset?
+	 * Test 3 setMaxUris() on non iterator based QB.
+	 * Test 4 setMaxUris() called after dmManager start - negative
+	 * Test 5 setMaxUris() called from multiple Threads on the diff QueryBatchers on same Manager
+	 * 
+	 */
+	@Ignore
+	public void testStopBeforeListenerisComplete() throws Exception {
+		System.out.println("In testStopBeforeListenerisComplete method");
 
+		final String query1 = "fn:count(fn:doc())";
+		final AtomicInteger count = new AtomicInteger(0);
+		final AtomicInteger failedBatch = new AtomicInteger(0);
+		final AtomicInteger successBatch = new AtomicInteger(0);
+		
+		ArrayList<String> urisList = new ArrayList<String>();
+
+		WriteBatcher batcher = dmManager.newWriteBatcher();
+		batcher.withBatchSize(99);
+		batcher.withThreadCount(10);
+
+		batcher.onBatchSuccess(batch -> {
+
+		}).onBatchFailure((batch, throwable) -> {
+			throwable.printStackTrace();
+
+		});
+		dmManager.startJob(batcher);
+
+		class writeDocsThread implements Runnable {
+
+			@Override
+			public void run() {
+
+				for (int j = 0; j < 50000; j++) {
+					String uri = "/local/json-" + j + "-" + Thread.currentThread().getId();
+					System.out.println("Thread name: " + Thread.currentThread().getName() + "  URI:" + uri);
+					urisList.add(uri);
+					batcher.add(uri, fileHandle);
+				}
+				batcher.flushAndWait();
+			}
+		}
+
+		class CountRunnable implements Runnable {
+
+			@Override
+			public void run() {
+				try {
+					Thread.currentThread().sleep(15000L);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				Set threads = Thread.getAllStackTraces().keySet();
+				Iterator<Thread> iter = threads.iterator();
+				while (iter.hasNext()) {
+					Thread t = iter.next();
+					if (t.getName().contains("pool-1-thread-"))
+						System.out.println(t.getName());
+					count.incrementAndGet();
+				}
+			}
+		}
+		Thread countT;
+		countT = new Thread(new CountRunnable());
+
+		Thread t1;
+		t1 = new Thread(new writeDocsThread());
+		
+		countT.start();
+		t1.start();
+		countT.join();
+
+		t1.join();
+		
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 5000);
+		QueryBatcher qb = dmManager.newQueryBatcher(urisList.iterator())
+				.withBatchSize(5)
+	            .withThreadCount(2)
+	            .withJobId("ListenerCompletionTest")
+	            // TODO Test 1 setMaxUris(1895)
+	            .onUrisReady((QueryBatch batch) -> {
+	            	StringBuffer batchResults = new StringBuffer();
+	            	for (String str : batch.getItems()) {
+	            		
+	                    batchResults.append(str);
+	                    batchResults.append("|");
+	                  }
+	            	System.out.println(batchResults.toString());
+	            	batchResults = null;
+	            	batchResults = new StringBuffer();
+	            	successBatch.addAndGet(1);
+	            })
+	            .onQueryFailure(throwable-> {
+	            	failedBatch.addAndGet(1);                
+            });
+		
+		class stopDMManager implements Runnable {
+
+			@Override
+			public void run() {
+				try {
+					Thread.currentThread().sleep(5000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				dmManager.stopJob(qb);
+				}			
+		}
+		
+		JobTicket jobTicket = dmManager.startJob(qb);
+		qb.awaitCompletion();
+		Thread tQBStop;
+		tQBStop = new Thread(new stopDMManager());
+		
+		tQBStop.start();
+		tQBStop.join();
+		// Validate Test 1 setMaxUris(1895)
+		
+		/* Test 2 setMaxUris() -- reset?
+		* Test 3 setMaxUris() on non iterator based QB.
+		* Test 4 setMaxUris() called after dmManager start - negative
+		* Test 5 setMaxUris() called from multiple Threads on the diff QueryBatchers on same Manager
+		*/
+		clearDB(port);
 	}
 }
