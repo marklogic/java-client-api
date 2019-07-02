@@ -1633,7 +1633,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
               System.out.println("actualPermissions: " + actualPermissions);
 
               assertTrue("Document permissions difference in size value",
-                      actualPermissions.contains("size:5"));
+                      actualPermissions.contains("size:6"));
               assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
               assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
 
@@ -2823,7 +2823,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       System.out.println("actualPermissions: " + actualPermissions);
 
       assertTrue("Document permissions difference in size value",
-          actualPermissions.contains("size:6"));
+          actualPermissions.contains("size:7"));
 
       assertTrue("Document permissions difference in rest-reader permission",
           actualPermissions.contains("rest-reader:[READ]"));
@@ -3005,7 +3005,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
               .getProperties().isEmpty());
 
           assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:6"));
+              actualPermissions.contains("size:7"));
           
           assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
           assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
@@ -3064,7 +3064,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
               .getProperties().isEmpty());
 
           assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:6"));
+              actualPermissions.contains("size:7"));
 
           assertTrue(
               "Document permissions difference in rest-reader permission",
@@ -3126,7 +3126,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
           }
 
           assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:6"));
+              actualPermissions.contains("size:7"));
           assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
           assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
 
@@ -3189,7 +3189,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
               .getProperties().isEmpty());
 
           assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:6"));
+              actualPermissions.contains("size:7"));
           assertTrue(
               "Document permissions difference in rest-reader permission",
               actualPermissions.contains("rest-reader:[READ]"));
@@ -3352,7 +3352,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
               .getProperties().isEmpty());
 
           assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:6"));
+              actualPermissions.contains("size:7"));
           assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
           assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
 
@@ -3411,7 +3411,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
               .getProperties().isEmpty());
 
           assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:6"));
+              actualPermissions.contains("size:7"));
           assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
           assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
 
@@ -3474,7 +3474,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
           }
 
           assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:6"));
+              actualPermissions.contains("size:7"));
           assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
           assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
 
@@ -3537,7 +3537,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
               .getProperties().isEmpty());
 
           assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:6"));
+              actualPermissions.contains("size:7"));
           assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
           assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
 

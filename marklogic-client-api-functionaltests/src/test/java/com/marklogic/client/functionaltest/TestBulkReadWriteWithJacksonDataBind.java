@@ -129,7 +129,7 @@ public class TestBulkReadWriteWithJacksonDataBind extends
     System.out.println(actualPermissions);
 
     assertTrue("Document permissions difference in size value",
-        actualPermissions.contains("size:5"));
+        actualPermissions.contains("size:6"));
     // assertTrue(
     // "Document permissions difference in flexrep-eval permission",
     // actualPermissions.contains("flexrep-eval:[READ]"));
