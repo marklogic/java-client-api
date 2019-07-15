@@ -541,6 +541,55 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
     }
     assertEquals("document count", 102, count);
   }
+  
+//Refer to BT 52461. Having bulk write with transform (no meta-data on the transform itself) used to throw
+ // SVC-FILSTAT: cts:tokenize("attachment; filename=&quot;/bulkTransform/foo0.xml&quot;", "http://marklogic.com/collation/") 
+ // -- File status error: GetFileAttributes
+ @Test
+ public void testBulkWriteNoMetadataWithXQueryTransform() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+
+   TransformExtensionsManager transMgr =
+       client.newServerConfigManager().newTransformExtensionsManager();
+   // get the transform file
+   File transformFile = new File("src/test/java/com/marklogic/client/functionaltest/transforms/add-attr-xquery-transform.xqy");
+   FileHandle transformHandle = new FileHandle(transformFile);
+   transMgr.writeXQueryTransform("add-attr-xquery-transform", transformHandle);
+   ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
+   transform.put("name", "Lang");
+   transform.put("value", "English");
+   int count = 1;
+   XMLDocumentManager docMgr = client.newXMLDocumentManager();
+   Map<String, String> map = new HashMap<>();
+   DocumentWriteSet writeset = docMgr.newWriteSet();
+   for (int i = 0; i < 102; i++) {
+
+     writeset.add(DIRECTORY + "foo" + i + ".xml", new DOMHandle(getDocumentContent("This is so foo" + i)));
+     map.put(DIRECTORY + "foo" + i + ".xml", convertXMLDocumentToString(getDocumentContent("This is so foo" + i)));
+     if (count % BATCH_SIZE == 0) {
+       docMgr.write(writeset, transform);
+       writeset = docMgr.newWriteSet();
+     }
+     count++;
+   }
+   if (count % BATCH_SIZE > 0) {
+     docMgr.write(writeset, transform);
+   }
+
+   String uris[] = new String[102];
+   for (int i = 0; i < 102; i++) {
+     uris[i] = DIRECTORY + "foo" + i + ".xml";
+   }
+   count = 0;
+   DocumentPage page = docMgr.read(uris);
+   DOMHandle dh = new DOMHandle();
+   while (page.hasNext()) {
+     DocumentRecord rec = page.next();
+     rec.getContent(dh);
+     assertTrue("Element has attribure ? :", dh.get().getElementsByTagName("foo").item(0).hasAttributes());
+     count++;
+   }
+   assertEquals("document count", 102, count);
+ }
 
   @Test
   public void testBulkReadWithXQueryTransform() throws KeyManagementException, NoSuchAlgorithmException, Exception {
