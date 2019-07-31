@@ -17,6 +17,8 @@
 package com.marklogic.client.functionaltest;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -31,10 +33,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
@@ -49,6 +54,19 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
     System.out.println("In setup");
     configureRESTServer(dbName, fNames);
     setupAppServicesConstraint(dbName);
+    
+    createUserRolesWithPrevilages("evalSearchRole", "eval-search-string", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
+    createRESTUser("evalSearchUser", "evalSearch", "tde-admin", "tde-view", "evalSearchRole", "rest-admin", "rest-writer", 
+    		                             "rest-reader", "rest-extension-user", "manage-user");
+  }
+  
+  @AfterClass
+  public static void tearDownAfterClass() throws Exception
+  {
+    System.out.println("In AfterClass tear down");
+    
+    deleteUserRole("evalSearchRole");
+    deleteRESTUser("evalSearchUser");
   }
 
   @After
@@ -369,6 +387,211 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
     assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
     assertXpathEvaluatesTo("/search-expr-func/constraint3.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
 
+    // release client
+    client.release();
+  }
+  
+  /*
+   * User with eval-string privs and a searchable expression. Similar to testSearchableExpressionFunction
+   * but in this case user has eval-string privs. 
+   */
+  
+  @Test
+  public void testEvalPrivAndSearchableExpression() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
+  {
+    System.out.println("Running testEvalPrivAndSearchableExpression");
+
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+
+    DatabaseClient client = getDatabaseClient("evalSearchUser", "evalSearch", getConnType());
+
+    // write docs
+    for (String filename : filenames) {
+      writeDocumentUsingInputStreamHandle(client, filename, "/search-expr-func/", "XML");
+    }
+
+    // create query options manager
+    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+
+    // create query options
+    String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+        "<search:return-metrics>false</search:return-metrics>" +
+        "<search:return-qtext>false</search:return-qtext>" +
+        "<search:searchable-expression>//p[contains(.,'groundbreaking')]</search:searchable-expression>" +
+        "<search:transform-results apply='snippet'>" +
+        "<search:per-match-tokens>30</search:per-match-tokens>" +
+        "<search:max-matches>10</search:max-matches>" +
+        "<search:max-snippet-chars>200</search:max-snippet-chars>" +
+        "</search:transform-results>" +
+        "</search:options>";
+
+    // create query options handle
+    StringHandle handle = new StringHandle(opts1);
+
+    // write query options
+    optionsMgr.writeOptions("SearchableExpressionFunction", handle);
+
+    // read query option
+    StringHandle readHandle = new StringHandle();
+    readHandle.setFormat(Format.XML);
+    optionsMgr.readOptions("SearchableExpressionFunction", readHandle);
+    String output = readHandle.get();
+    System.out.println(output);
+
+    // create query manager
+    QueryManager queryMgr = client.newQueryManager();
+
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition("SearchableExpressionFunction");
+    querydef.setCriteria("atlantic");
+
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    resultsHandle.setFormat(Format.XML);
+    queryMgr.search(querydef, resultsHandle);
+
+    // get the result
+    Document resultDoc = resultsHandle.get();
+
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("/search-expr-func/constraint3.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
+
+    // release client
+    client.release();
+  } 
+  
+  /*
+   * User with eval-string privs and no searchable expression
+   */
+  @Test
+  public void testevalsearchstringPrivilege() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
+  {
+	  DatabaseClient client = null;
+    System.out.println("Running testevalsearchstringPrivilege");
+    try {
+    
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+
+    client = getDatabaseClient("evalSearchUser", "evalSearch", getConnType());
+
+    // write docs
+    for (String filename : filenames) {
+      writeDocumentUsingInputStreamHandle(client, filename, "/search-expr-func/", "XML");
+    }
+
+    // create query options manager
+    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+
+    // create query options with no searchable expression
+    String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+        "<search:return-metrics>false</search:return-metrics>" +
+        "<search:return-qtext>false</search:return-qtext>" +     
+        "<search:transform-results apply='snippet'>" +
+        "<search:per-match-tokens>30</search:per-match-tokens>" +
+        "<search:max-matches>10</search:max-matches>" +
+        "<search:max-snippet-chars>200</search:max-snippet-chars>" +
+        "</search:transform-results>" +
+        "</search:options>";
+
+    // create query options handle
+    StringHandle handle = new StringHandle(opts1);
+
+    // write query options
+    optionsMgr.writeOptions("SearchableExpressionFunction", handle);
+
+    // create query manager
+    QueryManager queryMgr = client.newQueryManager();
+
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition("SearchableExpressionFunction");
+    querydef.setCriteria("atlantic");
+
+    // create handle
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    
+    queryMgr.search(querydef, jacksonHandle);
+
+    // get the result
+    JsonNode jsonResults = jacksonHandle.get();
+    JsonNode results = jsonResults.path("results");
+    JsonNode result1 = results.get(0).get("uri");
+    JsonNode result2 = results.get(1).get("uri");
+    System.out.println("Testing eval-string privilege without searchable-expression");
+    assertTrue("Row 1 uri value incorrect",  result1.asText().contains("/search-expr-func/constraint1.xml")
+    		|| result1.asText().contains("/search-expr-func/constraint3.xml"));
+    assertTrue("Row 1 uri value incorrect",  result2.asText().contains("/search-expr-func/constraint1.xml")
+    		|| result2.asText().contains("/search-expr-func/constraint3.xml"));
+     }
+    catch(Exception ex) {
+    	ex.printStackTrace();
+    }
+    finally {
+    // release client
+    client.release();
+    }
+    
+  }
+  
+  /* Negative case. Have a searchable expression not in the path range. User does not have eval-search-string privilege.
+   * Response will have XDMP-UNSEARCHABLE
+  */
+  @Test
+  public void testInvalidSearchableExpressionFunction() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
+  {
+    System.out.println("Running testInvalidSearchableExpressionFunction");
+
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
+
+    // write docs
+    for (String filename : filenames) {
+      writeDocumentUsingInputStreamHandle(client, filename, "/search-expr-func/", "XML");
+    }
+
+    // create query options manager
+    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+
+    // create query options
+    String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+        "<search:return-metrics>false</search:return-metrics>" +
+        "<search:return-qtext>false</search:return-qtext>" +
+        "<search:searchable-expression>junk[contains(.,'grdbreaking')]</search:searchable-expression>" +
+        "<search:transform-results apply='snippet'>" +
+        "<search:per-match-tokens>30</search:per-match-tokens>" +
+        "<search:max-matches>10</search:max-matches>" +
+        "<search:max-snippet-chars>200</search:max-snippet-chars>" +
+        "</search:transform-results>" +
+        "</search:options>";
+
+    // create query options handle
+    StringHandle handle = new StringHandle(opts1);
+
+    // write query options
+    optionsMgr.writeOptions("SearchableExpressionFunction", handle);
+
+    // create query manager
+    QueryManager queryMgr = client.newQueryManager();
+
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition("SearchableExpressionFunction");
+    querydef.setCriteria("atlantic");
+
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    resultsHandle.setFormat(Format.XML);
+    StringBuilder strb = new StringBuilder();
+    try {
+    	queryMgr.search(querydef, resultsHandle);
+
+    }
+    catch (FailedRequestException fex) {
+    	strb.append(fex.getServerMessage());
+    	strb.append(fex.getServerMessageCode());
+    	 System.out.println("Exception from search " + strb.toString());
+    }
+    assertTrue(strb.toString().contains("INTERNAL ERROR"));
+    assertTrue(strb.toString().contains("XDMP-UNSEARCHABLE"));
     // release client
     client.release();
   }
