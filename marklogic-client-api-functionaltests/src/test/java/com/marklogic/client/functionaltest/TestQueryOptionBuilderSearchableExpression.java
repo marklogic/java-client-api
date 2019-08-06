@@ -586,11 +586,14 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 
     }
     catch (FailedRequestException fex) {
+    	strb.append(fex.getServerStatusCode());
+    	strb.append(" ");
     	strb.append(fex.getServerMessage());
+    	strb.append(" ");
     	strb.append(fex.getServerMessageCode());
     	 System.out.println("Exception from search " + strb.toString());
     }
-    assertTrue(strb.toString().contains("INTERNAL ERROR"));
+    assertTrue(strb.toString().contains("400"));
     assertTrue(strb.toString().contains("XDMP-UNSEARCHABLE"));
     // release client
     client.release();
