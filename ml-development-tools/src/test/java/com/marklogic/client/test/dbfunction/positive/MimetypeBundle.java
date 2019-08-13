@@ -45,26 +45,34 @@ public interface MimetypeBundle {
      */
     static MimetypeBundle on(DatabaseClient db, JSONWriteHandle serviceDeclaration) {
         final class MimetypeBundleImpl implements MimetypeBundle {
+            private DatabaseClient dbClient;
             private BaseProxy baseProxy;
 
+            private BaseProxy.DBFunctionRequest req_apiReader;
+
             private MimetypeBundleImpl(DatabaseClient dbClient, JSONWriteHandle servDecl) {
-                baseProxy = new BaseProxy(dbClient, "/dbf/test/mimetype/", servDecl);
+                this.dbClient  = dbClient;
+                this.baseProxy = new BaseProxy("/dbf/test/mimetype/", servDecl);
+
+                this.req_apiReader = this.baseProxy.request(
+                    "apiReader.sjs", BaseProxy.ParameterValuesKind.MULTIPLE_ATOMICS);
             }
 
             @Override
             public Reader apiReader(String endpointDirectory, String functionName) {
+                return apiReader(
+                    this.req_apiReader.on(this.dbClient), endpointDirectory, functionName
+                    );
+            }
+            private Reader apiReader(BaseProxy.DBFunctionRequest request, String endpointDirectory, String functionName) {
               return BaseProxy.JsonDocumentType.toReader(
-                baseProxy
-                .request("apiReader.sjs", BaseProxy.ParameterValuesKind.MULTIPLE_ATOMICS)
-                .withSession()
-                .withParams(
-                    BaseProxy.atomicParam("endpointDirectory", false, BaseProxy.StringType.fromString(endpointDirectory)),
-                    BaseProxy.atomicParam("functionName", false, BaseProxy.StringType.fromString(functionName)))
-                .withMethod("POST")
-                .responseSingle(true, Format.JSON)
+                request
+                      .withParams(
+                          BaseProxy.atomicParam("endpointDirectory", false, BaseProxy.StringType.fromString(endpointDirectory)),
+                          BaseProxy.atomicParam("functionName", false, BaseProxy.StringType.fromString(functionName))
+                          ).responseSingle(true, Format.JSON)
                 );
             }
-
         }
 
         return new MimetypeBundleImpl(db, serviceDeclaration);

@@ -43,25 +43,33 @@ public interface DescribedBundle {
      */
     static DescribedBundle on(DatabaseClient db, JSONWriteHandle serviceDeclaration) {
         final class DescribedBundleImpl implements DescribedBundle {
+            private DatabaseClient dbClient;
             private BaseProxy baseProxy;
 
+            private BaseProxy.DBFunctionRequest req_describer;
+
             private DescribedBundleImpl(DatabaseClient dbClient, JSONWriteHandle servDecl) {
-                baseProxy = new BaseProxy(dbClient, "/dbf/test/described/", servDecl);
+                this.dbClient  = dbClient;
+                this.baseProxy = new BaseProxy("/dbf/test/described/", servDecl);
+
+                this.req_describer = this.baseProxy.request(
+                    "describer.sjs", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC);
             }
 
             @Override
             public Boolean describer(Integer first) {
+                return describer(
+                    this.req_describer.on(this.dbClient), first
+                    );
+            }
+            private Boolean describer(BaseProxy.DBFunctionRequest request, Integer first) {
               return BaseProxy.BooleanType.toBoolean(
-                baseProxy
-                .request("describer.sjs", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC)
-                .withSession()
-                .withParams(
-                    BaseProxy.atomicParam("first", false, BaseProxy.IntegerType.fromInteger(first)))
-                .withMethod("POST")
-                .responseSingle(false, null)
+                request
+                      .withParams(
+                          BaseProxy.atomicParam("first", false, BaseProxy.IntegerType.fromInteger(first))
+                          ).responseSingle(false, null)
                 );
             }
-
         }
 
         return new DescribedBundleImpl(db, serviceDeclaration);

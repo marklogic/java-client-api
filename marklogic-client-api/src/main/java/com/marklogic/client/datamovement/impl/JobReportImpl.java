@@ -18,7 +18,6 @@ package com.marklogic.client.datamovement.impl;
 import java.util.Calendar;
 
 import com.marklogic.client.datamovement.*;
-import com.marklogic.client.dataservices.impl.CallBatcher;
 
 public class JobReportImpl implements JobReport {
 
@@ -35,8 +34,6 @@ public class JobReportImpl implements JobReport {
     BatcherImpl       batcher = ticket.getBatcher();
     JobTicket.JobType jobType = ticket.getJobType();
     switch(jobType) {
-      case CALL_BATCHER:
-        return new JobReportImpl((CallBatcher) batcher);
       case QUERY_BATCHER:
         return new JobReportImpl((QueryBatcher) batcher);
       case WRITE_BATCHER:
@@ -48,10 +45,6 @@ public class JobReportImpl implements JobReport {
                         "unknown job type: "+jobType.name()
         );
     }
-  }
-
-  public JobReportImpl(CallBatcher batcher) {
-// TODO
   }
 
   public JobReportImpl(WriteBatcher batcher) {

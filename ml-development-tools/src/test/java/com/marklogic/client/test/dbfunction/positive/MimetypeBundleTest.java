@@ -28,7 +28,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class MimetypeBundleTest {
-    MimetypeBundle testObj = MimetypeBundle.on(DBFunctionTestUtil.db);
+    // endpoint needs elevated privilege to write document
+    MimetypeBundle testObj = MimetypeBundle.on(DBFunctionTestUtil.adminDb);
 
     @Test
     public void testApiReader() {

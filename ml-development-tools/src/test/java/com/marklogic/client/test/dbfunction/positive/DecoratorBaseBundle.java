@@ -13,9 +13,9 @@ import com.marklogic.client.impl.BaseProxy;
 /**
  * Provides a set of operations on the database server
  */
-public interface DecoratorDefaultBundle {
+public interface DecoratorBaseBundle {
     /**
-     * Creates a DecoratorDefaultBundle object for executing operations on the database server.
+     * Creates a DecoratorBaseBundle object for executing operations on the database server.
      *
      * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
      * client object can be used for any number of requests and in multiple threads.
@@ -23,11 +23,11 @@ public interface DecoratorDefaultBundle {
      * @param db	provides a client for communicating with the database server
      * @return	an object for executing database operations
      */
-    static DecoratorDefaultBundle on(DatabaseClient db) {
-      return on(db, null);
+    static DecoratorBaseBundle on(DatabaseClient db) {
+        return on(db, null);
     }
     /**
-     * Creates a DecoratorDefaultBundle object for executing operations on the database server.
+     * Creates a DecoratorBaseBundle object for executing operations on the database server.
      *
      * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
      * client object can be used for any number of requests and in multiple threads.
@@ -42,38 +42,46 @@ public interface DecoratorDefaultBundle {
      * @param serviceDeclaration	substitutes a custom implementation of the service
      * @return	an object for executing database operations
      */
-    static DecoratorDefaultBundle on(DatabaseClient db, JSONWriteHandle serviceDeclaration) {
-        final class DecoratorDefaultBundleImpl implements DecoratorDefaultBundle {
+    static DecoratorBaseBundle on(DatabaseClient db, JSONWriteHandle serviceDeclaration) {
+        final class DecoratorBaseBundleImpl implements DecoratorBaseBundle {
+            private DatabaseClient dbClient;
             private BaseProxy baseProxy;
 
-            private DecoratorDefaultBundleImpl(DatabaseClient dbClient, JSONWriteHandle servDecl) {
-                baseProxy = new BaseProxy(dbClient, "/dbf/test/decoratorDefault/", servDecl);
+            private BaseProxy.DBFunctionRequest req_docify;
+
+            private DecoratorBaseBundleImpl(DatabaseClient dbClient, JSONWriteHandle servDecl) {
+                this.dbClient  = dbClient;
+                this.baseProxy = new BaseProxy("/dbf/test/decoratorBase/", servDecl);
+
+                this.req_docify = this.baseProxy.request(
+                        "docify.sjs", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC);
             }
 
             @Override
             public com.fasterxml.jackson.databind.JsonNode docify(String value) {
-              return BaseProxy.JsonDocumentType.toJsonNode(
-                baseProxy
-                .request("docify.sjs", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC)
-                .withSession()
-                .withParams(
-                    BaseProxy.atomicParam("value", true, BaseProxy.StringType.fromString(value)))
-                .withMethod("POST")
-                .responseSingle(true, Format.JSON)
+                return docify(
+                        this.req_docify.on(this.dbClient), value
                 );
             }
-
+            private com.fasterxml.jackson.databind.JsonNode docify(BaseProxy.DBFunctionRequest request, String value) {
+                return BaseProxy.JsonDocumentType.toJsonNode(
+                        request
+                                .withParams(
+                                        BaseProxy.atomicParam("value", true, BaseProxy.StringType.fromString(value))
+                                ).responseSingle(true, Format.JSON)
+                );
+            }
         }
 
-        return new DecoratorDefaultBundleImpl(db, serviceDeclaration);
+        return new DecoratorBaseBundleImpl(db, serviceDeclaration);
     }
 
-  /**
-   * Invokes the docify operation on the database server
-   *
-   * @param value	provides input
-   * @return	as output
-   */
+    /**
+     * Invokes the docify operation on the database server
+     *
+     * @param value	provides input
+     * @return	as output
+     */
     com.fasterxml.jackson.databind.JsonNode docify(String value);
 
 }

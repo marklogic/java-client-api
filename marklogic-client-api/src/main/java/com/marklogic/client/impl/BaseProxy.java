@@ -23,29 +23,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.InputSourceHandle;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.JacksonParserHandle;
-import com.marklogic.client.io.OutputStreamHandle;
-import com.marklogic.client.io.OutputStreamSender;
-import com.marklogic.client.io.ReaderHandle;
-import com.marklogic.client.io.SourceHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.XMLEventReaderHandle;
-import com.marklogic.client.io.XMLStreamReaderHandle;
-import com.marklogic.client.io.marker.AbstractWriteHandle;
-import com.marklogic.client.io.marker.BinaryReadHandle;
-import com.marklogic.client.io.marker.BinaryWriteHandle;
-import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.TextReadHandle;
-import com.marklogic.client.io.marker.TextWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
+import com.marklogic.client.io.*;
+import com.marklogic.client.io.marker.*;
 import com.marklogic.client.impl.RESTServices.*;
 
 import org.w3c.dom.Document;
@@ -58,13 +37,15 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class BaseProxy {
+   final static private Pattern EXTENSION_PATTERN = Pattern.compile("\\.\\w+$");
    static private ObjectMapper mapper = null;
    private String         endpointDir;
+   private String         endpointExtension;
    private DatabaseClient db;
-
 
    static protected ObjectMapper getMapper() {
       // okay if one thread overwrites another during lazy initialization
@@ -76,10 +57,10 @@ public class BaseProxy {
 
    public BaseProxy() {
    }
-   public BaseProxy(DatabaseClient db, String endpointDir, JSONWriteHandle serviceDeclaration) {
+   public BaseProxy(String endpointDir, JSONWriteHandle serviceDeclaration) {
       this();
       if (serviceDeclaration == null) {
-         init(db, endpointDir);
+         init(endpointDir);
       } else {
          JsonNode serviceDecl = NodeConverter.handleToJsonNode(serviceDeclaration);
 
@@ -88,25 +69,55 @@ public class BaseProxy {
             throw new IllegalArgumentException("Service declaration without endpointDirectory property");
          }
 
-         init(db, endpointDirProp.asText());
+         JsonNode endpointExtsnProp = serviceDecl.get("endpointExtension");
+         if (endpointExtsnProp != null) {
+            endpointExtension = endpointExtsnProp.asText();
+            if (endpointExtension == null) {
+            } else if (endpointExtension.length() == 0) {
+               endpointExtension = null;
+            } else {
+               endpointExtension = endpointExtension.toLowerCase();
+               if (!endpointExtension.startsWith(".")) {
+                  endpointExtension = "."+endpointExtension;
+               }
+               boolean isValid = false;
+               for (String extension: new String[]{".mjs", ".sjs", ".xqy"}) {
+                  if (!extension.equals(endpointExtension)) continue;
+                  isValid = true;
+                  break;
       }
+               if (!isValid)
+                  throw new IllegalArgumentException(
+                          "endpoint extension must be mjs, sjs, or xqy and not: "+endpointExtension
+                  );
+            }
    }
-   // backward-compatible constructor for 4.x legacy
-   public BaseProxy(DatabaseClient db, String endpointDir) {
-      this(db, endpointDir, null);
+
+         init(endpointDirProp.asText());
    }
-   private void init(DatabaseClient db, String endpointDir) {
+   }
+   // backward-compatible constructor for 5.0.x legacy
+   public BaseProxy(DatabaseClient db, String endpointDir, JSONWriteHandle serviceDeclaration) {
+      this(endpointDir, serviceDeclaration);
+
       if (db == null) {
          throw new IllegalArgumentException("Cannot connect with null database client");
       } else if (db.getDatabase() != null) {
          throw new IllegalArgumentException("Client cannot specify a database - specified: "+db.getDatabase());
       }
+
+      this.db = db;
+   }
+   // backward-compatible constructor for 4.x legacy
+   public BaseProxy(DatabaseClient db, String endpointDir) {
+      this(db, endpointDir, null);
+   }
+   private void init(String endpointDir) {
       if (endpointDir == null || endpointDir.length() == 0) {
          throw new IllegalArgumentException("Cannot make requests with null or empty endpoint directory");
       }
 
       this.endpointDir = endpointDir;
-      this.db          = db;
    }
 
    public interface ServerDataType {
@@ -326,37 +337,40 @@ public class BaseProxy {
           BinaryWriteHandle[] binaryWriteHandleValues = Stream.of(values).map(value->NodeConverter.BinaryWriter(value)).toArray(BinaryWriteHandle[]::new);
           return NodeConverter.arrayWithFormat(binaryWriteHandleValues, FORMAT);
       }
-      static final public BinaryWriteHandle fromBytes(byte[] value) {
-         return NodeConverter.BinaryWriter(NodeConverter.BytesToHandle(value));
+      static final public BytesHandle fromBytes(byte[] value) {
+         return NodeConverter.withFormat(NodeConverter.BytesToHandle(value), FORMAT);
       }
-      static final public Stream<BinaryWriteHandle> fromBytes(Stream<? extends byte[]> values) {
-         return NodeConverter.BinaryWriter(NodeConverter.BytesToHandle(values));
+      static final public Stream<BytesHandle> fromBytes(Stream<? extends byte[]> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.BytesToHandle(values), FORMAT);
       }
-      static final public BinaryWriteHandle fromFile(File value) {
-         return NodeConverter.BinaryWriter(NodeConverter.FileToHandle(value));
+      static final public BytesHandle[] fromBytes(byte[][] values) {
+         return NodeConverter.arrayWithFormat(NodeConverter.BytesToHandle(values), FORMAT);
       }
-      static final public Stream<BinaryWriteHandle> fromFile(Stream<? extends File> values) {
-         return NodeConverter.BinaryWriter(NodeConverter.FileToHandle(values));
+      static final public FileHandle fromFile(File value) {
+         return NodeConverter.withFormat(NodeConverter.FileToHandle(value), FORMAT);
+      }
+      static final public Stream<FileHandle> fromFile(Stream<? extends File> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.FileToHandle(values), FORMAT);
       }
       static final public FileHandle[] fromFile(File[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.FileToHandle(values), FORMAT);
       }
-      static final public BinaryWriteHandle fromInputStream(InputStream value) {
-         return NodeConverter.BinaryWriter(NodeConverter.InputStreamToHandle(value));
+      static final public InputStreamHandle fromInputStream(InputStream value) {
+         return NodeConverter.withFormat(NodeConverter.InputStreamToHandle(value), FORMAT);
       }
-      static final public Stream<BinaryWriteHandle> fromInputStream(Stream<? extends InputStream> values) {
-         return NodeConverter.BinaryWriter(NodeConverter.InputStreamToHandle(values));
+      static final public Stream<InputStreamHandle> fromInputStream(Stream<? extends InputStream> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.InputStreamToHandle(values), FORMAT);
       }
-      static final public BinaryWriteHandle[] fromInputStream(InputStream[] values) {
+      static final public InputStreamHandle[] fromInputStream(InputStream[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.InputStreamToHandle(values), FORMAT);
       }
-      static final public BinaryWriteHandle fromOutputStreamSender(OutputStreamSender value) {
-         return NodeConverter.BinaryWriter(NodeConverter.OutputStreamSenderToHandle(value));
+      static final public OutputStreamHandle fromOutputStreamSender(OutputStreamSender value) {
+         return NodeConverter.withFormat(NodeConverter.OutputStreamSenderToHandle(value), FORMAT);
       }
-      static final public Stream<BinaryWriteHandle> fromOutputStreamSender(Stream<? extends OutputStreamSender> values) {
-         return NodeConverter.BinaryWriter(NodeConverter.OutputStreamSenderToHandle(values));
+      static final public Stream<OutputStreamHandle> fromOutputStreamSender(Stream<? extends OutputStreamSender> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.OutputStreamSenderToHandle(values), FORMAT);
       }
-      static final public BinaryWriteHandle[] fromOutputStreamSender(OutputStreamSender[] values) {
+      static final public OutputStreamHandle[] fromOutputStreamSender(OutputStreamSender[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.OutputStreamSenderToHandle(values), FORMAT);
       }
 
@@ -384,83 +398,83 @@ public class BaseProxy {
           JSONWriteHandle[] handleValues = Stream.of(values).map(value->NodeConverter.JSONWriter(value)).toArray(JSONWriteHandle[]::new);
           return NodeConverter.arrayWithFormat(handleValues, FORMAT);
       }
-      static final public JSONWriteHandle fromJsonNode(JsonNode value) {
-         return NodeConverter.JSONWriter(NodeConverter.JsonNodeToHandle(value));
+      static final public JacksonHandle fromJsonNode(JsonNode value) {
+         return NodeConverter.withFormat(NodeConverter.JsonNodeToHandle(value), FORMAT);
       }
-      static final public Stream<JSONWriteHandle> fromJsonNode(Stream<? extends JsonNode> values) {
-         return NodeConverter.JSONWriter(NodeConverter.JsonNodeToHandle(values));
+      static final public Stream<JacksonHandle> fromJsonNode(Stream<? extends JsonNode> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.JsonNodeToHandle(values), FORMAT);
       }
       static final public JacksonHandle[] fromJsonNode(JsonNode[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.JsonNodeToHandle(values), FORMAT);
       }
-      static final public JSONWriteHandle fromArrayNode(ArrayNode value) {
-         return NodeConverter.JSONWriter(NodeConverter.JsonNodeToHandle(value));
+      static final public JacksonHandle fromArrayNode(ArrayNode value) {
+         return NodeConverter.withFormat(NodeConverter.JsonNodeToHandle(value), FORMAT);
       }
-      static final public Stream<JSONWriteHandle> fromArrayNode(Stream<? extends ArrayNode> values) {
-         return NodeConverter.JSONWriter(NodeConverter.JsonNodeToHandle(values));
+      static final public Stream<JacksonHandle> fromArrayNode(Stream<? extends ArrayNode> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.JsonNodeToHandle(values), FORMAT);
       }
       static final public JacksonHandle[] fromArrayNode(ArrayNode[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.JsonNodeToHandle(values), FORMAT);
       }
-      static final public JSONWriteHandle fromObjectNode(ObjectNode value) {
-         return NodeConverter.JSONWriter(NodeConverter.JsonNodeToHandle(value));
+      static final public JacksonHandle fromObjectNode(ObjectNode value) {
+         return NodeConverter.withFormat(NodeConverter.JsonNodeToHandle(value), FORMAT);
       }
-      static final public Stream<JSONWriteHandle> fromObjectNode(Stream<? extends ObjectNode> values) {
-         return NodeConverter.JSONWriter(NodeConverter.JsonNodeToHandle(values));
+      static final public Stream<JacksonHandle> fromObjectNode(Stream<? extends ObjectNode> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.JsonNodeToHandle(values), FORMAT);
       }
       static final public JacksonHandle[] fromObjectNode(ObjectNode[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.JsonNodeToHandle(values), FORMAT);
       }
-      static final public JSONWriteHandle fromJsonParser(JsonParser value) {
-         return NodeConverter.JSONWriter(NodeConverter.JsonParserToHandle(value));
+      static final public JacksonParserHandle fromJsonParser(JsonParser value) {
+         return NodeConverter.withFormat(NodeConverter.JsonParserToHandle(value), FORMAT);
       }
-      static final public Stream<JSONWriteHandle> fromJsonParser(Stream<? extends JsonParser> values) {
-         return NodeConverter.JSONWriter(NodeConverter.JsonParserToHandle(values));
+      static final public Stream<JacksonParserHandle> fromJsonParser(Stream<? extends JsonParser> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.JsonParserToHandle(values), FORMAT);
       }
       static final public JacksonParserHandle[] fromJsonParser(JsonParser[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.JsonParserToHandle(values), FORMAT);
       }
-      static final public JSONWriteHandle fromFile(File value) {
-         return NodeConverter.JSONWriter(NodeConverter.FileToHandle(value));
+      static final public FileHandle fromFile(File value) {
+         return NodeConverter.withFormat(NodeConverter.FileToHandle(value), FORMAT);
       }
-      static final public Stream<JSONWriteHandle> fromFile(Stream<? extends File> values) {
-         return NodeConverter.JSONWriter(NodeConverter.FileToHandle(values));
+      static final public Stream<FileHandle> fromFile(Stream<? extends File> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.FileToHandle(values), FORMAT);
       }
       static final public FileHandle[] fromFile(File[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.FileToHandle(values), FORMAT);
       }
-      static final public JSONWriteHandle fromInputStream(InputStream value) {
-         return NodeConverter.JSONWriter(NodeConverter.InputStreamToHandle(value));
+      static final public InputStreamHandle fromInputStream(InputStream value) {
+         return NodeConverter.withFormat(NodeConverter.InputStreamToHandle(value), FORMAT);
       }
-      static final public Stream<JSONWriteHandle> fromInputStream(Stream<? extends InputStream> values) {
-         return NodeConverter.JSONWriter(NodeConverter.InputStreamToHandle(values));
+      static final public Stream<InputStreamHandle> fromInputStream(Stream<? extends InputStream> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.InputStreamToHandle(values), FORMAT);
       }
       static final public InputStreamHandle[] fromInputStream(InputStream[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.InputStreamToHandle(values), FORMAT);
       }
-      static final public JSONWriteHandle fromOutputStreamSender(OutputStreamSender value) {
-         return NodeConverter.JSONWriter(NodeConverter.OutputStreamSenderToHandle(value));
+      static final public OutputStreamHandle fromOutputStreamSender(OutputStreamSender value) {
+         return NodeConverter.withFormat(NodeConverter.OutputStreamSenderToHandle(value), FORMAT);
       }
-      static final public Stream<JSONWriteHandle> fromOutputStreamSender(Stream<? extends OutputStreamSender> values) {
-         return NodeConverter.JSONWriter(NodeConverter.OutputStreamSenderToHandle(values));
+      static final public Stream<OutputStreamHandle> fromOutputStreamSender(Stream<? extends OutputStreamSender> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.OutputStreamSenderToHandle(values), FORMAT);
       }
       static final public OutputStreamHandle[] fromOutputStreamSender(OutputStreamSender[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.OutputStreamSenderToHandle(values), FORMAT);
       }
-      static final public JSONWriteHandle fromReader(Reader value)                            {
-         return NodeConverter.JSONWriter(NodeConverter.ReaderToHandle(value));
+      static final public ReaderHandle fromReader(Reader value)                            {
+         return NodeConverter.withFormat(NodeConverter.ReaderToHandle(value), FORMAT);
       }
-      static final public Stream<JSONWriteHandle> fromReader(Stream<? extends Reader> values) {
-         return NodeConverter.JSONWriter(NodeConverter.ReaderToHandle(values));
+      static final public Stream<ReaderHandle> fromReader(Stream<? extends Reader> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.ReaderToHandle(values), FORMAT);
       }
       static final public ReaderHandle[] fromReader(Reader[] values) {
          return NodeConverter.arrayWithFormat (NodeConverter.ReaderToHandle(values) , FORMAT);
       }
-      static final public JSONWriteHandle fromString(String value)                            {
-         return NodeConverter.JSONWriter(NodeConverter.StringToHandle(value));
+      static final public StringHandle fromString(String value)                            {
+         return NodeConverter.withFormat(NodeConverter.StringToHandle(value), FORMAT);
       }
-      static final public Stream<JSONWriteHandle> fromString(Stream<? extends String> values) {
-         return NodeConverter.JSONWriter(NodeConverter.StringToHandle(values));
+      static final public Stream<StringHandle> fromString(Stream<? extends String> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.StringToHandle(values), FORMAT);
       }
       static final public StringHandle[] fromString(String[] values) {
           return NodeConverter.arrayWithFormat (NodeConverter.StringToHandle(values) , FORMAT);
@@ -526,47 +540,50 @@ public class BaseProxy {
           TextWriteHandle[] handleValues = Stream.of(values).map(value->NodeConverter.TextWriter(value)).toArray(TextWriteHandle[]::new);
           return NodeConverter.arrayWithFormat(handleValues, FORMAT);
       }
-      static final public TextWriteHandle fromFile(File value) {
-         return NodeConverter.TextWriter(NodeConverter.FileToHandle(value));
+      static final public FileHandle fromFile(File value) {
+         return NodeConverter.withFormat(NodeConverter.FileToHandle(value), FORMAT);
       }
-      static final public Stream<TextWriteHandle> fromFile(Stream<? extends File> values) {
-         return NodeConverter.TextWriter(NodeConverter.FileToHandle(values));
+      static final public Stream<FileHandle> fromFile(Stream<? extends File> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.FileToHandle(values), FORMAT);
       }
-      static final public TextWriteHandle[] fromFile(File[] values) {
+      static final public FileHandle[] fromFile(File[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.FileToHandle(values), FORMAT);
       }
-      static final public TextWriteHandle fromInputStream(InputStream value) {
-         return NodeConverter.TextWriter(NodeConverter.InputStreamToHandle(value));
+      static final public InputStreamHandle fromInputStream(InputStream value) {
+         return NodeConverter.withFormat(NodeConverter.InputStreamToHandle(value), FORMAT);
       }
-      static final public Stream<TextWriteHandle> fromInputStream(Stream<? extends InputStream> values) {
-         return NodeConverter.TextWriter(NodeConverter.InputStreamToHandle(values));
+      static final public Stream<InputStreamHandle> fromInputStream(Stream<? extends InputStream> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.InputStreamToHandle(values), FORMAT);
       }
-      static final public TextWriteHandle[] fromInputStream(InputStream[] values) {
+      static final public InputStreamHandle[] fromInputStream(InputStream[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.InputStreamToHandle(values), FORMAT);
       }
-      static final public TextWriteHandle fromOutputStreamSender(OutputStreamSender value) {
-         return NodeConverter.TextWriter(NodeConverter.OutputStreamSenderToHandle(value));
+      static final public OutputStreamHandle fromOutputStreamSender(OutputStreamSender value) {
+         return NodeConverter.withFormat(NodeConverter.OutputStreamSenderToHandle(value), FORMAT);
       }
-      static final public Stream<TextWriteHandle> fromOutputStreamSender(Stream<? extends OutputStreamSender> values) {
-         return NodeConverter.TextWriter(NodeConverter.OutputStreamSenderToHandle(values));
+      static final public Stream<OutputStreamHandle> fromOutputStreamSender(Stream<? extends OutputStreamSender> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.OutputStreamSenderToHandle(values), FORMAT);
       }
-      static final public TextWriteHandle[] fromOutputStreamSender(OutputStreamSender[] values) {
+      static final public OutputStreamHandle[] fromOutputStreamSender(OutputStreamSender[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.OutputStreamSenderToHandle(values), FORMAT);
       }
-      static final public TextWriteHandle fromReader(Reader value) {
-         return NodeConverter.TextWriter(NodeConverter.ReaderToHandle(value));
+      static final public ReaderHandle fromReader(Reader value) {
+         return NodeConverter.withFormat(NodeConverter.ReaderToHandle(value), FORMAT);
       }
-      static final public Stream<TextWriteHandle> fromReader(Stream<? extends Reader> values) {
-         return NodeConverter.TextWriter(NodeConverter.ReaderToHandle(values));
+      static final public Stream<ReaderHandle> fromReader(Stream<? extends Reader> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.ReaderToHandle(values), FORMAT);
       }
-      static final public TextWriteHandle[] fromReader(Reader[] values) {
+      static final public ReaderHandle[] fromReader(Reader[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.ReaderToHandle(values), FORMAT);
       }
-      static final public TextWriteHandle fromString(String value) {
-         return NodeConverter.TextWriter(NodeConverter.StringToHandle(value));
+      static final public StringHandle fromString(String value) {
+         return NodeConverter.withFormat(NodeConverter.StringToHandle(value), FORMAT);
       }
-      static final public Stream<TextWriteHandle> fromString(Stream<String> values) {
-         return NodeConverter.TextWriter(NodeConverter.StringToHandle(values));
+      static final public Stream<StringHandle> fromString(Stream<String> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.StringToHandle(values), FORMAT);
+      }
+      static final public StringHandle[] fromString(String[] values) {
+         return NodeConverter.arrayWithFormat(NodeConverter.StringToHandle(values), FORMAT);
       }
 
       static final public byte[]              toBytes(SingleCallResponse response)               { return response.asBytes();               }
@@ -597,92 +614,92 @@ public class BaseProxy {
           XMLWriteHandle[] handleValues = Stream.of(values).map(value-> NodeConverter.XMLWriter(value)).toArray(XMLWriteHandle[]::new);
           return NodeConverter.arrayWithFormat(handleValues, FORMAT);
       }
-      static final public XMLWriteHandle fromDocument(Document value) {
-         return NodeConverter.XMLWriter(NodeConverter.DocumentToHandle(value));
+      static final public DOMHandle fromDocument(Document value) {
+         return NodeConverter.withFormat(NodeConverter.DocumentToHandle(value), FORMAT);
       }
-      static final public Stream<XMLWriteHandle> fromDocument(Stream<? extends Document> values) {
-         return NodeConverter.XMLWriter(NodeConverter.DocumentToHandle(values));
+      static final public Stream<DOMHandle> fromDocument(Stream<? extends Document> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.DocumentToHandle(values), FORMAT);
       }
       static final public DOMHandle[] fromDocument(Document[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.DocumentToHandle(values), FORMAT);
       }
-      static final public XMLWriteHandle fromInputSource(InputSource value) {
-         return NodeConverter.XMLWriter(NodeConverter.InputSourceToHandle(value));
+      static final public InputSourceHandle fromInputSource(InputSource value) {
+         return NodeConverter.withFormat(NodeConverter.InputSourceToHandle(value), FORMAT);
       }
-      static final public Stream<XMLWriteHandle> fromInputSource(Stream<? extends InputSource> values) {
-         return NodeConverter.XMLWriter(NodeConverter.InputSourceToHandle(values));
+      static final public Stream<InputSourceHandle> fromInputSource(Stream<? extends InputSource> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.InputSourceToHandle(values), FORMAT);
       }
       static final public InputSourceHandle[] fromInputSource(InputSource[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.InputSourceToHandle(values), FORMAT);
       }
-      static final public XMLWriteHandle fromSource(Source value) {
-         return NodeConverter.XMLWriter(NodeConverter.SourceToHandle(value));
+      static final public SourceHandle fromSource(Source value) {
+         return NodeConverter.withFormat(NodeConverter.SourceToHandle(value), FORMAT);
       }
-      static final public Stream<XMLWriteHandle> fromSource(Stream<? extends Source> values) {
-         return NodeConverter.XMLWriter(NodeConverter.SourceToHandle(values));
+      static final public Stream<SourceHandle> fromSource(Stream<? extends Source> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.SourceToHandle(values), FORMAT);
       }
       static final public SourceHandle[] fromSource(Source[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.SourceToHandle(values), FORMAT);
       }
-      static final public XMLWriteHandle fromXMLEventReader(XMLEventReader value) {
-         return NodeConverter.XMLWriter(NodeConverter.XMLEventReaderToHandle(value));
+      static final public XMLEventReaderHandle fromXMLEventReader(XMLEventReader value) {
+         return NodeConverter.withFormat(NodeConverter.XMLEventReaderToHandle(value), FORMAT);
       }
-      static final public Stream<XMLWriteHandle> fromXMLEventReader(Stream<? extends XMLEventReader> values) {
-         return NodeConverter.XMLWriter(NodeConverter.XMLEventReaderToHandle(values));
+      static final public Stream<XMLEventReaderHandle> fromXMLEventReader(Stream<? extends XMLEventReader> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.XMLEventReaderToHandle(values), FORMAT);
       }
       static final public XMLEventReaderHandle[] fromXMLEventReader(XMLEventReader[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.XMLEventReaderToHandle(values), FORMAT);
       }
-      static final public XMLWriteHandle fromXMLStreamReader(XMLStreamReader value) {
-         return NodeConverter.XMLWriter(NodeConverter.XMLStreamReaderToHandle(value));
+      static final public XMLStreamReaderHandle fromXMLStreamReader(XMLStreamReader value) {
+         return NodeConverter.withFormat(NodeConverter.XMLStreamReaderToHandle(value), FORMAT);
       }
-      static final public Stream<XMLWriteHandle> fromXMLStreamReader(Stream<? extends XMLStreamReader> values) {
-         return NodeConverter.XMLWriter(NodeConverter.XMLStreamReaderToHandle(values));
+      static final public Stream<XMLStreamReaderHandle> fromXMLStreamReader(Stream<? extends XMLStreamReader> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.XMLStreamReaderToHandle(values), FORMAT);
       }
       static final public XMLStreamReaderHandle[] fromXMLStreamReader(XMLStreamReader[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.XMLStreamReaderToHandle(values), FORMAT);
       }
-      static final public XMLWriteHandle fromFile(File value) {
-         return NodeConverter.XMLWriter(NodeConverter.FileToHandle(value));
+      static final public FileHandle fromFile(File value) {
+         return NodeConverter.withFormat(NodeConverter.FileToHandle(value), FORMAT);
       }
-      static final public Stream<XMLWriteHandle> fromFile(Stream<? extends File> values) {
-         return NodeConverter.XMLWriter(NodeConverter.FileToHandle(values));
+      static final public Stream<FileHandle> fromFile(Stream<? extends File> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.FileToHandle(values), FORMAT);
       }
       static final public FileHandle[] fromFile(File[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.FileToHandle(values), FORMAT);
       }
-      static final public XMLWriteHandle fromInputStream(InputStream value) {
-         return NodeConverter.XMLWriter(NodeConverter.InputStreamToHandle(value));
+      static final public InputStreamHandle fromInputStream(InputStream value) {
+         return NodeConverter.withFormat(NodeConverter.InputStreamToHandle(value), FORMAT);
       }
-      static final public Stream<XMLWriteHandle> fromInputStream(Stream<? extends InputStream> values)  {
-         return NodeConverter.XMLWriter(NodeConverter.InputStreamToHandle(values));
+      static final public Stream<InputStreamHandle> fromInputStream(Stream<? extends InputStream> values)  {
+         return NodeConverter.streamWithFormat(NodeConverter.InputStreamToHandle(values), FORMAT);
       }
       static final public InputStreamHandle[] fromInputStream(InputStream[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.InputStreamToHandle(values), FORMAT);
       }
-      static final public XMLWriteHandle fromOutputStreamSender(OutputStreamSender value) {
-         return NodeConverter.XMLWriter(NodeConverter.OutputStreamSenderToHandle(value));
+      static final public OutputStreamHandle fromOutputStreamSender(OutputStreamSender value) {
+         return NodeConverter.withFormat(NodeConverter.OutputStreamSenderToHandle(value), FORMAT);
       }
-      static final public Stream<XMLWriteHandle> fromOutputStreamSender(Stream<? extends OutputStreamSender> values) {
-         return NodeConverter.XMLWriter(NodeConverter.OutputStreamSenderToHandle(values));
+      static final public Stream<OutputStreamHandle> fromOutputStreamSender(Stream<? extends OutputStreamSender> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.OutputStreamSenderToHandle(values), FORMAT);
       }
       static final public OutputStreamHandle[] fromOutputStreamSender(OutputStreamSender[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.OutputStreamSenderToHandle(values), FORMAT);
       }
-      static final public XMLWriteHandle fromReader(Reader value) {
-         return NodeConverter.XMLWriter(NodeConverter.ReaderToHandle(value));
+      static final public ReaderHandle fromReader(Reader value) {
+         return NodeConverter.withFormat(NodeConverter.ReaderToHandle(value), FORMAT);
       }
-      static final public Stream<XMLWriteHandle> fromReader(Stream<? extends Reader> values) {
-         return NodeConverter.XMLWriter(NodeConverter.ReaderToHandle(values));
+      static final public Stream<ReaderHandle> fromReader(Stream<? extends Reader> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.ReaderToHandle(values), FORMAT);
       }
       static final public ReaderHandle[] fromReader(Reader[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.ReaderToHandle(values), FORMAT);
       }
-      static final public XMLWriteHandle fromString(String value) {
-         return NodeConverter.XMLWriter(NodeConverter.StringToHandle(value));
+      static final public StringHandle fromString(String value) {
+         return NodeConverter.withFormat(NodeConverter.StringToHandle(value), FORMAT);
       }
-      static final public Stream<XMLWriteHandle> fromString(Stream<? extends String> values) {
-         return NodeConverter.XMLWriter(NodeConverter.StringToHandle(values));
+      static final public Stream<StringHandle> fromString(Stream<? extends String> values) {
+         return NodeConverter.streamWithFormat(NodeConverter.StringToHandle(values), FORMAT);
       }
       static final public StringHandle[] fromString(String[] values) {
           return NodeConverter.arrayWithFormat(NodeConverter.StringToHandle(values), FORMAT);
@@ -737,15 +754,14 @@ public class BaseProxy {
       NONE, SINGLE_ATOMIC, SINGLE_NODE, MULTIPLE_ATOMICS, MULTIPLE_NODES, MULTIPLE_MIXED;
    }
 
-   public DBFunctionRequest request(String module, ParameterValuesKind paramsKind) {
-      return request(db, endpointDir, module, paramsKind);
+   public DBFunctionRequest request(String defaultModule, ParameterValuesKind paramsKind) {
+      final String module = (endpointExtension == null) ? defaultModule :
+              EXTENSION_PATTERN.matcher(defaultModule).replaceFirst(endpointExtension);
+      DBFunctionRequest request = request(endpointDir, module, paramsKind);
+      // backward-compatible initialization
+      return (db != null) ? request.on(db) : request;
    }
-   static public DBFunctionRequest request(DatabaseClient db, String endpointDir, String module, ParameterValuesKind paramsKind) {
-      if (db == null) {
-         throw new IllegalArgumentException("Cannot connect with null database client");
-      } else if (db.getDatabase() != null) {
-         throw new IllegalArgumentException("Client cannot specify a database - specified: "+db.getDatabase());
-      }
+   static public DBFunctionRequest request(String endpointDir, String module, ParameterValuesKind paramsKind) {
       if (endpointDir == null || endpointDir.length() == 0) {
          throw new IllegalArgumentException("Cannot make requests with null or empty endpoint directory");
       }
@@ -753,7 +769,7 @@ public class BaseProxy {
          throw new IllegalArgumentException("null module");
       }
 
-      return new DBFunctionRequest(((DatabaseClientImpl) db).getServices(), endpointDir, module, paramsKind);
+      return new DBFunctionRequest(endpointDir, module, paramsKind);
    }
 
    static public SingleAtomicCallField atomicParam(String paramName, boolean isNullable, String value) {
@@ -762,10 +778,10 @@ public class BaseProxy {
    static public MultipleAtomicCallField atomicParam(String paramName, boolean isNullable, Stream<String> values) {
       return isParamNull(paramName, isNullable, values) ? null : new UnbufferedMultipleAtomicCallField(paramName, values);
    }
-   static public SingleNodeCallField documentParam(String paramName, boolean isNullable, AbstractWriteHandle value) {
-      return isParamNull(paramName, isNullable, value)  ? null : new UnbufferedSingleNodeCallField(paramName, value);
+   static public SingleNodeCallField documentParam(String paramName, boolean isNullable, BufferableHandle value) {
+      return isParamNull(paramName, isNullable, value)  ? null : new SingleNodeCallField(paramName, value);
    }
-   static public MultipleNodeCallField documentParam(String paramName, boolean isNullable, Stream<? extends AbstractWriteHandle> values) {
+   static public MultipleNodeCallField documentParam(String paramName, boolean isNullable, Stream<? extends BufferableHandle> values) {
       return isParamNull(paramName, isNullable, values) ? null : new UnbufferedMultipleNodeCallField(paramName, values);
    }
    static protected boolean isParamNull(String paramName, boolean isNullable, Object value) {
@@ -785,10 +801,43 @@ public class BaseProxy {
       private SessionState        session;
       private HttpMethod          method = HttpMethod.POST;
       private DBFunctionRequest(RESTServices services, String endpointDir, String module, ParameterValuesKind paramsKind) {
+         this(services, endpointDir + module, paramsKind);
+      }
+      private DBFunctionRequest(RESTServices services, String endpoint, ParameterValuesKind paramsKind, HttpMethod method) {
+         this(services, endpoint, paramsKind);
+         this.method = method;
+      }
+      private DBFunctionRequest(RESTServices services, String endpoint, ParameterValuesKind paramsKind) {
+         this(endpoint, paramsKind);
          this.services   = services;
-         endpoint        = endpointDir + module;
+      }
+      private DBFunctionRequest(String endpointDir, String module, ParameterValuesKind paramsKind) {
+         this(endpointDir + module, paramsKind);
+      }
+      private DBFunctionRequest(String endpoint, ParameterValuesKind paramsKind) {
+         this.endpoint   = endpoint;
          this.paramsKind = paramsKind;
       }
+
+      public DBFunctionRequest withMethod(String method) {
+         this.method = HttpMethod.valueOf(method);
+         return this;
+      }
+
+// TODO: two different classes instead of cloning DBFunctionRequest; distinguish in signatures
+      public DBFunctionRequest on(DatabaseClient db) {
+         if (db == null) {
+            throw new IllegalArgumentException("Cannot connect with null database client");
+         } else if (!(db instanceof DatabaseClientImpl)) {
+            throw new IllegalArgumentException("Cannot connect with non-standard implementation of database client");
+         } else if (db.getDatabase() != null) {
+            throw new IllegalArgumentException("Client cannot specify a database - specified: "+db.getDatabase());
+         }
+         return new DBFunctionRequest(
+             ((DatabaseClientImpl) db).getServices(), this.endpoint, this.paramsKind, this.method
+         );
+      }
+
       public DBFunctionRequest withSession() {
          return this;
       }
@@ -802,10 +851,6 @@ public class BaseProxy {
       }
       public DBFunctionRequest withParams(CallField... params) {
          this.params = params;
-         return this;
-      }
-      public DBFunctionRequest withMethod(String method) {
-         this.method = HttpMethod.valueOf(method);
          return this;
       }
 
@@ -839,20 +884,21 @@ public class BaseProxy {
       }
 
       public void responseNone() {
-         CallRequest requestdef = makeRequest();
-         CallResponse responsedef = requestdef.withEmptyResponse();
+         makeRequest().withEmptyResponse();
       }
       public SingleCallResponse responseSingle(boolean isNullable, Format returnFormat) {
-         CallRequest requestdef = makeRequest();
-         SingleCallResponse responsedef = requestdef.withDocumentResponse((returnFormat == null) ? Format.TEXT : returnFormat);
+         SingleCallResponse responsedef = makeRequest().withDocumentResponse(
+                 (returnFormat == null) ? Format.TEXT : returnFormat
+         );
          if (responsedef.isNull() && !isNullable) {
             throw new RequiredReturnException("null for required single return value");
          }
          return responsedef;
       }
       public MultipleCallResponse responseMultiple(boolean isNullable, Format returnFormat) {
-         CallRequest requestdef  = makeRequest();
-         MultipleCallResponse responsedef = requestdef.withMultipartMixedResponse((returnFormat == null) ? Format.TEXT : returnFormat);
+         MultipleCallResponse responsedef = makeRequest().withMultipartMixedResponse(
+                 (returnFormat == null) ? Format.TEXT : returnFormat
+         );
          if (responsedef.isNull() && !isNullable) {
             throw new RequiredReturnException("null for required multiple return value");
          }

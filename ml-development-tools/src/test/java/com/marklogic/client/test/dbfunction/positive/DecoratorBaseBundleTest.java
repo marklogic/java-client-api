@@ -26,8 +26,8 @@ import java.io.Reader;
 
 import static org.junit.Assert.*;
 
-public class DecoratorDefaultBundleTest {
-    DecoratorDefaultBundle testObj = DecoratorDefaultBundle.on(DBFunctionTestUtil.db);
+public class DecoratorBaseBundleTest {
+    DecoratorBaseBundle testObj = DecoratorBaseBundle.on(DBFunctionTestUtil.db);
 
     @Test
     public void testDocify() {

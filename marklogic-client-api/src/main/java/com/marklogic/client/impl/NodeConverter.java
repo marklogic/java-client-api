@@ -256,6 +256,9 @@ public class NodeConverter {
    static public Stream<BytesHandle> BytesToHandle(Stream<? extends byte[]> values) {
       return (values == null) ? null : values.map(NodeConverter::BytesToHandle);
    }
+   static public BytesHandle[] BytesToHandle(byte[][] values) {
+      return (values == null) ? null : convert(values, new BytesHandle[values.length], NodeConverter::BytesToHandle);
+   }
    static public BufferableHandle[] BytesToBufferableHandle(byte[][] values) {
       return convert(values, NodeConverter::BytesToHandle);
    }

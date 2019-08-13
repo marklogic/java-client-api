@@ -1,4 +1,0 @@
-{
-  "endpointDirectory" : "/dbf/test/decoratorDefault/",
-  "$javaClass" : "com.marklogic.client.test.dbfunction.positive.DecoratorDefaultBundle"
-}

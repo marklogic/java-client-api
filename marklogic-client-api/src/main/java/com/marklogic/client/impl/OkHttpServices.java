@@ -5784,23 +5784,20 @@ public class OkHttpServices implements RESTServices {
                 );
           }
         } else if (param instanceof SingleNodeCallField) {
-          AbstractWriteHandle paramValue = ((SingleNodeCallField) param).getParamValue();
+          SingleNodeCallField singleNodeParam = (SingleNodeCallField) param;
+          BufferableHandle paramValue = singleNodeParam.getParamValue();
           if (paramValue != null) {
             HandleImplementation handleBase = HandleAccessor.as(paramValue);
             if(! handleBase.isResendable()) {
-                if(param instanceof BufferedSingleNodeCallField) {
-                    BytesHandle bytesHandle = new BytesHandle((BufferableHandle) handleBase);
-                    ((BufferedSingleNodeCallField) param).setParamValue(bytesHandle);
+                BytesHandle bytesHandle = new BytesHandle(paramValue);
+                singleNodeParam.setParamValue(bytesHandle);
                     paramValue = bytesHandle;
                 }
-                else
-                    hasStreamingPartCondition.set();
-            }
             hasValue.set();
             multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue));
           }
         } else if (param instanceof UnbufferedMultipleNodeCallField) {
-          Stream<? extends AbstractWriteHandle> paramValues = ((UnbufferedMultipleNodeCallField) param).getParamValues();
+          Stream<? extends BufferableHandle> paramValues = ((UnbufferedMultipleNodeCallField) param).getParamValues();
           if (paramValues != null) {
             paramValues
                 .filter(paramValue -> paramValue != null)

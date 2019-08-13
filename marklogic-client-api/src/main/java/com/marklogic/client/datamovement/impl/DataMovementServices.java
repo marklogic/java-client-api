@@ -21,8 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.dataservices.impl.CallBatcher;
-import com.marklogic.client.dataservices.impl.CallBatcherImpl;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.datamovement.Batcher;
@@ -85,10 +83,6 @@ public class DataMovementServices {
   public JobTicket startJob(QueryBatcher batcher, ConcurrentHashMap<String, JobTicket> activeJobs) {
     return startJobImpl((QueryBatcherImpl) batcher, JobType.QUERY_BATCHER, activeJobs)
         .withQueryBatcher((QueryBatcherImpl) batcher);
-  }
-  public JobTicket startJob(CallBatcher batcher, ConcurrentHashMap<String, JobTicket> activeJobs) {
-    return startJobImpl((CallBatcherImpl) batcher, JobType.CALL_BATCHER, activeJobs)
-            .withCallBatcher((CallBatcherImpl) batcher);
   }
 
   private JobTicketImpl startJobImpl(

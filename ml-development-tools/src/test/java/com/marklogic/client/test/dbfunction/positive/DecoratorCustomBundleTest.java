@@ -16,17 +16,23 @@
 package com.marklogic.client.test.dbfunction.positive;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.test.dbfunction.DBFunctionTestUtil;
 import org.junit.Test;
+
+import java.io.File;
 
 import static org.junit.Assert.*;
 
 public class DecoratorCustomBundleTest {
-    // execute the same implementation via direct interface and via a customized implementation of an interface
+    final static private String SOURCE_SERVICE =
+            "src/test/ml-modules/root/dbfunctiondef/positive/decoratorCustom/service.json";
+
+    // execute the same implementation via direct interface and
     DecoratorCustomBundle  testDirectInterface = DecoratorCustomBundle.on(DBFunctionTestUtil.db);
-    DecoratorDefaultBundle testCustomOverride  = DecoratorDefaultBundle.on(DBFunctionTestUtil.db,
-        new StringHandle("{\"endpointDirectory\":\"/dbf/test/decoratorCustom/\"}")
+    // via a customized implementation of the same interface
+    DecoratorBaseBundle testCustomOverride  = DecoratorBaseBundle.on(
+        DBFunctionTestUtil.db, new FileHandle(new File(SOURCE_SERVICE))
         );
 
     @Test

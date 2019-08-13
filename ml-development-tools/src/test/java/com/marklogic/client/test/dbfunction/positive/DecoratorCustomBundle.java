@@ -44,25 +44,33 @@ public interface DecoratorCustomBundle {
      */
     static DecoratorCustomBundle on(DatabaseClient db, JSONWriteHandle serviceDeclaration) {
         final class DecoratorCustomBundleImpl implements DecoratorCustomBundle {
+            private DatabaseClient dbClient;
             private BaseProxy baseProxy;
 
+            private BaseProxy.DBFunctionRequest req_docify;
+
             private DecoratorCustomBundleImpl(DatabaseClient dbClient, JSONWriteHandle servDecl) {
-                baseProxy = new BaseProxy(dbClient, "/dbf/test/decoratorCustom/", servDecl);
+                this.dbClient  = dbClient;
+                this.baseProxy = new BaseProxy("/dbf/test/decoratorCustom/", servDecl);
+
+                this.req_docify = this.baseProxy.request(
+                    "docify.xqy", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC);
             }
 
             @Override
             public com.fasterxml.jackson.databind.JsonNode docify(String value) {
+                return docify(
+                    this.req_docify.on(this.dbClient), value
+                    );
+            }
+            private com.fasterxml.jackson.databind.JsonNode docify(BaseProxy.DBFunctionRequest request, String value) {
               return BaseProxy.JsonDocumentType.toJsonNode(
-                baseProxy
-                .request("docify.sjs", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC)
-                .withSession()
-                .withParams(
-                    BaseProxy.atomicParam("value", true, BaseProxy.StringType.fromString(value)))
-                .withMethod("POST")
-                .responseSingle(true, Format.JSON)
+                request
+                      .withParams(
+                          BaseProxy.atomicParam("value", true, BaseProxy.StringType.fromString(value))
+                          ).responseSingle(true, Format.JSON)
                 );
             }
-
         }
 
         return new DecoratorCustomBundleImpl(db, serviceDeclaration);
