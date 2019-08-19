@@ -425,7 +425,7 @@ public class StructuredQueryBuilder {
    * @param query    the query definition
    * @return    the StructuredQueryDefinition for the locks query
    */
-  public LocksQuery locks(StructuredQueryDefinition query) {
+  public StructuredQueryDefinition locks(StructuredQueryDefinition query) {
     checkQuery(query);
     return new LocksQuery(query);
   }
@@ -447,7 +447,7 @@ public class StructuredQueryBuilder {
    * @param uris    the identifiers for the criteria collections
    * @return    the StructuredQueryDefinition for the collection query
    */
-  public CollectionQuery collection(String... uris) {
+  public StructuredQueryDefinition collection(String... uris) {
     return new CollectionQuery(uris);
   }
 
@@ -458,7 +458,7 @@ public class StructuredQueryBuilder {
    * @param uris    the identifiers for the criteria directories
    * @return    the StructuredQueryDefinition for the directory query
    */
-  public DirectoryQuery directory(boolean isInfinite, String... uris) {
+  public StructuredQueryDefinition directory(boolean isInfinite, String... uris) {
     return new DirectoryQuery(isInfinite, uris);
   }
 
@@ -470,7 +470,7 @@ public class StructuredQueryBuilder {
    * @param uris    the identifiers for the criteria directories
    * @return    the StructuredQueryDefinition for the directory query
    */
-  public DirectoryQuery directory(int depth, String... uris) {
+  public StructuredQueryDefinition directory(int depth, String... uris) {
     return new DirectoryQuery(depth, uris);
   }
 
@@ -479,7 +479,7 @@ public class StructuredQueryBuilder {
    * @param uris    the identifiers for the documents
    * @return    the StructuredQueryDefinition for the document query
    */
-  public DocumentQuery document(String... uris) {
+  public StructuredQueryDefinition document(String... uris) {
     return new DocumentQuery(uris);
   }
 
@@ -1114,7 +1114,7 @@ public class StructuredQueryBuilder {
    * @param text    the input to the custom query
    * @return    the StructuredQueryDefinition for the custom constraint query
    */
-  public CustomConstraintQuery customConstraint(String constraintName, String... text) {
+  public StructuredQueryDefinition customConstraint(String constraintName, String... text) {
     return new CustomConstraintQuery(constraintName, text);
   }
 
