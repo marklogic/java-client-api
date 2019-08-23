@@ -15,8 +15,6 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.*;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.BasicAuthContext;
@@ -1244,25 +1242,29 @@ public class OkHttpServices implements RESTServices {
   public boolean exists(String uri) throws ForbiddenUserException, FailedRequestException {
     return headImpl(null, uri, null, setupRequest(uri, null)) == null ? false : true;
   }
-
+  
+  @Override
+  public ConnectionResult checkConnection() {
+	  Request.Builder request = new Request.Builder()
+		        .url(this.baseUri);
+	  Response response = headImplExec(null, this.baseUri.uri().toString(), null, request);
+	  ConnectionResult connectionResult = new ConnectionResult();
+	  int statusCode = response.code();
+	  if(statusCode < 300) {
+		  connectionResult.setConnected(true);
+	      connectionResult.setStatusCode(statusCode);
+	  }
+	  else {
+		  connectionResult.setConnected(false);
+		  connectionResult.setStatusCode(statusCode);
+		  connectionResult.setErrorMessage(getReasonPhrase(response));
+	  }
+	  return connectionResult;
+  }
+  
   private Response headImpl(RequestLogger reqlog, String uri,
                             Transaction transaction, Request.Builder requestBldr) {
-    if (uri == null) {
-      throw new IllegalArgumentException(
-        "Existence check for document identifier without uri");
-    }
-
-    logger.debug("Requesting head for {} in transaction {}", uri, getTransactionId(transaction));
-
-    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
-    requestBldr = addTelemetryAgentId(requestBldr);
-
-    Function<Request.Builder, Response> doHeadFunction = new Function<Request.Builder, Response>() {
-      public Response apply(Request.Builder funcBuilder) {
-        return sendRequestOnce(funcBuilder.head().build());
-      }
-    };
-    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doHeadFunction, null);
+    Response response = headImplExec(reqlog, uri, transaction, requestBldr);
     int status = response.code();
     if (status != STATUS_OK) {
       if (status == STATUS_NOT_FOUND) {
@@ -1282,6 +1284,26 @@ public class OkHttpServices implements RESTServices {
     return response;
   }
 
+  private Response headImplExec(RequestLogger reqlog, String uri,
+          Transaction transaction, Request.Builder requestBldr) {
+	  if (uri == null) {
+	      throw new IllegalArgumentException(
+	        "Existence check for document identifier without uri");
+	    }
+
+	    logger.debug("Requesting head for {} in transaction {}", uri, getTransactionId(transaction));
+
+	    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+	    requestBldr = addTelemetryAgentId(requestBldr);
+
+	    Function<Request.Builder, Response> doHeadFunction = new Function<Request.Builder, Response>() {
+	      public Response apply(Request.Builder funcBuilder) {
+	        return sendRequestOnce(funcBuilder.head().build());
+	      }
+	    };
+	    return sendRequestWithRetry(requestBldr, (transaction == null), doHeadFunction, null);
+  }
+  
   @Override
   public TemporalDescriptor putDocument(RequestLogger reqlog, DocumentDescriptor desc,
                                         Transaction transaction, Set<Metadata> categories,
@@ -6269,5 +6291,29 @@ public class OkHttpServices implements RESTServices {
       if (!is)
         is = true;
     }
+  }
+  
+  public class ConnectionResult {
+	  private boolean connected = false;
+	  private int statusCode;
+	  private String errorMessage;
+	  public boolean isConnected() {
+		return connected;
+	}
+	public void setConnected(boolean connected) {
+		this.connected = connected;
+	}
+	public int getStatusCode() {
+		return statusCode;
+	}
+	public void setStatusCode(int statusCode) {
+		this.statusCode = statusCode;
+	}
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
+	}
   }
 }
