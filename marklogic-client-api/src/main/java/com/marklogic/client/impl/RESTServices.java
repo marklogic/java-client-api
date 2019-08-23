@@ -42,6 +42,7 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
+import com.marklogic.client.impl.OkHttpServices.ConnectionResult;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
@@ -281,7 +282,8 @@ public interface RESTServices {
   public <R extends AbstractReadHandle> R deleteResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params, R output)
     throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-
+  public ConnectionResult checkConnection();
+  
   // backdoor
   public Object getClientImplementation();
 
