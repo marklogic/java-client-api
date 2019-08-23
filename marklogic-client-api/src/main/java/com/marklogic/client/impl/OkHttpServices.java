@@ -16,6 +16,7 @@
 package com.marklogic.client.impl;
 
 import com.marklogic.client.*;
+import com.marklogic.client.DatabaseClient.ConnectionResult;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.BasicAuthContext;
 import com.marklogic.client.DatabaseClientFactory.CertificateAuthContext;
@@ -1248,18 +1249,17 @@ public class OkHttpServices implements RESTServices {
 	  Request.Builder request = new Request.Builder()
 		        .url(this.baseUri);
 	  Response response = headImplExec(null, this.baseUri.uri().toString(), null, request);
-	  ConnectionResult connectionResult = new ConnectionResult();
+	  ConnectionResultImpl connectionResultImpl = new ConnectionResultImpl();
 	  int statusCode = response.code();
 	  if(statusCode < 300) {
-		  connectionResult.setConnected(true);
-	      connectionResult.setStatusCode(statusCode);
+		  connectionResultImpl.setConnected(true);
 	  }
 	  else {
-		  connectionResult.setConnected(false);
-		  connectionResult.setStatusCode(statusCode);
-		  connectionResult.setErrorMessage(getReasonPhrase(response));
+		  connectionResultImpl.setConnected(false);
+		  connectionResultImpl.setStatusCode(statusCode);
+		  connectionResultImpl.setErrorMessage(getReasonPhrase(response));
 	  }
-	  return connectionResult;
+	  return connectionResultImpl;
   }
   
   private Response headImpl(RequestLogger reqlog, String uri,
@@ -6293,26 +6293,35 @@ public class OkHttpServices implements RESTServices {
     }
   }
   
-  public class ConnectionResult {
-	  private boolean connected = false;
-	  private int statusCode;
-	  private String errorMessage;
-	  public boolean isConnected() {
+  class ConnectionResultImpl implements ConnectionResult {
+	private boolean connected = false;
+	private int statusCode;
+	private String errorMessage;
+
+	@Override
+	public boolean isConnected() {
 		return connected;
 	}
-	public void setConnected(boolean connected) {
+
+	private void setConnected(boolean connected) {
 		this.connected = connected;
 	}
-	public int getStatusCode() {
+
+	@Override
+	public Integer getStatusCode() {
 		return statusCode;
 	}
-	public void setStatusCode(int statusCode) {
+
+	private void setStatusCode(int statusCode) {
 		this.statusCode = statusCode;
 	}
+
+	@Override
 	public String getErrorMessage() {
 		return errorMessage;
 	}
-	public void setErrorMessage(String errorMessage) {
+
+	private void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
 	}
   }

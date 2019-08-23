@@ -27,7 +27,6 @@ import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.extensions.ResourceManager;
-import com.marklogic.client.impl.OkHttpServices.ConnectionResult;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.alerting.RuleManager;
@@ -229,10 +228,16 @@ public interface DatabaseClient {
   
   /**
    * Checks if the connection is valid.
-   * @return {@link ConnectionResult}  with a connected property of true or false. 
+   * @return {@link ConnectionResult} with a connected property of true or false. 
    *  In the false case it contains the errorMessage property identifying the failure.
    */
   ConnectionResult checkConnection();
+  
+  static public interface ConnectionResult {
+	  boolean isConnected();
+	  Integer getStatusCode();
+	  String getErrorMessage();  
+  }
 
   String getHost();
 

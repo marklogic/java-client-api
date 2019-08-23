@@ -24,6 +24,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClient.ConnectionResult;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.alerting.RuleManager;
@@ -33,7 +34,6 @@ import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.eval.ServerEvaluationCall;
-import com.marklogic.client.impl.OkHttpServices.ConnectionResult;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.util.RequestLogger;
@@ -130,7 +130,6 @@ public class DatabaseClientTest {
   
     ConnectionResult connResult = marklogic.checkConnection();
     assertTrue(connResult.isConnected());
-    assertTrue(connResult.getStatusCode() < 300);
   }
   
   @Test

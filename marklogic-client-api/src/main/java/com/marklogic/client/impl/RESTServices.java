@@ -42,7 +42,7 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
-import com.marklogic.client.impl.OkHttpServices.ConnectionResult;
+import com.marklogic.client.DatabaseClient.ConnectionResult;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
