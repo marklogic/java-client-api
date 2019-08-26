@@ -35,7 +35,6 @@ import com.marklogic.client.semantics.SPARQLQueryManager;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.extensions.ResourceManager;
-import com.marklogic.client.impl.OkHttpServices.ConnectionResult;
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.alerting.RuleManager;
