@@ -88,15 +88,14 @@ public class TestSearchMultipleForests extends BasicJavaClientREST {
     // Do forest specific searches.
     queryMgr.search(querydef, sHandleOnForest1, fNames[0]);
     System.out.println("Documents available on Forest 1 is " + sHandleOnForest1.getTotalResults());
-    assertTrue("Documents count on Forest 1 is ", sHandleOnForest1.getTotalResults() == 10);
+    assertTrue("Documents count on Forest 1 is ", sHandleOnForest1.getTotalResults() >= 0);
 
     queryMgr.search(querydef, sHandleOnForest2, fNames[1]);
     System.out.println("Documents available on Forest 2 is " + sHandleOnForest2.getTotalResults());
-    assertTrue("Documents count on Forest 2 is ", sHandleOnForest2.getTotalResults() == 10);
+    assertTrue("Documents count on Forest 2 is ", sHandleOnForest2.getTotalResults() >= 0);
 
-    // Assert on the total from individual forest counts. Round robin scheme
-    // yeilds 10 on F1 and 10 on F2.
-    // Future assignments schemes?
+    // Assert on the total from individual forest counts. Assignment scheme changed as of 10.0.2 ML Server.
+
     assertTrue("Document count is incorrect", sHandleOnForest1.getTotalResults() + sHandleOnForest2.getTotalResults() == 20);
 
     System.out.println(sHandle.getTotalResults());
@@ -127,9 +126,9 @@ public class TestSearchMultipleForests extends BasicJavaClientREST {
     sHandleOnForest2 = new SearchHandle();
 
     queryMgr.search(querydef, sHandleOnForest1, 0, t, fNames[0]);
-    assertTrue("Documents count on Forest 1 is ", sHandleOnForest1.getTotalResults() == 10);
+    assertTrue("Documents count on Forest 1 is ", sHandleOnForest1.getTotalResults() >= 0);
     queryMgr.search(querydef, sHandleOnForest2, 0, t, fNames[1]);
-    assertTrue("Documents count on Forest 2 is ", sHandleOnForest2.getTotalResults() == 10);
+    assertTrue("Documents count on Forest 2 is ", sHandleOnForest2.getTotalResults() >= 0);
     t.rollback();
 
     client.release();
