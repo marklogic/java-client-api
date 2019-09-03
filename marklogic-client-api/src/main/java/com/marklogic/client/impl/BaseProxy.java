@@ -752,6 +752,14 @@ public class BaseProxy {
    }
    public enum ParameterValuesKind {
       NONE, SINGLE_ATOMIC, SINGLE_NODE, MULTIPLE_ATOMICS, MULTIPLE_NODES, MULTIPLE_MIXED;
+
+      static public ParameterValuesKind forNodeCount(int nodeCount) {
+         switch (nodeCount) {
+            case 0:  return NONE;
+            case 1:  return SINGLE_NODE;
+            default: return MULTIPLE_NODES;
+         }
+      }
    }
 
    public DBFunctionRequest request(String defaultModule, ParameterValuesKind paramsKind) {
@@ -770,6 +778,9 @@ public class BaseProxy {
       }
 
       return new DBFunctionRequest(endpointDir, module, paramsKind);
+   }
+   static public DBFunctionRequest moduleRequest(String endpoint, ParameterValuesKind paramsKind) {
+      return new DBFunctionRequest(endpoint, paramsKind);
    }
 
    static public SingleAtomicCallField atomicParam(String paramName, boolean isNullable, String value) {
