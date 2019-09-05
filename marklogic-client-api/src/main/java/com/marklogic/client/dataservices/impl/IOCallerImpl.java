@@ -26,9 +26,9 @@ import com.marklogic.client.io.marker.JSONWriteHandle;
 import java.io.InputStream;
 import java.util.stream.Stream;
 
-class IOCallerImpl extends BaseCallerImpl {
+abstract class IOCallerImpl extends BaseCallerImpl {
     private JsonNode      apiDeclaration;
-    private String        endpoint;
+    private String        endpointPath;
     private ParamdefImpl  endpointStateParamdef;
     private ParamdefImpl  sessionParamdef;
     private ParamdefImpl  workUnitParamdef;
@@ -36,12 +36,6 @@ class IOCallerImpl extends BaseCallerImpl {
     private ReturndefImpl returndef;
 
     private BaseProxy.DBFunctionRequest requester;
-
-/*
-TODO:
-     unit tests
-     cache db, session, and callerImpl in the bulk caller instance
- */
 
     IOCallerImpl(JSONWriteHandle apiDeclaration) {
         super();
@@ -53,8 +47,8 @@ TODO:
             );
         }
 
-        this.endpoint = getText(this.apiDeclaration.get("endpoint"));
-        if (this.endpoint == null || this.endpoint.length() == 0) {
+        this.endpointPath = getText(this.apiDeclaration.get("endpoint"));
+        if (this.endpointPath == null || this.endpointPath.length() == 0) {
             throw new IllegalArgumentException(
                     "no endpoint in endpoint declaration: " + this.apiDeclaration.toString()
             );
@@ -138,17 +132,17 @@ TODO:
         if (this.endpointStateParamdef != null) {
             if (this.returndef == null) {
                 throw new IllegalArgumentException(
-                        "endpointState parameter requires return in endpoint: "+this.endpoint
+                        "endpointState parameter requires return in endpoint: "+getEndpointPath()
                 );
             } else if (this.endpointStateParamdef.getFormat() != this.returndef.getFormat()) {
                 throw new IllegalArgumentException(
-                        "endpointState format must match return format in endpoint: "+this.endpoint
+                        "endpointState format must match return format in endpoint: "+getEndpointPath()
                 );
             }
         }
 
         this.requester = getBaseProxy().moduleRequest(
-                this.endpoint, BaseProxy.ParameterValuesKind.forNodeCount(nodeArgCount)
+                getEndpointPath(), BaseProxy.ParameterValuesKind.forNodeCount(nodeArgCount)
         );
     }
 
@@ -160,58 +154,58 @@ TODO:
     BaseProxy.DBFunctionRequest makeRequest(
             DatabaseClient db, InputStream endpointState, SessionState session, InputStream workUnit, Stream<InputStream> input
     ) {
-        BaseProxy.DBFunctionRequest request = this.requester.on(db);
+        BaseProxy.DBFunctionRequest request = getRequester().on(db);
 
-        if (this.sessionParamdef != null) {
+        if (getSessionParamdef() != null) {
             request = request.withSession(
-                    this.sessionParamdef.getParamName(), session, this.sessionParamdef.isNullable()
+                    getSessionParamdef().getParamName(), session, getSessionParamdef().isNullable()
             );
         } else if (session != null) {
-            throw new IllegalArgumentException("session not supported by endpoint: "+this.endpoint);
+            throw new IllegalArgumentException("session not supported by endpoint: "+getEndpointPath());
         }
 
         int fieldNum = 0;
 
         RESTServices.CallField endpointStateField = null;
-        if (this.endpointStateParamdef != null) {
+        if (getEndpointStateParamdef() != null) {
             endpointStateField = BaseProxy.documentParam(
                     "endpointState",
-                    this.endpointStateParamdef.isNullable(),
+                    getEndpointStateParamdef().isNullable(),
                     NodeConverter.withFormat(
-                            NodeConverter.InputStreamToHandle(endpointState), this.endpointStateParamdef.getFormat()
+                            NodeConverter.InputStreamToHandle(endpointState), getEndpointStateParamdef().getFormat()
                     ));
             if (endpointState != null)
                 fieldNum++;
         } else if (endpointState != null) {
-            throw new IllegalArgumentException("endpointState parameter not supported by endpoint: "+this.endpoint);
+            throw new IllegalArgumentException("endpointState parameter not supported by endpoint: "+getEndpointPath());
         }
 
         RESTServices.CallField workUnitField = null;
-        if (this.workUnitParamdef != null) {
+        if (getWorkUnitParamdef() != null) {
             workUnitField = BaseProxy.documentParam(
                     "workUnit",
-                    this.workUnitParamdef.isNullable(),
+                    getWorkUnitParamdef().isNullable(),
                     NodeConverter.withFormat(
-                            NodeConverter.InputStreamToHandle(workUnit), this.workUnitParamdef.getFormat()
+                            NodeConverter.InputStreamToHandle(workUnit), getWorkUnitParamdef().getFormat()
                     ));
             if (workUnit != null)
                 fieldNum++;
         } else if (endpointState != null) {
-            throw new IllegalArgumentException("workUnit parameter not supported by endpoint: "+this.endpoint);
+            throw new IllegalArgumentException("workUnit parameter not supported by endpoint: "+getEndpointPath());
         }
 
         RESTServices.CallField inputField = null;
-        if (this.inputParamdef != null) {
+        if (getInputParamdef() != null) {
             inputField = BaseProxy.documentParam(
                     "input",
-                    this.inputParamdef.isNullable(),
+                    getInputParamdef().isNullable(),
                     NodeConverter.streamWithFormat(
-                            NodeConverter.InputStreamToHandle(input), this.inputParamdef.getFormat()
+                            NodeConverter.InputStreamToHandle(input), getInputParamdef().getFormat()
                     ));
             if (input != null)
                 fieldNum++;
         } else if (input != null) {
-            throw new IllegalArgumentException("input parameter not supported by endpoint: "+this.endpoint);
+            throw new IllegalArgumentException("input parameter not supported by endpoint: "+getEndpointPath());
         }
 
         if (fieldNum > 0) {
@@ -233,59 +227,61 @@ TODO:
         return request;
     }
     InputStream responseMaybe(BaseProxy.DBFunctionRequest request) {
-        if (this.returndef == null) {
+        if (getReturndef() == null) {
             request.responseNone();
             return null;
-        } else if (this.returndef.isMultiple()) {
-            throw new UnsupportedOperationException("multiple return from endpoint: "+this.endpoint);
+        } else if (getReturndef().isMultiple()) {
+            throw new UnsupportedOperationException("multiple return from endpoint: "+getEndpointPath());
         }
 
-        return request.responseSingle(this.returndef.isNullable(), this.returndef.getFormat())
+        return request.responseSingle(getReturndef().isNullable(), getReturndef().getFormat())
                       .asInputStream();
     }
     InputStream responseSingle(BaseProxy.DBFunctionRequest request) {
-        if (this.returndef == null) {
-            throw new UnsupportedOperationException("no return from endpoint: "+this.endpoint);
-        } else if (this.returndef.isMultiple()) {
-            throw new UnsupportedOperationException("multiple return from endpoint: "+this.endpoint);
+        if (getReturndef() == null) {
+            throw new UnsupportedOperationException("no return from endpoint: "+getEndpointPath());
+        } else if (getReturndef().isMultiple()) {
+            throw new UnsupportedOperationException("multiple return from endpoint: "+getEndpointPath());
         }
 
-        return request.responseSingle(this.returndef.isNullable(), this.returndef.getFormat())
+        return request.responseSingle(getReturndef().isNullable(), getReturndef().getFormat())
                       .asInputStream();
     }
     Stream<InputStream> responseMultiple(BaseProxy.DBFunctionRequest request) {
-        if (this.returndef == null) {
-            throw new UnsupportedOperationException("no return from endpoint: "+this.endpoint);
-        } else if (!this.returndef.isMultiple()) {
-            throw new UnsupportedOperationException("single return from endpoint: "+this.endpoint);
+        if (getReturndef() == null) {
+            throw new UnsupportedOperationException("no return from endpoint: "+getEndpointPath());
+        } else if (!getReturndef().isMultiple()) {
+            throw new UnsupportedOperationException("single return from endpoint: "+getEndpointPath());
         }
 
-        return request.responseMultiple(this.returndef.isNullable(), this.returndef.getFormat())
+        return request.responseMultiple(getReturndef().isNullable(), getReturndef().getFormat())
                       .asStreamOfInputStream();
     }
 
     JsonNode getApiDeclaration() {
-        return apiDeclaration;
+        return this.apiDeclaration;
     }
-    String getEndpoint() {
-        return endpoint;
+
+    String getEndpointPath() {
+        return this.endpointPath;
     }
+
     ParamdefImpl getEndpointStateParamdef() {
-        return endpointStateParamdef;
+        return this.endpointStateParamdef;
     }
     ParamdefImpl getSessionParamdef() {
-        return sessionParamdef;
+        return this.sessionParamdef;
     }
     ParamdefImpl getWorkUnitParamdef() {
-        return workUnitParamdef;
+        return this.workUnitParamdef;
     }
     ParamdefImpl getInputParamdef() {
-        return inputParamdef;
+        return this.inputParamdef;
     }
     ReturndefImpl getReturndef() {
-        return returndef;
+        return this.returndef;
     }
     BaseProxy.DBFunctionRequest getRequester() {
-        return requester;
+        return this.requester;
     }
 }

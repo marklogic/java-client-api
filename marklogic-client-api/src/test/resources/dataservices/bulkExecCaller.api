@@ -1,0 +1,19 @@
+{
+  "endpoint": "/marklogic/ds/test/bulkExecCaller.sjs",
+  "params": [ {
+    "name":     "endpointState",
+    "datatype": "jsonDocument",
+    "multiple": false,
+    "nullable": true
+    }, {
+    "name":     "workUnit",
+    "datatype": "jsonDocument",
+    "multiple": false,
+    "nullable": true
+  } ],
+  "return": {
+    "datatype": "jsonDocument",
+    "multiple": false,
+    "nullable": true
+  }
+}

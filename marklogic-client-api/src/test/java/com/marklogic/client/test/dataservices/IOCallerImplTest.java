@@ -16,25 +16,15 @@
 package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.dataservices.impl.ExecCallerImpl;
 import com.marklogic.client.dataservices.impl.InputCallerImpl;
 import com.marklogic.client.dataservices.impl.InputOutputCallerImpl;
 import com.marklogic.client.dataservices.impl.OutputCallerImpl;
-import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.document.TextDocumentManager;
-import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.test.Common;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.stream.Stream;
@@ -42,67 +32,35 @@ import java.util.stream.Stream;
 import static org.junit.Assert.*;
 
 public class IOCallerImplTest {
-    private final static String TEST_DIR = "dataservices";
-
-    private static DatabaseClient         db         = Common.newClient();
-    private static DatabaseClient         modDb      = Common.newEvalClient("java-unittest-modules");
-    private static DocumentMetadataHandle scriptMeta = new DocumentMetadataHandle();
-    private static DocumentMetadataHandle docMeta    = new DocumentMetadataHandle();
-    private static TextDocumentManager    modMgr     = modDb.newTextDocumentManager();
-
-    private final ObjectMapper mapper = new ObjectMapper();
-
-    @BeforeClass
-    public static void beforeClass() {
-        DocumentMetadataHandle.DocumentPermissions perms = scriptMeta.getPermissions();
-        perms.add("rest-reader",
-                DocumentMetadataHandle.Capability.READ,
-                DocumentMetadataHandle.Capability.EXECUTE);
-        perms.add("rest-writer",
-                DocumentMetadataHandle.Capability.READ,
-                DocumentMetadataHandle.Capability.UPDATE,
-                DocumentMetadataHandle.Capability.EXECUTE);
-
-        perms = docMeta.getPermissions();
-        perms.add("rest-reader",
-                DocumentMetadataHandle.Capability.READ);
-        perms.add("rest-writer",
-                DocumentMetadataHandle.Capability.READ,
-                DocumentMetadataHandle.Capability.UPDATE);
-    }
-    @AfterClass
-    public static void afterClass() {
-    }
-
     @Test
     public void testExecCallerImpl() throws IOException {
         String apiName = "execCallerImpl.api";
 
-        ObjectNode apiObj     = readApi(apiName);
-        String     scriptPath = getScriptPath(apiObj);
-        String     apiPath    = getApiPath(scriptPath);
-        load(apiName, apiObj, scriptPath, apiPath);
+        ObjectNode apiObj     = IOTestUtil.readApi(apiName);
+        String     scriptPath = IOTestUtil.getScriptPath(apiObj);
+        String     apiPath    = IOTestUtil.getApiPath(scriptPath);
+        IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
 
         String endpointState = getEndpointState();
         String workUnit      = getWorkUnit();
 
         ExecCallerImpl caller = new ExecCallerImpl(new JacksonHandle(apiObj));
         InputStream    result = caller.call(
-                db, asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit)
+                IOTestUtil.db, asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit)
         );
 
         checkNoInputState(endpointState, workUnit, result);
 
-        modMgr.delete(scriptPath, apiPath);
+        IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
     @Test
     public void testInputCallerImpl() throws IOException {
         String apiName = "inputCallerImpl.api";
 
-        ObjectNode apiObj     = readApi(apiName);
-        String     scriptPath = getScriptPath(apiObj);
-        String     apiPath    = getApiPath(scriptPath);
-        load(apiName, apiObj, scriptPath, apiPath);
+        ObjectNode apiObj     = IOTestUtil.readApi(apiName);
+        String     scriptPath = IOTestUtil.getScriptPath(apiObj);
+        String     apiPath    = IOTestUtil.getApiPath(scriptPath);
+        IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
 
         String              endpointState = getEndpointState();
         String              workUnit      = getWorkUnit();
@@ -113,21 +71,21 @@ public class IOCallerImplTest {
 
         InputCallerImpl caller = new InputCallerImpl(new JacksonHandle(apiObj));
         InputStream     result = caller.call(
-                db, asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit), input
+                IOTestUtil.db, asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit), input
         );
 
         checkInputState(endpointState, workUnit, result);
 
-        modMgr.delete(scriptPath, apiPath);
+        IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
     @Test
     public void testInputOutputCallerImpl() throws IOException {
         String apiName = "inputOutputCallerImpl.api";
 
-        ObjectNode apiObj     = readApi(apiName);
-        String     scriptPath = getScriptPath(apiObj);
-        String     apiPath    = getApiPath(scriptPath);
-        load(apiName, apiObj, scriptPath, apiPath);
+        ObjectNode apiObj     = IOTestUtil.readApi(apiName);
+        String     scriptPath = IOTestUtil.getScriptPath(apiObj);
+        String     apiPath    = IOTestUtil.getApiPath(scriptPath);
+        IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
 
         String              endpointState = getEndpointState();
         String              workUnit      = getWorkUnit();
@@ -138,33 +96,33 @@ public class IOCallerImplTest {
 
         InputOutputCallerImpl caller = new InputOutputCallerImpl(new JacksonHandle(apiObj));
         Stream<InputStream>   result = caller.call(
-                db, asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit), input
+                IOTestUtil.db, asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit), input
         );
 
         checkResults(endpointState, workUnit, result);
 
-        modMgr.delete(scriptPath, apiPath);
+        IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
     @Test
     public void testOutputCallerImpl() throws IOException {
         String apiName = "outputCallerImpl.api";
 
-        ObjectNode apiObj     = readApi(apiName);
-        String     scriptPath = getScriptPath(apiObj);
-        String     apiPath    = getApiPath(scriptPath);
-        load(apiName, apiObj, scriptPath, apiPath);
+        ObjectNode apiObj     = IOTestUtil.readApi(apiName);
+        String     scriptPath = IOTestUtil.getScriptPath(apiObj);
+        String     apiPath    = IOTestUtil.getApiPath(scriptPath);
+        IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
 
         String endpointState = getEndpointState();
         String workUnit      = getWorkUnit();
 
         OutputCallerImpl    caller = new OutputCallerImpl(new JacksonHandle(apiObj));
         Stream<InputStream> result = caller.call(
-                db, asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit)
+                IOTestUtil.db, asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit)
         );
 
         checkResults(endpointState, workUnit, result);
 
-        modMgr.delete(scriptPath, apiPath);
+        IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
     private String getEndpointState() {
         return "{\"offset\":0}";
@@ -225,7 +183,7 @@ public class IOCallerImplTest {
     }
     private ObjectNode checkResult(InputStream result) throws IOException {
         assertNotNull("null InputStream", result);
-        return mapper.readValue(result, ObjectNode.class);
+        return IOTestUtil.mapper.readValue(result, ObjectNode.class);
     }
     private void checkContainer(String propName, String expected, ObjectNode result) {
         JsonNode actual = result.get(propName);
@@ -241,24 +199,5 @@ public class IOCallerImplTest {
         JsonNode actual = result.get(propName);
         assertNotNull("null for property "+propName, actual);
         assertEquals("mismatch for property "+propName, expected, actual.asText());
-    }
-    private ObjectNode readApi(String apiName) throws IOException {
-        String apiBody = Common.testFileToString(TEST_DIR+ File.separator+apiName);
-        return mapper.readValue(apiBody, ObjectNode.class);
-    }
-    private String getScriptPath(JsonNode apiObj) {
-        return apiObj.get("endpoint").asText();
-    }
-    private String getApiPath(String endpointPath) {
-        return endpointPath.substring(0, endpointPath.length() - 3)+"api";
-    }
-    private void load(String apiName, ObjectNode apiObj, String scriptPath, String apiPath) throws IOException {
-        String scriptName = scriptPath.substring(scriptPath.length() - apiName.length());
-        String scriptBody = Common.testFileToString(TEST_DIR+ File.separator+scriptName);
-
-        DocumentWriteSet writeSet = modMgr.newWriteSet();
-        writeSet.add(apiPath,    docMeta,    new JacksonHandle(apiObj));
-        writeSet.add(scriptPath, scriptMeta, new StringHandle(scriptBody));
-        modMgr.write(writeSet);
     }
 }

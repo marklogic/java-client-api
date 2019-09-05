@@ -20,7 +20,7 @@ import com.marklogic.client.SessionState;
 import com.marklogic.client.impl.BaseProxy;
 import com.marklogic.client.io.Format;
 
-class BaseCallerImpl {
+abstract class BaseCallerImpl {
     private BaseProxy baseProxy;
 
     BaseCallerImpl() {

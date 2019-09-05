@@ -22,22 +22,22 @@ import java.util.stream.Stream;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
-public class InputCallerImpl extends IOCallerImpl {
+final public class InputCallerImpl extends IOCallerImpl {
     public InputCallerImpl(JSONWriteHandle apiDeclaration) {
         super(apiDeclaration);
 
         if (getInputParamdef() == null) {
-            throw new IllegalArgumentException("input parameter missing in endpoint: "+getEndpoint());
+            throw new IllegalArgumentException("input parameter missing in endpoint: "+ getEndpointPath());
         }
 
         ReturndefImpl returndef = getReturndef();
         if (returndef != null) {
             if (getEndpointStateParamdef() == null) {
                 throw new IllegalArgumentException(
-                        "cannot have return without endpointState parameter in endpoint: "+getEndpoint()
+                        "cannot have return without endpointState parameter in endpoint: "+ getEndpointPath()
                 );
             } else if (returndef.isMultiple()) {
-                throw new IllegalArgumentException("return cannot be multiple in endpoint: "+getEndpoint());
+                throw new IllegalArgumentException("return cannot be multiple in endpoint: "+ getEndpointPath());
             }
         }
     }
