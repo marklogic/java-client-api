@@ -47,7 +47,7 @@ parameterize the port, user name, etc
   when(operation) {
     "setup"    -> dbfTestSetup(serializer)
     "teardown" -> dbfTestTeardown(serializer)
-    else       -> throw IllegalArgumentException("unknown operation: "+operation)
+    else       -> throw java.lang.IllegalArgumentException("unknown operation: "+operation)
   }
 }
 fun dbfTestSetup(serializer: ObjectWriter) {
@@ -78,6 +78,16 @@ fun setupServer(serializer: ObjectWriter) {
       mapOf<String,String>("forest-name" to forestName, "database" to dbName)
       )
   }
+
+  val userName = "rest-reader"
+  createEntity(
+      client, serializer, "users", "user", userName,
+      mapOf<String,Any>(
+        "user-name"        to userName,
+        "password"         to "x",
+        "role"             to listOf<String>(userName)
+        )
+  )
 
   createEntity(
       client, serializer, "servers?group-id=Default&server-type=http", "appserver", serverName,
