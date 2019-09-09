@@ -91,6 +91,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private Calendar jobEndTime;
   private long maxUris = Long.MAX_VALUE;
   private AtomicBoolean jobDone = new AtomicBoolean(false);
+  private long maxBatches = Long.MAX_VALUE;
+  private boolean isMaxBatchesSet = false;
 
   public QueryBatcherImpl(QueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super(moveMgr);
@@ -362,6 +364,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
     jobStartTime = Calendar.getInstance();
     started.set(true);
+    if(this.isMaxBatchesSet) {
+    	setMaxUris(getMaxBatches());
+    }
     if ( query != null ) {
       startQuerying();
     } else {
@@ -1028,9 +1033,11 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
 @Override
-public void setMaxUris(long results) {
-    this.maxUris = results;
-    
+public void setMaxBatches(long maxBatches) {
+	this.maxBatches = maxBatches;
+	this.isMaxBatchesSet = true;
+	if(isStarted())
+		setMaxUris(maxBatches);
 }
 
 @Override
@@ -1040,7 +1047,12 @@ public void setMaxUris() {
 }
 
 @Override
-public long getMaxUris() {
-    return this.maxUris;
+public void setMaxUris(long maxBatches) {
+	this.maxUris = (maxBatches * getBatchSize());
+}
+
+@Override
+public long getMaxBatches() {
+    return this.maxBatches;
 }
 }

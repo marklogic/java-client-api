@@ -369,9 +369,9 @@ public interface QueryBatcher extends Batcher {
   /**
    * Sets the limit for the maximum number of uris that can be collected.
    * 
-   * @param results is the value of the limit.
+   * @param maxBatches is the value of the limit.
    */
-  void setMaxUris(long results);
+  void setMaxBatches(long maxBatches);
   
   /**
    * Resets the max number of uris limit so the new job can set it to its 
@@ -380,9 +380,16 @@ public interface QueryBatcher extends Batcher {
   void setMaxUris();
   
   /**
-   * Returns the maximum number of uris that can be collected for the current job. 
+   * Sets the maximum number of uris based on the maximum number of batches.
    * 
-   * @return the maximum number of uris that can be collected.
+   * @param maxBatches is the maximum number of batches.
    */
-  long getMaxUris();
+  void setMaxUris(long maxBatches);
+  
+  /**
+   * Returns the maximum number of Batches for the current job. 
+   * 
+   * @return the maximum number of Batches that can be collected.
+   */
+  long getMaxBatches();
 }
