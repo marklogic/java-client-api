@@ -29,9 +29,13 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
@@ -783,8 +787,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       createForest(testMultipleForest[1], testMultipleDB);
       associateRESTServerWithDB(restServerName, testMultipleDB);
       setupAppServicesConstraint(testMultipleDB);
-      Thread.sleep(60000);
-
+      
       String[] filenames = { "pathindex1.xml", "pathindex2.xml" };
       String combinedQueryFileName = "combinedQueryOptionPathIndex.xml";
 
@@ -812,7 +815,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
       wbatcher.flushAndWait();
       wbatcher.awaitCompletion();
-
+      
       // get the combined query
       File file = new File(combQueryFileDir + combinedQueryFileName);
 
@@ -824,11 +827,18 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
       StringBuilder batchResults = new StringBuilder();
       StringBuilder batchFailResults = new StringBuilder();
+      
 
       // Run a QueryBatcher on the new URIs.
       QueryBatcher queryBatcher1 = dmManagerTmp.newQueryBatcher(querydef);
 
       queryBatcher1.onUrisReady(batch -> {
+    	  try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         for (String str : batch.getItems()) {
           batchResults.append(str)
               .append('|');
@@ -851,7 +861,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
         // Verify the batch results now.
         String[] res = batchResults.toString().split("\\|");
-        assertEquals("Number of reults returned is incorrect", 2, res.length);
+        assertEquals("Number of results returned is incorrect", 2, res.length);
         assertTrue("URI returned not correct", res[0].contains("pathindex1.xml") ? true : (res[1].contains("pathindex1.xml") ? true : false));
         assertTrue("URI returned not correct", res[0].contains("pathindex2.xml") ? true : (res[1].contains("pathindex2.xml") ? true : false));
       }
@@ -2270,6 +2280,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   public void testProgressListener() throws Exception {
 	  DatabaseClient clientTmp = null;
 	  try {
+		  System.out.println("Running testProgressListener");
 		  DataMovementManager dmManager = null;
 
 		  clientTmp = getDatabaseClient("eval-user", "x", getConnType());
@@ -2410,5 +2421,78 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 	  finally {
 		  clientTmp.release();
 	  }
+  }
+  
+  @Test
+  public void testQueryBatcherWithIterator() throws Exception {
+	  DatabaseClient clientTmp = null;
+	  try {
+		  System.out.println("Running testQueryBatcherWithIterator");
+		  DataMovementManager dmManager = null;
+		  String uri = null;
+		  Collection<String> uris = new LinkedHashSet<String>();
+		  Collection<String> uris20 = new LinkedHashSet<String>();
+		  Collection<String> batchValueResults = new LinkedHashSet<String>();
+		  AtomicInteger count = new AtomicInteger(0);
+
+		  clientTmp = getDatabaseClient("eval-user", "x", getConnType());
+		  dmManager = clientTmp.newDataMovementManager();
+		  QueryManager queryMgr = clientTmp.newQueryManager();
+
+		  String jsonDoc = "{" + "\"employees\": [" + "{ \"firstName\":\"Juan\" , \"lastName\":\"Baptiste\" },"
+				  + "{ \"firstName\":\"Tress\" , \"lastName\":\"Bossmann\" },"
+				  + "{ \"firstName\":\"Micheal\" , \"lastName\":\"Fox\" }]" + "}";
+		  WriteBatcher wbatcher = dmManager.newWriteBatcher();
+		  wbatcher.withBatchSize(600);
+		  wbatcher.onBatchFailure((batch, throwable) -> throwable.printStackTrace());
+		  StringHandle handle = new StringHandle();
+		  handle.set(jsonDoc);
+		  
+		  // Insert 6 K documents
+		  for (int i = 0; i < 6000; i++) {
+			  uri = "/QBIteratorTest" + i + ".json";
+			  wbatcher.add(uri, handle);
+			  uris.add(uri);
+			  if (i < 20) {
+				  uris20.add(uri);
+			  }
+		  }
+
+		  wbatcher.flushAndWait();
+		  // Read all 6000 docs in a batch using an iterator.
+		  
+		  QueryBatcher queryBatcher = dmManager.newQueryBatcher(uris.iterator())
+				                               .withBatchSize(20)
+				                               .withThreadCount(1);
+
+		  queryBatcher.onUrisReady(batch -> {
+			  System.out.println("Batch results are: " + batch.getJobResultsSoFar());
+			  // Get 1 batch only for comparison.
+			  if (count.get() == 0) {
+				  for (String str : batch.getItems()) {
+			          batchValueResults.add(str);
+			        }
+			  count.incrementAndGet();
+			  }
+		  }
+		)
+		.onQueryFailure(throwable -> {
+			  System.out.println("Exceptions thrown from callback onQueryFailure in testMinHostWithHostAvailabilityListener");
+			  throwable.printStackTrace();
+
+		  });
+		  
+		  JobTicket jobTicket = dmManager.startJob(queryBatcher);
+		  queryBatcher.awaitCompletion();
+		  System.out.println("First batch comprisions");
+		  
+		  assertTrue("Batch 1 incorrect", batchValueResults.equals(uris20));		    
+	  }
+	  catch (Exception ex) {
+	  ex.printStackTrace();
+  }
+  finally {
+	  clientTmp.release();
+  }
   }
 }
