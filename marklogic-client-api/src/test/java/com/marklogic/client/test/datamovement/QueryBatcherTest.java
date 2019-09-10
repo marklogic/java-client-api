@@ -821,7 +821,7 @@ public class QueryBatcherTest {
       
       QueryBatcher  queryBatcher = dmManager.newQueryBatcher(uris.iterator());
       final Output output = new Output();
-      queryBatcher.setMaxUris(20);
+      queryBatcher.setMaxBatches(2);
       queryBatcher.withBatchSize(10).withThreadCount(2)
               .onUrisReady(batch -> {
                   outputUris.addAll(Arrays.asList(batch.getItems()));
@@ -860,7 +860,7 @@ public class QueryBatcherTest {
       
       QueryBatcher  queryBatcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("maxUrisTest"));
       final Output output = new Output();
-      queryBatcher.setMaxUris(20);
+      queryBatcher.setMaxBatches(2);
       queryBatcher.withBatchSize(10)
               .onUrisReady(batch -> {
                   outputUris.addAll(Arrays.asList(batch.getItems()));
