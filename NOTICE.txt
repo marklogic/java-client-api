@@ -14,9 +14,9 @@ Please direct questions, comments and requests to fossreview@marklogic.com.
 Open source software required to be made available under license is included herein. In the event you are unable to obtain a copy of such open source software, please contact fossreview@marklogic.com and a copy will be made available to you.
 
 
-The following software may be included in this project (last updated June 13, 2019):
+The following software may be included in this project (last updated September 4, 2019):
 
-Apache Commons IO™ 1.3.2 
+Apache Commons IO™ 2.4 
 Attribution Statements
 http://commons.apache.org/proper/commons-io/
 
@@ -492,7 +492,7 @@ License Text (http://spdx.org/licenses/BSD-3-Clause)
 Made available under the BSD 3-Clause "New" or "Revised" License. See Appendix for full text.
 
 Source materials are available for download at: http://mvnrepository.com/artifact/org.hsqldb/hsqldb 
-Jackson Annotations 2.9.4 
+Jackson Annotations 2.9.8 
 Attribution Statements
 http://wiki.fasterxml.com/JacksonHome
 
@@ -503,7 +503,7 @@ License Text (http://spdx.org/licenses/Apache-2.0)
 Made available under the Apache License 2.0. See Appendix for full text.
 
 Source materials are available for download at: http://github.com/FasterXML/jackson 
-Jackson Core 2.9.4 
+Jackson Core 2.9.8 
 Attribution Statements
 http://wiki.fasterxml.com/JacksonHome
 
@@ -514,7 +514,7 @@ License Text (http://spdx.org/licenses/Apache-2.0)
 Made available under the Apache License 2.0. See Appendix for full text.
 
 Source materials are available for download at: https://github.com/FasterXML/jackson-core 
-Jackson Databind 2.9.7 
+Jackson Databind 2.9.0 
 Attribution Statements
 http://wiki.fasterxml.com/JacksonHome
 
@@ -648,7 +648,7 @@ Copyright (C) 2000-2012 Jason Hunter & Brett McLaughlin.
  on the JDOM Project, please see <http://www.jdom.org/>.
 
 Source materials are available for download at: https://github.com/hunterhacker/jdom/ 
-JSONassert 1.2.3 
+JSONassert 1.5.0 
 Attribution Statements
 http://jsonassert.skyscreamer.org/
 
@@ -796,6 +796,7 @@ License Text (http://spdx.org/licenses/BSD-3-Clause)
 Made available under the BSD 3-Clause "New" or "Revised" License. See Appendix for full text.
 
 Source materials are available for download at: https://github.com/xmlunit/xmlunit/tree/master/xmlunit-legacy 
+
 
  
 Appendix
