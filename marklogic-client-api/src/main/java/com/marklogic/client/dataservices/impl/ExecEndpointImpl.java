@@ -20,13 +20,13 @@ import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.ExecEndpoint;
 import com.marklogic.client.io.marker.JSONWriteHandle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
-import java.util.function.Consumer;
-
-// TODO: the usual logger and logging
 
 final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoint {
+    private static Logger logger = LoggerFactory.getLogger(ExecEndpointImpl.class);
     private ExecCallerImpl caller;
 
     public ExecEndpointImpl(DatabaseClient client, JSONWriteHandle apiDecl) {
@@ -71,14 +71,18 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
         @Override
         public void awaitCompletion() {
             setPhase(WorkPhase.RUNNING);
+            logger.trace("exec running endpoint={} work={}", getEndpointPath(), getWorkUnit());
             SessionState session = allowsSession() ? getEndpoint().getCaller().newSessionState() : null;
             calling: while (true) {
                 InputStream output = null;
                 try {
+                    logger.trace("exec calling endpoint={} count={} state={}",
+                            getEndpointPath(), getCallCount(), getEndpointState());
 // TODO: use byte[] for IO internally (and InputStream externally)
                     output = getEndpoint().getCaller().call(
                             getEndpoint().getClient(), getEndpointState(), session, getWorkUnit()
                     );
+                    incrementCallCount();
                 } catch(Throwable throwable) {
                     // TODO: logging
                     throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
@@ -92,10 +96,14 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
                 switch(getPhase()) {
                     case INTERRUPTING:
                         setPhase(WorkPhase.INTERRUPTED);
+                        logger.info("exec interrupted endpoint={} count={} work={}",
+                                getEndpointPath(), getCallCount(), getWorkUnit());
                         break calling;
                     case RUNNING:
                         if (output == null) {
                             setPhase(WorkPhase.COMPLETED);
+                            logger.info("exec completed endpoint={} count={} work={}",
+                                    getEndpointPath(), getCallCount(), getWorkUnit());
                             break calling;
                         }
                         break;

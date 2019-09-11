@@ -22,7 +22,6 @@ import com.marklogic.client.io.marker.BufferableHandle;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.function.Consumer;
 
 abstract class IOEndpointImpl implements IOEndpoint {
     private DatabaseClient client;
@@ -77,6 +76,8 @@ abstract class IOEndpointImpl implements IOEndpoint {
         private byte[]         endpointState;
         private byte[]         workUnit;
 
+        private long           callCount = 0;
+
         BulkIOEndpointCallerImpl(IOEndpointImpl endpoint) {
             if (endpoint == null)
                 throw new IllegalArgumentException("null endpoint definition");
@@ -89,6 +90,12 @@ abstract class IOEndpointImpl implements IOEndpoint {
 
         String getEndpointPath() {
             return getEndpoint().getEndpointPath();
+        }
+        long getCallCount() {
+            return callCount;
+        }
+        void incrementCallCount() {
+            callCount++;
         }
 
         boolean allowsEndpointState() {
