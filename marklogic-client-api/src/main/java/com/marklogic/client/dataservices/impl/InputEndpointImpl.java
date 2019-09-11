@@ -15,6 +15,9 @@
  */
 package com.marklogic.client.dataservices.impl;
 
+import java.io.InputStream;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.dataservices.InputEndpoint;
@@ -55,5 +58,36 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 	public BulkInputCaller bulkCaller() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	final static class BulkInputCallerImpl extends IOEndpointImpl.BulkIOEndpointCallerImpl implements InputEndpoint.BulkInputCaller {
+		
+		private InputEndpointImpl endpoint;
+		private int batchSize;
+		private LinkedBlockingQueue<InputStream> queue;
+		
+		private BulkInputCallerImpl(InputEndpointImpl endpoint, int batchSize) {
+			super(endpoint);
+            this.endpoint = endpoint;
+            this.batchSize = batchSize;
+        }
+		
+		private InputEndpointImpl getEndpoint() {
+			return endpoint;
+		}
+		
+		private int getBatchSize() {
+			return batchSize;
+		}
+
+		@Override
+		public void accept(InputStream input) {
+			// TODO Auto-generated method stub
+		}
+
+		@Override
+		public void awaitCompletion() {
+			// TODO Auto-generated method stub
+		}
 	}
 }
