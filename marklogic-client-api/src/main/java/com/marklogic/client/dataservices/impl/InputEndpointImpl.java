@@ -59,23 +59,24 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-	final static class BulkInputCallerImpl extends IOEndpointImpl.BulkIOEndpointCallerImpl implements InputEndpoint.BulkInputCaller {
-		
+
+	final static class BulkInputCallerImpl extends IOEndpointImpl.BulkIOEndpointCallerImpl
+			implements InputEndpoint.BulkInputCaller {
+
 		private InputEndpointImpl endpoint;
 		private int batchSize;
 		private LinkedBlockingQueue<InputStream> queue;
-		
+
 		private BulkInputCallerImpl(InputEndpointImpl endpoint, int batchSize) {
 			super(endpoint);
-            this.endpoint = endpoint;
-            this.batchSize = batchSize;
-        }
-		
+			this.endpoint = endpoint;
+			this.batchSize = batchSize;
+		}
+
 		private InputEndpointImpl getEndpoint() {
 			return endpoint;
 		}
-		
+
 		private int getBatchSize() {
 			return batchSize;
 		}
