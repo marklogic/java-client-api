@@ -16,15 +16,18 @@
 package com.marklogic.client.dataservices;
 
 import java.io.InputStream;
+import java.util.stream.Stream;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.dataservices.impl.InputEndpointImpl;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
-public interface InputEndpoint {
+public interface InputEndpoint extends IOEndpoint {
 	static InputEndpoint on(DatabaseClient client, JSONWriteHandle apiDecl) {
 		return new InputEndpointImpl(client, apiDecl);
 	}
+
+	void call(InputStream workUnit, Stream<InputStream> input);
 
 	BulkInputCaller bulkCaller();
 

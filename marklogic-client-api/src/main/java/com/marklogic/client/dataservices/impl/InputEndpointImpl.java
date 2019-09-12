@@ -17,6 +17,7 @@ package com.marklogic.client.dataservices.impl;
 
 import java.io.InputStream;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
@@ -55,9 +56,8 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 	}
 
 	@Override
-	public BulkInputCaller bulkCaller() {
-		// TODO Auto-generated method stub
-		return null;
+	public InputEndpoint.BulkInputCaller bulkCaller() {
+		return new BulkInputCallerImpl(this, getBatchSize());
 	}
 
 	final static class BulkInputCallerImpl extends IOEndpointImpl.BulkIOEndpointCallerImpl
@@ -90,5 +90,13 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 		public void awaitCompletion() {
 			// TODO Auto-generated method stub
 		}
+	}
+
+	@Override
+	public void call(InputStream workUnit, Stream<InputStream> input) {
+		if (workUnit != null && !allowsWorkUnit())
+			throw new IllegalArgumentException("Input endpoint does not accept work unit");
+
+		getCaller().call(getClient(), null, null, workUnit, input);
 	}
 }
