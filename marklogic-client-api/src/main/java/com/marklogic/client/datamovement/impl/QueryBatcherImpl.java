@@ -1053,6 +1053,7 @@ public long getMaxBatches() {
 @Override
 public void setMaxBatches() {
 	this.maxBatches = -1L;
-	
+	if(isStarted())
+		setMaxUris(getMaxBatches());
 }
 }
