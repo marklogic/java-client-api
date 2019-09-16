@@ -747,7 +747,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 					.onQueryFailure(throwable-> {
 						failedBatch2.addAndGet(1);                
 					});
-			
+			qb2.setMaxBatches(203);
 			class BatchesSoFarThread implements Runnable {
 
 				@Override
@@ -761,10 +761,11 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 
 			Thread tMBStop2;
 			tMBStop2 = new Thread(new BatchesSoFarThread());
-
+            System.out.println("batch size before calling setMaxBatches "+batchResults2.size());
 			tMBStop2.start();
 			tMBStop2.join();
 			System.out.println("URI size so far is : " + batchResults2.size());
+			dmManager.stopJob(qb2);
 			assertTrue("Batches of URIs collected so far", batchResults.size() > 0);
 		}
 		catch (Exception ex) {
