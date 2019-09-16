@@ -714,10 +714,9 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 				}			
 			}
 
-			JobTicket jobTicket = dmManager.startJob(qb);
+			dmManager.startJob(qb);
 
-			Thread tMBStop;
-			tMBStop = new Thread(new MaxBatchesThread());
+			Thread tMBStop = new Thread(new MaxBatchesThread());
 
 			tMBStop.start();
 			tMBStop.join();
@@ -735,7 +734,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			Collection<String> batchResults2 = new LinkedHashSet<String>();
 			QueryBatcher qb2 = dmManager.newQueryBatcher(urisList.iterator())
 					.withBatchSize(12)
-					.withThreadCount(1)
+					.withThreadCount(20)
 					.withJobId("ListenerCompletionTest2")	            
 					.onUrisReady((QueryBatch batch) -> {
 
@@ -753,20 +752,28 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 				@Override
 				public void run() {
 					// Test 2
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 					qb2.setMaxBatches();					
 				}			
 			}
 
-			JobTicket jobTicket2 = dmManager.startJob(qb2);
+			dmManager.startJob(qb2);
 
-			Thread tMBStop2;
-			tMBStop2 = new Thread(new BatchesSoFarThread());
-            System.out.println("batch size before calling setMaxBatches "+batchResults2.size());
+			Thread tMBStop2 = new Thread(new BatchesSoFarThread());
+			int initialUrisSize = batchResults2.size();
+			
+			// Maximum number of uris = Maximum number of batches allowed * batchSize;
+			int maxUris = (203 * 12);
 			tMBStop2.start();
-			tMBStop2.join();
-			System.out.println("URI size so far is : " + batchResults2.size());
+			qb2.awaitCompletion();
 			dmManager.stopJob(qb2);
-			assertTrue("Batches of URIs collected so far", batchResults.size() > 0);
+			
+			assertTrue("Batches of URIs collected so far", batchResults2.size() > 0);
+			assertTrue("Number of Uris collected does not fall in the range", (batchResults2.size()>initialUrisSize && batchResults2.size()< maxUris));
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
