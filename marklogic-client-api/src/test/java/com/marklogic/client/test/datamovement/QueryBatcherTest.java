@@ -20,6 +20,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,11 +44,25 @@ import java.util.UUID;
 
 import com.marklogic.client.io.Format;
 import com.marklogic.client.query.RawCtsQueryDefinition;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.ServerTransform;
@@ -114,6 +130,8 @@ public class QueryBatcherTest {
   }
 
   public static void setup() throws Exception {
+	  
+	changeAssignmentPolicy("bucket");
     WriteBatcher writeBatcher = moveMgr.newWriteBatcher();
     moveMgr.startJob(writeBatcher);
     // a collection so we're only looking at docs related to this test
@@ -880,5 +898,67 @@ public class QueryBatcherTest {
           // The number of documents should be more than maxuris but less than (maxuris+ threadcount*batchsize)
           assertTrue("Output list does not contain expected number of outputs", (outputUris.size() >= 20) && outputUris.size()<50);
   }
+  
+	static void changeAssignmentPolicy(String value) throws IOException {
+
+		InputStream getResponseStream = null;
+		DefaultHttpClient defaultClient = null;
+
+		String propertyName = "assignment-policy";
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode mainNode = mapper.createObjectNode();
+		ArrayNode childArray = mapper.createArrayNode();
+		ObjectNode childNodeObject = mapper.createObjectNode();
+		childNodeObject.put("assignment-policy-name", "bucket");
+		childArray.add(childNodeObject);
+		mainNode.withArray("assignment-policy").add(childArray);
+		String dbName = "java-unittest";
+
+		try {
+			defaultClient = new DefaultHttpClient();
+			defaultClient.getCredentialsProvider().setCredentials(new AuthScope(client.getHost(), 8002),
+					new UsernamePasswordCredentials("admin", "admin"));
+			HttpGet getrequest = new HttpGet("http://" + client.getHost() + ":" + 8002 + "/manage/v2/databases/"
+					+ dbName + "/properties?format=json");
+			HttpResponse getResponse = defaultClient.execute(getrequest);
+			getResponseStream = getResponse.getEntity().getContent();
+			JsonNode jsonNode = mapper.readTree(getResponseStream);
+			if (!jsonNode.isNull()) {
+				if (!jsonNode.has(propertyName)) {
+					((ObjectNode) jsonNode).putArray(propertyName).addAll(mainNode.withArray(propertyName));
+				} else {
+					if (!jsonNode.path(propertyName).isArray()) {
+						((ObjectNode) jsonNode).putAll(mainNode);
+					} else {
+						JsonNode member = jsonNode.withArray(propertyName);
+						if (mainNode.path(propertyName).isArray()) {
+							((ArrayNode) member).addAll(mainNode.withArray(propertyName));
+						}
+					}
+				}
+
+				HttpPut put = new HttpPut("http://" + client.getHost() + ":" + 8002 + "/manage/v2/databases/" + dbName
+						+ "/properties?format=json");
+				put.addHeader("Content-type", "application/json");
+				put.setEntity(new StringEntity(jsonNode.toString()));
+
+				HttpResponse putResponse = defaultClient.execute(put);
+				HttpEntity respEntity = putResponse.getEntity();
+				if (respEntity != null) {
+					String content = EntityUtils.toString(respEntity);
+					System.out.println(content);
+				}
+			} else {
+				System.out.println("REST call for database properties returned NULL "
+						+ getResponse.getStatusLine().getStatusCode());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (getResponseStream != null)
+				getResponseStream.close();
+			defaultClient.getConnectionManager().shutdown();
+		}
+	}
 
 }
