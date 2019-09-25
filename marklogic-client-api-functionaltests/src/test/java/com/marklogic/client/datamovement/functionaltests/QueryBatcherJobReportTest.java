@@ -760,10 +760,16 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 					qb2.setMaxBatches();					
 				}			
 			}
+			
+			Thread tMBStop2 = new Thread(new BatchesSoFarThread());
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 
 			dmManager.startJob(qb2);
-
-			Thread tMBStop2 = new Thread(new BatchesSoFarThread());
+			
 			int initialUrisSize = batchResults2.size();
 			
 			tMBStop2.start();
@@ -771,7 +777,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			dmManager.stopJob(qb2);
 			
 			assertTrue("Batches of URIs collected so far", batchResults2.size() > 0);
-			assertTrue("Number of Uris collected does not fall in the range", (batchResults2.size()>initialUrisSize && batchResults2.size()< 50000));
+			assertTrue("Number of Uris collected does not fall in the range", (batchResults2.size()>initialUrisSize && batchResults2.size()< 2436));
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
