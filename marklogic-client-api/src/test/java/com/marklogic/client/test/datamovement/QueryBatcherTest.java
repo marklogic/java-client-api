@@ -44,6 +44,7 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.query.RawCtsQueryDefinition;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
@@ -838,7 +839,7 @@ public class QueryBatcherTest {
           assertTrue("Output list does not contain expected number of outputs", outputUris.size() == 20);
   }
   
-  @Test
+  @Ignore
   public void maxUrisTestWithQueryTask() {
       DataMovementManager dmManager = client.newDataMovementManager();
       List<String> outputUris = new ArrayList<String>();
