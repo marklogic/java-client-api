@@ -39,10 +39,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -53,6 +51,7 @@ import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.datamovement.ApplyTransformListener;
 import com.marklogic.client.datamovement.ApplyTransformListener.ApplyResult;
 import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.DeleteListener;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatch;
 import com.marklogic.client.datamovement.QueryBatcher;
@@ -190,23 +189,12 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			detachForest(dbName, dbName + "-" + (i + 1));
 			deleteForest(dbName + "-" + (i + 1));
 		}
-
 		deleteDB(dbName);
-	}
-
-	@Before
-	public void setUp() throws Exception {
-
-	}
-
-	@After
-	public void tearDown() throws Exception {
-
 	}
 
 	@Test
 	public void jobReport() throws Exception {
-
+		System.out.println("In jobReport method");
 		AtomicInteger batchCount = new AtomicInteger(0);
 		AtomicInteger successCount = new AtomicInteger(0);
 		AtomicLong count1 = new AtomicLong(0);
@@ -267,11 +255,11 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), count1.get());
 		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), count2.get());
 		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), count3.get());
-
 	}
 
 	@Test
 	public void testNullQdef() throws IOException, InterruptedException {
+		System.out.println("In testNullQdef method");
 		JsonNode node = null;
 		JacksonHandle jacksonHandle = null;
 
@@ -305,7 +293,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 
 	@Test
 	public void queryFailures() throws Exception {
-
+		System.out.println("In queryFailures method");
 		Thread t1 = new Thread(new DisabledDBRunnable());
 		t1.setName("Status Check -1");
 
@@ -399,12 +387,11 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			properties.put("enabled", "true");
 			changeProperty(properties, "/manage/v2/databases/" + dbName + "/properties");
 		}
-
 	}
 
 	@Test
 	public void jobReportStopJob() throws Exception {
-
+		System.out.println("In jobReportStopJob method");
 		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
 				.withBatchSize(20).withThreadCount(20);
 		AtomicInteger batchCount = new AtomicInteger(0);
@@ -438,7 +425,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 	// Making sure we can stop jobs based on the JobId.
 	@Test
 	public void stopJobUsingJobId() throws Exception {
-
+		System.out.println("In stopJobUsingJobId method");
 		String jobId = UUID.randomUUID().toString();
 
 		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
@@ -477,7 +464,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 
 	@Test
 	public void jsMasstransformReplace() throws Exception {
-
+		System.out.println("In jsMasstransformReplace method");
 		ServerTransform transform = new ServerTransform("jsTransform");
 		transform.put("newValue", "new Value");
 
@@ -532,10 +519,9 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 
 	}
 
-	// ISSUE # 106
 	@Test
 	public void stopTransformJobTest() throws Exception {
-
+		System.out.println("In stopTransformJobTest method");
 		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
 		transform.put("name", "Lang");
 		transform.put("value", "French");
@@ -606,19 +592,28 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 	 */
 	@Test
 	public void testStopBeforeListenerisComplete() throws Exception {
+		ArrayList<String> urisList = new ArrayList<String>();
+		final String qMaxBatches = "fn:count(cts:uri-match('/setMaxBatches*'))";
 		try {
-			clearDB(port);
+			
 			System.out.println("In testStopBeforeListenerisComplete method");
-
-			final String query1 = "fn:count(fn:doc())";
+		
 			final AtomicInteger count = new AtomicInteger(0);
 			final AtomicInteger failedBatch = new AtomicInteger(0);
 			final AtomicInteger successBatch = new AtomicInteger(0);
 			
 			final AtomicInteger failedBatch2 = new AtomicInteger(0);
 			final AtomicInteger successBatch2 = new AtomicInteger(0);
-
-			ArrayList<String> urisList = new ArrayList<String>();
+			
+			String jsonDoc = "{" +
+				    "\"employees\": [" +
+				    "{ \"firstName\":\"John\" , \"lastName\":\"Doe\" }," +
+				    "{ \"firstName\":\"Ann\" , \"lastName\":\"Smith\" }," +
+				    "{ \"firstName\":\"Bob\" , \"lastName\":\"Foo\" }]" +
+				    "}";
+			StringHandle handle = new StringHandle();
+			handle.setFormat(Format.JSON);
+			handle.set(jsonDoc);
 
 			WriteBatcher batcher = dmManager.newWriteBatcher();
 			batcher.withBatchSize(99);
@@ -638,10 +633,10 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 				public void run() {
 
 					for (int j = 0; j < 50000; j++) {
-						String uri = "/local/json-" + j + "-" + Thread.currentThread().getId();
-						System.out.println("Thread name: " + Thread.currentThread().getName() + "  URI:" + uri);
+						String uri = "/setMaxBatches-" + j + "-" + Thread.currentThread().getId();
+						//System.out.println("Thread name: " + Thread.currentThread().getName() + "  URI:" + uri);
 						urisList.add(uri);
-						batcher.add(uri, fileHandle);
+						batcher.add(uri, handle);
 					}
 					batcher.flushAndWait();
 				}
@@ -678,9 +673,10 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			countT.join();
 
 			t1.join();
-			int docCnt = dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue();
+			
+			int docCnt = dbClient.newServerEval().xquery(qMaxBatches).eval().next().getNumber().intValue();
 			System.out.println("Doc count is " + docCnt);
-			Assert.assertTrue( docCnt == 50000);
+			Assert.assertTrue(docCnt == 50000);
 
 			Collection<String> batchResults = new LinkedHashSet<String>();
 			QueryBatcher qb = dmManager.newQueryBatcher(urisList.iterator())
@@ -729,7 +725,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			assertTrue("Stop QueryBatcher with setMaxBatches set to 2035 is incorrect", batchResults.size() == 24420);
 
 			/* Test 2 setMaxBatches()
-
 			 */
 			Collection<String> batchResults2 = new LinkedHashSet<String>();
 			QueryBatcher qb2 = dmManager.newQueryBatcher(urisList.iterator())
@@ -747,6 +742,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 						failedBatch2.addAndGet(1);                
 					});
 			qb2.setMaxBatches(203);
+			
 			class BatchesSoFarThread implements Runnable {
 
 				@Override
@@ -760,14 +756,14 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 					qb2.setMaxBatches();					
 				}			
 			}
-			
+
 			Thread tMBStop2 = new Thread(new BatchesSoFarThread());
+			// Wait for the stop thread to initialize before starting DMSDK Job.
 			try {
 				Thread.sleep(3000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-
 			dmManager.startJob(qb2);
 			
 			int initialUrisSize = batchResults2.size();
@@ -776,6 +772,9 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			qb2.awaitCompletion();
 			dmManager.stopJob(qb2);
 			
+			System.out.println("Doc count in initialUrisSize " + initialUrisSize);
+			System.out.println("Doc count after setMaxBatches() is called " +  batchResults2.size());
+			
 			assertTrue("Batches of URIs collected so far", batchResults2.size() > 0);
 			assertTrue("Number of Uris collected does not fall in the range", (batchResults2.size()>initialUrisSize && batchResults2.size()< 2436));
 		}
@@ -783,7 +782,24 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			ex.printStackTrace();
 		}
 		finally {
-		clearDB(port);
+			// Delete all uris.
+			QueryBatcher deleteBatcher = dmManager.newQueryBatcher(urisList.iterator())
+			        .onUrisReady(new DeleteListener())
+			        .onUrisReady(batch -> {
+			          //System.out.println("Items in batch " + batch.getItems().length);
+			        }
+			        )
+			        .onQueryFailure(throwable -> {
+			          System.out.println("Query Failed");
+			          throwable.printStackTrace();
+			        })
+			        .withBatchSize(5000)
+			        .withThreadCount(10);
+			dmManager.startJob(deleteBatcher);
+			deleteBatcher.awaitCompletion(2, TimeUnit.MINUTES);
+			int docCnt = dbClient.newServerEval().xquery(qMaxBatches).eval().next().getNumber().intValue();
+			System.out.println("All setMaxBatches docs should have been deleted. Count after DeleteListener job is " + docCnt);
+			Assert.assertTrue(docCnt == 0);
 		}
 	}
 }
