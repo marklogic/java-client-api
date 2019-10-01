@@ -1183,9 +1183,9 @@ public class DatabaseClientFactory {
    * without any authentication. Such clients can be convenient for
    * experimentation but should not be used in production.
    *
-   * The CallManager interface can only call an endpoint for the configured content database
+   * A data service interface can only call an endpoint for the configured content database
    * of the appserver. You cannot specify the database when constructing a client for working
-   * with a CallManager.
+   * with a data service.
    *
    * @param host	the host with the REST server
    * @param port	the port for the REST server
@@ -1231,9 +1231,9 @@ public class DatabaseClientFactory {
   /**
    * Creates a client to access the database by means of a REST server.
    *
-   * The CallManager interface can only call an endpoint for the configured content database
+   * A data service interface can only call an endpoint for the configured content database
    * of the appserver. You cannot specify the database when constructing a client for working
-   * with a CallManager.
+   * with a data service.
    *
    * @param host the host with the REST server
    * @param port the port for the REST server
@@ -1251,9 +1251,9 @@ public class DatabaseClientFactory {
   /**
    * Creates a client to access the database by means of a REST server.
    *
-   * The CallManager interface can only call an endpoint for the configured content database
+   * A data service interface can only call an endpoint for the configured content database
    * of the appserver. You cannot specify the database when constructing a client for working
-   * with a CallManager.
+   * with a data service.
    *
    * @param host the host with the REST server
    * @param port the port for the REST server
@@ -1328,9 +1328,9 @@ public class DatabaseClientFactory {
   /**
    * Creates a client to access the database by means of a REST server.
    *
-   * The CallManager interface can only call an endpoint for the configured content database
+   * A data service interface can only call an endpoint for the configured content database
    * of the appserver. You cannot specify the database when constructing a client for working
-   * with a CallManager.
+   * with a data service.
    *
    * @param host	the host with the REST server
    * @param port	the port for the REST server
@@ -1364,9 +1364,9 @@ public class DatabaseClientFactory {
   /**
    * Creates a client to access the database by means of a REST server.
    *
-   * The CallManager interface can only call an endpoint for the configured content database
+   * A data service interface can only call an endpoint for the configured content database
    * of the appserver. You cannot specify the database when constructing a client for working
-   * with a CallManager.
+   * with a data service.
    *
    * @param host	the host with the REST server
    * @param port	the port for the REST server
@@ -1402,9 +1402,9 @@ public class DatabaseClientFactory {
   /**
    * Creates a client to access the database by means of a REST server.
    *
-   * The CallManager interface can only call an endpoint for the configured content database
+   * A data service interface can only call an endpoint for the configured content database
    * of the appserver. You cannot specify the database when constructing a client for working
-   * with a CallManager.
+   * with a data service.
    *
    * @param host	the host with the REST server
    * @param port	the port for the REST server
@@ -1645,9 +1645,9 @@ public class DatabaseClientFactory {
      * Specifies the database for clients created with a
      * DatabaseClientFactory.Bean object.
      *
-     * The CallManager interface can only call an endpoint for the configured content database
+     * A data service interface can only call an endpoint for the configured content database
      * of the appserver. You cannot specify the database when constructing a client for working
-     * with a CallManager.
+     * with a data service.
      *
      * @param database	a database to pass along to new DocumentManager and QueryManager instances
      */
