@@ -80,14 +80,16 @@ fun setupServer(serializer: ObjectWriter) {
   }
 
   val userName = "rest-reader"
-  createEntity(
-      client, serializer, "users", "user", userName,
-      mapOf<String,Any>(
-        "user-name"        to userName,
-        "password"         to "x",
-        "role"             to listOf<String>(userName)
-        )
-  )
+  if (!existsEntity(client, "users", "user", userName)) {
+    createEntity(
+            client, serializer, "users", "user", userName,
+            mapOf<String,Any>(
+                    "user-name"        to userName,
+                    "password"         to "x",
+                    "role"             to listOf<String>(userName)
+            )
+    )
+  }
 
   createEntity(
       client, serializer, "servers?group-id=Default&server-type=http", "appserver", serverName,
@@ -101,6 +103,18 @@ fun setupServer(serializer: ObjectWriter) {
   )
 
   dbClient.release()
+}
+fun existsEntity(client: OkHttpClient, address: String, name: String, instanceName: String) : Boolean {
+  val response = client.newCall(
+          Request.Builder()
+                  .url("""http://${host}:8002/manage/v2/${address}/${instanceName}""")
+                  .get()
+                  .build()
+  ).execute()
+  val status = response.code()
+  if (status < 400) return true
+  if (status == 404) return false
+  throw RuntimeException("""Could not create ${instanceName} ${name}: ${status}""")
 }
 fun createEntity(client: OkHttpClient, serializer: ObjectWriter, address: String, name: String,
     instanceName: String, instancedef: Map<String,Any>) {

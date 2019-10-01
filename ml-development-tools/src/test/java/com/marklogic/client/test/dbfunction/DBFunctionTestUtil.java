@@ -37,36 +37,41 @@ public class DBFunctionTestUtil {
       );
    }
    private static DatabaseClient makeRestClientImpl(DatabaseClientFactory.DigestAuthContext auth) {
-      return makeClientImpl(auth, "8012");
+      return makeClientImpl(auth, "8012", false);
    }
    private static DatabaseClient makeTestClientImpl(DatabaseClientFactory.DigestAuthContext auth) {
-      return makeClientImpl(auth, "8016");
+      return makeClientImpl(auth, "8016", true);
    }
-   private static DatabaseClient makeClientImpl(DatabaseClientFactory.DigestAuthContext auth, String defaultPort) {
+   private static DatabaseClient makeClientImpl(
+           DatabaseClientFactory.DigestAuthContext auth, String defaultPort, boolean withCheck
+   ) {
       String host = System.getProperty("TEST_HOST", "localhost");
       int    port = Integer.parseInt(System.getProperty("TEST_PORT", defaultPort));
 
       DatabaseClient db = DatabaseClientFactory.newClient(host, port, auth);
 
-      try {
-         OkHttpClient client = (OkHttpClient) db.getClientImplementation();
+      if (withCheck) {
+         try {
+            OkHttpClient client = (OkHttpClient) db.getClientImplementation();
 // TODO: better alternative to ping for non-REST server
-         Response response = client.newCall(new Request.Builder().url(
-            new HttpUrl.Builder()
-               .scheme("http")
-               .host(host)
-               .port(port)
-               .encodedPath("/")
-               .build()
-            ).build()
+            Response response = client.newCall(new Request.Builder().url(
+                    new HttpUrl.Builder()
+                            .scheme("http")
+                            .host(host)
+                            .port(port)
+                            .encodedPath("/")
+                            .build()
+                    ).build()
             ).execute();
-         int statusCode = response.code();
-         if (statusCode >= 300 && statusCode != 404) {
-            throw new RuntimeException(statusCode+" "+response.message());
+            int statusCode = response.code();
+            if (statusCode >= 300 && statusCode != 404) {
+               throw new RuntimeException(statusCode+" "+response.message());
+            }
+         } catch (IOException e) {
+            throw new RuntimeException(e);
          }
-      } catch (IOException e) {
-         throw new RuntimeException(e);
       }
+
       return db;
    }
    public static URL getResource(String name) {
