@@ -857,7 +857,7 @@ public class QueryBatcherTest {
           assertTrue("Output list does not contain expected number of outputs", outputUris.size() == 20);
   }
   
-  @Ignore
+  @Test
   public void maxUrisTestWithQueryTask() {
       DataMovementManager dmManager = client.newDataMovementManager();
       List<String> outputUris = new ArrayList<String>();
