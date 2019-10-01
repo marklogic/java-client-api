@@ -90,7 +90,6 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private Calendar jobStartTime;
   private Calendar jobEndTime;
   private long maxUris = Long.MAX_VALUE;
-  private AtomicBoolean jobDone = new AtomicBoolean(false);
   private long maxBatches = Long.MAX_VALUE;
 
   public QueryBatcherImpl(QueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
@@ -617,10 +616,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
           "for that forest has already been retrieved", forest.getForestName(), forestBatchNum, start);
         return;
       }
-      if(jobDone.get()) {
-          logger.info("The number of uris collected has reached the maximum limit.");
-          return;
-      }
+      
       // don't proceed if this job is stopped (because dataMovementManager.stopJob was called)
       if ( stopped.get() == true ) {
         logger.warn("Cancelling task to query forest '{}' forestBatchNum {} with start {} after the job is stopped",
@@ -662,11 +658,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
           for ( String uri : results ) {
             uris.add( uri );
           }
-          if ( uris.size() == getBatchSize() ) {
-            nextAfterUri = uris.get(getBatchSize() - 1);
-            // this is a full batch
-            launchNextTask();
-          }
+          
           batch = batch
             .withItems(uris.toArray(new String[uris.size()]))
             .withServerTimestamp(serverTimestamp.get())
@@ -674,9 +666,12 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
             .withForestResultsSoFar(forestResults.get(forest).addAndGet(uris.size()));
           
           if(maxUris <= (resultsSoFar.longValue())) {
-              jobDone.set(true);
               isDone.set(true);
-          }
+          } else if ( uris.size() == getBatchSize() ) {
+              nextAfterUri = uris.get(getBatchSize() - 1);
+              // this is a full batch
+              launchNextTask();
+            }
 
           logger.trace("batch size={}, jobBatchNumber={}, jobResultsSoFar={}, forest={}", uris.size(),
             batch.getJobBatchNumber(), batch.getJobResultsSoFar(), forest.getForestName());
@@ -734,7 +729,10 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       }
       AtomicBoolean isDone = forestIsDone.get(forest);
       // we made it to the end, so don't launch anymore tasks
-      if ( isDone.get() == true ) return;
+      if ( isDone.get() == true ) {
+    	  shutdownIfAllForestsAreDone();
+    	  return;
+    }
       long nextStart = start + getBatchSize();
       threadPool.execute(new QueryTask(moveMgr, batcher, forest, query, forestBatchNum + 1, nextStart, nextAfterUri));
     }
