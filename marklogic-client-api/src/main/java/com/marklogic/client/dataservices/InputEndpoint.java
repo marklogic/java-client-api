@@ -22,16 +22,41 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.dataservices.impl.InputEndpointImpl;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
+/**
+ * Provides an interface for calling an endpoint that takes input data structures.
+ */
 public interface InputEndpoint extends IOEndpoint {
+	/**
+     * Constructs an instance of the InputEndpoint interface.
+     * @param client  the database client to use for making calls
+     * @param apiDecl  the JSON api declaration specifying how to call the endpoint
+     * @return  the InputEndpoint instance for calling the endpoint.
+     */
 	static InputEndpoint on(DatabaseClient client, JSONWriteHandle apiDecl) {
 		return new InputEndpointImpl(client, apiDecl);
 	}
-
+	/**
+     * Makes one call to the endpoint for the instance
+     * @param workUnit  the definition of a unit of work
+     * @param input  the stream given to the endpoint as input.
+     */
 	void call(InputStream workUnit, Stream<InputStream> input);
-
+	/**
+     * Constructs an instance of a bulk caller, which completes
+     * a unit of work by repeated calls to the endpoint.
+     * @return  the bulk caller for the input endpoint
+     */
 	BulkInputCaller bulkCaller();
 
+	/**
+     * Provides an interface for completing a unit of work
+     * by repeated calls to the input endpoint.
+     */
 	interface BulkInputCaller extends IOEndpoint.BulkIOEndpointCaller {
+		/**
+		 * Accepts the input for the input endpoint.
+		 * @param input  the stream given to the endpoint as input.
+		 */
 		void accept(InputStream input);
 	}
 }

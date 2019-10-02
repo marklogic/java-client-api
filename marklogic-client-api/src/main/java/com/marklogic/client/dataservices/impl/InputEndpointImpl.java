@@ -16,16 +16,25 @@
 package com.marklogic.client.dataservices.impl;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.InputEndpoint;
 import com.marklogic.client.dataservices.impl.IOEndpointImpl;
+import com.marklogic.client.dataservices.impl.IOEndpointImpl.BulkIOEndpointCallerImpl.WorkPhase;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
 public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
+	private static Logger logger = LoggerFactory.getLogger(InputEndpointImpl.class);
 	private static int DEFAULT_BATCH_SIZE = 100;
 	private InputCallerImpl caller;
 	private int batchSize;
@@ -83,12 +92,53 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 
 		@Override
 		public void accept(InputStream input) {
-			// TODO Auto-generated method stub
+			
+			InputStream output = null;
+			try {
+				queue.put(input);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			if((queue.size()% getBatchSize()) > 0)
+				return;
+			
+			switch (getPhase()) {
+				case INITIALIZING:
+					setPhase(WorkPhase.RUNNING);
+					break;
+				case RUNNING:
+					break;
+				case INTERRUPTING:
+					throw new MarkLogicInternalException(
+							"cannot accept more input as current phase is  " + getPhase().name());
+				case INTERRUPTED:
+					throw new MarkLogicInternalException(
+							"cannot accept more input as current phase is  " + getPhase().name());
+				case COMPLETED:
+					throw new MarkLogicInternalException(
+							"cannot accept more input as current phase is  " + getPhase().name());
+				default:
+					throw new MarkLogicInternalException(
+							"unexpected state for " + getEndpointPath() + " during loop: " + getPhase().name());
+			}
+			List<InputStream> inputStreamList = new ArrayList<InputStream>();
+			queue.drainTo(inputStreamList);
+			SessionState session = allowsSession() ? getEndpoint().getCaller().newSessionState() : null;
+			
+			logger.trace("input endpoint running endpoint={} count={} state={}",
+                    getEndpointPath(), getCallCount(), getEndpointState());
+			output = getEndpoint().getCaller().call(
+					getEndpoint().getClient(), getEndpointState(), session, getWorkUnit(), inputStreamList.stream()
+					);
+			
+			if (allowsEndpointState()) {
+                setEndpointState(output);
+            }
 		}
 
 		@Override
 		public void awaitCompletion() {
-			// TODO Auto-generated method stub
+			logger.trace("input endpoint running endpoint={} work={}", getEndpointPath(), getWorkUnit());
 		}
 	}
 
