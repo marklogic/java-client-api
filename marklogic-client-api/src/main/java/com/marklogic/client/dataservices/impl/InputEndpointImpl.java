@@ -92,48 +92,45 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 
 		@Override
 		public void accept(InputStream input) {
-			
-			InputStream output = null;
+
 			try {
 				queue.put(input);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
+				throw new IllegalStateException("InputStream was not added to the queue." + e.getMessage());
 			}
-			if((queue.size()% getBatchSize()) > 0)
+			if ((queue.size() % getBatchSize()) > 0)
 				return;
-			
+
 			switch (getPhase()) {
-				case INITIALIZING:
-					setPhase(WorkPhase.RUNNING);
-					break;
-				case RUNNING:
-					break;
-				case INTERRUPTING:
-					throw new MarkLogicInternalException(
-							"cannot accept more input as current phase is  " + getPhase().name());
-				case INTERRUPTED:
-					throw new MarkLogicInternalException(
-							"cannot accept more input as current phase is  " + getPhase().name());
-				case COMPLETED:
-					throw new MarkLogicInternalException(
-							"cannot accept more input as current phase is  " + getPhase().name());
-				default:
-					throw new MarkLogicInternalException(
-							"unexpected state for " + getEndpointPath() + " during loop: " + getPhase().name());
+			case INITIALIZING:
+				setPhase(WorkPhase.RUNNING);
+				break;
+			case RUNNING:
+				break;
+			case INTERRUPTING:
+				
+			case INTERRUPTED:
+				
+			case COMPLETED:
+				throw new IllegalStateException(
+						"cannot accept more input as current phase is  " + getPhase().name());
+			default:
+				throw new MarkLogicInternalException(
+						"unexpected state for " + getEndpointPath() + " during loop: " + getPhase().name());
 			}
 			List<InputStream> inputStreamList = new ArrayList<InputStream>();
 			queue.drainTo(inputStreamList);
 			SessionState session = allowsSession() ? getEndpoint().getCaller().newSessionState() : null;
-			
-			logger.trace("input endpoint running endpoint={} count={} state={}",
-                    getEndpointPath(), getCallCount(), getEndpointState());
-			output = getEndpoint().getCaller().call(
-					getEndpoint().getClient(), getEndpointState(), session, getWorkUnit(), inputStreamList.stream()
-					);
-			
+
+			logger.trace("input endpoint running endpoint={} count={} state={}", getEndpointPath(), getCallCount(),
+					getEndpointState());
+			InputStream output = getEndpoint().getCaller().call(getEndpoint().getClient(), getEndpointState(), session,
+					getWorkUnit(), inputStreamList.stream());
+
 			if (allowsEndpointState()) {
-                setEndpointState(output);
-            }
+				setEndpointState(output);
+			}
 		}
 
 		@Override
