@@ -875,7 +875,10 @@ public class QueryBatcherTest {
       
       AtomicInteger counter = new AtomicInteger(0);
       QueryBatcher  queryBatcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("maxUrisTest"));
-      queryBatcher.setMaxBatches(2);
+      
+      int forest_count = queryBatcher.getForestConfig().listForests().length;
+      int maxBatches = forest_count-1;
+      queryBatcher.setMaxBatches(maxBatches);
       queryBatcher.withBatchSize(10)
               .onUrisReady(batch -> {
                   outputUris.addAll(Arrays.asList(batch.getItems()));
@@ -888,11 +891,10 @@ public class QueryBatcherTest {
           dmManager.startJob(queryBatcher);
           queryBatcher.awaitCompletion();
           dmManager.stopJob(queryBatcher);
+          assertTrue("Counter value not as expected", (counter.get() >= maxBatches) && (counter.get()<= (forest_count+maxBatches)));
           
-          assertTrue("Counter value not as expected", (counter.get() >= 2) && (counter.get()<5));
-          
-          // The number of documents should be more than maxuris but less than (maxuris+ threadcount*batchsize)
-          assertTrue("Output list does not contain expected number of outputs", (outputUris.size() >= 20) && outputUris.size()<50);
+          // The number of documents should be more than maxBatches*batchSize but less than (batchSize*(forest_count+maxBatches))
+          assertTrue("Output list does not contain expected number of outputs", (outputUris.size() >= (maxBatches*10)) && outputUris.size()<= (10*(forest_count+maxBatches)));
   }
   
 	static void changeAssignmentPolicy(String value) throws IOException {
