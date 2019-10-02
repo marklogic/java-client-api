@@ -860,7 +860,7 @@ public class QueryBatcherTest {
   @Test
   public void maxUrisTestWithQueryTask() {
       DataMovementManager dmManager = client.newDataMovementManager();
-      List<String> outputUris = new ArrayList<String>();
+      List<String> outputUris = Collections.synchronizedList(new ArrayList<String>());
       
       DocumentMetadataHandle documentMetadata = new DocumentMetadataHandle().withCollections("maxUrisTest");
       WriteBatcher batcher = moveMgr.newWriteBatcher().withDefaultMetadata(documentMetadata);
@@ -873,17 +873,13 @@ public class QueryBatcherTest {
       batcher.flushAndWait();
       moveMgr.stopJob(batcher);
       
-      class Output {
-          int counter = 0;
-      }
-      
+      AtomicInteger counter = new AtomicInteger(0);
       QueryBatcher  queryBatcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("maxUrisTest"));
-      final Output output = new Output();
       queryBatcher.setMaxBatches(2);
       queryBatcher.withBatchSize(10)
               .onUrisReady(batch -> {
                   outputUris.addAll(Arrays.asList(batch.getItems()));
-                  output.counter++;
+                  counter.incrementAndGet();
               })
               .onQueryFailure((QueryBatchException failure) -> {
                   System.out.println(failure.getMessage());
@@ -893,7 +889,7 @@ public class QueryBatcherTest {
           queryBatcher.awaitCompletion();
           dmManager.stopJob(queryBatcher);
           
-          assertTrue("Counter value not as expected", (output.counter >= 2) && (output.counter<5));
+          assertTrue("Counter value not as expected", (counter.get() >= 2) && (counter.get()<5));
           
           // The number of documents should be more than maxuris but less than (maxuris+ threadcount*batchsize)
           assertTrue("Output list does not contain expected number of outputs", (outputUris.size() >= 20) && outputUris.size()<50);
