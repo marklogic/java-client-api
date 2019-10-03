@@ -56,7 +56,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -864,9 +863,10 @@ public class QueryBatcherTest {
       
       DocumentMetadataHandle documentMetadata = new DocumentMetadataHandle().withCollections("maxUrisTest");
       WriteBatcher batcher = moveMgr.newWriteBatcher().withDefaultMetadata(documentMetadata);
-
+      int forests = batcher.getForestConfig().listForests().length;
+      int batchSize = 10;
       moveMgr.startJob(batcher);
-      for(int i=0; i<100; i++) {
+      for(int i=0; i<((forests+2)*batchSize); i++) {
           batcher.addAs("test"+i+".txt", new StringHandle().with("Test"+i));
       }
 
@@ -877,9 +877,8 @@ public class QueryBatcherTest {
       QueryBatcher  queryBatcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("maxUrisTest"));
       
       int forest_count = queryBatcher.getForestConfig().listForests().length;
-      int maxBatches = forest_count-1;
-      queryBatcher.setMaxBatches(maxBatches);
-      queryBatcher.withBatchSize(10)
+      queryBatcher.setMaxBatches(1);
+      queryBatcher.withBatchSize(batchSize)
               .onUrisReady(batch -> {
                   outputUris.addAll(Arrays.asList(batch.getItems()));
                   counter.incrementAndGet();
@@ -891,10 +890,10 @@ public class QueryBatcherTest {
           dmManager.startJob(queryBatcher);
           queryBatcher.awaitCompletion();
           dmManager.stopJob(queryBatcher);
-          assertTrue("Counter value not as expected", (counter.get() >= maxBatches) && (counter.get()<= (forest_count+maxBatches)));
+          assertTrue("Counter value not as expected", (counter.get() >= 1) && (counter.get()<= (forest_count+1)));
           
           // The number of documents should be more than maxBatches*batchSize but less than (batchSize*(forest_count+maxBatches))
-          assertTrue("Output list does not contain expected number of outputs", (outputUris.size() >= (maxBatches*10)) && outputUris.size()<= (10*(forest_count+maxBatches)));
+          assertTrue("Output list does not contain expected number of outputs", (outputUris.size() >= 10) && outputUris.size()<= (10*(forest_count+1)));
   }
   
 	static void changeAssignmentPolicy(String value) throws IOException {
