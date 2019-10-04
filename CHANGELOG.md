@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 5.0.1
+#### New Functionality
+- [#636](https://github.com/marklogic/java-client-api/issues/636) - Support for debugging connection issues
+
+#### Improvements and Bug Fixes
+- [#1104](https://github.com/marklogic/java-client-api/issues/1104) - Fix for mimetype extensions in determining formats for Data Services
+- [#1107](https://github.com/marklogic/java-client-api/issues/1107) - Expose server error information on the client
+- [#1117](https://github.com/marklogic/java-client-api/issues/1117) - Few StructuredQueryBuilder methods enhanced to return StructuredQueryDefinition
+
 ## 5.0.0
 #### New Functionality
 - [#911](https://github.com/marklogic/java-client-api/issues/911) - Streaming Multipart for OkHttp
