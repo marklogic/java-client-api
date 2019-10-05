@@ -12,41 +12,66 @@ import java.io.InputStream;
 import java.net.URL;
 
 public class DBFunctionTestUtil {
-   // TODO - parameterizable security context
+   // used for test endpoints that inspect request and generate response
    public final static DatabaseClient db = makeTestClient();
+
+   // used for bulk test endpoints that depend on DMSDK
+   public final static DatabaseClient restDb = makeRestClient();
+
+   // used for test endpoints that need an elevated privilege
+   public final static DatabaseClient adminDb = makeAdminTestClient();
+
+   private static DatabaseClient makeRestClient() {
+      return makeRestClientImpl(
+              new DatabaseClientFactory.DigestAuthContext("rest-reader", "x")
+      );
+   }
    private static DatabaseClient makeTestClient() {
-
+      return makeTestClientImpl(
+          new DatabaseClientFactory.DigestAuthContext("rest-reader", "x")
+      );
+   }
+   private static DatabaseClient makeAdminTestClient() {
+      return makeTestClientImpl(
+          new DatabaseClientFactory.DigestAuthContext("admin", "admin")
+      );
+   }
+   private static DatabaseClient makeRestClientImpl(DatabaseClientFactory.DigestAuthContext auth) {
+      return makeClientImpl(auth, "8012", false);
+   }
+   private static DatabaseClient makeTestClientImpl(DatabaseClientFactory.DigestAuthContext auth) {
+      return makeClientImpl(auth, "8016", true);
+   }
+   private static DatabaseClient makeClientImpl(
+           DatabaseClientFactory.DigestAuthContext auth, String defaultPort, boolean withCheck
+   ) {
       String host = System.getProperty("TEST_HOST", "localhost");
-      int    port = Integer.parseInt(System.getProperty("TEST_PORT", "8016"));;
+      int    port = Integer.parseInt(System.getProperty("TEST_PORT", defaultPort));
 
-      DatabaseClient db = DatabaseClientFactory.newClient(
-        host,
-        port,
-// TODO: use rest-reader role after amping to add header in test inspector
-//      new DatabaseClientFactory.DigestAuthContext("rest-reader", "x")
-        new DatabaseClientFactory.DigestAuthContext("admin", "admin")
-        );
+      DatabaseClient db = DatabaseClientFactory.newClient(host, port, auth);
 
-      try {
-         OkHttpClient client = (OkHttpClient) db.getClientImplementation();
+      if (withCheck) {
+         try {
+            OkHttpClient client = (OkHttpClient) db.getClientImplementation();
 // TODO: better alternative to ping for non-REST server
-         Response response = client.newCall(new Request.Builder().url(
-            new HttpUrl.Builder()
-               .scheme("http")
-               .host(host)
-               .port(port)
-               .encodedPath("/")
-               .build()
-            ).build()
+            Response response = client.newCall(new Request.Builder().url(
+                    new HttpUrl.Builder()
+                            .scheme("http")
+                            .host(host)
+                            .port(port)
+                            .encodedPath("/")
+                            .build()
+                    ).build()
             ).execute();
-         int statusCode = response.code();
-         if (statusCode >= 300 && statusCode != 404) {
-            throw new RuntimeException(statusCode+" "+response.message());
+            int statusCode = response.code();
+            if (statusCode >= 300 && statusCode != 404) {
+               throw new RuntimeException(statusCode+" "+response.message());
+            }
+         } catch (IOException e) {
+            throw new RuntimeException(e);
          }
-      } catch (IOException e) {
-// TODO: library error
-         throw new RuntimeException(e);
       }
+
       return db;
    }
    public static URL getResource(String name) {

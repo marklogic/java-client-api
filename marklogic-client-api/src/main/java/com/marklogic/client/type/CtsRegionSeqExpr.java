@@ -20,5 +20,5 @@ package com.marklogic.client.type;
 /**
  * A sequence of cts.region expressions.
  */
-public interface CtsRegionSeqExpr extends ItemSeqExpr {
+public interface CtsRegionSeqExpr extends ServerExpression {
 }

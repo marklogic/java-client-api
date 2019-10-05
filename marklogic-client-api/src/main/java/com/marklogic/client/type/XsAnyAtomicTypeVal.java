@@ -18,5 +18,5 @@ package com.marklogic.client.type;
 /**
  * An instance of a server atomic value.
  */
-public interface XsAnyAtomicTypeVal extends XsAnyAtomicTypeExpr, XsAnySimpleTypeVal, XsAnyAtomicTypeSeqVal, PlanTriplePosition {
+public interface XsAnyAtomicTypeVal extends XsAnySimpleTypeVal, XsAnyAtomicTypeSeqVal, PlanTriplePosition {
 }

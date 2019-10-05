@@ -15,29 +15,22 @@
  */
 package com.marklogic.client.expression;
 
-import com.marklogic.client.type.ElementNodeExpr;
-import com.marklogic.client.type.ItemExpr;
-import com.marklogic.client.type.ItemSeqExpr;
-import com.marklogic.client.type.NodeExpr;
-import com.marklogic.client.type.XsAnyAtomicTypeExpr;
-import com.marklogic.client.type.XsAnyAtomicTypeSeqExpr;
-import com.marklogic.client.type.XsAnyURIExpr;
-import com.marklogic.client.type.XsBooleanExpr;
-import com.marklogic.client.type.XsDateExpr;
-import com.marklogic.client.type.XsDateTimeExpr;
-import com.marklogic.client.type.XsDayTimeDurationExpr;
-import com.marklogic.client.type.XsDecimalExpr;
-import com.marklogic.client.type.XsDoubleExpr;
-import com.marklogic.client.type.XsDurationExpr;
-import com.marklogic.client.type.XsIntegerExpr;
-import com.marklogic.client.type.XsIntegerSeqExpr;
-import com.marklogic.client.type.XsNCNameExpr;
-import com.marklogic.client.type.XsNumericExpr;
-import com.marklogic.client.type.XsNumericSeqExpr;
-import com.marklogic.client.type.XsQNameExpr;
-import com.marklogic.client.type.XsStringExpr;
-import com.marklogic.client.type.XsStringSeqExpr;
-import com.marklogic.client.type.XsTimeExpr;
+import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
+import com.marklogic.client.type.XsAnyAtomicTypeVal;
+import com.marklogic.client.type.XsAnyURIVal;
+import com.marklogic.client.type.XsBooleanVal;
+import com.marklogic.client.type.XsDateTimeVal;
+import com.marklogic.client.type.XsDateVal;
+import com.marklogic.client.type.XsDayTimeDurationVal;
+import com.marklogic.client.type.XsDecimalVal;
+import com.marklogic.client.type.XsDoubleVal;
+import com.marklogic.client.type.XsDurationVal;
+import com.marklogic.client.type.XsIntegerSeqVal;
+import com.marklogic.client.type.XsIntegerVal;
+import com.marklogic.client.type.XsQNameVal;
+import com.marklogic.client.type.XsStringSeqVal;
+import com.marklogic.client.type.XsStringVal;
+import com.marklogic.client.type.XsTimeVal;
 
 import com.marklogic.client.type.ServerExpression;
 
@@ -58,7 +51,7 @@ public interface FnExpr {
   * @param arg  A numeric value.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public XsNumericExpr abs(ServerExpression arg);
+  public ServerExpression abs(ServerExpression arg);
 /**
   * Adjusts an xs:date value to a specific timezone, or to no timezone at all. If timezone is the empty sequence, returns an xs:date without a timezone. Otherwise, returns an xs:date with a timezone. For purposes of timezone adjustment, an xs:date is treated as an xs:dateTime with time 00:00:00. 
   *
@@ -69,7 +62,7 @@ public interface FnExpr {
   * @param arg  The date to adjust to the new timezone.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a> server data type
   */
-  public XsDateExpr adjustDateToTimezone(ServerExpression arg);
+  public ServerExpression adjustDateToTimezone(ServerExpression arg);
 /**
   * Adjusts an xs:date value to a specific timezone, or to no timezone at all. If timezone is the empty sequence, returns an xs:date without a timezone. Otherwise, returns an xs:date with a timezone. For purposes of timezone adjustment, an xs:date is treated as an xs:dateTime with time 00:00:00. 
   * <p>
@@ -78,7 +71,7 @@ public interface FnExpr {
   * @param timezone  The new timezone for the date.  (of <a href="{@docRoot}/doc-files/types/xs_dayTimeDuration.html">xs:dayTimeDuration</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a> server data type
   */
-  public XsDateExpr adjustDateToTimezone(ServerExpression arg, String timezone);
+  public ServerExpression adjustDateToTimezone(ServerExpression arg, String timezone);
 /**
   * Adjusts an xs:date value to a specific timezone, or to no timezone at all. If timezone is the empty sequence, returns an xs:date without a timezone. Otherwise, returns an xs:date with a timezone. For purposes of timezone adjustment, an xs:date is treated as an xs:dateTime with time 00:00:00. 
   * <p>
@@ -87,7 +80,7 @@ public interface FnExpr {
   * @param timezone  The new timezone for the date.  (of <a href="{@docRoot}/doc-files/types/xs_dayTimeDuration.html">xs:dayTimeDuration</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a> server data type
   */
-  public XsDateExpr adjustDateToTimezone(ServerExpression arg, ServerExpression timezone);
+  public ServerExpression adjustDateToTimezone(ServerExpression arg, ServerExpression timezone);
 /**
   * Adjusts an xs:dateTime value to a specific timezone, or to no timezone at all. If timezone is the empty sequence, returns an xs:dateTime without a timezone. Otherwise, returns an xs:dateTime with a timezone. 
   *
@@ -98,7 +91,7 @@ public interface FnExpr {
   * @param arg  The dateTime to adjust to the new timezone.  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr adjustDateTimeToTimezone(ServerExpression arg);
+  public ServerExpression adjustDateTimeToTimezone(ServerExpression arg);
 /**
   * Adjusts an xs:dateTime value to a specific timezone, or to no timezone at all. If timezone is the empty sequence, returns an xs:dateTime without a timezone. Otherwise, returns an xs:dateTime with a timezone. 
   * <p>
@@ -107,7 +100,7 @@ public interface FnExpr {
   * @param timezone  The new timezone for the dateTime.  (of <a href="{@docRoot}/doc-files/types/xs_dayTimeDuration.html">xs:dayTimeDuration</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr adjustDateTimeToTimezone(ServerExpression arg, String timezone);
+  public ServerExpression adjustDateTimeToTimezone(ServerExpression arg, String timezone);
 /**
   * Adjusts an xs:dateTime value to a specific timezone, or to no timezone at all. If timezone is the empty sequence, returns an xs:dateTime without a timezone. Otherwise, returns an xs:dateTime with a timezone. 
   * <p>
@@ -116,7 +109,7 @@ public interface FnExpr {
   * @param timezone  The new timezone for the dateTime.  (of <a href="{@docRoot}/doc-files/types/xs_dayTimeDuration.html">xs:dayTimeDuration</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr adjustDateTimeToTimezone(ServerExpression arg, ServerExpression timezone);
+  public ServerExpression adjustDateTimeToTimezone(ServerExpression arg, ServerExpression timezone);
 /**
   * Adjusts an xs:time value to a specific timezone, or to no timezone at all. If timezone is the empty sequence, returns an xs:time without a timezone. Otherwise, returns an xs:time with a timezone. 
   *
@@ -127,7 +120,7 @@ public interface FnExpr {
   * @param arg  The time to adjust to the new timezone.  (of <a href="{@docRoot}/doc-files/types/xs_time.html">xs:time</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_time.html">xs:time</a> server data type
   */
-  public XsTimeExpr adjustTimeToTimezone(ServerExpression arg);
+  public ServerExpression adjustTimeToTimezone(ServerExpression arg);
 /**
   * Adjusts an xs:time value to a specific timezone, or to no timezone at all. If timezone is the empty sequence, returns an xs:time without a timezone. Otherwise, returns an xs:time with a timezone. 
   * <p>
@@ -136,7 +129,7 @@ public interface FnExpr {
   * @param timezone  The new timezone for the date.  (of <a href="{@docRoot}/doc-files/types/xs_dayTimeDuration.html">xs:dayTimeDuration</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_time.html">xs:time</a> server data type
   */
-  public XsTimeExpr adjustTimeToTimezone(ServerExpression arg, String timezone);
+  public ServerExpression adjustTimeToTimezone(ServerExpression arg, String timezone);
 /**
   * Adjusts an xs:time value to a specific timezone, or to no timezone at all. If timezone is the empty sequence, returns an xs:time without a timezone. Otherwise, returns an xs:time with a timezone. 
   * <p>
@@ -145,7 +138,7 @@ public interface FnExpr {
   * @param timezone  The new timezone for the date.  (of <a href="{@docRoot}/doc-files/types/xs_dayTimeDuration.html">xs:dayTimeDuration</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_time.html">xs:time</a> server data type
   */
-  public XsTimeExpr adjustTimeToTimezone(ServerExpression arg, ServerExpression timezone);
+  public ServerExpression adjustTimeToTimezone(ServerExpression arg, ServerExpression timezone);
 /**
   * The result of the function is a new element node whose string value is the original string, but which contains markup to show which parts of the input match the regular expression.
   * <p>
@@ -154,7 +147,7 @@ public interface FnExpr {
   * @param regex  The regular expression pattern to match.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a> server data type
   */
-  public ElementNodeExpr analyzeString(String in, String regex);
+  public ServerExpression analyzeString(String in, String regex);
 /**
   * The result of the function is a new element node whose string value is the original string, but which contains markup to show which parts of the input match the regular expression.
   *
@@ -166,7 +159,7 @@ public interface FnExpr {
   * @param regex  The regular expression pattern to match.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a> server data type
   */
-  public ElementNodeExpr analyzeString(ServerExpression in, ServerExpression regex);
+  public ServerExpression analyzeString(ServerExpression in, ServerExpression regex);
 /**
   * The result of the function is a new element node whose string value is the original string, but which contains markup to show which parts of the input match the regular expression.
   * <p>
@@ -176,7 +169,7 @@ public interface FnExpr {
   * @param flags  The flag representing how to interpret the regular expression. One of "s", "m", "i", or "x", as defined in http://www.w3.org/TR/xpath-functions/#flags.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a> server data type
   */
-  public ElementNodeExpr analyzeString(String in, String regex, String flags);
+  public ServerExpression analyzeString(String in, String regex, String flags);
 /**
   * The result of the function is a new element node whose string value is the original string, but which contains markup to show which parts of the input match the regular expression.
   * <p>
@@ -186,7 +179,7 @@ public interface FnExpr {
   * @param flags  The flag representing how to interpret the regular expression. One of "s", "m", "i", or "x", as defined in http://www.w3.org/TR/xpath-functions/#flags.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a> server data type
   */
-  public ElementNodeExpr analyzeString(ServerExpression in, ServerExpression regex, ServerExpression flags);
+  public ServerExpression analyzeString(ServerExpression in, ServerExpression regex, ServerExpression flags);
 /**
   * Returns the average of the values in the input sequence arg, that is, the sum of the values divided by the number of values. 
   *
@@ -197,7 +190,7 @@ public interface FnExpr {
   * @param arg  The sequence of values to average.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
-  public XsAnyAtomicTypeExpr avg(ServerExpression arg);
+  public ServerExpression avg(ServerExpression arg);
 /**
   * Returns the value of the base-uri property for the specified node. If the node is part of a document and does not have a base-uri attribute explicitly set, fn:base-uri typically returns the URI of the document in which the node resides.
   *
@@ -208,7 +201,7 @@ public interface FnExpr {
   * @param arg  The node whose base-uri is to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyURI.html">xs:anyURI</a> server data type
   */
-  public XsAnyURIExpr baseUri(ServerExpression arg);
+  public ServerExpression baseUri(ServerExpression arg);
 /**
   * Computes the effective boolean value of the sequence arg. See Section 2.4.3 Effective Boolean Value[XP]. 
   *
@@ -219,7 +212,7 @@ public interface FnExpr {
   * @param arg  A sequence of items.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr booleanExpr(ServerExpression arg);
+  public ServerExpression booleanExpr(ServerExpression arg);
 /**
   * Returns the smallest (closest to negative infinity) number with no fractional part that is not less than the value of arg. If type of arg is one of the four numeric types xs:float, xs:double, xs:decimal or xs:integer the type of the result is the same as the type of arg. If the type of arg is a type derived from one of the numeric types, the result is an instance of the base numeric type. 
   *
@@ -230,7 +223,7 @@ public interface FnExpr {
   * @param arg  A numeric value.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public XsNumericExpr ceiling(ServerExpression arg);
+  public ServerExpression ceiling(ServerExpression arg);
 /**
   * Returns true if the specified parameters are the same Unicode code point, otherwise returns false. The codepoints are compared according to the Unicode code point collation (http://www.w3.org/2005/xpath-functions/collation/codepoint).  
   * <p>
@@ -239,7 +232,7 @@ public interface FnExpr {
   * @param comparand2  A string to be compared.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr codepointEqual(ServerExpression comparand1, String comparand2);
+  public ServerExpression codepointEqual(ServerExpression comparand1, String comparand2);
 /**
   * Returns true if the specified parameters are the same Unicode code point, otherwise returns false. The codepoints are compared according to the Unicode code point collation (http://www.w3.org/2005/xpath-functions/collation/codepoint).  
   *
@@ -251,7 +244,7 @@ public interface FnExpr {
   * @param comparand2  A string to be compared.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr codepointEqual(ServerExpression comparand1, ServerExpression comparand2);
+  public ServerExpression codepointEqual(ServerExpression comparand1, ServerExpression comparand2);
 /**
   * Creates an xs:string from a sequence of Unicode code points. Returns the zero-length string if arg is the empty sequence. If any of the code points in arg is not a legal XML character, an error is raised.
   *
@@ -262,7 +255,7 @@ public interface FnExpr {
   * @param arg  A sequence of Unicode code points.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr codepointsToString(ServerExpression arg);
+  public ServerExpression codepointsToString(ServerExpression arg);
 /**
   * Returns -1, 0, or 1, depending on whether the value of the comparand1 is respectively less than, equal to, or greater than the value of comparand2, according to the rules of the collation that is used. 
   * <p>
@@ -271,7 +264,7 @@ public interface FnExpr {
   * @param comparand2  A string to be compared.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr compare(ServerExpression comparand1, String comparand2);
+  public ServerExpression compare(ServerExpression comparand1, String comparand2);
 /**
   * Returns -1, 0, or 1, depending on whether the value of the comparand1 is respectively less than, equal to, or greater than the value of comparand2, according to the rules of the collation that is used. 
   *
@@ -283,7 +276,7 @@ public interface FnExpr {
   * @param comparand2  A string to be compared.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr compare(ServerExpression comparand1, ServerExpression comparand2);
+  public ServerExpression compare(ServerExpression comparand1, ServerExpression comparand2);
 /**
   * Returns -1, 0, or 1, depending on whether the value of the comparand1 is respectively less than, equal to, or greater than the value of comparand2, according to the rules of the collation that is used. 
   * <p>
@@ -293,7 +286,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr compare(ServerExpression comparand1, String comparand2, String collation);
+  public ServerExpression compare(ServerExpression comparand1, String comparand2, String collation);
 /**
   * Returns -1, 0, or 1, depending on whether the value of the comparand1 is respectively less than, equal to, or greater than the value of comparand2, according to the rules of the collation that is used. 
   * <p>
@@ -303,7 +296,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr compare(ServerExpression comparand1, ServerExpression comparand2, ServerExpression collation);
+  public ServerExpression compare(ServerExpression comparand1, ServerExpression comparand2, ServerExpression collation);
 /**
   * Returns the xs:string that is the concatenation of the values of the specified parameters. Accepts two or more xs:anyAtomicType arguments and casts them to xs:string. If any of the parameters is the empty sequence, the parameter is treated as the zero-length string. 
   *
@@ -314,7 +307,7 @@ public interface FnExpr {
   * @param parameter1  A value.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr concat(ServerExpression... parameter1);
+  public ServerExpression concat(ServerExpression... parameter1);
 /**
   * Returns true if the first parameter contains the string from the second parameter, otherwise returns false.
   * <p>
@@ -323,7 +316,7 @@ public interface FnExpr {
   * @param parameter2  The string to test for existence in the first parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr contains(ServerExpression parameter1, String parameter2);
+  public ServerExpression contains(ServerExpression parameter1, String parameter2);
 /**
   * Returns true if the first parameter contains the string from the second parameter, otherwise returns false.
   *
@@ -335,7 +328,7 @@ public interface FnExpr {
   * @param parameter2  The string to test for existence in the first parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr contains(ServerExpression parameter1, ServerExpression parameter2);
+  public ServerExpression contains(ServerExpression parameter1, ServerExpression parameter2);
 /**
   * Returns true if the first parameter contains the string from the second parameter, otherwise returns false.
   * <p>
@@ -345,7 +338,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr contains(ServerExpression parameter1, String parameter2, String collation);
+  public ServerExpression contains(ServerExpression parameter1, String parameter2, String collation);
 /**
   * Returns true if the first parameter contains the string from the second parameter, otherwise returns false.
   * <p>
@@ -355,7 +348,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr contains(ServerExpression parameter1, ServerExpression parameter2, ServerExpression collation);
+  public ServerExpression contains(ServerExpression parameter1, ServerExpression parameter2, ServerExpression collation);
 /**
   * Returns the number of items in the value of arg. 
   *
@@ -366,7 +359,7 @@ public interface FnExpr {
   * @param arg  The sequence of items to count.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr count(ServerExpression arg);
+  public ServerExpression count(ServerExpression arg);
 /**
   * Returns the number of items in the value of arg. 
   * <p>
@@ -375,7 +368,7 @@ public interface FnExpr {
   * @param maximum  The maximum value of the count to return. MarkLogic Server will stop count when the $maximum value is reached and return the $maximum value. This is an extension to the W3C standard fn:count function.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr count(ServerExpression arg, double maximum);
+  public ServerExpression count(ServerExpression arg, double maximum);
 /**
   * Returns the number of items in the value of arg. 
   * <p>
@@ -384,7 +377,7 @@ public interface FnExpr {
   * @param maximum  The maximum value of the count to return. MarkLogic Server will stop count when the $maximum value is reached and return the $maximum value. This is an extension to the W3C standard fn:count function.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr count(ServerExpression arg, ServerExpression maximum);
+  public ServerExpression count(ServerExpression arg, ServerExpression maximum);
 /**
   * Returns xs:date(fn:current-dateTime()). This is an xs:date (with timezone) that is current at some time during the evaluation of a query or transformation in which fn:current-date() is executed. This function is *stable*. The precise instant during the query or transformation represented by the value of fn:current-date() is *implementation dependent*.
   *
@@ -394,7 +387,7 @@ public interface FnExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/fn:current-date" target="mlserverdoc">fn:current-date</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a> server data type
   */
-  public XsDateExpr currentDate();
+  public ServerExpression currentDate();
 /**
   * Returns the current dateTime value (with timezone) from the dynamic context. (See Section C.2 Dynamic Context Components[XP].) This is an xs:dateTime that is current at some time during the evaluation of a query or transformation in which fn:current-dateTime() is executed. This function is *stable*. The precise instant during the query or transformation represented by the value of fn:current-dateTime() is *implementation dependent*.
   *
@@ -404,7 +397,7 @@ public interface FnExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/fn:current-dateTime" target="mlserverdoc">fn:current-dateTime</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr currentDateTime();
+  public ServerExpression currentDateTime();
 /**
   * Returns xs:time(fn:current-dateTime()). This is an xs:time (with timezone) that is current at some time during the evaluation of a query or transformation in which fn:current-time() is executed. This function is *stable*. The precise instant during the query or transformation represented by the value of fn:current-time() is *implementation dependent*.
   *
@@ -414,7 +407,7 @@ public interface FnExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/fn:current-time" target="mlserverdoc">fn:current-time</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_time.html">xs:time</a> server data type
   */
-  public XsTimeExpr currentTime();
+  public ServerExpression currentTime();
 /**
   * Returns an xs:integer between 1 and 31, both inclusive, representing the day component in the localized value of arg. 
   *
@@ -425,7 +418,7 @@ public interface FnExpr {
   * @param arg  The date whose day component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr dayFromDate(ServerExpression arg);
+  public ServerExpression dayFromDate(ServerExpression arg);
 /**
   * Returns an xs:integer between 1 and 31, both inclusive, representing the day component in the localized value of arg. 
   *
@@ -436,7 +429,7 @@ public interface FnExpr {
   * @param arg  The dateTime whose day component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr dayFromDateTime(ServerExpression arg);
+  public ServerExpression dayFromDateTime(ServerExpression arg);
 /**
   * Returns an xs:integer representing the days component in the canonical lexical representation of the value of arg. The result may be negative. 
   *
@@ -447,7 +440,7 @@ public interface FnExpr {
   * @param arg  The duration whose day component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_duration.html">xs:duration</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr daysFromDuration(ServerExpression arg);
+  public ServerExpression daysFromDuration(ServerExpression arg);
 /**
   * This function assesses whether two sequences are deep-equal to each other. To be deep-equal, they must contain items that are pairwise deep-equal; and for two items to be deep-equal, they must either be atomic values that compare equal, or nodes of the same kind, with the same name, whose children are deep-equal. This is defined in more detail below. The collation argument identifies a collation which is used at all levels of recursion when strings are compared (but not when names are compared), according to the rules in 7.3.1 Collations.  
   *
@@ -459,7 +452,7 @@ public interface FnExpr {
   * @param parameter2  The sequence of items to compare to the first sequence of items, again each item should be an atomic value or node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr deepEqual(ServerExpression parameter1, ServerExpression parameter2);
+  public ServerExpression deepEqual(ServerExpression parameter1, ServerExpression parameter2);
 /**
   * This function assesses whether two sequences are deep-equal to each other. To be deep-equal, they must contain items that are pairwise deep-equal; and for two items to be deep-equal, they must either be atomic values that compare equal, or nodes of the same kind, with the same name, whose children are deep-equal. This is defined in more detail below. The collation argument identifies a collation which is used at all levels of recursion when strings are compared (but not when names are compared), according to the rules in 7.3.1 Collations.  
   * <p>
@@ -469,7 +462,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr deepEqual(ServerExpression parameter1, ServerExpression parameter2, String collation);
+  public ServerExpression deepEqual(ServerExpression parameter1, ServerExpression parameter2, String collation);
 /**
   * This function assesses whether two sequences are deep-equal to each other. To be deep-equal, they must contain items that are pairwise deep-equal; and for two items to be deep-equal, they must either be atomic values that compare equal, or nodes of the same kind, with the same name, whose children are deep-equal. This is defined in more detail below. The collation argument identifies a collation which is used at all levels of recursion when strings are compared (but not when names are compared), according to the rules in 7.3.1 Collations.  
   * <p>
@@ -479,7 +472,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr deepEqual(ServerExpression parameter1, ServerExpression parameter2, ServerExpression collation);
+  public ServerExpression deepEqual(ServerExpression parameter1, ServerExpression parameter2, ServerExpression collation);
 /**
   * Returns the value of the default collation property from the static context. Components of the static context are discussed in Section C.1 Static Context Components[XP].  
   *
@@ -489,7 +482,7 @@ public interface FnExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/fn:default-collation" target="mlserverdoc">fn:default-collation</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr defaultCollation();
+  public ServerExpression defaultCollation();
 /**
   * Returns the sequence that results from removing from arg all but one of a set of values that are eq to one other. Values that cannot be compared, i.e. the eq operator is not defined for their types, are considered to be distinct. Values of type xs:untypedAtomic are compared as if they were of type xs:string. The order in which the sequence of values is returned is implementation dependent. 
   *
@@ -500,7 +493,7 @@ public interface FnExpr {
   * @param arg  A sequence of items.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
-  public XsAnyAtomicTypeSeqExpr distinctValues(ServerExpression arg);
+  public ServerExpression distinctValues(ServerExpression arg);
 /**
   * Returns the sequence that results from removing from arg all but one of a set of values that are eq to one other. Values that cannot be compared, i.e. the eq operator is not defined for their types, are considered to be distinct. Values of type xs:untypedAtomic are compared as if they were of type xs:string. The order in which the sequence of values is returned is implementation dependent. 
   * <p>
@@ -509,7 +502,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
-  public XsAnyAtomicTypeSeqExpr distinctValues(ServerExpression arg, String collation);
+  public ServerExpression distinctValues(ServerExpression arg, String collation);
 /**
   * Returns the sequence that results from removing from arg all but one of a set of values that are eq to one other. Values that cannot be compared, i.e. the eq operator is not defined for their types, are considered to be distinct. Values of type xs:untypedAtomic are compared as if they were of type xs:string. The order in which the sequence of values is returned is implementation dependent. 
   * <p>
@@ -518,7 +511,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
-  public XsAnyAtomicTypeSeqExpr distinctValues(ServerExpression arg, ServerExpression collation);
+  public ServerExpression distinctValues(ServerExpression arg, ServerExpression collation);
 /**
   * Returns the value of the document-uri property for the specified node. If the node is a document node, then the value returned is the URI of the document. If the node is not a document node, then fn:document-uri returns the empty sequence.
   *
@@ -529,7 +522,7 @@ public interface FnExpr {
   * @param arg  The node whose document-uri is to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyURI.html">xs:anyURI</a> server data type
   */
-  public XsAnyURIExpr documentUri(ServerExpression arg);
+  public ServerExpression documentUri(ServerExpression arg);
 /**
   * If the value of arg is the empty sequence, the function returns true; otherwise, the function returns false.
   *
@@ -540,7 +533,7 @@ public interface FnExpr {
   * @param arg  A sequence to test.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr empty(ServerExpression arg);
+  public ServerExpression empty(ServerExpression arg);
 /**
   * Invertible function that escapes characters required to be escaped inside path segments of URIs.
   *
@@ -551,7 +544,7 @@ public interface FnExpr {
   * @param uriPart  A string representing an unescaped URI.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr encodeForUri(ServerExpression uriPart);
+  public ServerExpression encodeForUri(ServerExpression uriPart);
 /**
   * Returns true if the first parameter ends with the string from the second parameter, otherwise returns false.
   * <p>
@@ -560,7 +553,7 @@ public interface FnExpr {
   * @param parameter2  The string to test whether it is at the end of the first parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr endsWith(ServerExpression parameter1, String parameter2);
+  public ServerExpression endsWith(ServerExpression parameter1, String parameter2);
 /**
   * Returns true if the first parameter ends with the string from the second parameter, otherwise returns false.
   *
@@ -572,7 +565,7 @@ public interface FnExpr {
   * @param parameter2  The string to test whether it is at the end of the first parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr endsWith(ServerExpression parameter1, ServerExpression parameter2);
+  public ServerExpression endsWith(ServerExpression parameter1, ServerExpression parameter2);
 /**
   * Returns true if the first parameter ends with the string from the second parameter, otherwise returns false.
   * <p>
@@ -582,7 +575,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr endsWith(ServerExpression parameter1, String parameter2, String collation);
+  public ServerExpression endsWith(ServerExpression parameter1, String parameter2, String collation);
 /**
   * Returns true if the first parameter ends with the string from the second parameter, otherwise returns false.
   * <p>
@@ -592,7 +585,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr endsWith(ServerExpression parameter1, ServerExpression parameter2, ServerExpression collation);
+  public ServerExpression endsWith(ServerExpression parameter1, ServerExpression parameter2, ServerExpression collation);
 /**
   * %-escapes everything except printable ASCII characters.
   *
@@ -603,7 +596,7 @@ public interface FnExpr {
   * @param uriPart  A string representing an unescaped URI.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr escapeHtmlUri(ServerExpression uriPart);
+  public ServerExpression escapeHtmlUri(ServerExpression uriPart);
 /**
   * If the value of arg is not the empty sequence, the function returns true; otherwise, the function returns false.
   *
@@ -614,7 +607,7 @@ public interface FnExpr {
   * @param arg  A sequence to test.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr exists(ServerExpression arg);
+  public ServerExpression exists(ServerExpression arg);
 /**
   * Returns the xs:boolean value false. Equivalent to xs:boolean("0").
   *
@@ -624,7 +617,7 @@ public interface FnExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/fn:false" target="mlserverdoc">fn:false</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr falseExpr();
+  public ServerExpression falseExpr();
 /**
   * Returns the largest (closest to positive infinity) number with no fractional part that is not greater than the value of arg. If type of arg is one of the four numeric types xs:float, xs:double, xs:decimal or xs:integer the type of the result is the same as the type of arg. If the type of arg is a type derived from one of the numeric types, the result is an instance of the base numeric type. 
   *
@@ -635,7 +628,7 @@ public interface FnExpr {
   * @param arg  A numeric value.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public XsNumericExpr floor(ServerExpression arg);
+  public ServerExpression floor(ServerExpression arg);
 /**
   * Returns a formatted date value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -644,7 +637,7 @@ public interface FnExpr {
   * @param picture  The desired string representation of the given date $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatDate(ServerExpression value, String picture);
+  public ServerExpression formatDate(ServerExpression value, String picture);
 /**
   * Returns a formatted date value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   *
@@ -656,7 +649,7 @@ public interface FnExpr {
   * @param picture  The desired string representation of the given date $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatDate(ServerExpression value, ServerExpression picture);
+  public ServerExpression formatDate(ServerExpression value, ServerExpression picture);
 /**
   * Returns a formatted date value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -666,7 +659,7 @@ public interface FnExpr {
   * @param language  The desired language for string representation of the date $value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatDate(ServerExpression value, String picture, String language);
+  public ServerExpression formatDate(ServerExpression value, String picture, String language);
 /**
   * Returns a formatted date value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -676,18 +669,7 @@ public interface FnExpr {
   * @param language  The desired language for string representation of the date $value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatDate(ServerExpression value, ServerExpression picture, ServerExpression language);
-/**
-  * Returns a formatted date value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
-  * <p>
-  * Provides a client interface to the <a href="http://docs.marklogic.com/fn:format-date" target="mlserverdoc">fn:format-date</a> server function.
-  * @param value  The given date $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
-  * @param picture  The desired string representation of the given date $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param language  The desired language for string representation of the date $value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param calendar  The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
-  */
-  public XsStringExpr formatDate(ServerExpression value, String picture, String language, String calendar);
+  public ServerExpression formatDate(ServerExpression value, ServerExpression picture, ServerExpression language);
 /**
   * Returns a formatted date value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -698,7 +680,7 @@ public interface FnExpr {
   * @param calendar  The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatDate(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression calendar);
+  public ServerExpression formatDate(ServerExpression value, String picture, String language, String calendar);
 /**
   * Returns a formatted date value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -707,10 +689,9 @@ public interface FnExpr {
   * @param picture  The desired string representation of the given date $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param language  The desired language for string representation of the date $value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param calendar  The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param country  $country is used the specification to take into account country specific string representation.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatDate(ServerExpression value, String picture, String language, String calendar, String country);
+  public ServerExpression formatDate(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression calendar);
 /**
   * Returns a formatted date value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -722,7 +703,19 @@ public interface FnExpr {
   * @param country  $country is used the specification to take into account country specific string representation.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatDate(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression calendar, ServerExpression country);
+  public ServerExpression formatDate(ServerExpression value, String picture, String language, String calendar, String country);
+/**
+  * Returns a formatted date value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/fn:format-date" target="mlserverdoc">fn:format-date</a> server function.
+  * @param value  The given date $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
+  * @param picture  The desired string representation of the given date $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The desired language for string representation of the date $value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param calendar  The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param country  $country is used the specification to take into account country specific string representation.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
+  */
+  public ServerExpression formatDate(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression calendar, ServerExpression country);
 /**
   * Returns a formatted dateTime value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -731,7 +724,7 @@ public interface FnExpr {
   * @param picture  The desired string representation of the given dateTime $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatDateTime(ServerExpression value, String picture);
+  public ServerExpression formatDateTime(ServerExpression value, String picture);
 /**
   * Returns a formatted dateTime value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   *
@@ -743,7 +736,7 @@ public interface FnExpr {
   * @param picture  The desired string representation of the given dateTime $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatDateTime(ServerExpression value, ServerExpression picture);
+  public ServerExpression formatDateTime(ServerExpression value, ServerExpression picture);
 /**
   * Returns a formatted dateTime value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -753,7 +746,7 @@ public interface FnExpr {
   * @param language  The desired language for string representation of the dateTime $value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatDateTime(ServerExpression value, String picture, String language);
+  public ServerExpression formatDateTime(ServerExpression value, String picture, String language);
 /**
   * Returns a formatted dateTime value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -763,18 +756,7 @@ public interface FnExpr {
   * @param language  The desired language for string representation of the dateTime $value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatDateTime(ServerExpression value, ServerExpression picture, ServerExpression language);
-/**
-  * Returns a formatted dateTime value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
-  * <p>
-  * Provides a client interface to the <a href="http://docs.marklogic.com/fn:format-dateTime" target="mlserverdoc">fn:format-dateTime</a> server function.
-  * @param value  The given dateTime $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
-  * @param picture  The desired string representation of the given dateTime $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param language  The desired language for string representation of the dateTime $value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param calendar  The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
-  */
-  public XsStringExpr formatDateTime(ServerExpression value, String picture, String language, String calendar);
+  public ServerExpression formatDateTime(ServerExpression value, ServerExpression picture, ServerExpression language);
 /**
   * Returns a formatted dateTime value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -785,7 +767,7 @@ public interface FnExpr {
   * @param calendar  The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatDateTime(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression calendar);
+  public ServerExpression formatDateTime(ServerExpression value, String picture, String language, String calendar);
 /**
   * Returns a formatted dateTime value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -794,10 +776,9 @@ public interface FnExpr {
   * @param picture  The desired string representation of the given dateTime $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param language  The desired language for string representation of the dateTime $value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param calendar  The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param country  $country is used the specification to take into account country specific string representation.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatDateTime(ServerExpression value, String picture, String language, String calendar, String country);
+  public ServerExpression formatDateTime(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression calendar);
 /**
   * Returns a formatted dateTime value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -809,7 +790,19 @@ public interface FnExpr {
   * @param country  $country is used the specification to take into account country specific string representation.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatDateTime(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression calendar, ServerExpression country);
+  public ServerExpression formatDateTime(ServerExpression value, String picture, String language, String calendar, String country);
+/**
+  * Returns a formatted dateTime value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/fn:format-dateTime" target="mlserverdoc">fn:format-dateTime</a> server function.
+  * @param value  The given dateTime $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
+  * @param picture  The desired string representation of the given dateTime $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The desired language for string representation of the dateTime $value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param calendar  The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param country  $country is used the specification to take into account country specific string representation.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
+  */
+  public ServerExpression formatDateTime(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression calendar, ServerExpression country);
 /**
   * Returns a formatted string representation of value argument based on the supplied picture. An optional decimal format name may also be supplied for interpretation of the picture string. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -818,7 +811,7 @@ public interface FnExpr {
   * @param picture  The desired string representation of the given number $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the format-number picture string, see http://www.w3.org/TR/xslt20/#function-format-number.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(ServerExpression value, String picture);
+  public ServerExpression formatNumber(ServerExpression value, String picture);
 /**
   * Returns a formatted string representation of value argument based on the supplied picture. An optional decimal format name may also be supplied for interpretation of the picture string. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   *
@@ -830,7 +823,7 @@ public interface FnExpr {
   * @param picture  The desired string representation of the given number $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the format-number picture string, see http://www.w3.org/TR/xslt20/#function-format-number.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture);
+  public ServerExpression formatNumber(ServerExpression value, ServerExpression picture);
 /**
   * Returns a formatted string representation of value argument based on the supplied picture. An optional decimal format name may also be supplied for interpretation of the picture string. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -840,7 +833,7 @@ public interface FnExpr {
   * @param decimalFormatName  Represents a named  instruction. It is used to assign values to the variables mentioned above based on the picture string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(ServerExpression value, String picture, String decimalFormatName);
+  public ServerExpression formatNumber(ServerExpression value, String picture, String decimalFormatName);
 /**
   * Returns a formatted string representation of value argument based on the supplied picture. An optional decimal format name may also be supplied for interpretation of the picture string. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -850,7 +843,7 @@ public interface FnExpr {
   * @param decimalFormatName  Represents a named  instruction. It is used to assign values to the variables mentioned above based on the picture string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression decimalFormatName);
+  public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression decimalFormatName);
 /**
   * Returns a formatted time value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -859,7 +852,7 @@ public interface FnExpr {
   * @param picture  The desired string representation of the given time $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatTime(ServerExpression value, String picture);
+  public ServerExpression formatTime(ServerExpression value, String picture);
 /**
   * Returns a formatted time value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   *
@@ -871,7 +864,7 @@ public interface FnExpr {
   * @param picture  The desired string representation of the given time $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatTime(ServerExpression value, ServerExpression picture);
+  public ServerExpression formatTime(ServerExpression value, ServerExpression picture);
 /**
   * Returns a formatted time value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -881,7 +874,7 @@ public interface FnExpr {
   * @param language  The desired language for string representation of the time $value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatTime(ServerExpression value, String picture, String language);
+  public ServerExpression formatTime(ServerExpression value, String picture, String language);
 /**
   * Returns a formatted time value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -891,18 +884,7 @@ public interface FnExpr {
   * @param language  The desired language for string representation of the time $value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatTime(ServerExpression value, ServerExpression picture, ServerExpression language);
-/**
-  * Returns a formatted time value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
-  * <p>
-  * Provides a client interface to the <a href="http://docs.marklogic.com/fn:format-time" target="mlserverdoc">fn:format-time</a> server function.
-  * @param value  The given time $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_time.html">xs:time</a>)
-  * @param picture  The desired string representation of the given time $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param language  The desired language for string representation of the time $value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param calendar  The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
-  */
-  public XsStringExpr formatTime(ServerExpression value, String picture, String language, String calendar);
+  public ServerExpression formatTime(ServerExpression value, ServerExpression picture, ServerExpression language);
 /**
   * Returns a formatted time value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -913,7 +895,7 @@ public interface FnExpr {
   * @param calendar  The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatTime(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression calendar);
+  public ServerExpression formatTime(ServerExpression value, String picture, String language, String calendar);
 /**
   * Returns a formatted time value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -922,10 +904,9 @@ public interface FnExpr {
   * @param picture  The desired string representation of the given time $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param language  The desired language for string representation of the time $value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param calendar  The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param country  $country is used the specification to take into account country specific string representation.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatTime(ServerExpression value, String picture, String language, String calendar, String country);
+  public ServerExpression formatTime(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression calendar);
 /**
   * Returns a formatted time value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
   * <p>
@@ -937,7 +918,19 @@ public interface FnExpr {
   * @param country  $country is used the specification to take into account country specific string representation.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatTime(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression calendar, ServerExpression country);
+  public ServerExpression formatTime(ServerExpression value, String picture, String language, String calendar, String country);
+/**
+  * Returns a formatted time value based on the picture argument. This is an XSLT function, and it is available in XSLT, XQuery 1.0-ml, and Server-Side JavaScript.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/fn:format-time" target="mlserverdoc">fn:format-time</a> server function.
+  * @param value  The given time $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_time.html">xs:time</a>)
+  * @param picture  The desired string representation of the given time $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The desired language for string representation of the time $value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param calendar  The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param country  $country is used the specification to take into account country specific string representation.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
+  */
+  public ServerExpression formatTime(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression calendar, ServerExpression country);
 /**
   * Returns a string that uniquely identifies a given node.  
   *
@@ -948,7 +941,7 @@ public interface FnExpr {
   * @param node  The node whose ID will be generated.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr generateId(ServerExpression node);
+  public ServerExpression generateId(ServerExpression node);
 /**
   * Returns the first item in a sequence. For more details, see XPath 3.0 Functions and Operators.
   *
@@ -959,7 +952,7 @@ public interface FnExpr {
   * @param seq  A sequence of items.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemExpr head(ServerExpression seq);
+  public ServerExpression head(ServerExpression seq);
 /**
   * Returns an xs:integer between 0 and 23, both inclusive, representing the hours component in the localized value of arg. 
   *
@@ -970,7 +963,7 @@ public interface FnExpr {
   * @param arg  The dateTime whose hours component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr hoursFromDateTime(ServerExpression arg);
+  public ServerExpression hoursFromDateTime(ServerExpression arg);
 /**
   * Returns an xs:integer representing the hours component in the canonical lexical representation of the value of arg. The result may be negative. 
   *
@@ -981,7 +974,7 @@ public interface FnExpr {
   * @param arg  The duration whose hour component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_duration.html">xs:duration</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr hoursFromDuration(ServerExpression arg);
+  public ServerExpression hoursFromDuration(ServerExpression arg);
 /**
   * Returns an xs:integer between 0 and 23, both inclusive, representing the value of the hours component in the localized value of arg. 
   *
@@ -992,7 +985,7 @@ public interface FnExpr {
   * @param arg  The time whose hours component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_time.html">xs:time</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr hoursFromTime(ServerExpression arg);
+  public ServerExpression hoursFromTime(ServerExpression arg);
 /**
   * Returns the value of the implicit timezone property from the dynamic context. Components of the dynamic context are discussed in Section C.2 Dynamic Context Components[XP].
   *
@@ -1002,7 +995,7 @@ public interface FnExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/fn:implicit-timezone" target="mlserverdoc">fn:implicit-timezone</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dayTimeDuration.html">xs:dayTimeDuration</a> server data type
   */
-  public XsDayTimeDurationExpr implicitTimezone();
+  public ServerExpression implicitTimezone();
 /**
   * Returns the prefixes of the in-scope namespaces for element. For namespaces that have a prefix, it returns the prefix as an xs:NCName. For the default namespace, which has no prefix, it returns the zero-length string. 
   *
@@ -1013,7 +1006,7 @@ public interface FnExpr {
   * @param element  The element whose in-scope prefixes will be returned.  (of <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringSeqExpr inScopePrefixes(ServerExpression element);
+  public ServerExpression inScopePrefixes(ServerExpression element);
 /**
   * Returns a sequence of positive integers giving the positions within the sequence seqParam of items that are equal to srchParam. 
   * <p>
@@ -1022,7 +1015,7 @@ public interface FnExpr {
   * @param srchParam  A value to find on the list.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerSeqExpr indexOf(ServerExpression seqParam, String srchParam);
+  public ServerExpression indexOf(ServerExpression seqParam, String srchParam);
 /**
   * Returns a sequence of positive integers giving the positions within the sequence seqParam of items that are equal to srchParam. 
   *
@@ -1034,7 +1027,7 @@ public interface FnExpr {
   * @param srchParam  A value to find on the list.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerSeqExpr indexOf(ServerExpression seqParam, ServerExpression srchParam);
+  public ServerExpression indexOf(ServerExpression seqParam, ServerExpression srchParam);
 /**
   * Returns a sequence of positive integers giving the positions within the sequence seqParam of items that are equal to srchParam. 
   * <p>
@@ -1044,7 +1037,7 @@ public interface FnExpr {
   * @param collationLiteral  A collation identifier.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerSeqExpr indexOf(ServerExpression seqParam, String srchParam, String collationLiteral);
+  public ServerExpression indexOf(ServerExpression seqParam, String srchParam, String collationLiteral);
 /**
   * Returns a sequence of positive integers giving the positions within the sequence seqParam of items that are equal to srchParam. 
   * <p>
@@ -1054,7 +1047,7 @@ public interface FnExpr {
   * @param collationLiteral  A collation identifier.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerSeqExpr indexOf(ServerExpression seqParam, ServerExpression srchParam, ServerExpression collationLiteral);
+  public ServerExpression indexOf(ServerExpression seqParam, ServerExpression srchParam, ServerExpression collationLiteral);
 /**
   * Returns a new sequence constructed from the value of target with the value of inserts inserted at the position specified by the value of position. (The value of target is not affected by the sequence construction.) 
   * <p>
@@ -1064,7 +1057,7 @@ public interface FnExpr {
   * @param inserts  The items to insert into the target sequence.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr insertBefore(ServerExpression target, long position, ServerExpression inserts);
+  public ServerExpression insertBefore(ServerExpression target, long position, ServerExpression inserts);
 /**
   * Returns a new sequence constructed from the value of target with the value of inserts inserted at the position specified by the value of position. (The value of target is not affected by the sequence construction.) 
   *
@@ -1077,7 +1070,7 @@ public interface FnExpr {
   * @param inserts  The items to insert into the target sequence.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr insertBefore(ServerExpression target, ServerExpression position, ServerExpression inserts);
+  public ServerExpression insertBefore(ServerExpression target, ServerExpression position, ServerExpression inserts);
 /**
   * Idempotent function that escapes non-URI characters.
   *
@@ -1088,7 +1081,7 @@ public interface FnExpr {
   * @param uriPart  A string representing an unescaped URI.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr iriToUri(ServerExpression uriPart);
+  public ServerExpression iriToUri(ServerExpression uriPart);
 /**
   * This function tests whether the language of node, or the context node if the second argument is omitted, as specified by xml:lang attributes is the same as, or is a sublanguage of, the language specified by testlang. The language of the argument node, or the context node if the second argument is omitted, is determined by the value of the xml:lang attribute on the node, or, if the node has no such attribute, by the value of the xml:lang attribute on the nearest ancestor of the node that has an xml:lang attribute. If there is no such ancestor, then the function returns false 
   *
@@ -1100,7 +1093,7 @@ public interface FnExpr {
   * @param node  The node to test.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr lang(ServerExpression testlang, ServerExpression node);
+  public ServerExpression lang(ServerExpression testlang, ServerExpression node);
 /**
   * Returns the local part of the name of arg as an xs:string that will either be the zero-length string or will have the lexical form of an xs:NCName. 
   *
@@ -1111,7 +1104,7 @@ public interface FnExpr {
   * @param arg  The node whose local name is to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr localName(ServerExpression arg);
+  public ServerExpression localName(ServerExpression arg);
 /**
   * Returns an xs:NCName representing the local part of arg. If arg is the empty sequence, returns the empty sequence.
   *
@@ -1122,7 +1115,7 @@ public interface FnExpr {
   * @param arg  A qualified name.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_NCName.html">xs:NCName</a> server data type
   */
-  public XsNCNameExpr localNameFromQName(ServerExpression arg);
+  public ServerExpression localNameFromQName(ServerExpression arg);
 /**
   * Returns the specified string converting all of the characters to lower-case characters. If a character does not have a corresponding lower-case character, then the original character is returned. The lower-case characters are determined using the Unicode Case Mappings.
   *
@@ -1133,7 +1126,7 @@ public interface FnExpr {
   * @param string  The string to convert.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr lowerCase(ServerExpression string);
+  public ServerExpression lowerCase(ServerExpression string);
 /**
   * Returns true if the specified input matches the specified pattern, otherwise returns false.
   * <p>
@@ -1142,7 +1135,7 @@ public interface FnExpr {
   * @param pattern  The regular expression to match.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr matches(ServerExpression input, String pattern);
+  public ServerExpression matches(ServerExpression input, String pattern);
 /**
   * Returns true if the specified input matches the specified pattern, otherwise returns false.
   *
@@ -1154,7 +1147,7 @@ public interface FnExpr {
   * @param pattern  The regular expression to match.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr matches(ServerExpression input, ServerExpression pattern);
+  public ServerExpression matches(ServerExpression input, ServerExpression pattern);
 /**
   * Returns true if the specified input matches the specified pattern, otherwise returns false.
   * <p>
@@ -1164,7 +1157,7 @@ public interface FnExpr {
   * @param flags  The flag representing how to interpret the regular expression. One of "s", "m", "i", or "x", as defined in http://www.w3.org/TR/xpath-functions/#flags.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr matches(ServerExpression input, String pattern, String flags);
+  public ServerExpression matches(ServerExpression input, String pattern, String flags);
 /**
   * Returns true if the specified input matches the specified pattern, otherwise returns false.
   * <p>
@@ -1174,7 +1167,7 @@ public interface FnExpr {
   * @param flags  The flag representing how to interpret the regular expression. One of "s", "m", "i", or "x", as defined in http://www.w3.org/TR/xpath-functions/#flags.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr matches(ServerExpression input, ServerExpression pattern, ServerExpression flags);
+  public ServerExpression matches(ServerExpression input, ServerExpression pattern, ServerExpression flags);
 /**
   * Selects an item from the input sequence arg whose value is greater than or equal to the value of every other item in the input sequence. If there are two or more such items, then the specific item whose value is returned is implementation dependent. 
   *
@@ -1185,7 +1178,7 @@ public interface FnExpr {
   * @param arg  The sequence of values whose maximum will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
-  public XsAnyAtomicTypeExpr max(ServerExpression arg);
+  public ServerExpression max(ServerExpression arg);
 /**
   * Selects an item from the input sequence arg whose value is greater than or equal to the value of every other item in the input sequence. If there are two or more such items, then the specific item whose value is returned is implementation dependent. 
   * <p>
@@ -1194,7 +1187,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
-  public XsAnyAtomicTypeExpr max(ServerExpression arg, String collation);
+  public ServerExpression max(ServerExpression arg, String collation);
 /**
   * Selects an item from the input sequence arg whose value is greater than or equal to the value of every other item in the input sequence. If there are two or more such items, then the specific item whose value is returned is implementation dependent. 
   * <p>
@@ -1203,7 +1196,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
-  public XsAnyAtomicTypeExpr max(ServerExpression arg, ServerExpression collation);
+  public ServerExpression max(ServerExpression arg, ServerExpression collation);
 /**
   * Selects an item from the input sequence arg whose value is less than or equal to the value of every other item in the input sequence. If there are two or more such items, then the specific item whose value is returned is implementation dependent. 
   *
@@ -1214,7 +1207,7 @@ public interface FnExpr {
   * @param arg  The sequence of values whose minimum will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
-  public XsAnyAtomicTypeExpr min(ServerExpression arg);
+  public ServerExpression min(ServerExpression arg);
 /**
   * Selects an item from the input sequence arg whose value is less than or equal to the value of every other item in the input sequence. If there are two or more such items, then the specific item whose value is returned is implementation dependent. 
   * <p>
@@ -1223,7 +1216,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
-  public XsAnyAtomicTypeExpr min(ServerExpression arg, String collation);
+  public ServerExpression min(ServerExpression arg, String collation);
 /**
   * Selects an item from the input sequence arg whose value is less than or equal to the value of every other item in the input sequence. If there are two or more such items, then the specific item whose value is returned is implementation dependent. 
   * <p>
@@ -1232,7 +1225,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
-  public XsAnyAtomicTypeExpr min(ServerExpression arg, ServerExpression collation);
+  public ServerExpression min(ServerExpression arg, ServerExpression collation);
 /**
   * Returns an xs:integer value between 0 and 59, both inclusive, representing the minute component in the localized value of arg. 
   *
@@ -1243,7 +1236,7 @@ public interface FnExpr {
   * @param arg  The dateTime whose minutes component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr minutesFromDateTime(ServerExpression arg);
+  public ServerExpression minutesFromDateTime(ServerExpression arg);
 /**
   * Returns an xs:integer representing the minutes component in the canonical lexical representation of the value of arg. The result may be negative. 
   *
@@ -1254,7 +1247,7 @@ public interface FnExpr {
   * @param arg  The duration whose minute component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_duration.html">xs:duration</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr minutesFromDuration(ServerExpression arg);
+  public ServerExpression minutesFromDuration(ServerExpression arg);
 /**
   * Returns an xs:integer value between 0 to 59, both inclusive, representing the value of the minutes component in the localized value of arg. 
   *
@@ -1265,7 +1258,7 @@ public interface FnExpr {
   * @param arg  The time whose minutes component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_time.html">xs:time</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr minutesFromTime(ServerExpression arg);
+  public ServerExpression minutesFromTime(ServerExpression arg);
 /**
   * Returns an xs:integer between 1 and 12, both inclusive, representing the month component in the localized value of arg. 
   *
@@ -1276,7 +1269,7 @@ public interface FnExpr {
   * @param arg  The date whose month component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr monthFromDate(ServerExpression arg);
+  public ServerExpression monthFromDate(ServerExpression arg);
 /**
   * Returns an xs:integer between 1 and 12, both inclusive, representing the month component in the localized value of arg. 
   *
@@ -1287,7 +1280,7 @@ public interface FnExpr {
   * @param arg  The dateTime whose month component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr monthFromDateTime(ServerExpression arg);
+  public ServerExpression monthFromDateTime(ServerExpression arg);
 /**
   * Returns an xs:integer representing the months component in the canonical lexical representation of the value of arg. The result may be negative. 
   *
@@ -1298,7 +1291,7 @@ public interface FnExpr {
   * @param arg  The duration whose month component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_duration.html">xs:duration</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr monthsFromDuration(ServerExpression arg);
+  public ServerExpression monthsFromDuration(ServerExpression arg);
 /**
   * Returns the name of a node, as an xs:string that is either the zero-length string, or has the lexical form of an xs:QName. 
   *
@@ -1309,7 +1302,7 @@ public interface FnExpr {
   * @param arg  The node whose name is to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr name(ServerExpression arg);
+  public ServerExpression name(ServerExpression arg);
 /**
   * Returns the namespace URI of the xs:QName of the node specified by arg. 
   *
@@ -1320,7 +1313,7 @@ public interface FnExpr {
   * @param arg  The node whose namespace URI is to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyURI.html">xs:anyURI</a> server data type
   */
-  public XsAnyURIExpr namespaceUri(ServerExpression arg);
+  public ServerExpression namespaceUri(ServerExpression arg);
 /**
   * Returns the namespace URI of one of the in-scope namespaces for element, identified by its namespace prefix. 
   *
@@ -1332,7 +1325,7 @@ public interface FnExpr {
   * @param element  An element node providing namespace context.  (of <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyURI.html">xs:anyURI</a> server data type
   */
-  public XsAnyURIExpr namespaceUriForPrefix(ServerExpression prefix, ServerExpression element);
+  public ServerExpression namespaceUriForPrefix(ServerExpression prefix, ServerExpression element);
 /**
   * Returns the namespace URI for arg as an xs:string. If arg is the empty sequence, the empty sequence is returned. If arg is in no namespace, the zero-length string is returned.
   *
@@ -1343,7 +1336,7 @@ public interface FnExpr {
   * @param arg  A qualified name.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyURI.html">xs:anyURI</a> server data type
   */
-  public XsAnyURIExpr namespaceUriFromQName(ServerExpression arg);
+  public ServerExpression namespaceUriFromQName(ServerExpression arg);
 /**
   * Summary: Returns an xs:boolean indicating whether the argument node is "nilled". If the argument is not an element node, returns the empty sequence. If the argument is the empty sequence, returns the empty sequence. For element nodes, true() is returned if the element is nilled, otherwise false(). 
   *
@@ -1354,7 +1347,7 @@ public interface FnExpr {
   * @param arg  The node to test for nilled status.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr nilled(ServerExpression arg);
+  public ServerExpression nilled(ServerExpression arg);
 /**
   * Returns an expanded-QName for node kinds that can have names. For other kinds of nodes it returns the empty sequence. If arg is the empty sequence, the empty sequence is returned.
   *
@@ -1365,7 +1358,7 @@ public interface FnExpr {
   * @param arg  The node whose name is to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a> server data type
   */
-  public XsQNameExpr nodeName(ServerExpression arg);
+  public ServerExpression nodeName(ServerExpression arg);
 /**
   * Returns the specified string with normalized whitespace, which strips off any leading or trailing whitespace and replaces any other sequences of more than one whitespace characters with a single space character (#x20).
   *
@@ -1376,7 +1369,7 @@ public interface FnExpr {
   * @param input  The string from which to normalize whitespace.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr normalizeSpace(ServerExpression input);
+  public ServerExpression normalizeSpace(ServerExpression input);
 /**
   * Return the argument normalized according to the normalization criteria for a normalization form identified by the value of normalizationForm. The effective value of the normalizationForm is computed by removing leading and trailing blanks, if present, and converting to upper case.
   *
@@ -1387,7 +1380,7 @@ public interface FnExpr {
   * @param arg  The string to normalize.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr normalizeUnicode(ServerExpression arg);
+  public ServerExpression normalizeUnicode(ServerExpression arg);
 /**
   * Return the argument normalized according to the normalization criteria for a normalization form identified by the value of normalizationForm. The effective value of the normalizationForm is computed by removing leading and trailing blanks, if present, and converting to upper case.
   * <p>
@@ -1396,7 +1389,7 @@ public interface FnExpr {
   * @param normalizationForm  The form under which to normalize the specified string: NFC, NFD, NFKC, or NFKD.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr normalizeUnicode(ServerExpression arg, String normalizationForm);
+  public ServerExpression normalizeUnicode(ServerExpression arg, String normalizationForm);
 /**
   * Return the argument normalized according to the normalization criteria for a normalization form identified by the value of normalizationForm. The effective value of the normalizationForm is computed by removing leading and trailing blanks, if present, and converting to upper case.
   * <p>
@@ -1405,7 +1398,7 @@ public interface FnExpr {
   * @param normalizationForm  The form under which to normalize the specified string: NFC, NFD, NFKC, or NFKD.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr normalizeUnicode(ServerExpression arg, ServerExpression normalizationForm);
+  public ServerExpression normalizeUnicode(ServerExpression arg, ServerExpression normalizationForm);
 /**
   * Returns true if the effective boolean value is false, and false if the effective boolean value is true. The arg parameter is first reduced to an effective boolean value by applying the fn:boolean function.
   *
@@ -1416,7 +1409,7 @@ public interface FnExpr {
   * @param arg  The expression to negate.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr not(ServerExpression arg);
+  public ServerExpression not(ServerExpression arg);
 /**
   * Returns the value indicated by arg or, if arg is not specified, the context item after atomization, converted to an xs:double. If arg is the empty sequence or if arg or the context item cannot be converted to an xs:double, the xs:double value NaN is returned. If the context item is undefined an error is raised: [err:XPDY0002]. 
   *
@@ -1427,7 +1420,7 @@ public interface FnExpr {
   * @param arg  The value to be returned as an xs:double value.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr number(ServerExpression arg);
+  public ServerExpression number(ServerExpression arg);
 /**
   * Returns an xs:NCName representing the prefix of arg. The empty sequence is returned if arg is the empty sequence or if the value of arg contains no prefix.
   *
@@ -1438,7 +1431,7 @@ public interface FnExpr {
   * @param arg  A qualified name.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_NCName.html">xs:NCName</a> server data type
   */
-  public XsNCNameExpr prefixFromQName(ServerExpression arg);
+  public ServerExpression prefixFromQName(ServerExpression arg);
 /**
   * Returns an xs:QName with the namespace URI given in paramURI. If paramURI is the zero-length string or the empty sequence, it represents "no namespace"; in this case, if the value of paramQName contains a colon (:), an error is raised [err:FOCA0002]. The prefix (or absence of a prefix) in paramQName is retained in the returned xs:QName value. The local name in the result is taken from the local part of paramQName. 
   * <p>
@@ -1447,7 +1440,7 @@ public interface FnExpr {
   * @param paramQName  A lexical qualified name (xs:QName), a string of the form "prefix:localname" or "localname".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a> server data type
   */
-  public XsQNameExpr QName(ServerExpression paramURI, String paramQName);
+  public ServerExpression QName(ServerExpression paramURI, String paramQName);
 /**
   * Returns an xs:QName with the namespace URI given in paramURI. If paramURI is the zero-length string or the empty sequence, it represents "no namespace"; in this case, if the value of paramQName contains a colon (:), an error is raised [err:FOCA0002]. The prefix (or absence of a prefix) in paramQName is retained in the returned xs:QName value. The local name in the result is taken from the local part of paramQName. 
   *
@@ -1459,7 +1452,7 @@ public interface FnExpr {
   * @param paramQName  A lexical qualified name (xs:QName), a string of the form "prefix:localname" or "localname".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a> server data type
   */
-  public XsQNameExpr QName(ServerExpression paramURI, ServerExpression paramQName);
+  public ServerExpression QName(ServerExpression paramURI, ServerExpression paramQName);
 /**
   * Returns a new sequence constructed from the value of target with the item at the position specified by the value of position removed. 
   * <p>
@@ -1468,7 +1461,7 @@ public interface FnExpr {
   * @param position  The position in the target sequence from which the items will be removed.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr remove(ServerExpression target, long position);
+  public ServerExpression remove(ServerExpression target, long position);
 /**
   * Returns a new sequence constructed from the value of target with the item at the position specified by the value of position removed. 
   *
@@ -1480,7 +1473,7 @@ public interface FnExpr {
   * @param position  The position in the target sequence from which the items will be removed.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr remove(ServerExpression target, ServerExpression position);
+  public ServerExpression remove(ServerExpression target, ServerExpression position);
 /**
   * Returns a string constructed by replacing the specified pattern on the input string with the specified replacement string.
   * <p>
@@ -1490,7 +1483,7 @@ public interface FnExpr {
   * @param replacement  The regular expression pattern to replace the $pattern with. It can also be a capture expression (for more details, see http://www.w3.org/TR/xpath-functions/#func-replace).  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr replace(ServerExpression input, String pattern, String replacement);
+  public ServerExpression replace(ServerExpression input, String pattern, String replacement);
 /**
   * Returns a string constructed by replacing the specified pattern on the input string with the specified replacement string.
   *
@@ -1503,7 +1496,7 @@ public interface FnExpr {
   * @param replacement  The regular expression pattern to replace the $pattern with. It can also be a capture expression (for more details, see http://www.w3.org/TR/xpath-functions/#func-replace).  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr replace(ServerExpression input, ServerExpression pattern, ServerExpression replacement);
+  public ServerExpression replace(ServerExpression input, ServerExpression pattern, ServerExpression replacement);
 /**
   * Returns a string constructed by replacing the specified pattern on the input string with the specified replacement string.
   * <p>
@@ -1514,7 +1507,7 @@ public interface FnExpr {
   * @param flags  The flag representing how to interpret the regular expression. One of "s", "m", "i", or "x", as defined in http://www.w3.org/TR/xpath-functions/#flags.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr replace(ServerExpression input, String pattern, String replacement, String flags);
+  public ServerExpression replace(ServerExpression input, String pattern, String replacement, String flags);
 /**
   * Returns a string constructed by replacing the specified pattern on the input string with the specified replacement string.
   * <p>
@@ -1525,7 +1518,7 @@ public interface FnExpr {
   * @param flags  The flag representing how to interpret the regular expression. One of "s", "m", "i", or "x", as defined in http://www.w3.org/TR/xpath-functions/#flags.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr replace(ServerExpression input, ServerExpression pattern, ServerExpression replacement, ServerExpression flags);
+  public ServerExpression replace(ServerExpression input, ServerExpression pattern, ServerExpression replacement, ServerExpression flags);
 /**
   * Returns an xs:QName value (that is, an expanded QName) by taking an xs:string that has the lexical form of an xs:QName (a string in the form "prefix:local-name" or "local-name") and resolving it using the in-scope namespaces for a given element. 
   *
@@ -1537,7 +1530,7 @@ public interface FnExpr {
   * @param element  An element providing the in-scope namespaces to use to resolve the qualified name.  (of <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a> server data type
   */
-  public XsQNameExpr resolveQName(ServerExpression qname, ServerExpression element);
+  public ServerExpression resolveQName(ServerExpression qname, ServerExpression element);
 /**
   * Resolves a relative URI against an absolute URI. If base is specified, the URI is resolved relative to that base. If base is not specified, the base is set to the base-uri property from the static context, if the property exists; if it does not exist, an error is thrown.
   * <p>
@@ -1546,7 +1539,7 @@ public interface FnExpr {
   * @param base  An absolute URI to use as the base of the resolution.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyURI.html">xs:anyURI</a> server data type
   */
-  public XsAnyURIExpr resolveUri(ServerExpression relative, String base);
+  public ServerExpression resolveUri(ServerExpression relative, String base);
 /**
   * Resolves a relative URI against an absolute URI. If base is specified, the URI is resolved relative to that base. If base is not specified, the base is set to the base-uri property from the static context, if the property exists; if it does not exist, an error is thrown.
   *
@@ -1558,7 +1551,7 @@ public interface FnExpr {
   * @param base  An absolute URI to use as the base of the resolution.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyURI.html">xs:anyURI</a> server data type
   */
-  public XsAnyURIExpr resolveUri(ServerExpression relative, ServerExpression base);
+  public ServerExpression resolveUri(ServerExpression relative, ServerExpression base);
 /**
   * Reverses the order of items in a sequence. If $arg is the empty sequence, the empty sequence is returned. 
   *
@@ -1569,7 +1562,7 @@ public interface FnExpr {
   * @param target  The sequence of items to be reversed.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr reverse(ServerExpression target);
+  public ServerExpression reverse(ServerExpression target);
 /**
   * Returns the root of the tree to which arg belongs. This will usually, but not necessarily, be a document node. 
   *
@@ -1580,7 +1573,7 @@ public interface FnExpr {
   * @param arg  The node whose root node will be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/node.html">node</a> server data type
   */
-  public NodeExpr root(ServerExpression arg);
+  public ServerExpression root(ServerExpression arg);
 /**
   * Returns the number with no fractional part that is closest to the argument. If there are two such numbers, then the one that is closest to positive infinity is returned. If type of arg is one of the four numeric types xs:float, xs:double, xs:decimal or xs:integer the type of the result is the same as the type of arg. If the type of arg is a type derived from one of the numeric types, the result is an instance of the base numeric type. 
   *
@@ -1591,7 +1584,7 @@ public interface FnExpr {
   * @param arg  A numeric value to round.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public XsNumericExpr round(ServerExpression arg);
+  public ServerExpression round(ServerExpression arg);
 /**
   * The value returned is the nearest (that is, numerically closest) numeric to arg that is a multiple of ten to the power of minus precision. If two such values are equally near (e.g. if the fractional part in arg is exactly .500...), returns the one whose least significant digit is even. If type of arg is one of the four numeric types xs:float, xs:double, xs:decimal or xs:integer the type of the result is the same as the type of arg. If the type of arg is a type derived from one of the numeric types, the result is an instance of the base numeric type. 
   *
@@ -1602,7 +1595,7 @@ public interface FnExpr {
   * @param arg  A numeric value to round.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public XsNumericExpr roundHalfToEven(ServerExpression arg);
+  public ServerExpression roundHalfToEven(ServerExpression arg);
 /**
   * The value returned is the nearest (that is, numerically closest) numeric to arg that is a multiple of ten to the power of minus precision. If two such values are equally near (e.g. if the fractional part in arg is exactly .500...), returns the one whose least significant digit is even. If type of arg is one of the four numeric types xs:float, xs:double, xs:decimal or xs:integer the type of the result is the same as the type of arg. If the type of arg is a type derived from one of the numeric types, the result is an instance of the base numeric type. 
   * <p>
@@ -1611,7 +1604,7 @@ public interface FnExpr {
   * @param precision  The precision to which to round the value.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public XsNumericExpr roundHalfToEven(ServerExpression arg, long precision);
+  public ServerExpression roundHalfToEven(ServerExpression arg, long precision);
 /**
   * The value returned is the nearest (that is, numerically closest) numeric to arg that is a multiple of ten to the power of minus precision. If two such values are equally near (e.g. if the fractional part in arg is exactly .500...), returns the one whose least significant digit is even. If type of arg is one of the four numeric types xs:float, xs:double, xs:decimal or xs:integer the type of the result is the same as the type of arg. If the type of arg is a type derived from one of the numeric types, the result is an instance of the base numeric type. 
   * <p>
@@ -1620,7 +1613,7 @@ public interface FnExpr {
   * @param precision  The precision to which to round the value.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public XsNumericExpr roundHalfToEven(ServerExpression arg, ServerExpression precision);
+  public ServerExpression roundHalfToEven(ServerExpression arg, ServerExpression precision);
 /**
   * Returns an xs:decimal value between 0 and 60.999..., both inclusive representing the seconds and fractional seconds in the localized value of arg. Note that the value can be greater than 60 seconds to accommodate occasional leap seconds used to keep human time synchronized with the rotation of the planet. 
   *
@@ -1631,7 +1624,7 @@ public interface FnExpr {
   * @param arg  The dateTime whose seconds component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_decimal.html">xs:decimal</a> server data type
   */
-  public XsDecimalExpr secondsFromDateTime(ServerExpression arg);
+  public ServerExpression secondsFromDateTime(ServerExpression arg);
 /**
   * Returns an xs:decimal representing the seconds component in the canonical lexical representation of the value of arg. The result may be negative. 
   *
@@ -1642,7 +1635,7 @@ public interface FnExpr {
   * @param arg  The duration whose minute component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_duration.html">xs:duration</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_decimal.html">xs:decimal</a> server data type
   */
-  public XsDecimalExpr secondsFromDuration(ServerExpression arg);
+  public ServerExpression secondsFromDuration(ServerExpression arg);
 /**
   * Returns an xs:decimal value between 0 and 60.999..., both inclusive, representing the seconds and fractional seconds in the localized value of arg. Note that the value can be greater than 60 seconds to accommodate occasional leap seconds used to keep human time synchronized with the rotation of the planet. 
   *
@@ -1653,7 +1646,7 @@ public interface FnExpr {
   * @param arg  The time whose seconds component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_time.html">xs:time</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_decimal.html">xs:decimal</a> server data type
   */
-  public XsDecimalExpr secondsFromTime(ServerExpression arg);
+  public ServerExpression secondsFromTime(ServerExpression arg);
 /**
   * Returns true if the first parameter starts with the string from the second parameter, otherwise returns false.
   * <p>
@@ -1662,7 +1655,7 @@ public interface FnExpr {
   * @param parameter2  The string to test whether it is at the beginning of the first parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr startsWith(ServerExpression parameter1, String parameter2);
+  public ServerExpression startsWith(ServerExpression parameter1, String parameter2);
 /**
   * Returns true if the first parameter starts with the string from the second parameter, otherwise returns false.
   *
@@ -1674,7 +1667,7 @@ public interface FnExpr {
   * @param parameter2  The string to test whether it is at the beginning of the first parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr startsWith(ServerExpression parameter1, ServerExpression parameter2);
+  public ServerExpression startsWith(ServerExpression parameter1, ServerExpression parameter2);
 /**
   * Returns true if the first parameter starts with the string from the second parameter, otherwise returns false.
   * <p>
@@ -1684,7 +1677,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr startsWith(ServerExpression parameter1, String parameter2, String collation);
+  public ServerExpression startsWith(ServerExpression parameter1, String parameter2, String collation);
 /**
   * Returns true if the first parameter starts with the string from the second parameter, otherwise returns false.
   * <p>
@@ -1694,7 +1687,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr startsWith(ServerExpression parameter1, ServerExpression parameter2, ServerExpression collation);
+  public ServerExpression startsWith(ServerExpression parameter1, ServerExpression parameter2, ServerExpression collation);
 /**
   * Returns the value of arg represented as an xs:string. If no argument is supplied, this function returns the string value of the context item (.).
   *
@@ -1705,7 +1698,7 @@ public interface FnExpr {
   * @param arg  The item to be rendered as a string.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr string(ServerExpression arg);
+  public ServerExpression string(ServerExpression arg);
 /**
   * Returns an xs:string created by concatenating the members of the parameter1 sequence using parameter2 as a separator. If the value of $arg2 is the zero-length string, then the members of parameter1 are concatenated without a separator. 
   * <p>
@@ -1714,7 +1707,7 @@ public interface FnExpr {
   * @param parameter2  A separator string to concatenate between the items in $parameter1.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr stringJoin(ServerExpression parameter1, String parameter2);
+  public ServerExpression stringJoin(ServerExpression parameter1, String parameter2);
 /**
   * Returns an xs:string created by concatenating the members of the parameter1 sequence using parameter2 as a separator. If the value of $arg2 is the zero-length string, then the members of parameter1 are concatenated without a separator. 
   *
@@ -1726,7 +1719,7 @@ public interface FnExpr {
   * @param parameter2  A separator string to concatenate between the items in $parameter1.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr stringJoin(ServerExpression parameter1, ServerExpression parameter2);
+  public ServerExpression stringJoin(ServerExpression parameter1, ServerExpression parameter2);
 /**
   * Returns an integer representing the length of the specified string. The length is 1-based, so a string that is one character long returns a value of 1.
   *
@@ -1737,7 +1730,7 @@ public interface FnExpr {
   * @param sourceString  The string to calculate the length.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr stringLength(ServerExpression sourceString);
+  public ServerExpression stringLength(ServerExpression sourceString);
 /**
   * Returns the sequence of Unicode code points that constitute an xs:string. If arg is a zero-length string or the empty sequence, the empty sequence is returned. 
   *
@@ -1748,7 +1741,7 @@ public interface FnExpr {
   * @param arg  A string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerSeqExpr stringToCodepoints(ServerExpression arg);
+  public ServerExpression stringToCodepoints(ServerExpression arg);
 /**
   * Returns the contiguous sequence of items in the value of sourceSeq beginning at the position indicated by the value of startingLoc and continuing for the number of items indicated by the value of length. 
   * <p>
@@ -1757,7 +1750,7 @@ public interface FnExpr {
   * @param startingLoc  The starting position of the start of the subsequence.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr subsequence(ServerExpression sourceSeq, double startingLoc);
+  public ServerExpression subsequence(ServerExpression sourceSeq, double startingLoc);
 /**
   * Returns the contiguous sequence of items in the value of sourceSeq beginning at the position indicated by the value of startingLoc and continuing for the number of items indicated by the value of length. 
   *
@@ -1769,7 +1762,7 @@ public interface FnExpr {
   * @param startingLoc  The starting position of the start of the subsequence.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr subsequence(ServerExpression sourceSeq, ServerExpression startingLoc);
+  public ServerExpression subsequence(ServerExpression sourceSeq, ServerExpression startingLoc);
 /**
   * Returns the contiguous sequence of items in the value of sourceSeq beginning at the position indicated by the value of startingLoc and continuing for the number of items indicated by the value of length. 
   * <p>
@@ -1779,7 +1772,7 @@ public interface FnExpr {
   * @param length  The length of the subsequence.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr subsequence(ServerExpression sourceSeq, double startingLoc, double length);
+  public ServerExpression subsequence(ServerExpression sourceSeq, double startingLoc, double length);
 /**
   * Returns the contiguous sequence of items in the value of sourceSeq beginning at the position indicated by the value of startingLoc and continuing for the number of items indicated by the value of length. 
   * <p>
@@ -1789,7 +1782,7 @@ public interface FnExpr {
   * @param length  The length of the subsequence.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr subsequence(ServerExpression sourceSeq, ServerExpression startingLoc, ServerExpression length);
+  public ServerExpression subsequence(ServerExpression sourceSeq, ServerExpression startingLoc, ServerExpression length);
 /**
   * Returns a substring starting from the startingLoc and continuing for length characters.
   * <p>
@@ -1798,7 +1791,7 @@ public interface FnExpr {
   * @param startingLoc  The number of characters from the start of the $sourceString.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr substring(ServerExpression sourceString, double startingLoc);
+  public ServerExpression substring(ServerExpression sourceString, double startingLoc);
 /**
   * Returns a substring starting from the startingLoc and continuing for length characters.
   *
@@ -1810,7 +1803,7 @@ public interface FnExpr {
   * @param startingLoc  The number of characters from the start of the $sourceString.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr substring(ServerExpression sourceString, ServerExpression startingLoc);
+  public ServerExpression substring(ServerExpression sourceString, ServerExpression startingLoc);
 /**
   * Returns a substring starting from the startingLoc and continuing for length characters.
   * <p>
@@ -1820,7 +1813,7 @@ public interface FnExpr {
   * @param length  The number of characters beyond the $startingLoc.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr substring(ServerExpression sourceString, double startingLoc, double length);
+  public ServerExpression substring(ServerExpression sourceString, double startingLoc, double length);
 /**
   * Returns a substring starting from the startingLoc and continuing for length characters.
   * <p>
@@ -1830,7 +1823,7 @@ public interface FnExpr {
   * @param length  The number of characters beyond the $startingLoc.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr substring(ServerExpression sourceString, ServerExpression startingLoc, ServerExpression length);
+  public ServerExpression substring(ServerExpression sourceString, ServerExpression startingLoc, ServerExpression length);
 /**
   * Returns the substring created by taking all of the input characters that occur after the specified after characters.
   * <p>
@@ -1839,7 +1832,7 @@ public interface FnExpr {
   * @param after  The string after which the substring is created.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr substringAfter(ServerExpression input, String after);
+  public ServerExpression substringAfter(ServerExpression input, String after);
 /**
   * Returns the substring created by taking all of the input characters that occur after the specified after characters.
   *
@@ -1851,7 +1844,7 @@ public interface FnExpr {
   * @param after  The string after which the substring is created.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr substringAfter(ServerExpression input, ServerExpression after);
+  public ServerExpression substringAfter(ServerExpression input, ServerExpression after);
 /**
   * Returns the substring created by taking all of the input characters that occur after the specified after characters.
   * <p>
@@ -1861,7 +1854,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr substringAfter(ServerExpression input, String after, String collation);
+  public ServerExpression substringAfter(ServerExpression input, String after, String collation);
 /**
   * Returns the substring created by taking all of the input characters that occur after the specified after characters.
   * <p>
@@ -1871,7 +1864,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr substringAfter(ServerExpression input, ServerExpression after, ServerExpression collation);
+  public ServerExpression substringAfter(ServerExpression input, ServerExpression after, ServerExpression collation);
 /**
   * Returns the substring created by taking all of the input characters that occur before the specified before characters.
   * <p>
@@ -1880,7 +1873,7 @@ public interface FnExpr {
   * @param before  The string before which the substring is created.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr substringBefore(ServerExpression input, String before);
+  public ServerExpression substringBefore(ServerExpression input, String before);
 /**
   * Returns the substring created by taking all of the input characters that occur before the specified before characters.
   *
@@ -1892,7 +1885,7 @@ public interface FnExpr {
   * @param before  The string before which the substring is created.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr substringBefore(ServerExpression input, ServerExpression before);
+  public ServerExpression substringBefore(ServerExpression input, ServerExpression before);
 /**
   * Returns the substring created by taking all of the input characters that occur before the specified before characters.
   * <p>
@@ -1902,7 +1895,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr substringBefore(ServerExpression input, String before, String collation);
+  public ServerExpression substringBefore(ServerExpression input, String before, String collation);
 /**
   * Returns the substring created by taking all of the input characters that occur before the specified before characters.
   * <p>
@@ -1912,7 +1905,7 @@ public interface FnExpr {
   * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr substringBefore(ServerExpression input, ServerExpression before, ServerExpression collation);
+  public ServerExpression substringBefore(ServerExpression input, ServerExpression before, ServerExpression collation);
 /**
   * Returns a value obtained by adding together the values in arg. If zero is not specified, then the value returned for an empty sequence is the xs:integer value 0. If zero is specified, then the value returned for an empty sequence is zero. 
   *
@@ -1923,7 +1916,7 @@ public interface FnExpr {
   * @param arg  The sequence of values to be summed.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
-  public XsAnyAtomicTypeExpr sum(ServerExpression arg);
+  public ServerExpression sum(ServerExpression arg);
 /**
   * Returns a value obtained by adding together the values in arg. If zero is not specified, then the value returned for an empty sequence is the xs:integer value 0. If zero is specified, then the value returned for an empty sequence is zero. 
   * <p>
@@ -1932,7 +1925,7 @@ public interface FnExpr {
   * @param zero  The value to return as zero if the input sequence is the empty sequence. This parameter is not available in the 0.9-ml XQuery dialect.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
-  public XsAnyAtomicTypeExpr sum(ServerExpression arg, String zero);
+  public ServerExpression sum(ServerExpression arg, String zero);
 /**
   * Returns a value obtained by adding together the values in arg. If zero is not specified, then the value returned for an empty sequence is the xs:integer value 0. If zero is specified, then the value returned for an empty sequence is zero. 
   * <p>
@@ -1941,7 +1934,7 @@ public interface FnExpr {
   * @param zero  The value to return as zero if the input sequence is the empty sequence. This parameter is not available in the 0.9-ml XQuery dialect.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
-  public XsAnyAtomicTypeExpr sum(ServerExpression arg, ServerExpression zero);
+  public ServerExpression sum(ServerExpression arg, ServerExpression zero);
 /**
   * Returns all but the first item in a sequence. For more details, see XPath 3.0 Functions and Operators.
   *
@@ -1952,7 +1945,7 @@ public interface FnExpr {
   * @param seq  The function value.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr tail(ServerExpression seq);
+  public ServerExpression tail(ServerExpression seq);
 /**
   * Returns the timezone component of arg if any. If arg has a timezone component, then the result is an xs:dayTimeDuration that indicates deviation from UTC; its value may range from +14:00 to -14:00 hours, both inclusive. Otherwise, the result is the empty sequence. 
   *
@@ -1963,7 +1956,7 @@ public interface FnExpr {
   * @param arg  The date whose timezone component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dayTimeDuration.html">xs:dayTimeDuration</a> server data type
   */
-  public XsDayTimeDurationExpr timezoneFromDate(ServerExpression arg);
+  public ServerExpression timezoneFromDate(ServerExpression arg);
 /**
   * Returns the timezone component of arg if any. If arg has a timezone component, then the result is an xs:dayTimeDuration that indicates deviation from UTC; its value may range from +14:00 to -14:00 hours, both inclusive. Otherwise, the result is the empty sequence. 
   *
@@ -1974,7 +1967,7 @@ public interface FnExpr {
   * @param arg  The dateTime whose timezone component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dayTimeDuration.html">xs:dayTimeDuration</a> server data type
   */
-  public XsDayTimeDurationExpr timezoneFromDateTime(ServerExpression arg);
+  public ServerExpression timezoneFromDateTime(ServerExpression arg);
 /**
   * Returns the timezone component of arg if any. If arg has a timezone component, then the result is an xs:dayTimeDuration that indicates deviation from UTC; its value may range from +14:00 to -14:00 hours, both inclusive. Otherwise, the result is the empty sequence. 
   *
@@ -1985,7 +1978,7 @@ public interface FnExpr {
   * @param arg  The time whose timezone component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_time.html">xs:time</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dayTimeDuration.html">xs:dayTimeDuration</a> server data type
   */
-  public XsDayTimeDurationExpr timezoneFromTime(ServerExpression arg);
+  public ServerExpression timezoneFromTime(ServerExpression arg);
 /**
   * Returns a sequence of strings contructed by breaking the specified input into substrings separated by the specified pattern. The specified pattern is not returned as part of the returned items.
   * <p>
@@ -1994,7 +1987,7 @@ public interface FnExpr {
   * @param pattern  The regular expression pattern from which to separate the tokens.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringSeqExpr tokenize(ServerExpression input, String pattern);
+  public ServerExpression tokenize(ServerExpression input, String pattern);
 /**
   * Returns a sequence of strings contructed by breaking the specified input into substrings separated by the specified pattern. The specified pattern is not returned as part of the returned items.
   *
@@ -2006,7 +1999,7 @@ public interface FnExpr {
   * @param pattern  The regular expression pattern from which to separate the tokens.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringSeqExpr tokenize(ServerExpression input, ServerExpression pattern);
+  public ServerExpression tokenize(ServerExpression input, ServerExpression pattern);
 /**
   * Returns a sequence of strings contructed by breaking the specified input into substrings separated by the specified pattern. The specified pattern is not returned as part of the returned items.
   * <p>
@@ -2016,7 +2009,7 @@ public interface FnExpr {
   * @param flags  The flag representing how to interpret the regular expression. One of "s", "m", "i", or "x", as defined in http://www.w3.org/TR/xpath-functions/#flags.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringSeqExpr tokenize(ServerExpression input, String pattern, String flags);
+  public ServerExpression tokenize(ServerExpression input, String pattern, String flags);
 /**
   * Returns a sequence of strings contructed by breaking the specified input into substrings separated by the specified pattern. The specified pattern is not returned as part of the returned items.
   * <p>
@@ -2026,7 +2019,7 @@ public interface FnExpr {
   * @param flags  The flag representing how to interpret the regular expression. One of "s", "m", "i", or "x", as defined in http://www.w3.org/TR/xpath-functions/#flags.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringSeqExpr tokenize(ServerExpression input, ServerExpression pattern, ServerExpression flags);
+  public ServerExpression tokenize(ServerExpression input, ServerExpression pattern, ServerExpression flags);
 /**
   * Returns a string where every character in src that occurs in some position in the mapString is translated into the transString character in the corresponding location of the mapString character.
   * <p>
@@ -2036,7 +2029,7 @@ public interface FnExpr {
   * @param transString  The string representing the characters to which the $mapString characters are translated.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr translate(ServerExpression src, String mapString, String transString);
+  public ServerExpression translate(ServerExpression src, String mapString, String transString);
 /**
   * Returns a string where every character in src that occurs in some position in the mapString is translated into the transString character in the corresponding location of the mapString character.
   *
@@ -2049,7 +2042,7 @@ public interface FnExpr {
   * @param transString  The string representing the characters to which the $mapString characters are translated.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr translate(ServerExpression src, ServerExpression mapString, ServerExpression transString);
+  public ServerExpression translate(ServerExpression src, ServerExpression mapString, ServerExpression transString);
 /**
   * Returns the xs:boolean value true. Equivalent to xs:boolean("1").
   *
@@ -2059,7 +2052,7 @@ public interface FnExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/fn:true" target="mlserverdoc">fn:true</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr trueExpr();
+  public ServerExpression trueExpr();
 /**
   * Returns the items of sourceSeq in an implementation dependent order. 
   *
@@ -2070,7 +2063,7 @@ public interface FnExpr {
   * @param sourceSeq  The sequence of items.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr unordered(ServerExpression sourceSeq);
+  public ServerExpression unordered(ServerExpression sourceSeq);
 /**
   * Returns the specified string converting all of the characters to upper-case characters. If a character does not have a corresponding upper-case character, then the original character is returned. The upper-case characters are determined using the Unicode Case Mappings.
   *
@@ -2081,7 +2074,7 @@ public interface FnExpr {
   * @param string  The string to upper-case.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr upperCase(ServerExpression string);
+  public ServerExpression upperCase(ServerExpression string);
 /**
   * Returns an xs:integer representing the year component in the localized value of arg. The result may be negative. 
   *
@@ -2092,7 +2085,7 @@ public interface FnExpr {
   * @param arg  The date whose year component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr yearFromDate(ServerExpression arg);
+  public ServerExpression yearFromDate(ServerExpression arg);
 /**
   * Returns an xs:integer representing the year component in the localized value of arg. The result may be negative. 
   *
@@ -2103,7 +2096,7 @@ public interface FnExpr {
   * @param arg  The dateTime whose year component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr yearFromDateTime(ServerExpression arg);
+  public ServerExpression yearFromDateTime(ServerExpression arg);
 /**
   * Returns an xs:integer representing the years component in the canonical lexical representation of the value of arg. The result may be negative. 
   *
@@ -2114,5 +2107,5 @@ public interface FnExpr {
   * @param arg  The duration whose year component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_duration.html">xs:duration</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr yearsFromDuration(ServerExpression arg);
+  public ServerExpression yearsFromDuration(ServerExpression arg);
 }

@@ -89,6 +89,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private JobTicket jobTicket;
   private Calendar jobStartTime;
   private Calendar jobEndTime;
+  private long maxUris = Long.MAX_VALUE;
+  private long maxBatches = Long.MAX_VALUE;
 
   public QueryBatcherImpl(QueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super(moveMgr);
@@ -271,7 +273,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   @Override
   public QueryBatcher withJobId(String jobId) {
     requireNotStarted();
-    super.withJobId(jobId);
+    setJobId(jobId);
     return this;
   }
 
@@ -343,7 +345,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
   }
 
-  synchronized void start(JobTicket ticket) {
+  @Override
+  public synchronized void start(JobTicket ticket) {
     if ( threadPool != null ) {
       logger.warn("startJob called more than once");
       return;
@@ -359,6 +362,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
     jobStartTime = Calendar.getInstance();
     started.set(true);
+    if(this.maxBatches < Long.MAX_VALUE) {
+    	setMaxUris(getMaxBatches());
+    }
     if ( query != null ) {
       startQuerying();
     } else {
@@ -424,7 +430,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   @Override
   public synchronized QueryBatcher withForestConfig(ForestConfiguration forestConfig) {
     super.withForestConfig(forestConfig);
-    Forest[] forests = forestConfig.listForests();
+    Forest[] forests = forests(forestConfig);
     Set<Forest> oldForests = new HashSet<>(forestResults.keySet());
     Map<String,Forest> hosts = new HashMap<>();
     for ( Forest forest : forests ) {
@@ -434,20 +440,16 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       if ( forestIsDone.get(forest) == null  ) forestIsDone.put(forest, new AtomicBoolean(false));
       if ( retryForestMap.get(forest) == null ) retryForestMap.put(forest, new AtomicInteger(0));
     }
-    logger.info("(withForestConfig) Using forests on {} hosts for \"{}\"", hosts.keySet(), forests[0].getDatabaseName());
-    List<DatabaseClient> newClientList = new ArrayList<>();
-    for ( String host : hosts.keySet() ) {
-      Forest forest = hosts.get(host);
-      DatabaseClient client = getMoveMgr().getForestClient(forest);
-      newClientList.add(client);
-    }
+    Set<String> hostNames = hosts.keySet();
+    logger.info("(withForestConfig) Using forests on {} hosts for \"{}\"", hostNames, forests[0].getDatabaseName());
+    List<DatabaseClient> newClientList = clients(hostNames);
     clientList.set(newClientList);
     boolean started = (threadPool != null);
-    if ( started == true && oldForests.size() > 0 ) calucluateDeltas(oldForests, forests);
+    if ( started == true && oldForests.size() > 0 ) calculateDeltas(oldForests, forests);
     return this;
   }
 
-  private synchronized void calucluateDeltas(Set<Forest> oldForests, Forest[] forests) {
+  private synchronized void calculateDeltas(Set<Forest> oldForests, Forest[] forests) {
     // the forests we haven't known about yet
     Set<Forest> addedForests = new HashSet<>();
     // the forests that we knew about but they were black-listed and are no longer black-listed
@@ -609,11 +611,12 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     public void run() {
       // don't proceed if this forest is marked as done (because we already got the last batch)
       AtomicBoolean isDone = forestIsDone.get(forest);
-      if ( isDone.get() == true ) {
+      if ( isDone.get() == true) {
         logger.error("Attempt to query forest '{}' forestBatchNum {} with start {} after the last batch " +
           "for that forest has already been retrieved", forest.getForestName(), forestBatchNum, start);
         return;
       }
+      
       // don't proceed if this job is stopped (because dataMovementManager.stopJob was called)
       if ( stopped.get() == true ) {
         logger.warn("Cancelling task to query forest '{}' forestBatchNum {} with start {} after the job is stopped",
@@ -655,16 +658,20 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
           for ( String uri : results ) {
             uris.add( uri );
           }
-          if ( uris.size() == getBatchSize() ) {
-            nextAfterUri = uris.get(getBatchSize() - 1);
-            // this is a full batch
-            launchNextTask();
-          }
+          
           batch = batch
             .withItems(uris.toArray(new String[uris.size()]))
             .withServerTimestamp(serverTimestamp.get())
             .withJobResultsSoFar(resultsSoFar.addAndGet(uris.size()))
             .withForestResultsSoFar(forestResults.get(forest).addAndGet(uris.size()));
+          
+          if(maxUris <= (resultsSoFar.longValue())) {
+              isDone.set(true);
+          } else if ( uris.size() == getBatchSize() ) {
+              nextAfterUri = uris.get(getBatchSize() - 1);
+              // this is a full batch
+              launchNextTask();
+            }
 
           logger.trace("batch size={}, jobBatchNumber={}, jobResultsSoFar={}, forest={}", uris.size(),
             batch.getJobBatchNumber(), batch.getJobResultsSoFar(), forest.getForestName());
@@ -722,7 +729,10 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       }
       AtomicBoolean isDone = forestIsDone.get(forest);
       // we made it to the end, so don't launch anymore tasks
-      if ( isDone.get() == true ) return;
+      if ( isDone.get() == true ) {
+    	  shutdownIfAllForestsAreDone();
+    	  return;
+    }
       long nextStart = start + getBatchSize();
       threadPool.execute(new QueryTask(moveMgr, batcher, forest, query, forestBatchNum + 1, nextStart, nextAfterUri));
     }
@@ -763,13 +773,16 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       try {
         boolean lastBatch = false;
         List<String> uriQueue = new ArrayList<>(getBatchSize());
-        while (iterator.hasNext()) {
+        while (iterator.hasNext() && !lastBatch) {
           uriQueue.add(iterator.next());
           if(!iterator.hasNext()) lastBatch = true;
           // if we've hit batchSize or the end of the iterator
-          if (uriQueue.size() == getBatchSize() || !iterator.hasNext()) {
+          if (uriQueue.size() == getBatchSize() || !iterator.hasNext() || lastBatch) {
             final List<String> uris = uriQueue;
             final boolean finalLastBatch = lastBatch;
+            final long results = resultsSoFar.addAndGet(uris.size());
+            if(maxUris <= results) 
+                lastBatch = true;
             uriQueue = new ArrayList<>(getBatchSize());
             Runnable processBatch = new Runnable() {
               public void run() {
@@ -785,7 +798,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
                   DatabaseClient client = currentClientList.get(clientIndex);
                   batch = batch.withJobBatchNumber(currentBatchNumber)
                       .withClient(client)
-                      .withJobResultsSoFar(resultsSoFar.addAndGet(uris.size()))
+                      .withJobResultsSoFar(results)
                       .withItems(uris.toArray(new String[uris.size()]));
                   logger.trace("batch size={}, jobBatchNumber={}, jobResultsSoFar={}", uris.size(),
                       batch.getJobBatchNumber(), batch.getJobResultsSoFar());
@@ -859,6 +872,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     threadPool.execute(new IteratorTask(this));
   }
 
+  @Override
   public void stop() {
     stopped.set(true);
     if ( threadPool != null ) threadPool.shutdownNow();
@@ -975,11 +989,6 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
   @Override
-  public DatabaseClient getPrimaryClient() {
-    return getMoveMgr().getPrimaryClient();
-  }
-
-  @Override
   public QueryBatcher onJobCompletion(QueryBatcherListener listener) {
     if ( listener == null ) throw new IllegalArgumentException("listener must not be null");
     jobCompletionListeners.add(listener);
@@ -1019,4 +1028,30 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       return jobEndTime;
     }
   }
+
+@Override
+public void setMaxBatches(long maxBatches) {
+	Long max_limit = Long.MAX_VALUE/getBatchSize();
+	if(maxBatches > max_limit)
+		throw new IllegalArgumentException("Number of batches cannot be more than "+ max_limit);
+	this.maxBatches = maxBatches;
+	if(isStarted())
+		setMaxUris(maxBatches);
+}
+
+private void setMaxUris(long maxBatches) {
+	this.maxUris = (maxBatches * getBatchSize());
+}
+
+@Override
+public long getMaxBatches() {
+    return this.maxBatches;
+}
+
+@Override
+public void setMaxBatches() {
+	this.maxBatches = -1L;
+	if(isStarted())
+		setMaxUris(getMaxBatches());
+}
 }

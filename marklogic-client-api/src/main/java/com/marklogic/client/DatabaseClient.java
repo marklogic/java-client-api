@@ -225,6 +225,19 @@ public interface DatabaseClient {
    * @return the connection type
    */
   ConnectionType getConnectionType();
+  
+  /**
+   * Checks if the connection is valid.
+   * @return {@link ConnectionResult} with a connected property of true or false. 
+   *  In the false case it contains the errorMessage property identifying the failure.
+   */
+  ConnectionResult checkConnection();
+  
+  static public interface ConnectionResult {
+	  boolean isConnected();
+	  Integer getStatusCode();
+	  String getErrorMessage();  
+  }
 
   String getHost();
 

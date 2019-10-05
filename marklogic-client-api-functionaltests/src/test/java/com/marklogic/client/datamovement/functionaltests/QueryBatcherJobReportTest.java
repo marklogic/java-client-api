@@ -16,15 +16,19 @@
 package com.marklogic.client.datamovement.functionaltests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,23 +39,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.datamovement.ApplyTransformListener;
 import com.marklogic.client.datamovement.ApplyTransformListener.ApplyResult;
 import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.DeleteListener;
 import com.marklogic.client.datamovement.JobTicket;
+import com.marklogic.client.datamovement.QueryBatch;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.document.DocumentPage;
@@ -75,7 +77,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 	private static final String TEST_DIR_PREFIX = "/WriteHostBatcher-testdata/";
 
 	private static DatabaseClient dbClient;
-	private static String host = null;
 	private static String user = "admin";
 	private static int port = 8000;
 	private static String password = "admin";
@@ -104,7 +105,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		server = getRestAppServerName();
 	    port = getRestAppServerPort();
 	    
-		host = getRestAppServerHostName();
+		getRestAppServerHostName();
 		dbClient = getDatabaseClient(user, password, getConnType());
 		dmManager = dbClient.newDataMovementManager();
 		hostNames = getHosts();
@@ -188,23 +189,12 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			detachForest(dbName, dbName + "-" + (i + 1));
 			deleteForest(dbName + "-" + (i + 1));
 		}
-
 		deleteDB(dbName);
-	}
-
-	@Before
-	public void setUp() throws Exception {
-
-	}
-
-	@After
-	public void tearDown() throws Exception {
-
 	}
 
 	@Test
 	public void jobReport() throws Exception {
-
+		System.out.println("In jobReport method");
 		AtomicInteger batchCount = new AtomicInteger(0);
 		AtomicInteger successCount = new AtomicInteger(0);
 		AtomicLong count1 = new AtomicLong(0);
@@ -265,11 +255,11 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), count1.get());
 		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), count2.get());
 		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), count3.get());
-
 	}
 
 	@Test
 	public void testNullQdef() throws IOException, InterruptedException {
+		System.out.println("In testNullQdef method");
 		JsonNode node = null;
 		JacksonHandle jacksonHandle = null;
 
@@ -303,7 +293,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 
 	@Test
 	public void queryFailures() throws Exception {
-
+		System.out.println("In queryFailures method");
 		Thread t1 = new Thread(new DisabledDBRunnable());
 		t1.setName("Status Check -1");
 
@@ -330,12 +320,15 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 
 		wbatcher.flushAndWait();
 
+		AtomicInteger failureCnts = new AtomicInteger(0);
 		QueryBatcher batcher = dmManager.newQueryBatcher(querydef).withBatchSize(10).withThreadCount(3);
 		batcher.onUrisReady(batch -> {
 			batches.incrementAndGet();
 		});
 		batcher.onQueryFailure((throwable) -> {
 			System.out.println("queryFailures: ");
+			failureCnts.incrementAndGet();
+			System.out.println("DB disabled for Forest " + throwable.getForest().getForestName());
 			try {
 				Thread.currentThread().sleep(7000L);
 			} catch (Exception e) {
@@ -343,6 +336,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 				e.printStackTrace();
 			}
 			throwable.getBatcher().retry(throwable);
+			// We need an NullPointerException. Hence these statements.
 			String s = null;
 			s.length();
 
@@ -360,8 +354,9 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		if(!isLBHost()) {
 			System.out.println("Method queryFailure hostNames.length " + hostNames.length);
 			System.out.println("Method queryFailure getFailureEventsCount() " + dmManager.getJobReport(queryTicket).getFailureEventsCount());
-			Assert.assertEquals(hostNames.length, dmManager.getJobReport(queryTicket).getFailureEventsCount());
-			Assert.assertEquals(hostNames.length, dmManager.getJobReport(queryTicket).getFailureBatchesCount());
+			
+			Assert.assertEquals(failureCnts.get(), dmManager.getJobReport(queryTicket).getFailureEventsCount());
+			Assert.assertEquals(failureCnts.get(), dmManager.getJobReport(queryTicket).getFailureBatchesCount());
 		}
 	}
 
@@ -392,12 +387,11 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			properties.put("enabled", "true");
 			changeProperty(properties, "/manage/v2/databases/" + dbName + "/properties");
 		}
-
 	}
 
 	@Test
 	public void jobReportStopJob() throws Exception {
-
+		System.out.println("In jobReportStopJob method");
 		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
 				.withBatchSize(20).withThreadCount(20);
 		AtomicInteger batchCount = new AtomicInteger(0);
@@ -431,7 +425,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 	// Making sure we can stop jobs based on the JobId.
 	@Test
 	public void stopJobUsingJobId() throws Exception {
-
+		System.out.println("In stopJobUsingJobId method");
 		String jobId = UUID.randomUUID().toString();
 
 		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
@@ -470,7 +464,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 
 	@Test
 	public void jsMasstransformReplace() throws Exception {
-
+		System.out.println("In jsMasstransformReplace method");
 		ServerTransform transform = new ServerTransform("jsTransform");
 		transform.put("newValue", "new Value");
 
@@ -525,10 +519,9 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 
 	}
 
-	// ISSUE # 106
 	@Test
 	public void stopTransformJobTest() throws Exception {
-
+		System.out.println("In stopTransformJobTest method");
 		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
 		transform.put("name", "Lang");
 		transform.put("value", "French");
@@ -591,6 +584,222 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		
 		System.out.println("stopTransformJobTest : successCount.get() " + successCount.get());
 		Assert.assertEquals(successCount.get(), successBatch.size());
+	}
+	
+	/* Test 1 setMaxBatches(2035) - maximum specified in advance
+	 * Test 2 setMaxBatches() -- the uris collected thus far during a job
+	 * 
+	 */
+	@Test
+	public void testStopBeforeListenerisComplete() throws Exception {
+		ArrayList<String> urisList = new ArrayList<String>();
+		final String qMaxBatches = "fn:count(cts:uri-match('/setMaxBatches*'))";
+		try {
+			
+			System.out.println("In testStopBeforeListenerisComplete method");
+		
+			final AtomicInteger count = new AtomicInteger(0);
+			final AtomicInteger failedBatch = new AtomicInteger(0);
+			final AtomicInteger successBatch = new AtomicInteger(0);
+			
+			final AtomicInteger failedBatch2 = new AtomicInteger(0);
+			final AtomicInteger successBatch2 = new AtomicInteger(0);
+			
+			String jsonDoc = "{" +
+				    "\"employees\": [" +
+				    "{ \"firstName\":\"John\" , \"lastName\":\"Doe\" }," +
+				    "{ \"firstName\":\"Ann\" , \"lastName\":\"Smith\" }," +
+				    "{ \"firstName\":\"Bob\" , \"lastName\":\"Foo\" }]" +
+				    "}";
+			StringHandle handle = new StringHandle();
+			handle.setFormat(Format.JSON);
+			handle.set(jsonDoc);
 
+			WriteBatcher batcher = dmManager.newWriteBatcher();
+			batcher.withBatchSize(99);
+			batcher.withThreadCount(10);
+
+			batcher.onBatchSuccess(batch -> {
+
+			}).onBatchFailure((batch, throwable) -> {
+				throwable.printStackTrace();
+
+			});
+			dmManager.startJob(batcher);
+
+			class writeDocsThread implements Runnable {
+
+				@Override
+				public void run() {
+
+					for (int j = 0; j < 50000; j++) {
+						String uri = "/setMaxBatches-" + j + "-" + Thread.currentThread().getId();
+						//System.out.println("Thread name: " + Thread.currentThread().getName() + "  URI:" + uri);
+						urisList.add(uri);
+						batcher.add(uri, handle);
+					}
+					batcher.flushAndWait();
+				}
+			}
+
+			class CountRunnable implements Runnable {
+
+				@Override
+				public void run() {
+					try {
+						Thread.currentThread().sleep(15000L);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					Set<Thread> threads = Thread.getAllStackTraces().keySet();
+					Iterator<Thread> iter = threads.iterator();
+					while (iter.hasNext()) {
+						Thread t = iter.next();
+						if (t.getName().contains("pool-1-thread-"))
+							System.out.println(t.getName());
+						count.incrementAndGet();
+					}
+				}
+			}
+			Thread countT;
+			countT = new Thread(new CountRunnable());
+
+			Thread t1;
+			t1 = new Thread(new writeDocsThread());
+
+			countT.start();
+			t1.start();
+			countT.join();
+
+			t1.join();
+			
+			int docCnt = dbClient.newServerEval().xquery(qMaxBatches).eval().next().getNumber().intValue();
+			System.out.println("Doc count is " + docCnt);
+			Assert.assertTrue(docCnt == 50000);
+
+			Collection<String> batchResults = new LinkedHashSet<String>();
+			QueryBatcher qb = dmManager.newQueryBatcher(urisList.iterator())
+					.withBatchSize(12)
+					.withThreadCount(1)
+					.withJobId("ListenerCompletionTest")	            
+					.onUrisReady((QueryBatch batch) -> {
+
+						for (String str : batch.getItems()) {            		
+							batchResults.add(str);	                    
+						}
+						successBatch.addAndGet(1);
+					})
+					.onQueryFailure(throwable-> {
+						failedBatch.addAndGet(1);                
+					});
+			// Test 1 - Set max uris that can be collected in advance of the job.
+			qb.setMaxBatches(2035);
+
+			class MaxBatchesThread implements Runnable {
+
+				@Override
+				public void run() {
+					try {
+						Thread.currentThread().sleep(3000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					dmManager.stopJob(qb);			
+				}			
+			}
+
+			dmManager.startJob(qb);
+
+			Thread tMBStop = new Thread(new MaxBatchesThread());
+
+			tMBStop.start();
+			tMBStop.join();
+
+			// Validate Test 1 setMaxBatches(2035)
+			System.out.println("Max URIs size is : " + batchResults.size());
+			/* 12 times 2035 equals 24420 with one Thread on QueryBatcher.
+			 * With thread count > 1 on QueryBatcher, batchResults size is less than 24420. 
+			 */
+			assertTrue("Stop QueryBatcher with setMaxBatches set to 2035 is incorrect", batchResults.size() == 24420);
+
+			/* Test 2 setMaxBatches()
+			 */
+			Collection<String> batchResults2 = new LinkedHashSet<String>();
+			QueryBatcher qb2 = dmManager.newQueryBatcher(urisList.iterator())
+					.withBatchSize(12)
+					.withThreadCount(20)
+					.withJobId("ListenerCompletionTest2")	            
+					.onUrisReady((QueryBatch batch) -> {
+
+						for (String str : batch.getItems()) {            		
+							batchResults2.add(str);	                    
+						}
+						successBatch2.addAndGet(1);
+					})
+					.onQueryFailure(throwable-> {
+						failedBatch2.addAndGet(1);                
+					});
+			qb2.setMaxBatches(203);
+			
+			class BatchesSoFarThread implements Runnable {
+
+				@Override
+				public void run() {
+					// Test 2
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					qb2.setMaxBatches();					
+				}			
+			}
+
+			Thread tMBStop2 = new Thread(new BatchesSoFarThread());
+			// Wait for the stop thread to initialize before starting DMSDK Job.
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			dmManager.startJob(qb2);
+			
+			int initialUrisSize = batchResults2.size();
+			
+			tMBStop2.start();
+			qb2.awaitCompletion();
+			dmManager.stopJob(qb2);
+			
+			System.out.println("Doc count in initialUrisSize " + initialUrisSize);
+			System.out.println("Doc count after setMaxBatches() is called " +  batchResults2.size());
+			
+			assertTrue("Batches of URIs collected so far", batchResults2.size() > 0);
+			assertTrue("Number of Uris collected does not fall in the range", (batchResults2.size()>initialUrisSize && batchResults2.size()< 2436));
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		finally {
+			// Delete all uris.
+			QueryBatcher deleteBatcher = dmManager.newQueryBatcher(urisList.iterator())
+			        .onUrisReady(new DeleteListener())
+			        .onUrisReady(batch -> {
+			          //System.out.println("Items in batch " + batch.getItems().length);
+			        }
+			        )
+			        .onQueryFailure(throwable -> {
+			          System.out.println("Query Failed");
+			          throwable.printStackTrace();
+			        })
+			        .withBatchSize(5000)
+			        .withThreadCount(10);
+			dmManager.startJob(deleteBatcher);
+			deleteBatcher.awaitCompletion(2, TimeUnit.MINUTES);
+			int docCnt = dbClient.newServerEval().xquery(qMaxBatches).eval().next().getNumber().intValue();
+			System.out.println("All setMaxBatches docs should have been deleted. Count after DeleteListener job is " + docCnt);
+			Assert.assertTrue(docCnt == 0);
+		}
 	}
 }

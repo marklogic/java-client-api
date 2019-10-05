@@ -44,6 +44,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResult.Type;
 import com.marklogic.client.eval.EvalResultIterator;
@@ -54,6 +56,7 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.StringHandle;
 
 /*
  * This test is meant for javascript to 
@@ -278,7 +281,8 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
 
   @Test
   public void testJSReturningDifferentTypesOrder1() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-    String insertXML = "declareUpdate();" + "var x = new NodeBuilder();"
+	  System.out.println("Running testJSReturningDifferentTypesOrder1");
+	  String insertXML = "declareUpdate();" + "var x = new NodeBuilder();"
         + "x.startDocument();" + "x.startElement(\"foo\");"
         + "x.addText(\"test1\");" + "x.endElement();"
         + "x.endDocument();"
@@ -357,7 +361,7 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
   // with javascript that retruns different types, formats
   @Test
   public void testJSReturningDifferentTypesOrder2() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-
+	System.out.println("Running testJSReturningDifferentTypesOrder2");
     InputStream inputStream = new FileInputStream(
         "src/test/java/com/marklogic/client/functionaltest/data/javascriptQueries.sjs");
     InputStreamHandle ish = new InputStreamHandle();
@@ -399,7 +403,7 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
   }
 
   /*
-   * Test is intended to test different types of variable passed to javascript
+   * Test is intended to test different types of variable passed to Javascript
    * from java and check return types,data types, there is a bug log against
    * REST 30209
    * 
@@ -409,7 +413,7 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
    */
   @Test(expected = IllegalArgumentException.class)
   public void testJSDifferentVariableTypes() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-
+	System.out.println("Running testJSDifferentVariableTypes"); 
     DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
     InputSource is = new InputSource();
     is.setCharacterStream(new StringReader("<foo attr=\"attribute\"><?processing instruction?><!--comment-->test1</foo>"));
@@ -456,7 +460,7 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
    */
   @Test
   public void testJSDifferentVariableTypesWithNulls() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-
+	System.out.println("Running testJSDifferentVariableTypesWithNulls");
     DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
     InputSource is = new InputSource();
     is.setCharacterStream(new StringReader("<foo attr=\"attribute\"><?processing instruction?><!--comment-->test1</foo>"));
@@ -501,6 +505,7 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
   @Test
   public void testJSDifferentVariableTypesNoNullNodes() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
+	System.out.println("Running testJSDifferentVariableTypesNoNullNodes");
     DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
     InputSource is = new InputSource();
     is.setCharacterStream(new StringReader("<foo attr=\"attribute\"><?processing instruction?><!--comment-->test1</foo>"));
@@ -538,6 +543,7 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
 
   @Test(expected = java.lang.IllegalStateException.class)
   public void testMultipleJSfnOnServerEval() {
+	System.out.println("Running testMultipleJSfnOnServerEval");
     String insertQuery = "xdmp.document-insert(\"test1.xml\",<foo>test1</foo>)";
     String query1 = "fn.exists(fn:doc())";
     String query2 = "fn.count(fn:doc())";
@@ -558,7 +564,7 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
   // where it test to see we can invoke a module
   @Test
   public void testJSReturningDifferentTypesOrder3fromModules() throws Exception {
-
+	System.out.println("Running testJSReturningDifferentTypesOrder3fromModules");
     InputStream inputStream = null;
     int restPort = getRestServerPort();
     String restServerName = getRestServerName();
@@ -624,7 +630,8 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
    */
   @Test
   public void testStreamClosingWithEvalAs() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-    try {
+	  System.out.println("Running testStreamClosingWithEvalAs");
+	  try {
       String query1 = 
            "var phrase = 'MarkLogic Corp';"
           + "var repeat = 10;"
@@ -681,5 +688,213 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
     } catch (Exception e) {
       throw e;
     }
+  }
+  
+  // Making sure that mjs modules can be used in eval.
+  @Test
+  public void testJavaScriptModules() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+	  System.out.println("Running testJavaScriptModules");
+	  DatabaseClient moduleClient = null;
+	  try {
+		  
+		   // Add new range elements into this array
+		    String[][] rangeElements = {
+		        // { scalar-type, namespace-uri, localname, collation,
+		        // range-value-positions, invalid-values }
+		        // If there is a need to add additional fields, then add them to the end
+		        // of each array
+		        // and pass empty strings ("") into an array where the additional field
+		        // does not have a value.
+		        // For example : as in namespace, collections below.
+		        // Add new RangeElementIndex as an array below.
+		        { "int", "", "srchNumber", "", "false", "reject" },
+		        { "int", "", "srchLevel", "", "false", "reject" },
+		        { "string", "", "srchCity", "http://marklogic.com/collation/", "false", "reject" },
+		        { "string", "", "city", "http://marklogic.com/collation/", "false", "reject" },
+		        { "date", "", "srchDate", "http://marklogic.com/collation/", "false", "reject" },
+		        { "int", "", "popularity", "", "false", "reject" },
+		    };
+
+		    // Insert the range indices
+		    addRangeElementIndex(dbName, rangeElements);
+					    
+		  String docId[] = { "/test/words/wd1.json", "/test/words/wd2.json", "/test/words/wd3.json",
+				  "/test/words/wd4.xml", "/test/words/wd5.xml"};
+		  int restPort = getRestServerPort();
+		  String restServerName = getRestServerName();
+		  moduleClient = getDatabaseClientOnDatabase(appServerHostname, restPort, (restServerName + "-modules"), "admin", "admin", getConnType());
+		  String mjsString = "import sr from '/MarkLogic/jsearch';" +
+	              "var output =" + 
+	              " sr.documents()" +
+	              "  .where(cts.directoryQuery('/test/words/'))" +
+	              "  .orderBy('city')" +
+	              "  .filter()" +
+	              "  .slice(0, 10)" +
+	              "  .result();" +
+	              "output;";
+
+		  DocumentManager dm = moduleClient.newDocumentManager();
+		  DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+		  metadataHandle.getPermissions().add("test-js-eval",
+				  Capability.UPDATE, Capability.READ, Capability.EXECUTE);
+		  dm.write("/mjs/JSearch.mjs", metadataHandle, new StringHandle(mjsString));
+
+		  TextDocumentManager docMgr = client.newTextDocumentManager();
+		  DocumentWriteSet writeset = docMgr.newWriteSet();
+
+		  StringBuilder sb1 = new StringBuilder(
+				  "{" +
+						  "    \"city\": \"london\"," + 
+						  "    \"distance\": 50.4," +
+						  "    \"srchDate\": \"2007-01-01\"," +
+						  "    \"metro\": true," +
+						  "    \"description\": \"Two recent discoveries indicate probable very early settlements near the Thames\"," +
+						  "    \"mayor\": {" +
+						  "       \"firstname\": \"John\"," +
+						  "       \"middlename\": \"Mark\"," +
+						  "       \"lastname\": \"Curry\"" +
+						  "     }," +
+						  "    \"location\": {" +
+						  "      \"latLonPoint\": \"51.50, -0.12\"," +
+						  "      \"latLonPair\": {" +
+						  "        \"lat\": 51.50," +
+						  "        \"long\": -0.12" +
+						  "      }," +
+						  "      \"latLonParent\": {" +
+						  "        \"latLonChild\": \"51.50, -0.12\"" +
+						  "      }" +
+						  "    }" +
+				  "  }");
+
+		  StringBuilder sb2 = new StringBuilder(
+				  "{ " +
+						  "    \"city\": \"new york\"," + 
+						  "    \"distance\": 23.3," +
+						  "    \"srchDate\": \"2006-06-23\"," +
+						  "    \"metro\": true," +
+						  "    \"description\": \"Henry Hudsons 1609 voyage marked the beginning of European involvement with the area\"," +
+						  "    \"mayor\": {" +
+						  "       \"firstname\": \"Phil\"," +
+						  "       \"middlename\": \"Tim\"," +
+						  "       \"lastname\": \"Dolan\"" +
+						  "     }," +
+						  "    \"location\": {" +
+						  "      \"latLonPoint\": \"40.71, -74.01\"," +
+						  "      \"latLonPair\": {" +
+						  "        \"lat\": 40.71," +
+						  "        \"long\": -74.01" +
+						  "      }," +
+						  "      \"latLonParent\": {" +
+						  "        \"latLonChild\": \"40.71, -74.01\"" +
+						  "      }" +
+						  "    }" +
+						  "  }"
+				  );
+
+		  StringBuilder sb3 = new StringBuilder(
+				  "  {" +
+						  "    \"city\": \"new jersey\"," + 
+						  "    \"distance\": 12.9," +
+						  "    \"srchDate\": \"1971-12-23\"," +
+						  "    \"metro\": false," +
+						  "    \"description\": \"American forces under Washington met the forces under General Henry Clinton\"," +
+						  "    \"mayor\": {" +
+						  "       \"firstname\": \"Jason\"," +
+						  "       \"middlename\": \"Gold\"," +
+						  "       \"lastname\": \"Kidd\"" +
+						  "     }," +
+						  "    \"location\": {" +
+						  "      \"latLonPoint\": \"40.72, -74.07\"," +
+						  "      \"latLonPair\": {" +
+						  "        \"lat\": 40.72," +
+						  "        \"long\": -74.07" +
+						  "      }," +
+						  "      \"latLonParent\": {" +
+						  "        \"latLonChild\": \"40.72, -74.07\"" +
+						  "      }" +
+						  "    }" +
+						  "  }"
+				  );
+		  StringBuilder sb4 = new StringBuilder(
+				  "<doc>" +
+	              "    <city>beijing</city>" + 
+	              "    <distance direction=\"east\">134.5</distance>" +
+	              "    <srchDate>1981-11-09</srchDate>" +
+	              "    <metro rate=\"3\">true</metro>" +
+	              "    <description>The Miyun Reservoir, on the upper reaches of the Chaobai River, is the largest reservoir within the municipality</description>" +
+	              "    <mayor>" +
+	              "      <firstname>Xu</firstname>" +
+	              "      <middlename>Ying</middlename>" +
+	              "      <lastname>Ma</lastname>" +
+	              "    </mayor>" +
+	              "    <location>" +
+	              "      <latLonPoint>39.90,116.40</latLonPoint>" +
+	              "      <latLonParent>" +
+	              "        <latLonChild>39.90,116.40</latLonChild>" +
+	              "      </latLonParent>" +
+	              "      <latLonPair>" +
+	              "        <lat>39.90</lat>" +
+	              "        <long>116.40</long>" +
+	              "      </latLonPair>" +
+	              "      <latLonAttrPair lat=\"39.90\" long=\"116.40\"/>" +
+	              "    </location>" +
+	              "  </doc>"
+				  );
+		  StringBuilder sb5 = new StringBuilder(
+				  "<doc>" +
+	              "    <city>cape town</city>" + 
+	              "    <distance direction=\"south\">377.9</distance>" +
+	              "    <srchDate>1999-04-22</srchDate>" +
+	              "    <metro rate=\"2\">true</metro>" +
+	              "    <description>The earliest known remnants in the region were found at Peers cave in Fish Hoek</description>" +
+	              "    <mayor>" +
+	              "      <firstname>Marco</firstname>" +
+	              "      <middlename>Xu</middlename>" +
+	              "      <lastname>Andrade</lastname>" +
+	              "    </mayor>" +
+	              "    <location>" +
+	              "      <latLonPoint>-33.91,18.42</latLonPoint>" +
+	              "      <latLonParent>" +
+	              "        <latLonChild>-33.91,18.42</latLonChild>" +
+	              "      </latLonParent>" +
+	              "      <latLonPair>" +
+	              "        <lat>-33.91</lat>" +
+	              "        <long>18.42</long>" +
+	              "      </latLonPair>" +
+	              "      <latLonAttrPair lat=\"-33.91\" long=\"18.42\"/>" +
+	              "    </location>" +
+	              "  </doc>"
+				  );
+
+		  writeset.add(docId[0], new StringHandle().with(sb1.toString()));
+		  writeset.add(docId[1], new StringHandle().with(sb2.toString()));
+		  writeset.add(docId[2], new StringHandle().with(sb3.toString()));
+		  writeset.add(docId[3], new StringHandle().with(sb4.toString()));
+		  writeset.add(docId[4], new StringHandle().with(sb5.toString()));
+		  docMgr.write(writeset);
+
+		  ServerEvaluationCall evl = client.newServerEval().modulePath("/mjs/JSearch.mjs");
+
+		  // Using evalAs(JsonNode.class)
+		  JsonNode jNode = evl.evalAs(JsonNode.class);
+		  
+		  assertTrue("Module Eval incorrect", jNode.get("results").get(0).get("uri").asText()
+				                              .equalsIgnoreCase("/test/words/wd4.xml"));
+		  assertTrue("Module Eval incorrect", jNode.get("results").get(1).get("uri").asText()
+                  .equalsIgnoreCase("/test/words/wd5.xml"));
+		  assertTrue("Module Eval incorrect", jNode.get("results").get(2).get("uri").asText()
+                  .equalsIgnoreCase("/test/words/wd1.json"));
+		  assertTrue("Module Eval incorrect", jNode.get("results").get(3).get("uri").asText()
+                  .equalsIgnoreCase("/test/words/wd3.json"));
+		  assertTrue("Module Eval incorrect", jNode.get("results").get(4).get("uri").asText()
+                  .equalsIgnoreCase("/test/words/wd2.json"));
+
+	  } catch (Exception e) {
+		  throw e;
+	  }
+	  finally {
+		  if (moduleClient != null)
+		  moduleClient.release();
+	  }
   }
 }

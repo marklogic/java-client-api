@@ -67,10 +67,11 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  * your resource there.</p>
  */
 public interface WriteBatcher extends Batcher {
-    /**
-     * Sets the DocumentMetadataHandle for write operations.
-     * @param handle the passed in DocumentMetadataHandle
-     */
+  /**
+   * Sets the DocumentMetadataHandle for write operations.
+   * @param handle the passed in DocumentMetadataHandle
+   * @return this write batcher for chaining configuration
+   */
     WriteBatcher withDefaultMetadata(DocumentMetadataHandle handle);
     
     /**

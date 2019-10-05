@@ -15,9 +15,8 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.*;
+import com.marklogic.client.DatabaseClient.ConnectionResult;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.BasicAuthContext;
 import com.marklogic.client.DatabaseClientFactory.CertificateAuthContext;
@@ -50,6 +49,7 @@ import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.CtsQueryWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
@@ -217,9 +217,9 @@ public class OkHttpServices implements RESTServices {
   }
 
   private FailedRequest extractErrorFields(Response response) {
-    if ( response == null ) return null;
+    if (response == null) return null;
     try {
-      if ( response.code() == STATUS_UNAUTHORIZED ) {
+      if (response.code() == STATUS_UNAUTHORIZED) {
         FailedRequest failure = new FailedRequest();
         failure.setMessageString("Unauthorized");
         failure.setStatusString("Failed Auth");
@@ -228,7 +228,7 @@ public class OkHttpServices implements RESTServices {
       String responseBody = getEntity(response.body(), String.class);
       InputStream is = new ByteArrayInputStream(responseBody.getBytes("UTF-8"));
       FailedRequest handler = FailedRequest.getFailedRequest(response.code(), response.header(HEADER_CONTENT_TYPE), is);
-      if ( handler.getMessage() == null ) {
+      if (handler.getMessage() == null) {
         handler.setMessageString(responseBody);
       }
       return handler;
@@ -1243,25 +1243,28 @@ public class OkHttpServices implements RESTServices {
   public boolean exists(String uri) throws ForbiddenUserException, FailedRequestException {
     return headImpl(null, uri, null, setupRequest(uri, null)) == null ? false : true;
   }
-
+  
+  @Override
+  public ConnectionResult checkConnection() {
+	  Request.Builder request = new Request.Builder()
+		        .url(this.baseUri);
+	  Response response = headImplExec(null, this.baseUri.uri().toString(), null, request);
+	  ConnectionResultImpl connectionResultImpl = new ConnectionResultImpl();
+	  int statusCode = response.code();
+	  if(statusCode < 300) {
+		  connectionResultImpl.setConnected(true);
+	  }
+	  else {
+		  connectionResultImpl.setConnected(false);
+		  connectionResultImpl.setStatusCode(statusCode);
+		  connectionResultImpl.setErrorMessage(getReasonPhrase(response));
+	  }
+	  return connectionResultImpl;
+  }
+  
   private Response headImpl(RequestLogger reqlog, String uri,
                             Transaction transaction, Request.Builder requestBldr) {
-    if (uri == null) {
-      throw new IllegalArgumentException(
-        "Existence check for document identifier without uri");
-    }
-
-    logger.debug("Requesting head for {} in transaction {}", uri, getTransactionId(transaction));
-
-    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
-    requestBldr = addTelemetryAgentId(requestBldr);
-
-    Function<Request.Builder, Response> doHeadFunction = new Function<Request.Builder, Response>() {
-      public Response apply(Request.Builder funcBuilder) {
-        return sendRequestOnce(funcBuilder.head().build());
-      }
-    };
-    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doHeadFunction, null);
+    Response response = headImplExec(reqlog, uri, transaction, requestBldr);
     int status = response.code();
     if (status != STATUS_OK) {
       if (status == STATUS_NOT_FOUND) {
@@ -1281,6 +1284,26 @@ public class OkHttpServices implements RESTServices {
     return response;
   }
 
+  private Response headImplExec(RequestLogger reqlog, String uri,
+          Transaction transaction, Request.Builder requestBldr) {
+	  if (uri == null) {
+	      throw new IllegalArgumentException(
+	        "Existence check for document identifier without uri");
+	    }
+
+	    logger.debug("Requesting head for {} in transaction {}", uri, getTransactionId(transaction));
+
+	    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+	    requestBldr = addTelemetryAgentId(requestBldr);
+
+	    Function<Request.Builder, Response> doHeadFunction = new Function<Request.Builder, Response>() {
+	      public Response apply(Request.Builder funcBuilder) {
+	        return sendRequestOnce(funcBuilder.head().build());
+	      }
+	    };
+	    return sendRequestWithRetry(requestBldr, (transaction == null), doHeadFunction, null);
+  }
+  
   @Override
   public TemporalDescriptor putDocument(RequestLogger reqlog, DocumentDescriptor desc,
                                         Transaction transaction, Set<Metadata> categories,
@@ -1877,12 +1900,12 @@ public class OkHttpServices implements RESTServices {
     return setupRequest("documents", queryParams);
   }
 
-  private boolean isExternalDescriptor(ContentDescriptor desc) {
+  static private boolean isExternalDescriptor(ContentDescriptor desc) {
     return desc != null && desc instanceof DocumentDescriptorImpl
       && !((DocumentDescriptorImpl) desc).isInternal();
   }
 
-  private void updateDescriptor(ContentDescriptor desc,
+  static private void updateDescriptor(ContentDescriptor desc,
                                 Headers headers) {
     if (desc == null || headers == null) return;
 
@@ -1892,7 +1915,7 @@ public class OkHttpServices implements RESTServices {
     updateServerTimestamp(desc, headers);
   }
 
-  private TemporalDescriptor updateTemporalSystemTime(DocumentDescriptor desc,
+  static private TemporalDescriptor updateTemporalSystemTime(DocumentDescriptor desc,
                                                       Headers headers)
   {
     if (headers == null) return null;
@@ -1907,7 +1930,7 @@ public class OkHttpServices implements RESTServices {
     return temporalDescriptor;
   }
 
-  private void copyDescriptor(DocumentDescriptor desc,
+  static private void copyDescriptor(DocumentDescriptor desc,
                               HandleImplementation handleBase) {
     if (handleBase == null) return;
 
@@ -1916,18 +1939,18 @@ public class OkHttpServices implements RESTServices {
     handleBase.setByteLength(desc.getByteLength());
   }
 
-  private void updateFormat(ContentDescriptor descriptor,
+  static private void updateFormat(ContentDescriptor descriptor,
                             Headers headers) {
     updateFormat(descriptor, getHeaderFormat(headers));
   }
 
-  private void updateFormat(ContentDescriptor descriptor, Format format) {
+  static private void updateFormat(ContentDescriptor descriptor, Format format) {
     if (format != null) {
       descriptor.setFormat(format);
     }
   }
 
-  private Format getHeaderFormat(Headers headers) {
+  static private Format getHeaderFormat(Headers headers) {
     String format = headers.get(HEADER_VND_MARKLOGIC_DOCUMENT_FORMAT);
     if (format != null) {
       return Format.valueOf(format.toUpperCase());
@@ -1935,7 +1958,7 @@ public class OkHttpServices implements RESTServices {
     return null;
   }
 
-  private Format getHeaderFormat(BodyPart part) {
+  static private Format getHeaderFormat(BodyPart part) {
     String contentDisposition = getHeader(part, HEADER_CONTENT_DISPOSITION);
     String formatRegex = ".* format=(text|binary|xml|json).*";
     String format = getHeader(part, HEADER_VND_MARKLOGIC_DOCUMENT_FORMAT);
@@ -1951,18 +1974,18 @@ public class OkHttpServices implements RESTServices {
     return null;
   }
 
-  private void updateMimetype(ContentDescriptor descriptor,
+  static private void updateMimetype(ContentDescriptor descriptor,
                               Headers headers) {
     updateMimetype(descriptor, getHeaderMimetype(headers.get(HEADER_CONTENT_TYPE)));
   }
 
-  private void updateMimetype(ContentDescriptor descriptor, String mimetype) {
+  static private void updateMimetype(ContentDescriptor descriptor, String mimetype) {
     if (mimetype != null) {
       descriptor.setMimetype(mimetype);
     }
   }
 
-  private String getHeader(Map<String, List<String>> headers, String name) {
+  static private String getHeader(Map<String, List<String>> headers, String name) {
     List<String> values = headers.get(name);
     if ( values != null && values.size() > 0 ) {
       return values.get(0);
@@ -1970,7 +1993,7 @@ public class OkHttpServices implements RESTServices {
     return null;
   }
 
-  private static String getHeader(BodyPart part, String name) {
+  static private String getHeader(BodyPart part, String name) {
     if ( part == null ) throw new MarkLogicInternalException("part must not be null");
     try {
       String[] values = part.getHeader(name);
@@ -1983,7 +2006,7 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  private String getHeaderMimetype(String contentType) {
+  static private String getHeaderMimetype(String contentType) {
     if (contentType != null) {
       String mimetype = contentType.contains(";")
                           ? contentType.substring(0, contentType.indexOf(";"))
@@ -1996,21 +2019,21 @@ public class OkHttpServices implements RESTServices {
     return null;
   }
 
-  private void updateLength(ContentDescriptor descriptor,
+  static private void updateLength(ContentDescriptor descriptor,
                             Headers headers) {
     updateLength(descriptor, getHeaderLength(headers.get(HEADER_CONTENT_LENGTH)));
   }
 
-  private void updateLength(ContentDescriptor descriptor, long length) {
+  static private void updateLength(ContentDescriptor descriptor, long length) {
     descriptor.setByteLength(length);
   }
 
-  private void updateServerTimestamp(ContentDescriptor descriptor,
+  static private void updateServerTimestamp(ContentDescriptor descriptor,
                                      Headers headers) {
     updateServerTimestamp(descriptor, getHeaderServerTimestamp(headers));
   }
 
-  private long getHeaderServerTimestamp(Headers headers) {
+  static private long getHeaderServerTimestamp(Headers headers) {
     String timestamp = headers.get(HEADER_ML_EFFECTIVE_TIMESTAMP);
     if (timestamp != null && timestamp.length() > 0) {
       return Long.parseLong(timestamp);
@@ -2018,7 +2041,7 @@ public class OkHttpServices implements RESTServices {
     return -1;
   }
 
-  private void updateServerTimestamp(ContentDescriptor descriptor, long timestamp) {
+  static private void updateServerTimestamp(ContentDescriptor descriptor, long timestamp) {
     if ( descriptor instanceof HandleImplementation ) {
       if ( descriptor != null && timestamp != -1 ) {
         ((HandleImplementation) descriptor).setResponseServerTimestamp(timestamp);
@@ -2026,14 +2049,14 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  private long getHeaderLength(String length) {
+  static private long getHeaderLength(String length) {
     if (length != null) {
       return Long.parseLong(length);
     }
     return ContentDescriptor.UNKNOWN_LENGTH;
   }
 
-  private String getHeaderUri(BodyPart part) {
+  static private String getHeaderUri(BodyPart part) {
     try {
       if ( part != null ) {
         return part.getFileName();
@@ -2045,17 +2068,24 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  private void updateVersion(DocumentDescriptor descriptor, Headers headers) {
-    long version = DocumentDescriptor.UNKNOWN_VERSION;
-    String value = headers.get(HEADER_ETAG);
-    if (value != null && value.length() > 0) {
-      // trim the double quotes
-      version = Long.parseLong(value.substring(1, value.length() - 1));
-    }
+  static private void updateVersion(DocumentDescriptor descriptor, Headers headers) {
+      updateVersion(descriptor, extractVersion(headers.get(HEADER_ETAG)));
+  }
+  static private void updateVersion(DocumentDescriptor descriptor, String header) {
+      updateVersion(descriptor, extractVersion(header));
+  }
+  static private void updateVersion(DocumentDescriptor descriptor, long version) {
     descriptor.setVersion(version);
   }
+  static private long extractVersion(String header) {
+    if (header != null && header.length() > 0) {
+      // trim the double quotes
+      return Long.parseLong(header.substring(1, header.length() - 1));
+    }
+    return DocumentDescriptor.UNKNOWN_VERSION;
+  }
 
-  private Request.Builder addVersionHeader(DocumentDescriptor desc, Request.Builder requestBldr, String name) {
+  static private Request.Builder addVersionHeader(DocumentDescriptor desc, Request.Builder requestBldr, String name) {
     if ( desc != null &&
          desc instanceof DocumentDescriptorImpl &&
          !((DocumentDescriptorImpl) desc).isInternal())
@@ -4747,18 +4777,45 @@ public class OkHttpServices implements RESTServices {
     }
 
     @Override
+    public DocumentDescriptor getDescriptor() {
+      if (content == null) {
+        throw new IllegalStateException("getDescriptor() called when no content is available");
+      }
+      DocumentDescriptorImpl descriptor = new DocumentDescriptorImpl(getUri(), false);
+      updateFormat(descriptor, getFormat());
+      updateMimetype(descriptor, getMimetype());
+      updateLength(descriptor, getLength());
+      updateVersion(descriptor, content.getHeader(HEADER_ETAG));
+      return descriptor;
+    }
+
+    @Override
     public Format getFormat() {
+      if (content == null) {
+        throw new IllegalStateException("getFormat() called when no content is available");
+      }
       return content.getFormat();
     }
 
     @Override
     public String getMimetype() {
+      if (content == null) {
+        throw new IllegalStateException("getMimetype() called when no content is available");
+      }
       return content.getMimetype();
     }
 
     @Override
+    public long getLength() {
+      if (content == null) {
+        throw new IllegalStateException("getLenth() called when no content is available");
+      }
+      return content.getLength();
+    }
+
+    @Override
     public <T extends DocumentMetadataReadHandle> T getMetadata(T metadataHandle) {
-      if ( metadata == null ) {
+      if (metadata == null) {
         throw new IllegalStateException("getMetadata called when no metadata is available");
       }
       return metadata.getContent(metadataHandle);
@@ -5375,16 +5432,37 @@ public class OkHttpServices implements RESTServices {
         String suffix = ".unknown";
         boolean isBinary = true;
         MediaType mediaType = body.contentType();
-        if ( mediaType != null ) {
-          suffix = "." + mediaType.subtype();
-          for ( String type : new String[] {"json", "xml", "xquery", "sjs", "javascript", "html"} ) {
-            if ( type.equalsIgnoreCase(mediaType.subtype()) ) {
+        if (mediaType != null) {
+          String subtype = mediaType.subtype();
+          if (subtype != null) {
+            subtype = subtype.toLowerCase();
+            if (subtype.endsWith("json")) {
+              suffix = ".json";
               isBinary = false;
+            } else if (subtype.endsWith("xml")) {
+              suffix = ".xml";
+              isBinary = false;
+            } else if (subtype.equals("vnd.marklogic-js-module")) {
+              suffix = ".mjs";
+              isBinary = false;
+            } else if (subtype.equals("vnd.marklogic-javascript")) {
+              suffix = ".sjs";
+              isBinary = false;
+            } else if (subtype.equals("vnd.marklogic-xdmp") || subtype.endsWith("xquery")) {
+              suffix = ".xqy";
+              isBinary = false;
+            } else if (subtype.endsWith("javascript")) {
+              suffix = ".js";
+              isBinary = false;
+            } else if (subtype.endsWith("html")) {
+              suffix = ".html";
+              isBinary = false;
+            } else if (mediaType.type().toLowerCase() == "text") {
+              suffix = ".txt";
+              isBinary = false;
+            } else {
+              suffix = "." + subtype;
             }
-          }
-          if ( isBinary == true && "text".equalsIgnoreCase(mediaType.type()) ) {
-            suffix = ".txt";
-            isBinary = false;
           }
         }
         Path path = Files.createTempFile("tmp", suffix);
@@ -5625,26 +5703,29 @@ public class OkHttpServices implements RESTServices {
       if (statusCode >= 300) {
         FailedRequest failure = null;
         MediaType mediaType = MediaType.parse(response.header(HEADER_CONTENT_TYPE));
-        if ( "json".equals(mediaType.subtype()) ) {
-          failure = extractErrorFields(response);
-        } else if ( statusCode == STATUS_UNAUTHORIZED ) {
-          failure = new FailedRequest();
-          failure.setMessageString("Unauthorized");
-          failure.setStatusString("Failed Auth");
-        } else if (statusCode == STATUS_NOT_FOUND) {
-          ResourceNotFoundException ex = failure == null ? new ResourceNotFoundException("Could not " + method  + " at " + endpoint) :
-              new ResourceNotFoundException("Could not " + method  + " at " + endpoint, failure);
-          throw ex;
-        } else if (statusCode == STATUS_FORBIDDEN) {
-          ForbiddenUserException ex = failure == null ? new ForbiddenUserException("User is not allowed to " + method + " at " + endpoint) :
-              new ForbiddenUserException("User is not allowed to " + method + " at " + endpoint, failure);
-          throw ex;
-        } else {
-          failure = new FailedRequest();
-          failure.setStatusCode(statusCode);
-          failure.setMessageCode("UNKNOWN");
-          failure.setMessageString("Server did not respond with an expected Error message.");
-          failure.setStatusString("UNKNOWN");
+        String subtype = mediaType.subtype();
+        if (subtype != null) {
+          subtype = subtype.toLowerCase();
+          if (subtype.endsWith("json") || subtype.endsWith("xml")) {
+            failure = extractErrorFields(response);
+          }
+        }
+        if (failure == null) {
+          if (statusCode == STATUS_UNAUTHORIZED) {
+            failure = new FailedRequest();
+            failure.setMessageString("Unauthorized");
+            failure.setStatusString("Failed Auth");
+          } else if (statusCode == STATUS_NOT_FOUND) {
+            throw new ResourceNotFoundException("Could not " + method  + " at " + endpoint);
+          } else if (statusCode == STATUS_FORBIDDEN) {
+            throw new ForbiddenUserException("User is not allowed to " + method + " at " + endpoint);
+          } else {
+            failure = new FailedRequest();
+            failure.setStatusCode(statusCode);
+            failure.setMessageCode("UNKNOWN");
+            failure.setMessageString("Server did not respond with an expected Error message.");
+            failure.setStatusString("UNKNOWN");
+          }
         }
         FailedRequestException ex = failure == null ? new FailedRequestException("failed to " + method + " at " + endpoint + ": "
             + getReasonPhrase(response)) : new FailedRequestException("failed to " + method + " at " + endpoint + ": "
@@ -5725,17 +5806,20 @@ public class OkHttpServices implements RESTServices {
                 );
           }
         } else if (param instanceof SingleNodeCallField) {
-          AbstractWriteHandle paramValue = ((SingleNodeCallField) param).getParamValue();
+          SingleNodeCallField singleNodeParam = (SingleNodeCallField) param;
+          BufferableHandle paramValue = singleNodeParam.getParamValue();
           if (paramValue != null) {
             HandleImplementation handleBase = HandleAccessor.as(paramValue);
             if(! handleBase.isResendable()) {
-              hasStreamingPartCondition.set();
-            }
+                BytesHandle bytesHandle = new BytesHandle(paramValue);
+                singleNodeParam.setParamValue(bytesHandle);
+                    paramValue = bytesHandle;
+                }
             hasValue.set();
             multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue));
           }
-        } else if (param instanceof MultipleNodeCallField) {
-          Stream<? extends AbstractWriteHandle> paramValues = ((MultipleNodeCallField) param).getParamValues();
+        } else if (param instanceof UnbufferedMultipleNodeCallField) {
+          Stream<? extends BufferableHandle> paramValues = ((UnbufferedMultipleNodeCallField) param).getParamValues();
           if (paramValues != null) {
             paramValues
                 .filter(paramValue -> paramValue != null)
@@ -5748,7 +5832,33 @@ public class OkHttpServices implements RESTServices {
                   multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue));
                 });
           }
-        } else {
+        } else if (param instanceof BufferedMultipleNodeCallField) {
+            BufferableHandle[] paramValues = ((BufferedMultipleNodeCallField) param).getParamValuesArray();
+            if(paramValues != null) {
+                boolean checkedBuffer = false;
+                for(int i=0; i < paramValues.length; i++) {
+                    BufferableHandle paramValue = paramValues[i];
+                    if (paramValue != null) {
+                        HandleImplementation handleBase = HandleAccessor.as(paramValue);
+                        if (!handleBase.isResendable()) {
+                            paramValue = new BytesHandle(paramValue);
+                            if (!checkedBuffer) {
+                                Class<?> actualClass = paramValues.getClass().getComponentType();
+                                if (actualClass != BufferableHandle.class && actualClass != BytesHandle.class) {
+                                    paramValues =
+                                        Arrays.copyOf(paramValues, paramValues.length, BufferableHandle[].class);
+                                }
+                                checkedBuffer = true;
+                            }
+                            paramValues[i] = paramValue;
+                        }
+                        hasValue.set();
+                        multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue));
+                    }
+                }
+            }
+        } 
+        else {
           throw new IllegalStateException(
               "unknown multipart "+paramName+" param of: "+param.getClass().getName()
           );
@@ -5870,8 +5980,8 @@ public class OkHttpServices implements RESTServices {
         if (errorBody.contentLength() > 0) {
           MediaType errorType = errorBody.contentType();
           if (errorType != null) {
-            String errorContentType = errorType.toString();
-            if (errorContentType != null && errorContentType.startsWith("application/") && errorContentType.contains("json")) {
+            String subtype = errorType.subtype();
+            if (subtype != null && subtype.toLowerCase().endsWith("json")) {
               return errorBody.string();
             }
           }
@@ -6114,23 +6224,23 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  static protected boolean checkNull(ResponseBody body, Format format) {
+  static protected boolean checkNull(ResponseBody body, Format expectedFormat) {
     if (body != null) {
       if (body.contentLength() == 0) {
         body.close();
       } else {
-        MediaType actualType  = body.contentType();
-        String    defaultType = (format == Format.BINARY) ?
-            "application/x-unknown-content-type" : format.getDefaultMimetype();
+        MediaType actualType = body.contentType();
         if (actualType == null) {
           body.close();
           throw new RuntimeException(
-              "Returned document with unknown mime type instead of "+defaultType
+              "Returned document with unknown mime type instead of "+expectedFormat.getDefaultMimetype()
           );
-        } else if (!actualType.toString().startsWith(defaultType)) {
+        }
+        Format actualFormat = Format.getFromMimetype(actualType.toString());
+        if (expectedFormat != actualFormat) {
           body.close();
           throw new RuntimeException(
-              "Returned document as "+actualType.toString()+" instead of "+defaultType
+              "Mime type "+actualType.toString()+" for returned document not recognized for "+expectedFormat.name()
           );
         }
         return false;
@@ -6138,18 +6248,21 @@ public class OkHttpServices implements RESTServices {
     }
     return true;
   }
-
-  static protected boolean checkNull(MimeMultipart multipart, Format format) {
+  static protected boolean checkNull(MimeMultipart multipart, Format expectedFormat) {
     if (multipart != null) {
       try {
         if (multipart.getCount() != 0) {
           BodyPart firstPart   = multipart.getBodyPart(0);
           String   actualType  = (firstPart == null) ? null : firstPart.getContentType();
-          String   defaultType = (format == Format.BINARY) ?
-              "application/x-unknown-content-type" : format.getDefaultMimetype();
-          if (actualType == null || !actualType.startsWith(defaultType)) {
+          if (actualType == null) {
             throw new RuntimeException(
-                "Returned document as "+actualType+" instead of "+defaultType
+                "Returned document with unknown mime type instead of "+expectedFormat.getDefaultMimetype()
+            );
+          }
+          Format actualFormat = Format.getFromMimetype(actualType);
+          if (expectedFormat != actualFormat) {
+            throw new RuntimeException(
+                "Mime type "+actualType+" for returned document not recognized for "+expectedFormat.name()
             );
           }
           return false;
@@ -6178,5 +6291,38 @@ public class OkHttpServices implements RESTServices {
       if (!is)
         is = true;
     }
+  }
+  
+  class ConnectionResultImpl implements ConnectionResult {
+	private boolean connected = false;
+	private int statusCode;
+	private String errorMessage;
+
+	@Override
+	public boolean isConnected() {
+		return connected;
+	}
+
+	private void setConnected(boolean connected) {
+		this.connected = connected;
+	}
+
+	@Override
+	public Integer getStatusCode() {
+		return statusCode;
+	}
+
+	private void setStatusCode(int statusCode) {
+		this.statusCode = statusCode;
+	}
+
+	@Override
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	private void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
+	}
   }
 }

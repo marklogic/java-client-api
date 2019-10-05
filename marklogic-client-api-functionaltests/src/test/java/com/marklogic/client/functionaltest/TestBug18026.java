@@ -32,6 +32,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
+import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -45,6 +46,9 @@ import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 
 public class TestBug18026 extends BasicJavaClientREST {
 
@@ -179,6 +183,36 @@ public class TestBug18026 extends BasicJavaClientREST {
     JsonNode contentAfter = mapper.readValue(strAfter, JsonNode.class);
 
     assertTrue("Buffered JSON document difference", contentBefore.equals(contentAfter));
+
+    // release client
+    client.release();
+  }
+  
+  @Test
+  public void testBug19016() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
+  {
+    System.out.println("Running testBug19016");
+
+    String[] filenames = { "bug19016.xml" };
+
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
+
+    // write docs
+    for (String filename : filenames)  {
+      writeDocumentUsingInputStreamHandle(client, filename, "/bug19016/", "XML");
+    }
+
+    QueryManager queryMgr = client.newQueryManager();
+
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition();
+    querydef.setCriteria("this\"is\"an%33odd string");
+
+    String result = queryMgr.search(querydef, new StringHandle()).get();
+
+    System.out.println(result);
+
+    assertTrue("qtext is not correct", result.contains("<search:qtext>this\"is\"an%33odd string</search:qtext>"));
 
     // release client
     client.release();

@@ -43,7 +43,7 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
-import com.marklogic.client.type.ItemSeqExpr;
+import com.marklogic.client.type.ServerExpression;
 import com.marklogic.client.type.PlanExprCol;
 
 public class PlanGeneratedBase {
@@ -73,7 +73,7 @@ public class PlanGeneratedBase {
 
   }
 
-  private PlanBuilder.ModifyPlan makePlan(ItemSeqExpr[] expressions) {
+  private PlanBuilder.ModifyPlan makePlan(ServerExpression[] expressions) {
     if (expressions == null || expressions.length == 0) {
       return lit;
     }
@@ -86,7 +86,7 @@ public class PlanGeneratedBase {
     return lit.select(bindings);
   }
 
-  protected void executeTester(String testName, ItemSeqExpr expression, boolean isVolatile, String type, String kind, Format format, String expected, ItemSeqExpr[] expressions) {
+  protected void executeTester(String testName, ServerExpression expression, boolean isVolatile, String type, String kind, Format format, String expected, ServerExpression[] expressions) {
     PlanBuilder.ModifyPlan plan = makePlan(expressions).select(p.as("t", expression));
 
 // System.out.println(plan.exportAs(String.class));

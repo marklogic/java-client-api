@@ -20,6 +20,6 @@ import javax.xml.datatype.Duration;
 /**
  * An instance of a server year-month duration value.
  */
-public interface XsYearMonthDurationVal extends XsYearMonthDurationExpr, XsDurationVal, XsYearMonthDurationSeqVal, PlanParamBindingVal {
+public interface XsYearMonthDurationVal extends XsDurationVal, XsYearMonthDurationSeqVal, PlanParamBindingVal {
     public Duration getDuration();
 }

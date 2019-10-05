@@ -67,17 +67,12 @@ an SSL certificate template.  The other examples do not use SSL.
 
 You can extend the Java API to support new kinds of content representations.
 
-The examples add support for the JDOM, XOM, Jackson, and other libraries. 
+The examples add support for the JDOM and other libraries.
 
 To compile the JDOM example, first download the library at version 2.0.2 or
 higher from:
 
     http://www.jdom.org/
-
-To compile the XOM example, first download the library at version 1.2.5 or
-higher from:
-
-    http://www.xom.nu/
 
 To compile the Apache HTTPClient example, you use the Apache HTTPClient
 bundled with the MarkLogic Java API in the lib subdirectory.

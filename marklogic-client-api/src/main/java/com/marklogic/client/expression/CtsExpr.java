@@ -15,21 +15,12 @@
  */
 package com.marklogic.client.expression;
 
-import com.marklogic.client.type.MapMapExpr;
-import com.marklogic.client.type.XsAnyAtomicTypeExpr;
-import com.marklogic.client.type.XsAnyAtomicTypeSeqExpr;
 import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
-import com.marklogic.client.type.XsDateTimeExpr;
 import com.marklogic.client.type.XsDateTimeVal;
-import com.marklogic.client.type.XsDoubleExpr;
 import com.marklogic.client.type.XsDoubleVal;
-import com.marklogic.client.type.XsQNameExpr;
-import com.marklogic.client.type.XsQNameSeqExpr;
 import com.marklogic.client.type.XsQNameSeqVal;
 import com.marklogic.client.type.XsQNameVal;
-import com.marklogic.client.type.XsStringExpr;
-import com.marklogic.client.type.XsStringSeqExpr;
 import com.marklogic.client.type.XsStringSeqVal;
 import com.marklogic.client.type.XsStringVal;
 
@@ -2056,7 +2047,7 @@ public interface CtsExpr {
   * @param map  A map of namespace bindings. The keys should be namespace prefixes and the values should be namespace URIs. These namespace bindings will be added to the in-scope namespace bindings in the interpretation of the path.
   * @return  a CtsReferenceExpr server expression
   */
-  public CtsReferenceExpr pathReference(String pathExpression, String options, MapMapExpr map);
+  public CtsReferenceExpr pathReference(String pathExpression, String options, ServerExpression map);
 /**
   * Creates a reference to a path value lexicon, for use as a parameter to cts:value-tuples. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
   * <p>
@@ -2066,7 +2057,7 @@ public interface CtsExpr {
   * @param map  A map of namespace bindings. The keys should be namespace prefixes and the values should be namespace URIs. These namespace bindings will be added to the in-scope namespace bindings in the interpretation of the path.
   * @return  a CtsReferenceExpr server expression
   */
-  public CtsReferenceExpr pathReference(XsStringVal pathExpression, XsStringSeqVal options, MapMapExpr map);
+  public CtsReferenceExpr pathReference(XsStringVal pathExpression, XsStringSeqVal options, ServerExpression map);
 /**
   * Creates a period value, for use as a parameter to cts:period-range-query or cts:period-compare-query.
   * <p>
@@ -2231,7 +2222,7 @@ public interface CtsExpr {
   * @param text  A word or phrase to stem.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringSeqExpr stem(ServerExpression text);
+  public ServerExpression stem(ServerExpression text);
 /**
   * Returns the stem(s) for a word.
   * <p>
@@ -2240,7 +2231,7 @@ public interface CtsExpr {
   * @param language  A language to use for stemming. If not supplied, it uses the database default language.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringSeqExpr stem(ServerExpression text, String language);
+  public ServerExpression stem(ServerExpression text, String language);
 /**
   * Returns the stem(s) for a word.
   * <p>
@@ -2249,17 +2240,7 @@ public interface CtsExpr {
   * @param language  A language to use for stemming. If not supplied, it uses the database default language.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringSeqExpr stem(ServerExpression text, ServerExpression language);
-/**
-  * Returns the stem(s) for a word.
-  * <p>
-  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:stem" target="mlserverdoc">cts:stem</a> server function.
-  * @param text  A word or phrase to stem.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param language  A language to use for stemming. If not supplied, it uses the database default language.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param partOfSpeech  A part of speech to use for stemming. The default is the unspecified part of speech. This parameter is for testing custom stemmers.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
-  */
-  public XsStringSeqExpr stem(ServerExpression text, String language, String partOfSpeech);
+  public ServerExpression stem(ServerExpression text, ServerExpression language);
 /**
   * Returns the stem(s) for a word.
   * <p>
@@ -2269,7 +2250,17 @@ public interface CtsExpr {
   * @param partOfSpeech  A part of speech to use for stemming. The default is the unspecified part of speech. This parameter is for testing custom stemmers.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringSeqExpr stem(ServerExpression text, ServerExpression language, ServerExpression partOfSpeech);
+  public ServerExpression stem(ServerExpression text, String language, String partOfSpeech);
+/**
+  * Returns the stem(s) for a word.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:stem" target="mlserverdoc">cts:stem</a> server function.
+  * @param text  A word or phrase to stem.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  A language to use for stemming. If not supplied, it uses the database default language.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param partOfSpeech  A part of speech to use for stemming. The default is the unspecified part of speech. This parameter is for testing custom stemmers.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
+  */
+  public ServerExpression stem(ServerExpression text, ServerExpression language, ServerExpression partOfSpeech);
 /**
   * Tokenizes text into words, punctuation, and spaces. Returns output in the type cts:token, which has subtypes cts:word, cts:punctuation, and cts:space, all of which are subtypes of xs:string.
   *
@@ -2280,7 +2271,7 @@ public interface CtsExpr {
   * @param text  A word or phrase to tokenize.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringSeqExpr tokenize(ServerExpression text);
+  public ServerExpression tokenize(ServerExpression text);
 /**
   * Tokenizes text into words, punctuation, and spaces. Returns output in the type cts:token, which has subtypes cts:word, cts:punctuation, and cts:space, all of which are subtypes of xs:string.
   * <p>
@@ -2289,7 +2280,7 @@ public interface CtsExpr {
   * @param language  A language to use for tokenization. If not supplied, it uses the database default language.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringSeqExpr tokenize(ServerExpression text, String language);
+  public ServerExpression tokenize(ServerExpression text, String language);
 /**
   * Tokenizes text into words, punctuation, and spaces. Returns output in the type cts:token, which has subtypes cts:word, cts:punctuation, and cts:space, all of which are subtypes of xs:string.
   * <p>
@@ -2298,17 +2289,7 @@ public interface CtsExpr {
   * @param language  A language to use for tokenization. If not supplied, it uses the database default language.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringSeqExpr tokenize(ServerExpression text, ServerExpression language);
-/**
-  * Tokenizes text into words, punctuation, and spaces. Returns output in the type cts:token, which has subtypes cts:word, cts:punctuation, and cts:space, all of which are subtypes of xs:string.
-  * <p>
-  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:tokenize" target="mlserverdoc">cts:tokenize</a> server function.
-  * @param text  A word or phrase to tokenize.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param language  A language to use for tokenization. If not supplied, it uses the database default language.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param field  A field to use for tokenization. If the field has custom tokenization rules, they will be used. If no field is supplied or the field has no custom tokenization rules, the default tokenization rules are used.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
-  */
-  public XsStringSeqExpr tokenize(ServerExpression text, String language, String field);
+  public ServerExpression tokenize(ServerExpression text, ServerExpression language);
 /**
   * Tokenizes text into words, punctuation, and spaces. Returns output in the type cts:token, which has subtypes cts:word, cts:punctuation, and cts:space, all of which are subtypes of xs:string.
   * <p>
@@ -2318,7 +2299,17 @@ public interface CtsExpr {
   * @param field  A field to use for tokenization. If the field has custom tokenization rules, they will be used. If no field is supplied or the field has no custom tokenization rules, the default tokenization rules are used.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringSeqExpr tokenize(ServerExpression text, ServerExpression language, ServerExpression field);
+  public ServerExpression tokenize(ServerExpression text, String language, String field);
+/**
+  * Tokenizes text into words, punctuation, and spaces. Returns output in the type cts:token, which has subtypes cts:word, cts:punctuation, and cts:space, all of which are subtypes of xs:string.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:tokenize" target="mlserverdoc">cts:tokenize</a> server function.
+  * @param text  A word or phrase to tokenize.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  A language to use for tokenization. If not supplied, it uses the database default language.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param field  A field to use for tokenization. If the field has custom tokenization rules, they will be used. If no field is supplied or the field has no custom tokenization rules, the default tokenization rules are used.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
+  */
+  public ServerExpression tokenize(ServerExpression text, ServerExpression language, ServerExpression field);
 /**
   * Returns a cts:query matching triples with a triple index entry equal to the given values. Searches with the cts:triple-range-query constructor require the triple index; if the triple index is not configured, then an exception is thrown.
   * <p>
@@ -2483,7 +2474,6 @@ public interface CtsExpr {
   * Constructs a sequence of CtsBoxExpr items.
   * @param items  the CtsBoxExpr items collected by the sequence
   * @return  a CtsBoxSeqExpr sequence
-  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public CtsBoxSeqExpr boxSeq(CtsBoxExpr... items);
  
@@ -2491,7 +2481,6 @@ public interface CtsExpr {
   * Constructs a sequence of CtsCircleExpr items.
   * @param items  the CtsCircleExpr items collected by the sequence
   * @return  a CtsCircleSeqExpr sequence
-  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public CtsCircleSeqExpr circleSeq(CtsCircleExpr... items);
  
@@ -2499,7 +2488,6 @@ public interface CtsExpr {
   * Constructs a sequence of CtsPeriodExpr items.
   * @param items  the CtsPeriodExpr items collected by the sequence
   * @return  a CtsPeriodSeqExpr sequence
-  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public CtsPeriodSeqExpr periodSeq(CtsPeriodExpr... items);
  
@@ -2507,7 +2495,6 @@ public interface CtsExpr {
   * Constructs a sequence of CtsPointExpr items.
   * @param items  the CtsPointExpr items collected by the sequence
   * @return  a CtsPointSeqExpr sequence
-  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public CtsPointSeqExpr pointSeq(CtsPointExpr... items);
  
@@ -2515,7 +2502,6 @@ public interface CtsExpr {
   * Constructs a sequence of CtsPolygonExpr items.
   * @param items  the CtsPolygonExpr items collected by the sequence
   * @return  a CtsPolygonSeqExpr sequence
-  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public CtsPolygonSeqExpr polygonSeq(CtsPolygonExpr... items);
  
@@ -2523,7 +2509,6 @@ public interface CtsExpr {
   * Constructs a sequence of CtsQueryExpr items.
   * @param items  the CtsQueryExpr items collected by the sequence
   * @return  a CtsQuerySeqExpr sequence
-  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public CtsQuerySeqExpr querySeq(CtsQueryExpr... items);
  
@@ -2531,7 +2516,6 @@ public interface CtsExpr {
   * Constructs a sequence of CtsReferenceExpr items.
   * @param items  the CtsReferenceExpr items collected by the sequence
   * @return  a CtsReferenceSeqExpr sequence
-  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public CtsReferenceSeqExpr referenceSeq(CtsReferenceExpr... items);
  
@@ -2539,7 +2523,6 @@ public interface CtsExpr {
   * Constructs a sequence of CtsRegionExpr items.
   * @param items  the CtsRegionExpr items collected by the sequence
   * @return  a CtsRegionSeqExpr sequence
-  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public CtsRegionSeqExpr regionSeq(CtsRegionExpr... items);
 

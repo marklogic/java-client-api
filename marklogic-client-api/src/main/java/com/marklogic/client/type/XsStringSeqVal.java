@@ -20,6 +20,6 @@ package com.marklogic.client.type;
 /**
  * A sequence of server string values.
  */
-public interface XsStringSeqVal extends XsStringSeqExpr, XsAnyAtomicTypeSeqVal {
+public interface XsStringSeqVal extends XsAnyAtomicTypeSeqVal {
     public XsStringVal[] getStringItems();
 }

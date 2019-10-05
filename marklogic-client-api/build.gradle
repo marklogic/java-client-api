@@ -33,23 +33,6 @@ dependencies {
     compileOnly group: 'com.opencsv', name: 'opencsv', version: '4.1'
     compileOnly group: 'org.geonames', name: 'geonames', version:'1.0'
     compileOnly group: 'org.springframework', name: 'spring-jdbc', version: '5.0.4.RELEASE'
-// uncomment to build XOMHandle
-//  compileOnly group: 'com.io7m.xom', name: 'xom', version: '1.2.10'
-}
-
-// comment the exclusion to build XOMHandle
-compileJava {
-    exclude (
-            'com/marklogic/client/extra/xom/**',
-            'com/marklogic/client/example/handle/XOMHandleExample.java'
-    )
-}
-
-// comment the exclusion to test XOMHandle
-compileTestJava {
-    exclude (
-            'com/marklogic/client/test/extra/XOMHandleTest.java'
-    )
 }
 
 jar {
@@ -57,8 +40,7 @@ jar {
             'search.xsd', 'search-bindings.xjb', 'query-options-template.xml',
             'com/marklogic/client/example/**', 'data/**', 'Example.properties',
             'example/**', 'scripts/**', '*.txt', 'property.xsd',
-            'restapi-bindings.xjb', 'security.xsd',
-            'com/marklogic/client/extra/xom/**'
+            'restapi-bindings.xjb', 'security.xsd'
     )
 }
 task sourcesJar(type: Jar) {
@@ -73,13 +55,12 @@ javadoc {
     options.overview = "src/main/javadoc/overview.html"
     options.windowTitle = "$rootProject.describedName $rootProject.version"
     options.docTitle = "$rootProject.describedName $rootProject.version"
-    options.bottom = "Copyright &copy; 2013-2018 MarkLogic Corporation."
+    options.bottom = "Copyright &copy; 2013-2019 MarkLogic Corporation."
     options.links = [ 'http://docs.oracle.com/javase/8/docs/api/' ]
     options.use = true
+    options.addBooleanOption('html4', true)
     exclude([
-            '**/impl/**', '**/jaxb/**', '**/test/**',
-            'com/marklogic/client/extra/xom/**',
-            'com/marklogic/client/example/handle/XOMHandleExample.java'
+            '**/impl/**', '**/jaxb/**', '**/test/**'
     ])
 // workaround for bug in options.docFilesSubDirs = true
     doLast{

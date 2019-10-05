@@ -20,6 +20,6 @@ package com.marklogic.client.type;
 /**
  * A sequence of semantic IRI values.
  */
-public interface SemIriSeqVal extends SemIriSeqExpr, XsAnyURISeqVal {
+public interface SemIriSeqVal extends XsAnyURISeqVal {
     public SemIriVal[] getIriItems();
 }

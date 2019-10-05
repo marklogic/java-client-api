@@ -20,6 +20,6 @@ import javax.xml.namespace.QName;
 /**
  * An instance of a server qualified name value.
  */
-public interface XsQNameVal extends XsQNameExpr, XsAnyAtomicTypeVal, XsQNameSeqVal {
+public interface XsQNameVal extends XsAnyAtomicTypeVal, XsQNameSeqVal {
     public QName getQName();
 }

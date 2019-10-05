@@ -1482,32 +1482,64 @@ public class RowManagerImpl
     }
 
     @Override
+    public Plan bindParam(String paramName, boolean literal) {
+      return bindParam(new PlanBuilderBaseImpl.PlanParamBase(paramName), literal);
+    }
+    @Override
     public Plan bindParam(PlanParamExpr param, boolean literal) {
       return bindParam(param, new XsValueImpl.BooleanValImpl(literal));
+    }
+    @Override
+    public Plan bindParam(String paramName, byte literal) {
+      return bindParam(new PlanBuilderBaseImpl.PlanParamBase(paramName), literal);
     }
     @Override
     public Plan bindParam(PlanParamExpr param, byte literal) {
       return bindParam(param, new XsValueImpl.ByteValImpl(literal));
     }
     @Override
+    public Plan bindParam(String paramName, double literal) {
+      return bindParam(new PlanBuilderBaseImpl.PlanParamBase(paramName), literal);
+    }
+    @Override
     public Plan bindParam(PlanParamExpr param, double literal) {
       return bindParam(param, new XsValueImpl.DoubleValImpl(literal));
+    }
+    @Override
+    public Plan bindParam(String paramName, float literal) {
+      return bindParam(new PlanBuilderBaseImpl.PlanParamBase(paramName), literal);
     }
     @Override
     public Plan bindParam(PlanParamExpr param, float literal) {
       return bindParam(param, new XsValueImpl.FloatValImpl(literal));
     }
     @Override
+    public Plan bindParam(String paramName, int literal) {
+      return bindParam(new PlanBuilderBaseImpl.PlanParamBase(paramName), literal);
+    }
+    @Override
     public Plan bindParam(PlanParamExpr param, int literal) {
       return bindParam(param, new XsValueImpl.IntValImpl(literal));
+    }
+    @Override
+    public Plan bindParam(String paramName, long literal) {
+      return bindParam(new PlanBuilderBaseImpl.PlanParamBase(paramName), literal);
     }
     @Override
     public Plan bindParam(PlanParamExpr param, long literal) {
       return bindParam(param, new XsValueImpl.LongValImpl(literal));
     }
     @Override
+    public Plan bindParam(String paramName, short literal) {
+      return bindParam(new PlanBuilderBaseImpl.PlanParamBase(paramName), literal);
+    }
+    @Override
     public Plan bindParam(PlanParamExpr param, short literal) {
       return bindParam(param, new XsValueImpl.ShortValImpl(literal));
+    }
+    @Override
+    public Plan bindParam(String paramName, String literal) {
+      return bindParam(new PlanBuilderBaseImpl.PlanParamBase(paramName), literal);
     }
     @Override
     public Plan bindParam(PlanParamExpr param, String literal) {

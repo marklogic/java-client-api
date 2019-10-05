@@ -23,5 +23,5 @@ package com.marklogic.client.type;
  * in expressions and can be passed on a bind() call to be
  * assigned a literal value when invoking a row pipeline.
  */
-public interface PlanParamExpr extends RdfLangStringExpr, SemIriExpr, XsAnyURIExpr, XsBooleanExpr, XsDateExpr, XsDateTimeExpr, XsDecimalExpr, XsIntegerExpr, XsLongExpr, XsIntExpr, XsShortExpr, XsByteExpr, XsUnsignedLongExpr, XsUnsignedIntExpr, XsUnsignedShortExpr, XsUnsignedByteExpr, XsDoubleExpr, XsDayTimeDurationExpr, XsYearMonthDurationExpr, XsFloatExpr, XsGDayExpr, XsGMonthExpr, XsGMonthDayExpr, XsGYearExpr, XsGYearMonthExpr, XsStringExpr, XsTimeExpr, XsUntypedAtomicExpr, PlanParamSeqExpr, PlanTriplePosition {
+public interface PlanParamExpr extends ServerExpression, PlanParamSeqExpr, PlanTriplePosition {
 }

@@ -16,7 +16,6 @@
 package com.marklogic.client.datamovement;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;

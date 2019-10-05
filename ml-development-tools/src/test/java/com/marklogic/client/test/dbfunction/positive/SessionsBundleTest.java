@@ -22,7 +22,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class SessionsBundleTest {
-   SessionsBundle testObj = SessionsBundle.on(DBFunctionTestUtil.db);
+   // endpoint needs elevated privilege to set session state
+   SessionsBundle testObj = SessionsBundle.on(DBFunctionTestUtil.adminDb);
 
    @Test
    public void fieldSessionTest() {

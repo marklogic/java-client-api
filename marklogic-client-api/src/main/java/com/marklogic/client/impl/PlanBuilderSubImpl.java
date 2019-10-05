@@ -240,7 +240,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   @Override
-  public ItemSeqExpr caseExpr(PlanCase... cases) {
+  public ServerExpression caseExpr(PlanCase... cases) {
     int lastPos = cases.length - 1;
     if (lastPos < 1) {
       throw new IllegalArgumentException("cannot specify caseExpr() without when() and elseExpr()");
@@ -316,11 +316,11 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
 
   // TODO: move jsonArray() and jsonObject() into generated code
   @Override
-  public ObjectNodeExpr jsonObject(PlanJsonProperty... properties) {
+  public ServerExpression jsonObject(PlanJsonProperty... properties) {
     return new JsonObjectCallImpl(new Object[]{ new JsonPropertySeqListImpl(properties) });
   }
   @Override
-  public ArrayNodeExpr jsonArray(ServerExpression... items) {
+  public ServerExpression jsonArray(ServerExpression... items) {
     return new JsonArrayCallImpl(new Object[]{ new BaseTypeImpl.ItemSeqListImpl(items) });
   }
 
@@ -333,7 +333,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
  */
 
   @Override
-  public AttributeNodeSeqExpr xmlAttributeSeq(ServerExpression... attributes) {
+  public ServerExpression xmlAttributeSeq(ServerExpression... attributes) {
     return new XmlAttributeSeqListImpl(attributes);
   }
 
@@ -463,32 +463,64 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
 
     @Override
+    public Plan bindParam(String paramName, boolean literal) {
+      return bindParam(new PlanParamBase(paramName), literal);
+    }
+    @Override
     public Plan bindParam(PlanParamExpr param, boolean literal) {
       return bindParam(param, new XsValueImpl.BooleanValImpl(literal));
+    }
+    @Override
+    public Plan bindParam(String paramName, byte literal) {
+      return bindParam(new PlanParamBase(paramName), new XsValueImpl.ByteValImpl(literal));
     }
     @Override
     public Plan bindParam(PlanParamExpr param, byte literal) {
       return bindParam(param, new XsValueImpl.ByteValImpl(literal));
     }
     @Override
+    public Plan bindParam(String paramName, double literal) {
+      return bindParam(new PlanParamBase(paramName), new XsValueImpl.DoubleValImpl(literal));
+    }
+    @Override
     public Plan bindParam(PlanParamExpr param, double literal) {
       return bindParam(param, new XsValueImpl.DoubleValImpl(literal));
+    }
+    @Override
+    public Plan bindParam(String paramName, float literal) {
+      return bindParam(new PlanParamBase(paramName), new XsValueImpl.FloatValImpl(literal));
     }
     @Override
     public Plan bindParam(PlanParamExpr param, float literal) {
       return bindParam(param, new XsValueImpl.FloatValImpl(literal));
     }
     @Override
+    public Plan bindParam(String paramName, int literal) {
+      return bindParam(new PlanParamBase(paramName), new XsValueImpl.IntValImpl(literal));
+    }
+    @Override
     public Plan bindParam(PlanParamExpr param, int literal) {
       return bindParam(param, new XsValueImpl.IntValImpl(literal));
+    }
+    @Override
+    public Plan bindParam(String paramName, long literal) {
+      return bindParam(new PlanParamBase(paramName), new XsValueImpl.LongValImpl(literal));
     }
     @Override
     public Plan bindParam(PlanParamExpr param, long literal) {
       return bindParam(param, new XsValueImpl.LongValImpl(literal));
     }
     @Override
+    public Plan bindParam(String paramName, short literal) {
+      return bindParam(new PlanParamBase(paramName), new XsValueImpl.ShortValImpl(literal));
+    }
+    @Override
     public Plan bindParam(PlanParamExpr param, short literal) {
       return bindParam(param, new XsValueImpl.ShortValImpl(literal));
+    }
+    @Override
+    public Plan bindParam(String paramName, String literal) {
+      return bindParam(new PlanParamBase(paramName), new XsValueImpl.StringValImpl(literal));
     }
     @Override
     public Plan bindParam(PlanParamExpr param, String literal) {
@@ -762,7 +794,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     public String getColName();
   }
 
-  static class CaseCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements ItemExpr {
+  static class CaseCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
     CaseCallImpl(BaseTypeImpl.BaseArgImpl[] whenList, BaseTypeImpl.BaseArgImpl otherwise) {
       super("op", "case", new BaseTypeImpl.BaseArgImpl[]{
         new BaseTypeImpl.ServerExpressionListImpl(whenList), otherwise
@@ -784,9 +816,9 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
   }
 
-  static interface JsonContentCallImpl extends JsonContentNodeExpr, BaseTypeImpl.BaseArgImpl {}
+  static interface JsonContentCallImpl extends BaseTypeImpl.BaseArgImpl {}
   static class JsonContentSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl {
-    JsonContentSeqListImpl(JsonContentNodeExpr[] items) {
+    JsonContentSeqListImpl(ServerExpression[] items) {
       super(Arrays.copyOf(items, items.length, BaseTypeImpl.BaseArgImpl[].class));
     }
   }
@@ -797,7 +829,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
   }
 
-  static class JsonObjectCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements ObjectNodeExpr, JsonContentCallImpl {
+  static class JsonObjectCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements JsonContentCallImpl {
     JsonObjectCallImpl(Object[] args) {
       super("op", "json-object", args);
     }
@@ -807,21 +839,21 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
       super("op", "prop", args);
     }
   }
-  static class JsonArrayCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements ArrayNodeExpr, JsonContentCallImpl {
+  static class JsonArrayCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements JsonContentCallImpl {
     JsonArrayCallImpl(Object[] args) {
       super("op", "json-array", args);
     }
   }
 
-  static class XmlAttributeSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements AttributeNodeSeqExpr {
+  static class XmlAttributeSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl {
     XmlAttributeSeqListImpl(ServerExpression[] items) {
       super(Arrays.copyOf(items, items.length, XmlAttributeCallImpl[].class));
     }
   }
 
-  static interface XmlContentCallImpl  extends XmlContentNodeExpr,  BaseTypeImpl.BaseArgImpl {}
+  static interface XmlContentCallImpl  extends BaseTypeImpl.BaseArgImpl {}
   static class XmlContentSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl {
-    XmlContentSeqListImpl(XmlContentNodeExpr[] items) {
+    XmlContentSeqListImpl(ServerExpression[] items) {
       super(Arrays.copyOf(items, items.length, BaseTypeImpl.NodeCallImpl[].class));
     }
   }
@@ -833,7 +865,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
   }
  */
-  static class XmlAttributeCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements AttributeNodeExpr {
+  static class XmlAttributeCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
     XmlAttributeCallImpl(Object[] args) {
       super("op", "xml-attribute", args);
     }

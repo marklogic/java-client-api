@@ -54,7 +54,7 @@ public interface PlanBuilderBase {
      * @param property  The properties to be used to contruct the object. This is constructed by the <a>op:prop</a> function.
      * @return  a ObjectNodeExpr expression
      */
-    public abstract ObjectNodeExpr jsonObject(PlanJsonProperty... property);
+    public abstract ServerExpression jsonObject(PlanJsonProperty... property);
     /**
      * This function constructs a JSON array during row processing. The array can be used as the value of a column in a row or passed to a builtin expression function. The node is constructed during processing of the plan, rather than when building the plan.
      * <p>
@@ -62,7 +62,7 @@ public interface PlanBuilderBase {
      * @param property  The JSON nodes for the array.
      * @return  a ArrayNodeExpr expression
      */
-    public abstract ArrayNodeExpr jsonArray(ServerExpression... property);
+    public abstract ServerExpression jsonArray(ServerExpression... property);
 
     /**
      * This function returns the specified value expression if the specified value expression is true. Otherwise, it returns null.
@@ -71,7 +71,7 @@ public interface PlanBuilderBase {
      * @param cases  One or more when or else expressions.
      * @return  a ItemSeqExpr expression sequence
      */
-    public ItemSeqExpr caseExpr(PlanCase... cases);
+    public ServerExpression caseExpr(PlanCase... cases);
 
     /**
      * This function returns the specified value if none of the preceeding when() conditions are true.
@@ -166,7 +166,15 @@ public interface PlanBuilderBase {
         /**
          * Specifies a boolean primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
-         * @param param  a placeholder parameter with as constructed by the param() method
+         * @param paramName  the name of a placeholder parameter
+         * @param literal   a boolean primitive value to replace the parameter
+         * @return  a Plan object
+         */
+        public PlanBuilder.Plan bindParam(String paramName, boolean literal);
+        /**
+         * Specifies a boolean primitive value to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * @param param  a placeholder parameter as constructed by the param() method
          * @param literal   a boolean primitive value to replace the parameter
          * @return  a Plan object
          */
@@ -174,7 +182,15 @@ public interface PlanBuilderBase {
         /**
          * Specifies a byte primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
-         * @param param  a placeholder parameter with as constructed by the param() method
+         * @param paramName  the name of a placeholder parameter
+         * @param literal   a byte primitive value to replace the parameter
+         * @return  a Plan object
+         */
+        public PlanBuilder.Plan bindParam(String paramName, byte    literal);
+        /**
+         * Specifies a byte primitive value to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * @param param  a placeholder parameter as constructed by the param() method
          * @param literal   a byte primitive value to replace the parameter
          * @return  a Plan object
          */
@@ -182,7 +198,15 @@ public interface PlanBuilderBase {
         /**
          * Specifies a double primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
-         * @param param  a placeholder parameter with as constructed by the param() method
+         * @param paramName  the name of a placeholder parameter
+         * @param literal   a double primitive value to replace the parameter
+         * @return  a Plan object
+         */
+        public PlanBuilder.Plan bindParam(String paramName, double  literal);
+        /**
+         * Specifies a double primitive value to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * @param param  a placeholder parameter as constructed by the param() method
          * @param literal   a double primitive value to replace the parameter
          * @return  a Plan object
          */
@@ -190,15 +214,33 @@ public interface PlanBuilderBase {
         /**
          * Specifies a float primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
-         * @param param  a placeholder parameter with as constructed by the param() method
+         * @param paramName  the name of a placeholder parameter
+         * @param literal   a float primitive value to replace the parameter
+         * @return  a Plan object
+         */
+        public PlanBuilder.Plan bindParam(String paramName, float   literal);
+        /**
+         * Specifies a float primitive value to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * @param param  a placeholder parameter as constructed by the param() method
          * @param literal   a float primitive value to replace the parameter
          * @return  a Plan object
          */
         public PlanBuilder.Plan bindParam(PlanParamExpr param, float   literal);
         /**
+         public PlanBuilder.Plan bindParam(PlanParamExpr param, int     literal);
          * Specifies an int primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
-         * @param param  a placeholder parameter with as constructed by the param() method
+         * @param paramName  the name of a placeholder parameter
+         * @param literal   an int primitive value to replace the parameter
+         * @return  a Plan object
+         */
+        public PlanBuilder.Plan bindParam(String paramName, int     literal);
+        /**
+         public PlanBuilder.Plan bindParam(PlanParamExpr param, int     literal);
+         * Specifies an int primitive value to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * @param param  a placeholder parameter as constructed by the param() method
          * @param literal   an int primitive value to replace the parameter
          * @return  a Plan object
          */
@@ -206,7 +248,15 @@ public interface PlanBuilderBase {
         /**
          * Specifies a long primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
-         * @param param  a placeholder parameter with as constructed by the param() method
+         * @param paramName  the name of a placeholder parameter
+         * @param literal   a long primitive value to replace the parameter
+         * @return  a Plan object
+         */
+        public PlanBuilder.Plan bindParam(String paramName, long    literal);
+        /**
+         * Specifies a long primitive value to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * @param param  a placeholder parameter as constructed by the param() method
          * @param literal   a long primitive value to replace the parameter
          * @return  a Plan object
          */
@@ -214,7 +264,15 @@ public interface PlanBuilderBase {
         /**
          * Specifies a short primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
-         * @param param  a placeholder parameter with as constructed by the param() method
+         * @param paramName  the name of a placeholder parameter
+         * @param literal   a short primitive value to replace the parameter
+         * @return  a Plan object
+         */
+        public PlanBuilder.Plan bindParam(String paramName, short   literal);
+        /**
+         * Specifies a short primitive value to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * @param param  a placeholder parameter as constructed by the param() method
          * @param literal   a short primitive value to replace the parameter
          * @return  a Plan object
          */
@@ -222,7 +280,15 @@ public interface PlanBuilderBase {
         /**
          * Specifies a string literal value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
-         * @param param  a placeholder parameter with as constructed by the param() method
+         * @param paramName  the name of a placeholder parameter
+         * @param literal   a string literal value to replace the parameter
+         * @return  a Plan object
+         */
+        public PlanBuilder.Plan bindParam(String paramName, String  literal);
+        /**
+         * Specifies a string literal value to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * @param param  a placeholder parameter as constructed by the param() method
          * @param literal   a string literal value to replace the parameter
          * @return  a Plan object
          */

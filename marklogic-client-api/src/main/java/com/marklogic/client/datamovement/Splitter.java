@@ -29,6 +29,7 @@ public interface Splitter<T extends AbstractWriteHandle> {
      * Converts the incoming input stream to a stream of AbstractWriteHandle objects.
      * @param input is the incoming input stream.
      * @return a stream of AbstractWriteHandle objects.
+     * @throws Exception if the input cannot be split
      */
     Stream<T> split(InputStream input) throws Exception;
 

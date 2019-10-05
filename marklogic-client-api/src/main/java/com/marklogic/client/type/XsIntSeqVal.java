@@ -20,6 +20,6 @@ package com.marklogic.client.type;
 /**
  * A sequence of server int values.
  */
-public interface XsIntSeqVal extends XsIntSeqExpr, XsLongSeqVal {
+public interface XsIntSeqVal extends XsLongSeqVal {
     public XsIntVal[] getIntItems();
 }

@@ -1,8 +1,6 @@
 subprojects {
     apply plugin: 'java'
     apply plugin: 'eclipse'
-    apply plugin: 'jacoco'
-        jacoco{toolVersion="0.7.4.201502262128"}
 
     configure(allprojects){
         ext.slf4jVersion = '1.7.25'
@@ -11,8 +9,8 @@ subprojects {
  	tasks.withType(JavaCompile) {
     	options.encoding = 'UTF-8'
   	}
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
+    sourceCompatibility = "9"
+    targetCompatibility = "9"
 
     sourceSets {
         test.compileClasspath += configurations.compileOnly

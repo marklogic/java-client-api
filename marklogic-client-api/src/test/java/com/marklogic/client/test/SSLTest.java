@@ -15,17 +15,15 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.*;
 import javax.security.auth.x500.X500Principal;
 import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
@@ -34,6 +32,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+
+import com.marklogic.client.MarkLogicIOException;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
@@ -42,25 +42,37 @@ import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.impl.OkHttpServices;
 
 public class SSLTest {
   @Test
-  public void testSSLAuth() throws NoSuchAlgorithmException, KeyManagementException {
+  public void testSSLAuth() throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException {
+    TrustManagerFactory trustMgrFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+    trustMgrFactory.init(KeyStore.getInstance(KeyStore.getDefaultType()));
+
+    TrustManager[] trustMgrs = trustMgrFactory.getTrustManagers();
+    assertNotNull(trustMgrs);
+    assertTrue(trustMgrs.length > 0);
+
+    X509TrustManager x509trustMgr = null;
+    for (TrustManager trustMgr: trustMgrs) {
+      if (trustMgr instanceof X509TrustManager) {
+        x509trustMgr = (X509TrustManager) trustMgr;
+        break;
+      }
+    }
+    assertNotNull(x509trustMgr);
 
     // create an SSL context
     SSLContext sslContext = SSLContext.getInstance("SSLv3");
-    sslContext.init(null, null, null);
+    sslContext.init(null, trustMgrs, null);
 
     // create the client
     DatabaseClient client = DatabaseClientFactory.newClient(Common.HOST, Common.PORT, new DigestAuthContext("rest-writer", "x")
-      .withSSLContext(sslContext)
+      .withSSLContext(sslContext, x509trustMgr)
       .withSSLHostnameVerifier(SSLHostnameVerifier.ANY));
 
-
     String expectedException = "com.marklogic.client.MarkLogicIOException: " +
-      "javax.net.ssl.SSLException: Unrecognized SSL message, plaintext connection?";
-    String exception = "";
+      "javax.net.ssl.SSLException: ";
 
     try {
       // make use of the client connection so we get an auth exception if it
@@ -75,10 +87,11 @@ public class SSLTest {
       docMgr.read(docId, handle);
       assertEquals(handle.get(), "A simple text document by SSL connection");
       docMgr.delete(docId);
-    }
-    catch (Exception e) {
-      exception = e.toString();
-      assertEquals(expectedException, exception);
+    } catch (MarkLogicIOException e) {
+      String exception = e.toString();
+System.out.println(exception);
+      assertTrue(exception.startsWith(expectedException));
+      assertTrue(exception.toLowerCase().contains("unrecognized ssl message"));
     }
   }
 

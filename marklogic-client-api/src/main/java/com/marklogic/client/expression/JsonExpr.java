@@ -15,19 +15,11 @@
  */
 package com.marklogic.client.expression;
 
-import com.marklogic.client.type.ElementNodeExpr;
-import com.marklogic.client.type.ItemExpr;
-import com.marklogic.client.type.ItemSeqExpr;
-import com.marklogic.client.type.XsBooleanExpr;
-import com.marklogic.client.type.XsNumericExpr;
-import com.marklogic.client.type.XsStringSeqExpr;
-import com.marklogic.client.type.XsUnsignedLongExpr;
+import com.marklogic.client.type.XsBooleanVal;
+import com.marklogic.client.type.XsStringSeqVal;
+import com.marklogic.client.type.XsUnsignedLongVal;
 
 import com.marklogic.client.type.ServerExpression;
-import com.marklogic.client.type.JsonArrayExpr;
-import com.marklogic.client.type.JsonArraySeqExpr;
-import com.marklogic.client.type.JsonObjectExpr;
-import com.marklogic.client.type.JsonObjectSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
 
@@ -45,7 +37,7 @@ public interface JsonExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/json:array" target="mlserverdoc">json:array</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type
   */
-  public JsonArrayExpr array();
+  public ServerExpression array();
 /**
   * Creates a (JSON) array, which is like a sequence of values, but allows for nesting.
   * <p>
@@ -53,7 +45,7 @@ public interface JsonExpr {
   * @param array  A serialized array element.  (of <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type
   */
-  public JsonArrayExpr array(ServerExpression array);
+  public ServerExpression array(ServerExpression array);
 /**
   * Returns the size of the array.
   *
@@ -64,7 +56,7 @@ public interface JsonExpr {
   * @param array  An array.  (of <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr arraySize(ServerExpression array);
+  public ServerExpression arraySize(ServerExpression array);
 /**
   * Returns the array values as an XQuery sequence.
   *
@@ -75,7 +67,7 @@ public interface JsonExpr {
   * @param array  An array.  (of <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr arrayValues(ServerExpression array);
+  public ServerExpression arrayValues(ServerExpression array);
 /**
   * Returns the array values as an XQuery sequence.
   * <p>
@@ -84,7 +76,7 @@ public interface JsonExpr {
   * @param flatten  Include values from subarrays in the sequence. The default is false, meaning that subarrays are returned as array values.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr arrayValues(ServerExpression array, boolean flatten);
+  public ServerExpression arrayValues(ServerExpression array, boolean flatten);
 /**
   * Returns the array values as an XQuery sequence.
   * <p>
@@ -93,7 +85,7 @@ public interface JsonExpr {
   * @param flatten  Include values from subarrays in the sequence. The default is false, meaning that subarrays are returned as array values.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr arrayValues(ServerExpression array, ServerExpression flatten);
+  public ServerExpression arrayValues(ServerExpression array, ServerExpression flatten);
 /**
   * Creates a JSON object, which is a kind of map with a fixed and ordered set of keys.
   *
@@ -103,7 +95,7 @@ public interface JsonExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/json:object" target="mlserverdoc">json:object</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_object.html">json:object</a> server data type
   */
-  public JsonObjectExpr object();
+  public ServerExpression object();
 /**
   * Creates a JSON object, which is a kind of map with a fixed and ordered set of keys.
   * <p>
@@ -111,7 +103,7 @@ public interface JsonExpr {
   * @param map  A serialized JSON object.  (of <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_object.html">json:object</a> server data type
   */
-  public JsonObjectExpr object(ServerExpression map);
+  public ServerExpression object(ServerExpression map);
 /**
   * Creates a JSON object.
   *
@@ -121,7 +113,7 @@ public interface JsonExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/json:object-define" target="mlserverdoc">json:object-define</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_object.html">json:object</a> server data type
   */
-  public JsonObjectExpr objectDefine();
+  public ServerExpression objectDefine();
 /**
   * Creates a JSON object.
   * <p>
@@ -129,7 +121,7 @@ public interface JsonExpr {
   * @param keys  The sequence of keys in this object.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_object.html">json:object</a> server data type
   */
-  public JsonObjectExpr objectDefine(ServerExpression keys);
+  public ServerExpression objectDefine(ServerExpression keys);
 /**
   * Extract a subarray from an array, producing a new array. The second and third arguments to this function operate similarly to those of fn:subsequence for XQuery sequences.
   * <p>
@@ -138,7 +130,7 @@ public interface JsonExpr {
   * @param startingLoc  The starting position of the start of the subarray.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type
   */
-  public JsonArrayExpr subarray(ServerExpression array, double startingLoc);
+  public ServerExpression subarray(ServerExpression array, double startingLoc);
 /**
   * Extract a subarray from an array, producing a new array. The second and third arguments to this function operate similarly to those of fn:subsequence for XQuery sequences.
   *
@@ -150,7 +142,7 @@ public interface JsonExpr {
   * @param startingLoc  The starting position of the start of the subarray.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type
   */
-  public JsonArrayExpr subarray(ServerExpression array, ServerExpression startingLoc);
+  public ServerExpression subarray(ServerExpression array, ServerExpression startingLoc);
 /**
   * Extract a subarray from an array, producing a new array. The second and third arguments to this function operate similarly to those of fn:subsequence for XQuery sequences.
   * <p>
@@ -160,7 +152,7 @@ public interface JsonExpr {
   * @param length  The length of the subarray.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type
   */
-  public JsonArrayExpr subarray(ServerExpression array, double startingLoc, double length);
+  public ServerExpression subarray(ServerExpression array, double startingLoc, double length);
 /**
   * Extract a subarray from an array, producing a new array. The second and third arguments to this function operate similarly to those of fn:subsequence for XQuery sequences.
   * <p>
@@ -170,7 +162,7 @@ public interface JsonExpr {
   * @param length  The length of the subarray.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type
   */
-  public JsonArrayExpr subarray(ServerExpression array, ServerExpression startingLoc, ServerExpression length);
+  public ServerExpression subarray(ServerExpression array, ServerExpression startingLoc, ServerExpression length);
 /**
   * Constructs json:array from a sequence of items.
   *
@@ -180,7 +172,7 @@ public interface JsonExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/json:to-array" target="mlserverdoc">json:to-array</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type
   */
-  public JsonArrayExpr toArray();
+  public ServerExpression toArray();
 /**
   * Constructs json:array from a sequence of items.
   * <p>
@@ -188,16 +180,7 @@ public interface JsonExpr {
   * @param items  A sequence of items.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type
   */
-  public JsonArrayExpr toArray(ServerExpression items);
-/**
-  * Constructs json:array from a sequence of items.
-  * <p>
-  * Provides a client interface to the <a href="http://docs.marklogic.com/json:to-array" target="mlserverdoc">json:to-array</a> server function.
-  * @param items  A sequence of items.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
-  * @param limit  The size of the array to construct. If the size is less than the length of the item sequence, only as "limit" items are put into the array. If the size is more than the length of the sequence, the array is filled with null values up to the limit.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type
-  */
-  public JsonArrayExpr toArray(ServerExpression items, double limit);
+  public ServerExpression toArray(ServerExpression items);
 /**
   * Constructs json:array from a sequence of items.
   * <p>
@@ -206,17 +189,16 @@ public interface JsonExpr {
   * @param limit  The size of the array to construct. If the size is less than the length of the item sequence, only as "limit" items are put into the array. If the size is more than the length of the sequence, the array is filled with null values up to the limit.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type
   */
-  public JsonArrayExpr toArray(ServerExpression items, ServerExpression limit);
+  public ServerExpression toArray(ServerExpression items, double limit);
 /**
   * Constructs json:array from a sequence of items.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/json:to-array" target="mlserverdoc">json:to-array</a> server function.
   * @param items  A sequence of items.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @param limit  The size of the array to construct. If the size is less than the length of the item sequence, only as "limit" items are put into the array. If the size is more than the length of the sequence, the array is filled with null values up to the limit.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
-  * @param zero  The value to use to pad out the array, if necessary. By default the empty sequence is used.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type
   */
-  public JsonArrayExpr toArray(ServerExpression items, double limit, ServerExpression zero);
+  public ServerExpression toArray(ServerExpression items, ServerExpression limit);
 /**
   * Constructs json:array from a sequence of items.
   * <p>
@@ -226,21 +208,15 @@ public interface JsonExpr {
   * @param zero  The value to use to pad out the array, if necessary. By default the empty sequence is used.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type
   */
-  public JsonArrayExpr toArray(ServerExpression items, ServerExpression limit, ServerExpression zero);
+  public ServerExpression toArray(ServerExpression items, double limit, ServerExpression zero);
 /**
-  * Constructs a sequence of JsonArrayExpr items.
-  * @param items  the JsonArrayExpr items collected by the sequence
-  * @return  a JsonArraySeqExpr sequence
-  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
+  * Constructs json:array from a sequence of items.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/json:to-array" target="mlserverdoc">json:to-array</a> server function.
+  * @param items  A sequence of items.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param limit  The size of the array to construct. If the size is less than the length of the item sequence, only as "limit" items are put into the array. If the size is more than the length of the sequence, the array is filled with null values up to the limit.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param zero  The value to use to pad out the array, if necessary. By default the empty sequence is used.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type
   */
-  public JsonArraySeqExpr arraySeq(JsonArrayExpr... items);
- 
-/**
-  * Constructs a sequence of JsonObjectExpr items.
-  * @param items  the JsonObjectExpr items collected by the sequence
-  * @return  a JsonObjectSeqExpr sequence
-  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
-  */
-  public JsonObjectSeqExpr objectSeq(JsonObjectExpr... items);
-
+  public ServerExpression toArray(ServerExpression items, ServerExpression limit, ServerExpression zero);
 }

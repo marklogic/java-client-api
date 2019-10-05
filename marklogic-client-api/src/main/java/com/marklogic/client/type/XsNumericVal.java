@@ -18,4 +18,4 @@ package com.marklogic.client.type;
 /**
  * An instance of a server numeric value.
  */
-public interface XsNumericVal extends XsNumericExpr, XsAnySimpleTypeVal, XsNumericSeqVal { }
+public interface XsNumericVal extends XsAnySimpleTypeVal, XsNumericSeqVal { }

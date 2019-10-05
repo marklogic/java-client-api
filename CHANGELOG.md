@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## 5.0.1
+#### New Functionality
+- [#636](https://github.com/marklogic/java-client-api/issues/636) - Support for debugging connection issues
+
+#### Improvements and Bug Fixes
+- [#1104](https://github.com/marklogic/java-client-api/issues/1104) - Fix for mimetype extensions in determining formats for Data Services
+- [#1107](https://github.com/marklogic/java-client-api/issues/1107) - Expose server error information on the client
+- [#1117](https://github.com/marklogic/java-client-api/issues/1117) - Few StructuredQueryBuilder methods enhanced to return StructuredQueryDefinition
+
+## 5.0.0
+#### New Functionality
+- [#911](https://github.com/marklogic/java-client-api/issues/911) - Streaming Multipart for OkHttp
+- [#1080](https://github.com/marklogic/java-client-api/issues/1080) - Returns version id for multiple documents in single request
+- [#1101](https://github.com/marklogic/java-client-api/issues/1101) - Parameter names as strings in Optic bindings to literals
+
+#### Improvements and Bug Fixes
+- [#885](https://github.com/marklogic/java-client-api/issues/885) - SecurityContext details exposed via getters
+- [#1090](https://github.com/marklogic/java-client-api/issues/1090), [#1098](https://github.com/marklogic/java-client-api/issues/1090) - Removed deprecated interfaces and XOM dependency
+- [#1103](https://github.com/marklogic/java-client-api/issues/1103) - OWASP recommendations to default parsers
+
 ## 4.2.0
 #### New Functionality
 - [#862](https://github.com/marklogic/java-client-api/issues/862) - Support for Java 9, OpenJDK 10 and OpenJDK 11

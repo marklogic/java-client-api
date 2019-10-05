@@ -20,6 +20,6 @@ package com.marklogic.client.type;
 /**
  * A sequence of server decimal values.
  */
-public interface XsDecimalSeqVal extends XsDecimalSeqExpr, XsAnyAtomicTypeSeqVal, XsNumericSeqVal {
+public interface XsDecimalSeqVal extends XsAnyAtomicTypeSeqVal, XsNumericSeqVal {
     public XsDecimalVal[] getDecimalItems();
 }

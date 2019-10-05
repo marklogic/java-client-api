@@ -15,9 +15,7 @@
  */
 package com.marklogic.client.datamovement.impl;
 
-import com.marklogic.client.datamovement.Batcher;
 import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.JobTicket.JobType;
 
 public class JobTicketImpl implements JobTicket {
   private String jobId;
@@ -34,36 +32,39 @@ public class JobTicketImpl implements JobTicket {
   public String getJobId() {
     return jobId;
   }
-
   @Override
   public JobType getJobType() {
     return jobType;
   }
 
-  public WriteBatcherImpl getWriteBatcher() {
-    return writeBatcher;
-  }
-
   @Override
-  public Batcher getBatcher() {
-    if (this.jobType == JobType.QUERY_BATCHER) {
-      return queryBatcher;
-    } else {
-      return writeBatcher;
+  public BatcherImpl getBatcher() {
+    switch(this.jobType) {
+      case QUERY_BATCHER: return getQueryBatcher();
+      case WRITE_BATCHER: return getWriteBatcher();
+      default:
+        throw new InternalError(
+                (jobType == null) ?
+                        "null job type" :
+                        "unknown job type: "+jobType.name()
+        );
     }
   }
 
-  public JobTicketImpl withWriteBatcher(WriteBatcherImpl writeBatcher) {
-    this.writeBatcher = writeBatcher;
-    return this;
-  }
 
   public QueryBatcherImpl getQueryBatcher() {
     return queryBatcher;
   }
+  public WriteBatcherImpl getWriteBatcher() {
+    return writeBatcher;
+  }
 
   public JobTicketImpl withQueryBatcher(QueryBatcherImpl queryBatcher) {
     this.queryBatcher = queryBatcher;
+    return this;
+  }
+  public JobTicketImpl withWriteBatcher(WriteBatcherImpl writeBatcher) {
+    this.writeBatcher = writeBatcher;
     return this;
   }
 }

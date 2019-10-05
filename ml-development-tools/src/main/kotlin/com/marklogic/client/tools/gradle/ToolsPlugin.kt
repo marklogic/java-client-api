@@ -25,5 +25,6 @@ open class ToolsPlugin : Plugin<Project> {
 
     project.tasks.create("generateEndpointProxies", EndpointProxiesGenTask::class.java)
     project.tasks.create("initializeModule",        ModuleInitTask::class.java)
+    project.tasks.create("checkCustomService",      ServiceCompareTask::class.java)
   }
 }

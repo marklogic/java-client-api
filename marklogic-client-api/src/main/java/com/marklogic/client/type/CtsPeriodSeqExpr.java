@@ -20,5 +20,5 @@ package com.marklogic.client.type;
 /**
  * A sequence of cts.period expressions.
  */
-public interface CtsPeriodSeqExpr extends ItemSeqExpr {
+public interface CtsPeriodSeqExpr extends ServerExpression  {
 }

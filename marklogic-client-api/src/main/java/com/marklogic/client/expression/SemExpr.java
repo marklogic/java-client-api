@@ -16,33 +16,17 @@
 package com.marklogic.client.expression;
 
 import com.marklogic.client.type.CtsQueryExpr;
-import com.marklogic.client.type.ItemSeqExpr;
-import com.marklogic.client.type.XsAnyAtomicTypeExpr;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
-import com.marklogic.client.type.XsBooleanExpr;
 import com.marklogic.client.type.XsBooleanVal;
-import com.marklogic.client.type.XsDateTimeExpr;
 import com.marklogic.client.type.XsDateTimeVal;
-import com.marklogic.client.type.XsDoubleExpr;
 import com.marklogic.client.type.XsDoubleVal;
-import com.marklogic.client.type.XsQNameExpr;
 import com.marklogic.client.type.XsQNameVal;
-import com.marklogic.client.type.XsStringExpr;
-import com.marklogic.client.type.XsStringSeqExpr;
 import com.marklogic.client.type.XsStringSeqVal;
 import com.marklogic.client.type.XsStringVal;
 
 import com.marklogic.client.type.ServerExpression;
-import com.marklogic.client.type.SemBlankExpr;
-import com.marklogic.client.type.SemBlankSeqExpr;
-import com.marklogic.client.type.SemInvalidExpr;
-import com.marklogic.client.type.SemInvalidSeqExpr;
-import com.marklogic.client.type.SemIriExpr;
-import com.marklogic.client.type.SemIriSeqExpr;
 import com.marklogic.client.type.SemStoreExpr;
 import com.marklogic.client.type.SemStoreSeqExpr;
-import com.marklogic.client.type.SemUnknownExpr;
-import com.marklogic.client.type.SemUnknownSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
 
@@ -60,7 +44,7 @@ public interface SemExpr extends SemValue {
   * Provides a client interface to the <a href="http://docs.marklogic.com/sem:bnode" target="mlserverdoc">sem:bnode</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_blank.html">sem:blank</a> server data type
   */
-  public SemBlankExpr bnode();
+  public ServerExpression bnode();
 /**
   * This function returns an identifier for a blank node, allowing the construction of a triple that refers to a blank node. This XQuery function backs up the SPARQL BNODE() function. 
   * <p>
@@ -68,7 +52,7 @@ public interface SemExpr extends SemValue {
   * @param value  If provided, the same blank node identifier is returned for the same argument value passed to the function.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_blank.html">sem:blank</a> server data type
   */
-  public SemBlankExpr bnode(ServerExpression value);
+  public ServerExpression bnode(ServerExpression value);
 /**
   * Returns the value of the first argument that evaluates without error. This XQuery function backs up the SPARQL COALESCE() functional form. 
   *
@@ -79,7 +63,7 @@ public interface SemExpr extends SemValue {
   * @param parameter1  A value.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr coalesce(ServerExpression... parameter1);
+  public ServerExpression coalesce(ServerExpression... parameter1);
 /**
   * Returns the name of the simple type of the atomic value argument as a SPARQL style IRI. If the value is derived from sem:unknown or sem:invalid, the datatype IRI part of those values is returned. This XQuery function backs up the SPARQL datatype() function. 
   *
@@ -90,7 +74,7 @@ public interface SemExpr extends SemValue {
   * @param value  The value to return the type of.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_iri.html">sem:iri</a> server data type
   */
-  public SemIriExpr datatype(ServerExpression value);
+  public ServerExpression datatype(ServerExpression value);
 /**
   * The IF function form evaluates the first argument, interprets it as a effective boolean value, then returns the value of expression2 if the EBV is true, otherwise it returns the value of expression3. Only one of expression2 and expression3 is evaluated. If evaluating the first argument raises an error, then an error is raised for the evaluation of the IF expression. This XQuery function backs up the SPARQL IF() functional form. 
   *
@@ -103,7 +87,7 @@ public interface SemExpr extends SemValue {
   * @param elseExpr  The else expression.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr ifExpr(ServerExpression condition, ServerExpression then, ServerExpression elseExpr);
+  public ServerExpression ifExpr(ServerExpression condition, ServerExpression then, ServerExpression elseExpr);
 /**
   * Returns a sem:invalid value with the given literal value and datatype IRI. The sem:invalid type extends xs:untypedAtomic, and represents an RDF value whose literal string is invalid according to the schema for it's datatype. 
   * <p>
@@ -112,7 +96,7 @@ public interface SemExpr extends SemValue {
   * @param datatype  The datatype IRI.  (of <a href="{@docRoot}/doc-files/types/sem_iri.html">sem:iri</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_invalid.html">sem:invalid</a> server data type
   */
-  public SemInvalidExpr invalid(ServerExpression string, String datatype);
+  public ServerExpression invalid(ServerExpression string, String datatype);
 /**
   * Returns a sem:invalid value with the given literal value and datatype IRI. The sem:invalid type extends xs:untypedAtomic, and represents an RDF value whose literal string is invalid according to the schema for it's datatype. 
   *
@@ -124,7 +108,7 @@ public interface SemExpr extends SemValue {
   * @param datatype  The datatype IRI.  (of <a href="{@docRoot}/doc-files/types/sem_iri.html">sem:iri</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_invalid.html">sem:invalid</a> server data type
   */
-  public SemInvalidExpr invalid(ServerExpression string, ServerExpression datatype);
+  public ServerExpression invalid(ServerExpression string, ServerExpression datatype);
 /**
   * Returns the datatype IRI of a sem:invalid value. 
   *
@@ -135,7 +119,7 @@ public interface SemExpr extends SemValue {
   * @param val  The sem:invalid value.  (of <a href="{@docRoot}/doc-files/types/sem_invalid.html">sem:invalid</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_iri.html">sem:iri</a> server data type
   */
-  public SemIriExpr invalidDatatype(ServerExpression val);
+  public ServerExpression invalidDatatype(ServerExpression val);
 /**
   * This is a constructor function that takes a string and constructs an item of type sem:iri from it.
   *
@@ -146,8 +130,8 @@ public interface SemExpr extends SemValue {
   * @param stringIri  The string with which to construct the sem:iri.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_iri.html">sem:iri</a> server data type
   */
-  public SemIriExpr iri(ServerExpression stringIri);
-public XsQNameExpr iriToQName(ServerExpression arg1);
+  public ServerExpression iri(ServerExpression stringIri);
+public ServerExpression iriToQName(ServerExpression arg1);
 /**
   * Returns true if the argument is an RDF blank node - that is, derived from type sem:blank. This XQuery function backs up the SPARQL isBlank() function. 
   *
@@ -158,7 +142,7 @@ public XsQNameExpr iriToQName(ServerExpression arg1);
   * @param value  The value to test.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr isBlank(ServerExpression value);
+  public ServerExpression isBlank(ServerExpression value);
 /**
   * Returns true if the argument is an RDF IRI - that is, derived from type sem:iri, but not derived from type sem:blank. This XQuery function backs up the SPARQL isIRI() and isURI() functions. 
   *
@@ -169,7 +153,7 @@ public XsQNameExpr iriToQName(ServerExpression arg1);
   * @param value  The value to test.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr isIRI(ServerExpression value);
+  public ServerExpression isIRI(ServerExpression value);
 /**
   * Returns true if the argument is an RDF literal - that is, derived from type xs:anyAtomicType, but not derived from type sem:iri. This XQuery function backs up the SPARQL isLiteral() function. 
   *
@@ -180,7 +164,7 @@ public XsQNameExpr iriToQName(ServerExpression arg1);
   * @param value  The value to test.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr isLiteral(ServerExpression value);
+  public ServerExpression isLiteral(ServerExpression value);
 /**
   * Returns true if the argument is a valid numeric RDF literal. This XQuery function backs up the SPARQL isNumeric() function. 
   *
@@ -191,7 +175,7 @@ public XsQNameExpr iriToQName(ServerExpression arg1);
   * @param value  The value to test.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr isNumeric(ServerExpression value);
+  public ServerExpression isNumeric(ServerExpression value);
 /**
   * Returns the language of the value passed in, or the empty string if the value has no language. Only values derived from rdf:langString have a language. This XQuery function backs up the SPARQL lang() function. 
   *
@@ -202,7 +186,7 @@ public XsQNameExpr iriToQName(ServerExpression arg1);
   * @param value  The value to return the language of.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr lang(ServerExpression value);
+  public ServerExpression lang(ServerExpression value);
 /**
   * Returns true if lang-tag matches lang-range according to the basic filtering scheme defined in RFC4647. This XQuery function backs up the SPARQL langMatches() function. 
   * <p>
@@ -211,7 +195,7 @@ public XsQNameExpr iriToQName(ServerExpression arg1);
   * @param langRange  The language range.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr langMatches(ServerExpression langTag, String langRange);
+  public ServerExpression langMatches(ServerExpression langTag, String langRange);
 /**
   * Returns true if lang-tag matches lang-range according to the basic filtering scheme defined in RFC4647. This XQuery function backs up the SPARQL langMatches() function. 
   *
@@ -223,8 +207,8 @@ public XsQNameExpr iriToQName(ServerExpression arg1);
   * @param langRange  The language range.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr langMatches(ServerExpression langTag, ServerExpression langRange);
-public SemIriExpr QNameToIri(ServerExpression arg1);
+  public ServerExpression langMatches(ServerExpression langTag, ServerExpression langRange);
+public ServerExpression QNameToIri(ServerExpression arg1);
 /**
   * Returns a random double between 0 and 1. This XQuery function backs up the SPARQL RAND() function. 
   *
@@ -234,7 +218,7 @@ public SemIriExpr QNameToIri(ServerExpression arg1);
   * Provides a client interface to the <a href="http://docs.marklogic.com/sem:random" target="mlserverdoc">sem:random</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr random();
+  public ServerExpression random();
 /**
   * The sem:ruleset-store function returns a set of triples derived by applying the ruleset to the triples in the sem:store constructor provided in store ("the triples that can be inferred from these rules"). 
   * <p>
@@ -297,7 +281,7 @@ public SemIriExpr QNameToIri(ServerExpression arg1);
   * @param b  The second value to test.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr sameTerm(ServerExpression a, String b);
+  public ServerExpression sameTerm(ServerExpression a, String b);
 /**
   * Returns true if the arguments are the same RDF term as defined by the RDF concepts specification. This XQuery function backs up the SPARQL sameTerm() function. 
   *
@@ -309,7 +293,7 @@ public SemIriExpr QNameToIri(ServerExpression arg1);
   * @param b  The second value to test.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr sameTerm(ServerExpression a, ServerExpression b);
+  public ServerExpression sameTerm(ServerExpression a, ServerExpression b);
 /**
   * The sem:store function defines a set of criteria, that when evaluated, selects a set of triples to be passed in to sem:sparql(), sem:sparql-update(), or sem:sparql-values() as part of the options argument. The sem:store constructor queries from the current database's triple index, restricted by the options and the cts:query argument (for instance, "triples in documents matching this query"). 
   * <p>
@@ -361,7 +345,7 @@ public SemIriExpr QNameToIri(ServerExpression arg1);
   * @param value  The dateTime value  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr timezoneString(ServerExpression value);
+  public ServerExpression timezoneString(ServerExpression value);
 /**
   * Returns a value to represent the RDF typed literal with lexical value value and datatype IRI datatype. Returns a value of type sem:unknown for datatype IRIs for which there is no schema, and a value of type sem:invalid for lexical values which are invalid according to the schema for the given datatype. This XQuery function backs up the SPARQL STRDT() function. 
   * <p>
@@ -370,7 +354,7 @@ public SemIriExpr QNameToIri(ServerExpression arg1);
   * @param datatype  The datatype IRI.  (of <a href="{@docRoot}/doc-files/types/sem_iri.html">sem:iri</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
-  public XsAnyAtomicTypeExpr typedLiteral(ServerExpression value, String datatype);
+  public ServerExpression typedLiteral(ServerExpression value, String datatype);
 /**
   * Returns a value to represent the RDF typed literal with lexical value value and datatype IRI datatype. Returns a value of type sem:unknown for datatype IRIs for which there is no schema, and a value of type sem:invalid for lexical values which are invalid according to the schema for the given datatype. This XQuery function backs up the SPARQL STRDT() function. 
   *
@@ -382,7 +366,7 @@ public SemIriExpr QNameToIri(ServerExpression arg1);
   * @param datatype  The datatype IRI.  (of <a href="{@docRoot}/doc-files/types/sem_iri.html">sem:iri</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
-  public XsAnyAtomicTypeExpr typedLiteral(ServerExpression value, ServerExpression datatype);
+  public ServerExpression typedLiteral(ServerExpression value, ServerExpression datatype);
 /**
   * Returns a sem:unknown value with the given literal value and datatype IRI. The sem:unknown type extends xs:untypedAtomic, and represents an RDF value with a datatype IRI for which no schema is available. 
   * <p>
@@ -391,7 +375,7 @@ public SemIriExpr QNameToIri(ServerExpression arg1);
   * @param datatype  The datatype IRI.  (of <a href="{@docRoot}/doc-files/types/sem_iri.html">sem:iri</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_unknown.html">sem:unknown</a> server data type
   */
-  public SemUnknownExpr unknown(ServerExpression string, String datatype);
+  public ServerExpression unknown(ServerExpression string, String datatype);
 /**
   * Returns a sem:unknown value with the given literal value and datatype IRI. The sem:unknown type extends xs:untypedAtomic, and represents an RDF value with a datatype IRI for which no schema is available. 
   *
@@ -403,7 +387,7 @@ public SemIriExpr QNameToIri(ServerExpression arg1);
   * @param datatype  The datatype IRI.  (of <a href="{@docRoot}/doc-files/types/sem_iri.html">sem:iri</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_unknown.html">sem:unknown</a> server data type
   */
-  public SemUnknownExpr unknown(ServerExpression string, ServerExpression datatype);
+  public ServerExpression unknown(ServerExpression string, ServerExpression datatype);
 /**
   * Returns the datatype IRI of a sem:unknown value. 
   *
@@ -414,7 +398,7 @@ public SemIriExpr QNameToIri(ServerExpression arg1);
   * @param val  The sem:unknown value.  (of <a href="{@docRoot}/doc-files/types/sem_unknown.html">sem:unknown</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_iri.html">sem:iri</a> server data type
   */
-  public SemIriExpr unknownDatatype(ServerExpression val);
+  public ServerExpression unknownDatatype(ServerExpression val);
 /**
   * Return a UUID URN (RFC4122) as a sem:iri value. This XQuery function backs up the SPARQL UUID() function. 
   *
@@ -424,7 +408,7 @@ public SemIriExpr QNameToIri(ServerExpression arg1);
   * Provides a client interface to the <a href="http://docs.marklogic.com/sem:uuid" target="mlserverdoc">sem:uuid</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_iri.html">sem:iri</a> server data type
   */
-  public SemIriExpr uuid();
+  public ServerExpression uuid();
 /**
   * Return a string that is the scheme specific part of random UUID URN (RFC4122). This XQuery function backs up the SPARQL STRUUID() function. 
   *
@@ -434,45 +418,12 @@ public SemIriExpr QNameToIri(ServerExpression arg1);
   * Provides a client interface to the <a href="http://docs.marklogic.com/sem:uuid-string" target="mlserverdoc">sem:uuid-string</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr uuidString();
-/**
-  * Constructs a sequence of SemBlankExpr items.
-  * @param items  the SemBlankExpr items collected by the sequence
-  * @return  a SemBlankSeqExpr sequence
-  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
-  */
-  public SemBlankSeqExpr blankSeq(SemBlankExpr... items);
- 
-/**
-  * Constructs a sequence of SemInvalidExpr items.
-  * @param items  the SemInvalidExpr items collected by the sequence
-  * @return  a SemInvalidSeqExpr sequence
-  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
-  */
-  public SemInvalidSeqExpr invalidSeq(SemInvalidExpr... items);
- 
-/**
-  * Constructs a sequence of SemIriExpr items.
-  * @param items  the SemIriExpr items collected by the sequence
-  * @return  a SemIriSeqExpr sequence
-  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
-  */
-  public SemIriSeqExpr iriSeq(SemIriExpr... items);
- 
+  public ServerExpression uuidString();
 /**
   * Constructs a sequence of SemStoreExpr items.
   * @param items  the SemStoreExpr items collected by the sequence
   * @return  a SemStoreSeqExpr sequence
-  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public SemStoreSeqExpr storeSeq(SemStoreExpr... items);
- 
-/**
-  * Constructs a sequence of SemUnknownExpr items.
-  * @param items  the SemUnknownExpr items collected by the sequence
-  * @return  a SemUnknownSeqExpr sequence
-  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
-  */
-  public SemUnknownSeqExpr unknownSeq(SemUnknownExpr... items);
 
 }

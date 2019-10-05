@@ -23,12 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
@@ -47,11 +42,14 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
+import com.marklogic.client.DatabaseClient.ConnectionResult;
+import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
@@ -284,7 +282,8 @@ public interface RESTServices {
   public <R extends AbstractReadHandle> R deleteResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params, R output)
     throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-
+  public ConnectionResult checkConnection();
+  
   // backdoor
   public Object getClientImplementation();
 
@@ -430,9 +429,9 @@ public interface RESTServices {
 
   CallRequest makeNodeBodyRequest(String endpoint, HttpMethod method, SessionState session, CallField... params);
 
-  static public enum HttpMethod {POST}
+  enum HttpMethod {POST}
 
-  static public abstract class CallField {
+  abstract class CallField {
     private String paramName;
     CallField(String paramName) {
       this.paramName = paramName;
@@ -440,8 +439,57 @@ public interface RESTServices {
     public String getParamName() {
       return paramName;
     }
+    public CallField toBuffered() {
+    	return this;
+    }
+    
+    @Override
+    public int hashCode() {
+        return getParamName().hashCode();
+    }
+    
+    @Override
+    public boolean equals(Object arg0) {
+        CallField callField = (CallField)arg0;
+        if(this.getParamName()!=null && callField.getParamName()!=null && 
+                this.getParamName().equals(callField.getParamName()))
+            return true;
+        return false;
+    }
   }
-  static public class SingleAtomicCallField extends CallField {
+  abstract class MultipleAtomicCallField extends CallField {
+    MultipleAtomicCallField(String paramName) {
+            super(paramName);
+        }
+    abstract Stream<String> getParamValues();
+  }
+  abstract class MultipleNodeCallField extends CallField {
+    MultipleNodeCallField(String paramName) {
+            super(paramName);
+        }
+    abstract Stream<? extends AbstractWriteHandle> getParamValues();
+  }
+  class SingleNodeCallField extends CallField {
+    private BufferableHandle paramValue;
+
+    public SingleNodeCallField(String paramName, BufferableHandle paramValue) {
+            super(paramName);
+      this.paramValue = paramValue;
+    }
+
+    public BufferableHandle getParamValue() {
+      return paramValue;
+        }
+
+    void setParamValue(BufferableHandle paramValue) {
+      this.paramValue = paramValue;
+    }
+
+    public SingleNodeCallField toBuffered() {
+      return new SingleNodeCallField(super.getParamName(), NodeConverter.bufferAsBytes(paramValue));
+  }
+  }
+  class SingleAtomicCallField extends CallField {
     private String paramValue;
     public SingleAtomicCallField(String paramName, String paramValue) {
       super(paramName);
@@ -450,71 +498,121 @@ public interface RESTServices {
     public String getParamValue() {
       return paramValue;
     }
+    @Override
+    public SingleAtomicCallField toBuffered() {
+    	return this;
+    }
   }
-  static public class MultipleAtomicCallField extends CallField {
+  class UnbufferedMultipleAtomicCallField extends MultipleAtomicCallField {
     private Stream<String> paramValues;
-    public MultipleAtomicCallField(String paramName, Stream<String> paramValues) {
+    public UnbufferedMultipleAtomicCallField(String paramName, Stream<String> paramValues) {
       super(paramName);
       this.paramValues = paramValues;
     }
+    
+    @Override
+    public BufferedMultipleAtomicCallField toBuffered() {
+    	return new BufferedMultipleAtomicCallField(super.getParamName(), paramValues);
+    }
+
+    @Override
     public Stream<String> getParamValues() {
-      return paramValues;
-    }
+		return paramValues;
+	}
   }
-  static public class SingleNodeCallField extends CallField {
-    private AbstractWriteHandle paramValue;
-    public SingleNodeCallField(String paramName, AbstractWriteHandle paramValue) {
-      super(paramName);
-      this.paramValue = paramValue;
-    }
-    public AbstractWriteHandle getParamValue() {
-      return paramValue;
-    }
-  }
-  static public class MultipleNodeCallField extends CallField {
-    private Stream<? extends AbstractWriteHandle> paramValues;
+  class UnbufferedMultipleNodeCallField extends MultipleNodeCallField {
+    private Stream<? extends BufferableHandle> paramValues;
 
-    public MultipleNodeCallField(String paramName, Stream<? extends AbstractWriteHandle> paramValues) {
+    public UnbufferedMultipleNodeCallField(String paramName, Stream<? extends BufferableHandle> paramValues) {
       super(paramName);
       this.paramValues = paramValues;
     }
-    public Stream<? extends AbstractWriteHandle> getParamValues() {
+    
+    @Override
+    public Stream<? extends BufferableHandle> getParamValues() {
       return paramValues;
     }
+    
+    @Override
+    public BufferedMultipleNodeCallField toBuffered() {
+    	return new BufferedMultipleNodeCallField(super.getParamName(), paramValues);
+    }
+    
   }
+  class BufferedMultipleAtomicCallField extends MultipleAtomicCallField {
+	private String[] paramValues;
+	public BufferedMultipleAtomicCallField(String paramName, Stream<String> paramValues) {
+        this(paramName, paramValues.toArray(size -> new String[size]));
+    }
+	
+	public BufferedMultipleAtomicCallField(String paramName, String[] paramValues) {
+	    super(paramName);
+	    this.paramValues = paramValues;
+	}
+  
+	@Override
+	public Stream<String> getParamValues() {
+		return Stream.of(paramValues);
+	}
+  }
+  class BufferedMultipleNodeCallField extends MultipleNodeCallField {
+	  private BufferableHandle[] paramValues;
 
-  public interface CallRequest {
+	  public BufferedMultipleNodeCallField(String paramName, Stream<? extends BufferableHandle> paramValues) {
+	        this(paramName, paramValues.toArray(size -> new BufferableHandle[size]));
+	  }
+	  public BufferedMultipleNodeCallField(String paramName, BufferableHandle[] paramValues) {
+	      super(paramName);
+	      this.paramValues = paramValues;
+	  }
+	  @Override
+	  public Stream<BufferableHandle> getParamValues() {
+			return Stream.of(paramValues);
+	  }
+	  public BufferableHandle[] getParamValuesArray() {
+	      return this.paramValues;
+	  }
+	  void setParamValues(BufferableHandle[] paramValues) {
+	      this.paramValues = paramValues;
+	  }
+	  
+	  public BufferedMultipleNodeCallField toBuffered() {
+          return new BufferedMultipleNodeCallField(super.getParamName(), NodeConverter.bufferAsBytes(paramValues));
+      }
+  }
+  
+  interface CallRequest {
     boolean hasStreamingPart();
     SessionState getSession();
     String getEndpoint();
     HttpMethod getHttpMethod();
-    public CallResponse withEmptyResponse();
-    public SingleCallResponse withDocumentResponse(Format format);
-    public MultipleCallResponse withMultipartMixedResponse(Format format);
+    CallResponse withEmptyResponse();
+    SingleCallResponse withDocumentResponse(Format format);
+    MultipleCallResponse withMultipartMixedResponse(Format format);
   }
 
-  public interface CallResponse {
-    public boolean isNull();
-    public int     getStatusCode();
-    public String  getStatusMsg();
-    public String  getErrorBody();
+  interface CallResponse {
+    boolean isNull();
+    int     getStatusCode();
+    String  getStatusMsg();
+    String  getErrorBody();
   }
 
-  public interface SingleCallResponse extends CallResponse {
-    public byte[]            asBytes();
-    public InputStream asInputStream();
-    public InputStreamHandle asInputStreamHandle();
-    public Reader asReader();
-    public ReaderHandle asReaderHandle();
-    public String            asString();
+  interface SingleCallResponse extends CallResponse {
+    byte[]            asBytes();
+    InputStream asInputStream();
+    InputStreamHandle asInputStreamHandle();
+    Reader asReader();
+    ReaderHandle asReaderHandle();
+    String            asString();
   }
 
-  public interface MultipleCallResponse extends CallResponse {
-    public Stream<byte[]> asStreamOfBytes();
-    public Stream<InputStream>       asStreamOfInputStream();
-    public Stream<InputStreamHandle> asStreamOfInputStreamHandle();
-    public Stream<Reader>            asStreamOfReader();
-    public Stream<ReaderHandle>      asStreamOfReaderHandle();
-    public Stream<String>            asStreamOfString();
+  interface MultipleCallResponse extends CallResponse {
+    Stream<byte[]> asStreamOfBytes();
+    Stream<InputStream>       asStreamOfInputStream();
+    Stream<InputStreamHandle> asStreamOfInputStreamHandle();
+    Stream<Reader>            asStreamOfReader();
+    Stream<ReaderHandle>      asStreamOfReaderHandle();
+    Stream<String>            asStreamOfString();
   }
 }

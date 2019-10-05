@@ -29,6 +29,7 @@ import java.util.Map;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -81,7 +82,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
 		  ndocCount = 5;
 	  }
 	  else {
-		  ndocCount = 102; 
+		  ndocCount = 10; 
 	  }
   }
 
@@ -181,7 +182,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
 		assertEquals("document count", 102, count);
 	} catch (Exception e) {
 		// TODO Auto-generated catch block
-		e.printStackTrace();		
+		e.printStackTrace();
 	}
     finally {
     	client.release();
@@ -208,15 +209,15 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
 		FileHandle h1 = new FileHandle(file1);
 		for (int i = 0; i < ndocCount; i++) {
 		  writeset.add(DIRECTORY + "binary" + i + ".jpg", h1);
-		  if (count % BATCH_SIZE == 0) {
+		 // if (count % BATCH_SIZE == 0) {
 		    docMgr.write(writeset);
 		    writeset = docMgr.newWriteSet();
-		  }
+		 // }
 		  count++;
 		}
-		if (count % BATCH_SIZE > 0) {
+		/*if (count % BATCH_SIZE > 0) {
 		  docMgr.write(writeset);
-		}
+		}*/
 		
 		String uris[] = new String[ndocCount];
 		for (int i = 0; i < ndocCount; i++) {
@@ -330,17 +331,51 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
     	client = getDatabaseClient("rest-admin", "x", getConnType());
 		GenericDocumentManager docMgr = client.newDocumentManager();
 		int countXML = 0, countJson = 0, countJpg = 0, countTEXT = 0;
-		String uris[] = new String[102];
-		for (int i = 0; i < 99;) {
-		  uris[i] = DIRECTORY + "foo" + i + ".xml";
-		  i++;
-		  uris[i] = DIRECTORY + "foo" + i + ".txt";
-		  i++;
-		  uris[i] = DIRECTORY + "binary" + i + ".jpg";
-		  i++;
-		  uris[i] = DIRECTORY + "dog" + i + ".json";
-		  i++;
+		String uris[] = new String[50];
+		int count = 0;
+
+		XMLDocumentManager xmldocMgr = client.newXMLDocumentManager();
+		DocumentWriteSet writesetXML = xmldocMgr.newWriteSet();
+		for (int i = 0; i < 10; i++) {
+		writesetXML.add(DIRECTORY + "foo" + i + ".xml", new DOMHandle(getDocumentContent("This is so foo" + i)));
+		uris[count++] =  DIRECTORY + "foo" + i + ".xml";
+		} 
+		xmldocMgr.write(writesetXML);
+
+		TextDocumentManager txtdocMgr = client.newTextDocumentManager();
+		DocumentWriteSet writesetTXT = txtdocMgr.newWriteSet();
+
+		for (int i = 0; i < 10; i++) {
+		writesetTXT.add(DIRECTORY + "foo" + i + ".txt", new StringHandle().with("This is so foo" + i));
+		uris[count++] =  DIRECTORY + "foo" + i + ".txt";    
 		}
+		txtdocMgr.write(writesetTXT);
+
+		BinaryDocumentManager bindocMgr = client.newBinaryDocumentManager();
+		DocumentWriteSet writesetBIN = bindocMgr.newWriteSet();
+		String docId[] = { "Sega-4MB.jpg" };
+
+		File file1 = null;
+				file1 = new File("src/test/java/com/marklogic/client/functionaltest/data/" + docId[0]);
+		FileHandle h1 = new FileHandle(file1);
+		for (int i = 0; i < 10; i++) {
+		writesetBIN.add(DIRECTORY + "binary" + i + ".jpg", h1); 
+		uris[count++] = DIRECTORY + "binary" + i + ".jpg";   
+		}
+		bindocMgr.write(writesetBIN);
+
+		JSONDocumentManager jsondocMgr = client.newJSONDocumentManager();
+		DocumentWriteSet writesetJSON = jsondocMgr.newWriteSet();
+
+		for (int i = 0; i < 10; i++) {
+		JsonNode jn = new ObjectMapper().readTree("{\"animal" + i + "\":\"dog" + i + "\", \"says\":\"woof\"}");
+		JacksonHandle jh = new JacksonHandle();
+		jh.set(jn);
+		writesetJSON.add(DIRECTORY + "dog" + i + ".json", jh);
+		uris[count++] = DIRECTORY + "dog" + i + ".json";
+		}
+		jsondocMgr.write(writesetJSON);
+		
 		// for(String uri:uris){System.out.println(uri);}
 		DocumentPage page = docMgr.read(uris);
 
@@ -370,10 +405,10 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
 		System.out.println("Document countTEXT test5WriteGenericDocMgr " + countTEXT);
 		System.out.println("Document countJpg test5WriteGenericDocMgr " + countJpg);
 		System.out.println("Document countJson test5WriteGenericDocMgr " + countJson);
-		assertEquals("xml document count", 25, countXML);
-		assertEquals("text document count", 25, countTEXT);
-		assertEquals("binary document count", isLBHost()?1:25, countJpg);
-		assertEquals("Json document count", 25, countJson);
+		assertEquals("xml document count", 10, countXML);
+		assertEquals("text document count", 10, countTEXT);
+		assertEquals("binary document count", isLBHost()?1:10, countJpg);
+		assertEquals("Json document count", 10, countJson);
 	} catch (Exception e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
@@ -448,11 +483,9 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
   }
 
   public void validateRecord(DocumentRecord record, Format type) {
-
     assertNotNull("DocumentRecord should never be null", record);
     assertNotNull("Document uri should never be null", record.getUri());
     assertTrue("Document uri should start with " + DIRECTORY, record.getUri().startsWith(DIRECTORY));
     assertEquals("All records are expected to be in same format", type, record.getFormat());
-
   }
 }

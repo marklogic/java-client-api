@@ -116,6 +116,7 @@ public class JobInformationRecorder {
    * Sets the WriteBatcher object which should be used for writing the job information. This
    * overrides the internal WriteBatcher object created by default.
    *
+   * @param dataMovementManager The manager associated with the write batcher
    * @param writeBatcher The WriteBatcher object with which we should write the job information.
    * @return this object for chaining
    */
@@ -210,7 +211,7 @@ public class JobInformationRecorder {
    * set before and initialize the properties with this map.
    *
    * @param properties map of Key value pairs
-   * @return
+   * @return this object for chaining
    */
   public JobInformationRecorder withProperty(Map<String, String> properties) {
     if(sourceBatcher.isStarted()) throw new IllegalStateException("Configuration cannot be changed after startJob has been called");

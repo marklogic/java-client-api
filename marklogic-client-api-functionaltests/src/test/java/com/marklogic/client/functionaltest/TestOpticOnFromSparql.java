@@ -100,7 +100,6 @@ public class TestOpticOnFromSparql extends BasicJavaClientREST {
    * @param client
    * @param filename
    * @param uri
-   * @param type
    * @throws IOException
    * @throws ParserConfigurationException
    * @throws SAXException

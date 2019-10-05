@@ -1,33 +1,28 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven { url 'http://developer.marklogic.com/maven2' }
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.31"
+    }
+}
+
 plugins {
     id 'java'
     id 'java-gradle-plugin'
     id 'maven-publish'
     id 'com.gradle.plugin-publish' version '0.10.0'
-    id 'org.jetbrains.kotlin.jvm'  version '1.2.51'
-}
-
-apply plugin: 'kotlin'
-apply plugin: 'java'
-apply plugin: 'java-gradle-plugin'
-apply plugin: 'maven-publish'
-
-//group   'com.marklogic'
-//version '4.1'
-
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
-
-repositories {
-    jcenter()
-    mavenCentral()
-    maven { url 'http://developer.marklogic.com/maven2' }
+    id 'org.jetbrains.kotlin.jvm'  version '1.3.31'
 }
 
 dependencies {
     compileOnly gradleApi()
     compile project (':marklogic-client-api')
-    compile ('org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.51')
-    compile ('com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8')
+    compile ('org.jetbrains.kotlin:kotlin-stdlib')
+    compile ('com.fasterxml.jackson.module:jackson-module-kotlin:2.9.9')
     testCompileOnly gradleTestKit()
 }
 
@@ -57,10 +52,10 @@ pluginBundle {
 }
 
 compileKotlin {
-    kotlinOptions.jvmTarget = '1.8'
+    kotlinOptions.jvmTarget = '9'
 }
 compileTestKotlin {
-    kotlinOptions.jvmTarget = '1.8'
+    kotlinOptions.jvmTarget = '9'
 }
 
 task setupTestServer(type: JavaExec) {
@@ -72,7 +67,7 @@ task generateTests(type: JavaExec) {
     dependsOn setupTestServer
     classpath = sourceSets.test.runtimeClasspath
     main = 'com.marklogic.client.test.dbfunction.FntestgenKt'
-    args = [ './src/test/' ]
+    args = [ './src/test/', 'latest' ]
 }
 task teardownTestServer(type: JavaExec) {
     dependsOn test

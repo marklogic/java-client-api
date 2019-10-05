@@ -294,7 +294,7 @@ public class EvalTest {
       result = results.next();
       assertEquals("myBinary looks wrong", ",", result.getString());
       assertEquals("myBinary should be Type.BINARY", EvalResult.Type.BINARY, result.getType());
-      assertEquals("myBinary should be Format.UNKNOWN", Format.UNKNOWN, result.getFormat());
+      assertEquals("myBinary should be Format.BINARY", Format.BINARY, result.getFormat());
       result = results.next();
       assertArrayEquals("myBase64Binary should = 1, 2, 3", new byte[] {1, 2, 3},
         DatatypeConverter.parseBase64Binary(result.getString()));

@@ -247,4 +247,9 @@ public class DatabaseClientImpl implements DatabaseClient {
   public SecurityContext getSecurityContext() {
     return securityContext;
   }
+
+  @Override
+  public ConnectionResult checkConnection() {
+	return services.checkConnection();
+  }
 }

@@ -20,5 +20,5 @@ package com.marklogic.client.type;
 /**
  * An instance of a cts.query expression.
  */
-public interface CtsQueryExpr extends CtsQuerySeqExpr, ItemExpr {
+public interface CtsQueryExpr extends CtsQuerySeqExpr {
 }

@@ -42,6 +42,7 @@ import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
+import org.xml.sax.SAXException;
 
 /**
  * A DOM4JHandle represents XML content as a dom4j document for reading or writing.
@@ -117,6 +118,18 @@ public class DOM4JHandle
   }
   protected SAXReader makeReader() {
     SAXReader reader = new SAXReader();
+    // default to best practices for conservative security including recommendations per
+    // https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md
+    try {
+      reader.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+    } catch (SAXException e) {}
+    try {
+      reader.setFeature("http://xml.org/sax/features/external-general-entities", false);
+    } catch (SAXException e) {}
+    try {
+      reader.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+    } catch (SAXException e) {}
+
     reader.setValidation(false);
     return reader;
   }

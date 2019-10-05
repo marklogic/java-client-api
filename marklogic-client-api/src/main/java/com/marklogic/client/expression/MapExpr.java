@@ -15,16 +15,12 @@
  */
 package com.marklogic.client.expression;
 
-import com.marklogic.client.type.ElementNodeExpr;
-import com.marklogic.client.type.ItemSeqExpr;
-import com.marklogic.client.type.XsBooleanExpr;
-import com.marklogic.client.type.XsStringExpr;
-import com.marklogic.client.type.XsStringSeqExpr;
-import com.marklogic.client.type.XsUnsignedIntExpr;
+import com.marklogic.client.type.XsBooleanVal;
+import com.marklogic.client.type.XsStringSeqVal;
+import com.marklogic.client.type.XsStringVal;
+import com.marklogic.client.type.XsUnsignedIntVal;
 
 import com.marklogic.client.type.ServerExpression;
-import com.marklogic.client.type.MapMapExpr;
-import com.marklogic.client.type.MapMapSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
 
@@ -41,7 +37,7 @@ public interface MapExpr {
   * @param key  A key.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr contains(ServerExpression map, String key);
+  public ServerExpression contains(ServerExpression map, String key);
 /**
   * Returns true if the key exists in the map.
   *
@@ -53,7 +49,7 @@ public interface MapExpr {
   * @param key  A key.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr contains(ServerExpression map, ServerExpression key);
+  public ServerExpression contains(ServerExpression map, ServerExpression key);
 /**
   * Returns the number of keys used in the map.
   *
@@ -64,7 +60,7 @@ public interface MapExpr {
   * @param map  A map.  (of <a href="{@docRoot}/doc-files/types/map_map.html">map:map</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a> server data type
   */
-  public XsUnsignedIntExpr count(ServerExpression map);
+  public ServerExpression count(ServerExpression map);
 /**
   * Constructs a new map with a single entry consisting of the key and value specified as arguments. This is particularly helpful when used as part of an argument to map:new().
   *
@@ -76,7 +72,7 @@ public interface MapExpr {
   * @param value  The map value.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/map_map.html">map:map</a> server data type
   */
-  public MapMapExpr entry(ServerExpression key, ServerExpression value);
+  public ServerExpression entry(ServerExpression key, ServerExpression value);
 /**
   * Get a value from a map.
   * <p>
@@ -85,7 +81,7 @@ public interface MapExpr {
   * @param key  A key.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr get(ServerExpression map, String key);
+  public ServerExpression get(ServerExpression map, String key);
 /**
   * Get a value from a map.
   *
@@ -97,7 +93,7 @@ public interface MapExpr {
   * @param key  A key.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr get(ServerExpression map, ServerExpression key);
+  public ServerExpression get(ServerExpression map, ServerExpression key);
 /**
   * Get the keys used in the map.
   *
@@ -108,7 +104,7 @@ public interface MapExpr {
   * @param map  A map.  (of <a href="{@docRoot}/doc-files/types/map_map.html">map:map</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringSeqExpr keys(ServerExpression map);
+  public ServerExpression keys(ServerExpression map);
 /**
   * Creates a map.
   *
@@ -118,7 +114,7 @@ public interface MapExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/map:map" target="mlserverdoc">map:map</a> server function.
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/map_map.html">map:map</a> server data type
   */
-  public MapMapExpr map();
+  public ServerExpression map();
 /**
   * Creates a map.
   * <p>
@@ -126,13 +122,5 @@ public interface MapExpr {
   * @param map  A serialized map element.  (of <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/map_map.html">map:map</a> server data type
   */
-  public MapMapExpr map(ServerExpression map);
-/**
-  * Constructs a sequence of MapMapExpr items.
-  * @param items  the MapMapExpr items collected by the sequence
-  * @return  a MapMapSeqExpr sequence
-  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
-  */
-  public MapMapSeqExpr mapSeq(MapMapExpr... items);
-
+  public ServerExpression map(ServerExpression map);
 }

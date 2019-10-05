@@ -1,0 +1,13 @@
+{
+  "functionName": "docify",
+  "params": [ {
+      "name":     "value",
+      "datatype": "string",
+      "nullable": true
+    } ],
+  "return": {
+    "datatype":    "jsonDocument",
+    "nullable":    true,
+    "$javaClass" : "com.fasterxml.jackson.databind.JsonNode"
+  }
+}

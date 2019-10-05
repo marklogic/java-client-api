@@ -560,6 +560,21 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     assertEquals("Row 5 rowId value incorrect", "5", node.path("rowId").path("value").asText());
     assertEquals("Row 5 desc value incorrect", "circle", node.path("desc").path("value").asText());
     assertFalse("Row 5 colorDesc should be null", node.path("colorDesc").isNull());
+    // To verify issue 1055.
+    FileHandle fh = new FileHandle();
+    rowMgr.resultDoc(output, fh);
+    File file = fh.get();
+    String fileContents = convertFileToString(file);
+    
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode fromFile = mapper.readTree(file).path("rows");
+    System.out.println(fileContents);
+    
+    assertEquals("Five nodes not returned from testJoinLeftOuter method", 5, fromFile.size());
+    JsonNode nodeFile = fromFile.path(0);
+    assertEquals("Row 1 rowId value incorrect", "1", nodeFile.path("rowId").path("value").asText());
+    assertEquals("Row 1 desc value incorrect", "ball", nodeFile.path("desc").path("value").asText());
+    assertEquals("Row 1 colorDesc value incorrect", "red", nodeFile.path("colorDesc").path("value").asText());    
   }
 
   /*
@@ -696,7 +711,8 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
                         p.elseExpr(p.xs.string("bar"))
                         )
                     )
-            );
+            )
+            .orderBy(p.sortKeySeq(p.col("rowId")));
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -1643,16 +1659,16 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     
     // Delete the temp schema DB after resetting the Schema DB on content DB.
     // Else delete fails.
-    deleteUserRole("opticRole");
-    deleteRESTUser("opticUser");
+    //deleteUserRole("opticRole");
+    //deleteRESTUser("opticUser");
     setDatabaseProperties(dbName, "schema-database", dbName);
-    deleteDB(schemadbName);
-    deleteForest(schemafNames[0]);
+    //deleteDB(schemadbName);
+    //deleteForest(schemafNames[0]);
     // release client
     clientRes.release();
     client.release();
-    cleanupRESTServer(dbName, fNames);
-    deleteRESTUser("eval-user");
-    deleteUserRole("test-eval");
+    //cleanupRESTServer(dbName, fNames);
+   // deleteRESTUser("eval-user");
+    //deleteUserRole("test-eval");
   }
 }

@@ -18,6 +18,6 @@ package com.marklogic.client.type;
 /**
  * An instance of a server unsigned long value.
  */
-public interface XsUnsignedLongVal extends XsUnsignedLongExpr, XsNonNegativeIntegerVal, XsUnsignedLongSeqVal, PlanParamBindingVal {
+public interface XsUnsignedLongVal extends XsNonNegativeIntegerVal, XsUnsignedLongSeqVal, PlanParamBindingVal {
     public long getLong();
 }

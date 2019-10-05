@@ -31,6 +31,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -231,7 +232,8 @@ public class DocumentMetadataHandleTest {
 
 
   // testing https://github.com/marklogic/java-client-api/issues/783
-  @Test
+//  @Test
+  @Ignore
   public void testStack20170725() throws IOException {
     XMLDocumentManager documentManager = Common.client.newXMLDocumentManager();
     Transaction transaction = Common.client.openTransaction();

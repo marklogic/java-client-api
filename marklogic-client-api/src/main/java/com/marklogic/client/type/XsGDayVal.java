@@ -20,6 +20,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 /**
  * An instance of a server GDay value.
  */
-public interface XsGDayVal extends XsGDayExpr, XsAnyAtomicTypeVal, XsGDaySeqVal, PlanParamBindingVal {
+public interface XsGDayVal extends XsAnyAtomicTypeVal, XsGDaySeqVal, PlanParamBindingVal {
     public XMLGregorianCalendar getXMLGregorianCalendar();
 }

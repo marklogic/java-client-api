@@ -365,4 +365,23 @@ public interface QueryBatcher extends Batcher {
    * @param queryEvent the information about the batch that failed
    */
   void retryWithFailureListeners(QueryEvent queryEvent);
+  
+  /**
+   * Sets the limit for the maximum number of uris that can be collected.
+   * 
+   * @param maxBatches is the value of the limit.
+   */
+  void setMaxBatches(long maxBatches);
+
+  /**
+   * Caps the query at the current batch.
+   */
+  void setMaxBatches();
+  
+  /**
+   * Returns the maximum number of Batches for the current job. 
+   * 
+   * @return the maximum number of Batches that can be collected.
+   */
+  long getMaxBatches();
 }

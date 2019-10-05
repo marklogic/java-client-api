@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.test;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -22,6 +23,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClient.ConnectionResult;
+import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.alerting.RuleManager;
 import com.marklogic.client.document.BinaryDocumentManager;
@@ -116,4 +120,29 @@ public class DatabaseClientTest {
     assertNotNull("Client could not get client implementation", impl);
     assertTrue("", impl instanceof okhttp3.OkHttpClient);
   }
+  
+  @Test
+  public void testCheckConnectionWithValidUser() {
+		
+	DatabaseClient marklogic = DatabaseClientFactory.newClient("localhost",
+		        8000, "unittest-nodeapi", new DatabaseClientFactory.DigestAuthContext(
+				        "admin", "admin"));
+  
+    ConnectionResult connResult = marklogic.checkConnection();
+    assertTrue(connResult.isConnected());
+  }
+  
+  @Test
+  public void testCheckConnectionWithInvalidUser() {
+		
+	DatabaseClient marklogic = DatabaseClientFactory.newClient("localhost",
+		        8000, "unittest-nodeapi", new DatabaseClientFactory.DigestAuthContext(
+				        "invalid", "invalid"));
+  
+    ConnectionResult connResult = marklogic.checkConnection();
+    assertFalse(connResult.isConnected());
+    assertTrue(connResult.getStatusCode() == 401);
+    assertTrue(connResult.getErrorMessage().equalsIgnoreCase("Unauthorized"));
+  }
+  
 }

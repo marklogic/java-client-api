@@ -18,6 +18,6 @@ package com.marklogic.client.type;
 /**
  * An instance of a server URI value.
  */
-public interface XsAnyURIVal extends XsAnyURIExpr, XsAnyAtomicTypeVal, XsAnyURISeqVal, PlanParamBindingVal {
+public interface XsAnyURIVal extends XsAnyAtomicTypeVal, XsAnyURISeqVal, PlanParamBindingVal {
     public String getString();
 }

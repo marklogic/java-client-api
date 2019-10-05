@@ -15,11 +15,9 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.type.XsStringExpr;
+import com.marklogic.client.type.XsStringVal;
 
 import com.marklogic.client.type.ServerExpression;
-import com.marklogic.client.type.RdfLangStringExpr;
-import com.marklogic.client.type.RdfLangStringSeqExpr;
 
 import com.marklogic.client.expression.RdfExpr;
 import com.marklogic.client.impl.BaseTypeImpl;
@@ -36,13 +34,13 @@ class RdfExprImpl extends RdfValueImpl implements RdfExpr {
 
     
   @Override
-  public RdfLangStringExpr langString(ServerExpression string, String lang) {
-    return langString(string, (lang == null) ? (XsStringExpr) null : xs.string(lang));
+  public ServerExpression langString(ServerExpression string, String lang) {
+    return langString(string, (lang == null) ? (ServerExpression) null : xs.string(lang));
   }
 
   
   @Override
-  public RdfLangStringExpr langString(ServerExpression string, ServerExpression lang) {
+  public ServerExpression langString(ServerExpression string, ServerExpression lang) {
     if (string == null) {
       throw new IllegalArgumentException("string parameter for langString() cannot be null");
     }
@@ -54,28 +52,19 @@ class RdfExprImpl extends RdfValueImpl implements RdfExpr {
 
   
   @Override
-  public XsStringExpr langStringLanguage(ServerExpression val) {
+  public ServerExpression langStringLanguage(ServerExpression val) {
     if (val == null) {
       throw new IllegalArgumentException("val parameter for langStringLanguage() cannot be null");
     }
     return new XsExprImpl.StringCallImpl("rdf", "langString-language", new Object[]{ val });
   }
 
-  @Override
-  public RdfLangStringSeqExpr langStringSeq(RdfLangStringExpr... items) {
-    return new LangStringSeqListImpl(items);
-  }
-  static class LangStringSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements RdfLangStringSeqExpr {
-    LangStringSeqListImpl(Object[] items) {
-      super(items);
-    }
-  }
-  static class LangStringSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements RdfLangStringSeqExpr {
+  static class LangStringSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
     LangStringSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class LangStringCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements RdfLangStringExpr {
+  static class LangStringCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
     LangStringCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
