@@ -80,6 +80,7 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 			super(endpoint);
 			this.endpoint = endpoint;
 			this.batchSize = batchSize;
+			this.queue = new LinkedBlockingQueue<InputStream>();
 		}
 
 		private InputEndpointImpl getEndpoint() {

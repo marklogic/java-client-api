@@ -26,8 +26,10 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.test.Common;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class IOTestUtil {
     public final static String TEST_DIR = "dataservices";
@@ -80,6 +82,10 @@ public class IOTestUtil {
         writeSet.add(apiPath,    docMeta,    new JacksonHandle(apiObj));
         writeSet.add(scriptPath, scriptMeta, new StringHandle(scriptBody));
         modMgr.write(writeSet);
+    }
+
+    static InputStream asInputStream(String value) {
+        return new ByteArrayInputStream(value.getBytes());
     }
 }
 
