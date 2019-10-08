@@ -66,7 +66,6 @@ public class BulkInputCallerTest {
 
         for(int i=startValue+1; i<workMax; i++) {
             String uri = "/marklogic/ds/test/bulkInputCaller/" +i+".json";
-            System.out.println(uri);
             assertNotNull("Could not find file "+uri,docMgr.read(uri, new JacksonHandle()).get());
         }
     }
@@ -113,9 +112,7 @@ public class BulkInputCallerTest {
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
         for(int i=startValue+1; i<workMax; i++) {
             String uri = "/marklogic/ds/test/bulkInputCaller/" +i+".json";
-           // docMgr.delete(uri);
+            docMgr.delete(uri);
         }
     }
-
-
 }

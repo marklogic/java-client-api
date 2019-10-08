@@ -22,7 +22,7 @@
     "nullable": true
   } ],
   "$bulk":{
-    "inputBatchSize":2
+    "inputBatchSize":1
     },
   "return": {
     "datatype": "jsonDocument",
