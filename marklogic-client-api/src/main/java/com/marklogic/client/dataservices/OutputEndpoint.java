@@ -19,6 +19,10 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.dataservices.impl.OutputEndpointImpl;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
+import java.io.InputStream;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
 /**
  * Provides an interface for calling an endpoint that gives output data structures.
  */
@@ -34,6 +38,12 @@ public interface OutputEndpoint extends IOEndpoint {
     }
 
     /**
+     * Makes one call to the endpoint for the instance
+     * @param workUnit  the definition of a unit of work
+     */
+    Stream<InputStream> call(InputStream workUnit);
+
+    /**
      * Constructs an instance of a bulk caller, which completes
      * a unit of work by repeated calls to the endpoint.
      * @return  the bulk caller for the output endpoint
@@ -45,6 +55,6 @@ public interface OutputEndpoint extends IOEndpoint {
      * by repeated calls to the output endpoint.
      */
     interface BulkOutputCaller extends IOEndpoint.BulkIOEndpointCaller {
-
+        void forEachOutput(Consumer<InputStream> outputConsumer);
     }
 }
