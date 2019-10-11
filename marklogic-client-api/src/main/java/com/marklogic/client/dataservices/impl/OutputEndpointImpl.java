@@ -31,7 +31,6 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
     private static Logger logger = LoggerFactory.getLogger(OutputEndpointImpl.class);
     private OutputCallerImpl caller;
 
-
     public OutputEndpointImpl(DatabaseClient client, JSONWriteHandle apiDecl) {
         this(client, new OutputCallerImpl(apiDecl));
     }
@@ -61,7 +60,16 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
 
         @Override
         public void awaitCompletion() {
+            if(outputConsumer == null)
+                return;
+
             logger.trace("output endpoint running endpoint={} work={}", getEndpointPath(), getWorkUnit());
+
+            if(getPhase() != WorkPhase.INITIALIZING) {
+                throw new IllegalStateException(
+                        "Cannot process output since current phase is  " + getPhase().name());
+            }
+
             setPhase(WorkPhase.RUNNING);
             SessionState session = allowsSession() ? getEndpoint().getCaller().newSessionState() : null;
 
@@ -79,14 +87,17 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                     throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
                 }
 
+                InputStream[] result = null;
+                if(output != null) {
+                    result = output.toArray(size -> new InputStream[size]);
+                }
                 if (allowsEndpointState()) {
-                    if(output!= null && output.findFirst()!= null && output.findFirst().isPresent()) {
-                        InputStream[] result = output.toArray(size -> new InputStream[size]);
-                        setEndpointState(result[0]);
-                        for(int i=1; i<result.length; i++) {
-                            forEachOutput((Consumer<InputStream>) result[i]);
+                        if(result !=null) {
+                            setEndpointState(result[0]);
                         }
-                    }
+                }
+                for(int i=1; i<result.length; i++) {
+                    outputConsumer.accept(result[i]);
                 }
 
                 switch(getPhase()) {
