@@ -61,7 +61,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         @Override
         public void awaitCompletion() {
             if(outputConsumer == null)
-                return;
+                throw new IllegalStateException("Consumer is null.");
 
             logger.trace("output endpoint running endpoint={} work={}", getEndpointPath(), getWorkUnit());
 
@@ -87,17 +87,15 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                     throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
                 }
 
-                InputStream[] result = null;
                 if(output != null) {
-                    result = output.toArray(size -> new InputStream[size]);
-                }
-                if (allowsEndpointState()) {
-                        if(result !=null) {
+                    InputStream[] result = output.toArray(size -> new InputStream[size]);
+
+                    if (allowsEndpointState() && result != null && result.length>0) {
                             setEndpointState(result[0]);
-                        }
-                }
-                for(int i=1; i<result.length; i++) {
-                    outputConsumer.accept(result[i]);
+                    }
+                    for(int i= allowsEndpointState()?1:0; i<result.length; i++) {
+                        outputConsumer.accept(result[i]);
+                    }
                 }
 
                 switch(getPhase()) {
