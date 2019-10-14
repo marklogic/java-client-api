@@ -90,7 +90,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                 if(output != null) {
                     InputStream[] result = output.toArray(size -> new InputStream[size]);
 
-                    if (allowsEndpointState() && result != null && result.length>0) {
+                    if (allowsEndpointState() && result.length>0) {
                             setEndpointState(result[0]);
                     }
                     for(int i= allowsEndpointState()?1:0; i<result.length; i++) {
