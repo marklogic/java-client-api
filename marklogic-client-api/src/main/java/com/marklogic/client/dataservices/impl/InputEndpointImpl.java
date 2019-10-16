@@ -120,23 +120,30 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 				throw new MarkLogicInternalException(
 						"unexpected state for " + getEndpointPath() + " during loop: " + getPhase().name());
 			}
+
+			logger.trace("input endpoint running endpoint={} count={} state={}", getEndpointPath(), getCallCount(),
+					getEndpointState());
+			processInput(queue);
+		}
+
+		@Override
+		public void awaitCompletion() {
+			logger.trace("input endpoint running endpoint={} work={}", getEndpointPath(), getWorkUnit());
+			if(queue != null && !queue.isEmpty())
+				processInput(queue);
+		}
+
+		private void processInput(LinkedBlockingQueue<InputStream> queue) {
 			List<InputStream> inputStreamList = new ArrayList<InputStream>();
 			queue.drainTo(inputStreamList);
 			SessionState session = allowsSession() ? getEndpoint().getCaller().newSessionState() : null;
 
-			logger.trace("input endpoint running endpoint={} count={} state={}", getEndpointPath(), getCallCount(),
-					getEndpointState());
 			InputStream output = getEndpoint().getCaller().call(getEndpoint().getClient(), getEndpointState(), session,
 					getWorkUnit(), inputStreamList.stream());
 
 			if (allowsEndpointState()) {
 				setEndpointState(output);
 			}
-		}
-
-		@Override
-		public void awaitCompletion() {
-			logger.trace("input endpoint running endpoint={} work={}", getEndpointPath(), getWorkUnit());
 		}
 	}
 
