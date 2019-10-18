@@ -124,6 +124,8 @@ public class IOCallerImplTest {
 
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
+
+    // conveniences
     private String getEndpointState() {
         return "{\"offset\":0}";
     }

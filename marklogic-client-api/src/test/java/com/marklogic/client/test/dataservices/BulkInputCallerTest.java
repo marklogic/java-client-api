@@ -1,11 +1,24 @@
+/*
+ * Copyright 2019 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.dataservices.ExecEndpoint;
 import com.marklogic.client.dataservices.InputEndpoint;
 import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.JacksonHandle;
 import org.hamcrest.core.StringContains;
 import org.junit.AfterClass;
@@ -16,18 +29,16 @@ import org.junit.internal.matchers.ThrowableMessageMatcher;
 import org.junit.rules.ExpectedException;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
 public class BulkInputCallerTest {
-
     static ObjectNode apiObj;
     static String apiName = "bulkInputCallerImpl.api";
     static String scriptPath;
     static String apiPath;
-    static int workMax = 5;
+    static int workMax = 4;
     static int startValue = 1;
     static JSONDocumentManager docMgr;
 
@@ -44,7 +55,7 @@ public class BulkInputCallerTest {
     }
 
     @Test
-    public void bulkInputEndpointTest() throws Exception {
+    public void bulkInputEndpointTest() {
         String apiName = "bulkInputCallerImpl.api";
 
         String endpointState = "{\"next\":"+startValue+"}";
@@ -64,9 +75,22 @@ public class BulkInputCallerTest {
         input.forEach(loader::accept);
         loader.awaitCompletion();
 
-        for(int i=startValue+1; i<workMax; i++) {
-            String uri = "/marklogic/ds/test/bulkInputCaller/" +i+".json";
-            assertNotNull("Could not find file "+uri,docMgr.read(uri, new JacksonHandle()).get());
+        for(int i=1; i < (workMax - startValue); i++) {
+            int stateNum = startValue + i;
+            String uri = "/marklogic/ds/test/bulkInputCaller/"+stateNum+".json";
+            JsonNode doc = docMgr.read(uri, new JacksonHandle()).get();
+            assertNotNull("Could not find file "+uri, doc);
+            assertEquals("state mismatch", stateNum, doc.get("state").get("next").asInt());
+            assertEquals("state mismatch", workMax,  doc.get("work").get("max").asInt());
+            JsonNode inputs = doc.get("inputs");
+            int docCount = (stateNum == (workMax - 1)) ? 1 : 2;
+            assertEquals("inputs mismatch", docCount, inputs.size());
+            for (int j=0; j < docCount; j++) {
+                int offset = j + (i * 2) - 1;
+                JsonNode inputDoc = inputs.get(j);
+                assertEquals("docNum mismatch", offset, inputDoc.get("docNum").asInt());
+                assertEquals("docName mismatch", "doc"+offset, inputDoc.get("docName").asText());
+            }
         }
     }
 
@@ -103,12 +127,10 @@ public class BulkInputCallerTest {
         expectedException.expect(IllegalStateException.class);
         expectedException.expect(new ThrowableMessageMatcher(new StringContains("cannot accept more input as current phase is  INTERRUPTING")));
         input2.forEach(loader::accept);
-
     }
 
     @AfterClass
     public static void cleanup() {
-
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
         for(int i=startValue+1; i<workMax; i++) {
             String uri = "/marklogic/ds/test/bulkInputCaller/" +i+".json";

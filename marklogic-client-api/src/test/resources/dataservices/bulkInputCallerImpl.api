@@ -1,5 +1,5 @@
 {
-  "endpoint": "/marklogic/ds/test/bulkinputCallerImpl.sjs",
+  "endpoint": "/marklogic/ds/test/bulkInputCallerImpl.sjs",
   "params": [ {
     "name":     "endpointState",
     "datatype": "jsonDocument",
@@ -21,12 +21,12 @@
     "multiple": true,
     "nullable": true
   } ],
-  "$bulk":{
-    "inputBatchSize":1
-    },
   "return": {
     "datatype": "jsonDocument",
     "multiple": false,
     "nullable": true
+  },
+  "$bulk":{
+    "inputBatchSize":2
   }
 }
