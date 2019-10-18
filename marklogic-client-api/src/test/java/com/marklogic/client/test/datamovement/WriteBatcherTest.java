@@ -1036,8 +1036,7 @@ public class WriteBatcherTest {
     }
   }
 
-  // TODO: uncomment this after fixing https://github.com/marklogic/java-client-api/issues/646
-  @Ignore
+  @Test
   public void testIssue646() throws Exception {
 
     WriteBatcher ihb2 = moveMgr.newWriteBatcher()

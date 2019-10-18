@@ -151,7 +151,7 @@ public class WriteBatcherImpl
   private String temporalCollection;
   private ServerTransform transform;
   private ForestConfiguration forestConfig;
-  private ArrayBlockingQueue<DocumentWriteOperation>[] queuedOperations;
+  private LinkedBlockingQueue<DocumentWriteOperation>[] queuedOperations;
   private List<WriteBatchListener> successListeners = new ArrayList<>();
   private List<WriteFailureListener> failureListeners = new ArrayList<>();
   private AtomicLong batchNumber = new AtomicLong(0);
@@ -213,9 +213,9 @@ public class WriteBatcherImpl
       // application thread drains a batch from the queue
       int queueSize = batchSize + (batchSize / 2);
 
-      queuedOperations = new ArrayBlockingQueue[queueCount];
+      queuedOperations = new LinkedBlockingQueue[queueCount];
       for (int i=0; i < queueCount; i++) {
-        queuedOperations[i] = new ArrayBlockingQueue<>(queueSize);
+        queuedOperations[i] = new LinkedBlockingQueue<>(queueSize);
       }
 
       logger.info("threadCount={}", threadCount);
@@ -252,7 +252,7 @@ public class WriteBatcherImpl
       logger.warn("could not determine placement for {}", writeUri);
       queueIndex = 0;
     }
-    ArrayBlockingQueue<DocumentWriteOperation> writeQueue = queuedOperations[queueIndex];
+    LinkedBlockingQueue<DocumentWriteOperation> writeQueue = queuedOperations[queueIndex];
     try {
       // blocks if the queue is full but releases when some thread drains
       writeQueue.put(writeOperation);
@@ -265,7 +265,7 @@ public class WriteBatcherImpl
     return this;
   }
 
-  private boolean drain(ArrayBlockingQueue<DocumentWriteOperation> writeQueue, int minDrain) {
+  private boolean drain(LinkedBlockingQueue<DocumentWriteOperation> writeQueue, int minDrain) {
     if (writeQueue.size() < minDrain) return false;
     int maxDrain = getBatchSize();
     List<DocumentWriteOperation> buffer = new ArrayList<>(maxDrain);
@@ -453,7 +453,7 @@ public class WriteBatcherImpl
     requireNotStopped();
 
     drainQueues:
-    for (ArrayBlockingQueue<DocumentWriteOperation> writeQueue: queuedOperations) {
+    for (LinkedBlockingQueue<DocumentWriteOperation> writeQueue: queuedOperations) {
       do {
         if (isStopped() == true) {
           logger.warn("Job is now stopped, preventing the flush of queued docs");
