@@ -1074,7 +1074,7 @@ public class WriteBatcherTest {
     String prefix    = directory+"doc";
     String suffix    = ".txt";
 
-    int forestCount = ((DataMovementManagerImpl) moveMgr).readForestConfig().listForests().length;
+    int forestCount = moveMgr.readForestConfig().listForests().length;
 
     AssignmentManager assignMgr = AssignmentManager.getInstance();
     if (!assignMgr.isInitialized()) {
@@ -1083,8 +1083,7 @@ public class WriteBatcherTest {
           );
       return;
     }
-    assertEquals("Expected bucket policy",
-            AssignmentPolicy.Kind.BUCKET, assignMgr.getPolicy().getPolicyKind());
+    assertNotNull("Bucket policy not established", assignMgr.getPolicy());
 
     // use Set to impose determinate order regardless of the order in which success listeners fire
     Set<String>[] expectedUris = new Set[forestCount];
