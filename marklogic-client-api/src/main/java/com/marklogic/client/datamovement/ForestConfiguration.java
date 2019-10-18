@@ -39,6 +39,9 @@ public interface ForestConfiguration {
    * @return the list of hosts a Batcher should use
    */
   public default String[] getPreferredHosts() {
-    return Stream.of(listForests()).map( (forest) -> forest.getPreferredHost()).distinct().toArray(String[]::new);
+    return Stream.of(listForests())
+            .map(forest -> forest.getPreferredHost())
+            .distinct()
+            .toArray(size -> new String[size]);
   }
 }

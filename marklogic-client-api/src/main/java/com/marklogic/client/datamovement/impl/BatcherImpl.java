@@ -21,9 +21,11 @@ import com.marklogic.client.datamovement.*;
 import java.util.*;
 
 public abstract class BatcherImpl implements Batcher {
+  final static int DEFAULT_BATCH_SIZE = 100;
+
   private String jobName = "unnamed";
   private String jobId = null;
-  private int batchSize = 100;
+  private int batchSize = DEFAULT_BATCH_SIZE;
   private int threadCount = 1;
   private ForestConfiguration forestConfig;
   private DatabaseClient client;

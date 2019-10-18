@@ -196,11 +196,6 @@ public interface WriteBatcher extends Batcher {
    */
   public void retry(WriteBatch queryEvent);
 
-  /*
-  public WriteBatcher withTransactionSize(int transactionSize);
-  public int getTransactionSize();
-  */
-
   /**
    * Get the array of WriteBatchListener instances registered via
    * onBatchSuccess.

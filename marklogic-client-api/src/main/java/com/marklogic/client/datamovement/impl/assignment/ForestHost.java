@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 MarkLogic Corporation
+ * Copyright 2003-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.datamovement.impl;
+package com.marklogic.client.datamovement.impl.assignment;
 
-import com.marklogic.client.datamovement.Forest;
-import com.marklogic.client.datamovement.ForestConfiguration;
+public class ForestHost {
+    private String forest;
+    private String hostName;
 
-public class ForestConfigurationImpl implements ForestConfiguration {
-  private Forest[] forests;
+    public ForestHost(String forest, String hostName) {
+        this.forest = forest;
+        this.hostName = hostName;
+    }
 
-  ForestConfigurationImpl withForests(Forest[] forests) {
-    this.forests = forests;
-    return this;
-  }
+    public String getForest() {
+        return forest;
+    }
 
-  @Override
-  public Forest[] listForests() {
-    return forests;
-  }
+    public String getHostName() {
+        return hostName;
+    }
 }
+

@@ -16,6 +16,7 @@
 package com.marklogic.client.impl;
 
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.DocumentWriteOperation;
@@ -33,6 +34,22 @@ public class DocumentWriteSetImpl extends LinkedHashSet<DocumentWriteOperation> 
   public DocumentWriteSet addDefault(DocumentMetadataWriteHandle metadataHandle) {
     add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT,
       null, metadataHandle, null));
+    return this;
+  }
+
+  @Override
+  public DocumentWriteSet addAll(DocumentWriteOperation... operations) {
+    for (DocumentWriteOperation operation: operations) {
+      add(operation);
+    }
+    return this;
+  }
+
+  @Override
+  public DocumentWriteSet addAll(WriteEvent... events) {
+    for (WriteEvent event: events) {
+      add(event.getTargetUri(), event.getMetadata(), event.getContent());
+    }
     return this;
   }
 

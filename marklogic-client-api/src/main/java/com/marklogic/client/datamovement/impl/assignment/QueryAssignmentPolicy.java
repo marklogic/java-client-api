@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 MarkLogic Corporation
+ * Copyright 2003-2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.datamovement.impl;
+package com.marklogic.client.datamovement.impl.assignment;
 
-import com.marklogic.client.datamovement.Forest;
-import com.marklogic.client.datamovement.ForestConfiguration;
-
-public class ForestConfigurationImpl implements ForestConfiguration {
-  private Forest[] forests;
-
-  ForestConfigurationImpl withForests(Forest[] forests) {
-    this.forests = forests;
-    return this;
-  }
-
-  @Override
-  public Forest[] listForests() {
-    return forests;
-  }
+/**
+ * Query Assignment Policy for fastload
+ */
+public class QueryAssignmentPolicy extends StatisticalAssignmentPolicy {
+    public QueryAssignmentPolicy(long[] stats, int batchSize) {
+        super(stats, batchSize);
+        policy = AssignmentPolicy.Kind.QUERY;
+    }
 }

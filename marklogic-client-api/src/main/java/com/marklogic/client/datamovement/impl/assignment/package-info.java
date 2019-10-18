@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 MarkLogic Corporation
+ * Copyright 2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.datamovement.impl;
-
-import com.marklogic.client.datamovement.Forest;
-import com.marklogic.client.datamovement.ForestConfiguration;
-
-public class ForestConfigurationImpl implements ForestConfiguration {
-  private Forest[] forests;
-
-  ForestConfigurationImpl withForests(Forest[] forests) {
-    this.forests = forests;
-    return this;
-  }
-
-  @Override
-  public Forest[] listForests() {
-    return forests;
-  }
-}
+/**
+ * The package contains a fork of the mlcp classes for determining
+ * the forest assignment based on a document URI and the initialized
+ * assignment policy. The input for initialization is returned
+ * by the internal endpoint of the REST API instead of based on
+ * ad hoc queries.
+ */
+package com.marklogic.client.datamovement.impl.assignment;

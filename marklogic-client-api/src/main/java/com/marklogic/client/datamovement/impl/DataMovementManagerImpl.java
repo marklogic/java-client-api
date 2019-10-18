@@ -167,13 +167,13 @@ public class DataMovementManagerImpl implements DataMovementManager {
   }
 
   private ForestConfiguration getForestConfig() {
-    if ( forestConfig != null ) return forestConfig;
+    if (forestConfig != null) return forestConfig;
     return readForestConfig();
   }
 
   @Override
   public ForestConfiguration readForestConfig() {
-    forestConfig = service.readForestConfig();
+    forestConfig = service.readForestConfig(this);
     return forestConfig;
   }
 

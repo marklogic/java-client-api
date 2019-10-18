@@ -59,6 +59,28 @@ public class RequestParameters
     getMap().put(name, Arrays.asList(values));
   }
   /**
+   * Appends a value to the list for a parameter and
+   * returns the RequestParameters object for chaining.
+   * @param name	the parameter
+   * @param value	the value to add to the list
+   * @return  the request parameter object
+   */
+  public RequestParameters with(String name, String value) {
+    add(name, value);
+    return this;
+  }
+  /**
+   * Appends a list of values to the list for a parameter and
+   * returns the RequestParameters object for chaining.
+   * @param name	the parameter
+   * @param values	the values to add to the list
+   * @return  the request parameter object
+   */
+  public RequestParameters with(String name, String... values) {
+    add(name, values);
+    return this;
+  }
+  /**
    * Appends a value to the list for a parameter.
    * @param name	the parameter
    * @param value	the value to add to the list

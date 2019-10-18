@@ -15,6 +15,10 @@
  */
 package com.marklogic.client.test.datamovement;
 
+import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
+import com.marklogic.client.datamovement.impl.WriteBatcherImpl;
+import com.marklogic.client.datamovement.impl.assignment.AssignmentManager;
+import com.marklogic.client.datamovement.impl.assignment.AssignmentPolicy;
 import com.marklogic.client.document.*;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import org.junit.AfterClass;
@@ -38,8 +42,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.FileHandle;
@@ -51,15 +53,11 @@ import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.datamovement.BatchFailureListener;
 import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.FilteredForestConfiguration;
-import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.datamovement.HostAvailabilityListener;
 import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.NoResponseListener;
-import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatch;
 import com.marklogic.client.datamovement.WriteBatchListener;
 import com.marklogic.client.datamovement.WriteEvent;
@@ -83,7 +81,6 @@ public class WriteBatcherTest {
   private static String transform = "WriteBatcherTest_transform.sjs";
   private static String whbTestCollection = "WriteBatcherTest_" +
     new Random().nextInt(10000);
-
 
   @BeforeClass
   public static void beforeClass() {
@@ -258,6 +255,8 @@ public class WriteBatcherTest {
 
       JobTicket ticket = moveMgr.startJob(batcher);
 
+      boolean isBatchedPerForest = ((WriteBatcherImpl) batcher).isBatchedPerForest();
+
       switch(i) {
       case 1:
         batcher.add(firstUri, firstContent);
@@ -273,11 +272,13 @@ public class WriteBatcherTest {
 
       batcher.flushAndWait();
 
-      assertEquals("success count", 3, successBatch.size());
       assertNull("default metadata", successBatch.get(0));
-      assertEquals("first success", firstUri, successBatch.get(1));
-      assertEquals("first success", secondUri, successBatch.get(2));
       assertEquals("failure count", 0, failureBatch.size());
+      if (!isBatchedPerForest) {
+        assertEquals("success count", 3, successBatch.size());
+        assertEquals("first success", firstUri, successBatch.get(1));
+        assertEquals("first success", secondUri, successBatch.get(2));
+      }
 
       DocumentPage docPage = docMgr.readMetadata(firstUri, secondUri);
       assertEquals("missing metadata", 2, docPage.getPageSize());
@@ -366,88 +367,6 @@ public class WriteBatcherTest {
         "HostAvailabilityListener was initialized with greater minHosts: " + e);
     }
   }
-
-  /*
-  @Test
-  public void testWritesWithTransactions() throws Exception {
-    String collection = whbTestCollection + ".testWritesWithTransactions";
-
-    final StringBuffer successListenerWasRun = new StringBuffer();
-    final StringBuffer failListenerWasRun = new StringBuffer();
-    final StringBuffer failures = new StringBuffer();
-    WriteBatcher batcher = moveMgr.newWriteBatcher()
-      .withBatchSize(2)
-      .withTransactionSize(2)
-      .withThreadCount(1)
-      .withTransform(
-        new ServerTransform(transform)
-          .addParameter("newValue", "test1a")
-      )
-      .onBatchSuccess(
-        batch -> {
-          successListenerWasRun.append("true");
-          logger.debug("[testWritesWithTransactions.onBatchSuccess] batch.getJobBatchNumber()=[" + batch.getJobBatchNumber() + "]");
-          if ( 2 != batch.getItems().length) {
-            failures.append("ERROR: There should be 2 items in batch " + batch.getJobBatchNumber() +
-              " but there are " + batch.getItems().length);
-          }
-        }
-      )
-      .onBatchFailure(
-        (batch, throwable) -> {
-          failListenerWasRun.append("true");
-          throwable.printStackTrace();
-          logger.debug("[testWritesWithTransactions.onBatchFailure] batch.getJobBatchNumber()=[" + batch.getJobBatchNumber() + "]");
-          assertEquals("There should be two items in the batch", 2, batch.getItems().length);
-          if ( 2 != batch.getItems().length) {
-            failures.append("ERROR: There should be 2 items in batch " + batch.getJobBatchNumber() +
-              " but there are " + batch.getItems().length);
-          }
-        }
-      );
-    JobTicket ticket = moveMgr.startJob(batcher);
-
-    DocumentMetadataHandle meta = new DocumentMetadataHandle()
-      .withCollections(collection, whbTestCollection);
-    JsonNode doc = new ObjectMapper().readTree("{ \"testProperty\": \"true\" }");
-    batcher.add(whbTestCollection + "doc_1.json", meta, new JacksonHandle(doc));
-    batcher.add(whbTestCollection + "doc_2.json", meta, new JacksonHandle(doc));
-    // the batch with this doc will fail to write because we say withFormat(JSON)
-    // but it isn't valid JSON. That will trigger our onBatchFailure listener.
-    StringHandle doc3 = new StringHandle("<thisIsNotJson>test1</thisIsNotJson>")
-      .withFormat(Format.JSON);
-    batcher.add(whbTestCollection + "doc_3.json", meta, doc3);
-    batcher.add(whbTestCollection + "doc_4.json", meta, new JacksonHandle(doc));
-    String uri5 = whbTestCollection + "doc_5.json";
-    JsonNode doc5 = new ObjectMapper().readTree("{ \"testProperty\": \"test1\" }");
-    batcher.addAs(uri5,                             meta, doc5);
-    JsonNode doc6 = new ObjectMapper().readTree("{ \"testProperty6\": \"test6\" }");
-    batcher.addAs(whbTestCollection + "doc_6.json", meta, doc6);
-    StringHandle doc7 = new StringHandle("{ \"testProperty7\": \"test7\" }").withFormat(Format.JSON);
-    batcher.add  (whbTestCollection + "doc_7.json", meta, doc7);
-    StringHandle doc8 = new StringHandle("{ \"testProperty8\": \"test8\" }").withFormat(Format.JSON);
-    batcher.add  (whbTestCollection + "doc_8.json", meta, doc8);
-    batcher.flushAndWait();
-    moveMgr.stopJob(ticket);
-
-    if ( failures.length() > 0 ) fail(failures.toString());
-    assertEquals("The success listener should have run", "truetrue", successListenerWasRun.toString());
-    assertEquals("The failure listener should have run", "truetrue", failListenerWasRun.toString());
-
-    StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collection);
-    DocumentPage docs = docMgr.search(query, 1);
-    // only docs 5, 7, 8, and 8 wrote successfully, docs 1, 2, 3, and 4 failed in the same
-    // transaction as doc 1
-    assertEquals("there should be four docs in the collection", 4, docs.getTotalSize());
-
-    for (DocumentRecord record : docs ) {
-      if ( uri5.equals(record.getUri()) ) {
-        assertEquals( "the transform should have changed testProperty to 'test1a'",
-          "test1a", record.getContentAs(JsonNode.class).get("testProperty").textValue() );
-      }
-    }
-  }
-  */
 
   @Test
   public void testZeros() throws Exception {
@@ -549,7 +468,8 @@ public class WriteBatcherTest {
     final AtomicReference<Calendar> batchTimestamp = new AtomicReference<>();
     final StringBuffer failures = new StringBuffer();
     final int expectedBatches = (int) Math.ceil(totalDocCount / expectedBatchSize);
-    WriteBatcher batcher = moveMgr.newWriteBatcher()
+    WriteBatcher batcher = moveMgr.newWriteBatcher();
+    batcher
       .withBatchSize(batchSize)
       .withThreadCount(batcherThreadCount)
       .onBatchSuccess(
@@ -561,11 +481,12 @@ public class WriteBatcherTest {
             successfulCount.incrementAndGet();
             //logger.debug("success event.getTargetUri()=[{}]", event.getTargetUri());
           }
-          if ( expectedBatchSize != batch.getItems().length) {
+          boolean isBatchedPerForest = ((WriteBatcherImpl) batcher).isBatchedPerForest();
+          if (!isBatchedPerForest && expectedBatchSize != batch.getItems().length) {
             // if this isn't the last batch
             if ( batch.getJobBatchNumber() != expectedBatches ) {
               failures.append("ERROR: There should be " + expectedBatchSize +
-                " items in batch " + batch.getJobBatchNumber() + " but there are " + batch.getItems().length);
+                " items in success batch " + batch.getJobBatchNumber() + " but there are " + batch.getItems().length);
             }
           }
           batchTicket.set(batch.getJobTicket());
@@ -580,11 +501,12 @@ public class WriteBatcherTest {
           for ( WriteEvent event : batch.getItems() ) {
             logger.debug("failure event.getTargetUri()=[{}]", event.getTargetUri());
           }
-          if ( expectedBatchSize != batch.getItems().length) {
+          boolean isBatchedPerForest = ((WriteBatcherImpl) batcher).isBatchedPerForest();
+          if (!isBatchedPerForest && expectedBatchSize != batch.getItems().length) {
             // if this isn't the last batch
             if ( batch.getJobBatchNumber() != expectedBatches ) {
               failures.append("ERROR: There should be " + expectedBatchSize +
-                " items in batch " + batch.getJobBatchNumber() + " but there are " + batch.getItems().length);
+                " items in failure batch " + batch.getJobBatchNumber() + " but there are " + batch.getItems().length);
             }
           }
         }
@@ -1140,5 +1062,108 @@ public class WriteBatcherTest {
 
     moveMgr.startJob(batcher);
     moveMgr.stopJob(batcher);
+  }
+
+  @Test
+  public void testPerForestBatch() {
+    int batchSize = 2;
+
+    // ensure that the last batch is partial
+    int bufferSize = 9;
+
+    String directory = "/test/perForestBatch/";
+    String prefix    = directory+"doc";
+    String suffix    = ".txt";
+
+    int forestCount = ((DataMovementManagerImpl) moveMgr).readForestConfig().listForests().length;
+
+    AssignmentManager assignMgr = AssignmentManager.getInstance();
+    if (!assignMgr.isInitialized()) {
+      System.out.println(
+          "Assuming that per-forest batches are not supported for either the server release or the assignment policy"
+          );
+      return;
+    }
+    assertEquals("Expected bucket policy",
+            AssignmentPolicy.Kind.BUCKET, assignMgr.getPolicy().getPolicyKind());
+
+    // use Set to impose determinate order regardless of the order in which success listeners fire
+    Set<String>[] expectedUris = new Set[forestCount];
+    for (int i=0; i < forestCount; i++) {
+      expectedUris[i] = new HashSet<>(bufferSize);
+    }
+
+    Random numberGen = new Random();
+    int working = forestCount;
+    urisInit:
+    while (working > 0) {
+      String candidate = prefix + Long.toUnsignedString(numberGen.nextLong()) + suffix;
+      int forestIndex = assignMgr.getPlacementForestIndex(candidate);
+      assertNotEquals("forest index of -1", -1, forestIndex);
+      assertTrue("forest index greater than configured forest count", forestIndex < forestCount);
+      Set<String> forestUris = expectedUris[forestIndex];
+      if (forestUris.size() < bufferSize) {
+        forestUris.add(candidate);
+        if (forestUris.size() == bufferSize) {
+          working--;
+          if (working == 0)
+            break urisInit;
+        }
+      }
+    }
+
+    Set<String>[] actualUris = new Set[forestCount];
+    for (int i=0; i < forestCount; i++) {
+      actualUris[i] = Collections.synchronizedSet(new HashSet<>(bufferSize));
+    }
+
+    List<String> badUris = Collections.synchronizedList(new ArrayList<>());
+    List<String> failureUris = Collections.synchronizedList(new ArrayList<>());
+
+    WriteBatcher batcher =  moveMgr.newWriteBatcher()
+      .withBatchSize(batchSize)
+      .onBatchSuccess(
+        batch -> {
+          logger.debug("[testSimple] batch: {}, items: {}",
+            batch.getJobBatchNumber(), batch.getItems().length);
+          for (WriteEvent event: batch.getItems()) {
+            String uri = event.getTargetUri();
+            int forestIndex = assignMgr.getPlacementForestIndex(uri);
+            if (-1 != forestIndex && forestIndex < forestCount)
+              actualUris[forestIndex].add(uri);
+            else
+              badUris.add(uri);
+          }
+        })
+      .onBatchFailure(
+        (batch, throwable) -> {
+          for(WriteEvent event: batch.getItems()){
+            failureUris.add(event.getTargetUri());
+          }
+        });
+    JobTicket ticket = moveMgr.startJob(batcher);
+
+    for (Set<String> forestUris: expectedUris) {
+      for (String uri: forestUris) {
+        batcher.add(uri, new StringHandle(uri+" document").withFormat(Format.TEXT));
+      }
+    }
+
+    batcher.flushAndWait();
+    moveMgr.stopJob(batcher);
+
+    assertTrue("bad forest index for some uris", badUris.size() == 0);
+    assertTrue("write failed for some uris", failureUris.size() == 0);
+
+    for (int i=0; i < forestCount; i++) {
+      assertEquals("uri count mismatch for forest "+i, expectedUris[i].size(), actualUris[i].size());
+      assertEquals("uri mismatch for forest "+i, expectedUris[i], actualUris[i]);
+    }
+
+    // delete after success
+    QueryManager queryMgr = client.newQueryManager();
+    DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
+    deleteQuery.setDirectory(directory);
+    queryMgr.delete(deleteQuery);
   }
 }

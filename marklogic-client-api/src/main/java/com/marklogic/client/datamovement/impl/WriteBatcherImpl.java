@@ -20,31 +20,22 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import com.marklogic.client.datamovement.impl.assignment.AssignmentManager;
+import com.marklogic.client.document.DocumentWriteSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.impl.ClientCookie;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.XMLDocumentManager;
@@ -56,7 +47,6 @@ import com.marklogic.client.impl.Utilities;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
 
 import com.marklogic.client.datamovement.DataMovementException;
 import com.marklogic.client.datamovement.DataMovementManager;
@@ -67,7 +57,6 @@ import com.marklogic.client.datamovement.WriteBatch;
 import com.marklogic.client.datamovement.WriteBatchListener;
 import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.datamovement.WriteFailureListener;
-import com.marklogic.client.datamovement.Forest.HostType;
 import com.marklogic.client.datamovement.WriteBatcher;
 
 /**
@@ -85,30 +74,12 @@ import com.marklogic.client.datamovement.WriteBatcher;
  *   - when batchSize reached, writes a batch
  *     - using a thread from threadPool
  *     - no synchronization or unnecessary delays while emptying queue
- *     - and calls each successListener (if not using transactions)
- *   - if usingTransactions (transactionSize &gt; 1)
- *     - opens transactions as needed
- *       - using a thread from threadPool
- *       - but not before, lest we increase likelihood of transaction timeout
- *       - threads needing a transaction will open one then make it available to others up to transactionSize
- *     - after each batch write, check if transactionSize reached and if so commit the transaction
- *       - don't check before write to avoid race condition where the last batch writes and commits
- *         before the second to last batch writes
- *       - don't commit if another thread is in process with the transaction
- *         - instead queue the transaction for commit later
- *       - if commit is successful call each successListener for each transaction batch
+ *     - and calls each successListener
  *   - when a batch fails, calls each failureListener
- *     - and calls rollback (if using transactions)
- *       - using a thread from threadPool
- *       - then calls each failureListener for each transaction batch
  *   - flush() writes all queued documents whether the last batch is full or not
- *     - and commits the transaction for each batch so nothing is left uncommitted (ignores transactionSize)
  *     - and resets counter so the next batch will be a normal batch size
- *     - and finishes any unfinished transactions
- *       - those without error are committed
- *       - those with error are made to rollback
  *   - awaitCompletion allows the calling thread to block until all tasks queued to that point
- *     are finished writing batches or committing transactions (or calling rollback)
+ *     are finished writing batches
  *
  * Design
  *   - think asynchronously
@@ -116,8 +87,7 @@ import com.marklogic.client.datamovement.WriteBatcher;
  *       updating state without creating conflict
  *     - avoid race conditions and logic which depends on state remaining unchanged
  *       from one statement to the next
- *     - when triggering periodic processing such as writing a batch, opening a
- *       transaction, or choosing the next host to use
+ *     - when triggering periodic processing such as writing a batch or choosing the next host to use
  *       - use logic where multiple concurrent threads can arrive at the same point and
  *         see the same state yet only one of the threads will perform the processing
  *         - do this by using AtomicLong.incrementAndGet() so each thread gets a different
@@ -150,9 +120,6 @@ import com.marklogic.client.datamovement.WriteBatcher;
  *           thread B might still complete first
  *     - try to match batch sizes to batchSize
  *       - except when flush is called, then immediately write all queued docs
- *     - try to match number of batches in each transaction to transactionSize
- *       - except when any batch fails, then stop writing to that transaction
- *       - except when flush is called, then commit all open transactions
  *     - when awaitCompletion is called, block until existing tasks are complete but ignore any
  *       tasks added after awaitCompletion is called
  *       - for more on the design of awaitCompletion, see comments above CompletableThreadPoolExecutor
@@ -170,57 +137,30 @@ import com.marklogic.client.datamovement.WriteBatcher;
  *       - client (contains http connection pool)
  *         - auth challenge once per client
  *       - number of batches
- *         - used to kick off a transaction each time we hit transactionSize
- *       - current transactions (transactionInfos object)
- *         - with batches already written
- *       - unfinishedTransactions
- *         - ready to commit or rollback, but waiting for all threads to stop processing it first
- *     - each transaction
- *       - host
- *       - inProcess == true if any thread is currently working in the transaction
- *       - transactionPermits track how many more batches can use the transaction
- *       - batchesFinished tracks number of batches written (after they're done)
- *         - so we can commit only after batchesFinished = transactionSize
- *       - written == true if any batches have started writing with this transaction
- *         - so we won't commit or rollback an unwritten transaction
- *       - throwable if an error occured but rollback couldn't be called immediately
- *         because another thread was still processing
- *       - alive = false if the transaction has been finished (commit / rollback)
- *       - queuedForCleanup tracks if the transaction is now in unfinishedTransactions
- *       - any batches waiting for finish (commit/rollback) before calling successListeners or failureListeners
  *     - each task (Runnable) in the thread pool task queue
  *       - so we can know which tasks to monitor when awaitCompletion is called
  *       - we remove each task when it's complete
  *       - for more details, see comments above CompletableThreadPoolExecutor and
  *         CompletableRejectedExecutionHandler
- *
- * Known issues
- *   - does not guarantee minimal batch loss on transaction failure
- *     - if two batches attempt to write at the same time and one fails, the other will be part of
- *       the rollback whether it fails or not
- *     - however, any subsequent batches that attempt to write will be in a new transaction
  */
 public class WriteBatcherImpl
   extends BatcherImpl
   implements WriteBatcher
 {
   private static Logger logger = LoggerFactory.getLogger(WriteBatcherImpl.class);
-  private int transactionSize;
   private String temporalCollection;
   private ServerTransform transform;
   private ForestConfiguration forestConfig;
-  private LinkedBlockingQueue<DocumentWriteOperation> queue = new LinkedBlockingQueue<>();
+  private ArrayBlockingQueue<DocumentWriteOperation>[] queuedOperations;
   private List<WriteBatchListener> successListeners = new ArrayList<>();
   private List<WriteFailureListener> failureListeners = new ArrayList<>();
   private AtomicLong batchNumber = new AtomicLong(0);
-  private AtomicLong batchCounter = new AtomicLong(0);
   private AtomicLong itemsSoFar = new AtomicLong(0);
   private HostInfo[] hostInfos;
   private boolean initialized = false;
   private CompletableThreadPoolExecutor threadPool = null;
   private final AtomicBoolean stopped = new AtomicBoolean(false);
   private final AtomicBoolean started = new AtomicBoolean(false);
-  private boolean usingTransactions = false;
   private JobTicket jobTicket;
   private Calendar jobStartTime;
   private Calendar jobEndTime;
@@ -232,30 +172,56 @@ public class WriteBatcherImpl
   }
 
   public void initialize() {
-    if ( initialized == true ) return;
+    if (initialized == true) return;
     synchronized(this) {
-      if ( initialized == true ) return;
-      if ( getBatchSize() <= 0 ) {
-        withBatchSize(1);
-        logger.warn("batchSize should be 1 or greater--setting batchSize to 1");
+      if (initialized == true) return;
+      initialized = true;
+
+      int batchSize = getBatchSize();
+      if (batchSize <= 0) {
+        batchSize = 1;
+        super.withBatchSize(batchSize);
+        logger.warn("batchSize should be 1 or greater--setting batchSize to {}", batchSize);
       }
-      if ( transactionSize > 1 ) usingTransactions = true;
+
       // if threadCount is negative or 0, use one thread per host
-      if ( getThreadCount() <= 0 ) {
-        withThreadCount( hostInfos.length );
-        logger.warn("threadCount should be 1 or greater--setting threadCount to number of hosts ({})", hostInfos.length);
+      int threadCount = getThreadCount();
+      if (threadCount <= 0) {
+        threadCount = hostInfos.length;
+        withThreadCount(threadCount);
+        logger.warn("threadCount should be 1 or greater--setting threadCount to number of hosts ({})", threadCount);
       }
       // create a thread pool where threads are kept alive for up to one minute of inactivity,
       // max queue size is threadCount * 3, and callers run tasks past the max queue size
-      threadPool = new CompletableThreadPoolExecutor(getThreadCount(), getThreadCount(), 1, TimeUnit.MINUTES,
-        new LinkedBlockingQueue<Runnable>(getThreadCount() * 3));
+      threadPool = new CompletableThreadPoolExecutor(threadCount, threadCount, 1, TimeUnit.MINUTES,
+        new LinkedBlockingQueue<Runnable>(threadCount * 3));
       threadPool.allowCoreThreadTimeOut(true);
 
-      initialized = true;
+      int queueCount = 1;
 
-      logger.info("threadCount={}", getThreadCount());
-      logger.info("batchSize={}", getBatchSize());
-      if ( usingTransactions == true ) logger.info("transactionSize={}", transactionSize);
+      AssignmentManager assignMgr = AssignmentManager.getInstance();
+      if (assignMgr.isInitialized()) {
+        assignMgr.setBatch(batchSize);
+        assignMgr.start();
+        queueCount = getForestConfig().listForests().length;
+      }
+
+      // because the application might add to the queues at a faster rate
+      // than the queues are drained, the queues must be bounded and must
+      // block when full; however, each queue should be large enough that
+      // one application thread can add to the queue while another concurrent
+      // application thread drains a batch from the queue
+      int queueSize = batchSize + (batchSize / 2);
+
+      queuedOperations = new ArrayBlockingQueue[queueCount];
+      for (int i=0; i < queueCount; i++) {
+        queuedOperations[i] = new ArrayBlockingQueue<>(queueSize);
+      }
+
+      logger.info("threadCount={}", threadCount);
+      logger.info("batchSize={}", batchSize);
+      logger.info("queueCount={}", queueCount);
+
       jobStartTime = Calendar.getInstance();
       started.set(true);
     }
@@ -274,35 +240,55 @@ public class WriteBatcherImpl
 
   @Override
   public WriteBatcher add(DocumentWriteOperation writeOperation) {
-    if ( writeOperation.getUri() == null ) throw new IllegalArgumentException("uri must not be null");
-    if ( writeOperation.getContent() == null ) throw new IllegalArgumentException("contentHandle must not be null");
+    if (writeOperation == null) throw new IllegalArgumentException("write operation must not be null");
+    String writeUri = writeOperation.getUri();
+    if (writeUri == null) throw new IllegalArgumentException("uri must not be null");
+    if (writeOperation.getContent() == null) throw new IllegalArgumentException("contentHandle must not be null");
     initialize();
     requireNotStopped();
-    queue.add(writeOperation);
-    logger.trace("add uri={}", writeOperation.getUri());
-    // if we have queued batchSize, it's time to flush a batch
-    long recordNum = batchCounter.incrementAndGet();
-    boolean timeToWriteBatch = (recordNum % getBatchSize()) == 0;
-    if ( timeToWriteBatch ) {
-      BatchWriteSet writeSet = newBatchWriteSet(false);
-      int minBatchSize = 0;
-      if(defaultMetadata != null) {
-        writeSet.getWriteSet().add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT, null, defaultMetadata, null));
-        minBatchSize = 1;
-      }
-      for (int i=0; i < getBatchSize(); i++ ) {
-        DocumentWriteOperation doc = queue.poll();
-        if ( doc == null ) {
-          // strange, there should have been a full batch of docs in the queue...
-          break;
-        }
-        writeSet.getWriteSet().add(doc);
-      }
-      if ( writeSet.getWriteSet().size() > minBatchSize ) {
-        threadPool.submit( new BatchWriter(writeSet) );
+    int queueIndex = (queuedOperations.length == 1) ? 0 :
+            AssignmentManager.getInstance().getPlacementForestIndex(writeUri);
+    if (queueIndex == -1) {
+      logger.warn("could not determine placement for {}", writeUri);
+      queueIndex = 0;
+    }
+    ArrayBlockingQueue<DocumentWriteOperation> writeQueue = queuedOperations[queueIndex];
+    try {
+      // blocks if the queue is full but releases when some thread drains
+      writeQueue.put(writeOperation);
+      logger.trace("add uri={}", writeUri);
+    } catch (InterruptedException e) {
+      logger.debug("add() uri={} caught InterruptedException", writeUri);
+      throw new RuntimeException(e);
+    }
+    drain(writeQueue, getBatchSize());
+    return this;
+  }
+
+  private boolean drain(ArrayBlockingQueue<DocumentWriteOperation> writeQueue, int minDrain) {
+    if (writeQueue.size() < minDrain) return false;
+    int maxDrain = getBatchSize();
+    List<DocumentWriteOperation> buffer = new ArrayList<>(maxDrain);
+    int drainedCount = 0;
+    // prevent multiple application threads from draining the same write queue at the same time
+    synchronized (writeQueue) {
+      if (writeQueue.size() >= minDrain) {
+        drainedCount = writeQueue.drainTo(buffer, maxDrain);
       }
     }
-    return this;
+    if (drainedCount == 0) {
+      return false;
+    }
+    BatchWriteSet batchWriteSet = newBatchWriteSet();
+    DocumentWriteSet docWriteSet = batchWriteSet.getWriteSet();
+    if (defaultMetadata != null) {
+      docWriteSet.add(
+          new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT, null, defaultMetadata, null)
+      );
+    }
+    docWriteSet.addAll(buffer);
+    threadPool.submit(new BatchWriter(batchWriteSet));
+    return true;
   }
 
   @Override
@@ -336,6 +322,11 @@ public class WriteBatcherImpl
     return add(uri, metadataHandle, handle);
   }
 
+  public boolean isBatchedPerForest() {
+    requireInitialized();
+    return queuedOperations.length > 1;
+  }
+
   private void requireInitialized() {
     if ( initialized == false ) {
       throw new IllegalStateException("This operation must be called after starting this job");
@@ -352,100 +343,22 @@ public class WriteBatcherImpl
     if ( isStopped() == true ) throw new IllegalStateException("This instance has been stopped");
   }
 
-  private BatchWriteSet newBatchWriteSet(boolean forceNewTransaction) {
+  private BatchWriteSet newBatchWriteSet() {
     long batchNum = batchNumber.incrementAndGet();
-    return newBatchWriteSet(forceNewTransaction, batchNum);
+    return newBatchWriteSet(batchNum);
   }
 
-  private BatchWriteSet newBatchWriteSet(boolean forceNewTransaction, long batchNum) {
+  private BatchWriteSet newBatchWriteSet(long batchNum) {
     int hostToUse = (int) (batchNum % hostInfos.length);
     HostInfo host = hostInfos[hostToUse];
     DatabaseClient hostClient = host.client;
     BatchWriteSet batchWriteSet = new BatchWriteSet(this, hostClient.newDocumentManager().newWriteSet(),
       hostClient, getTransform(), getTemporalCollection());
     batchWriteSet.setBatchNumber(batchNum);
-    if ( usingTransactions ) {
-      // before we write, see if we need to open a transaction
-      batchWriteSet.onBeforeWrite( () -> {
-        long transactionCount = host.transactionCounter.getAndIncrement();
-        // if this is the first batch in this transaction, it's time to initialize a transaction
-        boolean timeForNewTransaction = (transactionCount % getTransactionSize()) == 0;
-        if ( timeForNewTransaction ) {
-          batchWriteSet.setTransactionInfo( transactionOpener(host, hostClient, transactionSize) );
-        } else {
-          TransactionInfo transactionInfo = host.getTransactionInfo();
-          if ( transactionInfo != null ) {
-            // we have an open transaction to use
-            batchWriteSet.setTransactionInfo( transactionInfo );
-            transactionInfo.inProcess.incrementAndGet();
-          } else {
-            // no transactions were ready, so open a new one
-            batchWriteSet.setTransactionInfo( transactionOpener(host, hostClient, transactionSize) );
-          }
-        }
-      });
-    }
     batchWriteSet.onSuccess( () -> {
-      // if we're not using transactions then timeToCommit is always true
-      boolean timeToCommit = true;
-      boolean committed = false;
-      if ( usingTransactions ) {
-        TransactionInfo transactionInfo = batchWriteSet.getTransactionInfo();
-        long batchNumFinished = transactionInfo.batchesFinished.incrementAndGet();
-        timeToCommit = (batchNumFinished == getTransactionSize());
-        if ( forceNewTransaction || timeToCommit ) {
-          // this is the last batch in the transaction
-          if ( transactionInfo.alive.get() == true ) {
-            // if we're the only thread currently processing this transaction
-            if ( transactionInfo.inProcess.get() <= 1 ) {
-              // we're about to commit so let's restart transactionCounter
-              host.transactionCounter.set(0);
-              transactionInfo.transaction.commit();
-              committed = true;
-              sendSuccessToListeners(transactionInfo.batches);
-            } else {
-              // we chose not to commit because another thread is still processing,
-              // so queue up this batchWriteSet
-              transactionInfo.batches.add(batchWriteSet);
-              // and queue up this commit
-              host.unfinishedTransactions.add(transactionInfo);
-              timeToCommit = false;
-            }
-          }
-        } else {
-          // this is *not* the last batch in the transaction
-          // so queue up this batchWriteSet
-          transactionInfo.batches.add(batchWriteSet);
-        }
-        transactionInfo.inProcess.decrementAndGet();
-      } else {
-        committed = true;
-      }
-      if ( committed ) {
-        sendSuccessToListeners(batchWriteSet);
-      }
+      sendSuccessToListeners(batchWriteSet);
     });
     batchWriteSet.onFailure( (throwable) -> {
-      // reset the transactionCounter so the next write will start a new transaction
-      host.transactionCounter.set(0);
-      if ( usingTransactions ) {
-        TransactionInfo transactionInfo = batchWriteSet.getTransactionInfo();
-        transactionInfo.throwable.set(throwable);
-        // if we're the only thread currently processing this transaction
-        if ( transactionInfo.inProcess.get() <= 1 ) {
-          try {
-            logger.warn("Rolling back transaction because of throwable: {}", throwable.toString());
-            transactionInfo.transaction.rollback();
-          } catch(Throwable t2) {
-            throwable.addSuppressed(t2);
-            logger.warn("Failure to rollback transaction: {}", t2.toString());
-          }
-          sendThrowableToListeners(throwable, null, transactionInfo.batches);
-        } else {
-          host.unfinishedTransactions.add(transactionInfo);
-        }
-        transactionInfo.inProcess.decrementAndGet();
-      }
       sendThrowableToListeners(throwable, "Error writing batch: {}", batchWriteSet);
     });
     return batchWriteSet;
@@ -480,8 +393,7 @@ public class WriteBatcherImpl
       return;
     }
     if ( batch == null ) throw new IllegalArgumentException("batch must not be null");
-    boolean forceNewTransaction = true;
-    BatchWriteSet writeSet = newBatchWriteSet(forceNewTransaction, batch.getJobBatchNumber());
+    BatchWriteSet writeSet = newBatchWriteSet(batch.getJobBatchNumber());
     if ( !callFailListeners ) {
       writeSet.onFailure(throwable -> {
         if ( throwable instanceof RuntimeException )
@@ -490,9 +402,7 @@ public class WriteBatcherImpl
           throw new DataMovementException("Failed to retry batch", throwable);
       });
     }
-    for (WriteEvent doc : batch.getItems()) {
-      writeSet.getWriteSet().add(doc.getTargetUri(), doc.getMetadata(), doc.getContent());
-    }
+    writeSet.getWriteSet().addAll(batch.getItems());
     BatchWriter runnable = new BatchWriter(writeSet);
     runnable.run();
   }
@@ -541,77 +451,19 @@ public class WriteBatcherImpl
   private void flush(boolean waitForCompletion) {
     requireInitialized();
     requireNotStopped();
-    // drain any docs left in the queue
-    List<DocumentWriteOperation> docs = new ArrayList<>();
-    long recordInBatch = batchCounter.getAndSet(0);
-    queue.drainTo(docs);
-    logger.info("flushing {} queued docs", docs.size());
-    Iterator<DocumentWriteOperation> iter = docs.iterator();
-    boolean forceNewTransaction = true;
-    for ( int i=0; iter.hasNext(); i++ ) {
-      if ( isStopped() == true ) {
-        logger.warn("Job is now stopped, preventing the flush of {} queued docs", docs.size() - i);
-        if ( waitForCompletion == true ) awaitCompletion();
-        return;
-      }
-      BatchWriteSet writeSet = newBatchWriteSet(forceNewTransaction);
-      if(defaultMetadata != null) {
-          writeSet.getWriteSet().add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT, null, defaultMetadata, null));
+
+    drainQueues:
+    for (ArrayBlockingQueue<DocumentWriteOperation> writeQueue: queuedOperations) {
+      do {
+        if (isStopped() == true) {
+          logger.warn("Job is now stopped, preventing the flush of queued docs");
+          break drainQueues;
         }
-      int j=0;
-      for ( ; j < getBatchSize() && iter.hasNext(); j++ ) {
-        DocumentWriteOperation doc = iter.next();
-        writeSet.getWriteSet().add(doc);
-      }
-      threadPool.submit( new BatchWriter(writeSet) );
+        logger.info("flushing {} queued docs", writeQueue.size());
+      } while (drain(writeQueue,1));
     }
 
-    if ( waitForCompletion == true ) awaitCompletion();
-
-    // commit any transactions remaining open
-    if ( usingTransactions == true ) {
-      Runnable cleanupTransactions = () -> {
-        // first clean up old transactions
-        cleanupUnfinishedTransactions();
-
-        // now commit any current transactions
-        for ( HostInfo host : hostInfos ) {
-          TransactionInfo transactionInfo;
-          while ( (transactionInfo = host.getTransactionInfoAndDrainPermits()) != null ) {
-            TransactionInfo transactionInfoCopy = transactionInfo;
-            completeTransaction(transactionInfoCopy);
-          }
-        }
-      };
-      if ( waitForCompletion == true ) {
-        cleanupTransactions.run();
-      } else {
-        threadPool.submit( cleanupTransactions );
-      }
-    }
-  }
-
-  public boolean completeTransaction(TransactionInfo transactionInfo) {
-    boolean completed = false;
-    try {
-      if ( transactionInfo.alive.get() == true &&
-        transactionInfo.inProcess.get() <= 0 &&
-        transactionInfo.written.get() == true ) {
-        if ( transactionInfo.throwable.get() != null ) {
-          transactionInfo.transaction.rollback();
-          sendThrowableToListeners(transactionInfo.throwable.get(), "Failure during transaction: {}",
-            transactionInfo.batches);
-        } else {
-          transactionInfo.transaction.commit();
-          sendSuccessToListeners(transactionInfo.batches);
-        }
-        completed = true;
-      }
-    } catch (Throwable t) {
-      transactionInfo.throwable.set(t);
-      sendThrowableToListeners(t, "Failure to complete transaction: {}", transactionInfo.batches);
-    }
-    return completed;
+    if (waitForCompletion == true) awaitCompletion();
   }
 
   private void sendSuccessToListeners(Collection<BatchWriteSet> batches) {
@@ -660,10 +512,12 @@ public class WriteBatcherImpl
 
   @Override
   public void stop() {
+    if (!stopped.compareAndSet(false, true)) return;
     jobEndTime = Calendar.getInstance();
-    stopped.set(true);
     if ( threadPool != null ) threadPool.shutdownNow();
     closeAllListeners();
+    AssignmentManager assignMgr = AssignmentManager.getInstance();
+    if (assignMgr.isInitialized()) assignMgr.stop();
   }
 
   private void closeAllListeners() {
@@ -764,16 +618,6 @@ public class WriteBatcherImpl
     return this;
   }
 
-  public WriteBatcher withTransactionSize(int transactionSize) {
-    requireNotInitialized();
-    this.transactionSize = transactionSize;
-    return this;
-  }
-
-  public int getTransactionSize() {
-    return transactionSize;
-  }
-
   @Override
   public WriteBatcher withTemporalCollection(String collection) {
     requireNotInitialized();
@@ -851,8 +695,7 @@ public class WriteBatcherImpl
           if ( removedHostInfos.containsKey(writerTask.writeSet.getClient().getHost()) ) {
             // this batch was targeting a host that's no longer on the list
             // if we re-add these docs they'll now be in batches that target acceptable hosts
-            boolean forceNewTransaction = true;
-            BatchWriteSet writeSet = newBatchWriteSet(forceNewTransaction, writerTask.writeSet.getBatchNumber());
+            BatchWriteSet writeSet = newBatchWriteSet(writerTask.writeSet.getBatchNumber());
             writeSet.onFailure(throwable -> {
               if ( throwable instanceof RuntimeException ) throw (RuntimeException) throwable;
               else throw new DataMovementException("Failed to retry batch after failover", throwable);
@@ -871,9 +714,6 @@ public class WriteBatcherImpl
         Runnable fTask = (Runnable) threadPool.submit(task);
         threadPool.replaceTask(task, fTask);
       }
-      for ( HostInfo removedHostInfo : removedHostInfos.values() ) {
-        cleanupUnfinishedTransactions(removedHostInfo);
-      }
     }
     return this;
   }
@@ -886,154 +726,6 @@ public class WriteBatcherImpl
   public static class HostInfo {
     public String hostName;
     public DatabaseClient client;
-    public AtomicLong transactionCounter = new AtomicLong(0);
-    public ConcurrentLinkedDeque<TransactionInfo> transactionInfos = new ConcurrentLinkedDeque<>();
-    public ConcurrentLinkedQueue<TransactionInfo> unfinishedTransactions = new ConcurrentLinkedQueue<>();
-
-    private TransactionInfo getTransactionInfoAndDrainPermits() {
-      TransactionInfo transactionInfo = transactionInfos.poll();
-      if ( transactionInfo == null ) return null;
-      // if any more batches can be written for this transaction then transactionPermits
-      // is greater than zero and this transaction is available
-      int permits = transactionInfo.transactionPermits.getAndSet(0);
-      if ( permits > 0 ) {
-        return transactionInfo;
-      } else {
-        // otherwise return null
-        return null;
-      }
-    }
-
-    private TransactionInfo getTransactionInfo() {
-      // if any more batches can be written for this transaction then transactionPermits
-      // can be acquired and this transaction is available
-      // otherwise block until a new transaction is available with new permits
-      // get one off the queue if available, if not then block until one is avialable
-      TransactionInfo transactionInfo = transactionInfos.poll();
-      if ( transactionInfo == null ) return null;
-      // remove one permit
-      int permits = transactionInfo.transactionPermits.decrementAndGet();
-      // if there are permits left, push this back onto the queue
-      if ( permits >= 0 ) {
-        if ( permits > 0 ) {
-          // there are more permits left, so push it back onto the front of the queue
-          transactionInfos.addFirst(transactionInfo);
-        } else {
-          // this is the last permit, make sure this transaction gets completed
-          unfinishedTransactions.add(transactionInfo);
-        }
-        return transactionInfo;
-      } else {
-        // somehow this transaction was on the queue with no permits left
-        // make sure this transaction gets completed
-        unfinishedTransactions.add(transactionInfo);
-        // let's return a different transaction that has permits
-        return getTransactionInfo();
-      }
-    }
-
-    public void addTransactionInfo(TransactionInfo transactionInfo) {
-      transactionInfos.add(transactionInfo);
-    }
-
-    public void releaseTransactionInfo(TransactionInfo toRelease) {
-      toRelease.transactionPermits.set(0);
-      transactionInfos.remove(toRelease);
-      unfinishedTransactions.remove(toRelease);
-    }
-  }
-
-  public static class TransactionInfo {
-    private Transaction transaction;
-    public AtomicBoolean alive = new AtomicBoolean(false);
-    public AtomicBoolean written = new AtomicBoolean(false);
-    public AtomicReference<Throwable> throwable = new AtomicReference<>();
-    public AtomicLong inProcess = new AtomicLong(0);
-    public AtomicLong batchesFinished = new AtomicLong(0);
-    public AtomicBoolean queuedForCleanup = new AtomicBoolean(false);
-    public ConcurrentLinkedQueue<BatchWriteSet> batches = new ConcurrentLinkedQueue<>();
-    private AtomicInteger transactionPermits = new AtomicInteger(0);
-  }
-
-
-  private void cleanupUnfinishedTransactions() {
-    for ( HostInfo host : hostInfos ) {
-      cleanupUnfinishedTransactions(host);
-    }
-  }
-
-  private void cleanupUnfinishedTransactions(HostInfo host) {
-    Iterator<TransactionInfo> iterator = host.unfinishedTransactions.iterator();
-    while ( iterator.hasNext() ) {
-      TransactionInfo transactionInfo = iterator.next();
-      if ( transactionInfo.alive.get() == false ) {
-        iterator.remove();
-      } else if ( transactionInfo.queuedForCleanup.get() == true ) {
-        // skip this one, it's already queued
-      } else {
-        if ( transactionInfo.inProcess.get() <= 0 ) {
-          if ( transactionInfo.written.get() == true ) {
-            transactionInfo.queuedForCleanup.set(true);
-            threadPool.submit( () -> {
-              if ( completeTransaction(transactionInfo) ) {
-                host.unfinishedTransactions.remove(transactionInfo);
-              } else {
-                // let's try again next cleanup
-                transactionInfo.queuedForCleanup.set(false);
-              }
-            });
-          } else {
-            iterator.remove();
-          }
-        }
-      }
-    }
-  }
-
-  public TransactionInfo transactionOpener(HostInfo host, DatabaseClient client, int transactionSize) {
-    TransactionInfo transactionInfo = new TransactionInfo();
-    transactionInfo.transactionPermits.set(transactionSize - 1);
-    Transaction realTransaction = client.openTransaction();
-    logger.trace("opened transaction {}", realTransaction.getTransactionId());
-    // wrapping Transaction so I can call releaseTransactionInfo when commit or rollback are called
-    Transaction transaction = new Transaction() {
-      @Override
-      public void commit() {
-        host.releaseTransactionInfo(transactionInfo);
-        boolean alive = transactionInfo.alive.getAndSet(false);
-        if ( alive == true ) {
-          realTransaction.commit();
-          logger.trace("committed transaction {}", realTransaction.getTransactionId());
-        }
-      }
-      @Override
-      public List<ClientCookie> getCookies() {
-        return realTransaction.getCookies();
-      }
-      @Override
-      public String getHostId() { return realTransaction.getHostId(); }
-      @Override
-      public String getTransactionId() { return realTransaction.getTransactionId(); }
-      @Override
-      public <T extends StructureReadHandle> T readStatus(T handle) {
-        return realTransaction.readStatus(handle);
-      }
-      @Override
-      public void rollback() {
-        host.releaseTransactionInfo(transactionInfo);
-        boolean alive = transactionInfo.alive.getAndSet(false);
-        if ( alive == true ) {
-          realTransaction.rollback();
-          logger.trace("rolled back transaction {}", realTransaction.getTransactionId());
-        }
-      }
-    };
-    transactionInfo.transaction = transaction;
-    transactionInfo.alive.set(true);
-    transactionInfo.inProcess.incrementAndGet();
-    host.addTransactionInfo(transactionInfo);
-    cleanupUnfinishedTransactions();
-    return transactionInfo;
   }
 
   public static class BatchWriter implements Runnable {
@@ -1053,36 +745,25 @@ public class WriteBatcherImpl
         if ( onBeforeWrite != null ) {
           onBeforeWrite.run();
         }
-        TransactionInfo transactionInfo = writeSet.getTransactionInfo();
-        if ( transactionInfo == null || transactionInfo.alive.get() == true ) {
-          Transaction transaction = null;
-          if ( transactionInfo != null ) {
-            transaction = transactionInfo.transaction;
-            transactionInfo.written.set(true);
-          }
-          logger.trace("begin write batch {} to forest on host \"{}\"", writeSet.getBatchNumber(), writeSet.getClient().getHost());
-          if ( writeSet.getTemporalCollection() == null ) {
-            writeSet.getClient().newDocumentManager().write(
-              writeSet.getWriteSet(), writeSet.getTransform(), transaction
-            );
-          } else {
-            // to get access to the TemporalDocumentManager write overload we need to instantiate
-            // a JSONDocumentManager or XMLDocumentManager, but we don't want to make assumptions about content
-            // format, so we'll set the default content format to unknown
-            XMLDocumentManager docMgr = writeSet.getClient().newXMLDocumentManager();
-            docMgr.setContentFormat(Format.UNKNOWN);
-            docMgr.write(
-              writeSet.getWriteSet(), writeSet.getTransform(),
-              transaction, writeSet.getTemporalCollection()
-            );
-          }
-          closeAllHandles();
-          Runnable onSuccess = writeSet.getOnSuccess();
-          if ( onSuccess != null ) {
-            onSuccess.run();
-          }
+        logger.trace("begin write batch {} to forest on host \"{}\"", writeSet.getBatchNumber(), writeSet.getClient().getHost());
+        if ( writeSet.getTemporalCollection() == null ) {
+          writeSet.getClient().newDocumentManager().write(
+              writeSet.getWriteSet(), writeSet.getTransform(), null
+          );
         } else {
-          throw new DataMovementException("Failed to write because transaction already underwent commit or rollback", null);
+          // to get access to the TemporalDocumentManager write overload we need to instantiate
+          // a JSONDocumentManager or XMLDocumentManager, but we don't want to make assumptions about content
+          // format, so we'll set the default content format to unknown
+          XMLDocumentManager docMgr = writeSet.getClient().newXMLDocumentManager();
+          docMgr.setContentFormat(Format.UNKNOWN);
+          docMgr.write(
+              writeSet.getWriteSet(), writeSet.getTransform(),null, writeSet.getTemporalCollection()
+          );
+        }
+        closeAllHandles();
+        Runnable onSuccess = writeSet.getOnSuccess();
+        if ( onSuccess != null ) {
+          onSuccess.run();
         }
       } catch (Throwable t) {
         logger.trace("failed batch sent to forest on host \"{}\"", writeSet.getClient().getHost());
@@ -1321,20 +1002,19 @@ public class WriteBatcherImpl
     }
   }
 
+  @Override
+  public WriteBatcher withDefaultMetadata(DocumentMetadataHandle handle) {
+      this.defaultMetadata = handle;
+      return this;
+  }
 
-@Override
-public WriteBatcher withDefaultMetadata(DocumentMetadataHandle handle) {
-    this.defaultMetadata = handle;
-    return this;
-}
+  @Override
+  public void addAll(Stream<? extends DocumentWriteOperation> operations) {
+      operations.forEach(this::add);
+  }
 
-@Override
-public void addAll(Stream<? extends DocumentWriteOperation> operations) {
-    operations.forEach(this::add);
-}
-
-@Override
-public DocumentMetadataHandle getDocumentMetadata() {
-  return defaultMetadata;
-}
+  @Override
+  public DocumentMetadataHandle getDocumentMetadata() {
+    return defaultMetadata;
+  }
 }

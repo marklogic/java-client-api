@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.document;
 
+import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
@@ -34,6 +35,21 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
    * @return this instance (for method chaining)
    */
   DocumentWriteSet addDefault(DocumentMetadataWriteHandle metadataHandle);
+
+  /**
+   * Adds all of the document write operations to this write set
+   * @param operations  the document write operations to add
+   * @return this instance (for method chaining)
+   */
+  DocumentWriteSet addAll(DocumentWriteOperation... operations);
+
+  /**
+   * Adds all of the documents from the write events to this write set,
+   * typically as part of failure recovery
+   * @param events the write events with the documents to add
+   * @return this instance (for method chaining)
+   */
+  DocumentWriteSet addAll(WriteEvent... events);
 
   /** Removes the default metadata for this write set for all documents added after this call
    * @return this instance (for method chaining)

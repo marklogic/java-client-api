@@ -15,9 +15,14 @@
  */
 package com.marklogic.client.datamovement.impl;
 
+import com.marklogic.client.datamovement.impl.assignment.ForestHost;
+import com.marklogic.client.datamovement.impl.assignment.ForestInfo;
 import com.marklogic.client.datamovement.Forest;
 
-public class ForestImpl implements Forest {
+import java.util.ArrayList;
+import java.util.List;
+
+public class ForestImpl implements Forest, ForestInfo {
   private String host;
   private String openReplicaHost;
   private String alternateHost;
@@ -27,6 +32,7 @@ public class ForestImpl implements Forest {
   private String forestId;
   private boolean isUpdateable;
   private boolean isDeleteOnly;
+  private long fragmentCount = -1;
 
   public ForestImpl(String host, String openReplicaHost, String requestHost, String alternateHost, String databaseName,
     String forestName, String forestId, boolean isUpdateable, boolean isDeleteOnly)
@@ -133,5 +139,26 @@ public class ForestImpl implements Forest {
   @Override
   public int hashCode() {
     return getForestId() != null ? getForestId().hashCode() : 0;
+  }
+
+  // internal compatibility with mlcp
+  @Override
+  public long getFragmentCount() {
+    return fragmentCount;
+  }
+  public void setFragmentCount(long fragmentCount) {
+    this.fragmentCount = fragmentCount;
+  }
+  @Override
+  public String getHostName() {
+    return getHost();
+  }
+  @Override
+  public boolean getUpdatable() {
+    return isUpdateable();
+  }
+  @Override
+  public List<ForestHost> getReplicas() {
+    return new ArrayList<>();
   }
 }

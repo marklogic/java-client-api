@@ -15,12 +15,15 @@
  */
 package com.marklogic.client.datamovement.impl;
 
-import java.util.ArrayList;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.datamovement.impl.assignment.AssignmentManager;
+import com.marklogic.client.datamovement.impl.assignment.AssignmentPolicy;
+import com.marklogic.client.datamovement.impl.assignment.ForestInfo;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.datamovement.Batcher;
@@ -30,50 +33,123 @@ import com.marklogic.client.datamovement.JobTicket.JobType;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.JobReport;
-
-import java.util.List;
+import com.marklogic.client.util.RequestParameters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DataMovementServices {
+  private static Logger logger = LoggerFactory.getLogger(DataMovementServices.class);
+  private enum Condition { TRUE, FALSE, UNKNOWN; }
+  private final static Condition MAY_BATCH_PER_FOREST =
+          Condition.valueOf(System.getProperty("MAY_BATCH_PER_FOREST", "UNKNOWN"));
+
   private DatabaseClient client;
 
   public DatabaseClient getClient() {
     return client;
   }
-
   public DataMovementServices setClient(DatabaseClient client) {
     this.client = client;
     return this;
   }
 
-  public ForestConfigurationImpl readForestConfig() {
+  public ForestConfigurationImpl readForestConfig(DataMovementManagerImpl moveMgr) {
+    long serverVersion = moveMgr.getServerVersion();
+    boolean hasPolicy = (
+        MAY_BATCH_PER_FOREST == Condition.TRUE ||
+        (MAY_BATCH_PER_FOREST == Condition.UNKNOWN &&
+            (Long.compareUnsigned(serverVersion, Long.parseUnsignedLong("10000300")) >= 0 ||
+            (Long.compareUnsigned(serverVersion, Long.parseUnsignedLong("9001100")) >= 0 &&
+                Long.compareUnsigned(serverVersion, Long.parseUnsignedLong("10000000")) < 0))));
+    RequestParameters params = hasPolicy ? new RequestParameters().with("view", "policy") : null;
+    JsonNode results = null;
+    logger.info("Getting forest configuration");
+    try {
+      results = ((DatabaseClientImpl) client).getServices()
+              .getResource(null, "internal/forestinfo", null, params, new JacksonHandle())
+              .get();
+    } catch(Exception e) {
+      logger.warn("Failed to read forest policy configuration", e);
+      hasPolicy = false;
+      results = ((DatabaseClientImpl) client).getServices()
+              .getResource(null, "internal/forestinfo", null, null, new JacksonHandle())
+              .get();
+    }
+    ForestConfigurationImpl forestConfig = new ForestConfigurationImpl();
+    AssignmentPolicy.Kind assignPolicy = null;
+    boolean fastloadAllowed = false;
+    String database = null;
+    Map<String, ForestInfo> forestMap = null;
+    JsonNode forestNodes = null;
+    if (hasPolicy) {
+      String assignPolicyName = results.get("assignmentPolicy").asText();
+      assignPolicy = AssignmentPolicy.Kind.forName(assignPolicyName);
+      switch(assignPolicy) {
+        case BUCKET:
+        case LEGACY:
+        case SEGMENT:
+          fastloadAllowed = true;
+          break;
+        case STATISTICAL:
+          fastloadAllowed = results.get("fastloadAllowed").asBoolean();
+          if (!fastloadAllowed) {
+            logger.warn("Cannot batch by forest during rebalancing for statistical assignment policy");
+          }
+          break;
+        // unsupported because configuration is required
+        case QUERY:
+        case RANGE:
+          fastloadAllowed = false;
+          logger.warn("Batch by forest not supported for query or range assignment policies");
+          break;
+        default:
+          throw new MarkLogicInternalException("cannot initialize unknown policy: "+assignPolicyName);
+      }
+      database = results.get("database").asText();
+      forestMap = new HashMap<>();
+      forestNodes = results.get("forests");
+    } else {
+      forestNodes = results;
+    }
     List<ForestImpl> forests = new ArrayList<>();
-    JsonNode results = ((DatabaseClientImpl) client).getServices()
-      .getResource(null, "internal/forestinfo", null, null, new JacksonHandle())
-      .get();
-    for ( JsonNode forestNode : results ) {
+    for (JsonNode forestNode : forestNodes) {
       String id = forestNode.get("id").asText();
       String name = forestNode.get("name").asText();
-      String database = forestNode.get("database").asText();
+      if (database == null) {
+        database = forestNode.get("database").asText();
+      }
       String host = forestNode.get("host").asText();
-      String openReplicaHost = null;
-      if ( forestNode.get("openReplicaHost") != null ) openReplicaHost = forestNode.get("openReplicaHost").asText();
-      String requestHost = null;
-      if ( forestNode.get("requestHost") != null ) requestHost = forestNode.get("requestHost").asText();
-      String alternateHost = null;
-      if ( forestNode.get("alternateHost") != null ) alternateHost = forestNode.get("alternateHost").asText();
+      String openReplicaHost = getNodeAsText(forestNode,"openReplicaHost");
+      String requestHost = getNodeAsText(forestNode,"requestHost");
       // Since we added the forestinfo end point to populate both alternateHost and requestHost
       // in case we have a requestHost so that we don't break the existing API code, we will make the
       // alternateHost as null if both alternateHost and requestHost is set.
-      if ( requestHost != null && alternateHost != null )
-        alternateHost = null;
+      String alternateHost = (requestHost != null) ? null : getNodeAsText(forestNode,"alternateHost");
       boolean isUpdateable = "all".equals(forestNode.get("updatesAllowed").asText());
       boolean isDeleteOnly = false; // TODO: get this for real after we start using a REST endpoint
-      forests.add(
-            new ForestImpl(host, openReplicaHost, requestHost, alternateHost, database, name, id, isUpdateable, isDeleteOnly)
-      );
+      ForestImpl forest = new ForestImpl(host, openReplicaHost, requestHost, alternateHost, database, name, id, isUpdateable, isDeleteOnly);
+      if (hasPolicy) {
+        JsonNode fragmentCount = forestNode.get("fragmentCount");
+        if (fragmentCount != null) forest.setFragmentCount(fragmentCount.asLong());
+      }
+      if (forestMap != null) forestMap.put(id, forest);
+      forests.add(forest);
     }
+    if (fastloadAllowed) {
+      logger.info("Batching by forest for assignment policy: "+assignPolicy.name());
+      AssignmentManager assignMgr = AssignmentManager.getInstance();
+      if (!assignMgr.isInitialized()) {
+        assignMgr.setEffectiveVersion(serverVersion);
+        assignMgr.initialize(assignPolicy, forestMap, BatcherImpl.DEFAULT_BATCH_SIZE);
+      }
+    }
+    return forestConfig.withForests(forests.toArray(new ForestImpl[forests.size()]));
+  }
 
-    return new ForestConfigurationImpl(forests.toArray(new ForestImpl[forests.size()]));
+  static private String getNodeAsText(JsonNode parent, String name) {
+    JsonNode child = parent.get(name);
+    if (child == null) return null;
+    return child.asText();
   }
 
   public JobTicket startJob(WriteBatcher batcher, ConcurrentHashMap<String, JobTicket> activeJobs) {
