@@ -206,12 +206,14 @@ public class WriteBatcherImpl
         queueCount = getForestConfig().listForests().length;
       }
 
-      // because the application might add to the queues at a faster rate
+      // Because the application might add to the queues at a faster rate
       // than the queues are drained, the queues must be bounded and must
-      // block when full; however, each queue should be large enough that
-      // one application thread can add to the queue while another concurrent
-      // application thread drains a batch from the queue
-      int queueSize = batchSize + (batchSize / 2);
+      // block when full; however, each queue should provide enough buffer
+      // so documents can add and drain at a balanced rate with allowance
+      // for variability. In other words, during the the time that the
+      // queue has locked a batch of documents for draining, the queue
+      // must concurrently accept more than the next batch of documents.
+      int queueSize = 3 * batchSize;
 
       queuedOperations = new LinkedBlockingQueue[queueCount];
       for (int i=0; i < queueCount; i++) {
