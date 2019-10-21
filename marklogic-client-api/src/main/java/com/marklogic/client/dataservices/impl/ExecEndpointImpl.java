@@ -72,7 +72,6 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
         public void awaitCompletion() {
             setPhase(WorkPhase.RUNNING);
             logger.trace("exec running endpoint={} work={}", getEndpointPath(), getWorkUnit());
-            SessionState session = allowsSession() ? getEndpoint().getCaller().newSessionState() : null;
             calling: while (true) {
                 InputStream output = null;
                 try {
@@ -80,7 +79,7 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
                             getEndpointPath(), getCallCount(), getEndpointState());
 // TODO: use byte[] for IO internally (and InputStream externally)
                     output = getEndpoint().getCaller().call(
-                            getEndpoint().getClient(), getEndpointState(), session, getWorkUnit()
+                            getClient(), getEndpointState(), getSession(), getWorkUnit()
                     );
                     incrementCallCount();
                 } catch(Throwable throwable) {

@@ -38,7 +38,7 @@ public class BulkInputCallerTest {
     static String apiName = "bulkInputCallerImpl.api";
     static String scriptPath;
     static String apiPath;
-    static int workMax = 4;
+    static int workMax = 3;
     static int startValue = 1;
     static JSONDocumentManager docMgr;
 
@@ -68,25 +68,25 @@ public class BulkInputCallerTest {
         loader.setWorkUnit(new ByteArrayInputStream(workUnit.getBytes()));
 
         Stream<InputStream> input         = Stream.of(
-                IOTestUtil.asInputStream("{docNum:1, docName:\"doc1\"}"),
-                IOTestUtil.asInputStream("{docNum:2, docName:\"doc2\"}"),
-                IOTestUtil.asInputStream("{docNum:3, docName:\"doc3\"}")
+                IOTestUtil.asInputStream("{\"docNum\":1, \"docName\":\"doc1\"}"),
+                IOTestUtil.asInputStream("{\"docNum\":2, \"docName\":\"doc2\"}"),
+                IOTestUtil.asInputStream("{\"docNum\":3, \"docName\":\"doc3\"}")
         );
         input.forEach(loader::accept);
         loader.awaitCompletion();
 
-        for(int i=1; i < (workMax - startValue); i++) {
-            int stateNum = startValue + i;
-            String uri = "/marklogic/ds/test/bulkInputCaller/"+stateNum+".json";
+        for (int startNext=startValue; startNext < workMax; startNext++) {
+            int endNext=startNext+1;
+            String uri = "/marklogic/ds/test/bulkInputCaller/"+endNext+".json";
             JsonNode doc = docMgr.read(uri, new JacksonHandle()).get();
             assertNotNull("Could not find file "+uri, doc);
-            assertEquals("state mismatch", stateNum, doc.get("state").get("next").asInt());
-            assertEquals("state mismatch", workMax,  doc.get("work").get("max").asInt());
+            assertEquals("state mismatch", endNext, doc.get("state").get("next").asInt());
+            assertEquals("state mismatch", workMax, doc.get("work").get("max").asInt());
             JsonNode inputs = doc.get("inputs");
-            int docCount = (stateNum == (workMax - 1)) ? 1 : 2;
+            int docCount = (endNext == workMax) ? 1 : 2;
             assertEquals("inputs mismatch", docCount, inputs.size());
             for (int j=0; j < docCount; j++) {
-                int offset = j + (i * 2) - 1;
+                int offset = j + (startNext * 2) - 1;
                 JsonNode inputDoc = inputs.get(j);
                 assertEquals("docNum mismatch", offset, inputDoc.get("docNum").asInt());
                 assertEquals("docName mismatch", "doc"+offset, inputDoc.get("docName").asText());
@@ -111,15 +111,15 @@ public class BulkInputCallerTest {
         loader.setWorkUnit(new ByteArrayInputStream(workUnit.getBytes()));
 
         Stream<InputStream> input         = Stream.of(
-                IOTestUtil.asInputStream("{docNum:1, docName:\"doc1\"}"),
-                IOTestUtil.asInputStream("{docNum:2, docName:\"doc2\"}"),
-                IOTestUtil.asInputStream("{docNum:3, docName:\"doc3\"}")
+                IOTestUtil.asInputStream("{\"docNum\":1, \"docName\":\"doc1\"}"),
+                IOTestUtil.asInputStream("{\"docNum\":2, \"docName\":\"doc2\"}"),
+                IOTestUtil.asInputStream("{\"docNum\":3, \"docName\":\"doc3\"}")
         );
 
         Stream<InputStream> input2         = Stream.of(
-                IOTestUtil.asInputStream("{docNum:4, docName:\"doc4\"}"),
-                IOTestUtil.asInputStream("{docNum:5, docName:\"doc5\"}"),
-                IOTestUtil.asInputStream("{docNum:6, docName:\"doc6\"}"));
+                IOTestUtil.asInputStream("{\"docNum\":4, \"docName\":\"doc4\"}"),
+                IOTestUtil.asInputStream("{\"docNum\":5, \"docName\":\"doc5\"}"),
+                IOTestUtil.asInputStream("{\"docNum\":6, \"docName\":\"doc6\"}"));
 
         input.forEach(loader::accept);
         loader.interrupt();

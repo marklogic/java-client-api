@@ -58,10 +58,22 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
             this.endpoint = endpoint;
         }
 
+        private OutputEndpointImpl getEndpoint() {
+            return endpoint;
+        }
+        private Consumer<InputStream> getOutputConsumer() {
+            return outputConsumer;
+        }
+
+        @Override
+        public void forEachOutput(Consumer<InputStream> outputConsumer) {
+            this.outputConsumer = outputConsumer;
+        }
+
         @Override
         public void awaitCompletion() {
-            if(outputConsumer == null)
-                throw new IllegalStateException("Consumer is null.");
+            if (getOutputConsumer() == null)
+                throw new IllegalStateException("Output consumer is null");
 
             logger.trace("output endpoint running endpoint={} work={}", getEndpointPath(), getWorkUnit());
 
@@ -71,32 +83,23 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
             }
 
             setPhase(WorkPhase.RUNNING);
-            SessionState session = allowsSession() ? getEndpoint().getCaller().newSessionState() : null;
 
             calling: while (true) {
+                logger.trace("output endpoint={} count={} state={}",
+                        getEndpointPath(), getCallCount(), getEndpointState());
+
                 Stream<InputStream> output = null;
                 try {
-                    logger.trace("output endpoint={} count={} state={}",
-                            getEndpointPath(), getCallCount(), getEndpointState());
-
                     output = getEndpoint().getCaller().call(
-                            getEndpoint().getClient(), getEndpointState(), session, getWorkUnit()
+                            getClient(), getEndpointState(), getSession(), getWorkUnit()
                     );
-                    incrementCallCount();
                 } catch(Throwable throwable) {
                     throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
                 }
 
-                if(output != null) {
-                    InputStream[] result = output.toArray(size -> new InputStream[size]);
+                incrementCallCount();
 
-                    if (allowsEndpointState() && result.length>0) {
-                            setEndpointState(result[0]);
-                    }
-                    for(int i= allowsEndpointState()?1:0; i<result.length; i++) {
-                        outputConsumer.accept(result[i]);
-                    }
-                }
+                processOutputBatch(output, getOutputConsumer());
 
                 switch(getPhase()) {
                     case INTERRUPTING:
@@ -113,30 +116,15 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                             break calling;
                         }
                     case INTERRUPTED:
-
                     case COMPLETED:
                         throw new IllegalStateException(
                                 "cannot process more output as current phase is  " + getPhase().name());
-
                     default:
                         throw new MarkLogicInternalException(
                                 "unexpected state for "+getEndpointPath()+" during loop: "+getPhase().name()
                         );
                 }
             }
-        }
-
-        private OutputEndpointImpl getEndpoint() {
-            return endpoint;
-        }
-
-        private Consumer<InputStream> getOutputConsumer() {
-            return outputConsumer;
-        }
-
-        @Override
-        public void forEachOutput(Consumer<InputStream> outputConsumer) {
-            this.outputConsumer = outputConsumer;
         }
     }
 

@@ -35,33 +35,31 @@ import com.marklogic.client.io.marker.JSONWriteHandle;
 
 public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 	private static Logger logger = LoggerFactory.getLogger(InputEndpointImpl.class);
-	private static int DEFAULT_BATCH_SIZE = 100;
 	private InputCallerImpl caller;
 	private int batchSize;
 
 	public InputEndpointImpl(DatabaseClient client, JSONWriteHandle apiDecl) {
 		this(client, new InputCallerImpl(apiDecl));
 	}
-
 	private InputEndpointImpl(DatabaseClient client, InputCallerImpl caller) {
 		super(client, caller);
 		this.caller = caller;
-
-		JsonNode apiDeclaration = caller.getApiDeclaration();
-		if (apiDeclaration.has("$bulk") && apiDeclaration.get("$bulk").isObject()
-				&& apiDeclaration.get("$bulk").has("inputBatchSize")
-				&& apiDeclaration.get("$bulk").get("inputBatchSize").isInt()) {
-			this.batchSize = apiDeclaration.get("$bulk").get("inputBatchSize").asInt();
-		} else
-			this.batchSize = DEFAULT_BATCH_SIZE;
+		this.batchSize = initBatchSize(caller);
 	}
 
 	private InputCallerImpl getCaller() {
 		return this.caller;
 	}
-
 	private int getBatchSize() {
 		return this.batchSize;
+	}
+
+	@Override
+	public void call(InputStream workUnit, Stream<InputStream> input) {
+		if (workUnit != null && !allowsWorkUnit())
+			throw new IllegalArgumentException("Input endpoint does not accept work unit");
+
+		getCaller().call(getClient(), null, null, workUnit, input);
 	}
 
 	@Override
@@ -86,71 +84,48 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 		private InputEndpointImpl getEndpoint() {
 			return endpoint;
 		}
-
 		private int getBatchSize() {
 			return batchSize;
+		}
+		private LinkedBlockingQueue<InputStream> getQueue() {
+			return queue;
 		}
 
 		@Override
 		public void accept(InputStream input) {
-
-			try {
-				queue.put(input);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-				throw new IllegalStateException("InputStream was not added to the queue." + e.getMessage());
-			}
-			if ((queue.size() % getBatchSize()) > 0)
-				return;
-
-			switch (getPhase()) {
-			case INITIALIZING:
-				setPhase(WorkPhase.RUNNING);
-				break;
-			case RUNNING:
-				break;
-			case INTERRUPTING:
-				
-			case INTERRUPTED:
-				
-			case COMPLETED:
-				throw new IllegalStateException(
-						"cannot accept more input as current phase is  " + getPhase().name());
-			default:
-				throw new MarkLogicInternalException(
-						"unexpected state for " + getEndpointPath() + " during loop: " + getPhase().name());
-			}
-			processInput();
+			boolean hasBatch = queueInput(input, getQueue(), getBatchSize());
+			if (hasBatch)
+			    processInput();
 		}
 
 		@Override
 		public void awaitCompletion() {
-			logger.trace("input endpoint running endpoint={} work={}", getEndpointPath(), getWorkUnit());
-			if(queue != null && !queue.isEmpty())
+			if (getQueue() == null)
+				return;
+
+			while (!getQueue().isEmpty()) {
 				processInput();
+			}
 		}
 
 		private void processInput() {
 			logger.trace("input endpoint running endpoint={} count={} state={}", getEndpointPath(), getCallCount(),
 					getEndpointState());
-			List<InputStream> inputStreamList = new ArrayList<InputStream>();
-			queue.drainTo(inputStreamList);
-			SessionState session = allowsSession() ? getEndpoint().getCaller().newSessionState() : null;
 
-			InputStream output = getEndpoint().getCaller().call(getEndpoint().getClient(), getEndpointState(), session,
-					getWorkUnit(), inputStreamList.stream());
+			InputStream output = null;
+			try {
+				output = getEndpoint().getCaller().call(
+						getClient(), getEndpointState(), getSession(), getWorkUnit(), getInputBatch(getQueue(), getBatchSize())
+				);
+			} catch (Throwable throwable) {
+				throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
+			}
+
+			incrementCallCount();
 
 			if (allowsEndpointState()) {
 				setEndpointState(output);
 			}
 		}
-	}
-
-	@Override
-	public void call(InputStream workUnit, Stream<InputStream> input) {
-		if (workUnit != null && !allowsWorkUnit())
-			throw new IllegalArgumentException("Input endpoint does not accept work unit");
-
-		getCaller().call(getClient(), null, null, workUnit, input);
 	}
 }

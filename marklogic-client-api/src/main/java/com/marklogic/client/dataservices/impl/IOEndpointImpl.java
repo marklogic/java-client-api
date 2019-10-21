@@ -15,15 +15,26 @@
  */
 package com.marklogic.client.dataservices.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.IOEndpoint;
+import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.impl.NodeConverter;
 import com.marklogic.client.io.marker.BufferableHandle;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 abstract class IOEndpointImpl implements IOEndpoint {
+    final static int DEFAULT_BATCH_SIZE = 100;
+
     private DatabaseClient client;
     private IOCallerImpl   caller;
 
@@ -34,6 +45,16 @@ abstract class IOEndpointImpl implements IOEndpoint {
             throw new IllegalArgumentException("null caller");
         this.client = client;
         this.caller = caller;
+    }
+
+    int initBatchSize(IOCallerImpl caller) {
+        JsonNode apiDeclaration = caller.getApiDeclaration();
+        if (apiDeclaration.has("$bulk") && apiDeclaration.get("$bulk").isObject()
+                && apiDeclaration.get("$bulk").has("inputBatchSize")
+                && apiDeclaration.get("$bulk").get("inputBatchSize").isInt()) {
+            return apiDeclaration.get("$bulk").get("inputBatchSize").asInt();
+        }
+        return DEFAULT_BATCH_SIZE;
     }
 
     DatabaseClient getClient() {
@@ -144,12 +165,64 @@ abstract class IOEndpointImpl implements IOEndpoint {
             setWorkUnit((workUnit == null) ? null : workUnit.toBuffer());
         }
 
+        DatabaseClient getClient() {
+            return getEndpoint().getClient();
+        }
         boolean allowsSession() {
             return getEndpoint().allowsSession();
         }
-
+        SessionState getSession() {
+            return allowsSession() ? getEndpoint().getCaller().newSessionState() : null;
+        }
         boolean allowsInput() {
             return getEndpoint().allowsInput();
+        }
+
+        boolean queueInput(InputStream input, BlockingQueue<InputStream> queue, int batchSize) {
+            try {
+                queue.put(input);
+            } catch (InterruptedException e) {
+                throw new IllegalStateException("InputStream was not added to the queue." + e.getMessage());
+            }
+            if ((queue.size() % batchSize) > 0)
+                return false;
+
+            switch (getPhase()) {
+                case INITIALIZING:
+                    setPhase(WorkPhase.RUNNING);
+                    break;
+                case RUNNING:
+                    break;
+                case INTERRUPTING:
+                case INTERRUPTED:
+                case COMPLETED:
+                    throw new IllegalStateException(
+                            "cannot accept more input as current phase is  " + getPhase().name()
+                    );
+                default:
+                    throw new MarkLogicInternalException(
+                            "unexpected state for " + getEndpointPath() + " during loop: " + getPhase().name());
+            }
+
+            return true;
+        }
+        Stream<InputStream> getInputBatch(BlockingQueue<InputStream> queue, int batchSize) {
+            List<InputStream> inputStreamList = new ArrayList<InputStream>();
+            queue.drainTo(inputStreamList, batchSize);
+            return inputStreamList.stream();
+        }
+        void processOutputBatch(Stream<InputStream> output, Consumer<InputStream> outputConsumer) {
+            if (output == null) return;
+
+            InputStream[] result = output.toArray(size -> new InputStream[size]);
+
+            if (allowsEndpointState() && result.length > 0) {
+                setEndpointState(result[0]);
+            }
+
+            for (int i=allowsEndpointState()?1:0; i<result.length; i++) {
+                outputConsumer.accept(result[i]);
+            }
         }
 
         WorkPhase getPhase() {

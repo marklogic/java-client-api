@@ -65,8 +65,8 @@ public class IOCallerImplTest {
         String              endpointState = getEndpointState();
         String              workUnit      = getWorkUnit();
         Stream<InputStream> input         = Stream.of(
-                asInputStream("{docNum:1, docName:\"alpha\"}"),
-                asInputStream("{docNum:2, docName:\"beta\"}")
+                asInputStream("{\"docNum\":1, \"docName\":\"alpha\"}"),
+                asInputStream("{\"docNum\":2, \"docName\":\"beta\"}")
         );
 
         InputCallerImpl caller = new InputCallerImpl(new JacksonHandle(apiObj));
@@ -90,8 +90,8 @@ public class IOCallerImplTest {
         String              endpointState = getEndpointState();
         String              workUnit      = getWorkUnit();
         Stream<InputStream> input         = Stream.of(
-                asInputStream("{docNum:1, docName:\"alpha\"}"),
-                asInputStream("{docNum:2, docName:\"beta\"}")
+                asInputStream("{\"docNum\":1, \"docName\":\"alpha\"}"),
+                asInputStream("{\"docNum\":2, \"docName\":\"beta\"}")
         );
 
         InputOutputCallerImpl caller = new InputOutputCallerImpl(new JacksonHandle(apiObj));

@@ -16,7 +16,7 @@
 package com.marklogic.client.dataservices;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.dataservices.impl.OutputEndpointImpl;
+import com.marklogic.client.dataservices.impl.InputOutputEndpointImpl;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
 import java.io.InputStream;
@@ -24,42 +24,43 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 /**
- * Provides an interface for calling an endpoint that returns output data structures.
+ * Provides an interface for calling an endpoint that takes input data structures and
+ * returns output data structures.
  */
-public interface OutputEndpoint extends IOEndpoint {
-    /**
-     * Constructs an instance of the OutputEndpoint interface.
-     * @param client  the database client to use for making calls
-     * @param apiDecl  the JSON api declaration specifying how to call the endpoint
-     * @return  the OutputEndpoint instance for calling the endpoint.
-     */
-    static OutputEndpoint on(DatabaseClient client, JSONWriteHandle apiDecl) {
-        return new OutputEndpointImpl(client, apiDecl);
+public interface InputOutputEndpoint {
+    static InputOutputEndpoint on(DatabaseClient client, JSONWriteHandle apiDecl) {
+        return new InputOutputEndpointImpl(client, apiDecl);
     }
 
     /**
      * Makes one call to the endpoint for the instance
      * @param workUnit  the definition of a unit of work
+     * @param input  the stream given to the endpoint as input.
      * @return  the response from the endpoint
      */
-    Stream<InputStream> call(InputStream workUnit);
+    Stream<InputStream> call(InputStream workUnit, Stream<InputStream> input);
 
     /**
      * Constructs an instance of a bulk caller, which completes
      * a unit of work by repeated calls to the endpoint.
-     * @return  the bulk caller for the output endpoint
+     * @return  the bulk caller for the input-output endpoint
      */
-    OutputEndpoint.BulkOutputCaller bulkCaller();
+    BulkInputOutputCaller bulkCaller();
 
     /**
      * Provides an interface for completing a unit of work
-     * by repeated calls to the output endpoint.
+     * by repeated calls to the input-output endpoint.
      */
-    interface BulkOutputCaller extends IOEndpoint.BulkIOEndpointCaller {
+    interface BulkInputOutputCaller extends IOEndpoint.BulkIOEndpointCaller {
         /**
          * Specifies the function to call on receiving output from the endpoint.
          * @param outputConsumer a function for processing the endpoint output
          */
         void forEachOutput(Consumer<InputStream> outputConsumer);
+        /**
+         * Accepts the input for the input endpoint.
+         * @param input  the stream given to the endpoint as input.
+         */
+        void accept(InputStream input);
     }
 }
