@@ -59,7 +59,7 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 		if (workUnit != null && !allowsWorkUnit())
 			throw new IllegalArgumentException("Input endpoint does not accept work unit");
 
-		getCaller().call(getClient(), null, null, workUnit, input);
+		getCaller().streamCall(getClient(), null, null, workUnit, input);
 	}
 
 	@Override
@@ -114,7 +114,7 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 
 			InputStream output = null;
 			try {
-				output = getEndpoint().getCaller().call(
+				output = getEndpoint().getCaller().arrayCall(
 						getClient(), getEndpointState(), getSession(), getWorkUnit(), getInputBatch(getQueue(), getBatchSize())
 				);
 			} catch (Throwable throwable) {

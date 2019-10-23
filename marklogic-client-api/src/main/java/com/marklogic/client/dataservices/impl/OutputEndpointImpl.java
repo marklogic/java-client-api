@@ -42,6 +42,12 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         return this.caller;
     }
 
+
+    @Override
+    public Stream<InputStream> call(InputStream workUnit) {
+        return getCaller().streamCall(getClient(), null, null, workUnit);
+    }
+
     @Override
     public BulkOutputCaller bulkCaller() {
         return new BulkOutputCallerImpl(this);
@@ -88,9 +94,9 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                 logger.trace("output endpoint={} count={} state={}",
                         getEndpointPath(), getCallCount(), getEndpointState());
 
-                Stream<InputStream> output = null;
+                InputStream[] output = null;
                 try {
-                    output = getEndpoint().getCaller().call(
+                    output = getEndpoint().getCaller().arrayCall(
                             getClient(), getEndpointState(), getSession(), getWorkUnit()
                     );
                 } catch(Throwable throwable) {
@@ -126,10 +132,5 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                 }
             }
         }
-    }
-
-    @Override
-    public Stream<InputStream> call(InputStream workUnit) {
-        return getCaller().call(getClient(), null, null, workUnit);
     }
 }

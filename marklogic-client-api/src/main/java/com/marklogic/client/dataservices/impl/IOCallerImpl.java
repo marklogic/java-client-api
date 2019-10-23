@@ -149,10 +149,46 @@ abstract class IOCallerImpl extends BaseCallerImpl {
     BaseProxy.DBFunctionRequest makeRequest(
             DatabaseClient db, InputStream endpointState, SessionState session, InputStream workUnit
     ) {
-        return makeRequest(db, endpointState, session, workUnit, null);
+        return makeRequest(db, endpointState, session, workUnit, (RESTServices.CallField) null);
     }
     BaseProxy.DBFunctionRequest makeRequest(
             DatabaseClient db, InputStream endpointState, SessionState session, InputStream workUnit, Stream<InputStream> input
+    ) {
+        RESTServices.CallField inputField = null;
+
+        ParamdefImpl paramdef = getInputParamdef();
+        if (paramdef != null) {
+            inputField = BaseProxy.documentParam(
+                    "input",
+                    paramdef.isNullable(),
+                    NodeConverter.streamWithFormat(NodeConverter.InputStreamToHandle(input), paramdef.getFormat())
+                    );
+        } else if (input != null) {
+            throw new IllegalArgumentException("input parameter not supported by endpoint: "+getEndpointPath());
+        }
+
+        return makeRequest(db, endpointState, session, workUnit, inputField);
+    }
+    BaseProxy.DBFunctionRequest makeRequest(
+            DatabaseClient db, InputStream endpointState, SessionState session, InputStream workUnit, InputStream[] input
+    ) {
+        RESTServices.CallField inputField = null;
+
+        ParamdefImpl paramdef = getInputParamdef();
+        if (paramdef != null) {
+            inputField = BaseProxy.documentParam(
+                    "input",
+                    paramdef.isNullable(),
+                    NodeConverter.arrayWithFormat(NodeConverter.InputStreamToHandle(input), paramdef.getFormat())
+            );
+        } else if (input != null && input.length > 0) {
+            throw new IllegalArgumentException("input parameter not supported by endpoint: "+getEndpointPath());
+        }
+
+        return makeRequest(db, endpointState, session, workUnit, inputField);
+    }
+    BaseProxy.DBFunctionRequest makeRequest(
+            DatabaseClient db, InputStream endpointState, SessionState session, InputStream workUnit, RESTServices.CallField inputField
     ) {
         BaseProxy.DBFunctionRequest request = getRequester().on(db);
 
@@ -194,19 +230,8 @@ abstract class IOCallerImpl extends BaseCallerImpl {
             throw new IllegalArgumentException("workUnit parameter not supported by endpoint: "+getEndpointPath());
         }
 
-        RESTServices.CallField inputField = null;
-        if (getInputParamdef() != null) {
-            inputField = BaseProxy.documentParam(
-                    "input",
-                    getInputParamdef().isNullable(),
-                    NodeConverter.streamWithFormat(
-                            NodeConverter.InputStreamToHandle(input), getInputParamdef().getFormat()
-                    ));
-            if (input != null)
-                fieldNum++;
-        } else if (input != null) {
-            throw new IllegalArgumentException("input parameter not supported by endpoint: "+getEndpointPath());
-        }
+        if (inputField != null)
+            fieldNum++;
 
         if (fieldNum > 0) {
             RESTServices.CallField[] fields = new RESTServices.CallField[fieldNum];
@@ -247,15 +272,20 @@ abstract class IOCallerImpl extends BaseCallerImpl {
         return request.responseSingle(getReturndef().isNullable(), getReturndef().getFormat())
                       .asInputStream();
     }
-    Stream<InputStream> responseMultiple(BaseProxy.DBFunctionRequest request) {
+    Stream<InputStream> responseMultipleAsStream(BaseProxy.DBFunctionRequest request) {
+        return responseMultiple(request).asStreamOfInputStream();
+    }
+    InputStream[] responseMultipleAsArray(BaseProxy.DBFunctionRequest request) {
+        return responseMultiple(request).asArrayOfInputStream();
+    }
+    private RESTServices.MultipleCallResponse responseMultiple(BaseProxy.DBFunctionRequest request) {
         if (getReturndef() == null) {
             throw new UnsupportedOperationException("no return from endpoint: "+getEndpointPath());
         } else if (!getReturndef().isMultiple()) {
             throw new UnsupportedOperationException("single return from endpoint: "+getEndpointPath());
         }
 
-        return request.responseMultiple(getReturndef().isNullable(), getReturndef().getFormat())
-                      .asStreamOfInputStream();
+        return request.responseMultiple(getReturndef().isNullable(), getReturndef().getFormat());
     }
 
     JsonNode getApiDeclaration() {

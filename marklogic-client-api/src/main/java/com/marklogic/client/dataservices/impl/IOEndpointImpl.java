@@ -206,22 +206,20 @@ abstract class IOEndpointImpl implements IOEndpoint {
 
             return true;
         }
-        Stream<InputStream> getInputBatch(BlockingQueue<InputStream> queue, int batchSize) {
+        InputStream[] getInputBatch(BlockingQueue<InputStream> queue, int batchSize) {
             List<InputStream> inputStreamList = new ArrayList<InputStream>();
             queue.drainTo(inputStreamList, batchSize);
-            return inputStreamList.stream();
+            return inputStreamList.toArray(new InputStream[inputStreamList.size()]);
         }
-        void processOutputBatch(Stream<InputStream> output, Consumer<InputStream> outputConsumer) {
+        void processOutputBatch(InputStream[] output, Consumer<InputStream> outputConsumer) {
             if (output == null) return;
 
-            InputStream[] result = output.toArray(size -> new InputStream[size]);
-
-            if (allowsEndpointState() && result.length > 0) {
-                setEndpointState(result[0]);
+            if (allowsEndpointState() && output.length > 0) {
+                setEndpointState(output[0]);
             }
 
-            for (int i=allowsEndpointState()?1:0; i<result.length; i++) {
-                outputConsumer.accept(result[i]);
+            for (int i=allowsEndpointState()?1:0; i < output.length; i++) {
+                outputConsumer.accept(output[i]);
             }
         }
 

@@ -54,7 +54,7 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
 
     @Override
     public Stream<InputStream> call(InputStream workUnit, Stream<InputStream> input) {
-        return getCaller().call(getClient(), null, null, workUnit, input);
+        return getCaller().streamCall(getClient(), null, null, workUnit, input);
     }
 
     @Override
@@ -108,9 +108,9 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
             logger.trace("input endpoint running endpoint={} count={} state={}", getEndpointPath(), getCallCount(),
                     getEndpointState());
 
-            Stream<InputStream> output = null;
+            InputStream[] output = null;
             try {
-                output = getEndpoint().getCaller().call(
+                output = getEndpoint().getCaller().arrayCall(
                         getClient(), getEndpointState(), getSession(), getWorkUnit(), getInputBatch(getQueue(), getBatchSize())
                 );
             } catch(Throwable throwable) {

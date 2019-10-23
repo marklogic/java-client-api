@@ -70,7 +70,7 @@ public class IOCallerImplTest {
         );
 
         InputCallerImpl caller = new InputCallerImpl(new JacksonHandle(apiObj));
-        InputStream     result = caller.call(
+        InputStream     result = caller.streamCall(
                 IOTestUtil.db, asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit), input
         );
 
@@ -95,7 +95,7 @@ public class IOCallerImplTest {
         );
 
         InputOutputCallerImpl caller = new InputOutputCallerImpl(new JacksonHandle(apiObj));
-        Stream<InputStream>   result = caller.call(
+        Stream<InputStream>   result = caller.streamCall(
                 IOTestUtil.db, asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit), input
         );
 
@@ -116,7 +116,7 @@ public class IOCallerImplTest {
         String workUnit      = getWorkUnit();
 
         OutputCallerImpl    caller = new OutputCallerImpl(new JacksonHandle(apiObj));
-        Stream<InputStream> result = caller.call(
+        Stream<InputStream> result = caller.streamCall(
                 IOTestUtil.db, asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit)
         );
 

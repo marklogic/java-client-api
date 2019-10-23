@@ -38,9 +38,14 @@ final public class OutputCallerImpl extends IOCallerImpl {
         }
     }
 
-    public Stream<InputStream> call(
+    public InputStream[] arrayCall(
             DatabaseClient db, InputStream endpointState, SessionState session, InputStream workUnit
     ) {
-        return responseMultiple(makeRequest(db, endpointState, session, workUnit));
+        return responseMultipleAsArray(makeRequest(db, endpointState, session, workUnit));
+    }
+    public Stream<InputStream> streamCall(
+            DatabaseClient db, InputStream endpointState, SessionState session, InputStream workUnit
+    ) {
+        return responseMultipleAsStream(makeRequest(db, endpointState, session, workUnit));
     }
 }

@@ -52,7 +52,7 @@ public class InputEndpointImplTest {
                 IOTestUtil.asInputStream("{\"docNum\":2, \"docName\":\"doc2\"}"));
 
         InputCallerImpl caller = new InputCallerImpl(new JacksonHandle(apiObj));
-        InputStream result = caller.call(IOTestUtil.db, IOTestUtil.asInputStream(endpointState), caller.newSessionState(),
+        InputStream result = caller.streamCall(IOTestUtil.db, IOTestUtil.asInputStream(endpointState), caller.newSessionState(),
                 IOTestUtil.asInputStream(workUnit), input);
         assertNotNull(result);
 
@@ -72,7 +72,7 @@ public class InputEndpointImplTest {
                 IOTestUtil.asInputStream("{\"docNum\":2, \"docName\":\"doc2\"}"));
 
         InputCallerImpl caller = new InputCallerImpl(new JacksonHandle(apiObj));
-        InputStream result = caller.call(IOTestUtil.db, null, caller.newSessionState(),
+        InputStream result = caller.streamCall(IOTestUtil.db, null, caller.newSessionState(),
                 IOTestUtil.asInputStream(workUnit), input);
         assertNotNull(result);
 
@@ -88,7 +88,7 @@ public class InputEndpointImplTest {
                 IOTestUtil.asInputStream("{\"docNum\":2, \"docName\":\"doc2\"}"));
 
         InputCallerImpl caller = new InputCallerImpl(new JacksonHandle(apiObj));
-        InputStream result = caller.call(IOTestUtil.db, IOTestUtil.asInputStream("{\"endpoint\":0}"), null,
+        InputStream result = caller.streamCall(IOTestUtil.db, IOTestUtil.asInputStream("{\"endpoint\":0}"), null,
                 IOTestUtil.asInputStream(workUnit), input);
         assertNotNull(result);
 
@@ -105,7 +105,7 @@ public class InputEndpointImplTest {
                 IOTestUtil.asInputStream("{\"docNum\":2, \"docName\":\"doc2\"}"));
 
         InputCallerImpl caller = new InputCallerImpl(new JacksonHandle(apiObj));
-        InputStream result = caller.call(IOTestUtil.db, IOTestUtil.asInputStream("{\"endpoint\":0}"), caller.newSessionState(),
+        InputStream result = caller.streamCall(IOTestUtil.db, IOTestUtil.asInputStream("{\"endpoint\":0}"), caller.newSessionState(),
                 IOTestUtil.asInputStream(workUnit), null);
         assertNotNull(result);
 
@@ -122,7 +122,7 @@ public class InputEndpointImplTest {
                 IOTestUtil.asInputStream("{\"docNum\":2, \"docName\":\"doc2\"}"));
 
         InputCallerImpl caller = new InputCallerImpl(new JacksonHandle(apiObj));
-        InputStream result = caller.call(IOTestUtil.db, null, null,
+        InputStream result = caller.streamCall(IOTestUtil.db, null, null,
                 null, null);
         assertNotNull(result);
 

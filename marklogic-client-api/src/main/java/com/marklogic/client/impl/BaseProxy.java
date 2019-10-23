@@ -795,6 +795,9 @@ public class BaseProxy {
    static public MultipleNodeCallField documentParam(String paramName, boolean isNullable, Stream<? extends BufferableHandle> values) {
       return isParamNull(paramName, isNullable, values) ? null : new UnbufferedMultipleNodeCallField(paramName, values);
    }
+   static public MultipleNodeCallField documentParam(String paramName, boolean isNullable, BufferableHandle[] values) {
+      return isParamNull(paramName, isNullable, values) ? null : new BufferedMultipleNodeCallField(paramName, values);
+   }
    static protected boolean isParamNull(String paramName, boolean isNullable, Object value) {
       if (value != null) {
          return false;
