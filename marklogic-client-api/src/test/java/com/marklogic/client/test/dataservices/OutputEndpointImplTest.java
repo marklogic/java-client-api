@@ -49,7 +49,7 @@ public class OutputEndpointImplTest {
         String workUnit = "{\"workUnit\":\"/workUnit1\"}";
 
         OutputCallerImpl caller = new OutputCallerImpl(new JacksonHandle(apiObj));
-        Stream<InputStream> result = caller.call(IOTestUtil.db, IOTestUtil.asInputStream(endpointState), caller.newSessionState(),
+        Stream<InputStream> result = caller.streamCall(IOTestUtil.db, IOTestUtil.asInputStream(endpointState), caller.newSessionState(),
                 IOTestUtil.asInputStream(workUnit));
         assertNotNull(result);
         InputStream[] resultArray = result.toArray(size -> new InputStream[size]);
@@ -66,7 +66,7 @@ public class OutputEndpointImplTest {
         String workUnit = "{\"collection\":\"/dataset1\"}";
 
         OutputCallerImpl caller = new OutputCallerImpl(new JacksonHandle(apiObj));
-        Stream<InputStream> result = caller.call(IOTestUtil.db, null, caller.newSessionState(),
+        Stream<InputStream> result = caller.streamCall(IOTestUtil.db, null, caller.newSessionState(),
                 IOTestUtil.asInputStream(workUnit));
         assertNotNull(result);
         InputStream[] resultArray = result.toArray(size -> new InputStream[size]);
@@ -80,7 +80,7 @@ public class OutputEndpointImplTest {
 
         String workUnit = "{\"workUnit\":\"/1\"}";
         OutputCallerImpl caller = new OutputCallerImpl(new JacksonHandle(apiObj));
-        Stream<InputStream> result = caller.call(IOTestUtil.db, IOTestUtil.asInputStream("{\"endpoint\":1}"), null,
+        Stream<InputStream> result = caller.streamCall(IOTestUtil.db, IOTestUtil.asInputStream("{\"endpoint\":1}"), null,
                 IOTestUtil.asInputStream(workUnit));
         assertNotNull(result);
         InputStream[] resultArray = result.toArray(size -> new InputStream[size]);
@@ -92,7 +92,7 @@ public class OutputEndpointImplTest {
     public void testOutputCallerImplWithNull() throws IOException {
 
         OutputCallerImpl caller = new OutputCallerImpl(new JacksonHandle(apiObj));
-        Stream<InputStream> result = caller.call(IOTestUtil.db, null, null,
+        Stream<InputStream> result = caller.streamCall(IOTestUtil.db, null, null,
                 null);
         assertNotNull(result);
         InputStream[] resultArray = result.toArray(size -> new InputStream[size]);
