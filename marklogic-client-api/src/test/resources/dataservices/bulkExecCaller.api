@@ -6,6 +6,11 @@
     "multiple": false,
     "nullable": true
     }, {
+    "name":     "session",
+    "datatype": "session",
+    "multiple": false,
+    "nullable": true
+    }, {
     "name":     "workUnit",
     "datatype": "jsonDocument",
     "multiple": false,

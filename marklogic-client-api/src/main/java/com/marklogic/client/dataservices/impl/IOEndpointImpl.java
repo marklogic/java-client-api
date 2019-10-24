@@ -22,18 +22,27 @@ import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.IOEndpoint;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.impl.NodeConverter;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.marker.BufferableHandle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 abstract class IOEndpointImpl implements IOEndpoint {
+    private static Logger logger = LoggerFactory.getLogger(IOEndpointImpl.class);
+
     final static int DEFAULT_BATCH_SIZE = 100;
+    final static int DEFAULT_SESSION_TIMEOUT = 3600;
+
+    private static Duration sessionDuration = null;
 
     private DatabaseClient client;
     private IOCallerImpl   caller;
@@ -45,6 +54,25 @@ abstract class IOEndpointImpl implements IOEndpoint {
             throw new IllegalArgumentException("null caller");
         this.client = client;
         this.caller = caller;
+
+        // the session configuration shouldn't change, so establish the session duration once
+        if (sessionDuration == null && allowsSession()) {
+            int sessionTimeout = DEFAULT_SESSION_TIMEOUT;
+
+            try {
+                JsonNode config = ((DatabaseClientImpl) client).getServices()
+                        .getResource(null, "internal/config", null, null, new JacksonHandle())
+                        .get();
+                JsonNode sessionTimeoutProp = config.get("sessionTimeout");
+                if (sessionTimeoutProp != null && sessionTimeoutProp.isNumber())
+                    sessionTimeout = sessionTimeoutProp.asInt(DEFAULT_SESSION_TIMEOUT);
+            } catch (Exception e) {
+                logger.warn("could not get session timeout", e);
+            }
+
+            // size the session duration to half of the configured session time
+            sessionDuration = Duration.ofSeconds(sessionTimeout / 2);
+        }
     }
 
     int initBatchSize(IOCallerImpl caller) {
@@ -57,10 +85,13 @@ abstract class IOEndpointImpl implements IOEndpoint {
         return DEFAULT_BATCH_SIZE;
     }
 
+    private static Duration getSessionDuration() {
+        return sessionDuration;
+    }
+
     DatabaseClient getClient() {
         return this.client;
     }
-
     private IOCallerImpl getCaller() {
         return this.caller;
     }
@@ -96,6 +127,8 @@ abstract class IOEndpointImpl implements IOEndpoint {
         private IOEndpointImpl endpoint;
         private byte[]         endpointState;
         private byte[]         workUnit;
+        private SessionState   session;
+        private Instant        sessionRefreshAfter;
 
         private long           callCount = 0;
 
@@ -172,7 +205,14 @@ abstract class IOEndpointImpl implements IOEndpoint {
             return getEndpoint().allowsSession();
         }
         SessionState getSession() {
-            return allowsSession() ? getEndpoint().getCaller().newSessionState() : null;
+            if (!allowsSession())
+                return null;
+
+            if (session == null || sessionRefreshAfter.isBefore(Instant.now())) {
+                session = getEndpoint().getCaller().newSessionState();
+                sessionRefreshAfter = Instant.now().plus(endpoint.getSessionDuration());
+            }
+            return session;
         }
         boolean allowsInput() {
             return getEndpoint().allowsInput();

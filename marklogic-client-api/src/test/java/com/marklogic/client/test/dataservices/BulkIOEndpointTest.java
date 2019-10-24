@@ -41,9 +41,10 @@ public class BulkIOEndpointTest {
 
         String finalStateUri = "/marklogic/ds/test/bulkExecCallerFinalState.json";
 
+        int nextStart = 5;
         int workMax = 15;
 
-        String endpointState = "{\"next\":5}";
+        String endpointState = "{\"next\":"+nextStart+"}";
         String workUnit      = "{\"max\":"+workMax+"}";
 
         ObjectNode apiObj     = IOTestUtil.readApi(apiName);
@@ -69,6 +70,16 @@ public class BulkIOEndpointTest {
         assertTrue("final next not number", finalNext.isNumber());
         assertEquals("mismatch on final next", workMax, finalNext.asInt());
 
+        JsonNode finalMax = finalState.get("workMax");
+        assertNotNull("null final max", finalMax);
+        assertTrue("final max not number", finalMax.isNumber());
+        assertEquals("mismatch on final max", workMax, finalMax.asInt());
+
+        JsonNode sessionCounter = finalState.get("sessionCounter");
+        assertNotNull("null final sessionCounter", sessionCounter);
+        assertTrue("final sessionCounter not number", sessionCounter.isNumber());
+        assertEquals("mismatch on final sessionCounter", (workMax - nextStart) - 1, sessionCounter.asInt());
+
         docMgr.delete(finalStateUri);
 
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
@@ -77,15 +88,19 @@ public class BulkIOEndpointTest {
     public void testInputOutputCallerImpl() throws IOException {
         String apiName = "bulkInputOutputCaller.api";
 
-        int start   = 1;
-        int workMax = 4;
+        int nextStart = 1;
+        int workMax   = 4;
 
         ObjectNode apiObj     = IOTestUtil.readApi(apiName);
         String     scriptPath = IOTestUtil.getScriptPath(apiObj);
         String     apiPath    = IOTestUtil.getApiPath(scriptPath);
         IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
 
-        String              endpointState = "{\"next\":"+start+"}";
+        int batchSize = apiObj.get("$bulk").get("inputBatchSize").asInt();
+        int callCount = (workMax - nextStart) / batchSize +
+                (((workMax - nextStart) % batchSize) > 0 ? 1 : 0);
+
+        String              endpointState = "{\"next\":"+nextStart+"}";
         String              workUnit      = "{\"max\":"+workMax+"}";
         Set<String>         input         = Set.of(
                 "{\"docNum\":1, \"docName\":\"alpha\"}",
@@ -104,12 +119,28 @@ public class BulkIOEndpointTest {
         input.stream().forEach(value -> bulkCaller.accept(IOTestUtil.asInputStream(value)));
         bulkCaller.awaitCompletion();
 
-        ObjectNode lastState = mapper.readValue(bulkCaller.getEndpointState(), ObjectNode.class);
+        ObjectNode finalState = mapper.readValue(bulkCaller.getEndpointState(), ObjectNode.class);
 
         assertEquals("mismatch between input and output size", input.size(), output.size());
         assertEquals("mismatch between input and output elements", input, output);
 
-        assertEquals("mismatch between input and output elements", workMax, lastState.get("next").asInt());
+        assertNotNull("null final state", finalState);
+        assertTrue("final state not object", finalState.isObject());
+
+        JsonNode finalNext = finalState.get("next");
+        assertNotNull("null final next", finalNext);
+        assertTrue("final next not number", finalNext.isNumber());
+        assertEquals("mismatch on final next", workMax, finalNext.asInt());
+
+        JsonNode finalMax = finalState.get("workMax");
+        assertNotNull("null final max", finalMax);
+        assertTrue("final max not number", finalMax.isNumber());
+        assertEquals("mismatch on final max", workMax, finalMax.asInt());
+
+        JsonNode sessionCounter = finalState.get("sessionCounter");
+        assertNotNull("null final sessionCounter", sessionCounter);
+        assertTrue("final sessionCounter not number", sessionCounter.isNumber());
+        assertEquals("mismatch on final sessionCounter", callCount - 1, sessionCounter.asInt());
 
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
