@@ -118,8 +118,9 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                             setPhase(WorkPhase.COMPLETED);
                             logger.info("output completed endpoint={} count={} work={}",
                                     getEndpointPath(), getCallCount(), getWorkUnit());
+                            break calling;
                         }
-                        break calling;
+                        continue calling;
                     case INTERRUPTED:
                     case COMPLETED:
                         throw new IllegalStateException(
