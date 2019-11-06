@@ -81,6 +81,7 @@ public class DataMovementServices {
     String database = null;
     Map<String, ForestInfo> forestMap = null;
     JsonNode forestNodes = null;
+System.out.println("PERFTEST: MAY_BATCH_PER_FOREST="+MAY_BATCH_PER_FOREST+", hasPolicy="+hasPolicy);
     if (hasPolicy) {
       String assignPolicyName = results.get("assignmentPolicy").asText();
       assignPolicy = AssignmentPolicy.Kind.forName(assignPolicyName);
@@ -105,6 +106,7 @@ public class DataMovementServices {
         default:
           throw new MarkLogicInternalException("cannot initialize unknown policy: "+assignPolicyName);
       }
+System.out.println("PERFTEST: assignPolicy="+assignPolicy+", fastloadAllowed="+fastloadAllowed);
       database = results.get("database").asText();
       forestMap = new HashMap<>();
       forestNodes = results.get("forests");

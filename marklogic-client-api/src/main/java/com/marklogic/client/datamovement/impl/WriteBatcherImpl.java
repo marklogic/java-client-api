@@ -205,6 +205,7 @@ public class WriteBatcherImpl
         assignMgr.start();
         queueCount = getForestConfig().listForests().length;
       }
+System.out.println("PERFTEST: assignMgr.isInitialized()="+assignMgr.isInitialized()+", queueCount="+queueCount);
 
       // Because the application might add to the queues at a faster rate
       // than the queues are drained, the queues must be bounded and must
@@ -263,6 +264,7 @@ public class WriteBatcherImpl
       logger.debug("add() uri={} caught InterruptedException", writeUri);
       throw new RuntimeException(e);
     }
+System.out.println("PERFTEST: queueIndex="+queueIndex+", writeQueue.size()="+writeQueue.size());
     drain(writeQueue, getBatchSize());
     return this;
   }
