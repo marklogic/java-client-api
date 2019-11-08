@@ -69,25 +69,31 @@ public class BulkOutputCallerTest {
 
         InputStream[] resultArray = result.toArray(size -> new InputStream[size]);
         assertNotNull(resultArray);
-        assertTrue(resultArray.length == count);
+        assertTrue(resultArray.length-1 == count);
         List<String> list = new ArrayList<>();
-        for(int i=0;i<resultArray.length;i++) {
+        for(int i=1;i<resultArray.length;i++) {
             assertNotNull(resultArray[i]);
             list.add(IOTestUtil.mapper.readValue(resultArray[i], ObjectNode.class).toString());
         }
-
+        String workUnit2      = "{\"max\":"+3+"}";
         OutputEndpointImpl.BulkOutputCaller bulkCaller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj)).bulkCaller();
         bulkCaller.setEndpointState(new ByteArrayInputStream(endpointState.getBytes()));
-        bulkCaller.setWorkUnit(new ByteArrayInputStream(workUnit.getBytes()));
+        bulkCaller.setWorkUnit(new ByteArrayInputStream(workUnit2.getBytes()));
+        class Output {
+            int counter =0;
+        }
+        Output output = new Output();
         bulkCaller.forEachOutput(i-> {
             try {
                 assertTrue(list.contains(IOTestUtil.mapper.readValue(i, ObjectNode.class).toString()));
+                output.counter++;
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
 
        bulkCaller.awaitCompletion();
+       assertTrue(output.counter == count);
     }
 
     @AfterClass
