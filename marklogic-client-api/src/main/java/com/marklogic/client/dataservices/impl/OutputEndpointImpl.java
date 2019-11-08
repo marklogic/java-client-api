@@ -114,7 +114,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                                 getEndpointPath(), getCallCount(), getWorkUnit());
                         break calling;
                     case RUNNING:
-                        if (output == null) {
+                        if (output == null || output.length == 0) {
                             setPhase(WorkPhase.COMPLETED);
                             logger.info("output completed endpoint={} count={} work={}",
                                     getEndpointPath(), getCallCount(), getWorkUnit());
