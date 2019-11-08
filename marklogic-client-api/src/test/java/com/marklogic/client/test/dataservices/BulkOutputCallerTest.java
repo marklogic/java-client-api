@@ -69,7 +69,7 @@ public class BulkOutputCallerTest {
 
         InputStream[] resultArray = result.toArray(size -> new InputStream[size]);
         assertNotNull(resultArray);
-        assertTrue(resultArray.length == 5);
+        assertTrue(resultArray.length == count);
         List<String> list = new ArrayList<>();
         for(int i=0;i<resultArray.length;i++) {
             assertNotNull(resultArray[i]);
