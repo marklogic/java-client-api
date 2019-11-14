@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.function.Consumer;
@@ -257,10 +258,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
             if (allowsEndpointState() && output.length > 0) {
                 setEndpointState(output[0]);
             }
-
-            for (int i=allowsEndpointState()?1:0; i < output.length; i++) {
-                outputConsumer.accept(output[i]);
-            }
+            processOutput(output, outputConsumer);
         }
 
         WorkPhase getPhase() {
@@ -273,6 +271,20 @@ abstract class IOEndpointImpl implements IOEndpoint {
         public void interrupt() {
             if (this.phase == WorkPhase.RUNNING)
                 setPhase(WorkPhase.INTERRUPTING);
+        }
+
+        void processOutput(InputStream[] output, Consumer<InputStream> outputConsumer) {
+            for (int i=allowsEndpointState()?1:0; i < output.length; i++) {
+                outputConsumer.accept(output[i]);
+            }
+        }
+
+        InputStream[] getOutput(InputStream[] output, Consumer<InputStream> outputConsumer) {
+            processOutput(output, outputConsumer);
+            if(allowsEndpointState()) {
+                 return Arrays.copyOfRange(output, 1, output.length);
+            }
+            return output;
         }
     }
 }
