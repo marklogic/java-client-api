@@ -61,5 +61,9 @@ public interface OutputEndpoint extends IOEndpoint {
          * @param outputConsumer a function for processing the endpoint output
          */
         void forEachOutput(Consumer<InputStream> outputConsumer);
+        /**
+         * Called by the Kafka dataflow connector to get the next batch of output.
+         */
+        Stream<InputStream> next();
     }
 }

@@ -77,6 +77,14 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         }
 
         @Override
+        public Stream<InputStream> next() {
+            if(getOutputConsumer() != null )
+                throw new IllegalStateException("Cannot call next while current output consumer is not empty.");
+            InputStream[] output = getOutput(getOutputStream(), outputConsumer);
+            return Stream.of(output);
+        }
+
+        @Override
         public void awaitCompletion() {
             if (getOutputConsumer() == null)
                 throw new IllegalStateException("Output consumer is null");
@@ -94,16 +102,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                 logger.trace("output endpoint={} count={} state={}",
                         getEndpointPath(), getCallCount(), getEndpointState());
 
-                InputStream[] output = null;
-                try {
-                    output = getEndpoint().getCaller().arrayCall(
-                            getClient(), getEndpointState(), getSession(), getWorkUnit()
-                    );
-                } catch(Throwable throwable) {
-                    throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
-                }
-
-                incrementCallCount();
+                InputStream[] output = getOutputStream();
 
                 processOutputBatch(output, getOutputConsumer());
 
@@ -131,6 +130,20 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                         );
                 }
             }
+        }
+
+        private InputStream[] getOutputStream() {
+            InputStream[] output;
+            try {
+                output = getEndpoint().getCaller().arrayCall(
+                        getClient(), getEndpointState(), getSession(), getWorkUnit()
+                );
+            } catch(Throwable throwable) {
+                throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
+            }
+
+            incrementCallCount();
+            return output;
         }
     }
 }
