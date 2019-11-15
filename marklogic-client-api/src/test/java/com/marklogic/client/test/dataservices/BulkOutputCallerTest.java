@@ -96,6 +96,43 @@ public class BulkOutputCallerTest {
        assertTrue(output.counter == count);
     }
 
+    @Test
+    public void bulkOutputCallerNextTest() throws Exception {
+        String endpointState = "{\"next\":"+1+"}";
+        String workUnit      = "{\"max\":"+6+"}";
+
+        writeDocuments(10);
+        count = 10;
+
+        OutputCallerImpl caller = new OutputCallerImpl(new JacksonHandle(apiObj));
+
+        Stream<InputStream> result = caller.streamCall(IOTestUtil.db, IOTestUtil.asInputStream(endpointState), caller.newSessionState(),
+                IOTestUtil.asInputStream(workUnit));
+
+        InputStream[] resultArray = result.toArray(size -> new InputStream[size]);
+        assertNotNull(resultArray);
+        assertTrue(resultArray.length-1 == count);
+        List<String> list = new ArrayList<>();
+        for(int i=1;i<resultArray.length;i++) {
+            assertNotNull(resultArray[i]);
+            list.add(IOTestUtil.mapper.readValue(resultArray[i], ObjectNode.class).toString());
+        }
+
+        OutputEndpointImpl.BulkOutputCaller bulkCaller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj)).bulkCaller();
+        bulkCaller.setEndpointState(new ByteArrayInputStream(endpointState.getBytes()));
+        bulkCaller.setWorkUnit(new ByteArrayInputStream(workUnit.getBytes()));
+
+        Stream<InputStream> output = bulkCaller.next();
+        assertNotNull(output);
+        InputStream[] outputArray = output.toArray(size-> new InputStream[size]);
+        assertTrue("Output Array from Bulk Output Endpoint does not contain all the documents written.",outputArray.length == count);
+        for(InputStream i:outputArray) {
+            assertNotNull(i);
+            String data = IOTestUtil.mapper.readValue(i, ObjectNode.class).toString();
+            assertTrue("List does not contain "+data,list.contains(data));
+        }
+    }
+
     @AfterClass
     public static void cleanup() {
         QueryManager queryMgr = IOTestUtil.db.newQueryManager();
