@@ -121,15 +121,16 @@ public class BulkOutputCallerTest {
         OutputEndpointImpl.BulkOutputCaller bulkCaller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj)).bulkCaller();
         bulkCaller.setEndpointState(new ByteArrayInputStream(endpointState.getBytes()));
         bulkCaller.setWorkUnit(new ByteArrayInputStream(workUnit.getBytes()));
-
-        Stream<InputStream> output = bulkCaller.next();
-        assertNotNull(output);
-        InputStream[] outputArray = output.toArray(size-> new InputStream[size]);
-        assertTrue("Output Array from Bulk Output Endpoint does not contain all the documents written.",outputArray.length == count);
-        for(InputStream i:outputArray) {
-            assertNotNull(i);
-            String data = IOTestUtil.mapper.readValue(i, ObjectNode.class).toString();
-            assertTrue("List does not contain "+data,list.contains(data));
+        for (int j=0; j<4; j++) {
+            Stream<InputStream> output = bulkCaller.next();
+            assertNotNull(output);
+            InputStream[] outputArray = output.toArray(size -> new InputStream[size]);
+            assertTrue("Output Array from Bulk Output Endpoint does not contain all the documents written.", outputArray.length == count);
+            for (InputStream i : outputArray) {
+                assertNotNull(i);
+                String data = IOTestUtil.mapper.readValue(i, ObjectNode.class).toString();
+                assertTrue("List does not contain " + data, list.contains(data));
+            }
         }
     }
 
