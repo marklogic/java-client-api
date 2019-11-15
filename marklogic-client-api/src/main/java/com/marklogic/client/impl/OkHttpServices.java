@@ -827,7 +827,7 @@ public class OkHttpServices implements RESTServices {
       response.close();
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
-          Math.round((System.currentTimeMillis() - startTime) / 1000)+
+          ((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
     /*
@@ -1519,7 +1519,7 @@ public class OkHttpServices implements RESTServices {
       response.close();
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
-          Math.round((System.currentTimeMillis() - startTime) / 1000)+
+          ((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
     if (status == STATUS_NOT_FOUND) {
@@ -1664,7 +1664,7 @@ public class OkHttpServices implements RESTServices {
       response.close();
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
-          Math.round((System.currentTimeMillis() - startTime) / 1000)+
+          ((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
     if (status == STATUS_NOT_FOUND) {
@@ -2368,7 +2368,7 @@ public class OkHttpServices implements RESTServices {
         response.close();
         throw new FailedRetryException(
           "Service unavailable and maximum retry period elapsed: "+
-            Math.round((System.currentTimeMillis() - startTime) / 1000)+
+            ((System.currentTimeMillis() - startTime) / 1000)+
             " seconds after "+retry+" retries");
       }
       if (status == STATUS_NOT_FOUND) {
@@ -2967,7 +2967,7 @@ public class OkHttpServices implements RESTServices {
       response.close();
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
-          Math.round((System.currentTimeMillis() - startTime) / 1000)+
+          ((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
     if (status == STATUS_FORBIDDEN) {
@@ -3327,7 +3327,7 @@ public class OkHttpServices implements RESTServices {
       response.close();
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
-          Math.round((System.currentTimeMillis() - startTime) / 1000)+
+          ((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
 
@@ -3500,7 +3500,7 @@ public class OkHttpServices implements RESTServices {
       response.close();
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
-          Math.round((System.currentTimeMillis() - startTime) / 1000)+
+          ((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
 
@@ -4026,7 +4026,7 @@ public class OkHttpServices implements RESTServices {
       response.close();
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
-          Math.round((System.currentTimeMillis() - startTime) / 1000)+
+          ((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
 
@@ -5080,7 +5080,7 @@ public class OkHttpServices implements RESTServices {
       response.close();
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
-          Math.round((System.currentTimeMillis() - startTime) / 1000)+
+          ((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
     if (status == STATUS_FORBIDDEN) {
