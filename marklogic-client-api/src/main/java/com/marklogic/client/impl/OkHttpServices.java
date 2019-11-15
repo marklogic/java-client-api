@@ -5470,7 +5470,7 @@ public class OkHttpServices implements RESTServices {
             } else if (subtype.endsWith("html")) {
               suffix = ".html";
               isBinary = false;
-            } else if (mediaType.type().toLowerCase() == "text") {
+            } else if (mediaType.type().equalsIgnoreCase("text")) {
               suffix = ".txt";
               isBinary = false;
             } else {
