@@ -30,6 +30,10 @@ public class WriteBatchImpl extends BatchImpl<WriteEvent> implements WriteBatch 
   private long bytesMoved;
   private long jobWritesSoFar;
 
+  public WriteBatchImpl() {
+    super(WriteEvent.class);
+  }
+
   @Override
   public WriteBatcher getBatcher() {
     return batcher;

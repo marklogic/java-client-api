@@ -15,22 +15,31 @@
  */
 package com.marklogic.client.datamovement.impl;
 
+import java.lang.reflect.Array;
 import java.util.Calendar;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.datamovement.Batch;
-import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.JobTicket;
 
 public class BatchImpl<T> extends BatchEventImpl implements Batch<T> {
   private T[] items;
+  private Class<T> as;
 
-  public BatchImpl() {
+  public BatchImpl(Class<T> as) {
     super();
+    if (as == null) {
+      throw new MarkLogicInternalException("batch instantiated without type token");
+    }
+    this.as = as;
   }
 
   @Override
   public T[] getItems() {
+    if (items == null) {
+      return (T[]) Array.newInstance(as, 0);
+    }
     return items;
   }
   public BatchImpl<T> withItems(T[] items) {
