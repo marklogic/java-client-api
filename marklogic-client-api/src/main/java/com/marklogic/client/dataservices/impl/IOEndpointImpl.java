@@ -255,10 +255,11 @@ abstract class IOEndpointImpl implements IOEndpoint {
         void processOutputBatch(InputStream[] output, Consumer<InputStream> outputConsumer) {
             if (output == null || output.length == 0) return;
 
-            if (allowsEndpointState() && output.length > 0) {
-                setEndpointState(output[0]);
+            setEndpointState(output);
+
+            for (int i=allowsEndpointState()?1:0; i < output.length; i++) {
+                outputConsumer.accept(output[i]);
             }
-            processOutput(output, outputConsumer);
         }
 
         WorkPhase getPhase() {
@@ -267,21 +268,22 @@ abstract class IOEndpointImpl implements IOEndpoint {
         void setPhase(WorkPhase phase) {
             this.phase = phase;
         }
+
         @Override
         public void interrupt() {
             if (this.phase == WorkPhase.RUNNING)
                 setPhase(WorkPhase.INTERRUPTING);
         }
 
-        void processOutput(InputStream[] output, Consumer<InputStream> outputConsumer) {
-            for (int i=allowsEndpointState()?1:0; i < output.length; i++) {
-                outputConsumer.accept(output[i]);
+        void setEndpointState(InputStream[] output) {
+            if (allowsEndpointState() && output.length > 0) {
+                setEndpointState(output[0]);
             }
         }
 
         InputStream[] getOutput(InputStream[] output, Consumer<InputStream> outputConsumer) {
-            processOutput(output, outputConsumer);
-            if(allowsEndpointState()) {
+            setEndpointState(output);
+            if(allowsEndpointState() && output.length>0) {
                  return Arrays.copyOfRange(output, 1, output.length);
             }
             return output;
