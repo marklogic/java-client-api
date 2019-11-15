@@ -892,8 +892,6 @@ public class DocumentMetadataHandle
     }
 
     serializer.writeEndElement();
-
-    valueSerializer = null;
   }
   private void sendQualityImpl(XMLStreamWriter serializer) throws XMLStreamException {
     if ( qualityModified == false ) return;
