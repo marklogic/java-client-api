@@ -785,6 +785,11 @@ public class OkHttpServices implements RESTServices {
        * in order to get the Response
        */
       response = doFunction.apply(requestBldr);
+      if (response == null) {
+          throw new MarkLogicInternalException(
+                  "null response for: "+requestBldr.build().url().toString()
+          );
+      }
       status = response.code();
       if (!isRetryable || !retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
