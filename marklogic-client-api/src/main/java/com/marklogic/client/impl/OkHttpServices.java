@@ -824,6 +824,7 @@ public class OkHttpServices implements RESTServices {
      */
     if (retryStatus.contains(status)) {
       checkFirstRequest();
+      response.close();
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -1515,6 +1516,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
+      response.close();
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -1562,11 +1564,13 @@ public class OkHttpServices implements RESTServices {
       if (location != null) {
         int offset = location.indexOf(DOCUMENT_URI_PREFIX);
         if (offset == -1) {
+          response.close();
           throw new MarkLogicInternalException(
             "document create produced invalid location: " + location);
         }
         uri = location.substring(offset + DOCUMENT_URI_PREFIX.length());
         if (uri == null) {
+          response.close();
           throw new MarkLogicInternalException(
             "document create produced location without uri: " + location);
         }
@@ -1657,6 +1661,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
+      response.close();
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -1701,11 +1706,13 @@ public class OkHttpServices implements RESTServices {
       if (location != null) {
         int offset = location.indexOf(DOCUMENT_URI_PREFIX);
         if (offset == -1) {
+          response.close();
           throw new MarkLogicInternalException(
             "document create produced invalid location: " + location);
         }
         uri = location.substring(offset + DOCUMENT_URI_PREFIX.length());
         if (uri == null) {
+          response.close();
           throw new MarkLogicInternalException(
             "document create produced location without uri: " + location);
         }
@@ -1770,14 +1777,10 @@ public class OkHttpServices implements RESTServices {
     }
 
     String location = response.headers().get("Location");
-    String hostId = null;
     List<ClientCookie> cookies = new ArrayList<>();
     for ( String setCookie : response.headers(HEADER_SET_COOKIE) ) {
       ClientCookie cookie = ClientCookie.parse(requestBldr.build().url(), setCookie);
       cookies.add(cookie);
-      if ( "HostId".equalsIgnoreCase(cookie.getName()) ) {
-        hostId = cookie.getValue();
-      }
     }
     response.close();
     if (location == null) throw new MarkLogicInternalException("transaction open failed to provide location");
@@ -2362,6 +2365,7 @@ public class OkHttpServices implements RESTServices {
       }
       if (retryStatus.contains(status)) {
         checkFirstRequest();
+        response.close();
         throw new FailedRetryException(
           "Service unavailable and maximum retry period elapsed: "+
             Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -2943,7 +2947,6 @@ public class OkHttpServices implements RESTServices {
 
       if (!retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
-
         break;
       }
 
@@ -2961,6 +2964,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
+      response.close();
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -2987,7 +2991,6 @@ public class OkHttpServices implements RESTServices {
         + getReasonPhrase(response), extractErrorFields(response));
     }
     response.close();
-
   }
 
   @Override
@@ -3321,6 +3324,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
+      response.close();
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -3493,6 +3497,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
+      response.close();
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -4018,6 +4023,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
+      response.close();
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -5071,6 +5077,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
+      response.close();
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -5717,6 +5724,7 @@ public class OkHttpServices implements RESTServices {
           }
         }
         if (failure == null) {
+          response.close();
           if (statusCode == STATUS_UNAUTHORIZED) {
             failure = new FailedRequest();
             failure.setMessageString("Unauthorized");
