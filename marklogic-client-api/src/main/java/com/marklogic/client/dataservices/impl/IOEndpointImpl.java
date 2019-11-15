@@ -255,7 +255,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
         void processOutputBatch(InputStream[] output, Consumer<InputStream> outputConsumer) {
             if (output == null || output.length == 0) return;
 
-            setEndpointState(output);
+            assignEndpointState(output);
 
             for (int i=allowsEndpointState()?1:0; i < output.length; i++) {
                 outputConsumer.accept(output[i]);
@@ -275,14 +275,14 @@ abstract class IOEndpointImpl implements IOEndpoint {
                 setPhase(WorkPhase.INTERRUPTING);
         }
 
-        void setEndpointState(InputStream[] output) {
+        void assignEndpointState(InputStream[] output) {
             if (allowsEndpointState() && output.length > 0) {
                 setEndpointState(output[0]);
             }
         }
 
         InputStream[] getOutput(InputStream[] output, Consumer<InputStream> outputConsumer) {
-            setEndpointState(output);
+            assignEndpointState(output);
             if(allowsEndpointState() && output.length>0) {
                  return Arrays.copyOfRange(output, 1, output.length);
             }
