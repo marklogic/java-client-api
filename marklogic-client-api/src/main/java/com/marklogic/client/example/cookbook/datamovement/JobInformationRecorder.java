@@ -250,7 +250,6 @@ public class JobInformationRecorder {
     public void processFailure(QueryBatchException failure) {
       String uri = uriPrefix + "query/" + failure.getJobBatchNumber() + ".json";
       ObjectNode sourceNode = mapper.createObjectNode();
-      DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
       sourceNode.put("Batch Success/Failure Information", "Failure");
       sourceNode.put("Failure Message", failure.getMessage());
       sourceNode.put("Query Batch number", failure.getJobBatchNumber());
@@ -291,7 +290,6 @@ public class JobInformationRecorder {
     @Override
     public void processFailure(WriteBatch batch, Throwable failure) {
       String uri = uriPrefix + "write/" + batch.getJobBatchNumber() + ".json";
-      DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
       ObjectNode sourceNode = mapper.createObjectNode();
       sourceNode.put("Batch Success/Failure Information", "Failure");
       sourceNode.put("Failure Message", failure.getMessage());
