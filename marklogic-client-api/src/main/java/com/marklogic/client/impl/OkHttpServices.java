@@ -4348,6 +4348,7 @@ public class OkHttpServices implements RESTServices {
   }
 
   private Request.Builder setupRequest(HttpUrl requestUri, String path, RequestParameters params) {
+    if ( requestUri == null ) throw new IllegalArgumentException("request URI cannot be null");
     if ( path == null ) throw new IllegalArgumentException("path cannot be null");
     if ( path.startsWith("/") ) path = path.substring(1);
     HttpUrl.Builder uri = requestUri.resolve(path).newBuilder();
