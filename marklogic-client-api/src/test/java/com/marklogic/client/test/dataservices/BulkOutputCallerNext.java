@@ -43,7 +43,7 @@ public class BulkOutputCallerNext {
     @Test
     public void bulkOutputCallerNextTest() throws Exception {
         String endpointState = "{\"next\":"+1+"}";
-        String workUnit      = "{\"max\":"+5+"}";
+        String workUnit      = "{\"limit\":"+5+"}";
 
         IOTestUtil.writeDocuments(10,collectionName);
 
