@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonHandle;
@@ -86,6 +87,16 @@ public class IOTestUtil {
 
     static InputStream asInputStream(String value) {
         return new ByteArrayInputStream(value.getBytes());
+    }
+
+    static void writeDocuments(int count, String collection) {
+        JSONDocumentManager manager = IOTestUtil.db.newJSONDocumentManager();
+        DocumentMetadataHandle metadata = new DocumentMetadataHandle().withCollections(collection);
+
+        for(int i=1;i<=count;i++) {
+            StringHandle data = new StringHandle("{\"docNum\":"+i+", \"docName\":\"doc"+i+"\"}");
+            manager.write("/test"+i+".json", metadata, data);
+        }
     }
 }
 
