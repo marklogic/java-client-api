@@ -15,6 +15,8 @@ import org.junit.rules.ExpectedException;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
@@ -54,15 +56,19 @@ public class BulkOutputCallerNext {
         assertNotNull(output);
         InputStream[] outputArray = output.toArray(size -> new InputStream[size]);
         assertTrue(outputArray.length == 5);
+
         output = bulkCaller.next();
         assertNotNull(output);
         InputStream[] outputArray1 = output.toArray(size -> new InputStream[size]);
         assertTrue(outputArray1.length == 5);
         assertFalse(outputArray.equals(outputArray1));
-        for(int i=0; i<5; i++) {
-            String data = IOTestUtil.mapper.readValue(outputArray[i], ObjectNode.class).toString();
-            String data1 = IOTestUtil.mapper.readValue(outputArray1[i], ObjectNode.class).toString();
-            assertFalse(data.equals(data1));
+
+        List<String> outputList = new ArrayList<>();
+        for(InputStream i: outputArray1) {
+            outputList.add(IOTestUtil.mapper.readValue(i, ObjectNode.class).toString());
+        }
+        for(InputStream i: outputArray) {
+            assertFalse(outputList.contains(IOTestUtil.mapper.readValue(i, ObjectNode.class).toString()));
         }
     }
 
@@ -74,6 +80,5 @@ public class BulkOutputCallerNext {
         deletedef.setCollections(collectionName);
         queryMgr.delete(deletedef);
 
-        IOTestUtil.db.release();
     }
 }
