@@ -252,13 +252,13 @@ abstract class IOEndpointImpl implements IOEndpoint {
             queue.drainTo(inputStreamList, batchSize);
             return inputStreamList.toArray(new InputStream[inputStreamList.size()]);
         }
-        void processOutputBatch(InputStream[] output, Consumer<InputStream> outputConsumer) {
+        void processOutputBatch(InputStream[] output, Consumer<InputStream> outputListener) {
             if (output == null || output.length == 0) return;
 
             assignEndpointState(output);
 
             for (int i=allowsEndpointState()?1:0; i < output.length; i++) {
-                outputConsumer.accept(output[i]);
+                outputListener.accept(output[i]);
             }
         }
 
@@ -281,7 +281,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
             }
         }
 
-        InputStream[] getOutput(InputStream[] output, Consumer<InputStream> outputConsumer) {
+        InputStream[] getOutput(InputStream[] output) {
             assignEndpointState(output);
             if(allowsEndpointState() && output.length>0) {
                  return Arrays.copyOfRange(output, 1, output.length);

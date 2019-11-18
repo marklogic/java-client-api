@@ -114,7 +114,7 @@ public class BulkIOEndpointTest {
         InputOutputEndpoint.BulkInputOutputCaller bulkCaller = endpoint.bulkCaller();
         bulkCaller.setEndpointState(new ByteArrayInputStream(endpointState.getBytes()));
         bulkCaller.setWorkUnit(new ByteArrayInputStream(workUnit.getBytes()));
-        bulkCaller.forEachOutput(value -> output.add(NodeConverter.InputStreamToString(value)));
+        bulkCaller.setOutputListener(value -> output.add(NodeConverter.InputStreamToString(value)));
 
         input.stream().forEach(value -> bulkCaller.accept(IOTestUtil.asInputStream(value)));
         bulkCaller.awaitCompletion();

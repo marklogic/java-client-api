@@ -16,15 +16,12 @@
 package com.marklogic.client.dataservices.impl;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.InputOutputEndpoint;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -68,7 +65,7 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
         private InputOutputEndpointImpl endpoint;
         private int batchSize;
         private LinkedBlockingQueue<InputStream> queue;
-        private Consumer<InputStream> outputConsumer;
+        private Consumer<InputStream> outputListener;
 
         BulkInputOutputCallerImpl(InputOutputEndpointImpl endpoint, int batchSize) {
             super(endpoint);
@@ -86,18 +83,18 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
         private LinkedBlockingQueue<InputStream> getQueue() {
             return queue;
         }
-        private Consumer<InputStream> getOutputConsumer() {
-            return outputConsumer;
+        private Consumer<InputStream> getOutputListener() {
+            return outputListener;
         }
 
         @Override
-        public void forEachOutput(Consumer<InputStream> outputConsumer) {
-            this.outputConsumer = outputConsumer;
+        public void setOutputListener(Consumer<InputStream> listener) {
+            this.outputListener = listener;
         }
 
         @Override
         public void accept(InputStream input) {
-            if (getOutputConsumer() == null)
+            if (getOutputListener() == null)
                 throw new IllegalStateException("Output consumer is null");
 
             boolean hasBatch = queueInput(input, getQueue(), getBatchSize());
@@ -119,7 +116,7 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
 
             incrementCallCount();
 
-            processOutputBatch(output, getOutputConsumer());
+            processOutputBatch(output, getOutputListener());
         }
 
         @Override

@@ -83,7 +83,7 @@ public class BulkOutputCallerTest {
             int counter =0;
         }
         Output output = new Output();
-        bulkCaller.forEachOutput(i-> {
+        bulkCaller.setOutputListener(i-> {
             try {
                 assertTrue(list.contains(IOTestUtil.mapper.readValue(i, ObjectNode.class).toString()));
                 output.counter++;
@@ -98,13 +98,10 @@ public class BulkOutputCallerTest {
 
     @AfterClass
     public static void cleanup() {
-
         QueryManager queryMgr = IOTestUtil.db.newQueryManager();
         DeleteQueryDefinition deletedef = queryMgr.newDeleteDefinition();
         deletedef.setCollections("bulkOutputTest");
         queryMgr.delete(deletedef);
-
-        IOTestUtil.db.release();
     }
 
     private static void writeDocuments(int count) {

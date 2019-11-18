@@ -17,7 +17,6 @@ package com.marklogic.client.dataservices.impl;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.OutputEndpoint;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
@@ -57,7 +56,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
             implements OutputEndpoint.BulkOutputCaller {
 
         private OutputEndpointImpl endpoint;
-        private Consumer<InputStream> outputConsumer;
+        private Consumer<InputStream> outputListener;
 
         private BulkOutputCallerImpl(OutputEndpointImpl endpoint) {
             super(endpoint);
@@ -67,26 +66,26 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         private OutputEndpointImpl getEndpoint() {
             return endpoint;
         }
-        private Consumer<InputStream> getOutputConsumer() {
-            return outputConsumer;
+        private Consumer<InputStream> getOutputListener() {
+            return outputListener;
         }
 
         @Override
-        public void forEachOutput(Consumer<InputStream> outputConsumer) {
-            this.outputConsumer = outputConsumer;
+        public void setOutputListener(Consumer<InputStream> listener) {
+            this.outputListener = listener;
         }
 
         @Override
         public Stream<InputStream> next() {
-            if(getOutputConsumer() != null )
+            if(getOutputListener() != null )
                 throw new IllegalStateException("Cannot call next while current output consumer is not empty.");
-            InputStream[] output = getOutput(getOutputStream(), outputConsumer);
+            InputStream[] output = getOutput(getOutputStream());
             return Stream.of(output);
         }
 
         @Override
         public void awaitCompletion() {
-            if (getOutputConsumer() == null)
+            if (getOutputListener() == null)
                 throw new IllegalStateException("Output consumer is null");
 
             logger.trace("output endpoint running endpoint={} work={}", getEndpointPath(), getWorkUnit());
@@ -104,7 +103,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
 
                 InputStream[] output = getOutputStream();
 
-                processOutputBatch(output, getOutputConsumer());
+                processOutputBatch(output, getOutputListener());
 
                 switch(getPhase()) {
                     case INTERRUPTING:

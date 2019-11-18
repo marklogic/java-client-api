@@ -58,9 +58,9 @@ public interface OutputEndpoint extends IOEndpoint {
     interface BulkOutputCaller extends IOEndpoint.BulkIOEndpointCaller {
         /**
          * Specifies the function to call on receiving output from the endpoint.
-         * @param outputConsumer a function for processing the endpoint output
+         * @param listener a function for processing the endpoint output
          */
-        void forEachOutput(Consumer<InputStream> outputConsumer);
+        void setOutputListener(Consumer<InputStream> listener);
         /**
          * Provides synchronous access to output.
          * @return the response from the endpoint.
