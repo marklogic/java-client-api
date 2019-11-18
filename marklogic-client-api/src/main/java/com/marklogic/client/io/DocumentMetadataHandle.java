@@ -854,7 +854,8 @@ public class DocumentMetadataHandle
   }
   private void sendPropertiesImpl(final XMLStreamWriter serializer) throws XMLStreamException, TransformerFactoryConfigurationError, TransformerException {
     if ( getProperties() == null || getProperties().size() == 0 ) return;
-
+System.out.println("inside sendpropertiesimpl");
+System.out.println(serializer.getClass().getCanonicalName());
     ValueSerializer valueSerializer = null;
 
     serializer.writeStartElement("prop", "properties", PROPERTY_API_NS);
@@ -914,6 +915,9 @@ public class DocumentMetadataHandle
       try {
         serializer.writeAttribute(
           "xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type", type);
+        System.out.println("inside ValueSerializer");
+        System.out.println(value==null);
+
         serializer.writeCharacters(value);
       } catch(XMLStreamException e) {
         throw new MarkLogicIOException(e);

@@ -9,8 +9,8 @@ subprojects {
  	tasks.withType(JavaCompile) {
     	options.encoding = 'UTF-8'
   	}
-    sourceCompatibility = "9"
-    targetCompatibility = "9"
+    sourceCompatibility = "11.0"
+    targetCompatibility = "11.0"
 
     sourceSets {
         test.compileClasspath += configurations.compileOnly
@@ -37,6 +37,3 @@ subprojects {
     }
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.5.1'
-}

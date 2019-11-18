@@ -16,9 +16,14 @@
 package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.dataservices.impl.InputCallerImpl;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonHandle;
 
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.test.Common;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -132,6 +137,18 @@ public class InputEndpointImplTest {
 
     }
 
+    @Test
+    public void test() throws Exception {
+        DatabaseClient markLogic =  Common.connect(); // create client connection
+        XMLDocumentManager manager = markLogic.newXMLDocumentManager();
+        DocumentMetadataHandle metadata = new DocumentMetadataHandle();
+// this won't work
+        metadata.getProperties().put("foobar", "");
+        StringHandle data = new StringHandle("<root>Test</root>");
+// error is thrown here
+        manager.write("/test.xml", metadata, data);
+        markLogic.release();
+    }
     @AfterClass
     public static void cleanup() {
         IOTestUtil.modMgr.delete(scriptPath, apiPath);

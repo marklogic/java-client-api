@@ -579,6 +579,9 @@ public class ValueConverter {
   }
   static public String StringToString(String value) {
     try {
+      System.out.println("********************");
+      System.out.println("Inside StringToString");
+      System.out.println(value);
       return (value == null || value.length() == 0) ? null :
             DatatypeConverter.printString(value);
     } catch(Exception e) {
