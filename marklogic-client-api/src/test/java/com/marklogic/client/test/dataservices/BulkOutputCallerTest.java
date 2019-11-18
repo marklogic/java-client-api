@@ -5,9 +5,7 @@ import com.marklogic.client.dataservices.OutputEndpoint;
 import com.marklogic.client.dataservices.impl.OutputCallerImpl;
 import com.marklogic.client.dataservices.impl.OutputEndpointImpl;
 import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
 import org.hamcrest.core.StringContains;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -35,6 +33,8 @@ public class BulkOutputCallerTest {
     static JSONDocumentManager docMgr;
     static int count = 5;
 
+    private static String collectionName = "bulkOutputTest";
+
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
@@ -45,7 +45,7 @@ public class BulkOutputCallerTest {
         scriptPath = IOTestUtil.getScriptPath(apiObj);
         apiPath = IOTestUtil.getApiPath(scriptPath);
         IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
-        writeDocuments(count);
+        IOTestUtil.writeDocuments(count, collectionName);
     }
     @Test
     public void bulkOutputCallerWithNullConsumer() {
@@ -96,59 +96,11 @@ public class BulkOutputCallerTest {
        assertTrue(output.counter == count);
     }
 
-    @Test
-    public void bulkOutputCallerNextTest() throws Exception {
-        String endpointState = "{\"next\":"+1+"}";
-        String workUnit      = "{\"max\":"+6+"}";
-
-        writeDocuments(10);
-        count = 10;
-
-        OutputCallerImpl caller = new OutputCallerImpl(new JacksonHandle(apiObj));
-
-        Stream<InputStream> result = caller.streamCall(IOTestUtil.db, IOTestUtil.asInputStream(endpointState), caller.newSessionState(),
-                IOTestUtil.asInputStream(workUnit));
-
-        InputStream[] resultArray = result.toArray(size -> new InputStream[size]);
-        assertNotNull(resultArray);
-        assertTrue(resultArray.length-1 == count);
-        List<String> list = new ArrayList<>();
-        for(int i=1;i<resultArray.length;i++) {
-            assertNotNull(resultArray[i]);
-            list.add(IOTestUtil.mapper.readValue(resultArray[i], ObjectNode.class).toString());
-        }
-
-        OutputEndpointImpl.BulkOutputCaller bulkCaller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj)).bulkCaller();
-        bulkCaller.setEndpointState(new ByteArrayInputStream(endpointState.getBytes()));
-        bulkCaller.setWorkUnit(new ByteArrayInputStream(workUnit.getBytes()));
-        for (int j=0; j<4; j++) {
-            Stream<InputStream> output = bulkCaller.next();
-            assertNotNull(output);
-            InputStream[] outputArray = output.toArray(size -> new InputStream[size]);
-            assertTrue("Output Array from Bulk Output Endpoint does not contain all the documents written.", outputArray.length == count);
-            for (InputStream i : outputArray) {
-                assertNotNull(i);
-                String data = IOTestUtil.mapper.readValue(i, ObjectNode.class).toString();
-                assertTrue("List does not contain " + data, list.contains(data));
-            }
-        }
-    }
-
     @AfterClass
     public static void cleanup() {
         QueryManager queryMgr = IOTestUtil.db.newQueryManager();
         DeleteQueryDefinition deletedef = queryMgr.newDeleteDefinition();
-        deletedef.setCollections("bulkOutputTest");
+        deletedef.setCollections(collectionName);
         queryMgr.delete(deletedef);
-    }
-
-    private static void writeDocuments(int count) {
-        JSONDocumentManager manager = IOTestUtil.db.newJSONDocumentManager();
-        DocumentMetadataHandle metadata = new DocumentMetadataHandle().withCollections("bulkOutputTest");
-
-        for(int i=1;i<=count;i++) {
-            StringHandle data = new StringHandle("{\"docNum\":"+i+", \"docName\":\"doc"+i+"\"}");
-            manager.write("/test"+i+".json", metadata, data);
-        }
     }
 }
