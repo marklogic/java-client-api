@@ -41,15 +41,7 @@ import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.impl.QueryManagerImpl;
 import com.marklogic.client.impl.UrisHandle;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.TimeUnit;
@@ -93,10 +85,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private long maxBatches = Long.MAX_VALUE;
 
   public QueryBatcherImpl(QueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
-    super(moveMgr);
+    this(moveMgr, forestConfig);
     this.query = query;
-    withForestConfig(forestConfig);
-    withBatchSize(1000);
     if (query instanceof RawQueryDefinition) {
       RawQueryDefinition rawQuery = (RawQueryDefinition) query;
 
@@ -118,10 +108,12 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       }
     }
   }
-
   public QueryBatcherImpl(Iterator<String> iterator, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
-    super(moveMgr);
+    this(moveMgr, forestConfig);
     this.iterator = iterator;
+  }
+  private QueryBatcherImpl(DataMovementManager moveMgr, ForestConfiguration forestConfig) {
+    super(moveMgr);
     withForestConfig(forestConfig);
     withBatchSize(1000);
   }
@@ -470,7 +462,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       DataMovementManagerImpl moveMgrImpl = getMoveMgr();
       String primaryHost = moveMgrImpl.getPrimaryClient().getHost();
       if ( getHostNames(blackListedForests).contains(primaryHost) ) {
-        int randomPos = Math.abs(primaryHost.hashCode()) % clientList.get().size();
+        int randomPos = new Random().nextInt(clientList.get().size());
         moveMgrImpl.setPrimaryClient(clientList.get().get(randomPos));
       }
     }
@@ -521,9 +513,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
         for ( QueryTask task : blackListedTaskList ) {
           threadPool.execute(task);
         }
+        // we can clear blackListedTaskList because we have a synchronized lock
+        blackListedTaskList.clear();
       }
-      // we can clear blackListedTaskList because we have a synchronized lock
-      blackListedTaskList.clear();
     }
   }
 
@@ -936,17 +928,18 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
      * @param executor the executor attempting to execute this task
      */
     public void rejectedExecution(Runnable runnable, ThreadPoolExecutor executor) {
-      if ( !executor.isShutdown() ) {
-        try {
-          synchronized ( lock ) {
-            if(executor.getQueue().remainingCapacity() == 0) {
-              lock.wait();
-            }
+      if (executor.isShutdown()) {
+        return;
+      }
+      try {
+        synchronized ( lock ) {
+          while (executor.getQueue().remainingCapacity() == 0) {
+            lock.wait();
           }
-        } catch ( InterruptedException e ) {
-          logger.warn("Thread interrupted while waiting for the work queue to become empty" + e);
+          if (!executor.isShutdown()) executor.execute(runnable);
         }
-        if ( !executor.isShutdown() ) executor.execute(runnable);
+      } catch ( InterruptedException e ) {
+        logger.warn("Thread interrupted while waiting for the work queue to become empty" + e);
       }
     }
   }

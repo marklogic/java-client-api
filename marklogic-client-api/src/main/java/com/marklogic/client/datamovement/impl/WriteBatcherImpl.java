@@ -16,14 +16,7 @@
 package com.marklogic.client.datamovement.impl;
 
 import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -67,7 +60,6 @@ import com.marklogic.client.datamovement.WriteBatch;
 import com.marklogic.client.datamovement.WriteBatchListener;
 import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.datamovement.WriteFailureListener;
-import com.marklogic.client.datamovement.Forest.HostType;
 import com.marklogic.client.datamovement.WriteBatcher;
 
 /**
@@ -543,7 +535,7 @@ public class WriteBatcherImpl
     requireNotStopped();
     // drain any docs left in the queue
     List<DocumentWriteOperation> docs = new ArrayList<>();
-    long recordInBatch = batchCounter.getAndSet(0);
+    batchCounter.set(0);
     queue.drainTo(docs);
     logger.info("flushing {} queued docs", docs.size());
     Iterator<DocumentWriteOperation> iter = docs.iterator();
@@ -839,7 +831,7 @@ public class WriteBatcherImpl
       DataMovementManagerImpl moveMgrImpl = getMoveMgr();
       String primaryHost = moveMgrImpl.getPrimaryClient().getHost();
       if ( removedHostInfos.containsKey(primaryHost) ) {
-        int randomPos = Math.abs(primaryHost.hashCode()) % newHostInfos.length;
+        int randomPos = new Random().nextInt(newHostInfos.length);
         moveMgrImpl.setPrimaryClient(newHostInfos[randomPos].client);
       }
       // since some hosts have been removed, let's remove from the queue any jobs that were targeting that host

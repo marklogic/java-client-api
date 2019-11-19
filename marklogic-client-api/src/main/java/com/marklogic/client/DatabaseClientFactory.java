@@ -158,14 +158,17 @@ public class DatabaseClientFactory {
     	/**
     	 * verify method verifies the incoming hostname and SSLSession.
     	 * @param hostname denotes the hostname.
-    	 * @param session represents the SSLSession containing the pper certificates.
+    	 * @param session represents the SSLSession containing the peer certificates.
     	 * @return true if the hostname and peer certificates are valid and false if they are invalid.
     	 * */
     	@Override
     	public boolean verify(String hostname, SSLSession session) {
     		try {
     			Certificate[] certificates = session.getPeerCertificates();
-	            verify(hostname, (X509Certificate) certificates[0]);
+	            verify(
+	                hostname,
+                    (X509Certificate) ((certificates == null || certificates.length == 0) ? null : certificates[0])
+                );
 	            return true;
 	          } catch(SSLException e) {
 	            return false;
@@ -1496,11 +1499,11 @@ public class DatabaseClientFactory {
     private           String                password;
     private           Authentication        authentication;
     private           String                externalName;
-    private           SecurityContext       securityContext;
     private           DatabaseClient.ConnectionType connectionType;
-    private           HandleFactoryRegistry handleRegistry =
-      HandleFactoryRegistryImpl.newDefault();
 
+    transient private SecurityContext       securityContext;
+    transient private HandleFactoryRegistry handleRegistry =
+      HandleFactoryRegistryImpl.newDefault();
     transient private SSLContext            context;
     transient private SSLHostnameVerifier   verifier;
 

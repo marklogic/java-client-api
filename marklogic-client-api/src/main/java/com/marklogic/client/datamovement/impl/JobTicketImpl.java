@@ -39,15 +39,15 @@ public class JobTicketImpl implements JobTicket {
 
   @Override
   public BatcherImpl getBatcher() {
-    switch(this.jobType) {
+    JobType jobType = getJobType();
+    if (jobType == null) {
+      throw new InternalError("null job type");
+    }
+    switch(jobType) {
       case QUERY_BATCHER: return getQueryBatcher();
       case WRITE_BATCHER: return getWriteBatcher();
       default:
-        throw new InternalError(
-                (jobType == null) ?
-                        "null job type" :
-                        "unknown job type: "+jobType.name()
-        );
+        throw new InternalError("unknown job type: "+jobType.name());
     }
   }
 

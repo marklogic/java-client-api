@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -97,6 +98,9 @@ public class DeleteListener implements QueryBatchListener {
   @Override
   public void processEvent(QueryBatch batch) {
     try {
+      if (batch.getClient() == null) {
+        throw new IllegalStateException("null DatabaseClient");
+      }
       batch.getClient().newDocumentManager().delete( batch.getItems() );
     } catch (Throwable t) {
       for ( BatchFailureListener<Batch<String>> listener : failureListeners ) {

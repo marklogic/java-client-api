@@ -47,6 +47,9 @@ public class BatchEventImpl implements BatchEvent {
   }
 
   public BatchEventImpl withTimestamp(Calendar timestamp) {
+    if (timestamp == null) {
+      timestamp = Calendar.getInstance();
+    }
     this.timestamp = timestamp;
     return this;
   }

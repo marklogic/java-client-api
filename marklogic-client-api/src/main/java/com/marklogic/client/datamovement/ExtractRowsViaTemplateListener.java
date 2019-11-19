@@ -139,6 +139,9 @@ public class ExtractRowsViaTemplateListener implements QueryBatchListener, AutoC
 
   @Override
   public void initializeListener(QueryBatcher queryBatcher) {
+    if (queryBatcher.getPrimaryClient() == null) {
+      throw new IllegalStateException("null DatabaseClient");
+    }
     pb = queryBatcher.getPrimaryClient().newRowManager().newPlanBuilder();
   }
 
@@ -185,6 +188,9 @@ public class ExtractRowsViaTemplateListener implements QueryBatchListener, AutoC
    * create an iterator out of it.
    */
   private Iterable<TypedRow> getTypedRows(QueryBatch batch) throws IOException {
+    if (batch.getClient() == null) {
+      throw new IllegalStateException("null DatabaseClient");
+    }
     StringHandle uris = new StringHandle(String.join("\n", batch.getItems()))
       .withMimetype("text/uri-list");
     RESTServices services = ((DatabaseClientImpl) batch.getClient()).getServices();

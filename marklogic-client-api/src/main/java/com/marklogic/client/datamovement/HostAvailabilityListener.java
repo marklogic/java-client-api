@@ -16,7 +16,6 @@
 package com.marklogic.client.datamovement;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.FailedRetryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,11 +25,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import javax.net.ssl.SSLException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.concurrent.Executors;
@@ -83,6 +78,9 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
 
     @Override
     public void processFailure(QueryBatch batch, Throwable throwable) {
+      if (batch.getClient() == null) {
+        throw new IllegalStateException("null DatabaseClient");
+      }
       boolean isHostUnavailableException = processException(batch.getBatcher(), throwable, batch.getClient().getHost());
       if ( isHostUnavailableException == true ) {
         try {
@@ -191,6 +189,9 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
    * @param throwable the exception
    */
   public void processFailure(WriteBatch batch, Throwable throwable) {
+    if (batch.getClient() == null) {
+      throw new IllegalStateException("null DatabaseClient");
+    }
     boolean isHostUnavailableException = processException(batch.getBatcher(), throwable, batch.getClient().getHost());
     if ( isHostUnavailableException == true ) {
       try {
@@ -211,6 +212,9 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
    * @param queryBatch the exception with information about the failed query attempt
    */
   public void processFailure(QueryBatchException queryBatch) {
+    if (queryBatch.getClient() == null) {
+      throw new IllegalStateException("null DatabaseClient");
+    }
     boolean isHostUnavailableException = processException(queryBatch.getBatcher(), queryBatch, queryBatch.getClient().getHost());
     if ( isHostUnavailableException == true ) {
       try {
@@ -271,7 +275,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
           List<String> availableHosts = Stream.of(preferredHosts)
             .filter( (availableHost) -> ! availableHost.equals(host) )
             .collect(Collectors.toList());
-          int randomPos = Math.abs(host.hashCode()) % availableHosts.size();
+          int randomPos = new Random().nextInt(availableHosts.size());
           String randomAvailableHost = availableHosts.get(randomPos);
           filteredForestConfig = filteredForestConfig.withRenamedHost(host, randomAvailableHost);
         }
