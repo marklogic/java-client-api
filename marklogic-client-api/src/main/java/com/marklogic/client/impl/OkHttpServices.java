@@ -237,7 +237,7 @@ public class OkHttpServices implements RESTServices {
     } catch (UnsupportedEncodingException e) {
       throw new IllegalStateException("UTF-8 is unsupported", e);
     } finally {
-      response.close();
+      closeResponse(response);
     }
   }
 
@@ -564,12 +564,12 @@ public class OkHttpServices implements RESTServices {
     Response response = sendRequestOnce(setupRequest(requestUri, path, null).head());
     int statusCode = response.code();
     if (!retryStatus.contains(statusCode)) {
-      response.close();
+      closeResponse(response);
       return 0;
     }
 
     String retryAfterRaw = response.header("Retry-After");
-    response.close();
+    closeResponse(response);
 
     int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
     return Math.max(retryAfter, calculateDelay(randRetry, retry));
@@ -664,7 +664,7 @@ public class OkHttpServices implements RESTServices {
     int status = response.code();
 
     if (status == STATUS_NOT_FOUND) {
-      response.close();
+      closeResponse(response);
       throw new ResourceNotFoundException(
         "Could not delete non-existent document");
     }
@@ -700,7 +700,7 @@ public class OkHttpServices implements RESTServices {
     Headers responseHeaders = response.headers();
     TemporalDescriptor temporalDesc = updateTemporalSystemTime(desc, responseHeaders);
 
-    response.close();
+    closeResponse(response);
     logRequest(reqlog, "deleted %s document", uri);
     return temporalDesc;
   }
@@ -807,7 +807,7 @@ public class OkHttpServices implements RESTServices {
        * When the service becomes unavailable, we close the Response
        * we got and retry it to try and get a new Response
        */
-      response.close();
+      closeResponse(response);
       /*
        * There are scenarios where we don't want to retry and we just want to
        * throw ResourceNotResendableException. In that case, we pass that code from
@@ -826,7 +826,7 @@ public class OkHttpServices implements RESTServices {
      */
     if (retryStatus.contains(status)) {
       checkFirstRequest();
-      response.close();
+      closeResponse(response);
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           ((System.currentTimeMillis() - startTime) / 1000)+
@@ -888,7 +888,7 @@ public class OkHttpServices implements RESTServices {
         extractErrorFields(response));
     }
     if (status == STATUS_NOT_MODIFIED) {
-      response.close();
+      closeResponse(response);
       return false;
     }
     if (status != STATUS_OK && status != STATUS_PARTIAL_CONTENT) {
@@ -919,7 +919,7 @@ public class OkHttpServices implements RESTServices {
     Object entity = body.contentLength() != 0 ? getEntity(body, as) : null;
 
     if (entity == null || (!InputStream.class.isAssignableFrom(as) && !Reader.class.isAssignableFrom(as))) {
-      response.close();
+      closeResponse(response);
     }
 
     handleBase.receiveContent((reqlog != null) ? reqlog.copyContent(entity) : entity);
@@ -1163,7 +1163,7 @@ public class OkHttpServices implements RESTServices {
         extractErrorFields(response));
     }
     if (status == STATUS_NOT_MODIFIED) {
-      response.close();
+      closeResponse(response);
       return false;
     }
     if (status != STATUS_OK) {
@@ -1213,7 +1213,7 @@ public class OkHttpServices implements RESTServices {
       Object contentEntity = getEntity(contentPart, contentBase.receiveAs());
       contentBase.receiveContent((reqlog != null) ? reqlog.copyContent(contentEntity) : contentEntity);
 
-      response.close();
+      closeResponse(response);
 
       return true;
     } catch (MessagingException e) {
@@ -1234,7 +1234,7 @@ public class OkHttpServices implements RESTServices {
 
     Headers responseHeaders = response.headers();
 
-    response.close();
+    closeResponse(response);
     logRequest(reqlog, "checked %s document from %s transaction", uri,
       (transaction != null) ? transaction.getTransactionId() : "no");
 
@@ -1275,7 +1275,7 @@ public class OkHttpServices implements RESTServices {
     int status = response.code();
     if (status != STATUS_OK) {
       if (status == STATUS_NOT_FOUND) {
-        response.close();
+        closeResponse(response);
         return null;
       } else if (status == STATUS_FORBIDDEN) {
         throw new ForbiddenUserException(
@@ -1503,7 +1503,7 @@ public class OkHttpServices implements RESTServices {
       }
 
       String retryAfterRaw = response.header("Retry-After");
-      response.close();
+      closeResponse(response);
 
       if (!isResendable) {
         checkFirstRequest();
@@ -1517,7 +1517,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
-      response.close();
+      closeResponse(response);
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           ((System.currentTimeMillis() - startTime) / 1000)+
@@ -1565,13 +1565,13 @@ public class OkHttpServices implements RESTServices {
       if (location != null) {
         int offset = location.indexOf(DOCUMENT_URI_PREFIX);
         if (offset == -1) {
-          response.close();
+          closeResponse(response);
           throw new MarkLogicInternalException(
             "document create produced invalid location: " + location);
         }
         uri = location.substring(offset + DOCUMENT_URI_PREFIX.length());
         if (uri == null) {
-          response.close();
+          closeResponse(response);
           throw new MarkLogicInternalException(
             "document create produced location without uri: " + location);
         }
@@ -1581,7 +1581,7 @@ public class OkHttpServices implements RESTServices {
       }
     }
     TemporalDescriptor temporalDesc = updateTemporalSystemTime(desc, responseHeaders);
-    response.close();
+    closeResponse(response);
     return temporalDesc;
   }
 
@@ -1649,7 +1649,7 @@ public class OkHttpServices implements RESTServices {
         break;
       }
       String retryAfterRaw = response.header("Retry-After");
-      response.close();
+      closeResponse(response);
 
       if (hasStreamingPart) {
         throw new ResourceNotResendableException(
@@ -1662,14 +1662,14 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
-      response.close();
+      closeResponse(response);
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           ((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
     if (status == STATUS_NOT_FOUND) {
-      response.close();
+      closeResponse(response);
       throw new ResourceNotFoundException(
         "Could not write non-existent document");
     }
@@ -1707,13 +1707,13 @@ public class OkHttpServices implements RESTServices {
       if (location != null) {
         int offset = location.indexOf(DOCUMENT_URI_PREFIX);
         if (offset == -1) {
-          response.close();
+          closeResponse(response);
           throw new MarkLogicInternalException(
             "document create produced invalid location: " + location);
         }
         uri = location.substring(offset + DOCUMENT_URI_PREFIX.length());
         if (uri == null) {
-          response.close();
+          closeResponse(response);
           throw new MarkLogicInternalException(
             "document create produced location without uri: " + location);
         }
@@ -1723,7 +1723,7 @@ public class OkHttpServices implements RESTServices {
       }
     }
     TemporalDescriptor temporalDesc = updateTemporalSystemTime(desc, responseHeaders);
-    response.close();
+    closeResponse(response);
     return temporalDesc;
   }
 
@@ -1783,7 +1783,7 @@ public class OkHttpServices implements RESTServices {
       ClientCookie cookie = ClientCookie.parse(requestBldr.build().url(), setCookie);
       cookies.add(cookie);
     }
-    response.close();
+    closeResponse(response);
     if (location == null) throw new MarkLogicInternalException("transaction open failed to provide location");
     if (!location.contains("/")) {
       throw new MarkLogicInternalException("transaction open produced invalid location: " + location);
@@ -1844,7 +1844,7 @@ public class OkHttpServices implements RESTServices {
         extractErrorFields(response));
     }
 
-    response.close();
+    closeResponse(response);
   }
 
   private void addCategoryParams(Set<Metadata> categories, RequestParameters params,
@@ -2164,7 +2164,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     Object entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class)) {
-      response.close();
+      closeResponse(response);
     }
     searchBase.receiveContent(entity);
     updateDescriptor(searchBase, response.headers());
@@ -2359,20 +2359,20 @@ public class OkHttpServices implements RESTServices {
         String retryAfterRaw = response.header("Retry-After");
         int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
 
-        response.close();
+        closeResponse(response);
 
         nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
       }
       if (retryStatus.contains(status)) {
         checkFirstRequest();
-        response.close();
+        closeResponse(response);
         throw new FailedRetryException(
           "Service unavailable and maximum retry period elapsed: "+
             ((System.currentTimeMillis() - startTime) / 1000)+
             " seconds after "+retry+" retries");
       }
       if (status == STATUS_NOT_FOUND) {
-        response.close();
+        closeResponse(response);
         return null;
       }
       if (status == STATUS_FORBIDDEN) {
@@ -2449,7 +2449,7 @@ public class OkHttpServices implements RESTServices {
         + getReasonPhrase(response), extractErrorFields(response));
     }
 
-    response.close();
+    closeResponse(response);
 
     logRequest(
       reqlog,
@@ -2619,11 +2619,10 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class)) {
-      response.close();
+      closeResponse(response);
     }
 
     return entity;
-
   }
 
   @Override
@@ -2669,7 +2668,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class)) {
-      response.close();
+      closeResponse(response);
     }
 
     return entity;
@@ -2712,7 +2711,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class)) {
-      response.close();
+      closeResponse(response);
     }
 
     return entity;
@@ -2747,7 +2746,7 @@ public class OkHttpServices implements RESTServices {
 
     if (status != STATUS_OK) {
       if (status == STATUS_NOT_FOUND) {
-        response.close();
+        closeResponse(response);
         if (!isNullable) {
           throw new ResourceNotFoundException("Could not get " + type + "/" + key);
         }
@@ -2768,7 +2767,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class)) {
-      response.close();
+      closeResponse(response);
     }
 
     return (reqlog != null) ? reqlog.copyContent(entity) : entity;
@@ -2811,7 +2810,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class)) {
-      response.close();
+      closeResponse(response);
     }
 
     return (reqlog != null) ? reqlog.copyContent(entity) : entity;
@@ -2949,7 +2948,7 @@ public class OkHttpServices implements RESTServices {
       }
 
       String retryAfterRaw = response.header("Retry-After");
-      response.close();
+      closeResponse(response);
 
       if (!isResendable) {
         checkFirstRequest();
@@ -2962,7 +2961,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
-      response.close();
+      closeResponse(response);
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           ((System.currentTimeMillis() - startTime) / 1000)+
@@ -2988,7 +2987,7 @@ public class OkHttpServices implements RESTServices {
       throw new FailedRequestException(type + " write failed: "
         + getReasonPhrase(response), extractErrorFields(response));
     }
-    response.close();
+    closeResponse(response);
   }
 
   @Override
@@ -3020,7 +3019,7 @@ public class OkHttpServices implements RESTServices {
         + getReasonPhrase(response), extractErrorFields(response));
     }
 
-    response.close();
+    closeResponse(response);
 
     logRequest(reqlog, "deleted %s value with %s key", type, key);
   }
@@ -3049,7 +3048,7 @@ public class OkHttpServices implements RESTServices {
       throw new FailedRequestException("delete failed: "
         + getReasonPhrase(response), extractErrorFields(response));
     }
-    response.close();
+    closeResponse(response);
 
     logRequest(reqlog, "deleted %s values", type);
   }
@@ -3166,7 +3165,7 @@ public class OkHttpServices implements RESTServices {
       outputBase.receiveContent(makeResult(reqlog, "read", "resource",
         response, as));
     } else {
-      response.close();
+      closeResponse(response);
     }
 
     return output;
@@ -3255,7 +3254,7 @@ public class OkHttpServices implements RESTServices {
       outputBase.receiveContent(makeResult(reqlog, "write", "resource",
         response, as));
     } else {
-      response.close();
+      closeResponse(response);
     }
 
     return output;
@@ -3310,7 +3309,7 @@ public class OkHttpServices implements RESTServices {
       }
 
       String retryAfterRaw = response.header("Retry-After");
-      response.close();
+      closeResponse(response);
 
       if (hasStreamingPart) {
         throw new ResourceNotResendableException(
@@ -3322,7 +3321,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
-      response.close();
+      closeResponse(response);
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           ((System.currentTimeMillis() - startTime) / 1000)+
@@ -3336,7 +3335,7 @@ public class OkHttpServices implements RESTServices {
       outputBase.receiveContent(makeResult(reqlog, "write", "resource",
         response, as));
     } else {
-      response.close();
+      closeResponse(response);
     }
 
     return output;
@@ -3423,7 +3422,7 @@ public class OkHttpServices implements RESTServices {
       outputBase.receiveContent(makeResult(reqlog, operation, "resource",
         response, as));
     } else {
-      response.close();
+      closeResponse(response);
     }
 
     return output;
@@ -3483,7 +3482,7 @@ public class OkHttpServices implements RESTServices {
       }
 
       String retryAfterRaw = response.header("Retry-After");
-      response.close();
+      closeResponse(response);
 
       if (hasStreamingPart) {
         throw new ResourceNotResendableException(
@@ -3495,7 +3494,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
-      response.close();
+      closeResponse(response);
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           ((System.currentTimeMillis() - startTime) / 1000)+
@@ -3509,7 +3508,7 @@ public class OkHttpServices implements RESTServices {
       outputBase.receiveContent(makeResult(reqlog, "apply", "resource",
         response, as));
     } else {
-      response.close();
+      closeResponse(response);
     }
 
     return output;
@@ -4009,7 +4008,7 @@ public class OkHttpServices implements RESTServices {
       }
 
       String retryAfterRaw = response.header("Retry-After");
-      response.close();
+      closeResponse(response);
 
       if (hasStreamingPart) {
         throw new ResourceNotResendableException(
@@ -4021,7 +4020,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
-      response.close();
+      closeResponse(response);
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           ((System.currentTimeMillis() - startTime) / 1000)+
@@ -4070,7 +4069,7 @@ public class OkHttpServices implements RESTServices {
       outputBase.receiveContent(makeResult(reqlog, "delete", "resource",
         response, as));
     } else {
-      response.close();
+      closeResponse(response);
     }
 
     return output;
@@ -4447,7 +4446,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class)) {
-      response.close();
+      closeResponse(response);
     }
 
     return (reqlog != null) ? reqlog.copyContent(entity) : entity;
@@ -4917,7 +4916,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class)) {
-      response.close();
+      closeResponse(response);
     }
 
     return entity;
@@ -4961,7 +4960,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     InputStream entity = body.contentLength() != 0 ?
       getEntity(body, InputStream.class) : null;
-    if (entity == null) response.close();
+    if (entity == null) closeResponse(response);
 
     return entity;
   }
@@ -5068,13 +5067,13 @@ public class OkHttpServices implements RESTServices {
       String retryAfterRaw = response.header("Retry-After");
       int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
 
-      response.close();
+      closeResponse(response);
 
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
-      response.close();
+      closeResponse(response);
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           ((System.currentTimeMillis() - startTime) / 1000)+
@@ -5092,7 +5091,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     InputStream entity = body.contentLength() != 0 ?
       getEntity(body, InputStream.class) : null;
-    if (entity == null) response.close();
+    if (entity == null) closeResponse(response);
 
     return entity;
   }
@@ -5136,7 +5135,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     InputStream entity = body.contentLength() != 0 ?
       getEntity(body, InputStream.class) : null;
-    if (entity == null) response.close();
+    if (entity == null) closeResponse(response);
 
     return entity;
   }
@@ -5718,7 +5717,7 @@ public class OkHttpServices implements RESTServices {
           }
         }
         if (failure == null) {
-          response.close();
+          closeResponse(response);
           if (statusCode == STATUS_UNAUTHORIZED) {
             failure = new FailedRequest();
             failure.setMessageString("Unauthorized");
@@ -6000,6 +5999,10 @@ public class OkHttpServices implements RESTServices {
       }
       return null;
     }
+
+    @Override
+    public void close() {
+    }
   }
 
   static class SingleCallResponseImpl extends CallResponseImpl implements SingleCallResponse, AutoCloseable {
@@ -6063,7 +6066,7 @@ public class OkHttpServices implements RESTServices {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
       if (responseBody != null) {
         closeImpl();
       }
@@ -6281,6 +6284,11 @@ public class OkHttpServices implements RESTServices {
       }
     }
     return true;
+  }
+
+  static private void closeResponse(Response response) {
+      if (response == null || response.body() == null) return;
+      response.close();
   }
 
   Request.Builder forDocumentResponse(Request.Builder requestBldr, Format format) {

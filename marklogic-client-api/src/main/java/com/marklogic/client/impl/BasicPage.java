@@ -101,8 +101,7 @@ public class BasicPage<T> implements Page<T> {
 
   @Override
   public long getTotalPages() {
-    if ( getPageSize() == 0 ) return 0;
-    return (long) Math.ceil((double) getTotalSize() / (double) getPageSize());
+    return ceilingDivision(getTotalSize(), getPageSize());
   }
 
   @Override
@@ -122,11 +121,13 @@ public class BasicPage<T> implements Page<T> {
 
   @Override
   public long getPageNumber() {
-    if ( getPageSize() == 0 ) return 0;
-    double _start = (double) start;
-    double _pageSize = (double) getPageSize();
-    if ( _start % _pageSize == 0 ) return new Double(_start / _pageSize).longValue();
-    else return (long) Math.floor(_start / _pageSize) + 1;
+    return ceilingDivision(getStart(), getPageSize());
+  }
+
+  private long ceilingDivision(long dividend, long divisor) {
+    if (divisor == 0) return 0;
+    long quotient = dividend / divisor;
+    return (dividend % divisor == 0) ? quotient : quotient + 1;
   }
 
   @Override

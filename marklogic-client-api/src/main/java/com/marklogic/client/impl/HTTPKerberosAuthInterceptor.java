@@ -69,7 +69,7 @@ public class HTTPKerberosAuthInterceptor implements Interceptor {
    * Login Module to be used for authentication.
    *
    */
-  private class KerberosLoginConfiguration extends Configuration {
+  static private class KerberosLoginConfiguration extends Configuration {
     Map<String,String> krbOptions = null;
 
     public KerberosLoginConfiguration() {}
@@ -117,11 +117,18 @@ public class HTTPKerberosAuthInterceptor implements Interceptor {
    *           principal is present
    */
   private String getClientPrincipalName() {
-    final Set<Principal> principalSet = loginContext.getSubject().getPrincipals();
+    final Set<Principal> principalSet = getContextSubject().getPrincipals();
     if (principalSet.size() != 1)
       throw new IllegalStateException(
           "Only one principal is expected. Found 0 or more than one principals :" + principalSet);
     return principalSet.iterator().next().getName();
+  }
+
+  private Subject getContextSubject() {
+    Subject subject = loginContext.getSubject();
+    if (subject == null)
+      throw new IllegalStateException("Kerberos login context without subject");
+    return subject;
   }
 
   /**
@@ -150,7 +157,7 @@ public class HTTPKerberosAuthInterceptor implements Interceptor {
      * we build the Subject's private credentials again from valid TGT in the
      * Kerberos client cache.
      */
-    Set<Object> privateCreds = loginContext.getSubject().getPrivateCredentials();
+    Set<Object> privateCreds = getContextSubject().getPrivateCredentials();
     for (Object privateCred : privateCreds) {
       if (privateCred instanceof KerberosTicket) {
         String serverPrincipalTicketName = ((KerberosTicket) privateCred).getServer().getName();
@@ -220,6 +227,9 @@ public class HTTPKerberosAuthInterceptor implements Interceptor {
             GSSContext.DEFAULT_LIFETIME);
         byte[] inToken = new byte[0];
         byte[] outToken = context.initSecContext(inToken, 0, inToken.length);
+        if (outToken == null) {
+          throw new FailedRequestException("could not initialize the security context");
+        }
         context.requestMutualAuth(true);
         outputToken.append(new String(Base64.getEncoder().encode(outToken)));
         context.dispose();

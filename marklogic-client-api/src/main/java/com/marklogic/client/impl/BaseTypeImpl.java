@@ -316,10 +316,7 @@ public class BaseTypeImpl {
     }
     @Override
     public String toString() {
-      if (value == null) {
-        return null;
-      }
-      return value.toString();
+      return (value == null) ? null : value.toString();
     }
   }
 

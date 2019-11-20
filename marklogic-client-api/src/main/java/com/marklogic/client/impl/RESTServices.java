@@ -596,6 +596,7 @@ public interface RESTServices {
     int     getStatusCode();
     String  getStatusMsg();
     String  getErrorBody();
+    void close();
   }
 
   interface SingleCallResponse extends CallResponse {

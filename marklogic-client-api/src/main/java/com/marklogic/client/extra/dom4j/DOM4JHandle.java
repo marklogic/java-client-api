@@ -213,7 +213,7 @@ public class DOM4JHandle
   public String toString() {
     try {
       byte[] buffer = toBuffer();
-      return (buffer == null) ? "" : new String(buffer,"UTF-8");
+      return (buffer == null) ? null : new String(buffer,"UTF-8");
     } catch (UnsupportedEncodingException e) {
       throw new MarkLogicIOException(e);
     }

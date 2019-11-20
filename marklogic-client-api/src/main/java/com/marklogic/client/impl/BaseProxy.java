@@ -891,6 +891,7 @@ public class BaseProxy {
                  (returnFormat == null) ? Format.TEXT : returnFormat
          );
          if (responsedef.isNull() && !isNullable) {
+            responsedef.close();
             throw new RequiredReturnException("null for required single return value");
          }
          return responsedef;
