@@ -24,7 +24,8 @@ import java.nio.charset.Charset;
 import java.util.stream.Stream;
 
 /**
- * java doc to do
+ * The LineSplitter class is used to separate lines in line-delimited JSON, XML or TEXT files.
+ * It should also work with gzip-compressed line-delimited files.
  */
 public class LineSplitter implements Splitter<StringHandle> {
     private Format format = Format.JSON;
@@ -51,7 +52,7 @@ public class LineSplitter implements Splitter<StringHandle> {
     }
 
     /**
-     *
+     * Used to return the number of objects in the stream.
      * @return the number of objects in the stream.
      */
     @Override
@@ -61,7 +62,8 @@ public class LineSplitter implements Splitter<StringHandle> {
 
     /**
      * Takes the input stream and converts it into a stream of StringHandle. The content could be
-     * line-delimited JSON file, line-delimited XML file or gzip-compressed line-delimited JSON file.
+     * line-delimited JSON, XML or TEXT file. It could also be gzip-compressed line-delimited files.
+     * Provide GZIPInputStream to the splitter when splitting gzip files.
      * @param input is the incoming input stream.
      * @return a stream of StringHandle.
      * @throws IOException
