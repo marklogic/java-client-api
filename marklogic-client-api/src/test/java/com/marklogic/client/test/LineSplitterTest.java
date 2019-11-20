@@ -1,13 +1,9 @@
 package com.marklogic.client.test;
 
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.datamovement.LineSplitter;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,13 +20,6 @@ public class LineSplitterTest {
     static final private String jsonlFile = "src/test/resources/data" + File.separator + "line-delimited.jsonl";
     static final private String jsonlGzipFile = "src/test/resources/data" + File.separator + "line-delimited.jsonl.gz";
     static final private String xmlFile = "src/test/resources/data" + File.separator + "line-delimited.txt";
-    private DatabaseClient client;
-
-    @Before
-    public void setUp() {
-        client = DatabaseClientFactory.newClient("localhost", 8012,
-                new DatabaseClientFactory.DigestAuthContext("rest-admin", "x"));
-    }
 
     @Test
     public void testSplitter() throws Exception {
@@ -38,17 +27,10 @@ public class LineSplitterTest {
         Stream<StringHandle> contentStream = splitter.split(new FileInputStream(jsonlFile));
         assertNotNull(contentStream);
 
-        StringHandle[] result = contentStream.toArray(size -> new StringHandle[size]);
-        assertNotNull(result);
-        assertEquals(result.length, Files.lines(Paths.get(jsonlFile)).count());
-
         String[] originalResult = Files.lines(Paths.get(jsonlFile))
                                     .toArray(size -> new String[size]);
 
-        for (int i = 0; i < result.length && i < originalResult.length; i++) {
-            assertNotNull(result[i].get());
-            assertEquals(result[i].get(), originalResult[i]);
-        }
+        checkContent(contentStream, splitter.getFormat(), originalResult);
     }
 
     @Test
@@ -58,19 +40,12 @@ public class LineSplitterTest {
         Stream<StringHandle> contentStream = splitter.split(gzipStream);
         assertNotNull(contentStream);
 
-        StringHandle[] result = contentStream.toArray(size -> new StringHandle[size]);
-        assertNotNull(result);
-
         gzipStream = new GZIPInputStream(new FileInputStream(jsonlGzipFile));
         String[] originalResult = new BufferedReader(new InputStreamReader(gzipStream))
                                     .lines()
                                     .toArray(size -> new String[size]);
-        assertEquals(result.length, originalResult.length);
 
-        for (int i = 0; i < result.length && i < originalResult.length; i++) {
-            assertNotNull(result[i].get());
-            assertEquals(result[i].get(), originalResult[i]);
-        }
+        checkContent(contentStream, splitter.getFormat(), originalResult);
     }
 
     @Test
@@ -80,21 +55,25 @@ public class LineSplitterTest {
         Stream<StringHandle> contentStream = splitter.split(new FileInputStream(xmlFile));
         assertNotNull(contentStream);
 
-        StringHandle[] result = contentStream.toArray(size -> new StringHandle[size]);
-        assertNotNull(result);
-        assertEquals(result.length, Files.lines(Paths.get(xmlFile)).count());
-
         String[] originalResult = Files.lines(Paths.get(xmlFile))
                                     .toArray(size -> new String[size]);
-        assertEquals(result[0].getFormat(), Format.XML);
-        for (int i = 0; i < result.length && i < originalResult.length; i++) {
+
+        checkContent(contentStream, splitter.getFormat(), originalResult);
+    }
+
+    private void checkContent(Stream<StringHandle> contentStream,
+                                 Format format,
+                                 String[] originalResult) {
+
+        StringHandle[] result = contentStream.toArray(size -> new StringHandle[size]);
+        assertNotNull(result);
+
+        assertEquals(result.length, originalResult.length);
+        assertEquals(result[0].getFormat(), format);
+        for (int i = 0; i < result.length; i++) {
             assertNotNull(result[i].get());
             assertEquals(result[i].get(), originalResult[i]);
         }
     }
 
-    @After
-    public void closeSetUp() {
-        client.release();
-    }
 }
