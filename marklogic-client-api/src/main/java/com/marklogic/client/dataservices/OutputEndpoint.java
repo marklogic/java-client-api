@@ -16,12 +16,12 @@
 package com.marklogic.client.dataservices;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.impl.OutputEndpointImpl;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
 import java.io.InputStream;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 /**
  * Provides an interface for calling an endpoint that returns output data structures.
@@ -39,17 +39,19 @@ public interface OutputEndpoint extends IOEndpoint {
 
     /**
      * Makes one call to the endpoint for the instance
-     * @param workUnit  the definition of a unit of work
-     * @return  the response from the endpoint
+     * @param endpointState  the current mutable state of the endpoint (which must be null if not accepted by the endpoint)
+     * @param session  the identifier for the server cache of the endpoint (which must be null if not accepted by the endpoint)
+     * @param workUnit  the definition of a unit of work (which must be null if not accepted by the endpoint)
+     * @return  the endpoint state if produced by the endpoint followed by the response data from the endpoint
      */
-    Stream<InputStream> call(InputStream workUnit);
+    InputStream[] call(InputStream endpointState, SessionState session, InputStream workUnit);
 
     /**
      * Constructs an instance of a bulk caller, which completes
      * a unit of work by repeated calls to the endpoint.
      * @return  the bulk caller for the output endpoint
      */
-    OutputEndpoint.BulkOutputCaller bulkCaller();
+    BulkOutputCaller bulkCaller();
 
     /**
      * Provides an interface for completing a unit of work
@@ -65,6 +67,6 @@ public interface OutputEndpoint extends IOEndpoint {
          * Provides synchronous access to output.
          * @return the response from the endpoint.
          */
-        Stream<InputStream> next();
+        InputStream[] next();
     }
 }

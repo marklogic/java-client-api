@@ -42,10 +42,9 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
     }
 
     @Override
-    public void call(InputStream workUnit) {
-        if (workUnit != null && !allowsWorkUnit())
-            throw new IllegalArgumentException("endpoint does not accept work unit");
-        getCaller().call(getClient(), null, null, workUnit);
+    public InputStream call(InputStream endpointState, SessionState session, InputStream workUnit) {
+        checkAllowedArgs(endpointState, session, workUnit);
+        return getCaller().call(getClient(), endpointState, session, workUnit);
     }
 
     @Override

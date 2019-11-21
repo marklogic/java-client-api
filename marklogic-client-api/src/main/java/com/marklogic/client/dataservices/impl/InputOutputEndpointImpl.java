@@ -16,6 +16,7 @@
 package com.marklogic.client.dataservices.impl;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.InputOutputEndpoint;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
@@ -24,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutputEndpoint {
     private static Logger logger = LoggerFactory.getLogger(InputOutputEndpointImpl.class);
@@ -50,12 +50,13 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
     }
 
     @Override
-    public Stream<InputStream> call(InputStream workUnit, Stream<InputStream> input) {
-        return getCaller().streamCall(getClient(), null, null, workUnit, input);
+    public InputStream[] call(InputStream endpointState, SessionState session, InputStream workUnit, InputStream[] input) {
+        checkAllowedArgs(endpointState, session, workUnit);
+        return getCaller().arrayCall(getClient(), endpointState, session, workUnit, input);
     }
 
     @Override
-    public BulkInputOutputCaller bulkCaller() {
+    public InputOutputEndpoint.BulkInputOutputCaller bulkCaller() {
         return new BulkInputOutputCallerImpl(this, getBatchSize());
     }
 
@@ -95,9 +96,18 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
         @Override
         public void accept(InputStream input) {
             if (getOutputListener() == null)
-                throw new IllegalStateException("Output consumer is null");
+                throw new IllegalStateException("Must configure output consumer before providing input");
 
             boolean hasBatch = queueInput(input, getQueue(), getBatchSize());
+            if (hasBatch)
+                processInput();
+        }
+        @Override
+        public void acceptAll(InputStream[] input) {
+            if (getOutputListener() == null)
+                throw new IllegalStateException("Must configure output consumer before providing input");
+
+            boolean hasBatch = queueAllInput(input, getQueue(), getBatchSize());
             if (hasBatch)
                 processInput();
         }

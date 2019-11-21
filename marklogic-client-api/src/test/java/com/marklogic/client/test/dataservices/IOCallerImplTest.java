@@ -17,10 +17,10 @@ package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.dataservices.impl.ExecCallerImpl;
-import com.marklogic.client.dataservices.impl.InputCallerImpl;
-import com.marklogic.client.dataservices.impl.InputOutputCallerImpl;
-import com.marklogic.client.dataservices.impl.OutputCallerImpl;
+import com.marklogic.client.dataservices.ExecEndpoint;
+import com.marklogic.client.dataservices.InputEndpoint;
+import com.marklogic.client.dataservices.InputOutputEndpoint;
+import com.marklogic.client.dataservices.OutputEndpoint;
 import com.marklogic.client.io.JacksonHandle;
 import org.junit.Test;
 
@@ -44,9 +44,9 @@ public class IOCallerImplTest {
         String endpointState = getEndpointState();
         String workUnit      = getWorkUnit();
 
-        ExecCallerImpl caller = new ExecCallerImpl(new JacksonHandle(apiObj));
-        InputStream    result = caller.call(
-                IOTestUtil.db, asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit)
+        ExecEndpoint caller = ExecEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputStream result = caller.call(
+                asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit)
         );
 
         checkNoInputState(endpointState, workUnit, result);
@@ -62,16 +62,16 @@ public class IOCallerImplTest {
         String     apiPath    = IOTestUtil.getApiPath(scriptPath);
         IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
 
-        String              endpointState = getEndpointState();
-        String              workUnit      = getWorkUnit();
-        Stream<InputStream> input         = Stream.of(
-                asInputStream("{\"docNum\":1, \"docName\":\"alpha\"}"),
-                asInputStream("{\"docNum\":2, \"docName\":\"beta\"}")
+        String        endpointState = getEndpointState();
+        String        workUnit      = getWorkUnit();
+        InputStream[] input         = IOTestUtil.asInputStreamArray(
+                "{\"docNum\":1, \"docName\":\"alpha\"}",
+                "{\"docNum\":2, \"docName\":\"beta\"}"
         );
 
-        InputCallerImpl caller = new InputCallerImpl(new JacksonHandle(apiObj));
-        InputStream     result = caller.streamCall(
-                IOTestUtil.db, asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit), input
+        InputEndpoint caller = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputStream result = caller.call(
+                asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit), input
         );
 
         checkInputState(endpointState, workUnit, result);
@@ -87,19 +87,18 @@ public class IOCallerImplTest {
         String     apiPath    = IOTestUtil.getApiPath(scriptPath);
         IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
 
-        String              endpointState = getEndpointState();
-        String              workUnit      = getWorkUnit();
-        Stream<InputStream> input         = Stream.of(
-                asInputStream("{\"docNum\":1, \"docName\":\"alpha\"}"),
-                asInputStream("{\"docNum\":2, \"docName\":\"beta\"}")
+        String        endpointState = getEndpointState();
+        String        workUnit      = getWorkUnit();
+        InputStream[] input         = IOTestUtil.asInputStreamArray(
+                "{\"docNum\":1, \"docName\":\"alpha\"}",
+                "{\"docNum\":2, \"docName\":\"beta\"}"
         );
 
-        InputOutputCallerImpl caller = new InputOutputCallerImpl(new JacksonHandle(apiObj));
-        Stream<InputStream>   result = caller.streamCall(
-                IOTestUtil.db, asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit), input
+        InputOutputEndpoint caller = InputOutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputStream[] results = caller.call(asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit), input
         );
 
-        checkResults(endpointState, workUnit, result);
+        checkResults(endpointState, workUnit, results);
 
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
@@ -115,12 +114,12 @@ public class IOCallerImplTest {
         String endpointState = getEndpointState();
         String workUnit      = getWorkUnit();
 
-        OutputCallerImpl    caller = new OutputCallerImpl(new JacksonHandle(apiObj));
-        Stream<InputStream> result = caller.streamCall(
-                IOTestUtil.db, asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit)
+        OutputEndpoint caller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputStream[] results = caller.call(
+                asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit)
         );
 
-        checkResults(endpointState, workUnit, result);
+        checkResults(endpointState, workUnit, results);
 
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
@@ -135,10 +134,9 @@ public class IOCallerImplTest {
     private InputStream asInputStream(String value) {
         return new ByteArrayInputStream(value.getBytes());
     }
-    private void checkResults(String endpointState, String workUnit, Stream<InputStream> result) throws IOException {
-        assertNotNull("null result Stream<InputStream>", result);
+    private void checkResults(String endpointState, String workUnit, InputStream[] results) throws IOException {
+        assertNotNull("null result Stream<InputStream>", results);
 
-        InputStream[] results = result.toArray(size -> new InputStream[size]);
         assertEquals("mismatch for result size", 3, results.length);
 
         checkNoInputState(endpointState, workUnit, results[0]);

@@ -1,8 +1,22 @@
+/*
+ * Copyright 2019 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.dataservices.OutputEndpoint;
-import com.marklogic.client.dataservices.impl.OutputEndpointImpl;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
@@ -17,7 +31,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
@@ -49,17 +62,15 @@ public class BulkOutputCallerNext {
 
         IOTestUtil.writeDocuments(10,collectionName);
 
-        OutputEndpointImpl.BulkOutputCaller bulkCaller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj)).bulkCaller();
+        OutputEndpoint.BulkOutputCaller bulkCaller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj)).bulkCaller();
         bulkCaller.setEndpointState(new ByteArrayInputStream(endpointState.getBytes()));
         bulkCaller.setWorkUnit(new ByteArrayInputStream(workUnit.getBytes()));
-        Stream<InputStream> output = bulkCaller.next();
-        assertNotNull(output);
-        InputStream[] outputArray = output.toArray(size -> new InputStream[size]);
+        InputStream[] outputArray = bulkCaller.next();
+        assertNotNull(outputArray);
         assertTrue(outputArray.length == 5);
 
-        output = bulkCaller.next();
-        assertNotNull(output);
-        InputStream[] outputArray1 = output.toArray(size -> new InputStream[size]);
+        InputStream[] outputArray1 = bulkCaller.next();
+        assertNotNull(outputArray1);
         assertTrue(outputArray1.length == 5);
         assertFalse(outputArray.equals(outputArray1));
 

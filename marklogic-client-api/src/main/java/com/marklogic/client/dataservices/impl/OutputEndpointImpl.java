@@ -17,6 +17,7 @@ package com.marklogic.client.dataservices.impl;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.OutputEndpoint;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
@@ -24,7 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint {
     private static Logger logger = LoggerFactory.getLogger(OutputEndpointImpl.class);
@@ -43,12 +43,13 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
 
 
     @Override
-    public Stream<InputStream> call(InputStream workUnit) {
-        return getCaller().streamCall(getClient(), null, null, workUnit);
+    public InputStream[] call(InputStream endpointState, SessionState session, InputStream workUnit) {
+        checkAllowedArgs(endpointState, session, workUnit);
+        return getCaller().arrayCall(getClient(), endpointState, session, workUnit);
     }
 
     @Override
-    public BulkOutputCaller bulkCaller() {
+    public OutputEndpoint.BulkOutputCaller bulkCaller() {
         return new BulkOutputCallerImpl(this);
     }
 
@@ -76,11 +77,10 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         }
 
         @Override
-        public Stream<InputStream> next() {
-            if(getOutputListener() != null )
+        public InputStream[] next() {
+            if (getOutputListener() != null)
                 throw new IllegalStateException("Cannot call next while current output consumer is not empty.");
-            InputStream[] output = getOutput(getOutputStream());
-            return Stream.of(output);
+            return getOutput(getOutputStream());
         }
 
         @Override

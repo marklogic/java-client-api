@@ -113,9 +113,25 @@ abstract class IOEndpointImpl implements IOEndpoint {
     public boolean allowsInput() {
         return (getCaller().getInputParamdef() != null);
     }
-
-    boolean allowsSession() {
+    @Override
+    public boolean allowsSession() {
         return (getCaller().getSessionParamdef() != null);
+    }
+
+    @Override
+    public SessionState newSessionState() {
+        if (!allowsEndpointState())
+            throw new IllegalStateException("endpoint does not support session state");
+        return getCaller().newSessionState();
+    }
+
+    public void checkAllowedArgs(InputStream endpointState, SessionState session, InputStream workUnit) {
+        if (endpointState != null && !allowsEndpointState())
+            throw new IllegalArgumentException("endpoint does not accept endpoint state");
+        if (session != null && !allowsSession())
+            throw new IllegalArgumentException("endpoint does not accept session");
+        if (workUnit != null && !allowsWorkUnit())
+            throw new IllegalArgumentException("endpoint does not accept work unit");
     }
 
     static abstract class BulkIOEndpointCallerImpl implements IOEndpoint.BulkIOEndpointCaller {
@@ -220,11 +236,26 @@ abstract class IOEndpointImpl implements IOEndpoint {
         }
 
         boolean queueInput(InputStream input, BlockingQueue<InputStream> queue, int batchSize) {
+            if (input == null) return false;
             try {
                 queue.put(input);
             } catch (InterruptedException e) {
                 throw new IllegalStateException("InputStream was not added to the queue." + e.getMessage());
             }
+            return checkQueue(queue, batchSize);
+        }
+        boolean queueAllInput(InputStream[] input, BlockingQueue<InputStream> queue, int batchSize) {
+            if (input == null || input.length == 0) return false;
+            try {
+                for (InputStream item: input) {
+                    queue.put(item);
+                }
+            } catch (InterruptedException e) {
+                throw new IllegalStateException("InputStream was not added to the queue." + e.getMessage());
+            }
+            return checkQueue(queue, batchSize);
+        }
+        boolean checkQueue(BlockingQueue<InputStream> queue, int batchSize) {
             if ((queue.size() % batchSize) > 0)
                 return false;
 

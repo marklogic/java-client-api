@@ -85,6 +85,13 @@ public class IOTestUtil {
         modMgr.write(writeSet);
     }
 
+    static InputStream[] asInputStreamArray(String... values) {
+        InputStream[] list = new InputStream[values.length];
+        for (int i=0; i < values.length; i++)
+            list[i] = asInputStream(values[i]);
+        return list;
+    }
+
     static InputStream asInputStream(String value) {
         return new ByteArrayInputStream(value.getBytes());
     }

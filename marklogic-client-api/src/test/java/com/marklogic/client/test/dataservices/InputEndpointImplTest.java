@@ -16,7 +16,7 @@
 package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.dataservices.impl.InputCallerImpl;
+import com.marklogic.client.dataservices.InputEndpoint;
 import com.marklogic.client.io.JacksonHandle;
 
 import org.junit.AfterClass;
@@ -25,7 +25,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
@@ -48,11 +47,12 @@ public class InputEndpointImplTest {
 
         String endpointState = "{\"offset\":0}";
         String workUnit = "{\"collection\":\"/dataset1\"}";
-        Stream<InputStream> input = Stream.of(IOTestUtil.asInputStream("{\"docNum\":1, \"docName\":\"doc1\"}"),
-                IOTestUtil.asInputStream("{\"docNum\":2, \"docName\":\"doc2\"}"));
+        InputStream[] input = IOTestUtil.asInputStreamArray("{\"docNum\":1, \"docName\":\"doc1\"}",
+                "{\"docNum\":2, \"docName\":\"doc2\"}"
+        );
 
-        InputCallerImpl caller = new InputCallerImpl(new JacksonHandle(apiObj));
-        InputStream result = caller.streamCall(IOTestUtil.db, IOTestUtil.asInputStream(endpointState), caller.newSessionState(),
+        InputEndpoint caller = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));;
+        InputStream result = caller.call(IOTestUtil.asInputStream(endpointState), caller.newSessionState(),
                 IOTestUtil.asInputStream(workUnit), input);
         assertNotNull(result);
 
@@ -68,11 +68,11 @@ public class InputEndpointImplTest {
     public void testInputCallerImplWithNullEndpointState() throws IOException {
 
         String workUnit = "{\"collection\":\"/dataset1\"}";
-        Stream<InputStream> input = Stream.of(IOTestUtil.asInputStream("{\"docNum\":1, \"docName\":\"doc1\"}"),
-                IOTestUtil.asInputStream("{\"docNum\":2, \"docName\":\"doc2\"}"));
+        InputStream[] input = IOTestUtil.asInputStreamArray("{\"docNum\":1, \"docName\":\"doc1\"}",
+                "{\"docNum\":2, \"docName\":\"doc2\"}");
 
-        InputCallerImpl caller = new InputCallerImpl(new JacksonHandle(apiObj));
-        InputStream result = caller.streamCall(IOTestUtil.db, null, caller.newSessionState(),
+        InputEndpoint caller = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));;
+        InputStream result = caller.call(null, caller.newSessionState(),
                 IOTestUtil.asInputStream(workUnit), input);
         assertNotNull(result);
 
@@ -84,28 +84,27 @@ public class InputEndpointImplTest {
     public void testInputCallerImplWithNullSession() throws IOException {
 
         String workUnit = "{\"collection\":\"/dataset1\"}";
-        Stream<InputStream> input = Stream.of(IOTestUtil.asInputStream("{\"docNum\":1, \"docName\":\"doc1\"}"),
-                IOTestUtil.asInputStream("{\"docNum\":2, \"docName\":\"doc2\"}"));
+        InputStream[] input = IOTestUtil.asInputStreamArray("{\"docNum\":1, \"docName\":\"doc1\"}",
+                "{\"docNum\":2, \"docName\":\"doc2\"}");
 
-        InputCallerImpl caller = new InputCallerImpl(new JacksonHandle(apiObj));
-        InputStream result = caller.streamCall(IOTestUtil.db, IOTestUtil.asInputStream("{\"endpoint\":0}"), null,
+        InputEndpoint caller = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));;
+        InputStream result = caller.call(IOTestUtil.asInputStream("{\"endpoint\":0}"), null,
                 IOTestUtil.asInputStream(workUnit), input);
         assertNotNull(result);
 
         ObjectNode resultObj = IOTestUtil.mapper.readValue(result, ObjectNode.class);
         assertNull(resultObj.get("session"));
-
     }
 
     @Test
     public void testInputCallerImplWithNullInput() throws IOException {
 
         String workUnit = "{\"collection\":\"/dataset1\"}";
-        Stream<InputStream> input = Stream.of(IOTestUtil.asInputStream("{\"docNum\":1, \"docName\":\"doc1\"}"),
-                IOTestUtil.asInputStream("{\"docNum\":2, \"docName\":\"doc2\"}"));
+        InputStream[] input = IOTestUtil.asInputStreamArray("{\"docNum\":1, \"docName\":\"doc1\"}",
+                "{\"docNum\":2, \"docName\":\"doc2\"}");
 
-        InputCallerImpl caller = new InputCallerImpl(new JacksonHandle(apiObj));
-        InputStream result = caller.streamCall(IOTestUtil.db, IOTestUtil.asInputStream("{\"endpoint\":0}"), caller.newSessionState(),
+        InputEndpoint caller = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));;
+        InputStream result = caller.call(IOTestUtil.asInputStream("{\"endpoint\":0}"), caller.newSessionState(),
                 IOTestUtil.asInputStream(workUnit), null);
         assertNotNull(result);
 
@@ -118,12 +117,11 @@ public class InputEndpointImplTest {
     public void testInputCallerImplWithNull() throws IOException {
 
         String workUnit = "{\"collection\":\"/dataset1\"}";
-        Stream<InputStream> input = Stream.of(IOTestUtil.asInputStream("{\"docNum\":1, \"docName\":\"doc1\"}"),
-                IOTestUtil.asInputStream("{\"docNum\":2, \"docName\":\"doc2\"}"));
+        InputStream[] input = IOTestUtil.asInputStreamArray("{\"docNum\":1, \"docName\":\"doc1\"}",
+                "{\"docNum\":2, \"docName\":\"doc2\"}");
 
-        InputCallerImpl caller = new InputCallerImpl(new JacksonHandle(apiObj));
-        InputStream result = caller.streamCall(IOTestUtil.db, null, null,
-                null, null);
+        InputEndpoint caller = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));;
+        InputStream result = caller.call(null, null, null, null);
         assertNotNull(result);
 
         ObjectNode resultObj = IOTestUtil.mapper.readValue(result, ObjectNode.class);
@@ -136,5 +134,4 @@ public class InputEndpointImplTest {
     public static void cleanup() {
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
-
 }

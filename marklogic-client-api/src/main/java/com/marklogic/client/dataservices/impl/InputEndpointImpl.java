@@ -16,25 +16,19 @@
 package com.marklogic.client.dataservices.impl;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.InputEndpoint;
-import com.marklogic.client.dataservices.impl.IOEndpointImpl;
-import com.marklogic.client.dataservices.impl.IOEndpointImpl.BulkIOEndpointCallerImpl.WorkPhase;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
 public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 	private static Logger logger = LoggerFactory.getLogger(InputEndpointImpl.class);
+
 	private InputCallerImpl caller;
 	private int batchSize;
 
@@ -55,11 +49,9 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 	}
 
 	@Override
-	public void call(InputStream workUnit, Stream<InputStream> input) {
-		if (workUnit != null && !allowsWorkUnit())
-			throw new IllegalArgumentException("Input endpoint does not accept work unit");
-
-		getCaller().streamCall(getClient(), null, null, workUnit, input);
+	public InputStream call(InputStream endpointState, SessionState session, InputStream workUnit, InputStream[] input) {
+		checkAllowedArgs(endpointState, session, workUnit);
+		return getCaller().arrayCall(getClient(), endpointState, session, workUnit, input);
 	}
 
 	@Override
@@ -96,6 +88,12 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 			boolean hasBatch = queueInput(input, getQueue(), getBatchSize());
 			if (hasBatch)
 			    processInput();
+		}
+		@Override
+		public void acceptAll(InputStream[] input) {
+			boolean hasBatch = queueAllInput(input, getQueue(), getBatchSize());
+			if (hasBatch)
+				processInput();
 		}
 
 		@Override

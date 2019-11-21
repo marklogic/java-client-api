@@ -1,9 +1,22 @@
+/*
+ * Copyright 2019 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.dataservices.OutputEndpoint;
-import com.marklogic.client.dataservices.impl.OutputCallerImpl;
-import com.marklogic.client.dataservices.impl.OutputEndpointImpl;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.JacksonHandle;
 import org.hamcrest.core.StringContains;
@@ -62,12 +75,11 @@ public class BulkOutputCallerTest {
         String endpointState = "{\"next\":"+1+"}";
         String workUnit      = "{\"max\":"+6+"}";
 
-        OutputCallerImpl caller = new OutputCallerImpl(new JacksonHandle(apiObj));
+        OutputEndpoint caller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
 
-        Stream<InputStream> result = caller.streamCall(IOTestUtil.db, IOTestUtil.asInputStream(endpointState), caller.newSessionState(),
+        InputStream[] resultArray = caller.call(IOTestUtil.asInputStream(endpointState), caller.newSessionState(),
                 IOTestUtil.asInputStream(workUnit));
 
-        InputStream[] resultArray = result.toArray(size -> new InputStream[size]);
         assertNotNull(resultArray);
         assertTrue(resultArray.length-1 == count);
         List<String> list = new ArrayList<>();
@@ -76,7 +88,7 @@ public class BulkOutputCallerTest {
             list.add(IOTestUtil.mapper.readValue(resultArray[i], ObjectNode.class).toString());
         }
         String workUnit2      = "{\"max\":"+3+"}";
-        OutputEndpointImpl.BulkOutputCaller bulkCaller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj)).bulkCaller();
+        OutputEndpoint.BulkOutputCaller bulkCaller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj)).bulkCaller();
         bulkCaller.setEndpointState(new ByteArrayInputStream(endpointState.getBytes()));
         bulkCaller.setWorkUnit(new ByteArrayInputStream(workUnit2.getBytes()));
         class Output {

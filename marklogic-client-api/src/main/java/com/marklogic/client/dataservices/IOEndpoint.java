@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.dataservices;
 
+import com.marklogic.client.SessionState;
 import com.marklogic.client.io.marker.BufferableHandle;
 
 import java.io.InputStream;
@@ -37,6 +38,12 @@ public interface IOEndpoint {
      */
     boolean allowsEndpointState();
     /**
+     * Identifies whether the endpoint accepts a session identifier that
+     * the endpoint can use to access a session cache on the server.
+     * @return  whether the endpoint takes a session
+     */
+    boolean allowsSession();
+    /**
      * Identifies whether the endpoint accepts a data structure that defines
      * the unit of work to be done by the endpoint.
      * @return  whether the endpoint takes a work unit
@@ -48,6 +55,13 @@ public interface IOEndpoint {
      * @return  whether the endpoint takes input data structures
      */
     boolean allowsInput();
+
+    /**
+     * Generates an identifier for an endpoint to use when accessing a session cache
+     * on the server. The identifier can be reused for multiple calls.
+     * @return  a new identifier for a session cache on the server
+     */
+    SessionState newSessionState();
 
     /**
      * Base interface providing the methods common to all bulk endpoint callers.

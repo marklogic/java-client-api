@@ -16,7 +16,7 @@
 package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.dataservices.impl.OutputCallerImpl;
+import com.marklogic.client.dataservices.OutputEndpoint;
 import com.marklogic.client.io.JacksonHandle;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -24,7 +24,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
@@ -44,15 +43,13 @@ public class OutputEndpointImplTest {
 
     @Test
     public void testOutputCallerImpl() throws IOException {
-
         String endpointState = "{\"endpoint\":1}";
         String workUnit = "{\"workUnit\":\"/workUnit1\"}";
 
-        OutputCallerImpl caller = new OutputCallerImpl(new JacksonHandle(apiObj));
-        Stream<InputStream> result = caller.streamCall(IOTestUtil.db, IOTestUtil.asInputStream(endpointState), caller.newSessionState(),
+        OutputEndpoint caller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputStream[] resultArray = caller.call(IOTestUtil.asInputStream(endpointState), caller.newSessionState(),
                 IOTestUtil.asInputStream(workUnit));
-        assertNotNull(result);
-        InputStream[] resultArray = result.toArray(size -> new InputStream[size]);
+        assertNotNull(resultArray);
 
         ObjectNode resultObj = IOTestUtil.mapper.readValue(resultArray[0], ObjectNode.class);
         assertNotNull(resultObj);
@@ -62,14 +59,12 @@ public class OutputEndpointImplTest {
 
     @Test
     public void testOutputCallerImplWithNullEndpointState() throws IOException {
-
         String workUnit = "{\"collection\":\"/dataset1\"}";
 
-        OutputCallerImpl caller = new OutputCallerImpl(new JacksonHandle(apiObj));
-        Stream<InputStream> result = caller.streamCall(IOTestUtil.db, null, caller.newSessionState(),
+        OutputEndpoint caller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputStream[] resultArray = caller.call(null, caller.newSessionState(),
                 IOTestUtil.asInputStream(workUnit));
-        assertNotNull(result);
-        InputStream[] resultArray = result.toArray(size -> new InputStream[size]);
+        assertNotNull(resultArray);
 
         ObjectNode resultObj = IOTestUtil.mapper.readValue(resultArray[0], ObjectNode.class);
         assertNull(resultObj.get("endpointState"));
@@ -77,25 +72,20 @@ public class OutputEndpointImplTest {
 
     @Test
     public void testOutputCallerImplWithNullSession() throws IOException {
-
         String workUnit = "{\"workUnit\":\"/1\"}";
-        OutputCallerImpl caller = new OutputCallerImpl(new JacksonHandle(apiObj));
-        Stream<InputStream> result = caller.streamCall(IOTestUtil.db, IOTestUtil.asInputStream("{\"endpoint\":1}"), null,
+        OutputEndpoint caller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputStream[] resultArray = caller.call(IOTestUtil.asInputStream("{\"endpoint\":1}"), null,
                 IOTestUtil.asInputStream(workUnit));
-        assertNotNull(result);
-        InputStream[] resultArray = result.toArray(size -> new InputStream[size]);
+        assertNotNull(resultArray);
         ObjectNode resultObj = IOTestUtil.mapper.readValue(resultArray[0], ObjectNode.class);
         assertNull(resultObj.get("session"));
     }
 
     @Test
     public void testOutputCallerImplWithNull() throws IOException {
-
-        OutputCallerImpl caller = new OutputCallerImpl(new JacksonHandle(apiObj));
-        Stream<InputStream> result = caller.streamCall(IOTestUtil.db, null, null,
-                null);
-        assertNotNull(result);
-        InputStream[] resultArray = result.toArray(size -> new InputStream[size]);
+        OutputEndpoint caller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputStream[] resultArray = caller.call( null, null, null);
+        assertNotNull(resultArray);
         ObjectNode resultObj = IOTestUtil.mapper.readValue(resultArray[0], ObjectNode.class);
         assertNotNull(resultObj);
         assertTrue("Result object is not empty", resultObj.size() == 0);
