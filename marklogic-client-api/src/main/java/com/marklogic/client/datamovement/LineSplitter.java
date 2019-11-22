@@ -40,7 +40,8 @@ public class LineSplitter implements Splitter<StringHandle> {
     }
 
     /**
-     * Used to set document format to splitter
+     * Used to set document format to splitter.
+     * The format should be set before splitting. If not set, the default is JSON.
      * @param format the document content format.
      */
     public void setFormat(Format format) {
