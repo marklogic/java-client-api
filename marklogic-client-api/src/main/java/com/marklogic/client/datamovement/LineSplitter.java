@@ -45,7 +45,7 @@ public class LineSplitter implements Splitter<StringHandle> {
      */
     public void setFormat(Format format) {
         if (format == null) {
-            throw new IllegalArgumentException("some exception");
+            throw new IllegalArgumentException("Format cannot be null.");
         }
 
         this.format = format;
@@ -83,7 +83,7 @@ public class LineSplitter implements Splitter<StringHandle> {
      */
     public Stream<StringHandle> split(InputStream input, Charset charset) throws IOException {
         if (input == null) {
-            throw new IllegalArgumentException("some exception");
+            throw new IllegalArgumentException("InputStream cannot be null.");
         }
 
         return split( (charset == null) ?
@@ -100,7 +100,7 @@ public class LineSplitter implements Splitter<StringHandle> {
      */
     public Stream<StringHandle> split(Reader input) throws IOException {
         if (input == null) {
-            throw new IllegalArgumentException("some exception");
+            throw new IllegalArgumentException("Reader cannot be null.");
         }
         return new BufferedReader(input)
                 .lines()
