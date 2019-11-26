@@ -29,7 +29,7 @@ public class MarklogicSourceTask extends SourceTask {
     private static final Logger logger = LoggerFactory.getLogger(MarklogicSourceTask.class);
 
     static ObjectNode apiObj;
-    static String apiName = "output2.api";
+    static String apiName = "bulkOutputCallerImpl.api";
     static String scriptPath;
     static String apiPath;
     OutputEndpoint.BulkOutputCaller bulkCaller;
@@ -41,7 +41,7 @@ public class MarklogicSourceTask extends SourceTask {
 
     @Override
     public void start(Map<String, String> props) {
-        logger.info("Starting");
+        logger.info("*******************Starting******************");
         try {
             apiName = props.get("apiName");
             apiObj = IOTestUtil.readApi(apiName);
@@ -74,7 +74,7 @@ public class MarklogicSourceTask extends SourceTask {
           //  return List.of(sr);
 
             for(InputStream i:output) {
-                SourceRecord sr = new SourceRecord(sourcePartition, null, "test", Schema.STRING_SCHEMA, i);
+                SourceRecord sr = new SourceRecord(sourcePartition, null, "marklogic", Schema.STRING_SCHEMA, i);
                 sourceRecord.add(sr);
             }
         } catch(Exception ex) {
