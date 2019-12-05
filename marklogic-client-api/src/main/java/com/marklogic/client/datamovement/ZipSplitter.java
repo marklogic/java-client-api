@@ -50,6 +50,7 @@ public class ZipSplitter implements Splitter<BytesHandle> {
     /**
      * Returns the extensionFormats set to splitter. The extensionFormat is pre-defined in splitter.
      * It includes "json", "txt" and "xml" extensions. If the file has no extension, it is treated as binary file.
+     * You can also add mappings from other extensions in the zipfile to one of the four MarkLogic formats.
      * @return a map of extensionFormats
      */
     public Map<String, Format> getExtensionFormats() {
@@ -57,15 +58,16 @@ public class ZipSplitter implements Splitter<BytesHandle> {
     }
 
     /**
-     * Returns the entryFileter set to splitter.
-     * @return the entryFileter set to splitter
+     * Returns the entryFilter set to splitter.
+     * @return the entryFilter set to splitter
      */
     public Predicate<ZipEntry> getEntryFilter() {
         return this.entryFilter;
     }
 
     /**
-     * Used to set entryFilter to splitter.
+     * Used to set entryFilter to splitter. The entryFilter is a lambda function, which can be used to inspect
+     * the zip entry and return false for any document in the zipfile that should be ignored.
      * @param entryFilter the filter that applied to each zipEntry
      */
     public void setEntryFilter(Predicate<ZipEntry> entryFilter) {
@@ -81,7 +83,8 @@ public class ZipSplitter implements Splitter<BytesHandle> {
     }
 
     /**
-     * Used to set uriTransformer to splitter
+     * Used to set uriTransformer to splitter. The uriTransformer is a lambda function, which can be used to
+     * transform the name of the document in the zipfile into the document URI for the database.
      * @param uriTransformer the uriTransformer which applied on each document URI
      */
     public void setUriTransformer(Function<String, String> uriTransformer) {
@@ -106,6 +109,7 @@ public class ZipSplitter implements Splitter<BytesHandle> {
 
     /**
      * Takes a input stream of a ZIP file and convert it to a stream of BytesHandle.
+     * The input stream must be a ZipInputStream, otherwise it will throw an exception.
      * The ZIP file could contain XML, JSON, TXT and BINARY files.
      * @param input is the incoming input stream
      * @return a stream of BytesHandle
@@ -140,9 +144,8 @@ public class ZipSplitter implements Splitter<BytesHandle> {
         bytesHandleSpliterator.setZipStream(input);
         bytesHandleSpliterator.setEntryFilter(this.entryFilter);
         bytesHandleSpliterator.setExtensionFormats(this.extensionFormats);
-        bytesHandleSpliterator.setUriTransformer(this.uriTransformer);
 
-        return StreamSupport.stream(bytesHandleSpliterator, false);
+        return StreamSupport.stream(bytesHandleSpliterator, true);
     }
 
     /**
@@ -162,9 +165,8 @@ public class ZipSplitter implements Splitter<BytesHandle> {
         documentWriteOperationSpliterator.setZipStream(input);
         documentWriteOperationSpliterator.setEntryFilter(this.entryFilter);
         documentWriteOperationSpliterator.setExtensionFormats(this.extensionFormats);
-        documentWriteOperationSpliterator.setUriTransformer(this.uriTransformer);
 
-        return StreamSupport.stream(documentWriteOperationSpliterator, false);
+        return StreamSupport.stream(documentWriteOperationSpliterator, true);
     }
 
     private static class FormatEntry {
@@ -201,7 +203,6 @@ public class ZipSplitter implements Splitter<BytesHandle> {
         private ZipInputStream zipStream;
         private Map<String,Format> extensionFormats;
         private Predicate<ZipEntry> entryFilter;
-        private Function<String, String> uriTransformer;
 
         ZipEntrySpliterator(long est, int additionalCharacteristics) {
             super(est, additionalCharacteristics);
@@ -238,27 +239,15 @@ public class ZipSplitter implements Splitter<BytesHandle> {
             this.entryFilter = entryFilter;
         }
 
-        Function<String, String> getUriTransformer() {
-            return this.uriTransformer;
-        }
-
-        void setUriTransformer(Function<String, String> uriTransformer) {
-            this.uriTransformer = uriTransformer;
-        }
-
         protected FormatEntry getNextEntry() throws IOException {
             ZipEntry candidateEntry;
 
             while ((candidateEntry = getZipStream().getNextEntry()) != null) {
-                if (getEntryFilter() != null && getEntryFilter().test(candidateEntry) == false) {
+                if (getEntryFilter() != null && !getEntryFilter().test(candidateEntry)) {
                     continue;
                 }
 
                 String name = candidateEntry.getName();
-                if (getUriTransformer() != null) {
-                    name = getUriTransformer().apply(name);
-                }
-
                 Matcher matcher = extensionRegex.matcher(name);
                 matcher.find();
                 String extension = matcher.group(1);
@@ -311,7 +300,7 @@ public class ZipSplitter implements Splitter<BytesHandle> {
                 splitter.count++;
 
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException("Could not read ZipEntry", e);
             }
 
             return true;
@@ -340,8 +329,8 @@ public class ZipSplitter implements Splitter<BytesHandle> {
                 String name = nextEntry.getZipEntry().getName();
 
                 String uri = name;
-                if (getUriTransformer() != null) {
-                    uri = getUriTransformer().apply(name);
+                if (splitter.uriTransformer != null) {
+                    uri = splitter.uriTransformer.apply(name);
                 }
 
                 DocumentWriteOperationImpl documentWriteOperation = new DocumentWriteOperationImpl(
@@ -354,7 +343,7 @@ public class ZipSplitter implements Splitter<BytesHandle> {
                 splitter.count++;
 
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException("Could not read ZipEntry", e);
             }
 
             return true;

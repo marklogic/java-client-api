@@ -21,11 +21,13 @@ public class ZipSplitterTest {
     public void testSplitter() throws Exception {
 
         ZipSplitter splitter = new ZipSplitter();
+        splitter.setEntryFilter(x -> x.getSize() > 50 ? true : false );
         Stream<BytesHandle> contentStream = splitter.split(new ZipInputStream(new FileInputStream(zipFile)));
         assertNotNull(contentStream);
 
         BytesHandle[] bytesResult = contentStream.toArray(size -> new BytesHandle[size]);
         assertNotNull(bytesResult);
+        assertEquals(bytesResult.length, 2);
 
         ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(zipFile));
         ZipEntry zipEntry = null;
@@ -40,6 +42,7 @@ public class ZipSplitterTest {
     public void testSplitterWrite() throws Exception {
 
         ZipSplitter splitter = new ZipSplitter();
+        splitter.setUriTransformer(name -> name.toUpperCase());
         Stream<DocumentWriteOperation> contentStream =
                 splitter.splitWriteOperations(new ZipInputStream(new FileInputStream(zipFile)));
         assertNotNull(contentStream);
@@ -51,7 +54,7 @@ public class ZipSplitterTest {
         while (itr.hasNext() && ((zipEntry = zipInputStream.getNextEntry()) != null)) {
             DocumentWriteOperation docOp = itr.next();
             assertNotNull(docOp.getUri());
-            assertEquals(docOp.getUri(), zipEntry.getName());
+            assertEquals(docOp.getUri(), zipEntry.getName().toUpperCase());
 
             assertNotNull(docOp.getContent());
             String docOpContent = docOp.getContent().toString();
