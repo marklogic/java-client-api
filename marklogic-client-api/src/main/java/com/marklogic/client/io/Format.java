@@ -91,4 +91,22 @@ public enum Format {
       return TEXT;
     else return UNKNOWN;
   }
+
+  /**
+   * Returns the format based on a document data type
+   * as used in Data Services.
+   * @param dataType  the data type
+   * @return  the format
+   */
+  public static Format getFromDataType(String dataType) {
+    switch (dataType) {
+      case "array":          return JSON;
+      case "binaryDocument": return BINARY;
+      case "jsonDocument":   return JSON;
+      case "object":         return JSON;
+      case "textDocument":   return TEXT;
+      case "xmlDocument":    return XML;
+      default:               return UNKNOWN;
+    }
+  }
 }

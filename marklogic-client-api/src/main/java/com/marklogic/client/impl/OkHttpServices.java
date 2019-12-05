@@ -6234,6 +6234,126 @@ public class OkHttpServices implements RESTServices {
         throw new MarkLogicIOException(e);
       }
     }
+    @Override
+    public byte[][] asArrayOfBytes() {
+      try {
+        if (multipart == null) {
+          return new byte[0][];
+        }
+        int partCount = multipart.getCount();
+
+        byte[][] result = new byte[partCount][];
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          result[i] = NodeConverter.InputStreamToBytes(bodyPart.getInputStream());
+        }
+        return result;
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+    @Override
+    public InputStream[] asArrayOfInputStream() {
+      try {
+        if (multipart == null) {
+          return new InputStream[0];
+        }
+        int partCount = multipart.getCount();
+
+        InputStream[] result = new InputStream[partCount];
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          result[i] = bodyPart.getInputStream();
+        }
+        return result;
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+    @Override
+    public InputStreamHandle[] asArrayOfInputStreamHandle() {
+      try {
+        if (multipart == null) {
+          return new InputStreamHandle[0];
+        }
+        int partCount = multipart.getCount();
+
+        InputStreamHandle[] result = new InputStreamHandle[partCount];
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          result[i] = new InputStreamHandle(bodyPart.getInputStream());
+        }
+        return result;
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+    @Override
+    public ReaderHandle[] asArrayOfReaderHandle() {
+      try {
+        if (multipart == null) {
+          return new ReaderHandle[0];
+        }
+        int partCount = multipart.getCount();
+
+        ReaderHandle[] result = new ReaderHandle[partCount];
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          result[i] = new ReaderHandle(NodeConverter.InputStreamToReader(bodyPart.getInputStream()));
+        }
+        return result;
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+    @Override
+    public Reader[] asArrayOfReader() {
+      try {
+        if (multipart == null) {
+          return new Reader[0];
+        }
+        int partCount = multipart.getCount();
+
+        Reader[] result = new Reader[partCount];
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          result[i] = NodeConverter.InputStreamToReader(bodyPart.getInputStream());
+        }
+        return result;
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+    @Override
+    public String[] asArrayOfString() {
+      try {
+        if (multipart == null) {
+          return new String[0];
+        }
+        int partCount = multipart.getCount();
+
+        String[] result = new String[partCount];
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          result[i] = NodeConverter.InputStreamToString(bodyPart.getInputStream());
+        }
+        return result;
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
   }
 
   static protected boolean checkNull(ResponseBody body, Format expectedFormat) {

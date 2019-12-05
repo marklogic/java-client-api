@@ -1,0 +1,32 @@
+{
+  "endpoint": "/marklogic/ds/test/bulkInputCallerImpl.sjs",
+  "params": [ {
+    "name":     "endpointState",
+    "datatype": "jsonDocument",
+    "multiple": false,
+    "nullable": true
+    }, {
+    "name":     "session",
+    "datatype": "session",
+    "multiple": false,
+    "nullable": true
+    }, {
+    "name":     "workUnit",
+    "datatype": "jsonDocument",
+    "multiple": false,
+    "nullable": true
+    }, {
+    "name":     "input",
+    "datatype": "jsonDocument",
+    "multiple": true,
+    "nullable": true
+  } ],
+  "return": {
+    "datatype": "jsonDocument",
+    "multiple": false,
+    "nullable": true
+  },
+  "$bulk":{
+    "inputBatchSize":2
+  }
+}
