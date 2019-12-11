@@ -38,6 +38,11 @@ public interface OutputEndpoint extends IOEndpoint {
     }
 
     /**
+     * Makes one call to an endpoint that doesn't take an endpoint state, session, or work unit.
+     * @return  the response data from the endpoint
+     */
+    InputStream[] call();
+    /**
      * Makes one call to the endpoint for the instance
      * @param endpointState  the current mutable state of the endpoint (which must be null if not accepted by the endpoint)
      * @param session  the identifier for the server cache of the endpoint (which must be null if not accepted by the endpoint)

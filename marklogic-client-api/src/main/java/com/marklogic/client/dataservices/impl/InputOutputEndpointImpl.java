@@ -50,6 +50,10 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
     }
 
     @Override
+    public InputStream[] call(InputStream[] input) {
+        return call(null, null, null, input);
+    }
+    @Override
     public InputStream[] call(InputStream endpointState, SessionState session, InputStream workUnit, InputStream[] input) {
         checkAllowedArgs(endpointState, session, workUnit);
         return getCaller().arrayCall(getClient(), endpointState, session, workUnit, input);

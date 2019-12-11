@@ -42,6 +42,10 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
     }
 
     @Override
+    public void call() {
+        call(null, null, null);
+    }
+    @Override
     public InputStream call(InputStream endpointState, SessionState session, InputStream workUnit) {
         checkAllowedArgs(endpointState, session, workUnit);
         return getCaller().call(getClient(), endpointState, session, workUnit);

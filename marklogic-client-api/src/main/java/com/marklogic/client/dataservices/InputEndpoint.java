@@ -37,6 +37,11 @@ public interface InputEndpoint extends IOEndpoint {
 	}
 
 	/**
+	 * Makes one call to an endpoint that doesn't take an endpoint state, session, or work unit.
+	 * @param input  the request data sent to the endpoint
+	 */
+	void call(InputStream[] input);
+	/**
 	 * Makes one call to the endpoint for the instance
 	 * @param endpointState  the current mutable state of the endpoint (which must be null if not accepted by the endpoint)
 	 * @param session  the identifier for the server cache of the endpoint (which must be null if not accepted by the endpoint)
