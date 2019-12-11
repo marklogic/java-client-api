@@ -41,9 +41,6 @@ abstract class IOEndpointImpl implements IOEndpoint {
     private static Logger logger = LoggerFactory.getLogger(IOEndpointImpl.class);
 
     final static int DEFAULT_BATCH_SIZE = 100;
-    final static int DEFAULT_SESSION_TIMEOUT = 3600;
-
-    private static Duration sessionDuration = null;
 
     private DatabaseClient client;
     private IOCallerImpl   caller;
@@ -55,25 +52,6 @@ abstract class IOEndpointImpl implements IOEndpoint {
             throw new IllegalArgumentException("null caller");
         this.client = client;
         this.caller = caller;
-
-        // the session configuration shouldn't change, so establish the session duration once
-        if (sessionDuration == null && allowsSession()) {
-            int sessionTimeout = DEFAULT_SESSION_TIMEOUT;
-
-            try {
-                JsonNode config = ((DatabaseClientImpl) client).getServices()
-                        .getResource(null, "internal/config", null, null, new JacksonHandle())
-                        .get();
-                JsonNode sessionTimeoutProp = config.get("sessionTimeout");
-                if (sessionTimeoutProp != null && sessionTimeoutProp.isNumber())
-                    sessionTimeout = sessionTimeoutProp.asInt(DEFAULT_SESSION_TIMEOUT);
-            } catch (Exception e) {
-                logger.warn("could not get session timeout", e);
-            }
-
-            // size the session duration to half of the configured session time
-            sessionDuration = Duration.ofSeconds(sessionTimeout / 2);
-        }
     }
 
     int initBatchSize(IOCallerImpl caller) {
@@ -84,10 +62,6 @@ abstract class IOEndpointImpl implements IOEndpoint {
             return apiDeclaration.get("$bulk").get("inputBatchSize").asInt();
         }
         return DEFAULT_BATCH_SIZE;
-    }
-
-    private static Duration getSessionDuration() {
-        return sessionDuration;
     }
 
     DatabaseClient getClient() {
@@ -145,7 +119,6 @@ abstract class IOEndpointImpl implements IOEndpoint {
         private byte[]         endpointState;
         private byte[]         workUnit;
         private SessionState   session;
-        private Instant        sessionRefreshAfter;
 
         private long           callCount = 0;
 
@@ -225,9 +198,10 @@ abstract class IOEndpointImpl implements IOEndpoint {
             if (!allowsSession())
                 return null;
 
-            if (session == null || sessionRefreshAfter.isBefore(Instant.now())) {
+            if (session == null) {
+                // no need to refresh the session id preemptively before timeout
+                // because a timed-out session id is merely a new session id
                 session = getEndpoint().getCaller().newSessionState();
-                sessionRefreshAfter = Instant.now().plus(endpoint.getSessionDuration());
             }
             return session;
         }
