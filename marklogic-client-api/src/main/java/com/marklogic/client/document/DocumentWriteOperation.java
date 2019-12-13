@@ -42,6 +42,7 @@ public interface DocumentWriteOperation {
      * <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_54554">
      * REST API Guide -&gt; Example: Reverting to System Default Metadata</a>
      */
+    @Deprecated
     DISABLE_METADATA_DEFAULT,
     /** This write operation (REST API mime part) creates or overwrites
      * one document and/or document metadata.
