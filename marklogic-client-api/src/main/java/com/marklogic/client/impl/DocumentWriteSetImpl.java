@@ -174,7 +174,6 @@ public class DocumentWriteSetImpl implements Set<DocumentWriteOperation>,Documen
 
   @Override
   public boolean add(DocumentWriteOperation documentWriteOperation) {
-    System.out.println(operations);
     return operations.add(documentWriteOperation);
   }
 

@@ -30,24 +30,15 @@ public class DocumentWriteOperationImpl implements DocumentWriteOperation,Compar
   public DocumentWriteOperationImpl(OperationType type, String uri,
                                     DocumentMetadataWriteHandle metadata, AbstractWriteHandle content)
   {
-    this(uri, type, metadata, content);
-    this.temporalDocumentURI = null;
+    this(type, uri, metadata, content, null);
   }
 
   public DocumentWriteOperationImpl(OperationType type, String uri,
                                     DocumentMetadataWriteHandle metadata, AbstractWriteHandle content, String temporalDocumentURI) {
-    this(uri,type,metadata, content);
-    this.temporalDocumentURI = temporalDocumentURI;
-  }
-
-  private DocumentWriteOperationImpl(String uri, OperationType type,
-                                     DocumentMetadataWriteHandle metadata, AbstractWriteHandle content) {
-
-
     if(type == OperationType.DOCUMENT_WRITE && uri == null) {
       throw new IllegalArgumentException("Uri cannot be null when Operation Type is DOCUMENT_WRITE.");
     }
-    if(!(type == OperationType.DOCUMENT_WRITE) && uri != null) {
+    if(type != OperationType.DOCUMENT_WRITE && uri != null) {
       throw new IllegalArgumentException("Operation Type should be DOCUMENT_WRITE when uri is not null");
     }
 
@@ -55,6 +46,7 @@ public class DocumentWriteOperationImpl implements DocumentWriteOperation,Compar
     this.uri = uri;
     this.metadata = metadata;
     this.content = content;
+    this.temporalDocumentURI = temporalDocumentURI;
   }
 
   @Override
@@ -87,17 +79,23 @@ public class DocumentWriteOperationImpl implements DocumentWriteOperation,Compar
     if(o == null)
       throw new NullPointerException("DocumentWriteOperation cannot be null");
 
-    if(this.getUri() instanceof String && o.getUri() instanceof String)
+    if(this.getUri() != null && o.getUri() != null)
       return getUri().compareTo(o.getUri());
 
-    if(this.getUri() == null && o.getUri() instanceof String)
+    if(this.getUri() == null && o.getUri() != null)
       return -1;
 
-    if(this.getUri() instanceof String && o.getUri()==null)
+    if(this.getUri() != null && o.getUri()==null)
       return 1;
 
     if(this.getUri() == null && o.getUri() == null)
-      super.hashCode();
+    {
+      if(this.hashCode() > o.hashCode())
+        return 1;
+      else if (this.hashCode() < o.hashCode())
+        return -1;
+      return 0;
+    }
     return 0;
   }
 
@@ -110,8 +108,10 @@ public class DocumentWriteOperationImpl implements DocumentWriteOperation,Compar
 
   @Override
   public boolean equals(Object o){
-    if(this.getUri()!=null)
-      return this.getUri().equals(o);
-    return super.equals(o);
+    if(!(o instanceof DocumentWriteOperation))
+      return false;
+    if(this.getUri() == null)
+      return super.equals(o);
+    return this.getUri().equals(((DocumentWriteOperation) o).getUri());
   }
 }
