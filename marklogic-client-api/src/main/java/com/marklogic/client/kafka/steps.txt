@@ -1,0 +1,9 @@
+1. Download kafka version 2.3.0 or higher
+2. Create a jar of the code and place under - {kafka_home}/libs
+3. Open terminal and start zookeeper - bin/zookeeper-server-start.sh config/zookeeper.properties
+4. Open second terminal and start kafka in parallel - bin/kafka-server-start.sh config/server.properties
+5. Open third terminal to start marklogic source connector and tasks (marklogic-source.properties should be added to {kafka_home}/config)-
+bin/connect-standalone.sh config/marklogic-connect-standalone.properties config/marklogic-source.properties
+
+6. To see the corresponding records received by kafka, in a separate terminal subscribe to the topic -
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic marklogic
