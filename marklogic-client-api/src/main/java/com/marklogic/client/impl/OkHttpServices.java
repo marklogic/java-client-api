@@ -131,6 +131,7 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -3569,13 +3570,21 @@ public class OkHttpServices implements RESTServices {
           mimeType = defaultFormat.getDefaultMimetype();
         }
         headers.add(HEADER_CONTENT_TYPE, mimeType);
-          String disposition = null;
-          try {
-              disposition = DISPOSITION_TYPE_ATTACHMENT + "; " +
-                      DISPOSITION_PARAM_FILENAME + "*=UTF-8''" + URLEncoder.encode(write.getUri(), "UTF-8") + contentDispositionTemporal;
-          } catch (Exception ex) {
-              ex.printStackTrace();
-          }
+        String disposition = null;
+        CharsetEncoder asciiEncoder = java.nio.charset.StandardCharsets.US_ASCII.newEncoder();
+        if(asciiEncoder.canEncode(write.getUri())) {
+            disposition = DISPOSITION_TYPE_ATTACHMENT + "; " +
+                      DISPOSITION_PARAM_FILENAME + "=" + escapeContentDispositionFilename(write.getUri()) + contentDispositionTemporal;
+        }
+        else {
+            try {
+                disposition = DISPOSITION_TYPE_ATTACHMENT + "; " +
+                          DISPOSITION_PARAM_FILENAME + "*=UTF-8''" + URLEncoder.encode(write.getUri(), "UTF-8") + contentDispositionTemporal;
+              } catch (Exception ex) {
+                  throw new IllegalArgumentException("Uri cannot be accepted");
+              }
+        }
+        asciiEncoder.reset();
         headers.add(HEADER_CONTENT_DISPOSITION, disposition);
         headerList.add(headers);
         writeHandles.add(write.getContent());
