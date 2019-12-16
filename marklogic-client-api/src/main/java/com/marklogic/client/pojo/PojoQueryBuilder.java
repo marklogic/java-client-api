@@ -419,7 +419,7 @@ public interface PojoQueryBuilder<T> {
    */
   StructuredQueryDefinition term(String... terms);
   /** Wraps the structured query into a combined query with options containing
-   * <a href="http://docs.marklogic.com/guide/rest-dev/appendixb#id_29496">
+   * <a href="https://docs.marklogic.com/guide/search-dev/appendixa#id_77801">
    *     &lt;search-option&gt;filtered&lt;/search-option&gt;</a> so results are accurate
    * though slower.
    *
