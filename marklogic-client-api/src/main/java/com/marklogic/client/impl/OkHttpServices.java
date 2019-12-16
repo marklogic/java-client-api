@@ -3581,7 +3581,7 @@ public class OkHttpServices implements RESTServices {
                 disposition = DISPOSITION_TYPE_ATTACHMENT + "; " +
                           DISPOSITION_PARAM_FILENAME + "*=UTF-8''" + URLEncoder.encode(write.getUri(), "UTF-8") + contentDispositionTemporal;
               } catch (Exception ex) {
-                  throw new IllegalArgumentException("Uri cannot be accepted");
+                  throw new IllegalArgumentException("Uri cannot be encoded as UFT-8");
               }
         }
         asciiEncoder.reset();
