@@ -15,16 +15,16 @@
  */
 package com.marklogic.client.test.datamovement;
 
-import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
 import com.marklogic.client.datamovement.impl.WriteBatcherImpl;
 import com.marklogic.client.datamovement.impl.assignment.AssignmentManager;
-import com.marklogic.client.datamovement.impl.assignment.AssignmentPolicy;
+import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.document.*;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
+import com.marklogic.client.io.*;
+import com.marklogic.client.query.*;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.Ignore;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,17 +42,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.HostAvailabilityListener;
 import com.marklogic.client.datamovement.JobReport;
@@ -1074,7 +1063,8 @@ public class WriteBatcherTest {
     String prefix    = directory+"doc";
     String suffix    = ".txt";
 
-    int forestCount = moveMgr.readForestConfig().listForests().length;
+    Forest[] forests = moveMgr.readForestConfig().listForests();
+    int forestCount = forests.length;
 
     AssignmentManager assignMgr = AssignmentManager.getInstance();
     if (!assignMgr.isInitialized()) {
@@ -1154,12 +1144,24 @@ public class WriteBatcherTest {
     assertTrue("write failed for some uris", failureUris.size() == 0);
 
     for (int i=0; i < forestCount; i++) {
-      assertEquals("uri count mismatch for forest "+i, expectedUris[i].size(), actualUris[i].size());
-      assertEquals("uri mismatch for forest "+i, expectedUris[i], actualUris[i]);
+      assertEquals("success uri count mismatch for forest "+i, expectedUris[i].size(), actualUris[i].size());
+      assertEquals("success uri mismatch for forest "+i, expectedUris[i], actualUris[i]);
+    }
+
+    QueryManager queryMgr = client.newQueryManager();
+    for (int i=0; i < forestCount; i++) {
+      StringQueryDefinition checkQuery = queryMgr.newStringDefinition();
+      checkQuery.setDirectory(directory);
+      actualUris[i].clear();
+      SearchHandle results = queryMgr.search(checkQuery, new SearchHandle(), forests[i].getForestName());
+      for (MatchDocumentSummary summary: results.getMatchResults()) {
+        actualUris[i].add(summary.getUri());
+      }
+      assertEquals("search uri count mismatch for forest "+i, expectedUris[i].size(), actualUris[i].size());
+      assertEquals("search uri mismatch for forest "+i, expectedUris[i], actualUris[i]);
     }
 
     // delete after success
-    QueryManager queryMgr = client.newQueryManager();
     DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
     deleteQuery.setDirectory(directory);
     queryMgr.delete(deleteQuery);
