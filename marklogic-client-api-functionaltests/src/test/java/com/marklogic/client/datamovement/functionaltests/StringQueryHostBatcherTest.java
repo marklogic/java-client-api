@@ -2221,4 +2221,109 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 	  clearDB();
   }
   }
+
+  // Verify UTF-8 char in URI. Refer to Git Issue 1163.
+
+  @Test
+  public void testUTF8InUri() throws Exception
+  {
+        System.out.println("Running testUTF8InUri");
+        DatabaseClient clientTmp = null;
+        DataMovementManager dmManagerTmp = null;
+
+        try {
+          System.out.println("Running testUTF8InUri");
+
+          String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+          String combinedQueryFileName = "combinedQueryOptionJSON.json";
+
+          clientTmp = getDatabaseClient("eval-user", "x", getConnType());
+          dmManagerTmp = clientTmp.newDataMovementManager();
+
+          QueryManager queryMgr = clientTmp.newQueryManager();
+          String dataFileDir = dataConfigDirPath + "/data/";
+          String combQueryFileDir = dataConfigDirPath + "/combined/";
+
+          // Use WriteBatcher to write the same files.
+          WriteBatcher wbatcher = dmManagerTmp.newWriteBatcher();
+
+          wbatcher.withBatchSize(2);
+          InputStreamHandle contentHandle1 = new InputStreamHandle();
+          contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
+          InputStreamHandle contentHandle2 = new InputStreamHandle();
+          contentHandle2.set(new FileInputStream(dataFileDir + filenames[1]));
+          InputStreamHandle contentHandle3 = new InputStreamHandle();
+          contentHandle3.set(new FileInputStream(dataFileDir + filenames[2]));
+          InputStreamHandle contentHandle4 = new InputStreamHandle();
+          contentHandle4.set(new FileInputStream(dataFileDir + filenames[3]));
+          InputStreamHandle contentHandle5 = new InputStreamHandle();
+          contentHandle5.set(new FileInputStream(dataFileDir + filenames[4]));
+
+          wbatcher.add(filenames[0], contentHandle1);
+          wbatcher.add(filenames[1], contentHandle2);
+          wbatcher.add(filenames[2], contentHandle3);
+          wbatcher.add(filenames[3], contentHandle4);
+          wbatcher.add("/CXXXX_Ü_testqa.xml", contentHandle5);
+
+          wbatcher.flushAndWait();
+
+          // get the combined query
+          File file = new File(combQueryFileDir + combinedQueryFileName);
+
+          // create a handle for the search criteria
+          FileHandle rawHandle = (new FileHandle(file)).withFormat(Format.JSON);
+          // create a search definition based on the handle
+          RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+
+          StringBuilder batchResults = new StringBuilder();
+          StringBuilder batchFailResults = new StringBuilder();
+
+          // Run a QueryBatcher on the new URIs.
+          QueryBatcher queryBatcher1 = dmManagerTmp.newQueryBatcher(querydef);
+
+          queryBatcher1.onUrisReady(batch -> {
+            for (String str : batch.getItems()) {
+              batchResults.append(str)
+                      .append('|');
+            }
+          });
+          queryBatcher1.onQueryFailure(throwable -> {
+            System.out.println("Exceptions thrown from callback onQueryFailure");
+            throwable.printStackTrace();
+            batchFailResults.append("Test has Exceptions");
+          });
+
+          dmManagerTmp.startJob(queryBatcher1);
+          boolean bJobFinished = queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);
+
+          if (bJobFinished) {
+
+            if (!batchFailResults.toString().isEmpty() && batchFailResults.toString().contains("Exceptions")) {
+              fail("Test failed due to exceptions");
+            }
+
+            // Verify the batch results now.
+            String[] res = batchResults.toString().split("\\|");
+            assertEquals("Number of reults returned is incorrect", 1, res.length);
+            assertTrue("URI returned not correct", res[0].trim().contains("/CXXXX_Ü_testqa.xml"));
+
+            // Read the document and assert on the value
+            DOMHandle contentHandle = new DOMHandle();
+            contentHandle = readDocumentUsingDOMHandle(clientTmp, "/CXXXX_Ü_testqa.xml", "XML");
+            Document readDoc = contentHandle.get();
+            System.out.println(convertXMLDocumentToString(readDoc));
+
+            assertTrue("Document content returned not correct", readDoc.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
+            assertTrue("Document content returned not correct", readDoc.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
+            assertTrue("Document content returned not correct", readDoc.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));
+          }
+        } catch (Exception e) {
+          System.out.println("Exceptions thrown from testUTF8InUri");
+          System.out.println(e.getMessage());
+          fail("testUTF8InUri mathod failed");
+        } finally {
+          clientTmp.release();
+          clearDB();
+        }
+      }
 }
