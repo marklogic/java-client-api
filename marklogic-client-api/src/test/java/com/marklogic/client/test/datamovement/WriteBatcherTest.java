@@ -80,6 +80,7 @@ public class WriteBatcherTest {
   private static String uri3 = "WriteBatcherTest_content_3.txt";
   private static String uri4 = "WriteBatcherTest_content_4.txt";
   private static String uri5 = "invalidXML.xml";
+  private static String uri6 = "invalidXML_2.xml";
   private static String transform = "WriteBatcherTest_transform.sjs";
   private static String whbTestCollection = "WriteBatcherTest_" +
     new Random().nextInt(10000);
@@ -708,7 +709,7 @@ public class WriteBatcherTest {
     String directory = "/WriteBatcherTest/testWriteValidAndInvalidDocsAndThrowException/";
     DocumentWriteSet writeSet = client.newDocumentManager().newWriteSet();
     writeSet.add(directory + uri1, new StringHandle("test"));
-    writeSet.add(directory + uri5, new StringHandle("this is not valid XML").withFormat(Format.XML));
+    writeSet.add(directory + uri6, new StringHandle("this is not valid XML").withFormat(Format.XML));
     writeSet.add(directory + uri2, new StringHandle("test"));
     writeSet.add(directory + uri5, new StringHandle("this is not valid XML").withFormat(Format.XML));
     writeSet.add(directory + uri3, new StringHandle("test"));
