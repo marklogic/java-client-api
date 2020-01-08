@@ -30,15 +30,16 @@ import java.util.*;
 
 public class DocumentWriteSetImpl implements Set<DocumentWriteOperation>,DocumentWriteSet {
 
-  final private static String SET_TYPE = System.getProperty("com.marklogic.client.DocumentWriteSet.type", "sorted");
-  private Set<DocumentWriteOperation> operations;
+  private List<DocumentWriteOperation> operations;
+  private int metadataCount;
 
   DocumentWriteSetImpl(){
-    setOperations(SET_TYPE);
-
+    operations = new ArrayList<>();
+    metadataCount = 0;
   }
   @Override
   public DocumentWriteSet addDefault(DocumentMetadataWriteHandle metadataHandle) {
+    this.metadataCount++;
     add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT,
       null, metadataHandle, null));
     return this;
@@ -46,6 +47,7 @@ public class DocumentWriteSetImpl implements Set<DocumentWriteOperation>,Documen
 
   @Override
   public DocumentWriteSet disableDefault() {
+    this.metadataCount++;
     add(new DocumentWriteOperationImpl(OperationType.DISABLE_METADATA_DEFAULT,
       null, new StringHandle("{ }").withFormat(Format.JSON), null));
     return this;
@@ -159,6 +161,8 @@ public class DocumentWriteSetImpl implements Set<DocumentWriteOperation>,Documen
 
   @Override
   public Iterator<DocumentWriteOperation> iterator() {
+    if(metadataCount <=1)
+      Collections.sort(operations);
     return operations.iterator();
   }
 
@@ -207,14 +211,4 @@ public class DocumentWriteSetImpl implements Set<DocumentWriteOperation>,Documen
     operations.clear();
   }
 
-  private void setOperations(String SET_TYPE) {
-
-    if(SET_TYPE.equals("sorted")) {
-      this.operations = new TreeSet<DocumentWriteOperation>();
-    } else if(SET_TYPE.equals("unsorted")) {
-      this.operations = new LinkedHashSet<DocumentWriteOperation>();
-    } else {
-      throw new IllegalStateException("SET_TYPE should be either sorted or unsorted");
-    }
-  }
 }
