@@ -27,7 +27,7 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  * {@link DocumentWriteSet#add add}, {@link DocumentWriteSet#addDefault addDefault}, or
  * {@link DocumentWriteSet#disableDefault disableDefault}.
  */
-public interface DocumentWriteOperation {
+public interface DocumentWriteOperation extends Comparable<DocumentWriteOperation> {
   public enum OperationType {
     /** This write operation (REST API mime part) sets the defaults for the
      * rest of the request.
@@ -139,6 +139,10 @@ public interface DocumentWriteOperation {
                 return null;
             }
 
+            @Override
+            public int compareTo(DocumentWriteOperation o) {
+                return getUri().compareTo(o.getUri());
+            }
         }
         final class WrapperImpl {
             private DocumentUriMaker docUriMaker;
