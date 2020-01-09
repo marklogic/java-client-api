@@ -161,7 +161,7 @@ public class DocumentWriteSetImpl implements Set<DocumentWriteOperation>,Documen
 
   @Override
   public Iterator<DocumentWriteOperation> iterator() {
-    if(metadataCount <=1)
+    if(this.metadataCount <=1)
       Collections.sort(operations);
     return operations.iterator();
   }
