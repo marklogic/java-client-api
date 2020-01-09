@@ -19,7 +19,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
@@ -91,7 +91,7 @@ public interface DocumentWriteOperation extends Comparable<DocumentWriteOperatio
    * @return the logical temporal document URI
    */
   String getTemporalDocumentURI();
-  
+
   /**
    * The from method prepares each content object for writing as a document including generating a URI by inserting a UUID.
    * @param content a subclass of AbstractWriteHandle
@@ -102,44 +102,7 @@ public interface DocumentWriteOperation extends Comparable<DocumentWriteOperatio
             final DocumentUriMaker uriMaker) {
         if(content == null || uriMaker == null)
             throw new IllegalArgumentException("Content and/or Uri maker cannot be null");
-        
-        final class DocumentWriteOperationImpl implements DocumentWriteOperation {
-            
-            private AbstractWriteHandle content;
-            private String uri;
-            
-            public DocumentWriteOperationImpl(AbstractWriteHandle content, String uri) {
-                this.content = content;
-                this.uri = uri;
-            }
 
-
-            @Override
-            public OperationType getOperationType() {
-                return null;
-            }
-
-            @Override
-            public String getUri() {
-                return uri;
-            }
-
-            @Override
-            public DocumentMetadataWriteHandle getMetadata() {
-                return null;
-            }
-
-            @Override
-            public AbstractWriteHandle getContent() {
-                return content;
-            }
-
-            @Override
-            public String getTemporalDocumentURI() {
-                return null;
-            }
-
-        }
         final class WrapperImpl {
             private DocumentUriMaker docUriMaker;
             WrapperImpl(DocumentUriMaker uriMaker){
@@ -147,9 +110,7 @@ public interface DocumentWriteOperation extends Comparable<DocumentWriteOperatio
             }
             DocumentWriteOperation mapper(AbstractWriteHandle content) {
                 String uri = docUriMaker.apply(content);
-                if (uri == null)
-                    throw new MarkLogicInternalException("Uri could not be created");
-                return new DocumentWriteOperationImpl(content, uri);
+                return new DocumentWriteOperationImpl(uri, content);
             }
 
         }
@@ -186,29 +147,5 @@ public interface DocumentWriteOperation extends Comparable<DocumentWriteOperatio
 
     @FunctionalInterface
     public interface DocumentUriMaker extends Function<AbstractWriteHandle, String> {
-    }
-
-    default int compareTo(DocumentWriteOperation o) {
-        if(o == null)
-            throw new NullPointerException("DocumentWriteOperation cannot be null");
-
-        if(this.getUri() != null && o.getUri() != null)
-            return getUri().compareTo(o.getUri());
-
-        if(this.getUri() == null && o.getUri() != null)
-            return -1;
-
-        if(this.getUri() != null && o.getUri()==null)
-            return 1;
-
-        if(this.getUri() == null && o.getUri() == null)
-        {
-            if(this.hashCode() > o.hashCode())
-                return 1;
-            else if (this.hashCode() < o.hashCode())
-                return -1;
-            return 0;
-        }
-        return 0;
     }
 }

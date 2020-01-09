@@ -16,7 +16,6 @@
 package com.marklogic.client.impl;
 
 import com.marklogic.client.document.DocumentWriteOperation;
-import com.marklogic.client.document.DocumentWriteOperation.OperationType;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
@@ -49,6 +48,10 @@ public class DocumentWriteOperationImpl implements DocumentWriteOperation {
     this.temporalDocumentURI = temporalDocumentURI;
   }
 
+  public DocumentWriteOperationImpl(String uri, AbstractWriteHandle content){
+    this(OperationType.DOCUMENT_WRITE, uri, null, content, null);
+  }
+
   @Override
   public OperationType getOperationType() {
     return operationType;
@@ -72,6 +75,31 @@ public class DocumentWriteOperationImpl implements DocumentWriteOperation {
   @Override
   public AbstractWriteHandle getContent() {
     return content;
+  }
+
+  @Override
+  public int compareTo(DocumentWriteOperation o) {
+    if(o == null)
+      throw new NullPointerException("DocumentWriteOperation cannot be null");
+
+    if(this.getUri() != null && o.getUri() != null)
+      return getUri().compareTo(o.getUri());
+
+    if(this.getUri() == null && o.getUri() != null)
+      return -1;
+
+    if(this.getUri() != null && o.getUri()==null)
+      return 1;
+
+    if(this.getUri() == null && o.getUri() == null)
+    {
+      if(this.hashCode() > o.hashCode())
+        return 1;
+      else if (this.hashCode() < o.hashCode())
+        return -1;
+      return 0;
+    }
+    return 0;
   }
 
   @Override
