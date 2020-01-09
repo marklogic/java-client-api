@@ -139,10 +139,6 @@ public interface DocumentWriteOperation extends Comparable<DocumentWriteOperatio
                 return null;
             }
 
-            @Override
-            public int compareTo(DocumentWriteOperation o) {
-                return getUri().compareTo(o.getUri());
-            }
         }
         final class WrapperImpl {
             private DocumentUriMaker docUriMaker;
@@ -190,5 +186,29 @@ public interface DocumentWriteOperation extends Comparable<DocumentWriteOperatio
 
     @FunctionalInterface
     public interface DocumentUriMaker extends Function<AbstractWriteHandle, String> {
+    }
+
+    default int compareTo(DocumentWriteOperation o) {
+        if(o == null)
+            throw new NullPointerException("DocumentWriteOperation cannot be null");
+
+        if(this.getUri() != null && o.getUri() != null)
+            return getUri().compareTo(o.getUri());
+
+        if(this.getUri() == null && o.getUri() != null)
+            return -1;
+
+        if(this.getUri() != null && o.getUri()==null)
+            return 1;
+
+        if(this.getUri() == null && o.getUri() == null)
+        {
+            if(this.hashCode() > o.hashCode())
+                return 1;
+            else if (this.hashCode() < o.hashCode())
+                return -1;
+            return 0;
+        }
+        return 0;
     }
 }
