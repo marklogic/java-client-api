@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2019 MarkLogic Corporation
+ * Copyright 2014-2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
     configureRESTServer(dbName, fNames, false);
     TestEvalXquery.createUserRolesWithPrevilages("test-js-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "xdmp:invoke-in", "xdmp:invoke", "xdbc:invoke-in", "any-uri",
         "xdbc:invoke");
-    TestEvalXquery.createRESTUser("eval-user", "x", "test-js-eval");
+    TestEvalXquery.createRESTUser("eval-userJS", "x", "test-js-eval");
     appServerHostname = getRestAppServerHostName();
   }
 
@@ -86,14 +86,14 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tear down");
     cleanupRESTServer(dbName, fNames);
-    TestEvalXquery.deleteRESTUser("eval-user");
+    TestEvalXquery.deleteRESTUser("eval-userJS");
     TestEvalXquery.deleteUserRole("test-js-eval");
   }
 
   @Before
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     int restPort = getRestServerPort();
-    client = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-user", "x", getConnType());
+    client = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-userJS", "x", getConnType());
   }
 
   @After
@@ -579,8 +579,8 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
           Capability.UPDATE, Capability.READ, Capability.EXECUTE);
       DocumentManager dm = moduleClient.newDocumentManager();
       dm.write("/data/javascriptQueries.sjs", metadataHandle, ish);
-      DocumentBuilder db = DocumentBuilderFactory.newInstance()
-          .newDocumentBuilder();
+      /*DocumentBuilder db = DocumentBuilderFactory.newInstance()
+          .newDocumentBuilder();*/
       InputSource is = new InputSource();
       is.setCharacterStream(new StringReader(
           "<foo attr=\"attribute\"><?processing instruction?><!--comment-->test1</foo>"));
