@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2019 MarkLogic Corporation
+ * Copyright 2014-2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -246,14 +246,22 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			// the callback receives the output stream
 			public void write(OutputStream out) throws IOException {
 				// acquire the content
-				InputStream docStreamwrongjson = new FileInputStream(
-						WriteHostBatcherTest.class.getResource(TEST_DIR_PREFIX + "WrongFormat.json").getPath());
+				InputStream docStreamwrongjson = null;
+				try {
+					 docStreamwrongjson = new FileInputStream(
+							WriteHostBatcherTest.class.getResource(TEST_DIR_PREFIX + "WrongFormat.json").getPath());
 
-				// copy content to the output stream
-				byte[] buf = new byte[1024];
-				int byteCount = 0;
-				while ((byteCount = docStreamwrongjson.read(buf)) != -1) {
-					out.write(buf, 0, byteCount);
+					// copy content to the output stream
+					byte[] buf = new byte[1024];
+					int byteCount = 0;
+					while ((byteCount = docStreamwrongjson.read(buf)) != -1) {
+						out.write(buf, 0, byteCount);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				finally {
+					docStreamwrongjson.close();
 				}
 
 			}
@@ -1434,7 +1442,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				Set threads = Thread.getAllStackTraces().keySet();
+				Set<Thread> threads = Thread.getAllStackTraces().keySet();
 				Iterator<Thread> iter = threads.iterator();
 				while (iter.hasNext()) {
 					Thread t = iter.next();
@@ -1519,7 +1527,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				Set threads = Thread.getAllStackTraces().keySet();
+				Set<Thread> threads = Thread.getAllStackTraces().keySet();
 				Iterator<Thread> iter = threads.iterator();
 				while (iter.hasNext()) {
 					Thread t = iter.next();
@@ -1611,7 +1619,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				Set threads = Thread.getAllStackTraces().keySet();
+				Set<Thread> threads = Thread.getAllStackTraces().keySet();
 				Iterator<Thread> iter = threads.iterator();
 				while (iter.hasNext()) {
 					Thread t = iter.next();
@@ -1762,7 +1770,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 					}
 					Iterator<Entry<String, Integer>> it = threadMap.entrySet().iterator();
 					while (it.hasNext()) {
-						Map.Entry<String, Integer> pair = (Map.Entry) it.next();
+						Map.Entry<String, Integer> pair = (Entry<String, Integer>) it.next();
 						System.out.println("Thread pool: " + pair.getKey() + " = " + pair.getValue() + " Threads");
 						if (pair.getValue() == 20) {
 							count.set(true);
@@ -1823,6 +1831,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			System.out.println("Job writes " + batch.getJobWritesSoFar());
 			successCount.getAndAdd(batch.getItems().length);
 			String s = null;
+			// s.length is called purposefully to set off NEE.
 			s.length();
 
 		}).onBatchFailure((batch, throwable) -> {
@@ -2363,8 +2372,6 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		System.out.println("In testNullConfig method");
 
 		final String query1 = "fn:count(fn:doc())";
-
-		DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoHost").withQuality(0);
 
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
@@ -2910,7 +2917,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	    
 	    metadataHandle.setQuality(23);
 	    DocumentWriteOperationImpl docWriteOpsImp4 = new DocumentWriteOperationImpl(
-	    		OperationType.DISABLE_METADATA_DEFAULT,
+	    		OperationType.DOCUMENT_WRITE,
 	    		docId[4],
 	    		metadataHandle,
 	    		contHandle5
