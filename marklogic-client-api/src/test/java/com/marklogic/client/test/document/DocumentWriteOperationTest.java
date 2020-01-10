@@ -53,7 +53,7 @@ public class DocumentWriteOperationTest {
     }
 
     @Test
-    public void DocumentWriteSetImplTest() {
+    public void DocumentWriteSetWithNoMetadataTest() {
 
         DocumentWriteSet batch = textDocumentManager.newWriteSet();
 
@@ -65,10 +65,9 @@ public class DocumentWriteOperationTest {
         batch.add("doc1.txt", doc1);
         batch.add("doc2.txt", doc2);
         batch.add("doc7.txt", doc7);
-        batch.addDefault(defaultMetadata1);
 
         List<String> list = new ArrayList<>();
-        list.add(null);
+
         list.add("doc1.txt");
         list.add("doc2.txt");
         list.add("doc3.txt");
@@ -148,6 +147,151 @@ public class DocumentWriteOperationTest {
 
         assertEquals("Doc 8 metadata not as expected",0,
                 textDocumentManager.readMetadata("doc8.txt", new DocumentMetadataHandle()).getQuality());
+    }
+
+    @Test
+    public void DocumentWriteSetWithOneMetadataTest() {
+
+        DocumentWriteSet batch = textDocumentManager.newWriteSet();
+
+        batch.addDefault(defaultMetadata1);
+        batch.add("doc8.txt", doc8);
+        batch.add("doc5.txt", doc5);
+        batch.add("doc6.txt", doc6);
+        batch.add("doc4.txt", doc4);
+        batch.add("doc3.txt", doc3);
+        batch.add("doc1.txt", doc1);
+        batch.add("doc2.txt", doc2);
+        batch.add("doc7.txt", doc7);
+
+        List<String> list = new ArrayList<>();
+        list.add(null);
+        list.add("doc1.txt");
+        list.add("doc2.txt");
+        list.add("doc3.txt");
+        list.add("doc4.txt");
+        list.add("doc5.txt");
+        list.add("doc6.txt");
+        list.add("doc7.txt");
+        list.add("doc8.txt");
+        int i = 0;
+
+        Iterator<DocumentWriteOperation> itr = batch.iterator();
+        while(itr.hasNext()){
+            assertEquals("Document uri not as expected", itr.next().getUri(), list.get(i));
+            i++;
+        }
+        textDocumentManager.write(batch);
+    }
+
+    @Test
+    public void DocumentWriteSetWithOneMetadataTest_2() {
+
+        DocumentWriteSet batch = textDocumentManager.newWriteSet();
+
+        batch.add("doc8.txt", doc8);
+        batch.add("doc5.txt", doc5);
+        batch.add("doc6.txt", doc6);
+        batch.addDefault(defaultMetadata1);
+        batch.add("doc4.txt", doc4);
+        batch.add("doc3.txt", doc3);
+        batch.add("doc1.txt", doc1);
+        batch.add("doc2.txt", doc2);
+        batch.add("doc7.txt", doc7);
+
+        List<String> list = new ArrayList<>();
+
+        list.add("doc8.txt");
+        list.add("doc5.txt");
+        list.add("doc6.txt");
+        list.add(null);
+        list.add("doc4.txt");
+        list.add("doc3.txt");
+        list.add("doc1.txt");
+        list.add("doc2.txt");
+        list.add("doc7.txt");
+        int i = 0;
+
+        Iterator<DocumentWriteOperation> itr = batch.iterator();
+        while(itr.hasNext()){
+            assertEquals("Document uri not as expected", itr.next().getUri(), list.get(i));
+            i++;
+        }
+        textDocumentManager.write(batch);
+    }
+
+    @Test
+    public void DocumentWriteSetWithDisableMetadataTest() {
+
+        DocumentWriteSet batch = textDocumentManager.newWriteSet();
+
+        batch.disableDefault();
+        batch.add("doc8.txt", doc8);
+        batch.add("doc5.txt", doc5);
+        batch.add("doc6.txt", doc6);
+        batch.add("doc4.txt", doc4);
+        batch.add("doc3.txt", doc3);
+        batch.add("doc1.txt", doc1);
+        batch.add("doc2.txt", doc2);
+        batch.add("doc7.txt", doc7);
+
+        List<String> list = new ArrayList<>();
+
+        list.add(null);
+        list.add("doc1.txt");
+        list.add("doc2.txt");
+        list.add("doc3.txt");
+        list.add("doc4.txt");
+        list.add("doc5.txt");
+        list.add("doc6.txt");
+        list.add("doc7.txt");
+        list.add("doc8.txt");
+        int i=0;
+
+        Iterator<DocumentWriteOperation> itr = batch.iterator();
+        while(itr.hasNext()){
+            assertEquals("Document uri not as expected", itr.next().getUri(), list.get(i));
+            i++;
+        }
+        textDocumentManager.write(batch);
+    }
+
+    @Test
+    public void DocumentWriteSetWithDisableMetadataTest_2() {
+
+        DocumentWriteSet batch = textDocumentManager.newWriteSet();
+
+
+        batch.add("doc8.txt", doc8);
+        batch.add("doc5.txt", doc5);
+        batch.add("doc6.txt", doc6);
+        batch.add("doc4.txt", doc4);
+        batch.disableDefault();
+        batch.add("doc3.txt", doc3);
+        batch.add("doc1.txt", doc1);
+        batch.add("doc2.txt", doc2);
+        batch.add("doc7.txt", doc7);
+
+        List<String> list = new ArrayList<>();
+
+
+        list.add("doc8.txt");
+        list.add("doc5.txt");
+        list.add("doc6.txt");
+        list.add("doc4.txt");
+        list.add(null);
+        list.add("doc3.txt");
+        list.add("doc1.txt");
+        list.add("doc2.txt");
+        list.add("doc7.txt");
+        int i=0;
+
+        Iterator<DocumentWriteOperation> itr = batch.iterator();
+        while(itr.hasNext()){
+            assertEquals("Document uri not as expected", itr.next().getUri(), list.get(i));
+            i++;
+        }
+        textDocumentManager.write(batch);
     }
 
     @AfterClass

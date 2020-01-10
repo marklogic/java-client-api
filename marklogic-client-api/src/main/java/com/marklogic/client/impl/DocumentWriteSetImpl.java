@@ -27,19 +27,21 @@ import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DocumentWriteSetImpl implements Set<DocumentWriteOperation>,DocumentWriteSet {
 
   private List<DocumentWriteOperation> operations;
-  private int metadataCount;
+  AtomicBoolean canSort;
 
   DocumentWriteSetImpl(){
     operations = new ArrayList<>();
-    metadataCount = 0;
+    canSort = new AtomicBoolean(true);
   }
   @Override
   public DocumentWriteSet addDefault(DocumentMetadataWriteHandle metadataHandle) {
-    this.metadataCount++;
+    if(canSort.get() && operations.size() > 0)
+      canSort = new AtomicBoolean(false);
     add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT,
       null, metadataHandle, null));
     return this;
@@ -47,7 +49,8 @@ public class DocumentWriteSetImpl implements Set<DocumentWriteOperation>,Documen
 
   @Override
   public DocumentWriteSet disableDefault() {
-    this.metadataCount++;
+    if(canSort.get() && operations.size() > 0)
+      canSort = new AtomicBoolean(false);
     add(new DocumentWriteOperationImpl(OperationType.DISABLE_METADATA_DEFAULT,
       null, new StringHandle("{ }").withFormat(Format.JSON), null));
     return this;
@@ -161,7 +164,7 @@ public class DocumentWriteSetImpl implements Set<DocumentWriteOperation>,Documen
 
   @Override
   public Iterator<DocumentWriteOperation> iterator() {
-    if(this.metadataCount <=1)
+    if(canSort.get())
       Collections.sort(operations);
     return operations.iterator();
   }
