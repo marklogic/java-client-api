@@ -32,16 +32,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class DocumentWriteSetImpl implements Set<DocumentWriteOperation>,DocumentWriteSet {
 
   private List<DocumentWriteOperation> operations;
-  AtomicBoolean canSort;
+  Boolean canSort;
 
   DocumentWriteSetImpl(){
     operations = new ArrayList<>();
-    canSort = new AtomicBoolean(true);
+    canSort = true;
   }
   @Override
   public DocumentWriteSet addDefault(DocumentMetadataWriteHandle metadataHandle) {
-    if(canSort.get() && operations.size() > 0)
-      canSort = new AtomicBoolean(false);
+    if(canSort && operations.size() > 0)
+      canSort = false;
     add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT,
       null, metadataHandle, null));
     return this;
@@ -49,8 +49,8 @@ public class DocumentWriteSetImpl implements Set<DocumentWriteOperation>,Documen
 
   @Override
   public DocumentWriteSet disableDefault() {
-    if(canSort.get() && operations.size() > 0)
-      canSort = new AtomicBoolean(false);
+    if(canSort && operations.size() > 0)
+      canSort = false;
     add(new DocumentWriteOperationImpl(OperationType.DISABLE_METADATA_DEFAULT,
       null, new StringHandle("{ }").withFormat(Format.JSON), null));
     return this;
@@ -164,7 +164,7 @@ public class DocumentWriteSetImpl implements Set<DocumentWriteOperation>,Documen
 
   @Override
   public Iterator<DocumentWriteOperation> iterator() {
-    if(canSort.get())
+    if(canSort)
       Collections.sort(operations);
     return operations.iterator();
   }
