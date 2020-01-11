@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<people xmlns="http://www.marklogic.com/people/">
+<person president="yes"><first>George</first><last>Washington</last></person>
+<person president="no"><first>Betsy</first><last>Ross</last></person>
+<skip>
+  <person president="yes"><first>John</first><last>Kennedy</last></person>
+</skip>
+</people>
