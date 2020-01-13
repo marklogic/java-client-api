@@ -24,10 +24,19 @@ The Java API supports the following core features of the MarkLogic database:
 *  Query data structure trees, marked-up text, and all the hybrids in between those extremes.
 *  Project values, tuples, and triples from hierarchical documents and aggregate over them.
 *  Patch documents with partial updates.
-*  Match documents against alerting rules expressed as queries.
 *  Use Optimistic Locking to detect contention without creating locks on the server.
 *  Execute ACID modifications so the change either succeeds or throws an exception.
 *  Execute multi-statement transactions so changes to multiple documents succeed or fail together.
+*  Call Data Services by means of a Java interface on the client for data functionality 
+implemented by an endpoint on the server.
+
+### What's New in Java Client API 5
+
+*  Splitters for CSV records, for entries in a ZipInputStream, and for line-delimited JSON or XML
+for streaming to WriteBatcher.
+*  Support for Bulk IO Data Services to make it easy to implement connectors for dataflow
+frameworks - see https://github.com/marklogic/java-client-api/wiki/Bulk-Data-Services for more 
+detail.
 
 ### What's New in Java Client API 4
 
