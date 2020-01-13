@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 MarkLogic Corporation
+ * Copyright 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -271,8 +271,8 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
                 nsUri = "";
             }
 
-            if (localName == null) {
-                localName = "";
+            if (localName == null || localName.equals("")) {
+                throw new IllegalArgumentException("LocalName cannot be null");
             }
 
             this.nsUri = nsUri;
@@ -358,49 +358,62 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
                 while (xmlStreamReader.hasNext()) {
                     int event = xmlStreamReader.next();
 
-                    if (event == XMLStreamReader.START_ELEMENT) {
-                        StartElementReaderImpl startElementReader = new StartElementReaderImpl(xmlStreamReader);
-                        NodeOperation nodeOperation = visitor.startElement(startElementReader);
+                    checkForHandle:
+                    switch (event) {
+                        case XMLStreamReader.START_ELEMENT:
+                            StartElementReaderImpl startElementReader = new StartElementReaderImpl(xmlStreamReader);
+                            NodeOperation nodeOperation = visitor.startElement(startElementReader);
 
-                        if (nodeOperation == null) {
-                            throw new IllegalStateException("No NodeOperation returned.");
-                        }
+                            if (nodeOperation == null) {
+                                throw new IllegalStateException("No NodeOperation returned.");
+                            }
 
-                        switch (nodeOperation) {
-                            case DESCEND:
-                                break;
+                            switch (nodeOperation) {
+                                case DESCEND:
+                                    break checkForHandle;
 
-                            case PROCESS:
-                                T handle = visitor.makeBufferedHandle(xmlStreamReader);
-                                if (handle != null) {
-                                    return handle;
-                                }
-                                break;
-
-                            case SKIP:
-                                int count = 0;
-                                while (xmlStreamReader.hasNext()) {
-                                    int next = xmlStreamReader.next();
-                                    if (next == XMLStreamReader.START_ELEMENT) {
-                                        count++;
+                                case PROCESS:
+                                    T handle = visitor.makeBufferedHandle(xmlStreamReader);
+                                    if (handle != null) {
+                                        return handle;
                                     }
+                                    break checkForHandle;
 
-                                    if (next == XMLStreamReader.END_ELEMENT) {
-                                        if (count == 0) {
-                                            break;
+                                case SKIP:
+                                    int depth = 0;
+                                    while (xmlStreamReader.hasNext()) {
+                                        int next = xmlStreamReader.next();
+                                        skipCheck:
+                                        switch (next) {
+                                            case XMLStreamReader.START_ELEMENT:
+                                                depth++;
+                                                break skipCheck;
+
+                                            case XMLStreamReader.END_ELEMENT:
+                                                if (depth == 0) {
+                                                    break checkForHandle;
+                                                }
+                                                depth--;
+                                                break skipCheck;
+
+                                            default:
+                                                break skipCheck;
                                         }
-                                        count--;
                                     }
-                                }
-                                break;
+                                    break checkForHandle;
 
-                            default:
-                                throw new IllegalStateException("Unknown state");
-                        }
-                    }else if (event == XMLStreamReader.END_ELEMENT) {
-                        visitor.endElement(
-                                xmlStreamReader.getNamespaceURI(),
-                                xmlStreamReader.getLocalName());
+                                default:
+                                    throw new IllegalStateException("Unknown state");
+                            }
+
+                        case XMLStreamReader.END_ELEMENT:
+                            visitor.endElement(
+                                    xmlStreamReader.getNamespaceURI(),
+                                    xmlStreamReader.getLocalName());
+                            break checkForHandle;
+
+                        default:
+                            break checkForHandle;
                     }
                 }
 
