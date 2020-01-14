@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 MarkLogic Corporation
+ * Copyright 2012-2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,21 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
-import java.util.LinkedHashSet;
+import java.util.*;
 
-public class DocumentWriteSetImpl extends LinkedHashSet<DocumentWriteOperation> implements DocumentWriteSet {
+public class DocumentWriteSetImpl implements Set<DocumentWriteOperation>,DocumentWriteSet {
+
+  private List<DocumentWriteOperation> operations;
+  Boolean canSort;
+
+  DocumentWriteSetImpl(){
+    operations = new ArrayList<>();
+    canSort = true;
+  }
   @Override
   public DocumentWriteSet addDefault(DocumentMetadataWriteHandle metadataHandle) {
+    if(canSort && operations.size() > 0)
+      canSort = false;
     add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT,
       null, metadataHandle, null));
     return this;
@@ -38,6 +48,8 @@ public class DocumentWriteSetImpl extends LinkedHashSet<DocumentWriteOperation> 
 
   @Override
   public DocumentWriteSet disableDefault() {
+    if(canSort && operations.size() > 0)
+      canSort = false;
     add(new DocumentWriteOperationImpl(OperationType.DISABLE_METADATA_DEFAULT,
       null, new StringHandle("{ }").withFormat(Format.JSON), null));
     return this;
@@ -133,4 +145,72 @@ public class DocumentWriteSetImpl extends LinkedHashSet<DocumentWriteOperation> 
       temporalDocumentURI));
     return this;
   }
+
+  @Override
+  public int size() {
+    return operations.size();
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return operations.isEmpty();
+  }
+
+  @Override
+  public boolean contains(Object o) {
+    return operations.contains(o);
+  }
+
+  @Override
+  public Iterator<DocumentWriteOperation> iterator() {
+    if(canSort)
+      Collections.sort(operations);
+    return operations.iterator();
+  }
+
+  @Override
+  public Object[] toArray() {
+    return operations.toArray();
+  }
+
+  @Override
+  public <T> T[] toArray(T[] a) {
+    return operations.toArray(a);
+  }
+
+  @Override
+  public boolean add(DocumentWriteOperation documentWriteOperation) {
+    return operations.add(documentWriteOperation);
+  }
+
+  @Override
+  public boolean remove(Object o) {
+    return operations.remove(o);
+  }
+
+  @Override
+  public boolean containsAll(Collection<?> c) {
+    return operations.containsAll(c);
+  }
+
+  @Override
+  public boolean addAll(Collection<? extends DocumentWriteOperation> c) {
+    return operations.addAll(c);
+  }
+
+  @Override
+  public boolean retainAll(Collection<?> c) {
+    return operations.retainAll(c);
+  }
+
+  @Override
+  public boolean removeAll(Collection<?> c) {
+    return operations.removeAll(c);
+  }
+
+  @Override
+  public void clear() {
+    operations.clear();
+  }
+
 }

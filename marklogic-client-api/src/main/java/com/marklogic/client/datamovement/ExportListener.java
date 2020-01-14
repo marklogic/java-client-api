@@ -24,14 +24,12 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.query.QueryManager;
 
+import com.marklogic.client.query.StructuredQueryDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.*;
 import java.util.function.Consumer;
-import java.util.List;
-import java.util.Set;
 
 /**
  * <p>Reads document contents (and optionally metadata) for each batch, then sends
@@ -87,6 +85,9 @@ public class ExportListener implements QueryBatchListener {
   }
 
   protected DocumentPage getDocs(QueryBatch batch) {
+    if (batch.getClient() == null) {
+      throw new IllegalStateException("null DatabaseClient");
+    }
     GenericDocumentManager docMgr = batch.getClient().newDocumentManager();
     if ( view              != null ) docMgr.setSearchView(view);
     if ( categories        != null ) docMgr.setMetadataCategories(categories);

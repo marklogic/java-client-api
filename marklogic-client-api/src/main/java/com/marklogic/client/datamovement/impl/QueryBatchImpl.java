@@ -33,6 +33,10 @@ public class QueryBatchImpl extends BatchImpl<String> implements QueryBatch {
   private Forest forest;
   private long serverTimestamp;
 
+  public QueryBatchImpl() {
+    super(String.class);
+  }
+
   @Override
   public QueryBatcher getBatcher() {
     return batcher;

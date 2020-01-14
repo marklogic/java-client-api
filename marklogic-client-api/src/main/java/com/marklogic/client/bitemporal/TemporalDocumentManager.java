@@ -21,10 +21,7 @@ import java.util.Calendar;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.datatype.Duration;
 
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.Transaction;
+import com.marklogic.client.*;
 import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager;
@@ -68,8 +65,9 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
           return "noWipe";
         case NOUPDATE:
           return "noUpdate";
+        default:
+          throw new MarkLogicInternalException("Unknown enumeration");
       }
-      return null;
     }
   }
 

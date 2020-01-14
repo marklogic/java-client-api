@@ -596,6 +596,7 @@ public interface RESTServices {
     int     getStatusCode();
     String  getStatusMsg();
     String  getErrorBody();
+    void close();
   }
 
   interface SingleCallResponse extends CallResponse {
@@ -608,11 +609,17 @@ public interface RESTServices {
   }
 
   interface MultipleCallResponse extends CallResponse {
-    Stream<byte[]> asStreamOfBytes();
+    Stream<byte[]>            asStreamOfBytes();
     Stream<InputStream>       asStreamOfInputStream();
     Stream<InputStreamHandle> asStreamOfInputStreamHandle();
     Stream<Reader>            asStreamOfReader();
     Stream<ReaderHandle>      asStreamOfReaderHandle();
     Stream<String>            asStreamOfString();
+    byte[][]            asArrayOfBytes();
+    InputStream[]       asArrayOfInputStream();
+    InputStreamHandle[] asArrayOfInputStreamHandle();
+    Reader[]            asArrayOfReader();
+    ReaderHandle[]      asArrayOfReaderHandle();
+    String[]            asArrayOfString();
   }
 }

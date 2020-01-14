@@ -76,7 +76,7 @@ public interface DocumentPatchBuilder extends DocumentMetadataPatchBuilder {
     @Override
     public String toString() {
       return super.toString().toLowerCase();
-    };
+    }
 
   }
 

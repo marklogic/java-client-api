@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 5.1.0
+#### New Functionality
+- New package to make it easy to implement connectors for dataflow frameworks. Refer to https://github.com/marklogic/java-client-api/wiki/Bulk-Data-Services page for details.
+- Two new splitters complementing JacksonCSVSplitter. LineSplitter for line-delimited payloads (JSON) and ZipSplitter splitter for entries in a zipfile
+
+#### Improvements and Bug Fixes
+- [#1163](https://github.com/marklogic/java-client-api/issues/1163) - Eliminated potential for deadlocks between batches with URI sort and support for multibyte characters within uris
+- [#1177](https://github.com/marklogic/java-client-api/issues/1177) - Addressed security vulnerability in Jackson by upgrading Jackson dependency
+
 ## 5.0.1
 #### New Functionality
 - [#636](https://github.com/marklogic/java-client-api/issues/636) - Support for debugging connection issues

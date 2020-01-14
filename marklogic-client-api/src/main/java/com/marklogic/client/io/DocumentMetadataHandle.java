@@ -527,7 +527,8 @@ public class DocumentMetadataHandle
   @Override
   public String toString() {
     try {
-      return new String(toBuffer(),"UTF-8");
+      byte[] buffer = toBuffer();
+      return (buffer == null) ? null : new String(buffer,"UTF-8");
     } catch (UnsupportedEncodingException e) {
       throw new MarkLogicIOException(e);
     }
@@ -892,8 +893,6 @@ public class DocumentMetadataHandle
     }
 
     serializer.writeEndElement();
-
-    valueSerializer = null;
   }
   private void sendQualityImpl(XMLStreamWriter serializer) throws XMLStreamException {
     if ( qualityModified == false ) return;

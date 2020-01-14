@@ -70,7 +70,9 @@ import java.text.SimpleDateFormat;
 public class BulkExportToJdbc {
   private static Logger logger = LoggerFactory.getLogger(BulkExportToJdbc.class);
   // this is the date format required by our relational database tables
-  public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+  // which is thread local because DateFormat is not threadsafe
+  public static final ThreadLocal<SimpleDateFormat> dateFormat =
+          ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd"));
 
   // we're using a small thread count and batch size because the example
   // dataset is small, but with a larger dataset you'd use more threads and
@@ -123,9 +125,9 @@ public class BulkExportToJdbc {
             jdbcTemplate.update(
               "INSERT INTO employees_export (emp_no, hire_date, first_name, last_name, gender, birth_date) " +
               "VALUES (?, ?, ?, ?, ?, ?) ",
-              employee.getEmployeeId(), dateFormat.format(employee.getHireDate().getTime()), employee.getFirstName(),
+              employee.getEmployeeId(), dateFormat.get().format(employee.getHireDate().getTime()), employee.getFirstName(),
               employee.getLastName(), employee.getGender() == Gender.MALE ? "M" : "F",
-              dateFormat.format(employee.getBirthDate().getTime()));
+              dateFormat.get().format(employee.getBirthDate().getTime()));
             if ( employee.getSalaries() != null ) {
               // each employee could have many salaries, and we need to write
               // each of those to its own row
@@ -133,8 +135,8 @@ public class BulkExportToJdbc {
                 jdbcTemplate.update(
                   "INSERT INTO salaries_export (emp_no, salary, from_date, to_date) " +
                   "VALUES(?, ?, ?, ?)",
-                  employee.getEmployeeId(), salary.getSalary(), dateFormat.format(salary.getFromDate().getTime()),
-                  dateFormat.format(salary.getToDate().getTime()));
+                  employee.getEmployeeId(), salary.getSalary(), dateFormat.get().format(salary.getFromDate().getTime()),
+                  dateFormat.get().format(salary.getToDate().getTime()));
               }
             }
             if ( employee.getTitles() != null ) {
@@ -144,8 +146,8 @@ public class BulkExportToJdbc {
                 jdbcTemplate.update(
                   "INSERT INTO titles_export (emp_no, title, from_date, to_date) " +
                   "VALUES(?, ?, ?, ?)",
-                  employee.getEmployeeId(), title.getTitle(), dateFormat.format(title.getFromDate().getTime()),
-                  dateFormat.format(title.getToDate().getTime()));
+                  employee.getEmployeeId(), title.getTitle(), dateFormat.get().format(title.getFromDate().getTime()),
+                  dateFormat.get().format(title.getToDate().getTime()));
               }
             }
           })

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 MarkLogic Corporation
+ * Copyright 2015-2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,6 +80,7 @@ public class WriteBatcherTest {
   private static String uri3 = "WriteBatcherTest_content_3.txt";
   private static String uri4 = "WriteBatcherTest_content_4.txt";
   private static String uri5 = "invalidXML.xml";
+  private static String uri6 = "invalidXML_2.xml";
   private static String transform = "WriteBatcherTest_transform.sjs";
   private static String whbTestCollection = "WriteBatcherTest_" +
     new Random().nextInt(10000);
@@ -708,7 +709,7 @@ public class WriteBatcherTest {
     String directory = "/WriteBatcherTest/testWriteValidAndInvalidDocsAndThrowException/";
     DocumentWriteSet writeSet = client.newDocumentManager().newWriteSet();
     writeSet.add(directory + uri1, new StringHandle("test"));
-    writeSet.add(directory + uri5, new StringHandle("this is not valid XML").withFormat(Format.XML));
+    writeSet.add(directory + uri6, new StringHandle("this is not valid XML").withFormat(Format.XML));
     writeSet.add(directory + uri2, new StringHandle("test"));
     writeSet.add(directory + uri5, new StringHandle("this is not valid XML").withFormat(Format.XML));
     writeSet.add(directory + uri3, new StringHandle("test"));
@@ -1140,5 +1141,25 @@ public class WriteBatcherTest {
 
     moveMgr.startJob(batcher);
     moveMgr.stopJob(batcher);
+  }
+
+  @Test
+  public void testUrisWithDifferentCharacters() {
+    GenericDocumentManager docMgr = client.newDocumentManager();
+    DocumentWriteSet writeSet = docMgr.newWriteSet();
+    StringHandle handle1 = new StringHandle("{hello:\"test1\"}");
+    StringHandle handle2 = new StringHandle("{hello:\"test2\"}");
+
+    writeSet.add("/CXXXX_Ü_9999.json", handle1);
+    writeSet.add("Ä_9999.json", handle2);
+    docMgr.write(writeSet);
+
+    DocumentPage documentsPage = docMgr.read("/CXXXX_Ü_9999.json","Ä_9999.json");
+    assertTrue("All the documents were not written.",documentsPage.size() == 2);
+    assertEquals("First document content not as expected.",handle1,documentsPage.next().getContent(handle1));
+    assertEquals("Second document content not as expected.",handle2,documentsPage.next().getContent(handle2));
+
+    client.newDocumentManager().delete("/CXXXX_Ü_9999.json");
+    client.newDocumentManager().delete("Ä_9999.json");
   }
 }

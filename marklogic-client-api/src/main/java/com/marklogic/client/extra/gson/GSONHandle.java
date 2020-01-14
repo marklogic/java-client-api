@@ -159,7 +159,7 @@ public class GSONHandle
   @Override
   public String toString() {
     if (content == null) {
-      return null;
+      return "";
     }
     return content.toString();
   }

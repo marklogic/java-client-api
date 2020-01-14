@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 MarkLogic Corporation
+ * Copyright 2012-2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
@@ -27,7 +27,7 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  * {@link DocumentWriteSet#add add}, {@link DocumentWriteSet#addDefault addDefault}, or
  * {@link DocumentWriteSet#disableDefault disableDefault}.
  */
-public interface DocumentWriteOperation {
+public interface DocumentWriteOperation extends Comparable<DocumentWriteOperation> {
   public enum OperationType {
     /** This write operation (REST API mime part) sets the defaults for the
      * rest of the request.
@@ -42,6 +42,7 @@ public interface DocumentWriteOperation {
      * <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_54554">
      * REST API Guide -&gt; Example: Reverting to System Default Metadata</a>
      */
+    @Deprecated
     DISABLE_METADATA_DEFAULT,
     /** This write operation (REST API mime part) creates or overwrites
      * one document and/or document metadata.
@@ -90,7 +91,7 @@ public interface DocumentWriteOperation {
    * @return the logical temporal document URI
    */
   String getTemporalDocumentURI();
-  
+
   /**
    * The from method prepares each content object for writing as a document including generating a URI by inserting a UUID.
    * @param content a subclass of AbstractWriteHandle
@@ -101,44 +102,7 @@ public interface DocumentWriteOperation {
             final DocumentUriMaker uriMaker) {
         if(content == null || uriMaker == null)
             throw new IllegalArgumentException("Content and/or Uri maker cannot be null");
-        
-        final class DocumentWriteOperationImpl implements DocumentWriteOperation {
-            
-            private AbstractWriteHandle content;
-            private String uri;
-            
-            public DocumentWriteOperationImpl(AbstractWriteHandle content, String uri) {
-                this.content = content;
-                this.uri = uri;
-            }
 
-
-            @Override
-            public OperationType getOperationType() {
-                return null;
-            }
-
-            @Override
-            public String getUri() {
-                return uri;
-            }
-
-            @Override
-            public DocumentMetadataWriteHandle getMetadata() {
-                return null;
-            }
-
-            @Override
-            public AbstractWriteHandle getContent() {
-                return content;
-            }
-
-            @Override
-            public String getTemporalDocumentURI() {
-                return null;
-            }
-
-        }
         final class WrapperImpl {
             private DocumentUriMaker docUriMaker;
             WrapperImpl(DocumentUriMaker uriMaker){
@@ -146,9 +110,7 @@ public interface DocumentWriteOperation {
             }
             DocumentWriteOperation mapper(AbstractWriteHandle content) {
                 String uri = docUriMaker.apply(content);
-                if (uri == null)
-                    throw new MarkLogicInternalException("Uri could not be created");
-                return new DocumentWriteOperationImpl(content, uri);
+                return new DocumentWriteOperationImpl(uri, content);
             }
 
         }

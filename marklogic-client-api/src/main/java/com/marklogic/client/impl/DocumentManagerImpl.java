@@ -373,11 +373,10 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       HandleImplementation metadataBase = HandleAccessor.checkHandle(
         metadataHandle, "metadata");
       Format metadataFormat = metadataBase.getFormat();
-      if (metadataFormat == null
-        || (metadataFormat != Format.JSON && metadataFormat != Format.XML)) {
+      if (metadataFormat != Format.JSON && metadataFormat != Format.XML) {
         if (logger.isWarnEnabled())
           logger.warn("Unsupported metadata format {}, using XML",
-            metadataFormat.name());
+                  (metadataFormat == null) ? "null" : metadataFormat.name());
         metadataBase.setFormat(Format.XML);
       }
     }
@@ -535,7 +534,6 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       }
     }
 
-    String tid = transaction == null ? null : transaction.getTransactionId();
     // the default for bulk is no metadata, which differs from the normal
     // default of ALL
     Set<Metadata> metadata = isProcessedMetadataModified ? processedMetadata
@@ -904,11 +902,10 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       HandleImplementation metadataBase = HandleAccessor.checkHandle(
         metadataHandle, "metadata");
       Format metadataFormat = metadataBase.getFormat();
-      if (metadataFormat == null
-        || (metadataFormat != Format.JSON && metadataFormat != Format.XML)) {
+      if (metadataFormat != Format.JSON && metadataFormat != Format.XML) {
         if (logger.isWarnEnabled())
           logger.warn("Unsupported metadata format {}, using XML",
-            metadataFormat.name());
+                  (metadataFormat == null) ? "null" : metadataFormat.name());
         metadataBase.setFormat(Format.XML);
       }
     }
@@ -1228,11 +1225,10 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       HandleImplementation metadataBase = HandleAccessor.checkHandle(
         metadataHandle, "metadata");
       Format metadataFormat = metadataBase.getFormat();
-      if (metadataFormat == null
-        || (metadataFormat != Format.JSON && metadataFormat != Format.XML)) {
+      if (metadataFormat != Format.JSON && metadataFormat != Format.XML) {
         if (logger.isWarnEnabled())
           logger.warn("Unsupported metadata format {}, using XML",
-            metadataFormat.name());
+                  (metadataFormat == null) ? "null" : metadataFormat.name());
         metadataBase.setFormat(Format.XML);
       }
     }

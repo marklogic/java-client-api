@@ -179,7 +179,7 @@ public class BytesHandle
   @Override
   public String toString() {
     try {
-      return new String(content,"UTF-8");
+      return (content == null) ? null : new String(content,"UTF-8");
     } catch (UnsupportedEncodingException e) {
       throw new MarkLogicIOException(e);
     }

@@ -33,17 +33,16 @@ public class JobReportImpl implements JobReport {
   static public JobReportImpl about(JobTicketImpl ticket) {
     BatcherImpl       batcher = ticket.getBatcher();
     JobTicket.JobType jobType = ticket.getJobType();
+    if (jobType == null) {
+      throw new InternalError("null job type");
+    }
     switch(jobType) {
       case QUERY_BATCHER:
         return new JobReportImpl((QueryBatcher) batcher);
       case WRITE_BATCHER:
         return new JobReportImpl((WriteBatcher) batcher);
       default:
-        throw new InternalError(
-                (jobType == null) ?
-                        "null job type" :
-                        "unknown job type: "+jobType.name()
-        );
+        throw new InternalError("unknown job type: "+jobType.name());
     }
   }
 

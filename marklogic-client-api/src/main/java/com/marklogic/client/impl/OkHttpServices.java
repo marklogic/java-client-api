@@ -131,6 +131,7 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -143,6 +144,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -235,7 +238,7 @@ public class OkHttpServices implements RESTServices {
     } catch (UnsupportedEncodingException e) {
       throw new IllegalStateException("UTF-8 is unsupported", e);
     } finally {
-      response.close();
+      closeResponse(response);
     }
   }
 
@@ -562,12 +565,12 @@ public class OkHttpServices implements RESTServices {
     Response response = sendRequestOnce(setupRequest(requestUri, path, null).head());
     int statusCode = response.code();
     if (!retryStatus.contains(statusCode)) {
-      response.close();
+      closeResponse(response);
       return 0;
     }
 
     String retryAfterRaw = response.header("Retry-After");
-    response.close();
+    closeResponse(response);
 
     int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
     return Math.max(retryAfter, calculateDelay(randRetry, retry));
@@ -662,7 +665,7 @@ public class OkHttpServices implements RESTServices {
     int status = response.code();
 
     if (status == STATUS_NOT_FOUND) {
-      response.close();
+      closeResponse(response);
       throw new ResourceNotFoundException(
         "Could not delete non-existent document");
     }
@@ -698,7 +701,7 @@ public class OkHttpServices implements RESTServices {
     Headers responseHeaders = response.headers();
     TemporalDescriptor temporalDesc = updateTemporalSystemTime(desc, responseHeaders);
 
-    response.close();
+    closeResponse(response);
     logRequest(reqlog, "deleted %s document", uri);
     return temporalDesc;
   }
@@ -785,6 +788,11 @@ public class OkHttpServices implements RESTServices {
        * in order to get the Response
        */
       response = doFunction.apply(requestBldr);
+      if (response == null) {
+          throw new MarkLogicInternalException(
+                  "null response for: "+requestBldr.build().url().toString()
+          );
+      }
       status = response.code();
       if (!isRetryable || !retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
@@ -800,7 +808,7 @@ public class OkHttpServices implements RESTServices {
        * When the service becomes unavailable, we close the Response
        * we got and retry it to try and get a new Response
        */
-      response.close();
+      closeResponse(response);
       /*
        * There are scenarios where we don't want to retry and we just want to
        * throw ResourceNotResendableException. In that case, we pass that code from
@@ -819,9 +827,10 @@ public class OkHttpServices implements RESTServices {
      */
     if (retryStatus.contains(status)) {
       checkFirstRequest();
+      closeResponse(response);
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
-          Math.round((System.currentTimeMillis() - startTime) / 1000)+
+          ((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
     /*
@@ -880,7 +889,7 @@ public class OkHttpServices implements RESTServices {
         extractErrorFields(response));
     }
     if (status == STATUS_NOT_MODIFIED) {
-      response.close();
+      closeResponse(response);
       return false;
     }
     if (status != STATUS_OK && status != STATUS_PARTIAL_CONTENT) {
@@ -911,7 +920,7 @@ public class OkHttpServices implements RESTServices {
     Object entity = body.contentLength() != 0 ? getEntity(body, as) : null;
 
     if (entity == null || (!InputStream.class.isAssignableFrom(as) && !Reader.class.isAssignableFrom(as))) {
-      response.close();
+      closeResponse(response);
     }
 
     handleBase.receiveContent((reqlog != null) ? reqlog.copyContent(entity) : entity);
@@ -952,7 +961,6 @@ public class OkHttpServices implements RESTServices {
 
   private class OkHttpDocumentPage extends BasicPage<DocumentRecord> implements DocumentPage, Iterator<DocumentRecord> {
     private OkHttpResultIterator iterator;
-    private Iterator<DocumentRecord> docRecordIterator;
     private boolean hasMetadata;
     private boolean hasContent;
 
@@ -1042,7 +1050,7 @@ public class OkHttpServices implements RESTServices {
       }
     }
 
-    OkHttpResultIterator iterator = getIteratedResourceImpl(DefaultOkHttpResultIterator.class,
+    OkHttpResultIterator iterator = getIteratedResourceImpl(DefaultOkHttpResultIterator::new,
       reqlog, path, transaction, params, MIMETYPE_MULTIPART_MIXED);
     if ( iterator != null ) {
       if ( iterator.getStart() == -1 ) iterator.setStart(1);
@@ -1099,12 +1107,12 @@ public class OkHttpServices implements RESTServices {
               partList = partList.subList(1, partList.size());
             }
             Closeable closeable = response;
-            return makeResults(OkHttpServiceResultIterator.class, reqlog, "read", "resource", partList, response,
+            return makeResults(OkHttpServiceResultIterator::new, reqlog, "read", "resource", partList, response,
               closeable);
           }
         }
       }
-      return makeResults(OkHttpServiceResultIterator.class, reqlog, "read", "resource", response);
+      return makeResults(OkHttpServiceResultIterator::new, reqlog, "read", "resource", response);
     } catch (MessagingException e) {
       throw new MarkLogicIOException(e);
     }
@@ -1156,7 +1164,7 @@ public class OkHttpServices implements RESTServices {
         extractErrorFields(response));
     }
     if (status == STATUS_NOT_MODIFIED) {
-      response.close();
+      closeResponse(response);
       return false;
     }
     if (status != STATUS_OK) {
@@ -1206,7 +1214,7 @@ public class OkHttpServices implements RESTServices {
       Object contentEntity = getEntity(contentPart, contentBase.receiveAs());
       contentBase.receiveContent((reqlog != null) ? reqlog.copyContent(contentEntity) : contentEntity);
 
-      response.close();
+      closeResponse(response);
 
       return true;
     } catch (MessagingException e) {
@@ -1227,7 +1235,7 @@ public class OkHttpServices implements RESTServices {
 
     Headers responseHeaders = response.headers();
 
-    response.close();
+    closeResponse(response);
     logRequest(reqlog, "checked %s document from %s transaction", uri,
       (transaction != null) ? transaction.getTransactionId() : "no");
 
@@ -1268,7 +1276,7 @@ public class OkHttpServices implements RESTServices {
     int status = response.code();
     if (status != STATUS_OK) {
       if (status == STATUS_NOT_FOUND) {
-        response.close();
+        closeResponse(response);
         return null;
       } else if (status == STATUS_FORBIDDEN) {
         throw new ForbiddenUserException(
@@ -1496,7 +1504,7 @@ public class OkHttpServices implements RESTServices {
       }
 
       String retryAfterRaw = response.header("Retry-After");
-      response.close();
+      closeResponse(response);
 
       if (!isResendable) {
         checkFirstRequest();
@@ -1510,9 +1518,10 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
+      closeResponse(response);
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
-          Math.round((System.currentTimeMillis() - startTime) / 1000)+
+          ((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
     if (status == STATUS_NOT_FOUND) {
@@ -1557,11 +1566,13 @@ public class OkHttpServices implements RESTServices {
       if (location != null) {
         int offset = location.indexOf(DOCUMENT_URI_PREFIX);
         if (offset == -1) {
+          closeResponse(response);
           throw new MarkLogicInternalException(
             "document create produced invalid location: " + location);
         }
         uri = location.substring(offset + DOCUMENT_URI_PREFIX.length());
         if (uri == null) {
+          closeResponse(response);
           throw new MarkLogicInternalException(
             "document create produced location without uri: " + location);
         }
@@ -1571,7 +1582,7 @@ public class OkHttpServices implements RESTServices {
       }
     }
     TemporalDescriptor temporalDesc = updateTemporalSystemTime(desc, responseHeaders);
-    response.close();
+    closeResponse(response);
     return temporalDesc;
   }
 
@@ -1639,7 +1650,7 @@ public class OkHttpServices implements RESTServices {
         break;
       }
       String retryAfterRaw = response.header("Retry-After");
-      response.close();
+      closeResponse(response);
 
       if (hasStreamingPart) {
         throw new ResourceNotResendableException(
@@ -1652,13 +1663,14 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
+      closeResponse(response);
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
-          Math.round((System.currentTimeMillis() - startTime) / 1000)+
+          ((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
     if (status == STATUS_NOT_FOUND) {
-      response.close();
+      closeResponse(response);
       throw new ResourceNotFoundException(
         "Could not write non-existent document");
     }
@@ -1696,11 +1708,13 @@ public class OkHttpServices implements RESTServices {
       if (location != null) {
         int offset = location.indexOf(DOCUMENT_URI_PREFIX);
         if (offset == -1) {
+          closeResponse(response);
           throw new MarkLogicInternalException(
             "document create produced invalid location: " + location);
         }
         uri = location.substring(offset + DOCUMENT_URI_PREFIX.length());
         if (uri == null) {
+          closeResponse(response);
           throw new MarkLogicInternalException(
             "document create produced location without uri: " + location);
         }
@@ -1710,7 +1724,7 @@ public class OkHttpServices implements RESTServices {
       }
     }
     TemporalDescriptor temporalDesc = updateTemporalSystemTime(desc, responseHeaders);
-    response.close();
+    closeResponse(response);
     return temporalDesc;
   }
 
@@ -1765,16 +1779,12 @@ public class OkHttpServices implements RESTServices {
     }
 
     String location = response.headers().get("Location");
-    String hostId = null;
     List<ClientCookie> cookies = new ArrayList<>();
     for ( String setCookie : response.headers(HEADER_SET_COOKIE) ) {
       ClientCookie cookie = ClientCookie.parse(requestBldr.build().url(), setCookie);
       cookies.add(cookie);
-      if ( "HostId".equalsIgnoreCase(cookie.getName()) ) {
-        hostId = cookie.getValue();
-      }
     }
-    response.close();
+    closeResponse(response);
     if (location == null) throw new MarkLogicInternalException("transaction open failed to provide location");
     if (!location.contains("/")) {
       throw new MarkLogicInternalException("transaction open produced invalid location: " + location);
@@ -1835,7 +1845,7 @@ public class OkHttpServices implements RESTServices {
         extractErrorFields(response));
     }
 
-    response.close();
+    closeResponse(response);
   }
 
   private void addCategoryParams(Set<Metadata> categories, RequestParameters params,
@@ -2008,9 +2018,8 @@ public class OkHttpServices implements RESTServices {
 
   static private String getHeaderMimetype(String contentType) {
     if (contentType != null) {
-      String mimetype = contentType.contains(";")
-                          ? contentType.substring(0, contentType.indexOf(";"))
-                          : contentType;
+      int offset = contentType.indexOf(";");
+      String mimetype = (offset == -1) ? contentType : contentType.substring(0, offset);
       // TODO: if "; charset=foo" set character set
       if (mimetype != null && mimetype.length() > 0) {
         return mimetype;
@@ -2156,7 +2165,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     Object entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class)) {
-      response.close();
+      closeResponse(response);
     }
     searchBase.receiveContent(entity);
     updateDescriptor(searchBase, response.headers());
@@ -2351,19 +2360,20 @@ public class OkHttpServices implements RESTServices {
         String retryAfterRaw = response.header("Retry-After");
         int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
 
-        response.close();
+        closeResponse(response);
 
         nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
       }
       if (retryStatus.contains(status)) {
         checkFirstRequest();
+        closeResponse(response);
         throw new FailedRetryException(
           "Service unavailable and maximum retry period elapsed: "+
-            Math.round((System.currentTimeMillis() - startTime) / 1000)+
+            ((System.currentTimeMillis() - startTime) / 1000)+
             " seconds after "+retry+" retries");
       }
       if (status == STATUS_NOT_FOUND) {
-        response.close();
+        closeResponse(response);
         return null;
       }
       if (status == STATUS_FORBIDDEN) {
@@ -2440,7 +2450,7 @@ public class OkHttpServices implements RESTServices {
         + getReasonPhrase(response), extractErrorFields(response));
     }
 
-    response.close();
+    closeResponse(response);
 
     logRequest(
       reqlog,
@@ -2610,11 +2620,10 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class)) {
-      response.close();
+      closeResponse(response);
     }
 
     return entity;
-
   }
 
   @Override
@@ -2660,7 +2669,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class)) {
-      response.close();
+      closeResponse(response);
     }
 
     return entity;
@@ -2703,7 +2712,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class)) {
-      response.close();
+      closeResponse(response);
     }
 
     return entity;
@@ -2738,7 +2747,7 @@ public class OkHttpServices implements RESTServices {
 
     if (status != STATUS_OK) {
       if (status == STATUS_NOT_FOUND) {
-        response.close();
+        closeResponse(response);
         if (!isNullable) {
           throw new ResourceNotFoundException("Could not get " + type + "/" + key);
         }
@@ -2754,12 +2763,12 @@ public class OkHttpServices implements RESTServices {
     }
 
     logRequest(reqlog, "read %s value with %s key and %s mime type", type,
-      key, (mimetype != null) ? mimetype : null);
+      key, mimetype);
 
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class)) {
-      response.close();
+      closeResponse(response);
     }
 
     return (reqlog != null) ? reqlog.copyContent(entity) : entity;
@@ -2797,13 +2806,12 @@ public class OkHttpServices implements RESTServices {
         + getReasonPhrase(response), extractErrorFields(response));
     }
 
-    logRequest(reqlog, "read %s values with %s mime type", type,
-      (mimetype != null) ? mimetype : null);
+    logRequest(reqlog, "read %s values with %s mime type", type, mimetype);
 
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class)) {
-      response.close();
+      closeResponse(response);
     }
 
     return (reqlog != null) ? reqlog.copyContent(entity) : entity;
@@ -2855,10 +2863,9 @@ public class OkHttpServices implements RESTServices {
                                 int... expectedStatuses) {
     if (key != null) {
       logRequest(reqlog, "writing %s value with %s key and %s mime type",
-        type, key, (mimetype != null) ? mimetype : null);
+        type, key, mimetype);
     } else {
-      logRequest(reqlog, "writing %s values with %s mime type", type,
-        (mimetype != null) ? mimetype : null);
+      logRequest(reqlog, "writing %s values with %s mime type", type, mimetype);
     }
 
     HandleImplementation handle = (value instanceof HandleImplementation) ?
@@ -2938,12 +2945,11 @@ public class OkHttpServices implements RESTServices {
 
       if (!retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
-
         break;
       }
 
       String retryAfterRaw = response.header("Retry-After");
-      response.close();
+      closeResponse(response);
 
       if (!isResendable) {
         checkFirstRequest();
@@ -2956,9 +2962,10 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
+      closeResponse(response);
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
-          Math.round((System.currentTimeMillis() - startTime) / 1000)+
+          ((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
     if (status == STATUS_FORBIDDEN) {
@@ -2981,8 +2988,7 @@ public class OkHttpServices implements RESTServices {
       throw new FailedRequestException(type + " write failed: "
         + getReasonPhrase(response), extractErrorFields(response));
     }
-    response.close();
-
+    closeResponse(response);
   }
 
   @Override
@@ -3014,7 +3020,7 @@ public class OkHttpServices implements RESTServices {
         + getReasonPhrase(response), extractErrorFields(response));
     }
 
-    response.close();
+    closeResponse(response);
 
     logRequest(reqlog, "deleted %s value with %s key", type, key);
   }
@@ -3043,7 +3049,7 @@ public class OkHttpServices implements RESTServices {
       throw new FailedRequestException("delete failed: "
         + getReasonPhrase(response), extractErrorFields(response));
     }
-    response.close();
+    closeResponse(response);
 
     logRequest(reqlog, "deleted %s values", type);
   }
@@ -3160,7 +3166,7 @@ public class OkHttpServices implements RESTServices {
       outputBase.receiveContent(makeResult(reqlog, "read", "resource",
         response, as));
     } else {
-      response.close();
+      closeResponse(response);
     }
 
     return output;
@@ -3171,11 +3177,11 @@ public class OkHttpServices implements RESTServices {
                                                        String path, Transaction transaction, RequestParameters params, String... mimetypes)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    return getIteratedResourceImpl(OkHttpServiceResultIterator.class, reqlog, path, transaction, params, mimetypes);
+    return getIteratedResourceImpl(OkHttpServiceResultIterator::new, reqlog, path, transaction, params, mimetypes);
   }
 
-  private <U extends OkHttpResultIterator> U getIteratedResourceImpl(Class<U> clazz, RequestLogger reqlog,
-                                                                     String path, Transaction transaction, RequestParameters params, String... mimetypes)
+  private <U extends OkHttpResultIterator> U getIteratedResourceImpl(ResultIteratorConstructor<U> constructor,
+        RequestLogger reqlog, String path, Transaction transaction, RequestParameters params, String... mimetypes)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     if ( params == null ) params = new RequestParameters();
@@ -3197,7 +3203,7 @@ public class OkHttpServices implements RESTServices {
     checkStatus(response, status, "read", "resource", path,
       ResponseStatus.OK_OR_NO_CONTENT);
 
-    return makeResults(clazz, reqlog, "read", "resource", response);
+    return makeResults(constructor, reqlog, "read", "resource", response);
   }
 
   @Override
@@ -3249,7 +3255,7 @@ public class OkHttpServices implements RESTServices {
       outputBase.receiveContent(makeResult(reqlog, "write", "resource",
         response, as));
     } else {
-      response.close();
+      closeResponse(response);
     }
 
     return output;
@@ -3304,7 +3310,7 @@ public class OkHttpServices implements RESTServices {
       }
 
       String retryAfterRaw = response.header("Retry-After");
-      response.close();
+      closeResponse(response);
 
       if (hasStreamingPart) {
         throw new ResourceNotResendableException(
@@ -3316,9 +3322,10 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
+      closeResponse(response);
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
-          Math.round((System.currentTimeMillis() - startTime) / 1000)+
+          ((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
 
@@ -3329,7 +3336,7 @@ public class OkHttpServices implements RESTServices {
       outputBase.receiveContent(makeResult(reqlog, "write", "resource",
         response, as));
     } else {
-      response.close();
+      closeResponse(response);
     }
 
     return output;
@@ -3416,7 +3423,7 @@ public class OkHttpServices implements RESTServices {
       outputBase.receiveContent(makeResult(reqlog, operation, "resource",
         response, as));
     } else {
-      response.close();
+      closeResponse(response);
     }
 
     return output;
@@ -3476,7 +3483,7 @@ public class OkHttpServices implements RESTServices {
       }
 
       String retryAfterRaw = response.header("Retry-After");
-      response.close();
+      closeResponse(response);
 
       if (hasStreamingPart) {
         throw new ResourceNotResendableException(
@@ -3488,9 +3495,10 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
+      closeResponse(response);
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
-          Math.round((System.currentTimeMillis() - startTime) / 1000)+
+          ((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
 
@@ -3501,7 +3509,7 @@ public class OkHttpServices implements RESTServices {
       outputBase.receiveContent(makeResult(reqlog, "apply", "resource",
         response, as));
     } else {
-      response.close();
+      closeResponse(response);
     }
 
     return output;
@@ -3562,8 +3570,21 @@ public class OkHttpServices implements RESTServices {
           mimeType = defaultFormat.getDefaultMimetype();
         }
         headers.add(HEADER_CONTENT_TYPE, mimeType);
-        String disposition = DISPOSITION_TYPE_ATTACHMENT + "; " +
-          DISPOSITION_PARAM_FILENAME + "=" + escapeContentDispositionFilename(write.getUri()) + contentDispositionTemporal;
+        String disposition = null;
+        CharsetEncoder asciiEncoder = java.nio.charset.StandardCharsets.US_ASCII.newEncoder();
+        if(asciiEncoder.canEncode(write.getUri())) {
+            disposition = DISPOSITION_TYPE_ATTACHMENT + "; " +
+                      DISPOSITION_PARAM_FILENAME + "=" + escapeContentDispositionFilename(write.getUri()) + contentDispositionTemporal;
+        }
+        else {
+            try {
+                disposition = DISPOSITION_TYPE_ATTACHMENT + "; " +
+                          DISPOSITION_PARAM_FILENAME + "*=UTF-8''" + URLEncoder.encode(write.getUri(), "UTF-8") + contentDispositionTemporal;
+              } catch (Exception ex) {
+                  throw new IllegalArgumentException("Uri cannot be encoded as UFT-8");
+              }
+        }
+        asciiEncoder.reset();
         headers.add(HEADER_CONTENT_DISPOSITION, disposition);
         headerList.add(headers);
         writeHandles.add(write.getContent());
@@ -3724,11 +3745,11 @@ public class OkHttpServices implements RESTServices {
     }
 
     @Override
-    public <T> T getAs(Class<T> clazz) {
+    public <T> T getAs(Class<T> as) {
       if ( getType() == EvalResult.Type.NULL ) return null;
-      if (clazz == null) throw new IllegalArgumentException("clazz cannot be null");
+      if (as == null) throw new IllegalArgumentException("class cannot be null");
 
-      ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(clazz);
+      ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(as);
       if ( readHandle == null ) return null;
       readHandle = get(readHandle);
       if ( readHandle == null ) return null;
@@ -3881,7 +3902,7 @@ public class OkHttpServices implements RESTServices {
     }
     StringHandle input = new StringHandle(formUrlEncodedPayload)
       .withMimetype("application/x-www-form-urlencoded");
-    return new OkHttpEvalResultIterator( postIteratedResourceImpl(DefaultOkHttpResultIterator.class,
+    return new OkHttpEvalResultIterator( postIteratedResourceImpl(DefaultOkHttpResultIterator::new,
       reqlog, path, transaction, params, input) );
   }
 
@@ -3903,12 +3924,12 @@ public class OkHttpServices implements RESTServices {
                                                         String... outputMimetypes)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
-    return postIteratedResourceImpl(OkHttpServiceResultIterator.class,
+    return postIteratedResourceImpl(OkHttpServiceResultIterator::new,
       reqlog, path, transaction, params, input, outputMimetypes);
   }
 
   private <U extends OkHttpResultIterator> U postIteratedResourceImpl(
-    Class<U> clazz, final RequestLogger reqlog,
+    ResultIteratorConstructor<U> constructor, final RequestLogger reqlog,
     final String path, Transaction transaction, RequestParameters params,
     AbstractWriteHandle input, String... outputMimetypes)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
@@ -3947,7 +3968,7 @@ public class OkHttpServices implements RESTServices {
     checkStatus(response, status, "apply", "resource", path,
       ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
-    return makeResults(clazz, reqlog, "apply", "resource", response);
+    return makeResults(constructor, reqlog, "apply", "resource", response);
   }
 
   @Override
@@ -3956,12 +3977,12 @@ public class OkHttpServices implements RESTServices {
     W[] input, String... outputMimetypes)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
-    return postIteratedResourceImpl(OkHttpServiceResultIterator.class,
+    return postIteratedResourceImpl(OkHttpServiceResultIterator::new,
       reqlog, path, transaction, params, input, outputMimetypes);
   }
 
   private <W extends AbstractWriteHandle, U extends OkHttpResultIterator> U postIteratedResourceImpl(
-    Class<U> clazz, RequestLogger reqlog, String path, Transaction transaction,
+    ResultIteratorConstructor<U> constructor, RequestLogger reqlog, String path, Transaction transaction,
     RequestParameters params, W[] input, String... outputMimetypes)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
@@ -4001,7 +4022,7 @@ public class OkHttpServices implements RESTServices {
       }
 
       String retryAfterRaw = response.header("Retry-After");
-      response.close();
+      closeResponse(response);
 
       if (hasStreamingPart) {
         throw new ResourceNotResendableException(
@@ -4013,16 +4034,17 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
+      closeResponse(response);
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
-          Math.round((System.currentTimeMillis() - startTime) / 1000)+
+          ((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
 
     checkStatus(response, status, "apply", "resource", path,
       ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
-    return makeResults(clazz, reqlog, "apply", "resource", response);
+    return makeResults(constructor, reqlog, "apply", "resource", response);
   }
 
   @Override
@@ -4061,7 +4083,7 @@ public class OkHttpServices implements RESTServices {
       outputBase.receiveContent(makeResult(reqlog, "delete", "resource",
         response, as));
     } else {
-      response.close();
+      closeResponse(response);
     }
 
     return output;
@@ -4343,6 +4365,7 @@ public class OkHttpServices implements RESTServices {
   }
 
   private Request.Builder setupRequest(HttpUrl requestUri, String path, RequestParameters params) {
+    if ( requestUri == null ) throw new IllegalArgumentException("request URI cannot be null");
     if ( path == null ) throw new IllegalArgumentException("path cannot be null");
     if ( path.startsWith("/") ) path = path.substring(1);
     HttpUrl.Builder uri = requestUri.resolve(path).newBuilder();
@@ -4437,14 +4460,14 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class)) {
-      response.close();
+      closeResponse(response);
     }
 
     return (reqlog != null) ? reqlog.copyContent(entity) : entity;
   }
 
   private <U extends OkHttpResultIterator> U makeResults(
-    Class<U> clazz, RequestLogger reqlog,
+    ResultIteratorConstructor<U> constructor, RequestLogger reqlog,
     String operation, String entityType, Response response) {
     if ( response == null ) return null;
     ResponseBody body = response.body();
@@ -4453,11 +4476,11 @@ public class OkHttpServices implements RESTServices {
 
     List<BodyPart> partList = getPartList(entity);
     Closeable closeable = response;
-    return makeResults(clazz, reqlog, operation, entityType, partList, response, closeable);
+    return makeResults(constructor, reqlog, operation, entityType, partList, response, closeable);
   }
 
   private <U extends OkHttpResultIterator> U makeResults(
-    Class<U> clazz, RequestLogger reqlog,
+    ResultIteratorConstructor<U> constructor, RequestLogger reqlog,
     String operation, String entityType, List<BodyPart> partList, Response response,
     Closeable closeable) {
     logRequest(reqlog, "%s for %s", operation, entityType);
@@ -4465,9 +4488,7 @@ public class OkHttpServices implements RESTServices {
     if ( response == null ) return null;
 
     try {
-      java.lang.reflect.Constructor<U> constructor =
-        clazz.getConstructor(OkHttpServices.class, RequestLogger.class, List.class, Closeable.class);
-      OkHttpResultIterator result = constructor.newInstance(this, reqlog, partList, closeable);
+      OkHttpResultIterator result = constructor.construct(reqlog, partList, closeable);
       Headers headers = response.headers();
       if (headers.get(HEADER_VND_MARKLOGIC_START) != null) {
         result.setStart(Long.parseLong(headers.get(HEADER_VND_MARKLOGIC_START)));
@@ -4480,7 +4501,7 @@ public class OkHttpServices implements RESTServices {
       }
       return (U) result;
     } catch (Throwable t) {
-      throw new MarkLogicInternalException("Error instantiating " + clazz.getName(), t);
+      throw new MarkLogicInternalException("Error constructing iterator", t);
     }
   }
 
@@ -4534,7 +4555,7 @@ public class OkHttpServices implements RESTServices {
     return min + randRetry.nextInt(range);
   }
 
-  public class OkHttpResult {
+  static class OkHttpResult {
     private RequestLogger reqlog;
     private BodyPart part;
     private boolean extractedHeaders = false;
@@ -4544,7 +4565,7 @@ public class OkHttpServices implements RESTServices {
     private String mimetype;
     private long length;
 
-    public OkHttpResult(RequestLogger reqlog, BodyPart part) {
+    OkHttpResult(RequestLogger reqlog, BodyPart part) {
       this.reqlog = reqlog;
       this.part = part;
     }
@@ -4570,8 +4591,8 @@ public class OkHttpServices implements RESTServices {
       }
     }
 
-    public <T> T getContentAs(Class<T> clazz) {
-      ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(clazz);
+    public <T> T getContentAs(Class<T> as) {
+      ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(as);
       readHandle = getContent(readHandle);
       if ( readHandle == null ) return null;
       return readHandle.get();
@@ -4628,25 +4649,22 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  public class OkHttpServiceResult extends OkHttpResult implements RESTServices.RESTServiceResult {
-    public OkHttpServiceResult(RequestLogger reqlog, BodyPart part) {
+  static class OkHttpServiceResult extends OkHttpResult implements RESTServices.RESTServiceResult {
+    OkHttpServiceResult(RequestLogger reqlog, BodyPart part) {
       super(reqlog, part);
     }
   }
 
-  public class OkHttpResultIterator<T extends OkHttpResult> {
+  static abstract class OkHttpResultIterator<T extends OkHttpResult> {
     private RequestLogger reqlog;
     private Iterator<BodyPart> partQueue;
-    private Class<T> clazz;
     private long start = -1;
     private long size = -1;
     private long pageSize = -1;
     private long totalSize = -1;
     private Closeable closeable;
 
-    public OkHttpResultIterator(RequestLogger reqlog,
-                                List<BodyPart> partList, Class<T> clazz, Closeable closeable) {
-      this.clazz = clazz;
+    OkHttpResultIterator(RequestLogger reqlog, List<BodyPart> partList, Closeable closeable) {
       this.reqlog = reqlog;
       if (partList != null && partList.size() > 0) {
         this.size = partList.size();
@@ -4694,7 +4712,6 @@ public class OkHttpServices implements RESTServices {
       return this;
     }
 
-
     public boolean hasNext() {
       if (partQueue == null) return false;
       boolean hasNext = partQueue.hasNext();
@@ -4705,13 +4722,13 @@ public class OkHttpServices implements RESTServices {
       if (partQueue == null) return null;
 
       try {
-        java.lang.reflect.Constructor<T> constructor =
-          clazz.getConstructor(OkHttpServices.class, RequestLogger.class, BodyPart.class);
-        return constructor.newInstance(new OkHttpServices(), reqlog, partQueue.next());
+        return constructNext(reqlog, partQueue.next());
       } catch (Throwable t) {
-        throw new IllegalStateException("Error instantiating " + clazz.getName(), t);
+        throw new IllegalStateException("Error instantiating iterated result", t);
       }
     }
+
+    abstract T constructNext(RequestLogger logger, BodyPart part);
 
     public void remove() {
       if (partQueue == null) return;
@@ -4732,36 +4749,42 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  public class OkHttpServiceResultIterator
+  static class OkHttpServiceResultIterator
     extends OkHttpResultIterator<OkHttpServiceResult>
     implements RESTServiceResultIterator
   {
-    public OkHttpServiceResultIterator(RequestLogger reqlog,
+    OkHttpServiceResultIterator(RequestLogger reqlog,
                                        List<BodyPart> partList, Closeable closeable) {
-      super(reqlog, partList, OkHttpServiceResult.class, closeable);
+      super(reqlog, partList, closeable);
+    }
+    OkHttpServiceResult constructNext(RequestLogger logger, BodyPart part) {
+      return new OkHttpServiceResult(logger, part);
     }
   }
 
-  public class DefaultOkHttpResultIterator
+  static class DefaultOkHttpResultIterator
     extends OkHttpResultIterator<OkHttpResult>
     implements Iterator<OkHttpResult>
   {
-    public DefaultOkHttpResultIterator(RequestLogger reqlog,
+    DefaultOkHttpResultIterator(RequestLogger reqlog,
                                        List<BodyPart> partList, Closeable closeable) {
-      super(reqlog, partList, OkHttpResult.class, closeable);
+      super(reqlog, partList, closeable);
+    }
+    OkHttpResult constructNext(RequestLogger logger, BodyPart part) {
+      return new OkHttpResult(logger, part);
     }
   }
 
-  public class OkHttpDocumentRecord implements DocumentRecord {
+  static class OkHttpDocumentRecord implements DocumentRecord {
     private OkHttpResult content;
     private OkHttpResult metadata;
 
-    public OkHttpDocumentRecord(OkHttpResult content, OkHttpResult metadata) {
+    OkHttpDocumentRecord(OkHttpResult content, OkHttpResult metadata) {
       this.content = content;
       this.metadata = metadata;
     }
 
-    public OkHttpDocumentRecord(OkHttpResult content) {
+    OkHttpDocumentRecord(OkHttpResult content) {
       this.content = content;
     }
 
@@ -4907,7 +4930,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class)) {
-      response.close();
+      closeResponse(response);
     }
 
     return entity;
@@ -4951,7 +4974,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     InputStream entity = body.contentLength() != 0 ?
       getEntity(body, InputStream.class) : null;
-    if (entity == null) response.close();
+    if (entity == null) closeResponse(response);
 
     return entity;
   }
@@ -5038,8 +5061,7 @@ public class OkHttpServices implements RESTServices {
       }
 
       if (queryDef instanceof StructuredQueryDefinition) {
-        response = sendRequestOnce(requestBldr.post(RequestBody.create(mediaType, structure)));
-          response = doPost(null, requestBldr, structure);
+        response = doPost(null, requestBldr, structure);
       } else if (queryDef instanceof RawQueryDefinition) {
         response = doPost(null, requestBldr, baseHandle.sendContent());
       } else if (queryDef instanceof StringQueryDefinition) {
@@ -5059,15 +5081,16 @@ public class OkHttpServices implements RESTServices {
       String retryAfterRaw = response.header("Retry-After");
       int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
 
-      response.close();
+      closeResponse(response);
 
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
+      closeResponse(response);
       throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
-          Math.round((System.currentTimeMillis() - startTime) / 1000)+
+          ((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
     if (status == STATUS_FORBIDDEN) {
@@ -5082,7 +5105,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     InputStream entity = body.contentLength() != 0 ?
       getEntity(body, InputStream.class) : null;
-    if (entity == null) response.close();
+    if (entity == null) closeResponse(response);
 
     return entity;
   }
@@ -5126,7 +5149,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     InputStream entity = body.contentLength() != 0 ?
       getEntity(body, InputStream.class) : null;
-    if (entity == null) response.close();
+    if (entity == null) closeResponse(response);
 
     return entity;
   }
@@ -5383,18 +5406,18 @@ public class OkHttpServices implements RESTServices {
     return postResource(reqlog, "/graphs/sparql", transaction, params, input, output);
   }
 
-  private String getTransactionId(Transaction transaction) {
+  static private String getTransactionId(Transaction transaction) {
     if ( transaction == null ) return null;
     return transaction.getTransactionId();
   }
 
-  private String getReasonPhrase(Response response) {
-    if ( response.message() == null ) return "";
+  static private String getReasonPhrase(Response response) {
+    if (response == null || response.message() == null) return "";
     // strip off the number part of the reason phrase
     return response.message().replaceFirst("^\\d+ ", "");
   }
 
-  private <T> T getEntity(BodyPart part, Class<T> as) {
+  static private <T> T getEntity(BodyPart part, Class<T> as) {
     try {
       String contentType = part.getContentType();
       return getEntity(ResponseBody.create(MediaType.parse(contentType), part.getSize(),
@@ -5406,14 +5429,14 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  private MediaType makeType(String mimetype) {
+  static private MediaType makeType(String mimetype) {
     if ( mimetype == null ) return null;
     MediaType type = MediaType.parse(mimetype);
     if ( type == null ) throw new IllegalArgumentException("Invalid mime-type: " + mimetype);
     return type;
   }
 
-  private <T> T getEntity(ResponseBody body, Class<T> as) {
+  static private <T> T getEntity(ResponseBody body, Class<T> as) {
     try {
       if ( as == InputStream.class ) {
         return (T) body.byteStream();
@@ -5424,7 +5447,9 @@ public class OkHttpServices implements RESTServices {
       } else if ( as == String.class ) {
         return (T) body.string();
       } else if ( as == MimeMultipart.class ) {
-        ByteArrayDataSource dataSource = new ByteArrayDataSource(body.byteStream(), body.contentType().toString());
+        MediaType mediaType = body.contentType();
+        String contentType = (mediaType != null) ? mediaType.toString() : "application/x-unknown-content-type";
+        ByteArrayDataSource dataSource = new ByteArrayDataSource(body.byteStream(), contentType);
         return (T) new MimeMultipart(dataSource);
       } else if ( as == File.class ) {
         // write out the response body to a temp file in the system temp folder
@@ -5457,7 +5482,7 @@ public class OkHttpServices implements RESTServices {
             } else if (subtype.endsWith("html")) {
               suffix = ".html";
               isBinary = false;
-            } else if (mediaType.type().toLowerCase() == "text") {
+            } else if (mediaType.type().equalsIgnoreCase("text")) {
               suffix = ".txt";
               isBinary = false;
             } else {
@@ -5486,7 +5511,7 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  private List<BodyPart> getPartList(MimeMultipart multipart) {
+  static private List<BodyPart> getPartList(MimeMultipart multipart) {
     try {
       if ( multipart == null ) return null;
       List<BodyPart> partList = new ArrayList<BodyPart>();
@@ -5499,7 +5524,7 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  private class ObjectRequestBody extends RequestBody {
+  static private class ObjectRequestBody extends RequestBody {
     private Object obj;
     private MediaType contentType;
 
@@ -5533,14 +5558,6 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  private interface Function<T,R> {
-    R apply(T t);
-  }
-
-  private interface Consumer<T> {
-    void accept(T t);
-  }
-
   // API First Changes
   static private class EmptyRequestBody extends RequestBody {
     @Override
@@ -5570,7 +5587,7 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  public class CallRequestImpl implements CallRequest {
+  class CallRequestImpl implements CallRequest {
     private SessionStateImpl session;
     private Request.Builder requestBldr;
     private RequestBody requestBody;
@@ -5702,8 +5719,11 @@ public class OkHttpServices implements RESTServices {
       int statusCode = response.code();
       if (statusCode >= 300) {
         FailedRequest failure = null;
-        MediaType mediaType = MediaType.parse(response.header(HEADER_CONTENT_TYPE));
-        String subtype = mediaType.subtype();
+        String contentType = response.header(HEADER_CONTENT_TYPE);
+        MediaType mediaType = MediaType.parse(
+                (contentType != null) ? contentType : "application/x-unknown-content-type"
+        );
+        String subtype = (mediaType != null) ? mediaType.subtype() : null;
         if (subtype != null) {
           subtype = subtype.toLowerCase();
           if (subtype.endsWith("json") || subtype.endsWith("xml")) {
@@ -5711,6 +5731,7 @@ public class OkHttpServices implements RESTServices {
           }
         }
         if (failure == null) {
+          closeResponse(response);
           if (statusCode == STATUS_UNAUTHORIZED) {
             failure = new FailedRequest();
             failure.setMessageString("Unauthorized");
@@ -5766,9 +5787,10 @@ public class OkHttpServices implements RESTServices {
       }
       HandleImplementation handleBase = HandleAccessor.as(document);
       Format format = handleBase.getFormat();
-      String mimetype = (format == Format.BINARY) ?
-          "application/x-unknown-content-type" : handleBase.getMimetype();
-      MediaType mediaType = MediaType.parse(mimetype);
+      String mimetype = (format == Format.BINARY) ? null : handleBase.getMimetype();
+      MediaType mediaType = MediaType.parse(
+              (mimetype != null) ? mimetype : "application/x-unknown-content-type"
+      );
       return (document instanceof OutputStreamSender) ?
           new StreamingOutputImpl((OutputStreamSender) document, null, mediaType) :
           new ObjectRequestBody(HandleAccessor.sendContent(document), mediaType);
@@ -5895,7 +5917,7 @@ public class OkHttpServices implements RESTServices {
     return new CallRequestImpl(endpoint, method, session).withNodeBodyRequest(params);
   }
 
-  private String encodeParamValue(String paramName, String value) {
+  static private String encodeParamValue(String paramName, String value) {
     if (value == null) {
       return null;
     }
@@ -5906,14 +5928,14 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  private String encodeParamValue(SingleAtomicCallField param) {
+  static private String encodeParamValue(SingleAtomicCallField param) {
     if (param == null) {
       return null;
     }
     return encodeParamValue(param.getParamName(), param.getParamValue());
   }
 
-  private String encodeParamValue(MultipleAtomicCallField param) {
+  static private String encodeParamValue(MultipleAtomicCallField param) {
     if (param == null) {
       return null;
     }
@@ -5932,7 +5954,7 @@ public class OkHttpServices implements RESTServices {
     return encodedParamValues;
   }
 
-  private String encodeParamValue(CallField param) {
+  static private String encodeParamValue(CallField param) {
     if (param == null) {
       return null;
     } else if (param instanceof SingleAtomicCallField) {
@@ -5990,6 +6012,10 @@ public class OkHttpServices implements RESTServices {
         throw new MarkLogicIOException(e);
       }
       return null;
+    }
+
+    @Override
+    public void close() {
     }
   }
 
@@ -6054,7 +6080,7 @@ public class OkHttpServices implements RESTServices {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
       if (responseBody != null) {
         closeImpl();
       }
@@ -6222,6 +6248,126 @@ public class OkHttpServices implements RESTServices {
         throw new MarkLogicIOException(e);
       }
     }
+    @Override
+    public byte[][] asArrayOfBytes() {
+      try {
+        if (multipart == null) {
+          return new byte[0][];
+        }
+        int partCount = multipart.getCount();
+
+        byte[][] result = new byte[partCount][];
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          result[i] = NodeConverter.InputStreamToBytes(bodyPart.getInputStream());
+        }
+        return result;
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+    @Override
+    public InputStream[] asArrayOfInputStream() {
+      try {
+        if (multipart == null) {
+          return new InputStream[0];
+        }
+        int partCount = multipart.getCount();
+
+        InputStream[] result = new InputStream[partCount];
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          result[i] = bodyPart.getInputStream();
+        }
+        return result;
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+    @Override
+    public InputStreamHandle[] asArrayOfInputStreamHandle() {
+      try {
+        if (multipart == null) {
+          return new InputStreamHandle[0];
+        }
+        int partCount = multipart.getCount();
+
+        InputStreamHandle[] result = new InputStreamHandle[partCount];
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          result[i] = new InputStreamHandle(bodyPart.getInputStream());
+        }
+        return result;
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+    @Override
+    public ReaderHandle[] asArrayOfReaderHandle() {
+      try {
+        if (multipart == null) {
+          return new ReaderHandle[0];
+        }
+        int partCount = multipart.getCount();
+
+        ReaderHandle[] result = new ReaderHandle[partCount];
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          result[i] = new ReaderHandle(NodeConverter.InputStreamToReader(bodyPart.getInputStream()));
+        }
+        return result;
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+    @Override
+    public Reader[] asArrayOfReader() {
+      try {
+        if (multipart == null) {
+          return new Reader[0];
+        }
+        int partCount = multipart.getCount();
+
+        Reader[] result = new Reader[partCount];
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          result[i] = NodeConverter.InputStreamToReader(bodyPart.getInputStream());
+        }
+        return result;
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+    @Override
+    public String[] asArrayOfString() {
+      try {
+        if (multipart == null) {
+          return new String[0];
+        }
+        int partCount = multipart.getCount();
+
+        String[] result = new String[partCount];
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          result[i] = NodeConverter.InputStreamToString(bodyPart.getInputStream());
+        }
+        return result;
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
   }
 
   static protected boolean checkNull(ResponseBody body, Format expectedFormat) {
@@ -6268,10 +6414,15 @@ public class OkHttpServices implements RESTServices {
           return false;
         }
       } catch (MessagingException e) {
-        new MarkLogicIOException(e);
+        throw new MarkLogicIOException(e);
       }
     }
     return true;
+  }
+
+  static private void closeResponse(Response response) {
+      if (response == null || response.body() == null) return;
+      response.close();
   }
 
   Request.Builder forDocumentResponse(Request.Builder requestBldr, Format format) {
@@ -6293,7 +6444,7 @@ public class OkHttpServices implements RESTServices {
     }
   }
   
-  class ConnectionResultImpl implements ConnectionResult {
+  static class ConnectionResultImpl implements ConnectionResult {
 	private boolean connected = false;
 	private int statusCode;
 	private String errorMessage;
@@ -6324,5 +6475,10 @@ public class OkHttpServices implements RESTServices {
 	private void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
 	}
+  }
+
+  @FunctionalInterface
+  private interface ResultIteratorConstructor<T> {
+    T construct(RequestLogger logger, List list, Closeable closeable);
   }
 }

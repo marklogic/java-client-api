@@ -26,7 +26,6 @@ public abstract class BatcherImpl implements Batcher {
   private int batchSize = 100;
   private int threadCount = 1;
   private ForestConfiguration forestConfig;
-  private DatabaseClient client;
   private DataMovementManagerImpl moveMgr;
 
   protected BatcherImpl(DataMovementManager moveMgr){
