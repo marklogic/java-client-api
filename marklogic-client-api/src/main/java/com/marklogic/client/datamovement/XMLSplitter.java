@@ -373,7 +373,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
                                     break checkForHandle;
 
                                 case PROCESS:
-                                    T handle = visitor.makeBufferedHandle(xmlStreamReader);
+                                    T handle = visitor.makeBufferedHandle(new XMLBranchStreamReader(xmlStreamReader));
                                     if (handle != null) {
                                         return handle;
                                     }
@@ -463,6 +463,55 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
             getSplitter().count++;
 
             return true;
+        }
+    }
+
+    private static class XMLBranchStreamReader extends StreamReaderDelegate {
+        private int depth = 1;
+
+        XMLBranchStreamReader(XMLStreamReader reader) {
+            super(reader);
+        }
+
+        public boolean hasNext() {
+            return (depth > 0);
+        }
+
+        public int next() throws XMLStreamException {
+            if (depth < 1) {
+                return XMLStreamReader.END_DOCUMENT;
+            }
+
+            int next = super.next();
+            if (depth >= 1) {
+                if (next == XMLStreamReader.START_ELEMENT) {
+                    depth++;
+                }
+                if (next == XMLStreamReader.END_ELEMENT) {
+                    depth--;
+                }
+            }
+
+            return next;
+        }
+
+        public int nextTag() throws XMLStreamException {
+            if (depth < 1) {
+                return XMLStreamReader.END_DOCUMENT;
+            }
+            int next = super.nextTag();
+            if (next == XMLStreamReader.START_ELEMENT) {
+                depth++;
+            }
+            if (next == XMLStreamReader.END_ELEMENT) {
+                depth--;
+            }
+
+            return next;
+        }
+
+        public void close() {
+            throw new UnsupportedOperationException("Current XML branch cannot be closed.");
         }
     }
 
