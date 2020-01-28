@@ -226,7 +226,7 @@ abstract class IOCallerImpl extends BaseCallerImpl {
                     ));
             if (workUnit != null)
                 fieldNum++;
-        } else if (endpointState != null) {
+        } else if (workUnit != null) {
             throw new IllegalArgumentException("workUnit parameter not supported by endpoint: "+getEndpointPath());
         }
 
