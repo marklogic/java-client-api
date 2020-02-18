@@ -1,6 +1,3 @@
-plugins {
-    id 'com.marklogic.ml-development-tools' version '5.1.0'
-}
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: 'distribution'
@@ -201,8 +198,4 @@ task testServerTeardown(type: JavaExec) {
     classpath = sourceSets.test.runtimeClasspath
     main = 'com.marklogic.client.test.util.TestServerBootstrapper'
     args = ["teardown"]
-}
-
-task generateBulkExportServices(type: com.marklogic.client.tools.gradle.EndpointProxiesGenTask) {
-    serviceDeclarationFile = 'marklogic-client-api/src/main/resources/scripts/bulkExport/service.json'
 }

@@ -16,9 +16,8 @@
 package com.marklogic.client.example.cookbook.datamovement;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.QueryBatch;
-import com.marklogic.client.datamovement.QueryBatchListener;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.JSONDocumentManager;
@@ -29,22 +28,27 @@ import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.query.*;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Stream;
 
+/*
+ * For custom task approach, the Gradle build file should include the below plugin and task -
+ *
+ * plugins {
+ *     id 'com.marklogic.ml-development-tools' version '5.1.0'
+ * }
+ * task generateBulkExportServices(type: com.marklogic.client.tools.gradle.EndpointProxiesGenTask) {
+ *     serviceDeclarationFile = 'marklogic-client-api/src/main/resources/scripts/bulkExport/service.json'
+ * }
+ *
+ * URL of the product documentation at http://docs.marklogic.com/guide/java/DataServices#id_44346
+ *
+ * */
 
-public class BulkExportWithDataService implements QueryBatchListener {
+public class BulkExportWithDataService {
 
-    private DatabaseClient dbClient = DatabaseClientSingleton.getAdmin("java-unittest");
+    private DatabaseClient dbClient = DatabaseClientFactory.newClient("localhost", 8012, new DatabaseClientFactory.DigestAuthContext("rest-writer", "x"));
     private DatabaseClient dbModulesClient = DatabaseClientSingleton.getAdmin("java-unittest-modules");
     private DataMovementManager moveMgr = dbClient.newDataMovementManager();
-    private List<String> urisList = new ArrayList<>();
-
-    @Override
-    public void processEvent(QueryBatch batch) {
-    }
 
     public static void main(String args[]) throws IOException {
         new BulkExportWithDataService().run();
@@ -75,23 +79,29 @@ public class BulkExportWithDataService implements QueryBatchListener {
 
 
     private void exportJson(){
-        BulkExportServices bulkExportServices = uris -> {
-            List<Object> list = Arrays.asList(uris.toArray());
-            for(Object i:list) {
-                if(!(urisList.contains(i)))
-                    throw new InternalError("urisList does not contain "+i.toString());
-                urisList.remove(i);
-            }
-            return null;
-        };
+        BulkExportServices bulkExportServices = BulkExportServices.on(dbClient);
 
         StructuredQueryBuilder structuredQueryBuilder = new StructuredQueryBuilder();
-        structuredQueryBuilder.directory(1,"/example/cookbook/bulkExport/");
         QueryBatcher queryBatcher = moveMgr.newQueryBatcher(structuredQueryBuilder.collection("BulkExportWithDataService"))
                 .withBatchSize(3)
                 .withThreadCount(3)
                 .onQueryFailure(batch -> new InternalError("An exception occured in queryBatcher"))
-                .onUrisReady(batch -> bulkExportServices.readJsonDocs(Stream.of(batch.getItems())));
+                .onUrisReady(batch -> (bulkExportServices.readJsonDocs(Stream.of(batch.getItems())))
+                        .forEach(reader -> {
+                            try {
+                                int charValue = reader.read();
+                                String docContent = "";
+                                while(charValue!=-1) {
+                                    docContent+=((char)charValue);
+                                    charValue = reader.read();
+                                }
+                                System.out.println(docContent);
+                                reader.close();
+                            }
+                            catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }));
         moveMgr.startJob(queryBatcher);
         queryBatcher.awaitCompletion();
         moveMgr.stopJob(queryBatcher);
@@ -106,7 +116,6 @@ public class BulkExportWithDataService implements QueryBatchListener {
             StringHandle data = new StringHandle("{\"docNum\":"+i+", \"docName\":\"doc"+i+"\"}");
             String docId = "/example/cookbook/bulkExport/"+i+".json";
             manager.write(docId, metadata, data);
-            urisList.add(docId);
         }
     }
 
@@ -114,8 +123,8 @@ public class BulkExportWithDataService implements QueryBatchListener {
         TextDocumentManager modMgr     = dbModulesClient.newTextDocumentManager();
         DocumentWriteSet writeSet = modMgr.newWriteSet();
         DocumentMetadataHandle metadata = new DocumentMetadataHandle().withCollections("BulkExportWithDataService");
-        metadata.getPermissions().add("rest-writer", DocumentMetadataHandle.Capability.UPDATE, DocumentMetadataHandle.Capability.READ);
-        metadata.getPermissions().add("rest-reader", DocumentMetadataHandle.Capability.READ);
+        metadata.getPermissions().add("rest-writer", DocumentMetadataHandle.Capability.UPDATE);
+        metadata.getPermissions().add("rest-reader", DocumentMetadataHandle.Capability.READ, DocumentMetadataHandle.Capability.EXECUTE);
 
         InputStream in = (Util.openStream("scripts"+ File.separator+"bulkExport"+File.separator+fileName));
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));

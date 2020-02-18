@@ -4,11 +4,11 @@
   "params" : [ {
     "name" : "uris",
     "datatype" : "string",
-    "multiple" : "true"
+    "multiple" : true
   } ],
   "return" : {
     "datatype" : "jsonDocument",
-    "multiple" : "true",
-    "nullable" : "true"
+    "multiple" : true,
+    "nullable" : true
   }
 }

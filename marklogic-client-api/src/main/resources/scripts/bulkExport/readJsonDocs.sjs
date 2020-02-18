@@ -1,6 +1,4 @@
 'use strict';
-const uris = external.uris;
-
+var uris;
 const output = fn.doc(uris);
-console.log(output);
 output;
