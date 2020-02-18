@@ -1,0 +1,14 @@
+
+{
+  "functionName" : "readJsonDocs",
+  "params" : [ {
+    "name" : "uris",
+    "datatype" : "string",
+    "multiple" : "true"
+  } ],
+  "return" : {
+    "datatype" : "jsonDocument",
+    "multiple" : "true",
+    "nullable" : "true"
+  }
+}

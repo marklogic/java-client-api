@@ -1,0 +1,4 @@
+{
+  "endpointDirectory" : "/example/cookbook/bulkExport/",
+  "$javaClass"        : "com.marklogic.client.example.cookbook.datamovement.BulkExportServices"
+}
