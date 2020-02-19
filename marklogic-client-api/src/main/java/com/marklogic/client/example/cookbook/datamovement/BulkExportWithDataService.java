@@ -28,6 +28,7 @@ import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.query.*;
 
 import java.io.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 /*
@@ -46,9 +47,12 @@ import java.util.stream.Stream;
 
 public class BulkExportWithDataService {
 
-    private DatabaseClient dbClient = DatabaseClientFactory.newClient("localhost", 8012, new DatabaseClientFactory.DigestAuthContext("rest-writer", "x"));
+    private static Util.ExampleProperties properties = getProperties();
+    private DatabaseClient dbClient = DatabaseClientFactory.newClient(properties.host, 8012,
+            new DatabaseClientFactory.DigestAuthContext(properties.writerUser, properties.writerPassword));
     private DatabaseClient dbModulesClient = DatabaseClientSingleton.getAdmin("java-unittest-modules");
     private DataMovementManager moveMgr = dbClient.newDataMovementManager();
+    private int count = 100;
 
     public static void main(String args[]) throws IOException {
         new BulkExportWithDataService().run();
@@ -62,7 +66,7 @@ public class BulkExportWithDataService {
 
     private void setup() throws IOException {
 
-        writeDocuments(100,"BulkExportWithDataService");
+        writeDocuments(count,"BulkExportWithDataService");
         writeScriptFile("readJsonDocs.api");
         writeScriptFile("readJsonDocs.sjs");
     }
@@ -82,6 +86,7 @@ public class BulkExportWithDataService {
         BulkExportServices bulkExportServices = BulkExportServices.on(dbClient);
 
         StructuredQueryBuilder structuredQueryBuilder = new StructuredQueryBuilder();
+        AtomicInteger docCount = new AtomicInteger();
         QueryBatcher queryBatcher = moveMgr.newQueryBatcher(structuredQueryBuilder.collection("BulkExportWithDataService"))
                 .withBatchSize(3)
                 .withThreadCount(3)
@@ -89,13 +94,14 @@ public class BulkExportWithDataService {
                 .onUrisReady(batch -> (bulkExportServices.readJsonDocs(Stream.of(batch.getItems())))
                         .forEach(reader -> {
                             try {
-                                int charValue = reader.read();
-                                String docContent = "";
-                                while(charValue!=-1) {
-                                    docContent+=((char)charValue);
-                                    charValue = reader.read();
+                                BufferedReader br = new BufferedReader(reader);
+                                StringBuilder out = new StringBuilder();
+                                String line;
+                                while ((line = br.readLine()) != null) {
+                                    out.append(line);
+                                    docCount.getAndIncrement();
                                 }
-                                System.out.println(docContent);
+                                System.out.println(out.toString());
                                 reader.close();
                             }
                             catch (IOException e) {
@@ -105,7 +111,8 @@ public class BulkExportWithDataService {
         moveMgr.startJob(queryBatcher);
         queryBatcher.awaitCompletion();
         moveMgr.stopJob(queryBatcher);
-
+        if(docCount.get()!= count)
+            throw new InternalError("Mismatch between the number of documents written and read from the database.");
     }
 
     private void writeDocuments(int count, String collection) {
@@ -138,5 +145,14 @@ public class BulkExportWithDataService {
         writeSet.add("/example/cookbook/bulkExport/"+fileName, metadata,
                 (new StringHandle(out.toString())));
         modMgr.write(writeSet);
+    }
+
+    private static Util.ExampleProperties getProperties() {
+        try {
+            return Util.loadProperties();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 }
