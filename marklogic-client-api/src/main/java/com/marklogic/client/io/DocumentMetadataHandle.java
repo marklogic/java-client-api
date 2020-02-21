@@ -900,8 +900,7 @@ public class DocumentMetadataHandle
   private void sendQualityImpl(XMLStreamWriter serializer) throws XMLStreamException {
     if ( qualityModified == false ) return;
     serializer.writeStartElement("rapi", "quality", REST_API_NS);
-    if(String.valueOf(getQuality()) != null)
-      serializer.writeCharacters(String.valueOf(getQuality()));
+    serializer.writeCharacters(String.valueOf(getQuality()));
     serializer.writeEndElement();
   }
   static private class ValueSerializer implements ValueConverter.ValueProcessor {

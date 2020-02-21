@@ -757,8 +757,7 @@ class DocumentMetadataPatchBuilderImpl
     public void write(XMLOutputSerializer out) throws Exception {
       XMLStreamWriter serializer = out.getSerializer();
       writeStartReplace(out, "/rapi:metadata/rapi:quality", null);
-      if(String.valueOf(quality) != null)
-        serializer.writeCharacters(String.valueOf(quality));
+      serializer.writeCharacters(String.valueOf(quality));
       serializer.writeEndElement();
     }
   }

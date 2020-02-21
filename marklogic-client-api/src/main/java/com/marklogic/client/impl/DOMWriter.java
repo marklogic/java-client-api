@@ -136,7 +136,7 @@ public class DOMWriter {
     }
   }
   public void serializeText(Text text) throws XMLStreamException {
-    if(text != null && text.getData() != null)
+    if(text != null)
       serializer.writeCharacters(text.getData());
   }
   public void serializeCDATASection(CDATASection cdata) throws XMLStreamException {
