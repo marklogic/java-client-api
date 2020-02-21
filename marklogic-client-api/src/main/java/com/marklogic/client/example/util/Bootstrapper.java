@@ -439,7 +439,8 @@ public class Bootstrapper {
       writer.writeDefaultNamespace("http://marklogic.com/rest-api");
 
       writer.writeStartElement("name");
-      writer.writeCharacters(server);
+      if(server != null)
+        writer.writeCharacters(server);
       writer.writeEndElement();
 
       if (group != null && group.length() > 0) {
@@ -449,7 +450,8 @@ public class Bootstrapper {
       }
 
       writer.writeStartElement("database");
-      writer.writeCharacters(database);
+      if(database != null)
+        writer.writeCharacters(database);
       writer.writeEndElement();
 
       if (modulesDatabase != null && modulesDatabase.length() > 0) {
@@ -459,7 +461,8 @@ public class Bootstrapper {
       }
 
       writer.writeStartElement("port");
-      writer.writeCharacters(String.valueOf(port));
+      if(String.valueOf(port) != null)
+        writer.writeCharacters(String.valueOf(port));
       writer.writeEndElement();
 
       writer.writeEndElement();

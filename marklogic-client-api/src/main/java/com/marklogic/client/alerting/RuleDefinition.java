@@ -255,7 +255,8 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 
       serializer.writeStartElement(RequestConstants.RESTAPI_PREFIX,
         "name", RequestConstants.RESTAPI_NS);
-      serializer.writeCharacters(getName());
+      if(getName() != null)
+        serializer.writeCharacters(getName());
       serializer.writeEndElement();
 
       serializer.writeStartElement(RequestConstants.RESTAPI_PREFIX,
@@ -471,7 +472,8 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
         serializer.writeAttribute("xsi",
           XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type",
           type);
-        serializer.writeCharacters(value);
+        if(value != null)
+          serializer.writeCharacters(value);
       } catch (XMLStreamException e) {
         throw new MarkLogicIOException(e);
       }

@@ -812,7 +812,8 @@ public class DocumentMetadataHandle
     for (Map.Entry<String, String> value : getMetadataValues().entrySet()) {
       serializer.writeStartElement("rapi", "metadata-value", REST_API_NS);
       serializer.writeAttribute("key", value.getKey());
-      serializer.writeCharacters(value.getValue());
+      if(value.getValue() != null)
+        serializer.writeCharacters(value.getValue());
       serializer.writeEndElement();
     }
 
@@ -825,7 +826,8 @@ public class DocumentMetadataHandle
 
     for (String collection: getCollections()) {
       serializer.writeStartElement("rapi", "collection", REST_API_NS);
-      serializer.writeCharacters(collection);
+      if(collection != null)
+        serializer.writeCharacters(collection);
       serializer.writeEndElement();
     }
 
@@ -839,7 +841,8 @@ public class DocumentMetadataHandle
       serializer.writeStartElement("rapi", "permission", REST_API_NS);
 
       serializer.writeStartElement("rapi", "role-name", REST_API_NS);
-      serializer.writeCharacters(permission.getKey());
+      if(permission.getKey() != null)
+        serializer.writeCharacters(permission.getKey());
       serializer.writeEndElement();
 
       for (Capability capability: permission.getValue()) {
@@ -897,7 +900,8 @@ public class DocumentMetadataHandle
   private void sendQualityImpl(XMLStreamWriter serializer) throws XMLStreamException {
     if ( qualityModified == false ) return;
     serializer.writeStartElement("rapi", "quality", REST_API_NS);
-    serializer.writeCharacters(String.valueOf(getQuality()));
+    if(String.valueOf(getQuality()) != null)
+      serializer.writeCharacters(String.valueOf(getQuality()));
     serializer.writeEndElement();
   }
   static private class ValueSerializer implements ValueConverter.ValueProcessor {
@@ -913,7 +917,8 @@ public class DocumentMetadataHandle
       try {
         serializer.writeAttribute(
           "xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type", type);
-        serializer.writeCharacters(value);
+        if(value != null)
+          serializer.writeCharacters(value);
       } catch(XMLStreamException e) {
         throw new MarkLogicIOException(e);
       }

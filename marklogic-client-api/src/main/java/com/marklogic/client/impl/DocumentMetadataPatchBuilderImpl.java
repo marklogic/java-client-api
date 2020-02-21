@@ -329,7 +329,8 @@ class DocumentMetadataPatchBuilderImpl
         serializer.writeNamespace("xs", XMLConstants.W3C_XML_SCHEMA_NS_URI);
         serializer.writeAttribute(
           "xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type", type);
-        serializer.writeCharacters(value);
+        if(value != null)
+          serializer.writeCharacters(value);
       } catch(XMLStreamException e) {
         throw new MarkLogicIOException(e);
       }
@@ -357,7 +358,8 @@ class DocumentMetadataPatchBuilderImpl
       XMLStreamWriter serializer = out.getSerializer();
       writeStartInsert(out, "/rapi:metadata/rapi:collections", "last-child", null);
       serializer.writeStartElement("rapi", "collection", REST_API_NS);
-      serializer.writeCharacters(collection);
+      if(collection != null)
+        serializer.writeCharacters(collection);
       serializer.writeEndElement();
       serializer.writeEndElement();
     }
@@ -416,7 +418,8 @@ class DocumentMetadataPatchBuilderImpl
         null
       );
       serializer.writeStartElement("rapi", "collection", REST_API_NS);
-      serializer.writeCharacters(newCollection);
+      if(newCollection != null)
+        serializer.writeCharacters(newCollection);
       serializer.writeEndElement();
       serializer.writeEndElement();
     }
@@ -458,7 +461,8 @@ class DocumentMetadataPatchBuilderImpl
       serializer.writeStartElement("rapi", "permission", REST_API_NS);
 
       serializer.writeStartElement("rapi", "role-name", REST_API_NS);
-      serializer.writeCharacters(role);
+      if(role != null)
+        serializer.writeCharacters(role);
       serializer.writeEndElement();
 
       for (Capability capability: capabilities) {
@@ -542,7 +546,8 @@ class DocumentMetadataPatchBuilderImpl
       serializer.writeStartElement("rapi", "permission", REST_API_NS);
 
       serializer.writeStartElement("rapi", "role-name", REST_API_NS);
-      serializer.writeCharacters(newRole);
+      if(newRole != null)
+        serializer.writeCharacters(newRole);
       serializer.writeEndElement();
 
       for (Capability capability: newCapabilities) {
@@ -752,7 +757,8 @@ class DocumentMetadataPatchBuilderImpl
     public void write(XMLOutputSerializer out) throws Exception {
       XMLStreamWriter serializer = out.getSerializer();
       writeStartReplace(out, "/rapi:metadata/rapi:quality", null);
-      serializer.writeCharacters(String.valueOf(quality));
+      if(String.valueOf(quality) != null)
+        serializer.writeCharacters(String.valueOf(quality));
       serializer.writeEndElement();
     }
   }
@@ -788,7 +794,8 @@ class DocumentMetadataPatchBuilderImpl
 
       serializer.writeStartElement("rapi", "metadata-value", REST_API_NS);
       serializer.writeAttribute("key", key);
-      serializer.writeCharacters(value);
+      if(value != null)
+        serializer.writeCharacters(value);
       serializer.writeEndElement();
 
       serializer.writeEndElement();
@@ -855,7 +862,8 @@ class DocumentMetadataPatchBuilderImpl
       );
       serializer.writeStartElement("rapi", "metadata-value", REST_API_NS);
       serializer.writeAttribute("key", key);
-      serializer.writeCharacters(value);
+      if(value != null)
+        serializer.writeCharacters(value);
       serializer.writeEndElement();
 
       serializer.writeEndElement();
