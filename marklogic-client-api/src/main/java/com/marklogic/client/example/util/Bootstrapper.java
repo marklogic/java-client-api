@@ -461,8 +461,7 @@ public class Bootstrapper {
       }
 
       writer.writeStartElement("port");
-      if(String.valueOf(port) != null)
-        writer.writeCharacters(String.valueOf(port));
+      writer.writeCharacters(String.valueOf(port));
       writer.writeEndElement();
 
       writer.writeEndElement();
