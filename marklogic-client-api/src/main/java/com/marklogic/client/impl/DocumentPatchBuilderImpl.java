@@ -128,7 +128,8 @@ class DocumentPatchBuilderImpl
         serializer.flush();
         out.getWriter().write(inputAsString);
       } else {
-        serializer.writeCharacters(inputAsString);
+        if(inputAsString != null)
+          serializer.writeCharacters(inputAsString);
       }
       serializer.writeEndElement();
     }
