@@ -22,6 +22,7 @@ dependencies {
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version:'2.10.3'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.10.3'
     compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-csv', version:'2.10.3'
+    compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-xml', version:'2.10.3'
     testCompile group: 'org.mockito', name: 'mockito-all', version:'1.10.19'
     testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
     testCompile group: 'org.hsqldb', name: 'hsqldb', version:'2.4.0'
