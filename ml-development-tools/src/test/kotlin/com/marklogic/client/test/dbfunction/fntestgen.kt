@@ -30,8 +30,9 @@ import java.io.File
 import java.lang.Exception
 
 import java.lang.IllegalStateException
+import kotlin.system.exitProcess
 
-val TEST_PACKAGE = "com.marklogic.client.test.dbfunction.generated"
+const val TEST_PACKAGE = "com.marklogic.client.test.dbfunction.generated"
 
 val generator     = Generator()
 val atomicMap     = generator.getAtomicDataTypes()
@@ -528,11 +529,11 @@ fun main(args: Array<String>) {
         2 -> dbfTestGenerate(args[0], args[1])
         else -> {
             System.err.println("usage: fntestgen testDir [release]")
-            System.exit(-1)
+            exitProcess(-1)
         }
     }
   } catch (e: Exception) {
-    e.printStackTrace();
+    e.printStackTrace()
   }
 }
 fun getExtensions(release: String) : List<String> {
@@ -541,10 +542,9 @@ fun getExtensions(release: String) : List<String> {
         "release5",
         "latest"   -> listOf("mjs", "sjs", "xqy")
         else       -> {
-            System.err.println("unknown release: "+release)
+            System.err.println("unknown release: $release")
             System.err.println("valid releases are one of release4, release5, or latest")
-            System.exit(-1)
-            listOf()
+            exitProcess(-1)
         }
     }
 }
@@ -689,22 +689,22 @@ if (true) {
             "datatype" to multiDocNames[requestBodyNum % multiDocMax],
             "multiple" to true, "nullable" to false
             )
-          else -> throw IllegalStateException("""unknown response body type ${responseBodyType}""")
+          else -> throw IllegalStateException("""unknown response body type $responseBodyType""")
           }
 
       for (endpointMethod in listOf("post")) {
         val testBaseStart = endpointMethod+"Of"+requestBody
-        val testBaseEnd = "For"+responseBody
+        val testBaseEnd = "For$responseBody"
 
         val testBundle       = testBaseStart+testBaseEnd
         val bundleTested     = testBundle.capitalize()+"Bundle"
         val bundleTester     = bundleTested+"Test"
-        val bundleJSONPath   = jsonPath+testBundle+"/"
+        val bundleJSONPath   = "$jsonPath$testBundle/"
         val bundleFilename   = bundleJSONPath+"service.json"
-        val bundleEndpoint   = endpointBase+testBundle+"/"
+        val bundleEndpoint   = "$endpointBase$testBundle/"
         val bundleJSONString = serializer.writeValueAsString(mapOf(
             "endpointDirectory" to bundleEndpoint,
-            "\$javaClass"       to TEST_PACKAGE+"."+bundleTested
+            "\$javaClass"       to "$TEST_PACKAGE.$bundleTested"
         ))
         File(bundleJSONPath).mkdirs()
         File(bundleFilename).writeText(bundleJSONString, Charsets.UTF_8)
@@ -769,8 +769,8 @@ if (true) {
                   val atomicCurr = atomicNames[i]
                   for (testNum in allTestTypes.indices) {
                     val testType     = allTestTypes[testNum]
-                    val testMultiple = testType.get("multiple") as Boolean
-                    val testNullable = testType.get("nullable") as Boolean
+                    val testMultiple = testType["multiple"] as Boolean
+                    val testNullable = testType["nullable"] as Boolean
                     val funcParams   = listOf(mapOf(
                       "name"     to "param1",     "datatype" to atomicCurr,
                       "multiple" to testMultiple, "nullable" to testNullable
@@ -932,8 +932,8 @@ if (true) {
                     val testType      = docTestTypes[testNum]
 // TODO: restore after fix for internal bug 52334
 //                  val testMultiple = testType.get("multiple") as Boolean
-                    val testMultiple = if (docCurr == "object") false else (testType.get("multiple") as Boolean)
-                    val testNullable  = testType.get("nullable") as Boolean
+                    val testMultiple = if (docCurr == "object") false else (testType["multiple"] as Boolean)
+                    val testNullable  = testType["nullable"] as Boolean
                     val docFuncParams = listOf(mapOf(
                         "name"     to "param1",     "datatype" to docCurr,
                         "multiple" to testMultiple, "nullable" to testNullable
@@ -1034,7 +1034,7 @@ if (true) {
                             when (docCurr) {
                               "array", "object", "jsonDocument" -> "xmlDocument"
                               "xmlDocument" -> "jsonDocument"
-                              else          -> throw IllegalArgumentException("No type error test for "+docCurr)
+                              else          -> throw IllegalArgumentException("No type error test for $docCurr")
                             }
                         val typeErrName      = docTestName+"TypeErr"
                         val typeErrServerdef = replaceFuncName(docTestdef, typeErrName)
@@ -1078,14 +1078,14 @@ if (true) {
                   }
                 }
               }
-            else -> throw IllegalStateException("""unknown request body type ${requestBodyType}""")
+            else -> throw IllegalStateException("""unknown request body type $requestBodyType""")
             }} // end of branching on request body type
           "text" -> {
             for (i in atomicNames.indices) {
               val atomicCurr = atomicNames[i]
               for (testNum in nonMultipleTestTypes.indices) {
                 val testType     = nonMultipleTestTypes[testNum]
-                val testNullable = testType.get("nullable") as Boolean
+                val testNullable = testType["nullable"] as Boolean
                 val funcReturn   = mapOf(
                   "datatype" to atomicCurr, "nullable" to testNullable
                   )
@@ -1205,8 +1205,8 @@ if (true) {
                 val testType = docTestTypes[testNum]
 // TODO: restore after fix for internal bug 52334
 //              val testMultiple = testType.get("multiple") as Boolean
-                val testMultiple = if (docCurr == "object") false else (testType.get("multiple") as Boolean)
-                val testNullable = testType.get("nullable") as Boolean
+                val testMultiple = if (docCurr == "object") false else (testType["multiple"] as Boolean)
+                val testNullable = testType["nullable"] as Boolean
                 val funcReturn   = mapOf(
                   "datatype" to docCurr,
                   "multiple" to testMultiple, "nullable" to testNullable
@@ -1299,8 +1299,8 @@ if (true) {
                 val testType = docTestTypes[testNum]
 // TODO: restore after fix for internal bug 52334
 //              val testMultiple = testType.get("multiple") as Boolean
-                val testMultiple = if (docCurr == "object") false else (testType.get("multiple") as Boolean)
-                val testNullable = testType.get("nullable") as Boolean
+                val testMultiple = if (docCurr == "object") false else (testType["multiple"] as Boolean)
+                val testNullable = testType["nullable"] as Boolean
                 val funcReturn   = mapOf(
                     "datatype" to docCurr,
                     "multiple" to testMultiple, "nullable" to testNullable
@@ -1404,12 +1404,12 @@ if (true) {
                 }
               }
             }}
-          else -> throw IllegalStateException("""unknown response body type ${responseBodyType}""")
+          else -> throw IllegalStateException("""unknown response body type $responseBodyType""")
         } // end of branching on response body type
 
         generator.serviceBundleToJava(bundleFilename, javaBaseDir)
         writeJUnitRequestTest(
-            testPath+bundleTester+".java",
+                "$testPath$bundleTester.java",
             generateJUnitTest(bundleTested, bundleTester, testingFuncs)
           )
       } // end of iteration on endpoint methods
@@ -1423,12 +1423,12 @@ if (true) {
   val atomicMappingBundle           = "mapAtomics"
   val atomicMappingBundleTested     = atomicMappingBundle.capitalize()+"Bundle"
   val atomicMappingBundleTester     = atomicMappingBundleTested+"Test"
-  val atomicMappingBundleJSONPath   = jsonPath+atomicMappingBundle+"/"
+  val atomicMappingBundleJSONPath   = "$jsonPath$atomicMappingBundle/"
   val atomicMappingBundleFilename   = atomicMappingBundleJSONPath+"service.json"
-  val atomicMappingBundleEndpoint   = endpointBase+atomicMappingBundle+"/"
+  val atomicMappingBundleEndpoint   = "$endpointBase$atomicMappingBundle/"
   val atomicMappingBundleJSONString = serializer.writeValueAsString(mapOf(
       "endpointDirectory" to atomicMappingBundleEndpoint,
-      "\$javaClass"       to TEST_PACKAGE+"."+atomicMappingBundleTested
+      "\$javaClass"       to "$TEST_PACKAGE.$atomicMappingBundleTested"
   ))
   File(atomicMappingBundleJSONPath).mkdirs()
   File(atomicMappingBundleFilename).writeText(atomicMappingBundleJSONString, Charsets.UTF_8)
@@ -1443,15 +1443,15 @@ if (true) {
     val modExtension         = modExtensions[datatypeNum % modExtensions.size]
     for (mappedType in datatypeConstructors.keys) {
       // mappedType.capitalize().replace('.', '_')
-      val testMapped        = mappedType.split('.').map{word -> word.capitalize()}.joinToString("")
-      val mappedConstructor = datatypeConstructors[mappedType] as String
+      val testMapped        = mappedType.split('.').joinToString("") { word -> word.capitalize() }
+        val mappedConstructor = datatypeConstructors[mappedType] as String
       val typeConstructors  = mapOf(datatype to mappedConstructor)
       for (testNum in allTestTypes.indices) {
         val testType       = allTestTypes[testNum]
 // TODO: restore after fix for internal bug 52334
 //      val testMultiple   = testType.get("multiple") as Boolean
-        val testMultiple   = if (datatype == "object") false else (testType.get("multiple") as Boolean)
-        val testNullable   = testType.get("nullable") as Boolean
+        val testMultiple   = if (datatype == "object") false else (testType["multiple"] as Boolean)
+        val testNullable   = testType["nullable"] as Boolean
         val funcParams     = listOf(mapOf(
             "name"        to "param1",     "datatype" to datatype,
             "multiple"    to testMultiple, "nullable" to testNullable,
@@ -1502,7 +1502,7 @@ if (true) {
 
   generator.serviceBundleToJava(atomicMappingBundleFilename, javaBaseDir)
   writeJUnitRequestTest(
-      testPath+atomicMappingBundleTester+".java",
+          "$testPath$atomicMappingBundleTester.java",
       generateJUnitTest(atomicMappingBundleTested, atomicMappingBundleTester, atomicMappingTestingFuncs,
           extraImports = getAtomicMappingImports(), extraMembers = getAtomicMappingMembers())
   )
@@ -1513,12 +1513,12 @@ if (true) {
   val documentMappingBundle           = "mapDocuments"
   val documentMappingBundleTested     = documentMappingBundle.capitalize()+"Bundle"
   val documentMappingBundleTester     = documentMappingBundleTested+"Test"
-  val documentMappingBundleJSONPath   = jsonPath+documentMappingBundle+"/"
+  val documentMappingBundleJSONPath   = "$jsonPath$documentMappingBundle/"
   val documentMappingBundleFilename   = documentMappingBundleJSONPath+"service.json"
-  val documentMappingBundleEndpoint   = endpointBase+documentMappingBundle+"/"
+  val documentMappingBundleEndpoint   = "$endpointBase$documentMappingBundle/"
   val documentMappingBundleJSONString = serializer.writeValueAsString(mapOf(
       "endpointDirectory" to documentMappingBundleEndpoint,
-      "\$javaClass"       to TEST_PACKAGE+"."+documentMappingBundleTested
+      "\$javaClass"       to "$TEST_PACKAGE.$documentMappingBundleTested"
   ))
   File(documentMappingBundleJSONPath).mkdirs()
   File(documentMappingBundleFilename).writeText(documentMappingBundleJSONString, Charsets.UTF_8)
@@ -1532,15 +1532,15 @@ if (true) {
     val datatypeConstructors = documentMappingConstructors[datatype] as Map<String,String>
     val modExtension         = modExtensions[datatypeNum % modExtensions.size]
     for (mappedType in datatypeConstructors.keys) {
-      val testMapped        = mappedType.split('.').map{word -> word.capitalize()}.joinToString("")
-      val mappedConstructor = datatypeConstructors[mappedType] as String
+      val testMapped        = mappedType.split('.').joinToString("") { word -> word.capitalize() }
+        val mappedConstructor = datatypeConstructors[mappedType] as String
       val typeConstructors  = mapOf(datatype to mappedConstructor)
       for (testNum in allTestTypes.indices) {
         val testType = allTestTypes[testNum]
 // TODO: restore after fix for internal bug 52334
 //      val testMultiple = testType.get("multiple") as Boolean
-        val testMultiple   = if (datatype == "object") false else (testType.get("multiple") as Boolean)
-        val testNullable = testType.get("nullable") as Boolean
+        val testMultiple   = if (datatype == "object") false else (testType["multiple"] as Boolean)
+        val testNullable = testType["nullable"] as Boolean
 
         val funcParams = listOf(mapOf(
             "name" to "param1", "datatype" to datatype,
@@ -1593,7 +1593,7 @@ if (true) {
 // System.out.println(documentMappingTestingFuncs.joinToString("\n"))
   generator.serviceBundleToJava(documentMappingBundleFilename, javaBaseDir)
   writeJUnitRequestTest(
-      testPath+documentMappingBundleTester+".java",
+          "$testPath$documentMappingBundleTester.java",
       generateJUnitTest(documentMappingBundleTested, documentMappingBundleTester, documentMappingTestingFuncs,
           extraImports = getDocumentMappingImports(), extraMembers = getDocumentMappingMembers())
   )
@@ -1603,7 +1603,7 @@ if (true) {
   for (testName in listOf("decoratorBase", "decoratorCustom", "described", "mimetype", "sessions")) {
     val testModMgr = modMgr
     val manualBundleJSONPath = "${testDir}ml-modules/root/dbfunctiondef/positive/${testName}/"
-    val manualBundleEndpoint = endpointBase+testName+"/"
+    val manualBundleEndpoint = "$endpointBase$testName/"
     val manualBundleFilename = manualBundleJSONPath+"service.json"
 
     generator.serviceBundleToJava(manualBundleFilename, javaBaseDir)
@@ -1612,7 +1612,7 @@ if (true) {
         .filter{file -> (file.extension == "api")}
         .forEach{apiFile ->
           val baseName = apiFile.nameWithoutExtension
-          val apiName  = baseName +".api"
+          val apiName  = "$baseName.api"
           val modFile  = listOf(".sjs", ".xqy", ".mjs").fold(null as File?, {found: File?, extension: String ->
                   if (found != null) {
                       found
@@ -1626,7 +1626,7 @@ if (true) {
                   }
               })
           if (modFile == null) {
-              throw IllegalArgumentException("could not find module for ${apiName}")
+              throw IllegalArgumentException("could not find module for $apiName")
           }
 
           val modName = modFile.name
@@ -1658,21 +1658,21 @@ if (true) {
     val moduleInitBundle           = "moduleInit"+modExtension.capitalize()
     val moduleInitBundleTested     = moduleInitBundle.capitalize()+"Bundle"
     val moduleInitBundleTester     = moduleInitBundleTested+"Test"
-    val moduleInitBundleJSONPath   = jsonPath+moduleInitBundle+"/"
+    val moduleInitBundleJSONPath   = "$jsonPath$moduleInitBundle/"
     val moduleInitBundleFilename   = moduleInitBundleJSONPath+"service.json"
-    val moduleInitBundleEndpoint   = endpointBase+moduleInitBundle+"/"
+    val moduleInitBundleEndpoint   = "$endpointBase$moduleInitBundle/"
     val moduleInitBundleJSONString = serializer.writeValueAsString(mapOf(
         "endpointDirectory" to moduleInitBundleEndpoint,
-        "\$javaClass"       to TEST_PACKAGE+"."+moduleInitBundleTested
+        "\$javaClass"       to "$TEST_PACKAGE.$moduleInitBundleTested"
     ))
     File(moduleInitBundleJSONPath).mkdirs()
     File(moduleInitBundleFilename).writeText(moduleInitBundleJSONString, Charsets.UTF_8)
 
-    val moduleInitAPIName     = moduleInitName+".api"
+    val moduleInitAPIName     = "$moduleInitName.api"
     val moduleInitAPIFilename = moduleInitBundleJSONPath+moduleInitAPIName
     val moduleInitAPIFile     = File(moduleInitAPIFilename)
 
-    val moduleInitModName     = moduleInitName+"."+modExtension
+    val moduleInitModName     = "$moduleInitName.$modExtension"
     val moduleInitModFilename = moduleInitBundleJSONPath+moduleInitModName
     val moduleInitModFile     = File(moduleInitModFilename)
 
@@ -1687,7 +1687,7 @@ ${
     when (modExtension) {
       "mjs", "sjs" -> "true;"
       "xqy"        -> "fn:true()"
-      else         -> IllegalArgumentException("unknown module extension: "+modExtension)
+      else         -> IllegalArgumentException("unknown module extension: $modExtension")
     }}
 """, Charsets.UTF_8)
 
@@ -1703,7 +1703,7 @@ ${
         generateJUnitCallTest(moduleInitName, moduleInitParams, moduleInitReturn, testdefs)
         )
     writeJUnitRequestTest(
-        testPath+moduleInitBundleTester+".java",
+            "$testPath$moduleInitBundleTester.java",
         generateJUnitTest(moduleInitBundleTested, moduleInitBundleTester, moduleInitTestingFunctions)
         )
   }
@@ -1713,13 +1713,11 @@ ${
 }
 fun pickDocOther(documentNames: Array<String>, documentMax: Int, docCurr: String, i: Int
 ) : String {
-  val docOther =
-      when (docCurr) {
-        "array", "object", "jsonDocument" -> "xmlDocument"
-        "xmlDocument"                     -> "jsonDocument"
-        else                              -> documentNames[if (i == documentMax) 0 else i + 1]
-      }
-  return docOther
+    return when (docCurr) {
+      "array", "object", "jsonDocument" -> "xmlDocument"
+      "xmlDocument"                     -> "jsonDocument"
+      else                              -> documentNames[if (i == documentMax) 0 else i + 1]
+    }
 }
 fun replaceFuncName(funcdef: Map<String,*>, funcName: String) : Map<String,*> {
   return replaceKeyValue(funcdef, "functionName", funcName)
@@ -1751,8 +1749,8 @@ fun persistServerdef(modMgr: TextDocumentManager, endpointBase: String, funcName
                      modMeta: DocumentMetadataHandle, funcdef: String, funcParams: List<Map<String,*>>?, modExtension: String
 ) {
   val docIdBase = endpointBase+funcName
-  val apiId     = docIdBase+".api"
-  val moduleId  = docIdBase+"."+modExtension
+  val apiId     = "$docIdBase.api"
+  val moduleId  = "$docIdBase.$modExtension"
   val apiHandle = StringHandle(funcdef)
   val moduleDoc = makeModuleDoc(docIdBase, funcParams, funcdef, modExtension)
   modMgr.write(
@@ -1762,8 +1760,8 @@ fun persistServerdef(modMgr: TextDocumentManager, endpointBase: String, funcName
 fun generateClientdef(jsonPath: String, endpointBase: String, funcName: String,
                       funcdef: String, funcParams: List<Map<String,*>>?, modExtension: String) {
   val funcPathBase     = jsonPath+funcName
-  val funcClientJSON   = funcPathBase+".api"
-  val moduleClientPath = funcPathBase+"."+modExtension
+  val funcClientJSON   = "$funcPathBase.api"
+  val moduleClientPath = "$funcPathBase.$modExtension"
   val moduleClientDoc  = makeModuleDoc(endpointBase+funcName, funcParams, funcdef, modExtension)
   File(funcClientJSON).writeText(funcdef, Charsets.UTF_8)
   File(moduleClientPath).writeText(moduleClientDoc, Charsets.UTF_8)
@@ -1771,41 +1769,43 @@ fun generateClientdef(jsonPath: String, endpointBase: String, funcName: String,
 // TODO: call makeModuleDoc() only once per definition and use for both project filesystem and modules database
 fun makeModuleDoc(docIdBase: String, funcParams: List<Map<String,*>>?, funcdef: String, modExtension: String
 ) : String {
-  var convertedParams = mapper.convertValue<ArrayNode>(funcParams, ArrayNode::class.java)
+  val convertedParams = mapper.convertValue<ArrayNode>(funcParams, ArrayNode::class.java)
   val prologSource = generator.getEndpointProlog(modExtension)
   val paramSource = generator.getEndpointParamSource(atomicMap, documentMap, modExtension, convertedParams)
-  val paramNames = funcParams?.map{param -> param["name"] as String} ?: emptyList<String>()
-  val moduleDoc  =
-      if (modExtension === "mjs" || modExtension === "sjs") """${prologSource}
-${paramSource}
+  val paramNames = funcParams?.map{param -> param["name"] as String} ?: emptyList()
+  return if (modExtension === "mjs" || modExtension === "sjs") """$prologSource
+$paramSource
 const inspector = require('/dbf/test/testInspector.sjs');
 const errorList = [];
 const funcdef   = ${funcdef};
 let fields = {};
-${paramNames.map{paramName -> """fields = inspector.addField(
-  '${docIdBase}', fields, '${paramName}', ${paramName}
-  );
-"""}.joinToString("")}
+${paramNames.joinToString("") { paramName ->
+          """fields = inspector.addField(
+'${docIdBase}', fields, '${paramName}', $paramName
+);
+"""
+      }}
 fields = inspector.getFields(funcdef, fields, errorList);
 inspector.makeResult('${docIdBase}', funcdef, fields, errorList);
 """
-      else       """${prologSource}
-${paramSource}
+      else       """$prologSource
+$paramSource
 let ${'$'}errorList := json:array()
 let ${'$'}funcdef   := xdmp:from-json-string('${funcdef}')
 let ${'$'}fields   := map:map()
-${paramNames.map{paramName -> """let ${'$'}fields   := xdmp:apply(xdmp:function(xs:QName("addField"), "/dbf/test/testInspector.sjs"),
-    "${docIdBase}", ${'$'}fields, "${paramName}", ${'$'}${paramName}
-    )
-"""}.joinToString("")}
+${paramNames.joinToString("") { paramName ->
+          """let ${'$'}fields   := xdmp:apply(xdmp:function(xs:QName("addField"), "/dbf/test/testInspector.sjs"),
+"$docIdBase", ${'$'}fields, "$paramName", ${'$'}${paramName}
+)
+"""
+      }}
 let ${'$'}fields   := xdmp:apply(xdmp:function(xs:QName("getFields"), "/dbf/test/testInspector.sjs"),
     ${'$'}funcdef, ${'$'}fields, ${'$'}errorList
     )
 return xdmp:apply(xdmp:function(xs:QName("makeResult"), "/dbf/test/testInspector.sjs"),
-    "${docIdBase}", ${'$'}funcdef, ${'$'}fields, ${'$'}errorList
+    "$docIdBase", ${'$'}funcdef, ${'$'}fields, ${'$'}errorList
     )
 """
-  return moduleDoc;
 }
 fun serializeArg(paramTest: JsonNode, mappedType: String, testConstructor: String?) : String {
   val text   = paramTest.asText()
@@ -1816,17 +1816,15 @@ fun serializeArg(paramTest: JsonNode, mappedType: String, testConstructor: Strin
       "float"       -> text+"F"
       "Long"        -> text+"L"
       "long"        -> text+"L"
-      "InputStream" -> """new ByteArrayInputStream(DatatypeConverter.parseBase64Binary("${text}"))"""
-      "Reader"      -> """new StringReader("${text}")"""
+      "InputStream" -> """new ByteArrayInputStream(DatatypeConverter.parseBase64Binary("$text"))"""
+      "Reader"      -> """new StringReader("$text")"""
       else          ->
 // TODO: binary document mapping
         if (mappedType.contains('.')) "\"" + text + "\""
         else text
       }
-  val arg    =
-      if (testConstructor === null) argRaw
-      else """${testConstructor}(${argRaw})"""
-  return arg
+  return if (testConstructor === null) argRaw
+         else """${testConstructor}(${argRaw})"""
 }
 fun writeJUnitRequestTest(testingFilename: String, testingSrc: String) {
   val testingFile     = File(testingFilename)
@@ -1836,7 +1834,7 @@ fun generateJUnitTest(
     testedClass: String, testingClass: String, funcTests: List<String>,
     extraImports: String = "", extraMembers: String = ""
 ): String {
-  val testingSrc = """package ${TEST_PACKAGE};
+  return """package ${TEST_PACKAGE};
 
 // IMPORTANT: Do not edit. This file is generated.
 
@@ -1850,7 +1848,7 @@ import java.util.stream.Stream;
 import javax.xml.bind.DatatypeConverter;
 import java.lang.reflect.Array;
 
-${extraImports}
+$extraImports
 
 import org.junit.Test;
 import static org.junit.Assert.assertNull;
@@ -1861,8 +1859,8 @@ import static org.junit.Assert.fail;
 
 import com.marklogic.client.test.dbfunction.DBFunctionTestUtil;
 
-public class ${testingClass} {
-   ${testedClass} testObj = ${testedClass}.on(DBFunctionTestUtil.db);
+public class $testingClass {
+   $testedClass testObj = ${testedClass}.on(DBFunctionTestUtil.db);
 
    void assertBytesStreamEqual(String testName, String[] expectedVals, Stream<byte[]> actual) throws IOException {
       byte[][] actualVals = actual.toArray(size -> new byte[size][]);
@@ -1945,12 +1943,11 @@ public class ${testingClass} {
          );
    }
 
-${extraMembers}
+$extraMembers
 
 ${funcTests.joinToString("\n")}
 }
 """
-  return testingSrc
 }
 fun generateJUnitCallTest(
     funcName: String, funcParams: List<Map<String,*>>?, funcReturn: Map<String,*>?,
@@ -1967,9 +1964,9 @@ fun generateJUnitCallTest(
       }
   val testName         = funcName+testType
 
-  val testingArgs      = funcParams?.map{ funcParam ->
-    testVal(typeTests, funcParam, testVariant, typeConstructors = typeConstructors, mappedTestdefs = mappedTestdefs)
-    }?.joinToString(", ") ?: ""
+  val testingArgs      = funcParams?.joinToString(", ") { funcParam ->
+      testVal(typeTests, funcParam, testVariant, typeConstructors = typeConstructors, mappedTestdefs = mappedTestdefs)
+  } ?: ""
 
   val returnType        = funcReturn?.get("datatype")    as String?
   val returnMapping     = funcReturn?.get("\$javaClass") as String?
@@ -1985,8 +1982,8 @@ fun generateJUnitCallTest(
       else typeConstructors[returnType]?.substringAfter(returnType+"As")
   val returnAssign      =
       if (returnMappedType === null) ""
-      else if (!returnMultiple)      returnMappedType+" return1 = "
-      else                           "Stream<"+returnMappedType+"> return1 = "
+      else if (!returnMultiple) "$returnMappedType return1 = "
+      else                      "Stream<$returnMappedType> return1 = "
   val asserter         =
       if (expectError || testVariant != TestVariant.VALUE || returnMappedType === null || returnKind === "document")
         null
@@ -2001,7 +1998,7 @@ fun generateJUnitCallTest(
             typeConstructors = typeConstructors, mappedTestdefs = mappedTestdefs
           )
       else if (returnMultiple)
-        typeTests.withArray(returnType).map{testVal -> "\""+testVal.asText()+"\""}.joinToString(",")
+          typeTests.withArray(returnType).joinToString(",") { testVal -> "\"" + testVal.asText() + "\"" }
       else
         "\""+typeTests.withArray(returnType)[0].asText()+"\""
   val assertActual     =
@@ -2021,55 +2018,55 @@ fun generateJUnitCallTest(
       else if (returnMappedType === null)
         ""
       else if (testVariant != TestVariant.VALUE)
-        if (!returnMultiple)              """assertNull("${testName}", return1);"""
-        else if (returnKind === "atomic") """assertEquals("${testName}", 0, return1.length);"""
-        else                              """assertEquals("${testName}", 0, return1.count());"""
+        if (!returnMultiple)              """assertNull("$testName", return1);"""
+        else if (returnKind === "atomic") """assertEquals("$testName", 0, return1.length);"""
+        else                              """assertEquals("$testName", 0, return1.count());"""
 // TODO: factor out similar to parameters
       else if (returnKind === "document")
         if (returnType === "binaryDocument")
           if (returnMultiple)
             if (returnConstructor !== null)
-              """assertBytesStreamEqual("${testName}", new String[]{${assertExpected}}, ${returnConstructor}AsBytes(return1));"""
+              """assertBytesStreamEqual("$testName", new String[]{${assertExpected}}, ${returnConstructor}AsBytes(return1));"""
             else
-              """assertBytesEqual("${testName}", new String[]{${assertExpected}}, return1);"""
+              """assertBytesEqual("$testName", new String[]{${assertExpected}}, return1);"""
           else
             if (returnCustom)
-              """assertBytesEqual("${testName}", ${assertExpected}, asBytes(return1));"""
+              """assertBytesEqual("$testName", ${assertExpected}, asBytes(return1));"""
             else
-              """assertBytesEqual("${testName}", ${assertExpected}, return1);"""
+              """assertBytesEqual("$testName", ${assertExpected}, return1);"""
         else
           if (returnMultiple)
             if (returnConstructor !== null)
-              """assertStringEqual("${testName}", new String[]{${assertExpected}}, ${returnConstructor}AsString(return1));"""
+              """assertStringEqual("$testName", new String[]{${assertExpected}}, ${returnConstructor}AsString(return1));"""
             else
-              """assertCharsEqual("${testName}", new String[]{${assertExpected}}, return1);"""
+              """assertCharsEqual("$testName", new String[]{${assertExpected}}, return1);"""
           else
             if (returnCustom)
-              """assertStringEqual("${testName}", ${assertExpected}, asString(return1));"""
+              """assertStringEqual("$testName", ${assertExpected}, asString(return1));"""
             else
-              """assertCharsEqual("${testName}", ${assertExpected}, return1);"""
+              """assertCharsEqual("$testName", ${assertExpected}, return1);"""
       else if (returnMultiple)
         if (returnConstructor !== null)
-          """assertStreamEquals("${testName}", ${assertExpected}, ${assertActual}"""
+          """assertStreamEquals("$testName", ${assertExpected}, $assertActual"""
         else
-          """assertStringEqual("${testName}", new String[]{${assertExpected}}, ${assertActual}"""
+          """assertStringEqual("$testName", new String[]{${assertExpected}}, $assertActual"""
       else if (returnNullable && generator.getPrimitiveDataTypes().containsKey(returnType))
-        """${asserter}("${testName}", ${returnMappedType}.valueOf(${assertExpected}), ${assertActual}"""
+        """${asserter}("$testName", ${returnMappedType}.valueOf(${assertExpected}), $assertActual"""
       else if (returnType == "double" || returnType == "float")
-        """${asserter}("${testName}", ${assertExpected}, ${assertActual}"""
+        """${asserter}("$testName", ${assertExpected}, $assertActual"""
       else
-        """${asserter}("${testName}", (Object) ${assertExpected}, ${assertActual}"""
+        """${asserter}("$testName", (Object) ${assertExpected}, $assertActual"""
 
 // TODO: assert read() = -1 and close()
 
-  val funcTest         = """
+  return """
    @Test
    public void ${testName}() {
       try {
          ${returnAssign}testObj.${funcName}(
-             ${testingArgs}
+             $testingArgs
              );
-         ${assertion}
+         $assertion
       } catch(Exception e) {
          ${
            if (expectError) ""
@@ -2078,17 +2075,16 @@ fun generateJUnitCallTest(
       }
    }
 """
-  return funcTest
 }
 fun testVal(
     typeTests: ObjectNode?, typedef: Map<String,*>, testVariant: TestVariant,
     typeConstructors: Map<String,String>? = null, mappedTestdefs: ObjectNode? = null
 ) : String {
-  val dataType   = typedef.get("datatype") as String
-  val mapping    = typedef.get("\$javaClass") as String?
+  val dataType   = typedef["datatype"] as String
+  val mapping    = typedef["\$javaClass"] as String?
   val dataKind   = getDataKind(dataType, typedef) as String
-  val isMultiple = typedef.get("multiple") == true
-  val isNullable = typedef.get("nullable") == true
+  val isMultiple = typedef["multiple"] == true
+  val isNullable = typedef["nullable"] == true
   val mappedType = generator.getJavaDataType(dataType, mapping, dataKind, isMultiple)
   return testVal(
     typeTests, dataType, isNullable, isMultiple, mappedType, testVariant, typeConstructors, mappedTestdefs
@@ -2106,28 +2102,27 @@ fun testVal(
   val testConstructor =
       if (typeConstructors === null) null
       else typeConstructors[dataType]
-  val testValue       =
-      if (testValues === null || testValues.size() == 0 || (isNullable && testVariant === TestVariant.NULL)) {
-        "null"
-      } else if (isNullable && isMultiple && testVariant === TestVariant.EMPTY) {
-        """Stream.empty()"""
-      } else if (isMultiple) {
-        """Stream.of(${testValues.map{ testValue ->
+    return if (testValues === null || testValues.size() == 0 || (isNullable && testVariant === TestVariant.NULL)) {
+      "null"
+    } else if (isNullable && isMultiple && testVariant === TestVariant.EMPTY) {
+      """Stream.empty()"""
+    } else if (isMultiple) {
+      """Stream.of(${testValues.joinToString(", ") { testValue ->
           serializeArg(testValue, mappedType, testConstructor)
-        }.joinToString(", ")})"""
-      } else {
-        serializeArg(testValues[0], mappedType, testConstructor)
-      }
-  return testValue
+      }})"""
+    } else {
+      serializeArg(testValues[0], mappedType, testConstructor)
+    }
 }
 fun getDataKind(dataType: String?, typedef: Map<String,*>?) : String? {
   val dataKind = typedef?.get("dataKind")
-  if (dataKind !== null)
-    return dataKind as String
-  else if (dataType === null)
-    return null
-  else if (dataType.endsWith("Document") || dataType == "array" || dataType == "object")
-    return "document"
-  else
-    return "atomic"
+    return if (dataKind !== null) {
+        dataKind as String
+    } else if (dataType === null) {
+        null
+    } else if (dataType.endsWith("Document") || dataType == "array" || dataType == "object") {
+        "document"
+    } else {
+        "atomic"
+    }
 }
