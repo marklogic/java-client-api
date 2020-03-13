@@ -71,9 +71,6 @@ public class SSLTest {
       .withSSLContext(sslContext, x509trustMgr)
       .withSSLHostnameVerifier(SSLHostnameVerifier.ANY));
 
-    String expectedException = "com.marklogic.client.MarkLogicIOException: " +
-      "javax.net.ssl.SSLException: ";
-
     try {
       // make use of the client connection so we get an auth exception if it
       // is a non SSL connection and a successful write if it is an SSL connection
@@ -89,9 +86,22 @@ public class SSLTest {
       docMgr.delete(docId);
     } catch (MarkLogicIOException e) {
       String exception = e.toString();
-System.out.println(exception);
-      assertTrue(exception.startsWith(expectedException));
-      assertTrue(exception.toLowerCase().contains("unrecognized ssl message"));
+      String message = exception.toLowerCase();
+
+      boolean foundExpected = false;
+
+      String[] expectedClasses  = {"javax.net.ssl.SSLException", "java.net.UnknownServiceException"};
+      String[] expectedMessages = {"unrecognized ssl message",   "unable to find acceptable protocols"};
+      for (int i=0; i < expectedClasses.length; i++) {
+        String expectedException = "com.marklogic.client.MarkLogicIOException: " + expectedClasses[i] +": ";
+        if (exception.startsWith(expectedException) && message.contains(expectedMessages[i])) {
+          foundExpected = true;
+          break;
+        }
+      }
+      if (!foundExpected) {
+        fail("unexpected exception for SSL over HTTPS or HTTP connection:\n"+exception);
+      }
     }
   }
 
