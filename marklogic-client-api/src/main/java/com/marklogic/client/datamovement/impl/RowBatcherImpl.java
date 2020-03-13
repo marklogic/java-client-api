@@ -1,5 +1,6 @@
 package com.marklogic.client.datamovement.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.*;
 import com.marklogic.client.expression.PlanBuilder;
@@ -61,9 +62,8 @@ public class RowBatcherImpl extends BatcherImpl implements RowBatcher {
         if(this.isStarted())
             throw new IllegalStateException(("Cannot change batch view after the job is started."));
 
-       // this.preparePlan = BatchPlanImpl.modifyChain(viewPlan, client, lowerBound.get(),this.batchSize);
         BatchPlanImpl batchPlanImpl = new BatchPlanImpl();
-
+        batchPlanImpl.modifyChain(viewPlan, client, lowerBound.get(),this.batchSize);
         params.add("schema", batchPlanImpl.getSchema());
         //  params.add("view", BatchPlanImpl.getView());
         return this;
@@ -241,14 +241,10 @@ public class RowBatcherImpl extends BatcherImpl implements RowBatcher {
 
     private void getRowCount(){
 
-        ((DatabaseClientImpl) client).getServices()
+        JsonNode jn = ((DatabaseClientImpl) client).getServices()
                 .getResource(null, "internal/viewinfo", null, params,
                         new JacksonHandle())
                 .get();
-        getBucketSize();
-    }
-
-    private void getBucketSize() {
         long batchCount = (this.rowCount/this.batchSize);
         this.bucketSize = (Long.MAX_VALUE/batchCount);
     }
