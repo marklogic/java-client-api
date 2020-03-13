@@ -117,6 +117,15 @@ public class BaseTypeImpl {
 
   static class BaseChainImpl<T extends BaseArgImpl> implements BaseArgImpl {
     private BaseCallImpl<T>[] chain = null;
+
+    public BaseCallImpl<T>[] getChain() {
+      return chain;
+    }
+
+    void setChain(BaseCallImpl<T>[] chain) {
+      this.chain = chain;
+    }
+
     @SuppressWarnings("unchecked")
     protected BaseChainImpl(BaseChainImpl<T> prior, String fnPrefix, String fnName, T[] fnArgs) {
       BaseCallImpl<T> call = new BaseCallImpl<>(fnPrefix, fnName, fnArgs);

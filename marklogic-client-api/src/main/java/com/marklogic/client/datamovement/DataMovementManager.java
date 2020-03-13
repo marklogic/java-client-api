@@ -16,6 +16,7 @@
 package com.marklogic.client.datamovement;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
@@ -26,7 +27,7 @@ import java.util.Iterator;
 
 /**
  * <p>DataMovementManager is the starting point for getting new instances of
- * QueryBatcher and WriteBatcher, configured with a DatabaseClient and
+ * QueryBatcher, WriteBatcher and RowBatcher, configured with a DatabaseClient and
  * ForestConfiguration.  On instantiation, it will immediately call
  * readForestConfig to obtain the ForestConfiguration from which it can create
  * host-specific DatabaseClient instances for each applicable host.  Applicable
@@ -201,4 +202,10 @@ public interface DataMovementManager {
    * @return the connection type
    */
   public DatabaseClient.ConnectionType getConnectionType();
+
+  <T extends StructureReadHandle> RowBatcher<T> newRowBatcher(T sampleHandle);
+
+  JobTicket startJob(RowBatcher batcher);
+
+
 }
