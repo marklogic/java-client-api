@@ -1,0 +1,13 @@
+[
+  {"record": "first record"},
+  {"record": "second record"},
+  {"record": "third record"},
+  [
+    {"record": "forth record"},
+    {"record": "fifth record"}
+  ],
+  {"context": [
+    {"record": "sixth record"},
+    {"record": "seventh record"}
+  ]}
+]
