@@ -17,24 +17,16 @@ package com.marklogic.client.datamovement.impl;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.datamovement.*;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.ForestConfiguration;
-import com.marklogic.client.datamovement.Forest;
-import com.marklogic.client.datamovement.HostAvailabilityListener;
-import com.marklogic.client.datamovement.Batcher;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.NoResponseListener;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.datamovement.JobReport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -220,6 +212,18 @@ public class DataMovementManagerImpl implements DataMovementManager {
   @Override
   public DatabaseClient.ConnectionType getConnectionType() {
     return primaryClient.getConnectionType();
+  }
+
+  @Override
+  public <T extends StructureReadHandle> RowBatcher<T> newRowBatcher(T sampleHandle) {
+    return new RowBatcherImpl(sampleHandle, this);
+  }
+
+
+  @Override
+  public JobTicket startJob(RowBatcher batcher) {
+    if (batcher == null) throw new IllegalArgumentException("batcher must not be null");
+    return new RowBatcherImpl(null, this).getJobTicket();
   }
 
   public DataMovementServices getDataMovementServices() {
