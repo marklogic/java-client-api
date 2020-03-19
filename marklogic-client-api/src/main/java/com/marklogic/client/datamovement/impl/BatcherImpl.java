@@ -17,6 +17,8 @@ package com.marklogic.client.datamovement.impl;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -27,6 +29,9 @@ public abstract class BatcherImpl implements Batcher {
   private int threadCount = 1;
   private ForestConfiguration forestConfig;
   private DataMovementManagerImpl moveMgr;
+  private static Logger logger = LoggerFactory.getLogger(BatcherImpl.class);
+  Map<String, WriteBatcherImpl.HostInfo> existingHostInfos = new HashMap<>();
+  Map<String, WriteBatcherImpl.HostInfo> removedHostInfos = new HashMap<>();
 
   protected BatcherImpl(DataMovementManager moveMgr){
     if (moveMgr == null)
@@ -153,6 +158,42 @@ public abstract class BatcherImpl implements Batcher {
       clients.add(moveMgr.getHostClient(host));
     }
     return clients;
+  }
+
+  WriteBatcherImpl.HostInfo[] forestHosts(ForestConfiguration forestConfig, WriteBatcherImpl.HostInfo[] hostInfos) {
+    // get the list of hosts to use
+    Forest[] forests = forests(forestConfig);
+    Set<String> hosts = hosts(forests);
+
+    if (hostInfos != null) {
+      for (WriteBatcherImpl.HostInfo hostInfo : hostInfos) {
+        existingHostInfos.put(hostInfo.hostName, hostInfo);
+        removedHostInfos.put(hostInfo.hostName, hostInfo);
+      }
+    }
+    logger.info("(withForestConfig) Using forests on {} hosts for \"{}\"", hosts, forests[0].getDatabaseName());
+    // initialize a DatabaseClient for each host
+    WriteBatcherImpl.HostInfo[] newHostInfos = new WriteBatcherImpl.HostInfo[hosts.size()];
+    int i = 0;
+    for (String host : hosts) {
+      if (existingHostInfos.get(host) != null) {
+        newHostInfos[i] = existingHostInfos.get(host);
+        removedHostInfos.remove(host);
+      } else {
+        newHostInfos[i] = new WriteBatcherImpl.HostInfo();
+        newHostInfos[i].hostName = host;
+        // this is a host-specific client (no DatabaseClient is actually forest-specific)
+        newHostInfos[i].client = getMoveMgr().getHostClient(host);
+        if (getMoveMgr().getConnectionType() == DatabaseClient.ConnectionType.DIRECT) {
+          logger.info("Adding DatabaseClient on port {} for host \"{}\" to the rotation",
+                  newHostInfos[i].client.getPort(), host);
+        }
+      }
+      i++;
+    }
+    this.forestConfig = forestConfig;
+
+    return newHostInfos;
   }
 
 }
