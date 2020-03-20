@@ -1,3 +1,19 @@
+/*
+ * Copyright 2020 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.marklogic.client.test.datamovement;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -142,21 +158,12 @@ public class JSONSplitterTest {
         }
     }
 
-    static public class MultiArrayVisitor extends JSONSplitter.Visitor {
+    static public class MultiArrayVisitor extends JSONSplitter.ArrayVisitor {
 
         @Override
         public NodeOperation startArray(String containerKey) {
-            arrayDepth++;
+            incrementArrayDepth();
             return NodeOperation.DESCEND;
-        }
-
-        @Override
-        public StringHandle makeBufferedHandle(JsonParser containerParser) {
-            if (containerParser == null) {
-                throw new IllegalArgumentException("JsonParser cannot be null");
-            }
-            String content = serialize(containerParser);
-            return new StringHandle(content).withFormat(Format.JSON);
         }
     }
 
@@ -186,7 +193,7 @@ public class JSONSplitterTest {
         }
     }
 
-    static public class KeyVisitor extends JSONSplitter.Visitor {
+    static public class KeyVisitor extends JSONSplitter.ArrayVisitor {
 
         private String key;
 
@@ -196,11 +203,11 @@ public class JSONSplitterTest {
 
         @Override
         public NodeOperation startObject(String containerKey) {
-            if (arrayDepth > 0 && !key.equals(containerKey)) {
+            if (getArrayDepth() > 0 && !key.equals(containerKey)) {
                 return NodeOperation.SKIP;
             }
 
-            if (arrayDepth > 0 && containerKey.equals(key)) {
+            if (getArrayDepth() > 0 && containerKey.equals(key)) {
                 return NodeOperation.PROCESS;
             }
 
@@ -209,33 +216,19 @@ public class JSONSplitterTest {
 
         @Override
         public NodeOperation startArray(String containerKey) {
-            arrayDepth++;
+            incrementArrayDepth();
 
-            if (arrayDepth > 1 && !key.equals(containerKey)) {
-                arrayDepth--;
+            if (getArrayDepth() > 1 && !key.equals(containerKey)) {
+                decrementArrayDepth();
                 return NodeOperation.SKIP;
             }
 
-            if (arrayDepth > 1 && containerKey.equals(key)) {
-                arrayDepth--;
+            if (getArrayDepth() > 1 && containerKey.equals(key)) {
+                decrementArrayDepth();
                 return NodeOperation.PROCESS;
             }
 
             return NodeOperation.DESCEND;
-        }
-
-        @Override
-        public void endArray(String containerKey) {
-            arrayDepth--;
-        }
-
-        @Override
-        public StringHandle makeBufferedHandle(JsonParser containerParser) {
-            if (containerParser == null) {
-                throw new IllegalArgumentException("JsonParser cannot be null");
-            }
-            String content = serialize(containerParser);
-            return new StringHandle(content).withFormat(Format.JSON);
         }
     }
 }
