@@ -139,25 +139,22 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
     }
 
     /**
-     * The Visitor class is used to describe the rule of how to split the JSON file.
+     * The Visitor class is used to accumulate and inspect state during the depth-first traversal of the JSON tree
+     * and make the decision of how to split the JSON file.
      * It checks if the current object or array is the target to split.
      * If it is, convert the target object or array into buffered handles or DocumentWriteOperations.
      * @param <T> The type of the handle used for each split
      */
     static public abstract class Visitor<T extends AbstractWriteHandle>   {
 
-        public int arrayDepth = 0;
-
         /**
-         * Use arrayDepth and containerKey to check if the current object is the one to split.
+         * This method inspects the state of the current object and decides whether to split it or not. This method
+         * can be overridden to accumulate and inspect state during the depth-first traversal of the JSON tree and make
+         * the decision of whether to split.
          * @param containerKey The key of the object which the value contains current object
          * @return different operations to either process current object, go down the JSON tree or skip current object
          */
         public NodeOperation startObject(String containerKey) {
-            if (arrayDepth > 0) {
-                return NodeOperation.PROCESS;
-            }
-
             return NodeOperation.DESCEND;
         }
 
@@ -169,18 +166,13 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
         }
 
         /**
-         * Use the arrayDepth and containerKey to check if the current array is the one to split. Also increase arrayDepth.
+         * This method inspects the state of the current array and decides whether to split it or not. This method
+         * can be overridden to accumulate and inspect state during the depth-first traversal of the JSON tree and make
+         * the decision of whether to split.
          * @param containerKey The key of the object which the value contains current array
          * @return different operations to either process current array, go down the JSON tree or skip current array
          */
         public NodeOperation startArray(String containerKey) {
-            arrayDepth++;
-
-            if (arrayDepth > 1) {
-                arrayDepth--;
-                return NodeOperation.PROCESS;
-            }
-
             return NodeOperation.DESCEND;
         }
 
@@ -267,10 +259,10 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
          * @return different operations to either process current array or go down the JSON tree
          */
         public NodeOperation startArray(String containerKey) {
-            arrayDepth++;
+            incrementArrayDepth();
 
             if (arrayDepth > 1) {
-                arrayDepth--;
+                decrementArrayDepth();;
                 return NodeOperation.PROCESS;
             }
 
@@ -282,6 +274,28 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
          * @param containerKey The key of the object which the value contains current array
          */
         public void endArray(String containerKey) {
+            decrementArrayDepth();
+        }
+
+        /**
+         * Get the current array depth in the JSON tree.
+         * @return current array depth
+         */
+        public int getArrayDepth() {
+            return arrayDepth;
+        }
+
+        /**
+         * Increment array depth by 1 while traversing the JSON tree.
+         */
+        public void incrementArrayDepth() {
+            arrayDepth++;
+        }
+
+        /**
+         * Decrement array depth by 1 while traversing the JSON tree.
+         */
+        public void decrementArrayDepth() {
             arrayDepth--;
         }
 
@@ -341,6 +355,7 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
                     switch (currentToken) {
                         case FIELD_NAME:
                             key.pop();
+                            String s = jsonParser.getText();
                             key.push(jsonParser.getCurrentName());
                             break;
 
@@ -468,17 +483,23 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
         }
 
         private void maintainDepth(JsonToken currentToken) {
-            if (currentToken == JsonToken.START_ARRAY || currentToken == JsonToken.START_OBJECT) {
-                depth++;
-            }
 
-            if (currentToken == JsonToken.END_ARRAY || currentToken == JsonToken.END_OBJECT) {
-                depth--;
+            switch(currentToken) {
+                case START_OBJECT:
+                case START_ARRAY:
+                    depth++;
+                    break;
+
+                case END_OBJECT:
+                case END_ARRAY:
+                    depth--;
+                    break;
             }
         }
 
-        private void maintainDepth() {
-            maintainDepth(super.currentToken());
+        private void maintainDepth() throws IOException {
+            JsonToken next = super.nextToken();
+            maintainDepth(next);
         }
 
         @Override
@@ -487,9 +508,8 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
                 throw new IllegalStateException("The JSON branch is closed");
             }
 
-            JsonToken next = super.nextToken();
-            maintainDepth(next);
-            return next;
+            maintainDepth();
+            return super.getCurrentToken();
         }
 
         @Override
@@ -497,9 +517,9 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
             if (depth == 0) {
                 return null;
             }
-            boolean next = super.nextBooleanValue();
+
             maintainDepth();
-            return next;
+            return super.getBooleanValue();
         }
 
         @Override
@@ -507,9 +527,9 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
             if (depth == 0) {
                 return null;
             }
-            String next = super.nextFieldName();
+
             maintainDepth();
-            return next;
+            return super.getText();
         }
 
         @Override
@@ -517,9 +537,9 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
             if (depth == 0) {
                 return -1;
             }
-            int next = super.nextIntValue(defaultValue);
+
             maintainDepth();
-            return next;
+            return super.getIntValue();
         }
 
         @Override
@@ -527,9 +547,9 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
             if (depth == 0) {
                 return -1;
             }
-            long next = super.nextLongValue(defaultValue);
+
             maintainDepth();
-            return next;
+            return super.getLongValue();
         }
 
         @Override
@@ -537,9 +557,9 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
             if (depth == 0) {
                 return null;
             }
-            String next = super.nextTextValue();
+
             maintainDepth();
-            return next;
+            return super.getText();
         }
 
         @Override
