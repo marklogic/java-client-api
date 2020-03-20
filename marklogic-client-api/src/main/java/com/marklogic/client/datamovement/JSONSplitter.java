@@ -355,7 +355,6 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
                     switch (currentToken) {
                         case FIELD_NAME:
                             key.pop();
-                            String s = jsonParser.getText();
                             key.push(jsonParser.getCurrentName());
                             break;
 
@@ -363,6 +362,8 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
                             NodeOperation operation = visitor.startObject(key.peek());
                             switch (operation) {
                                 case DESCEND:
+                                    //For maintenance: We push key in DESCEND case only as the parser won't hit
+                                    //END_OBJECT in case PROCESS and case SKIP.
                                     key.push(currentToken.asString());
                                     break;
 
