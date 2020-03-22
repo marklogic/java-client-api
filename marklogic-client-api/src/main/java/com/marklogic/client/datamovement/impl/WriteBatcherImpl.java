@@ -793,7 +793,38 @@ public class WriteBatcherImpl
   @Override
   public synchronized WriteBatcher withForestConfig(ForestConfiguration forestConfig) {
     super.withForestConfig(forestConfig);
-    HostInfo[] newHostInfos= forestHosts(forestConfig,this.hostInfos);
+    // get the list of hosts to use
+    Forest[] forests = forests(forestConfig);
+    Set<String> hosts = hosts(forests);
+    Map<String,HostInfo> existingHostInfos = new HashMap<>();
+    Map<String,HostInfo> removedHostInfos = new HashMap<>();
+    if ( hostInfos != null ) {
+      for ( HostInfo hostInfo : hostInfos ) {
+        existingHostInfos.put(hostInfo.hostName, hostInfo);
+        removedHostInfos.put(hostInfo.hostName, hostInfo);
+      }
+    }
+    logger.info("(withForestConfig) Using forests on {} hosts for \"{}\"", hosts, forests[0].getDatabaseName());
+    // initialize a DatabaseClient for each host
+    HostInfo[] newHostInfos = new HostInfo[hosts.size()];
+    int i=0;
+    for (String host: hosts) {
+      if ( existingHostInfos.get(host) != null ) {
+        newHostInfos[i] = existingHostInfos.get(host);
+        removedHostInfos.remove(host);
+      } else {
+        newHostInfos[i] = new HostInfo();
+        newHostInfos[i].hostName = host;
+        // this is a host-specific client (no DatabaseClient is actually forest-specific)
+        newHostInfos[i].client = getMoveMgr().getHostClient(host);
+        if (getMoveMgr().getConnectionType() == DatabaseClient.ConnectionType.DIRECT) {
+          logger.info("Adding DatabaseClient on port {} for host \"{}\" to the rotation",
+                newHostInfos[i].client.getPort(), host);
+        }
+      }
+      i++;
+    }
+    this.forestConfig = forestConfig;
     this.hostInfos = newHostInfos;
 
     if ( removedHostInfos.size() > 0 ) {
@@ -865,7 +896,7 @@ public class WriteBatcherImpl
       }
     }
 
-    TransactionInfo getTransactionInfo() {
+    private TransactionInfo getTransactionInfo() {
       // if any more batches can be written for this transaction then transactionPermits
       // can be acquired and this transaction is available
       // otherwise block until a new transaction is available with new permits
@@ -914,10 +945,6 @@ public class WriteBatcherImpl
     public AtomicBoolean queuedForCleanup = new AtomicBoolean(false);
     public ConcurrentLinkedQueue<BatchWriteSet> batches = new ConcurrentLinkedQueue<>();
     private AtomicInteger transactionPermits = new AtomicInteger(0);
-
-    Transaction getTransaction(){
-      return this.transaction;
-    }
   }
 
 

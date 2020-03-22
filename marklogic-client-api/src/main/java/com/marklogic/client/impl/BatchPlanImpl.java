@@ -47,8 +47,8 @@ public class BatchPlanImpl  {
         StringBuilder str = new StringBuilder();
 
         // TODO : might need change
-        view = firstPlanImpl.args[0].exportAst(str).toString();
-        schema = firstPlanImpl.args[1].exportAst(str).toString();
+        view = firstPlanImpl.args[0].toString();
+        schema = firstPlanImpl.args[1].toString();
 
         if(getSchema() == null || getSchema().length()==0)
             throw new IllegalArgumentException("Schema cannot be empty");
