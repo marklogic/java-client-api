@@ -299,6 +299,9 @@ public class RowBatcherImpl extends BatcherImpl implements RowBatcher {
             }
             else {
                 Iterator<RowRecord> rowItr = rowSet.iterator();
+                while(rowItr.hasNext()) {
+                    rowBatcher.onSuccess((RowBatchSuccessListener) rowItr.next());
+                }
                 if(upperBound == Long.MAX_VALUE)
                     rowBatcher.threadPool.shutdown();
                 else
