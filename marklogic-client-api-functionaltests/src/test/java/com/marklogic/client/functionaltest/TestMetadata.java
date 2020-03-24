@@ -300,6 +300,7 @@ public class TestMetadata extends BasicJavaClientREST {
     metadataHandle.getProperties().put("myInteger", 10);
     metadataHandle.getProperties().put("myDecimal", 34.56678);
     metadataHandle.getProperties().put("myCalendar", Calendar.getInstance().get(Calendar.YEAR));
+    metadataHandle.getProperties().put("emptyProperty", "");
     metadataHandle.setQuality(23);
 
     // write the doc with the metadata
@@ -320,12 +321,12 @@ public class TestMetadata extends BasicJavaClientREST {
     String actualProperties = getDocumentPropertiesString(properties);
     System.out.println("Returned properties: " + actualProperties);
 
-    assertTrue("Document properties difference in size value", actualProperties.contains("size:5"));
+    assertTrue("Document properties difference in size value", actualProperties.contains("size:6"));
     assertTrue("Document property reviewed not found or not correct", actualProperties.contains("reviewed:true"));
     assertTrue("Document property myInteger not found or not correct", actualProperties.contains("myInteger:10"));
     assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("myDecimal:34.56678"));
     assertTrue("Document property myCalendar not found or not correct", actualProperties.contains(calProperty.toString()));
-    assertTrue("Document property myString not found or not correct", actualProperties.contains("myString:foo"));
+    assertTrue("Document property emptyProperty not found or not correct", actualProperties.contains("emptyProperty:null"));
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
@@ -347,6 +348,25 @@ public class TestMetadata extends BasicJavaClientREST {
     assertTrue("my-collection1 not found", actualCollections.contains("another-collection"));
     assertTrue("my-collection2 not found", actualCollections.contains("my-collection"));
 
+    // Write into empty props and read again.
+    DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
+    
+    DocumentProperties properties1 = metadataHandle1.getProperties();
+    properties1.put("emptyProperty", "Not Empty");
+    writeDocumentUsingStringHandle(client, filename, "/write-text-stringhandle-metadata/", metadataHandle1, "Text");
+
+    // create handle to read metadata
+    DocumentMetadataHandle readMetadataHandle1 = new DocumentMetadataHandle();
+
+    // read metadata
+    readMetadataHandle1 = readMetadataFromDocument(client, "/write-text-stringhandle-metadata/" + filename, "Text");
+
+    // get metadata values
+    DocumentProperties propertiesRead1 = readMetadataHandle1.getProperties();
+    // Properties
+    String actualProperties1 = getDocumentPropertiesString(propertiesRead1);
+    System.out.println("Returned properties: " + actualProperties1);
+    assertTrue("Document property emptyProperty not found or not correct", actualProperties1.contains("emptyProperty:Not Empty"));
     // release the client
     client.release();
   }
