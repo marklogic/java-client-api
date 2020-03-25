@@ -594,7 +594,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
   DocumentPage search(QueryDefinition querydef, long start);
 
   /**
-   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long) QueryManager.search}
+   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, String) QueryManager.search}
    * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
    * documents in each DocumentPage. If setMetadataCategories has
    * been called, populates metadata for each result in the format specified by
@@ -637,7 +637,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
   DocumentPage search(QueryDefinition querydef, long start, Transaction transaction);
 
   /**
-   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction) QueryManager.search}
+   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction, String) QueryManager.search}
    * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
    * documents in each DocumentPage. If setMetadataCategories has
    * been called, populates metadata for each result in the format specified by
@@ -685,7 +685,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
   DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle);
 
   /**
-   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long) QueryManager.search}
+   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, String) QueryManager.search}
    * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
    * documents in each DocumentPage.  If searchHandle is not null,
    * requests a search response and populates searchHandle with it. If setMetadataCategories has
@@ -719,7 +719,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
   DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle, Transaction transaction);
 
   /**
-   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction)}
+   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction, String)}
    * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
    * documents in each DocumentPage.  If searchHandle is not null,
    * requests a search response and populates searchHandle with it. If setMetadataCategories has
