@@ -948,14 +948,14 @@ public class OkHttpServices implements RESTServices {
                                        Transaction transaction,
                                        SearchReadHandle searchHandle, QueryView view,
                                        Set<Metadata> categories, Format format, ServerTransform responseTransform,
-                                       RequestParameters extraParams)
+                                       RequestParameters extraParams, String forestName)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     boolean hasMetadata = categories != null && categories.size() > 0;
     boolean hasContent = true;
     OkHttpResultIterator iterator =
       getBulkDocumentsImpl(reqlog, serverTimestamp, querydef, start, pageLength, transaction,
-        searchHandle, view, categories, format, responseTransform, extraParams);
+        searchHandle, view, categories, format, responseTransform, extraParams, forestName);
     return new OkHttpDocumentPage(iterator, hasContent, hasMetadata);
   }
 
@@ -1066,7 +1066,7 @@ public class OkHttpServices implements RESTServices {
                                                     QueryDefinition querydef, long start, long pageLength,
                                                     Transaction transaction, SearchReadHandle searchHandle, QueryView view,
                                                     Set<Metadata> categories, Format format, ServerTransform responseTransform,
-                                                    RequestParameters extraParams)
+                                                    RequestParameters extraParams, String forestName)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     try {
@@ -1090,7 +1090,7 @@ public class OkHttpServices implements RESTServices {
       }
 
       OkHttpSearchRequest request =
-        generateSearchRequest(reqlog, querydef, MIMETYPE_MULTIPART_MIXED, transaction, responseTransform, params, null);
+        generateSearchRequest(reqlog, querydef, MIMETYPE_MULTIPART_MIXED, transaction, responseTransform, params, forestName);
       Response response = request.getResponse();
       if ( response == null ) return null;
       MimeMultipart entity = null;
