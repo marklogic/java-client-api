@@ -15,24 +15,23 @@
  */
 package com.marklogic.client.test.document;
 
-import com.marklogic.client.document.DocumentWriteOperation;
-import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.document.TextDocumentManager;
+import com.marklogic.client.document.*;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.test.Common;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class DocumentWriteOperationTest {
 
@@ -307,6 +306,56 @@ public class DocumentWriteOperationTest {
             i++;
         }
         textDocumentManager.write(batch);
+    }
+
+    @Test
+    public void DocumentQueryWithForest() {
+        DocumentWriteSet batch = textDocumentManager.newWriteSet();
+        batch.addDefault(defaultMetadata1);
+
+        for (int i = 0; i < 30; i++) {
+            String uri = "doc" + i + ".txt";
+            StringHandle handle = new StringHandle("Document - " + i).withFormat(Format.TEXT);
+            batch.add(uri, handle);
+        }
+
+        textDocumentManager.write(batch);
+        StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collectionName);
+
+        DocumentPage documentsF1 = textDocumentManager.search(query, 1, "java-unittest-1");
+        DocumentPage documentsF2 = textDocumentManager.search(query, 1, "java-unittest-2");
+        DocumentPage documentsF3 = textDocumentManager.search(query, 1, "java-unittest-3");
+
+        long totalCount = documentsF1.getTotalSize() + documentsF2.getTotalSize() + documentsF3.getTotalSize();
+        assertEquals(30, totalCount);
+
+        Set<String> set1 = new HashSet<>();
+        Set<String> set2 = new HashSet<>();
+        Set<String> set3 = new HashSet<>();
+
+        for (DocumentRecord document : documentsF1) {
+            set1.add(document.getUri());
+        }
+
+        for (DocumentRecord document : documentsF2) {
+            set2.add(document.getUri());
+        }
+
+        for (DocumentRecord document : documentsF3) {
+            set3.add(document.getUri());
+        }
+
+        Set<String> intersectSet = new HashSet<>(set1);
+        intersectSet.retainAll(set2);
+        assertTrue(intersectSet.isEmpty());
+
+        intersectSet.addAll(set1);
+        intersectSet.retainAll(set3);
+        assertTrue(intersectSet.isEmpty());
+
+        intersectSet.addAll(set2);
+        intersectSet.retainAll(set3);
+        assertTrue(intersectSet.isEmpty());
     }
 
     @AfterClass

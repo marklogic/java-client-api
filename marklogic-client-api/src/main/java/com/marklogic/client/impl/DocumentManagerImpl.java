@@ -484,38 +484,61 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 
   @Override
   public DocumentPage search(QueryDefinition querydef, long start) {
-    return search(querydef, start, -1, null, null);
+    return search(querydef, start, -1, null, null, null);
+  }
+
+  @Override
+  public DocumentPage search(QueryDefinition querydef, long start, String forestName) {
+    return search(querydef, start, -1, null, null, forestName);
   }
 
   public DocumentPage search(QueryDefinition querydef, long start, long serverTimestamp) {
-    return search(querydef, start, serverTimestamp, null, null);
+    return search(querydef, start, serverTimestamp, null, null, null);
   }
 
   @Override
   public DocumentPage search(QueryDefinition querydef, long start,
                              SearchReadHandle searchHandle) {
-    return search(querydef, start, -1, searchHandle, null);
+    return search(querydef, start, -1, searchHandle, null, null);
+  }
+
+  @Override
+  public DocumentPage search(QueryDefinition querydef, long start,
+                             SearchReadHandle searchHandle, String forestName) {
+    return search(querydef, start, -1, searchHandle, null, forestName);
   }
 
   @Override
   public DocumentPage search(QueryDefinition querydef, long start,
                              Transaction transaction) {
-    return search(querydef, start, -1, null, transaction);
+    return search(querydef, start, -1, null, transaction, null);
+  }
+
+  @Override
+  public DocumentPage search(QueryDefinition querydef, long start,
+                             Transaction transaction, String forestName) {
+    return search(querydef, start, -1, null, transaction, forestName);
   }
 
   public DocumentPage search(QueryDefinition querydef, long start,
                              long serverTimestamp, Transaction transaction) {
-    return search(querydef, start, serverTimestamp, null, transaction);
+    return search(querydef, start, serverTimestamp, null, transaction, null);
   }
 
   @Override
   public DocumentPage search(QueryDefinition querydef, long start,
                              SearchReadHandle searchHandle, Transaction transaction) {
-    return search(querydef, start, -1, searchHandle, transaction);
+    return search(querydef, start, -1, searchHandle, transaction, null);
+  }
+
+  @Override
+  public DocumentPage search(QueryDefinition querydef, long start,
+                             SearchReadHandle searchHandle, Transaction transaction, String forestName) {
+    return search(querydef, start, -1, searchHandle, transaction, forestName);
   }
 
   private DocumentPage search(QueryDefinition querydef, long start,
-                              long serverTimestamp, SearchReadHandle searchHandle, Transaction transaction) {
+                              long serverTimestamp, SearchReadHandle searchHandle, Transaction transaction, String forestName) {
 
     if (searchHandle != null) {
       HandleImplementation searchBase = HandleAccessor.checkHandle(
@@ -540,7 +563,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       : null;
     return services.getBulkDocuments(requestLogger, serverTimestamp, querydef, start,
       getPageLength(), transaction, searchHandle, searchView, metadata,
-      nonDocumentFormat, getReadTransform(), null);
+      nonDocumentFormat, getReadTransform(), null, forestName);
   }
 
   @Override
