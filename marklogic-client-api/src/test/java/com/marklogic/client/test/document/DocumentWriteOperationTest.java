@@ -322,39 +322,33 @@ public class DocumentWriteOperationTest {
         textDocumentManager.write(batch);
         StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collectionName);
 
-        DocumentPage documentsF1 = textDocumentManager.search(query, 1, "java-unittest-1");
-        DocumentPage documentsF2 = textDocumentManager.search(query, 1, "java-unittest-2");
-        DocumentPage documentsF3 = textDocumentManager.search(query, 1, "java-unittest-3");
+        int forestCount = 3;
+        DocumentPage[] documents = new DocumentPage[forestCount];
+        ArrayList<Set<String>> sets = new ArrayList<Set<String>>();
 
-        long totalCount = documentsF1.getTotalSize() + documentsF2.getTotalSize() + documentsF3.getTotalSize();
+        long totalCount = 0;
+
+        for (int i = 0; i < forestCount; i++) {
+            documents[i] = textDocumentManager.search(query, 1, "java-unittest-" + String.valueOf(i+1));
+            totalCount += documents[i].getTotalSize();
+            sets.add(new HashSet<String>());
+            for (DocumentRecord document : documents[i]) {
+                sets.get(i).add(document.getUri());
+            }
+
+        }
         assertEquals(30, totalCount);
 
-        Set<String> set1 = new HashSet<>();
-        Set<String> set2 = new HashSet<>();
-        Set<String> set3 = new HashSet<>();
-
-        for (DocumentRecord document : documentsF1) {
-            set1.add(document.getUri());
-        }
-
-        for (DocumentRecord document : documentsF2) {
-            set2.add(document.getUri());
-        }
-
-        for (DocumentRecord document : documentsF3) {
-            set3.add(document.getUri());
-        }
-
-        Set<String> intersectSet = new HashSet<>(set1);
-        intersectSet.retainAll(set2);
+        Set<String> intersectSet = new HashSet<>(sets.get(0));
+        intersectSet.retainAll(sets.get(1));
         assertTrue(intersectSet.isEmpty());
 
-        intersectSet.addAll(set1);
-        intersectSet.retainAll(set3);
+        intersectSet.addAll(sets.get(0));
+        intersectSet.retainAll(sets.get(2));
         assertTrue(intersectSet.isEmpty());
 
-        intersectSet.addAll(set2);
-        intersectSet.retainAll(set3);
+        intersectSet.addAll(sets.get(1));
+        intersectSet.retainAll(sets.get(2));
         assertTrue(intersectSet.isEmpty());
     }
 
