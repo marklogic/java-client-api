@@ -50,17 +50,48 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 
 	@Override
 	public void call(InputStream[] input) {
-		call(null, null, null, input);
-	}
-	@Override
-	public InputStream call(InputStream endpointState, SessionState session, InputStream workUnit, InputStream[] input) {
-		checkAllowedArgs(endpointState, session, workUnit);
-		return getCaller().arrayCall(getClient(), endpointState, session, workUnit, input);
+		call(newCallContext(), input);
 	}
 
 	@Override
-	public InputEndpoint.BulkInputCaller bulkCaller() {
-		return new BulkInputCallerImpl(this, getBatchSize());
+	@Deprecated
+	public InputStream call(InputStream endpointState, SessionState session, InputStream workUnit, InputStream[] input) {
+		newCallContext().withEndpointState(endpointState).withSessionState(session)
+				.withWorkUnit(workUnit);
+		return call(newCallContext(), input);
+	}
+
+	@Override
+	@Deprecated
+	public BulkInputCaller bulkCaller() {
+		return bulkCaller(newCallContext());
+	}
+
+	@Override
+	public InputStream call(CallContext callContext, InputStream[] input) {
+		checkAllowedArgs(callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit());
+		return getCaller().arrayCall(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
+				callContext.getWorkUnit(), input);
+	}
+
+	@Override
+	public BulkInputCaller bulkCaller(CallContext callContext) {
+		return new BulkInputCallerImpl(this, getBatchSize(), newCallContext());
+	}
+
+	@Override
+	public BulkInputCaller bulkCaller(CallContext[] callContexts) {
+		return null;
+	}
+
+	@Override
+	public BulkInputCaller bulkCaller(CallContext[] callContexts, int threadCount) {
+		return null;
+	}
+
+	@Override
+	public CallContext newCallContext() {
+		return new CallContextImpl(this);
 	}
 
 	final static class BulkInputCallerImpl extends IOEndpointImpl.BulkIOEndpointCallerImpl
@@ -69,12 +100,15 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 		private InputEndpointImpl endpoint;
 		private int batchSize;
 		private LinkedBlockingQueue<InputStream> queue;
+		public CallContext callContext;
+		private ErrorListener errorListener;
 
-		private BulkInputCallerImpl(InputEndpointImpl endpoint, int batchSize) {
+		private BulkInputCallerImpl(InputEndpointImpl endpoint, int batchSize, CallContext callContext) {
 			super(endpoint);
 			this.endpoint = endpoint;
 			this.batchSize = batchSize;
 			this.queue = new LinkedBlockingQueue<InputStream>();
+			this.callContext = callContext;
 		}
 
 		private InputEndpointImpl getEndpoint() {
@@ -101,6 +135,11 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 		}
 
 		@Override
+		public void setErrorListener(ErrorListener errorListener) {
+			this.errorListener = errorListener;
+		}
+
+		@Override
 		public void awaitCompletion() {
 			if (getQueue() == null)
 				return;
@@ -112,12 +151,13 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 
 		private void processInput() {
 			logger.trace("input endpoint running endpoint={} count={} state={}", getEndpointPath(), getCallCount(),
-					getEndpointState());
+					callContext.getEndpointState());
 
 			InputStream output = null;
 			try {
 				output = getEndpoint().getCaller().arrayCall(
-						getClient(), getEndpointState(), getSession(), getWorkUnit(), getInputBatch(getQueue(), getBatchSize())
+						getClient(), callContext.getEndpointState(), callContext.getSessionState(),
+						callContext.getWorkUnit(), getInputBatch(getQueue(), getBatchSize())
 				);
 			} catch (Throwable throwable) {
 				throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
@@ -126,7 +166,15 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 			incrementCallCount();
 
 			if (allowsEndpointState()) {
-				setEndpointState(output);
+				callContext.withEndpointState(output);
+			}
+		}
+
+		static class ErrorListenerImpl implements BulkInputCaller.ErrorListener {
+
+			@Override
+			public BulkIOEndpointCaller.ErrorDisposition processError(int retryCount, Throwable throwable, CallContext callContext, InputStream[] input) {
+				return null;
 			}
 		}
 	}

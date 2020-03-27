@@ -98,6 +98,10 @@ abstract class IOEndpointImpl implements IOEndpoint {
             throw new IllegalStateException("endpoint does not support session state");
         return getCaller().newSessionState();
     }
+    @Override
+    public CallContext newCallContext(){
+        return new CallContextImpl(this);
+    }
 
     public void checkAllowedArgs(InputStream endpointState, SessionState session, InputStream workUnit) {
         if (endpointState != null && !allowsEndpointState())
@@ -119,21 +123,23 @@ abstract class IOEndpointImpl implements IOEndpoint {
         private byte[]         endpointState;
         private byte[]         workUnit;
         private SessionState   session;
+        private CallContextImpl callContext;
 
         private long           callCount = 0;
 
         BulkIOEndpointCallerImpl(IOEndpointImpl endpoint) {
             if (endpoint == null)
                 throw new IllegalArgumentException("null endpoint definition");
+            this.callContext = new CallContextImpl(endpoint);
             this.endpoint = endpoint;
         }
 
         private IOEndpointImpl getEndpoint() {
-            return this.endpoint;
+            return callContext.getEndpoint();
         }
 
         String getEndpointPath() {
-            return getEndpoint().getEndpointPath();
+            return callContext.getEndpoint().getEndpointPath();
         }
         long getCallCount() {
             return callCount;
@@ -146,53 +152,62 @@ abstract class IOEndpointImpl implements IOEndpoint {
             return getEndpoint().allowsEndpointState();
         }
         @Override
+        @Deprecated
         public InputStream getEndpointState() {
-            return (this.endpointState == null) ? null : new ByteArrayInputStream(this.endpointState);
+            return callContext.getEndpointState();
         }
         @Override
+        @Deprecated
         public void setEndpointState(byte[] endpointState) {
             if (allowsEndpointState())
-                this.endpointState = endpointState;
+                this.callContext = callContext.withEndpointState(endpointState);
             else if (endpointState != null)
                 throw new IllegalArgumentException("endpoint state not accepted by endpoint: "+ getEndpointPath());
         }
         @Override
+        @Deprecated
         public void setEndpointState(InputStream endpointState) {
-            setEndpointState(NodeConverter.InputStreamToBytes(endpointState));
+            this.callContext = callContext.withEndpointState(NodeConverter.InputStreamToBytes(endpointState));
         }
         @Override
+        @Deprecated
         public void setEndpointState(BufferableHandle endpointState) {
-            setEndpointState((endpointState == null) ? null : endpointState.toBuffer());
+            this.callContext = callContext.withEndpointState((endpointState == null) ? null : endpointState.toBuffer());
         }
 
         boolean allowsWorkUnit() {
-            return getEndpoint().allowsWorkUnit();
+            return callContext.getEndpoint().allowsWorkUnit();
         }
+
         @Override
+        @Deprecated
         public InputStream getWorkUnit() {
-            return (this.workUnit == null) ? null : new ByteArrayInputStream(this.workUnit);
+            return callContext.getWorkUnit();
         }
         @Override
+        @Deprecated
         public void setWorkUnit(byte[] workUnit) {
             if (allowsWorkUnit())
-                this.workUnit = workUnit;
+                this.callContext = callContext.withWorkUnit(workUnit);
             else if (workUnit != null)
                 throw new IllegalArgumentException("work unit not accepted by endpoint: "+ getEndpointPath());
         }
         @Override
+        @Deprecated
         public void setWorkUnit(InputStream workUnit) {
-            setWorkUnit(NodeConverter.InputStreamToBytes(workUnit));
+            this.callContext = callContext.withWorkUnit(NodeConverter.InputStreamToBytes(workUnit));
         }
         @Override
+        @Deprecated
         public void setWorkUnit(BufferableHandle workUnit) {
-            setWorkUnit((workUnit == null) ? null : workUnit.toBuffer());
+            this.callContext = callContext.withWorkUnit((workUnit == null) ? null : workUnit.toBuffer());
         }
 
         DatabaseClient getClient() {
-            return getEndpoint().getClient();
+            return callContext.getEndpoint().getClient();
         }
         boolean allowsSession() {
-            return getEndpoint().allowsSession();
+            return callContext.getEndpoint().allowsSession();
         }
         SessionState getSession() {
             if (!allowsSession())
@@ -201,12 +216,12 @@ abstract class IOEndpointImpl implements IOEndpoint {
             if (session == null) {
                 // no need to refresh the session id preemptively before timeout
                 // because a timed-out session id is merely a new session id
-                session = getEndpoint().getCaller().newSessionState();
+                session = callContext.getEndpoint().getCaller().newSessionState();
             }
             return session;
         }
         boolean allowsInput() {
-            return getEndpoint().allowsInput();
+            return callContext.getEndpoint().allowsInput();
         }
 
         boolean queueInput(InputStream input, BlockingQueue<InputStream> queue, int batchSize) {
@@ -294,4 +309,74 @@ abstract class IOEndpointImpl implements IOEndpoint {
             return output;
         }
     }
+
+    static class CallContextImpl implements IOEndpoint.CallContext {
+
+        private IOEndpointImpl endpoint;
+        private byte[]         endpointState;
+        private byte[]         workUnit;
+        private SessionState   session;
+
+        CallContextImpl(IOEndpointImpl endpoint){
+            this.endpoint = endpoint;
+        }
+
+        public IOEndpointImpl getEndpoint() {
+            return endpoint;
+        }
+
+        @Override
+        public InputStream getEndpointState() {
+            return (this.endpointState == null) ? null : new ByteArrayInputStream(this.endpointState);
+        }
+
+        @Override
+        public CallContextImpl withEndpointState(byte[] endpointState) {
+            this.endpointState = endpointState;
+            return this;
+        }
+
+        @Override
+        public CallContextImpl withEndpointState(InputStream endpointState) {
+            return withEndpointState(NodeConverter.InputStreamToBytes(endpointState));
+        }
+
+        @Override
+        public CallContextImpl withEndpointState(BufferableHandle endpointState) {
+            return withEndpointState((endpointState == null) ? null : endpointState.toBuffer());
+        }
+
+        @Override
+        public InputStream getWorkUnit() {
+            return (this.workUnit == null) ? null : new ByteArrayInputStream(this.workUnit);
+        }
+
+        @Override
+        public CallContextImpl withWorkUnit(byte[] workUnit) {
+            this.workUnit = workUnit;
+            return this;
+        }
+
+        @Override
+        public CallContextImpl withWorkUnit(InputStream workUnit) {
+            return withWorkUnit(NodeConverter.InputStreamToBytes(workUnit));
+        }
+
+        @Override
+        public CallContextImpl withWorkUnit(BufferableHandle workUnit) {
+            return withWorkUnit((workUnit == null) ? null : workUnit.toBuffer());
+        }
+
+        @Override
+        public SessionState getSessionState() {
+            return this.session;
+        }
+
+        @Override
+        public CallContextImpl withSessionState(SessionState sessionState) {
+            this.session = sessionState;
+            return this;
+        }
+    }
+
 }

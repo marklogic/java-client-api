@@ -49,6 +49,7 @@ public interface OutputEndpoint extends IOEndpoint {
      * @param workUnit  the definition of a unit of work (which must be null if not accepted by the endpoint)
      * @return  the endpoint state if produced by the endpoint followed by the response data from the endpoint
      */
+    @Deprecated
     InputStream[] call(InputStream endpointState, SessionState session, InputStream workUnit);
 
     /**
@@ -56,8 +57,38 @@ public interface OutputEndpoint extends IOEndpoint {
      * a unit of work by repeated calls to the endpoint.
      * @return  the bulk caller for the output endpoint
      */
+    @Deprecated
     BulkOutputCaller bulkCaller();
 
+    /**
+     * Makes one call to the endpoint for the instance
+     * @param callContext the collection of endpointState, sessionState and workUnit
+     * @return  the endpoint state if produced by the endpoint followed by the response data from the endpoint
+     */
+    InputStream[] call(CallContext callContext);
+
+    /**
+     * Constructs an instance of a bulk caller, which completes
+     * a unit of work by repeated calls to the endpoint.
+     * @param callContext the collection of endpointState, sessionState and workUnit
+     * @return  the bulk caller for the output endpoint
+     */
+    BulkOutputCaller bulkCaller(CallContext callContext);
+    /**
+     * Constructs an instance of a bulk caller, which completes
+     * a unit of work by repeated calls to the endpoint.
+     * @param callContexts the collection of callContexts
+     * @return  the bulk caller for the output endpoint
+     */
+    BulkOutputCaller bulkCaller(CallContext[] callContexts);
+    /**
+     * Constructs an instance of a bulk caller, which completes
+     * a unit of work by repeated calls to the endpoint.
+     * @param callContexts the collection of callContexts
+     * @param threadCount the number of threads
+     * @return  the bulk caller for the output endpoint
+     */
+    BulkOutputCaller bulkCaller(CallContext[] callContexts, int threadCount);
     /**
      * Provides an interface for completing a unit of work
      * by repeated calls to the output endpoint.
@@ -73,5 +104,12 @@ public interface OutputEndpoint extends IOEndpoint {
          * @return the response from the endpoint.
          */
         InputStream[] next();
+
+        void setErrorListener(ErrorListener errorListener);
+
+        interface ErrorListener {
+            IOEndpoint.BulkIOEndpointCaller.ErrorDisposition processError(
+                    int retryCount, Throwable throwable, CallContext callContext);
+        }
     }
 }

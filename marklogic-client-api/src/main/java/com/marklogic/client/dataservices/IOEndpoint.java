@@ -71,42 +71,50 @@ public interface IOEndpoint {
          * Gets the current snapshot of the mutable endpoint state.
          * @return  the data structure with the endpoint state
          */
+        @Deprecated
         InputStream getEndpointState();
         /**
          * Initializes the endpoint state, typically prior to the first call.
          * @param endpointState the data structure for the endpoint state as a byte[] array
          */
+        @Deprecated
         void setEndpointState(byte[] endpointState);
         /**
          * Initializes the endpoint state, typically prior to the first call.
          * @param endpointState the data structure for the endpoint state as an InputStream
          */
+        @Deprecated
         void setEndpointState(InputStream endpointState);
         /**
          * Initializes the endpoint state, typically prior to the first call.
          * @param endpointState the data structure for the endpoint state as a bufferable handle
          */
+        @Deprecated
         void setEndpointState(BufferableHandle endpointState);
 
         /**
          * Gets the definition for the unit of  work to be done by the endpoint.
          * @return  the data structure for the unit of work
          */
+        @Deprecated
         InputStream getWorkUnit();
         /**
          * Initializes the defintion of the work unit prior to the first call.
          * @param workUnit the data structure for the work unit as a byte[] array
          */
+        @Deprecated
         void setWorkUnit(byte[] workUnit);
         /**
          * Initializes the defintion of the work unit prior to the first call.
          * @param workUnit the data structure for the work unit as an InputStream
          */
+        @Deprecated
         void setWorkUnit(InputStream workUnit);
         /**
          * Initializes the defintion of the work unit prior to the first call.
          * @param workUnit the data structure for the work unit as a bufferable handle
          */
+        @Deprecated
         void setWorkUnit(BufferableHandle workUnit);
 
         /**
@@ -118,5 +126,74 @@ public interface IOEndpoint {
          * Interrupts the iterative bulk calls prior to completion.
          */
         void interrupt();
+
+        enum ErrorDisposition {
+            RETRY, SKIP_CALL, STOP_CONTEXT_CALLS, STOP_ALL_CALLS;
+        }
+    }
+    /**
+     * Gets the current snapshot of the endpoint state, work unit and session.
+     * @return  the data structure with the endpoint state, work unit and session.
+     */
+    CallContext newCallContext();
+
+    interface CallContext {
+        /**
+         * Gets the current snapshot of the mutable endpoint state.
+         * @return  the data structure with the endpoint state
+         */
+        InputStream getEndpointState();
+        /**
+         * Initializes the endpoint state.
+         * @param endpointState the data structure for the endpoint state as a byte[] array
+         * @return the CallContext
+         */
+        CallContext withEndpointState(byte[] endpointState);
+        /**
+         * Initializes the endpoint state.
+         * @param endpointState the data structure for the endpoint state as an InputStream
+         * @return the callContext
+         */
+        CallContext withEndpointState(InputStream endpointState);
+        /**
+         * Initializes the endpoint state.
+         * @param endpointState the data structure for the endpoint state as a bufferable handle
+         * @return the callContext
+         */
+        CallContext withEndpointState(BufferableHandle endpointState);
+
+        /**
+         * Gets the definition for the unit of  work to be done by the endpoint.
+         * @return  the data structure for the unit of work
+         */
+        InputStream getWorkUnit();
+        /**
+         * Initializes the defintion of the work unit.
+         * @param workUnit the data structure for the work unit as a byte[] array
+         * @return the callContext
+         */
+        CallContext withWorkUnit(byte[] workUnit);
+        /**
+         * Initializes the defintion of the work unit.
+         * @param workUnit the data structure for the work unit as an InputStream
+         * @return  the callContext
+         */
+        CallContext withWorkUnit(InputStream workUnit);
+        /**
+         * Initializes the defintion of the work unit.
+         * @param workUnit the data structure for the work unit as a bufferable handle
+         * @return the callContext
+         */
+        CallContext withWorkUnit(BufferableHandle workUnit);
+        /**
+         * Returns an identifier for an endpoint to use when accessing a session cache on the server.
+         * @return the endpoint identifier
+         */
+        SessionState getSessionState();
+        /**
+         * Sets an identifier for an endpoint to use when accessing a session cache on the server.
+         * @return the callContext
+         */
+        CallContext  withSessionState(SessionState sessionState);
     }
 }

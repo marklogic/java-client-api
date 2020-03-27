@@ -46,14 +46,44 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
         call(null, null, null);
     }
     @Override
+    @Deprecated
     public InputStream call(InputStream endpointState, SessionState session, InputStream workUnit) {
-        checkAllowedArgs(endpointState, session, workUnit);
-        return getCaller().call(getClient(), endpointState, session, workUnit);
+        CallContext callContext = newCallContext().withEndpointState(endpointState).withSessionState(session)
+                .withWorkUnit(workUnit);
+        return call(callContext);
     }
 
     @Override
+    @Deprecated
     public ExecEndpoint.BulkExecCaller bulkCaller() {
-        return new BulkExecCallerImpl(this);
+        return bulkCaller(newCallContext());
+    }
+
+    @Override
+    public InputStream call(CallContext callContext) {
+        checkAllowedArgs(callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit());
+        return getCaller().call(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
+                callContext.getWorkUnit());
+    }
+
+    @Override
+    public BulkExecCaller bulkCaller(CallContext callContext) {
+        return new BulkExecCallerImpl(this, callContext);
+    }
+
+    @Override
+    public BulkExecCaller bulkCaller(CallContext[] callContexts) {
+        return null;
+    }
+
+    @Override
+    public BulkExecCaller bulkCaller(CallContext[] callContexts, int threadCount) {
+        return null;
+    }
+
+    @Override
+    public CallContext newCallContext() {
+        return new CallContextImpl(this);
     }
 
     final static class BulkExecCallerImpl
@@ -61,9 +91,13 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
             implements ExecEndpoint.BulkExecCaller
     {
         private ExecEndpointImpl endpoint;
+        private CallContext callContext;
+        private ErrorListener errorListener;
+        private int threadCount;
 
-        private BulkExecCallerImpl(ExecEndpointImpl endpoint) {
+        private BulkExecCallerImpl(ExecEndpointImpl endpoint, CallContext callContext) {
             super(endpoint);
+            this.callContext = callContext;
             this.endpoint = endpoint;
         }
 
@@ -82,7 +116,8 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
                             getEndpointPath(), getCallCount(), getEndpointState());
 // TODO: use byte[] for IO internally (and InputStream externally)
                     output = getEndpoint().getCaller().call(
-                            getClient(), getEndpointState(), getSession(), getWorkUnit()
+                            getClient(), callContext.getEndpointState(), callContext.getSessionState(),
+                            callContext.getWorkUnit()
                     );
                     incrementCallCount();
                 } catch(Throwable throwable) {
@@ -92,7 +127,7 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
 // TODO -- retry with new session if times out
 
                 if (allowsEndpointState()) {
-                    setEndpointState(output);
+                    this.callContext = callContext.withEndpointState(output);
                 }
 
                 switch(getPhase()) {
@@ -117,5 +152,18 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
             }
         }
 
+        @Override
+        public void setErrorListener(ErrorListener errorListener) {
+            this.errorListener = errorListener;
+        }
+
+        static class ErrorListenerImpl implements BulkExecCaller.ErrorListener {
+
+            @Override
+            public BulkIOEndpointCaller.ErrorDisposition processError(int retryCount, Throwable throwable,
+                                                                      CallContext callContext) {
+                return null;
+            }
+        }
     }
 }

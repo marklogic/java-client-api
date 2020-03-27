@@ -44,17 +44,48 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
 
     @Override
     public InputStream[] call() {
-        return call(null, null, null);
-    }
-    @Override
-    public InputStream[] call(InputStream endpointState, SessionState session, InputStream workUnit) {
-        checkAllowedArgs(endpointState, session, workUnit);
-        return getCaller().arrayCall(getClient(), endpointState, session, workUnit);
+        return call(newCallContext());
     }
 
     @Override
+    @Deprecated
+    public InputStream[] call(InputStream endpointState, SessionState session, InputStream workUnit) {
+        CallContext callContext = newCallContext().withEndpointState(endpointState).withSessionState(session)
+                .withWorkUnit(workUnit);
+        return call(callContext);
+    }
+
+    @Override
+    @Deprecated
     public OutputEndpoint.BulkOutputCaller bulkCaller() {
-        return new BulkOutputCallerImpl(this);
+        return bulkCaller(newCallContext());
+    }
+
+    @Override
+    public InputStream[] call(CallContext callContext) {
+        checkAllowedArgs(callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit());
+        return getCaller().arrayCall(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
+                callContext.getWorkUnit());
+    }
+
+    @Override
+    public BulkOutputCaller bulkCaller(CallContext callContext) {
+        return new BulkOutputCallerImpl(this, callContext);
+    }
+
+    @Override
+    public BulkOutputCaller bulkCaller(CallContext[] callContexts) {
+        return null;
+    }
+
+    @Override
+    public BulkOutputCaller bulkCaller(CallContext[] callContexts, int threadCount) {
+        return null;
+    }
+
+    @Override
+    public CallContext newCallContext() {
+        return new CallContextImpl(this);
     }
 
     final static class BulkOutputCallerImpl extends IOEndpointImpl.BulkIOEndpointCallerImpl
@@ -62,10 +93,13 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
 
         private OutputEndpointImpl endpoint;
         private Consumer<InputStream> outputListener;
+        private CallContext callContext;
+        private ErrorListener errorListener;
 
-        private BulkOutputCallerImpl(OutputEndpointImpl endpoint) {
+        private BulkOutputCallerImpl(OutputEndpointImpl endpoint, CallContext callContext) {
             super(endpoint);
             this.endpoint = endpoint;
+            this.callContext = callContext;
         }
 
         private OutputEndpointImpl getEndpoint() {
@@ -88,11 +122,16 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         }
 
         @Override
+        public void setErrorListener(ErrorListener errorListener) {
+            this.errorListener = errorListener;
+        }
+
+        @Override
         public void awaitCompletion() {
             if (getOutputListener() == null)
                 throw new IllegalStateException("Output consumer is null");
 
-            logger.trace("output endpoint running endpoint={} work={}", getEndpointPath(), getWorkUnit());
+            logger.trace("output endpoint running endpoint={} work={}", getEndpointPath(), callContext.getWorkUnit());
 
             if(getPhase() != WorkPhase.INITIALIZING) {
                 throw new IllegalStateException(
@@ -103,7 +142,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
 
             calling: while (true) {
                 logger.trace("output endpoint={} count={} state={}",
-                        getEndpointPath(), getCallCount(), getEndpointState());
+                        getEndpointPath(), getCallCount(), callContext.getEndpointState());
 
                 InputStream[] output = getOutputStream();
 
@@ -119,7 +158,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                         if (output == null || output.length == 0) {
                             setPhase(WorkPhase.COMPLETED);
                             logger.info("output completed endpoint={} count={} work={}",
-                                    getEndpointPath(), getCallCount(), getWorkUnit());
+                                    getEndpointPath(), getCallCount(), callContext.getWorkUnit());
                             break calling;
                         }
                         continue calling;
@@ -139,7 +178,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
             InputStream[] output;
             try {
                 output = getEndpoint().getCaller().arrayCall(
-                        getClient(), getEndpointState(), getSession(), getWorkUnit()
+                        getClient(), callContext.getEndpointState(), getSession(), callContext.getWorkUnit()
                 );
             } catch(Throwable throwable) {
                 throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
@@ -147,6 +186,15 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
 
             incrementCallCount();
             return output;
+        }
+
+        static class ErrorListenerImpl implements BulkOutputCaller.ErrorListener {
+
+            @Override
+            public BulkIOEndpointCaller.ErrorDisposition processError(int retryCount, Throwable throwable,
+                                                                      CallContext callContext) {
+                return null;
+            }
         }
     }
 }
