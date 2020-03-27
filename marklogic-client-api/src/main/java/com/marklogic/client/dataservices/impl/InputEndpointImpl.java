@@ -56,9 +56,9 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 	@Override
 	@Deprecated
 	public InputStream call(InputStream endpointState, SessionState session, InputStream workUnit, InputStream[] input) {
-		newCallContext().withEndpointState(endpointState).withSessionState(session)
+		CallContext callContext = newCallContext().withEndpointState(endpointState).withSessionState(session)
 				.withWorkUnit(workUnit);
-		return call(newCallContext(), input);
+		return call(callContext, input);
 	}
 
 	@Override
@@ -89,11 +89,6 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 		return null;
 	}
 
-	@Override
-	public CallContext newCallContext() {
-		return new CallContextImpl(this);
-	}
-
 	final static class BulkInputCallerImpl extends IOEndpointImpl.BulkIOEndpointCallerImpl
 			implements InputEndpoint.BulkInputCaller {
 
@@ -104,7 +99,7 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 		private ErrorListener errorListener;
 
 		private BulkInputCallerImpl(InputEndpointImpl endpoint, int batchSize, CallContext callContext) {
-			super(endpoint);
+			super(endpoint, callContext);
 			this.endpoint = endpoint;
 			this.batchSize = batchSize;
 			this.queue = new LinkedBlockingQueue<InputStream>();

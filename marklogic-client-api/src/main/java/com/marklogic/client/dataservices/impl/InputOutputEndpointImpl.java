@@ -91,11 +91,6 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
         return null;
     }
 
-    @Override
-    public CallContext newCallContext() {
-        return new CallContextImpl(this);
-    }
-
     final static class BulkInputOutputCallerImpl extends IOEndpointImpl.BulkIOEndpointCallerImpl
             implements InputOutputEndpoint.BulkInputOutputCaller {
 
@@ -107,7 +102,7 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
         private CallContext callContext;
 
         BulkInputOutputCallerImpl(InputOutputEndpointImpl endpoint, int batchSize, CallContext callContext) {
-            super(endpoint);
+            super(endpoint, callContext);
             this.endpoint = endpoint;
             this.batchSize = batchSize;
             this.queue = new LinkedBlockingQueue<InputStream>();
