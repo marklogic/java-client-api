@@ -46,6 +46,7 @@ public interface InputOutputEndpoint extends IOEndpoint {
      * @param input  the request data sent to the endpoint
      * @return  the endpoint state if produced by the endpoint followed by the response data from the endpoint
      */
+    @Deprecated
     InputStream[] call(InputStream endpointState, SessionState session, InputStream workUnit, InputStream[] input);
 
     /**
@@ -53,7 +54,38 @@ public interface InputOutputEndpoint extends IOEndpoint {
      * a unit of work by repeated calls to the endpoint.
      * @return  the bulk caller for the input-output endpoint
      */
+    @Deprecated
     BulkInputOutputCaller bulkCaller();
+
+    /**
+     * Makes one call to an endpoint that doesn't take an endpoint state, session, or work unit.
+     * @param callContext  the collection of endpointState, sessionState and workUnit
+     * @param input  the request data sent to the endpoint
+     * @return  the response data from the endpoint
+     */
+    InputStream[] call(CallContext callContext, InputStream[] input);
+    /**
+     * Constructs an instance of a bulk caller, which completes
+     * a unit of work by repeated calls to the endpoint.
+     * @param callContext  the collection of endpointState, sessionState and workUnit
+     * @return  the bulk caller for the input-output endpoint
+     */
+    BulkInputOutputCaller bulkCaller(CallContext callContext);
+    /**
+     * Constructs an instance of a bulk caller, which completes
+     * a unit of work by repeated calls to the endpoint.
+     * @param callContexts  the collection of callContexts
+     * @return  the bulk caller for the input-output endpoint
+     */
+    BulkInputOutputCaller bulkCaller(CallContext[] callContexts);
+    /**
+     * Constructs an instance of a bulk caller, which completes
+     * a unit of work by repeated calls to the endpoint.
+     * @param callContexts  the collection of callContexts
+     * @param threadCount the number of threads
+     * @return  the bulk caller for the input-output endpoint
+     */
+    BulkInputOutputCaller bulkCaller(CallContext[] callContexts, int threadCount);
 
     /**
      * Provides an interface for completing a unit of work
@@ -77,5 +109,13 @@ public interface InputOutputEndpoint extends IOEndpoint {
          * @param input  multiple input items.
          */
         void acceptAll(InputStream[] input);
+
+        void setErrorListener(ErrorListener errorListener);
+
+        interface ErrorListener {
+            IOEndpoint.BulkIOEndpointCaller.ErrorDisposition processError(
+                    int retryCount, Throwable throwable, CallContext callContext, InputStream[] input
+            );
+        }
     }
 }
