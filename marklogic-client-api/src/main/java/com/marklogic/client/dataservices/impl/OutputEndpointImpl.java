@@ -83,11 +83,6 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         return null;
     }
 
-    @Override
-    public CallContext newCallContext() {
-        return new CallContextImpl(this);
-    }
-
     final static class BulkOutputCallerImpl extends IOEndpointImpl.BulkIOEndpointCallerImpl
             implements OutputEndpoint.BulkOutputCaller {
 
@@ -97,7 +92,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         private ErrorListener errorListener;
 
         private BulkOutputCallerImpl(OutputEndpointImpl endpoint, CallContext callContext) {
-            super(endpoint);
+            super(endpoint, callContext);
             this.endpoint = endpoint;
             this.callContext = callContext;
         }
