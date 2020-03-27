@@ -43,7 +43,7 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
 
     @Override
     public void call() {
-        call(null, null, null);
+        call(newCallContext());
     }
     @Override
     @Deprecated
@@ -81,11 +81,6 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
         return null;
     }
 
-    @Override
-    public CallContext newCallContext() {
-        return new CallContextImpl(this);
-    }
-
     final static class BulkExecCallerImpl
             extends IOEndpointImpl.BulkIOEndpointCallerImpl
             implements ExecEndpoint.BulkExecCaller
@@ -96,7 +91,7 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
         private int threadCount;
 
         private BulkExecCallerImpl(ExecEndpointImpl endpoint, CallContext callContext) {
-            super(endpoint);
+            super(endpoint, callContext);
             this.callContext = callContext;
             this.endpoint = endpoint;
         }
@@ -108,12 +103,12 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
         @Override
         public void awaitCompletion() {
             setPhase(WorkPhase.RUNNING);
-            logger.trace("exec running endpoint={} work={}", getEndpointPath(), getWorkUnit());
+            logger.trace("exec running endpoint={} work={}", getEndpointPath(), callContext.getWorkUnit());
             calling: while (true) {
                 InputStream output = null;
                 try {
                     logger.trace("exec calling endpoint={} count={} state={}",
-                            getEndpointPath(), getCallCount(), getEndpointState());
+                            getEndpointPath(), getCallCount(), callContext.getEndpointState());
 // TODO: use byte[] for IO internally (and InputStream externally)
                     output = getEndpoint().getCaller().call(
                             getClient(), callContext.getEndpointState(), callContext.getSessionState(),
@@ -127,20 +122,20 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
 // TODO -- retry with new session if times out
 
                 if (allowsEndpointState()) {
-                    this.callContext = callContext.withEndpointState(output);
+                    callContext.withEndpointState(output);
                 }
 
                 switch(getPhase()) {
                     case INTERRUPTING:
                         setPhase(WorkPhase.INTERRUPTED);
                         logger.info("exec interrupted endpoint={} count={} work={}",
-                                getEndpointPath(), getCallCount(), getWorkUnit());
+                                getEndpointPath(), getCallCount(), callContext.getWorkUnit());
                         break calling;
                     case RUNNING:
                         if (output == null) {
                             setPhase(WorkPhase.COMPLETED);
                             logger.info("exec completed endpoint={} count={} work={}",
-                                    getEndpointPath(), getCallCount(), getWorkUnit());
+                                    getEndpointPath(), getCallCount(), callContext.getWorkUnit());
                             break calling;
                         }
                         break;
