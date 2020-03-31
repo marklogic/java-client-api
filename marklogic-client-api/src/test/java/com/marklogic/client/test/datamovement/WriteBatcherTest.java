@@ -522,11 +522,6 @@ public class WriteBatcherTest {
     runWriteTest(2, 20, 20, 200, "batchesThreads");
   }
 
-  @Test
-  public void testEverything() throws Exception {
-    runWriteTest(2, 20, 20, 200, "everything");
-  }
-
   public void runWriteTest( int batchSize, int externalThreadCount, int batcherThreadCount,
                             int totalDocCount, String testName)
   {
@@ -555,38 +550,48 @@ public class WriteBatcherTest {
       .withThreadCount(batcherThreadCount)
       .onBatchSuccess(
         batch -> {
-          logger.debug("[testWrites_{}] batch: {}, items: {}", testName,
-            batch.getJobBatchNumber(), batch.getItems().length);
-          successfulBatchCount.incrementAndGet();
-          for ( WriteEvent event : batch.getItems() ) {
-            successfulCount.incrementAndGet();
-            //logger.debug("success event.getTargetUri()=[{}]", event.getTargetUri());
-          }
-          if ( expectedBatchSize != batch.getItems().length) {
-            // if this isn't the last batch
-            if ( batch.getJobBatchNumber() != expectedBatches ) {
-              failures.append("ERROR: There should be " + expectedBatchSize +
-                " items in batch " + batch.getJobBatchNumber() + " but there are " + batch.getItems().length);
+          try {
+            logger.debug("[testWrites_{}] batch: {}, items: {}", testName,
+                    batch.getJobBatchNumber(), batch.getItems().length);
+            successfulBatchCount.incrementAndGet();
+            for ( WriteEvent event : batch.getItems() ) {
+              successfulCount.incrementAndGet();
+              //logger.debug("success event.getTargetUri()=[{}]", event.getTargetUri());
             }
+            if ( expectedBatchSize != batch.getItems().length) {
+              // if this isn't the last batch
+              if ( batch.getJobBatchNumber() != expectedBatches ) {
+                failures.append("ERROR: There should be " + expectedBatchSize +
+                        " items in batch " + batch.getJobBatchNumber() + " but there are " + batch.getItems().length);
+              }
+            }
+            batchTicket.set(batch.getJobTicket());
+            batchTimestamp.set(batch.getTimestamp());
+          } catch(Throwable e) {
+            System.out.println("onBatchSuccess failed");
+            e.printStackTrace(System.out);
           }
-          batchTicket.set(batch.getJobTicket());
-          batchTimestamp.set(batch.getTimestamp());
         }
       )
       .onBatchFailure(
         (batch, throwable) -> {
-          failureBatchCount.incrementAndGet();
-          failureCount.addAndGet(batch.getItems().length);
-          throwable.printStackTrace();
-          for ( WriteEvent event : batch.getItems() ) {
-            logger.debug("failure event.getTargetUri()=[{}]", event.getTargetUri());
-          }
-          if ( expectedBatchSize != batch.getItems().length) {
-            // if this isn't the last batch
-            if ( batch.getJobBatchNumber() != expectedBatches ) {
-              failures.append("ERROR: There should be " + expectedBatchSize +
-                " items in batch " + batch.getJobBatchNumber() + " but there are " + batch.getItems().length);
+          try {
+            failureBatchCount.incrementAndGet();
+            failureCount.addAndGet(batch.getItems().length);
+            throwable.printStackTrace();
+            for ( WriteEvent event : batch.getItems() ) {
+              logger.debug("failure event.getTargetUri()=[{}]", event.getTargetUri());
             }
+            if ( expectedBatchSize != batch.getItems().length) {
+              // if this isn't the last batch
+              if ( batch.getJobBatchNumber() != expectedBatches ) {
+                failures.append("ERROR: There should be " + expectedBatchSize +
+                        " items in batch " + batch.getJobBatchNumber() + " but there are " + batch.getItems().length);
+              }
+            }
+          } catch(Throwable e) {
+            System.out.println("onBatchFailure failed");
+            e.printStackTrace(System.out);
           }
         }
       )
@@ -600,38 +605,51 @@ public class WriteBatcherTest {
     assertEquals(writeBatcherJobId, batcher.getJobId());
     assertEquals(batcherThreadCount, batcher.getThreadCount());
 
-    class WriteOperationRunnable implements Runnable {
+    final AtomicBoolean noExternalFailure = new AtomicBoolean(true);
 
+    class WriteOperationRunnable implements Runnable {
       @Override
       public void run() {
-        String threadName = Thread.currentThread().getName();
-        DocumentWriteSet writeSet = client.newDocumentManager().newWriteSet();
-        for (int j = 1; j <= docsPerExternalThread; j++) {
-          String uri = "/" + collection + "/" + threadName + "/" + j + ".txt";
-          DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(whbTestCollection, collection);
-          writeSet.add(uri, meta, new StringHandle("test").withFormat(Format.TEXT));
-        }
-        for (DocumentWriteOperation doc : writeSet) {
-          batcher.add(doc);
+        try {
+          String threadName = Thread.currentThread().getName();
+          DocumentWriteSet writeSet = client.newDocumentManager().newWriteSet();
+          for (int j = 1; j <= docsPerExternalThread; j++) {
+            String uri = "/" + collection + "/" + threadName + "/" + j + ".txt";
+            DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(whbTestCollection, collection);
+            writeSet.add(uri, meta, new StringHandle("test").withFormat(Format.TEXT));
+          }
+          for (DocumentWriteOperation doc : writeSet) {
+            batcher.add(doc);
+          }
+        } catch(Throwable e) {
+          noExternalFailure.compareAndSet(true, false);
+          System.out.println("WriteOperationRunnable failed");
+          e.printStackTrace(System.out);
         }
       }
     }
 
     class MyRunnable implements Runnable {
-
       @Override
       public void run() {
-        String threadName = Thread.currentThread().getName();
-        for (int j=1; j <= docsPerExternalThread; j++) {
-          String uri = "/" + collection + "/"+ threadName + "/" + j + ".txt";
-          DocumentMetadataHandle meta = new DocumentMetadataHandle()
-            .withCollections(whbTestCollection, collection);
-          batcher.add(uri, meta, new StringHandle("test").withFormat(Format.TEXT));
+        try {
+          String threadName = Thread.currentThread().getName();
+          for (int j=1; j <= docsPerExternalThread; j++) {
+            String uri = "/" + collection + "/"+ threadName + "/" + j + ".txt";
+            DocumentMetadataHandle meta = new DocumentMetadataHandle()
+                    .withCollections(whbTestCollection, collection);
+            batcher.add(uri, meta, new StringHandle("test").withFormat(Format.TEXT));
+          }
+        } catch(Throwable e) {
+          noExternalFailure.compareAndSet(true, false);
+          System.out.println("MyRunnable failed");
+          e.printStackTrace(System.out);
         }
       }
     }
 
     Thread[] externalThreads = new Thread[externalThreadCount];
+    logger.debug("starting runnables threadCount=[{}]", externalThreadCount);
     for (int i = 0; i < externalThreadCount - 1; i++) {
       externalThreads[i] = new Thread(new MyRunnable(), testName + i);
       externalThreads[i].start();
@@ -639,12 +657,16 @@ public class WriteBatcherTest {
     externalThreads[externalThreadCount - 1] = new Thread(new WriteOperationRunnable(),
         testName + (externalThreadCount - 1));
     externalThreads[externalThreadCount - 1].start();
+    logger.debug("started runnables threadCount=[{}]", externalThreadCount);
 
     for ( Thread thread : externalThreads ) {
       try { thread.join(); } catch (Exception e) {}
     }
+    logger.debug("finished runnables threadCount=[{}]", externalThreadCount);
     batcher.flushAndWait();
+
     int leftover = (totalDocCount % docsPerExternalThread);
+    logger.debug("adding leftover=[{}]", leftover);
     // write any leftovers
     for (int j =0; j < leftover; j++) {
       String uri = "/" + collection + "/"+ Thread.currentThread().getName() + "/" + j + ".txt";
@@ -652,7 +674,9 @@ public class WriteBatcherTest {
         .withCollections(whbTestCollection, collection);
       batcher.add(uri, meta, new StringHandle("test").withFormat(Format.TEXT));
     }
+    logger.debug("finished leftover=[{}]", leftover);
     batcher.flushAndWait();
+
     JobReport report = moveMgr.getJobReport(ticket);
     //assertEquals("Job Report has incorrect completion information", false, report.isJobComplete());
 
@@ -661,6 +685,7 @@ public class WriteBatcherTest {
     //assertTrue("Job should be stopped now", batcher.isStopped());
 
     if ( failures.length() > 0 ) fail(failures.toString());
+    assertTrue("WriteOperationRunnable thread failed", noExternalFailure.get());
 
     logger.debug("expectedSuccess=[{}] successfulCount.get()=[{}]", totalDocCount, successfulCount.get());
     assertEquals("The success listener ran wrong number of times", totalDocCount, successfulCount.get());
