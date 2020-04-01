@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 MarkLogic Corporation
+ * Copyright 2012-2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,19 +86,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import okhttp3.ConnectionPool;
-import okhttp3.CookieJar;
-import okhttp3.Headers;
-import okhttp3.HttpUrl;
-import okhttp3.Interceptor;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
+import okhttp3.*;
 import okhttp3.MultipartBody.Part;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okio.BufferedSink;
 import okio.Okio;
@@ -129,7 +118,10 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.math.BigDecimal;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
@@ -260,7 +252,9 @@ public class OkHttpServices implements RESTServices {
     	      .cookieJar(CookieJar.NO_COOKIES)
     	      // no timeouts since some of our clients' reads and writes can be massive
     	      .readTimeout(0, TimeUnit.SECONDS)
-    	      .writeTimeout(0, TimeUnit.SECONDS);
+    	      .writeTimeout(0, TimeUnit.SECONDS)
+              // prefer ipv4 to ipv6
+              .dns(new DnsImpl());
     
 	if (securityContext instanceof BasicAuthContext) {
 	    BasicAuthContext basicContext = (BasicAuthContext) securityContext;
@@ -6480,5 +6474,19 @@ public class OkHttpServices implements RESTServices {
   @FunctionalInterface
   private interface ResultIteratorConstructor<T> {
     T construct(RequestLogger logger, List list, Closeable closeable);
+  }
+
+  static class DnsImpl implements Dns {
+      @Override
+      public List<InetAddress> lookup(String hostname) throws UnknownHostException {
+          List<InetAddress> rawAddresses = Dns.SYSTEM.lookup(hostname);
+          List<InetAddress> ipv4Addresses = new ArrayList<>();
+          for (InetAddress address: rawAddresses) {
+              if (address instanceof Inet4Address) {
+                  ipv4Addresses.add(address);
+              }
+          }
+          return ipv4Addresses.isEmpty() ? rawAddresses : ipv4Addresses;
+      }
   }
 }
