@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.test.document;
 
+import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.document.*;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
@@ -322,7 +324,11 @@ public class DocumentWriteOperationTest {
         textDocumentManager.write(batch);
         StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collectionName);
 
-        int forestCount = 3;
+        int forestCount;
+        DataMovementManager moveMgr = Common.client.newDataMovementManager();
+        ForestConfiguration forest = moveMgr.readForestConfig();
+        forestCount = forest.listForests().length;
+
         DocumentPage[] documents = new DocumentPage[forestCount];
         ArrayList<Set<String>> sets = new ArrayList<Set<String>>();
 
