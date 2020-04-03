@@ -91,11 +91,16 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 
 	@Override
 	public BulkInputCaller bulkCaller(CallContext[] callContexts, int threadCount) {
+		if(callContexts == null)
+			throw new IllegalArgumentException("CallContext cannot be null.");
 		if(threadCount > callContexts.length)
 			throw new IllegalArgumentException("Thread count cannot be more than the callContext count.");
-		if(threadCount == 1)
-			return new BulkInputCallerImpl(this, getBatchSize(), callContexts[0]);
-		return new BulkInputCallerImpl(this, getBatchSize(), callContexts, threadCount);
+
+		switch(callContexts.length) {
+			case 0: throw new IllegalArgumentException("CallContext cannot be empty");
+			case 1: return new BulkInputCallerImpl(this, getBatchSize(), callContexts[0]);
+			default: return new BulkInputCallerImpl(this, getBatchSize(), callContexts, threadCount);
+		}
 	}
 
 	final static class BulkInputCallerImpl extends IOEndpointImpl.BulkIOEndpointCallerImpl
@@ -105,7 +110,6 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 		private int batchSize;
 		private LinkedBlockingQueue<InputStream> queue;
 		private ErrorListener errorListener;
-		private int threadCount;
 
 		private BulkInputCallerImpl(InputEndpointImpl endpoint, int batchSize, CallContext callContext) {
 			super(endpoint, callContext);
@@ -119,7 +123,6 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 			this.endpoint = endpoint;
 			this.batchSize = batchSize;
 			this.queue = new LinkedBlockingQueue<>();
-			this.threadCount = threadCount;
 		}
 
 		private InputEndpointImpl getEndpoint() {
@@ -160,10 +163,10 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 			}
 		}
 		private void processInput() {
-			if(threadCount == 1)
+			if(getThreadCount() == 1)
 				processInput(getCallContext());
 			else {
-				for (int i = 0; i < threadCount; i++) {
+				for (int i = 0; i < getThreadCount(); i++) {
 					BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this);
 					try {
 						bulkCallableImpl.submit(bulkCallableImpl);
@@ -193,14 +196,6 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 
 			if (allowsEndpointState()) {
 				callContext.withEndpointState(output);
-			}
-		}
-
-		static class ErrorListenerImpl implements BulkInputCaller.ErrorListener {
-
-			@Override
-			public BulkIOEndpointCaller.ErrorDisposition processError(int retryCount, Throwable throwable, CallContext callContext, InputStream[] input) {
-				return null;
 			}
 		}
 
