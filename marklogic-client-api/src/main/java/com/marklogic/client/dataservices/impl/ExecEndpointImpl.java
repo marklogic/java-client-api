@@ -24,6 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 
 final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoint {
     private static Logger logger = LoggerFactory.getLogger(ExecEndpointImpl.class);
@@ -73,12 +76,18 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
 
     @Override
     public BulkExecCaller bulkCaller(CallContext[] callContexts) {
-        return null;
+        if(callContexts == null || callContexts.length==0)
+            throw new IllegalArgumentException("CallContext cannot be null or empty");
+        return bulkCaller(callContexts, callContexts.length);
     }
 
     @Override
     public BulkExecCaller bulkCaller(CallContext[] callContexts, int threadCount) {
-        return null;
+        if(threadCount > callContexts.length)
+            throw new IllegalArgumentException("Thread count cannot be more than the callContext count.");
+        if(threadCount == 1)
+            return new BulkExecCallerImpl(this, callContexts[0]);
+        return new BulkExecCallerImpl(this, callContexts, threadCount);
     }
 
     final static class BulkExecCallerImpl
@@ -86,14 +95,17 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
             implements ExecEndpoint.BulkExecCaller
     {
         private ExecEndpointImpl endpoint;
-        private CallContext callContext;
         private ErrorListener errorListener;
         private int threadCount;
 
         private BulkExecCallerImpl(ExecEndpointImpl endpoint, CallContext callContext) {
             super(endpoint, callContext);
-            this.callContext = callContext;
             this.endpoint = endpoint;
+        }
+        private BulkExecCallerImpl(ExecEndpointImpl endpoint, CallContext[] callContexts, int threadCount) {
+            super(endpoint, callContexts, threadCount, threadCount);
+            this.endpoint = endpoint;
+            this.threadCount = threadCount;
         }
 
         private ExecEndpointImpl getEndpoint() {
@@ -103,7 +115,38 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
         @Override
         public void awaitCompletion() {
             setPhase(WorkPhase.RUNNING);
-            logger.trace("exec running endpoint={} work={}", getEndpointPath(), callContext.getWorkUnit());
+            logger.trace("exec running endpoint={} work={}", getEndpointPath(), getCallContext().getWorkUnit());
+
+            if(threadCount == 1)
+                processOutput(getCallContext());
+            else {
+                for (int i = 0; i < threadCount; i++) {
+                    BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this);
+                    try {
+                        bulkCallableImpl.submit(bulkCallableImpl);
+                        getCallerThreadPoolExecutor().awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+                    } catch(Throwable throwable) {
+                        throw new RuntimeException("Error occurred while awaiting termination ", throwable);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void setErrorListener(ErrorListener errorListener) {
+            this.errorListener = errorListener;
+        }
+
+        static class ErrorListenerImpl implements BulkExecCaller.ErrorListener {
+
+            @Override
+            public BulkIOEndpointCaller.ErrorDisposition processError(int retryCount, Throwable throwable,
+                                                                      CallContext callContext) {
+                return null;
+            }
+        }
+
+        private void processOutput(CallContext callContext){
             calling: while (true) {
                 InputStream output = null;
                 try {
@@ -114,6 +157,7 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
                             getClient(), callContext.getEndpointState(), callContext.getSessionState(),
                             callContext.getWorkUnit()
                     );
+
                     incrementCallCount();
                 } catch(Throwable throwable) {
                     // TODO: logging
@@ -147,17 +191,28 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
             }
         }
 
-        @Override
-        public void setErrorListener(ErrorListener errorListener) {
-            this.errorListener = errorListener;
-        }
-
-        static class ErrorListenerImpl implements BulkExecCaller.ErrorListener {
+        private class BulkCallableImpl implements Callable<Boolean> {
+            private BulkExecCallerImpl bulkExecCallerImpl;
+            BulkCallableImpl(BulkExecCallerImpl bulkExecCallerImpl) {
+                this.bulkExecCallerImpl = bulkExecCallerImpl;
+            }
 
             @Override
-            public BulkIOEndpointCaller.ErrorDisposition processError(int retryCount, Throwable throwable,
-                                                                      CallContext callContext) {
-                return null;
+            public Boolean call() throws InterruptedException{
+                    CallContext callContext = bulkExecCallerImpl.getCallContexts().poll();
+
+                    bulkExecCallerImpl.processOutput(callContext);
+                    if(getPhase() == WorkPhase.COMPLETED && bulkExecCallerImpl.getCallContexts().isEmpty()) {
+                        getCallerThreadPoolExecutor().shutdown();
+                    } else {
+                        bulkExecCallerImpl.getCallContexts().put(callContext);
+                    }
+              return true;
+            }
+
+            private void submit(BulkCallableImpl bulkCallableImpl) {
+                FutureTask futureTask = new FutureTask(bulkCallableImpl);
+                getCallerThreadPoolExecutor().execute(futureTask);
             }
         }
     }

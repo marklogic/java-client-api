@@ -24,6 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint {
@@ -75,12 +78,18 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
 
     @Override
     public BulkOutputCaller bulkCaller(CallContext[] callContexts) {
-        return null;
+        if(callContexts == null || callContexts.length==0)
+            throw new IllegalArgumentException("CallContext cannot be null or empty");
+        return bulkCaller(callContexts, callContexts.length);
     }
 
     @Override
     public BulkOutputCaller bulkCaller(CallContext[] callContexts, int threadCount) {
-        return null;
+        if(threadCount > callContexts.length)
+            throw new IllegalArgumentException("Thread count cannot be more than the callContext count.");
+        if(threadCount == 1)
+            return new BulkOutputCallerImpl(this, callContexts[0]);
+        return new BulkOutputCallerImpl(this, callContexts, threadCount);
     }
 
     final static class BulkOutputCallerImpl extends IOEndpointImpl.BulkIOEndpointCallerImpl
@@ -90,11 +99,17 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         private Consumer<InputStream> outputListener;
         private CallContext callContext;
         private ErrorListener errorListener;
+        private int threadCount;
 
         private BulkOutputCallerImpl(OutputEndpointImpl endpoint, CallContext callContext) {
             super(endpoint, callContext);
             this.endpoint = endpoint;
             this.callContext = callContext;
+        }
+        private BulkOutputCallerImpl(OutputEndpointImpl endpoint, CallContext[] callContexts, int threadCount) {
+            super(endpoint, callContexts, threadCount, threadCount);
+            this.endpoint = endpoint;
+            this.threadCount = threadCount;
         }
 
         private OutputEndpointImpl getEndpoint() {
@@ -134,7 +149,45 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
             }
 
             setPhase(WorkPhase.RUNNING);
+            if(threadCount == 1)
+                processOutput(getCallContext());
+            else {
+                for (int i = 0; i < threadCount; i++) {
+                    BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this);
+                    try {
+                        bulkCallableImpl.submit(bulkCallableImpl);
+                        getCallerThreadPoolExecutor().awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+                    } catch(Throwable throwable) {
+                        throw new RuntimeException("Error occurred while awaiting termination", throwable);
+                    }
+                }
+            }
 
+        }
+
+        private InputStream[] getOutputStream() {
+            InputStream[] output;
+            try {
+                output = getEndpoint().getCaller().arrayCall(
+                        getClient(), callContext.getEndpointState(), getSession(), callContext.getWorkUnit()
+                );
+            } catch(Throwable throwable) {
+                throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
+            }
+
+            incrementCallCount();
+            return output;
+        }
+
+        static class ErrorListenerImpl implements BulkOutputCaller.ErrorListener {
+
+            @Override
+            public BulkIOEndpointCaller.ErrorDisposition processError(int retryCount, Throwable throwable,
+                                                                      CallContext callContext) {
+                return null;
+            }
+        }
+        private void processOutput(CallContext callContext){
             calling: while (true) {
                 logger.trace("output endpoint={} count={} state={}",
                         getEndpointPath(), getCallCount(), callContext.getEndpointState());
@@ -169,26 +222,32 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
             }
         }
 
-        private InputStream[] getOutputStream() {
-            InputStream[] output;
-            try {
-                output = getEndpoint().getCaller().arrayCall(
-                        getClient(), callContext.getEndpointState(), getSession(), callContext.getWorkUnit()
-                );
-            } catch(Throwable throwable) {
-                throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
+        private class BulkCallableImpl implements Callable<Boolean> {
+            private BulkOutputCallerImpl bulkOutputCallerImpl;
+            BulkCallableImpl(BulkOutputCallerImpl bulkOutputCallerImpl) {
+                this.bulkOutputCallerImpl = bulkOutputCallerImpl;
+            }
+            @Override
+            public Boolean call() {
+                try {
+                    CallContext callContext = bulkOutputCallerImpl.getCallContexts().poll();
+
+                    bulkOutputCallerImpl.processOutput(callContext);
+                    if(getPhase() == WorkPhase.COMPLETED && bulkOutputCallerImpl.getCallContexts().isEmpty()) {
+                        getCallerThreadPoolExecutor().shutdown();
+                    } else {
+                        bulkOutputCallerImpl.getCallContexts().put(callContext);
+                    }
+                } catch(Exception ex) {
+                    logger.error("Error occurred while processing CallContext - "+ex.getMessage());
+                    return false;
+                }
+                return true;
             }
 
-            incrementCallCount();
-            return output;
-        }
-
-        static class ErrorListenerImpl implements BulkOutputCaller.ErrorListener {
-
-            @Override
-            public BulkIOEndpointCaller.ErrorDisposition processError(int retryCount, Throwable throwable,
-                                                                      CallContext callContext) {
-                return null;
+            private void submit(BulkCallableImpl bulkCallableImpl) {
+                FutureTask futureTask = new FutureTask(bulkCallableImpl);
+                getCallerThreadPoolExecutor().execute(futureTask);
             }
         }
     }
