@@ -78,18 +78,23 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
 
     @Override
     public BulkOutputCaller bulkCaller(CallContext[] callContexts) {
-        if(callContexts == null || callContexts.length==0)
+        if(callContexts == null || callContexts.length == 0)
             throw new IllegalArgumentException("CallContext cannot be null or empty");
         return bulkCaller(callContexts, callContexts.length);
     }
 
     @Override
     public BulkOutputCaller bulkCaller(CallContext[] callContexts, int threadCount) {
+        if(callContexts == null)
+            throw new IllegalArgumentException("CallContext cannot be null");
         if(threadCount > callContexts.length)
             throw new IllegalArgumentException("Thread count cannot be more than the callContext count.");
-        if(threadCount == 1)
-            return new BulkOutputCallerImpl(this, callContexts[0]);
-        return new BulkOutputCallerImpl(this, callContexts, threadCount);
+
+        switch(callContexts.length) {
+            case 0: throw new IllegalArgumentException("CallContext cannot be null or empty");
+            case 1: return new BulkOutputCallerImpl(this, callContexts[0]);
+            default: return new BulkOutputCallerImpl(this, callContexts, threadCount);
+        }
     }
 
     final static class BulkOutputCallerImpl extends IOEndpointImpl.BulkIOEndpointCallerImpl
@@ -99,7 +104,6 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         private Consumer<InputStream> outputListener;
         private CallContext callContext;
         private ErrorListener errorListener;
-        private int threadCount;
 
         private BulkOutputCallerImpl(OutputEndpointImpl endpoint, CallContext callContext) {
             super(endpoint, callContext);
@@ -109,7 +113,6 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         private BulkOutputCallerImpl(OutputEndpointImpl endpoint, CallContext[] callContexts, int threadCount) {
             super(endpoint, callContexts, threadCount, threadCount);
             this.endpoint = endpoint;
-            this.threadCount = threadCount;
         }
 
         private OutputEndpointImpl getEndpoint() {
@@ -149,10 +152,10 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
             }
 
             setPhase(WorkPhase.RUNNING);
-            if(threadCount == 1)
+            if(getThreadCount() == 1)
                 processOutput(getCallContext());
             else {
-                for (int i = 0; i < threadCount; i++) {
+                for (int i = 0; i < getThreadCount(); i++) {
                     BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this);
                     try {
                         bulkCallableImpl.submit(bulkCallableImpl);
@@ -179,14 +182,6 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
             return output;
         }
 
-        static class ErrorListenerImpl implements BulkOutputCaller.ErrorListener {
-
-            @Override
-            public BulkIOEndpointCaller.ErrorDisposition processError(int retryCount, Throwable throwable,
-                                                                      CallContext callContext) {
-                return null;
-            }
-        }
         private void processOutput(CallContext callContext){
             calling: while (true) {
                 logger.trace("output endpoint={} count={} state={}",

@@ -136,6 +136,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
         private SessionState   session;
         private CallContext callContext;
         private long           callCount = 0;
+        private int threadCount;
 
         private CallerThreadPoolExecutor callerThreadPoolExecutor;
         private LinkedBlockingQueue<CallContext> callContexts;
@@ -151,6 +152,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
                 throw new IllegalArgumentException("null endpoint definition");
             this.callerThreadPoolExecutor = new CallerThreadPoolExecutor(threadCount, queueSize);
             this.callContexts = new LinkedBlockingQueue<>(Arrays.asList(callContexts));
+            this.threadCount = threadCount;
         }
 
         private IOEndpointImpl getEndpoint() {
@@ -174,6 +176,9 @@ abstract class IOEndpointImpl implements IOEndpoint {
         }
         LinkedBlockingQueue<CallContext> getCallContexts() {
             return this.callContexts;
+        }
+        int getThreadCount(){
+            return this.threadCount;
         }
 
         boolean allowsEndpointState() {
