@@ -20,21 +20,17 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.IOEndpoint;
-import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.impl.NodeConverter;
-import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.marker.BufferableHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 abstract class IOEndpointImpl implements IOEndpoint {
@@ -137,20 +133,24 @@ abstract class IOEndpointImpl implements IOEndpoint {
         }
 
         private WorkPhase phase = WorkPhase.INITIALIZING;
-
-        private IOEndpointImpl endpoint;
-        private byte[]         endpointState;
-        private byte[]         workUnit;
         private SessionState   session;
         private CallContext callContext;
-
         private long           callCount = 0;
+
+        private CallerThreadPoolExecutor callerThreadPoolExecutor;
+        private LinkedBlockingQueue<CallContext> callContexts;
 
         BulkIOEndpointCallerImpl(IOEndpointImpl endpoint, CallContext callContext) {
             if (endpoint == null)
                 throw new IllegalArgumentException("null endpoint definition");
             this.callContext = callContext;
-            this.endpoint = endpoint;
+        }
+
+        BulkIOEndpointCallerImpl(IOEndpointImpl endpoint, CallContext[] callContexts, int threadCount, int queueSize) {
+            if (endpoint == null)
+                throw new IllegalArgumentException("null endpoint definition");
+            this.callerThreadPoolExecutor = new CallerThreadPoolExecutor(threadCount, queueSize);
+            this.callContexts = new LinkedBlockingQueue<>(Arrays.asList(callContexts));
         }
 
         private IOEndpointImpl getEndpoint() {
@@ -166,6 +166,15 @@ abstract class IOEndpointImpl implements IOEndpoint {
         void incrementCallCount() {
             callCount++;
         }
+        CallContext getCallContext() {
+            return this.callContext;
+        }
+        CallerThreadPoolExecutor getCallerThreadPoolExecutor() {
+            return this.callerThreadPoolExecutor;
+        }
+        LinkedBlockingQueue<CallContext> getCallContexts() {
+            return this.callContexts;
+        }
 
         boolean allowsEndpointState() {
             return getEndpoint().allowsEndpointState();
@@ -173,11 +182,13 @@ abstract class IOEndpointImpl implements IOEndpoint {
         @Override
         @Deprecated
         public InputStream getEndpointState() {
+            checkCallContextQueue();
             return callContext.getEndpointState();
         }
         @Override
         @Deprecated
         public void setEndpointState(byte[] endpointState) {
+            checkCallContextQueue();
             if (allowsEndpointState())
                 callContext.withEndpointState(endpointState);
             else if (endpointState != null)
@@ -186,11 +197,13 @@ abstract class IOEndpointImpl implements IOEndpoint {
         @Override
         @Deprecated
         public void setEndpointState(InputStream endpointState) {
+            checkCallContextQueue();
             callContext.withEndpointState(NodeConverter.InputStreamToBytes(endpointState));
         }
         @Override
         @Deprecated
         public void setEndpointState(BufferableHandle endpointState) {
+            checkCallContextQueue();
             callContext.withEndpointState((endpointState == null) ? null : endpointState.toBuffer());
         }
 
@@ -201,11 +214,13 @@ abstract class IOEndpointImpl implements IOEndpoint {
         @Override
         @Deprecated
         public InputStream getWorkUnit() {
+            checkCallContextQueue();
             return callContext.getWorkUnit();
         }
         @Override
         @Deprecated
         public void setWorkUnit(byte[] workUnit) {
+            checkCallContextQueue();
             if (allowsWorkUnit())
                 callContext.withWorkUnit(workUnit);
             else if (workUnit != null)
@@ -214,11 +229,13 @@ abstract class IOEndpointImpl implements IOEndpoint {
         @Override
         @Deprecated
         public void setWorkUnit(InputStream workUnit) {
+            checkCallContextQueue();
             callContext.withWorkUnit(NodeConverter.InputStreamToBytes(workUnit));
         }
         @Override
         @Deprecated
         public void setWorkUnit(BufferableHandle workUnit) {
+            checkCallContextQueue();
             callContext.withWorkUnit((workUnit == null) ? null : workUnit.toBuffer());
         }
 
@@ -326,6 +343,25 @@ abstract class IOEndpointImpl implements IOEndpoint {
                  return Arrays.copyOfRange(output, 1, output.length);
             }
             return output;
+        }
+
+        private void checkCallContextQueue() {
+            if(this.callContexts != null || !this.callContexts.isEmpty())
+                throw new InternalError("CallContext queue not empty");
+        }
+
+        class CallerThreadPoolExecutor extends ThreadPoolExecutor {
+
+            CallerThreadPoolExecutor(int threadCount, int queueSize) {
+
+                super(threadCount, threadCount, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(queueSize),
+                        new CallerRunsPolicy());
+            }
+
+            private void submitTask(Callable<Boolean> callable) {
+                FutureTask futureTask = new FutureTask(callable);
+                super.execute((Runnable) callable);
+            }
         }
     }
 
