@@ -93,11 +93,16 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
 
     @Override
     public BulkInputOutputCaller bulkCaller(CallContext[] callContexts, int threadCount) {
+        if(callContexts == null)
+            throw new IllegalArgumentException("CallContext cannot be null");
         if(threadCount > callContexts.length)
             throw new IllegalArgumentException("Thread count cannot be more than the callContext count.");
-        if(threadCount == 1)
-            return new BulkInputOutputCallerImpl(this, getBatchSize(), callContexts[0]);
-        return new BulkInputOutputCallerImpl(this, getBatchSize(), callContexts, threadCount);
+
+        switch(callContexts.length) {
+            case 0: throw new IllegalArgumentException("CallContext cannot be empty");
+            case 1: return new BulkInputOutputCallerImpl(this, getBatchSize(), callContexts[0]);
+            default: return new BulkInputOutputCallerImpl(this, getBatchSize(), callContexts, threadCount);
+        }
     }
 
     final static class BulkInputOutputCallerImpl extends IOEndpointImpl.BulkIOEndpointCallerImpl
@@ -210,14 +215,6 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
 
             while (!getQueue().isEmpty()) {
                 processInput();
-            }
-        }
-
-        static class ErrorListenerImpl implements BulkInputOutputCaller.ErrorListener {
-
-            @Override
-            public BulkIOEndpointCaller.ErrorDisposition processError(int retryCount, Throwable throwable, CallContext callContext, InputStream[] input) {
-                return null;
             }
         }
 

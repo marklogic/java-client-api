@@ -76,18 +76,23 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
 
     @Override
     public BulkExecCaller bulkCaller(CallContext[] callContexts) {
-        if(callContexts == null || callContexts.length==0)
-            throw new IllegalArgumentException("CallContext cannot be null or empty");
+        if(callContexts == null || callContexts.length == 0)
+            throw new IllegalArgumentException("CallContext cannot be null or empty.");
         return bulkCaller(callContexts, callContexts.length);
     }
 
     @Override
     public BulkExecCaller bulkCaller(CallContext[] callContexts, int threadCount) {
+        if(callContexts == null)
+            throw new IllegalArgumentException("CallContext cannot be null.");
         if(threadCount > callContexts.length)
             throw new IllegalArgumentException("Thread count cannot be more than the callContext count.");
-        if(threadCount == 1)
-            return new BulkExecCallerImpl(this, callContexts[0]);
-        return new BulkExecCallerImpl(this, callContexts, threadCount);
+
+        switch(callContexts.length) {
+            case 0: throw new IllegalArgumentException("CallContext cannot be empty");
+            case 1: return new BulkExecCallerImpl(this, callContexts[0]);
+            default: return new BulkExecCallerImpl(this, callContexts, threadCount);
+        }
     }
 
     final static class BulkExecCallerImpl
@@ -96,7 +101,6 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
     {
         private ExecEndpointImpl endpoint;
         private ErrorListener errorListener;
-        private int threadCount;
 
         private BulkExecCallerImpl(ExecEndpointImpl endpoint, CallContext callContext) {
             super(endpoint, callContext);
@@ -105,7 +109,6 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
         private BulkExecCallerImpl(ExecEndpointImpl endpoint, CallContext[] callContexts, int threadCount) {
             super(endpoint, callContexts, threadCount, threadCount);
             this.endpoint = endpoint;
-            this.threadCount = threadCount;
         }
 
         private ExecEndpointImpl getEndpoint() {
@@ -117,17 +120,19 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
             setPhase(WorkPhase.RUNNING);
             logger.trace("exec running endpoint={} work={}", getEndpointPath(), getCallContext().getWorkUnit());
 
-            if(threadCount == 1)
+            if(getThreadCount() == 1)
                 processOutput(getCallContext());
             else {
-                for (int i = 0; i < threadCount; i++) {
-                    BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this);
-                    try {
-                        bulkCallableImpl.submit(bulkCallableImpl);
-                        getCallerThreadPoolExecutor().awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
-                    } catch(Throwable throwable) {
-                        throw new RuntimeException("Error occurred while awaiting termination ", throwable);
+                try {
+                    for (int i = 0; i < getThreadCount(); i++) {
+                        BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this);
+                        submit(bulkCallableImpl);
+
                     }
+                    getCallerThreadPoolExecutor().awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+                }
+                catch(Throwable throwable) {
+                    throw new RuntimeException("Error occurred while awaiting termination ", throwable);
                 }
             }
         }
@@ -137,14 +142,11 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
             this.errorListener = errorListener;
         }
 
-        static class ErrorListenerImpl implements BulkExecCaller.ErrorListener {
-
-            @Override
-            public BulkIOEndpointCaller.ErrorDisposition processError(int retryCount, Throwable throwable,
-                                                                      CallContext callContext) {
-                return null;
+        /*private void processOutput() {
+            calling:while (true){
+            processOutput(getCallContext());
             }
-        }
+        }*/
 
         private void processOutput(CallContext callContext){
             calling: while (true) {
@@ -199,21 +201,22 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
 
             @Override
             public Boolean call() throws InterruptedException{
-                    CallContext callContext = bulkExecCallerImpl.getCallContexts().poll();
-
+                CallContext callContext = bulkExecCallerImpl.getCallContexts().poll();
+                if(callContext!=null)
                     bulkExecCallerImpl.processOutput(callContext);
-                    if(getPhase() == WorkPhase.COMPLETED && bulkExecCallerImpl.getCallContexts().isEmpty()) {
-                        getCallerThreadPoolExecutor().shutdown();
-                    } else {
-                        bulkExecCallerImpl.getCallContexts().put(callContext);
-                    }
+                else if(getPhase() == WorkPhase.COMPLETED && bulkExecCallerImpl.getCallContexts().isEmpty()) {
+                    getCallerThreadPoolExecutor().shutdown();
+                } else {
+                    bulkExecCallerImpl.getCallContexts().put(callContext);
+                    submit(this);
+                }
               return true;
             }
+        }
 
-            private void submit(BulkCallableImpl bulkCallableImpl) {
-                FutureTask futureTask = new FutureTask(bulkCallableImpl);
-                getCallerThreadPoolExecutor().execute(futureTask);
-            }
+        private void submit(BulkCallableImpl bulkCallableImpl) {
+            FutureTask futureTask = new FutureTask(bulkCallableImpl);
+            getCallerThreadPoolExecutor().execute(futureTask);
         }
     }
 }
