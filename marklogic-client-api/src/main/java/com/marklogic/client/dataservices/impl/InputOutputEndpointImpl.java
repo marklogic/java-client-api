@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -86,7 +85,7 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
 
     @Override
     public BulkInputOutputCaller bulkCaller(CallContext[] callContexts) {
-        if(callContexts == null || callContexts.length==0)
+        if(callContexts == null || callContexts.length == 0)
             throw new IllegalArgumentException("CallContext cannot be null or empty");
         return bulkCaller(callContexts, callContexts.length);
     }
@@ -113,10 +112,9 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
         private LinkedBlockingQueue<InputStream> queue;
         private Consumer<InputStream> outputListener;
         private ErrorListener errorListener;
-        private int threadCount;
 
         BulkInputOutputCallerImpl(InputOutputEndpointImpl endpoint, int batchSize, CallContext callContext) {
-            super(endpoint, callContext);
+            super(callContext);
             this.endpoint = endpoint;
             this.batchSize = batchSize;
             this.queue = new LinkedBlockingQueue<>();
@@ -124,11 +122,10 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
 
         private BulkInputOutputCallerImpl(InputOutputEndpointImpl endpoint, int batchSize, CallContext[] callContexts,
                                           int threadCount) {
-            super(endpoint, callContexts, threadCount, (2*callContexts.length));
+            super(callContexts, threadCount, (2*callContexts.length));
             this.endpoint = endpoint;
             this.batchSize = batchSize;
             this.queue = new LinkedBlockingQueue<>();
-            this.threadCount = threadCount;
         }
 
         private InputOutputEndpointImpl getEndpoint() {
@@ -174,17 +171,24 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
         }
 
         private void processInput() {
-            if(threadCount == 1)
+            if(getThreadCount() == 1 && getCallContexts().size()==1)
                 processInput(getCallContext());
+            else if(getThreadCount() == 1 && getCallContexts().size()>1) {
+                while(!getCallContexts().isEmpty()) {
+                    CallContext callContext = getCallContexts().poll();
+                    if(callContext!=null)
+                        processInput(callContext);
+                }
+            }
             else {
-                for (int i = 0; i < threadCount; i++) {
-                    BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this);
-                    try {
-                        bulkCallableImpl.submit(bulkCallableImpl);
-                        getCallerThreadPoolExecutor().awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
-                    } catch(Throwable throwable) {
-                        throw new RuntimeException("Error occurred while awaiting Termination ", throwable);
+                try {
+                    for (int i = 0; i < getThreadCount(); i++) {
+                        BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this);
+                        submitTask(bulkCallableImpl);
                     }
+                    getCallerThreadPoolExecutor().awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+                } catch(Throwable throwable) {
+                    throw new RuntimeException("Error occurred while awaiting Termination ", throwable);
                 }
             }
         }
@@ -227,23 +231,21 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
             public Boolean call() {
                 try {
                     CallContext callContext = bulkInputOutputCallerImpl.getCallContexts().poll();
+                    if(callContext != null)
+                        bulkInputOutputCallerImpl.processInput(callContext);
 
-                    bulkInputOutputCallerImpl.processInput(callContext);
                     if(getPhase() == WorkPhase.COMPLETED && bulkInputOutputCallerImpl.getCallContexts().isEmpty()) {
                         getCallerThreadPoolExecutor().shutdown();
-                    } else {
+                    }
+                    else if(callContext != null) {
                         bulkInputOutputCallerImpl.getCallContexts().put(callContext);
+                        submitTask(this);
                     }
                 } catch(Exception ex) {
                     logger.error("Error occurred while processing CallContext - "+ex.getMessage());
                     return false;
                 }
                 return true;
-            }
-
-            private void submit(BulkCallableImpl bulkCallableImpl) {
-                FutureTask futureTask = new FutureTask(bulkCallableImpl);
-                getCallerThreadPoolExecutor().execute(futureTask);
             }
         }
     }

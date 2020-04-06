@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoint {
@@ -103,11 +102,11 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
         private ErrorListener errorListener;
 
         private BulkExecCallerImpl(ExecEndpointImpl endpoint, CallContext callContext) {
-            super(endpoint, callContext);
+            super(callContext);
             this.endpoint = endpoint;
         }
         private BulkExecCallerImpl(ExecEndpointImpl endpoint, CallContext[] callContexts, int threadCount) {
-            super(endpoint, callContexts, threadCount, threadCount);
+            super(callContexts, threadCount, threadCount);
             this.endpoint = endpoint;
         }
 
@@ -120,14 +119,18 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
             setPhase(WorkPhase.RUNNING);
             logger.trace("exec running endpoint={} work={}", getEndpointPath(), getCallContext().getWorkUnit());
 
-            if(getThreadCount() == 1)
-                processOutput(getCallContext());
+            if(getThreadCount() == 1 && getCallContexts().size()==1)
+                processOutput();
+            else if(getThreadCount() == 1 && getCallContexts().size()>1) {
+                while(!getCallContexts().isEmpty()) {
+                    processOutput();
+                }
+            }
             else {
                 try {
                     for (int i = 0; i < getThreadCount(); i++) {
                         BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this);
-                        submit(bulkCallableImpl);
-
+                        submitTask(bulkCallableImpl);
                     }
                     getCallerThreadPoolExecutor().awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
                 }
@@ -142,14 +145,17 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
             this.errorListener = errorListener;
         }
 
-        /*private void processOutput() {
-            calling:while (true){
-            processOutput(getCallContext());
+        private void processOutput() {
+            CallContext callContext = getCallContexts().poll();
+            if(callContext != null) {
+                calling:while (true){
+                    if(!processOutput(callContext))
+                        break calling;
+                }
             }
-        }*/
+        }
 
-        private void processOutput(CallContext callContext){
-            calling: while (true) {
+        private Boolean processOutput(CallContext callContext){
                 InputStream output = null;
                 try {
                     logger.trace("exec calling endpoint={} count={} state={}",
@@ -176,21 +182,20 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
                         setPhase(WorkPhase.INTERRUPTED);
                         logger.info("exec interrupted endpoint={} count={} work={}",
                                 getEndpointPath(), getCallCount(), callContext.getWorkUnit());
-                        break calling;
+                        return false;
                     case RUNNING:
                         if (output == null) {
                             setPhase(WorkPhase.COMPLETED);
                             logger.info("exec completed endpoint={} count={} work={}",
                                     getEndpointPath(), getCallCount(), callContext.getWorkUnit());
-                            break calling;
+                            return false;
                         }
-                        break;
+                        return true;
                     default:
                         throw new MarkLogicInternalException(
                                 "unexpected state for "+getEndpointPath()+" during loop: "+getPhase().name()
                         );
                 }
-            }
         }
 
         private class BulkCallableImpl implements Callable<Boolean> {
@@ -204,19 +209,16 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
                 CallContext callContext = bulkExecCallerImpl.getCallContexts().poll();
                 if(callContext!=null)
                     bulkExecCallerImpl.processOutput(callContext);
-                else if(getPhase() == WorkPhase.COMPLETED && bulkExecCallerImpl.getCallContexts().isEmpty()) {
+
+                if(getPhase() == WorkPhase.COMPLETED && bulkExecCallerImpl.getCallContexts().isEmpty()) {
                     getCallerThreadPoolExecutor().shutdown();
-                } else {
+                }
+                else if(callContext != null) {
                     bulkExecCallerImpl.getCallContexts().put(callContext);
-                    submit(this);
+                    submitTask(this);
                 }
               return true;
             }
-        }
-
-        private void submit(BulkCallableImpl bulkCallableImpl) {
-            FutureTask futureTask = new FutureTask(bulkCallableImpl);
-            getCallerThreadPoolExecutor().execute(futureTask);
         }
     }
 }

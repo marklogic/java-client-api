@@ -141,15 +141,11 @@ abstract class IOEndpointImpl implements IOEndpoint {
         private CallerThreadPoolExecutor callerThreadPoolExecutor;
         private LinkedBlockingQueue<CallContext> callContexts;
 
-        BulkIOEndpointCallerImpl(IOEndpointImpl endpoint, CallContext callContext) {
-            if (endpoint == null)
-                throw new IllegalArgumentException("null endpoint definition");
+        BulkIOEndpointCallerImpl(CallContext callContext) {
             this.callContext = callContext;
         }
 
-        BulkIOEndpointCallerImpl(IOEndpointImpl endpoint, CallContext[] callContexts, int threadCount, int queueSize) {
-            if (endpoint == null)
-                throw new IllegalArgumentException("null endpoint definition");
+        BulkIOEndpointCallerImpl(CallContext[] callContexts, int threadCount, int queueSize) {
             this.callerThreadPoolExecutor = new CallerThreadPoolExecutor(threadCount, queueSize);
             this.callContexts = new LinkedBlockingQueue<>(Arrays.asList(callContexts));
             this.threadCount = threadCount;
@@ -187,13 +183,13 @@ abstract class IOEndpointImpl implements IOEndpoint {
         @Override
         @Deprecated
         public InputStream getEndpointState() {
-            checkCallContextQueue();
+            checkCallContext();
             return callContext.getEndpointState();
         }
         @Override
         @Deprecated
         public void setEndpointState(byte[] endpointState) {
-            checkCallContextQueue();
+            checkCallContext();
             if (allowsEndpointState())
                 callContext.withEndpointState(endpointState);
             else if (endpointState != null)
@@ -202,13 +198,13 @@ abstract class IOEndpointImpl implements IOEndpoint {
         @Override
         @Deprecated
         public void setEndpointState(InputStream endpointState) {
-            checkCallContextQueue();
+            checkCallContext();
             callContext.withEndpointState(NodeConverter.InputStreamToBytes(endpointState));
         }
         @Override
         @Deprecated
         public void setEndpointState(BufferableHandle endpointState) {
-            checkCallContextQueue();
+            checkCallContext();
             callContext.withEndpointState((endpointState == null) ? null : endpointState.toBuffer());
         }
 
@@ -219,13 +215,13 @@ abstract class IOEndpointImpl implements IOEndpoint {
         @Override
         @Deprecated
         public InputStream getWorkUnit() {
-            checkCallContextQueue();
+            checkCallContext();
             return callContext.getWorkUnit();
         }
         @Override
         @Deprecated
         public void setWorkUnit(byte[] workUnit) {
-            checkCallContextQueue();
+            checkCallContext();
             if (allowsWorkUnit())
                 callContext.withWorkUnit(workUnit);
             else if (workUnit != null)
@@ -234,13 +230,13 @@ abstract class IOEndpointImpl implements IOEndpoint {
         @Override
         @Deprecated
         public void setWorkUnit(InputStream workUnit) {
-            checkCallContextQueue();
+            checkCallContext();
             callContext.withWorkUnit(NodeConverter.InputStreamToBytes(workUnit));
         }
         @Override
         @Deprecated
         public void setWorkUnit(BufferableHandle workUnit) {
-            checkCallContextQueue();
+            checkCallContext();
             callContext.withWorkUnit((workUnit == null) ? null : workUnit.toBuffer());
         }
 
@@ -350,22 +346,22 @@ abstract class IOEndpointImpl implements IOEndpoint {
             return output;
         }
 
-        private void checkCallContextQueue() {
-            if(this.callContexts != null || !this.callContexts.isEmpty())
+        private void checkCallContext() {
+            if(this.callContext != null)
                 throw new InternalError("CallContext queue not empty");
+        }
+
+        void submitTask(Callable<Boolean> callable) {
+            FutureTask futureTask = new FutureTask(callable);
+            getCallerThreadPoolExecutor().execute(futureTask);
         }
 
         class CallerThreadPoolExecutor extends ThreadPoolExecutor {
 
             CallerThreadPoolExecutor(int threadCount, int queueSize) {
 
-                super(threadCount, threadCount, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(queueSize),
-                        new CallerRunsPolicy());
-            }
-
-            private void submitTask(Callable<Boolean> callable) {
-                FutureTask futureTask = new FutureTask(callable);
-                super.execute((Runnable) callable);
+                super(threadCount, threadCount, 0, TimeUnit.MILLISECONDS,
+                        new LinkedBlockingQueue<Runnable>(queueSize), new CallerRunsPolicy());
             }
         }
     }

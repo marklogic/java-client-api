@@ -17,7 +17,6 @@ package com.marklogic.client.dataservices.impl;
 
 import java.io.InputStream;
 import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -112,14 +111,14 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 		private ErrorListener errorListener;
 
 		private BulkInputCallerImpl(InputEndpointImpl endpoint, int batchSize, CallContext callContext) {
-			super(endpoint, callContext);
+			super(callContext);
 			this.endpoint = endpoint;
 			this.batchSize = batchSize;
 			this.queue = new LinkedBlockingQueue<>();
 		}
 
 		private BulkInputCallerImpl(InputEndpointImpl endpoint, int batchSize, CallContext[] callContexts, int threadCount) {
-			super(endpoint, callContexts, threadCount, (2*callContexts.length));
+			super(callContexts, threadCount, (2*callContexts.length));
 			this.endpoint = endpoint;
 			this.batchSize = batchSize;
 			this.queue = new LinkedBlockingQueue<>();
@@ -163,17 +162,24 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 			}
 		}
 		private void processInput() {
-			if(getThreadCount() == 1)
+			if(getThreadCount() == 1 && getCallContexts().size() == 1)
 				processInput(getCallContext());
+			else if(getThreadCount() == 1 && getCallContexts().size()>1) {
+				while(!getCallContexts().isEmpty()) {
+					CallContext callContext = getCallContexts().poll();
+					if(callContext != null)
+						processInput(callContext);
+				}
+			}
 			else {
-				for (int i = 0; i < getThreadCount(); i++) {
-					BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this);
-					try {
-						bulkCallableImpl.submit(bulkCallableImpl);
-						getCallerThreadPoolExecutor().awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
-					} catch(Throwable throwable) {
-						throw new RuntimeException("Error occurred while awaiting termination "+throwable.getMessage());
+				try {
+					for (int i = 0; i < getThreadCount(); i++) {
+						BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this);
+						submitTask(bulkCallableImpl);
 					}
+					getCallerThreadPoolExecutor().awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+				} catch(Throwable throwable) {
+					throw new RuntimeException("Error occurred while awaiting termination "+throwable.getMessage());
 				}
 			}
 		}
@@ -208,23 +214,21 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 			public Boolean call() {
 				try {
 					CallContext callContext = bulkInputCallerImpl.getCallContexts().poll();
+					if(callContext != null)
+						bulkInputCallerImpl.processInput(callContext);
 
-					bulkInputCallerImpl.processInput(callContext);
 					if(getPhase() == WorkPhase.COMPLETED && bulkInputCallerImpl.getCallContexts().isEmpty()) {
 						getCallerThreadPoolExecutor().shutdown();
-					} else {
+					}
+					else if(callContext != null) {
 						bulkInputCallerImpl.getCallContexts().put(callContext);
+						submitTask(this);
 					}
 				} catch(Exception ex) {
 					logger.error("Error occurred while processing CallContext - "+ex.getMessage());
 					return false;
 				}
 				return true;
-			}
-
-			private void submit(BulkCallableImpl bulkCallableImpl) {
-				FutureTask futureTask = new FutureTask(bulkCallableImpl);
-				getCallerThreadPoolExecutor().execute(futureTask);
 			}
 		}
 	}
