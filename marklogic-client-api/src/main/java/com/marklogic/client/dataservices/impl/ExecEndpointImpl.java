@@ -119,24 +119,23 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
             setPhase(WorkPhase.RUNNING);
             logger.trace("exec running endpoint={} work={}", getEndpointPath(), getCallContext().getWorkUnit());
 
-            if(getThreadCount() == 1 && getCallContexts().size()==1)
+            if(getCallContext() != null)
                 processOutput();
-            else if(getThreadCount() == 1 && getCallContexts().size()>1) {
-                while(!getCallContexts().isEmpty()) {
-                    processOutput();
-                }
-            }
-            else {
+                // TODO : optimize the case of a single thread with a callContextQueue.
+
+            else if(getCallContextQueue() != null && !getCallContextQueue().isEmpty()){
                 try {
                     for (int i = 0; i < getThreadCount(); i++) {
                         BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this);
                         submitTask(bulkCallableImpl);
                     }
-                    getCallerThreadPoolExecutor().awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+                    getCallerThreadPoolExecutor().awaitTermination();
                 }
                 catch(Throwable throwable) {
                     throw new RuntimeException("Error occurred while awaiting termination ", throwable);
                 }
+            } else {
+                throw new IllegalArgumentException("Cannot process output without Callcontext.");
             }
         }
 
@@ -146,16 +145,13 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
         }
 
         private void processOutput() {
-            CallContext callContext = getCallContexts().poll();
+            CallContext callContext = getCallContext();
             if(callContext != null) {
-                calling:while (true){
-                    if(!processOutput(callContext))
-                        break calling;
-                }
+                while (processOutput(callContext));
             }
         }
 
-        private Boolean processOutput(CallContext callContext){
+        private boolean processOutput(CallContext callContext){
                 InputStream output = null;
                 try {
                     logger.trace("exec calling endpoint={} count={} state={}",
@@ -200,24 +196,27 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
 
         private class BulkCallableImpl implements Callable<Boolean> {
             private BulkExecCallerImpl bulkExecCallerImpl;
+            private Boolean continueCalling = true;
+
             BulkCallableImpl(BulkExecCallerImpl bulkExecCallerImpl) {
                 this.bulkExecCallerImpl = bulkExecCallerImpl;
             }
 
             @Override
             public Boolean call() throws InterruptedException{
-                CallContext callContext = bulkExecCallerImpl.getCallContexts().poll();
-                if(callContext!=null)
-                    bulkExecCallerImpl.processOutput(callContext);
+                CallContext callContext = bulkExecCallerImpl.getCallContextQueue().poll();
 
-                if(getPhase() == WorkPhase.COMPLETED && bulkExecCallerImpl.getCallContexts().isEmpty()) {
-                    getCallerThreadPoolExecutor().shutdown();
-                }
-                else if(callContext != null) {
-                    bulkExecCallerImpl.getCallContexts().put(callContext);
+                continueCalling = (callContext == null)? false:bulkExecCallerImpl.processOutput(callContext);
+
+                if(continueCalling) {
+                    bulkExecCallerImpl.getCallContextQueue().put(callContext);
                     submitTask(this);
                 }
-              return true;
+                else if(getPhase() == WorkPhase.COMPLETED && bulkExecCallerImpl.getCallContextQueue().isEmpty()) {
+                    getCallerThreadPoolExecutor().shutdown();
+                }
+
+                return true;
             }
         }
     }

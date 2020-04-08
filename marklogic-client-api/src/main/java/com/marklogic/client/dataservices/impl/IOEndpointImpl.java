@@ -139,15 +139,15 @@ abstract class IOEndpointImpl implements IOEndpoint {
         private int threadCount;
 
         private CallerThreadPoolExecutor callerThreadPoolExecutor;
-        private LinkedBlockingQueue<CallContext> callContexts;
+        private LinkedBlockingQueue<CallContext> callContextQueue;
 
         BulkIOEndpointCallerImpl(CallContext callContext) {
             this.callContext = callContext;
         }
 
         BulkIOEndpointCallerImpl(CallContext[] callContexts, int threadCount, int queueSize) {
-            this.callerThreadPoolExecutor = new CallerThreadPoolExecutor(threadCount, queueSize);
-            this.callContexts = new LinkedBlockingQueue<>(Arrays.asList(callContexts));
+            this.callerThreadPoolExecutor = new CallerThreadPoolExecutor(threadCount, queueSize, this);
+            this.callContextQueue = new LinkedBlockingQueue<>(Arrays.asList(callContexts));
             this.threadCount = threadCount;
         }
 
@@ -170,8 +170,8 @@ abstract class IOEndpointImpl implements IOEndpoint {
         CallerThreadPoolExecutor getCallerThreadPoolExecutor() {
             return this.callerThreadPoolExecutor;
         }
-        LinkedBlockingQueue<CallContext> getCallContexts() {
-            return this.callContexts;
+        LinkedBlockingQueue<CallContext> getCallContextQueue() {
+            return this.callContextQueue;
         }
         int getThreadCount(){
             return this.threadCount;
@@ -347,8 +347,8 @@ abstract class IOEndpointImpl implements IOEndpoint {
         }
 
         private void checkCallContext() {
-            if(this.callContext != null)
-                throw new InternalError("CallContext queue not empty");
+            if(this.callContext == null)
+                throw new InternalError("Can only call methods with single callcontext.");
         }
 
         void submitTask(Callable<Boolean> callable) {
@@ -356,12 +356,26 @@ abstract class IOEndpointImpl implements IOEndpoint {
             getCallerThreadPoolExecutor().execute(futureTask);
         }
 
-        class CallerThreadPoolExecutor extends ThreadPoolExecutor {
 
-            CallerThreadPoolExecutor(int threadCount, int queueSize) {
+        static class CallerThreadPoolExecutor extends ThreadPoolExecutor {
+
+            private Boolean awaitingTermination;
+            private BulkIOEndpointCallerImpl bulkIOEndpointCaller;
+            CallerThreadPoolExecutor(int threadCount, int queueSize, BulkIOEndpointCallerImpl bulkIOEndpointCaller) {
 
                 super(threadCount, threadCount, 0, TimeUnit.MILLISECONDS,
                         new LinkedBlockingQueue<Runnable>(queueSize), new CallerRunsPolicy());
+                this.bulkIOEndpointCaller = bulkIOEndpointCaller;
+            }
+
+            Boolean isAwaitingTermination() {
+                return this.awaitingTermination;
+            }
+            synchronized void awaitTermination() throws InterruptedException {
+                if(bulkIOEndpointCaller.getCallContextQueue().isEmpty())
+                    shutdown();
+                awaitingTermination = true;
+                awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
             }
         }
     }

@@ -154,37 +154,32 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 
 		@Override
 		public void awaitCompletion() {
-			if (getQueue() == null)
-				return;
+			try {
+				if (getQueue() == null)
+					return;
 
-			while (!getQueue().isEmpty()) {
-				processInput();
+				while (getQueue() != null && !getQueue().isEmpty()) {
+					processInput();
+				}
+				getCallerThreadPoolExecutor().awaitTermination();
+			} catch (Throwable throwable) {
+				throw new RuntimeException("Error occurred while awaiting termination "+throwable.getMessage());
 			}
 		}
 		private void processInput() {
-			if(getThreadCount() == 1 && getCallContexts().size() == 1)
-				processInput(getCallContext());
-			else if(getThreadCount() == 1 && getCallContexts().size()>1) {
-				while(!getCallContexts().isEmpty()) {
-					CallContext callContext = getCallContexts().poll();
-					if(callContext != null)
-						processInput(callContext);
-				}
-			}
-			else {
-				try {
-					for (int i = 0; i < getThreadCount(); i++) {
-						BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this);
-						submitTask(bulkCallableImpl);
-					}
-					getCallerThreadPoolExecutor().awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
-				} catch(Throwable throwable) {
-					throw new RuntimeException("Error occurred while awaiting termination "+throwable.getMessage());
-				}
+			InputStream[] inputBatch = getInputBatch(getQueue(), getBatchSize());
+			if(getCallContext()!=null)
+				processInput(getCallContext(), inputBatch);
+			// TODO : optimize the case of a single thread with a callContextQueue.
+			else if(getCallContextQueue() != null && !getCallContextQueue().isEmpty()){
+					BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this, inputBatch);
+					submitTask(bulkCallableImpl);
+			} else {
+				throw new IllegalArgumentException("Cannot process input without Callcontext.");
 			}
 		}
 
-		private void processInput(CallContext callContext) {
+		private void processInput(CallContext callContext, InputStream[] inputBatch) {
 			logger.trace("input endpoint running endpoint={} count={} state={}", getEndpointPath(), getCallCount(),
 					callContext.getEndpointState());
 
@@ -192,7 +187,7 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 			try {
 				output = getEndpoint().getCaller().arrayCall(
 						getClient(), callContext.getEndpointState(), callContext.getSessionState(),
-						callContext.getWorkUnit(), getInputBatch(getQueue(), getBatchSize())
+						callContext.getWorkUnit(), inputBatch
 				);
 			} catch (Throwable throwable) {
 				throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
@@ -207,26 +202,26 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 
 		private class BulkCallableImpl implements Callable<Boolean> {
 			private BulkInputCallerImpl bulkInputCallerImpl;
-			BulkCallableImpl(BulkInputCallerImpl bulkInputCallerImpl) {
+			private InputStream[] inputBatch;
+			BulkCallableImpl(BulkInputCallerImpl bulkInputCallerImpl, InputStream[] inputBatch) {
 				this.bulkInputCallerImpl = bulkInputCallerImpl;
+				this.inputBatch = inputBatch;
 			}
 			@Override
 			public Boolean call() {
 				try {
-					CallContext callContext = bulkInputCallerImpl.getCallContexts().poll();
+					CallContext callContext = bulkInputCallerImpl.getCallContextQueue().poll();
 					if(callContext != null)
-						bulkInputCallerImpl.processInput(callContext);
+						bulkInputCallerImpl.processInput(callContext, inputBatch);
 
-					if(getPhase() == WorkPhase.COMPLETED && bulkInputCallerImpl.getCallContexts().isEmpty()) {
+					if(getPhase() == WorkPhase.COMPLETED && bulkInputCallerImpl.getCallContextQueue().isEmpty()) {
 						getCallerThreadPoolExecutor().shutdown();
 					}
 					else if(callContext != null) {
-						bulkInputCallerImpl.getCallContexts().put(callContext);
-						submitTask(this);
+						bulkInputCallerImpl.getCallContextQueue().put(callContext);
 					}
 				} catch(Exception ex) {
-					logger.error("Error occurred while processing CallContext - "+ex.getMessage());
-					return false;
+					throw new InternalError("Error occurred while processing CallContext - "+ex.getMessage());
 				}
 				return true;
 			}
