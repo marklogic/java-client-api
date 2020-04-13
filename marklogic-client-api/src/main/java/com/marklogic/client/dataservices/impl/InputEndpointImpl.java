@@ -18,7 +18,6 @@ package com.marklogic.client.dataservices.impl;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +59,8 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 	public InputStream call(InputStream endpointState, SessionState session, InputStream workUnit, InputStream[] input) {
 		CallContext callContext = newCallContext().withEndpointState(endpointState).withSessionState(session)
 				.withWorkUnit(workUnit);
-		return call(callContext, input);
+		call(callContext, input);
+		return callContext.getEndpointState();
 	}
 
 	@Override
@@ -70,15 +70,15 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 	}
 
 	@Override
-	public InputStream call(CallContext callContext, InputStream[] input) {
+	public void call(CallContext callContext, InputStream[] input) {
 		checkAllowedArgs(callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit());
-		return getCaller().arrayCall(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
-				callContext.getWorkUnit(), input);
+		callContext.withEndpointState(getCaller().arrayCall(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
+				callContext.getWorkUnit(), input));
 	}
 
 	@Override
 	public BulkInputCaller bulkCaller(CallContext callContext) {
-		return new BulkInputCallerImpl(this, getBatchSize(), newCallContext());
+		return new BulkInputCallerImpl(this, getBatchSize(), callContext);
 	}
 
 	@Override
@@ -107,21 +107,21 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 
 		private InputEndpointImpl endpoint;
 		private int batchSize;
-		private LinkedBlockingQueue<InputStream> queue;
+		private LinkedBlockingQueue<InputStream> inputQueue;
 		private ErrorListener errorListener;
 
 		private BulkInputCallerImpl(InputEndpointImpl endpoint, int batchSize, CallContext callContext) {
 			super(callContext);
 			this.endpoint = endpoint;
 			this.batchSize = batchSize;
-			this.queue = new LinkedBlockingQueue<>();
+			this.inputQueue = new LinkedBlockingQueue<>();
 		}
 
 		private BulkInputCallerImpl(InputEndpointImpl endpoint, int batchSize, CallContext[] callContexts, int threadCount) {
 			super(callContexts, threadCount, (2*callContexts.length));
 			this.endpoint = endpoint;
 			this.batchSize = batchSize;
-			this.queue = new LinkedBlockingQueue<>();
+			this.inputQueue = new LinkedBlockingQueue<>();
 		}
 
 		private InputEndpointImpl getEndpoint() {
@@ -130,19 +130,19 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 		private int getBatchSize() {
 			return batchSize;
 		}
-		private LinkedBlockingQueue<InputStream> getQueue() {
-			return queue;
+		private LinkedBlockingQueue<InputStream> getInputQueue() {
+			return inputQueue;
 		}
 
 		@Override
 		public void accept(InputStream input) {
-			boolean hasBatch = queueInput(input, getQueue(), getBatchSize());
+			boolean hasBatch = queueInput(input, getInputQueue(), getBatchSize());
 			if (hasBatch)
 			    processInput();
 		}
 		@Override
 		public void acceptAll(InputStream[] input) {
-			boolean hasBatch = queueAllInput(input, getQueue(), getBatchSize());
+			boolean hasBatch = queueAllInput(input, getInputQueue(), getBatchSize());
 			if (hasBatch)
 				processInput();
 		}
@@ -155,10 +155,10 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 		@Override
 		public void awaitCompletion() {
 			try {
-				if (getQueue() == null)
+				if (getInputQueue() == null)
 					return;
 
-				while (getQueue() != null && !getQueue().isEmpty()) {
+				while (!getInputQueue().isEmpty()) {
 					processInput();
 				}
 				getCallerThreadPoolExecutor().awaitTermination();
@@ -167,7 +167,7 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 			}
 		}
 		private void processInput() {
-			InputStream[] inputBatch = getInputBatch(getQueue(), getBatchSize());
+			InputStream[] inputBatch = getInputBatch(getInputQueue(), getBatchSize());
 			if(getCallContext()!=null)
 				processInput(getCallContext(), inputBatch);
 			// TODO : optimize the case of a single thread with a callContextQueue.
@@ -211,14 +211,14 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 			public Boolean call() {
 				try {
 					CallContext callContext = bulkInputCallerImpl.getCallContextQueue().poll();
-					if(callContext != null)
-						bulkInputCallerImpl.processInput(callContext, inputBatch);
 
-					if(getPhase() == WorkPhase.COMPLETED && bulkInputCallerImpl.getCallContextQueue().isEmpty()) {
-						getCallerThreadPoolExecutor().shutdown();
-					}
-					else if(callContext != null) {
+					if(callContext != null) {
+						bulkInputCallerImpl.processInput(callContext, inputBatch);
 						bulkInputCallerImpl.getCallContextQueue().put(callContext);
+					}
+					else if(bulkInputCallerImpl.getCallContextQueue().isEmpty() &&
+							getCallerThreadPoolExecutor().getActiveCount() == 0) {
+						getCallerThreadPoolExecutor().shutdown();
 					}
 				} catch(Exception ex) {
 					throw new InternalError("Error occurred while processing CallContext - "+ex.getMessage());

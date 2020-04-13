@@ -61,29 +61,28 @@ public interface OutputEndpoint extends IOEndpoint {
     BulkOutputCaller bulkCaller();
 
     /**
-     * Makes one call to the endpoint for the instance
+     * Makes one call to the endpoint for the instance and sets the endpoint state in the Call Context.
      * @param callContext the collection of endpointState, sessionState and workUnit
-     * @return  the endpoint state if produced by the endpoint followed by the response data from the endpoint
      */
-    InputStream[] call(CallContext callContext);
+    void call(CallContext callContext);
 
     /**
      * Constructs an instance of a bulk caller, which completes
-     * a unit of work by repeated calls to the endpoint.
+     * a unit of work by repeated calls to the endpoint. The calls occur in current thread.
      * @param callContext the collection of endpointState, sessionState and workUnit
      * @return  the bulk caller for the output endpoint
      */
     BulkOutputCaller bulkCaller(CallContext callContext);
     /**
      * Constructs an instance of a bulk caller, which completes
-     * a unit of work by repeated calls to the endpoint.
+     * a unit of work by repeated calls to the endpoint. The calls occur in worker threads.
      * @param callContexts the collection of callContexts
      * @return  the bulk caller for the output endpoint
      */
     BulkOutputCaller bulkCaller(CallContext[] callContexts);
     /**
      * Constructs an instance of a bulk caller, which completes
-     * a unit of work by repeated calls to the endpoint.
+     * a unit of work by repeated calls to the endpoint. The calls occur in worker threads.
      * @param callContexts the collection of callContexts
      * @param threadCount the number of threads
      * @return  the bulk caller for the output endpoint
@@ -100,7 +99,8 @@ public interface OutputEndpoint extends IOEndpoint {
          */
         void setOutputListener(Consumer<InputStream> listener);
         /**
-         * Provides synchronous access to output.
+         * Provides synchronous access to output. Used only while executing calls in the current thread instead of
+         * worker threads and when an output listener is not used.
          * @return the response from the endpoint.
          */
         InputStream[] next();

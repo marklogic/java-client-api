@@ -47,7 +47,9 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
 
     @Override
     public InputStream[] call() {
-        return call(newCallContext());
+        call(newCallContext());
+        InputStream[] endpointStateValue = {getCallContext().getEndpointState()};
+        return endpointStateValue;
     }
 
     @Override
@@ -55,7 +57,9 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
     public InputStream[] call(InputStream endpointState, SessionState session, InputStream workUnit) {
         CallContext callContext = newCallContext().withEndpointState(endpointState).withSessionState(session)
                 .withWorkUnit(workUnit);
-        return call(callContext);
+        call(callContext);
+        InputStream[] endpointStateValue = {callContext.getEndpointState()};
+        return endpointStateValue;
     }
 
     @Override
@@ -65,10 +69,10 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
     }
 
     @Override
-    public InputStream[] call(CallContext callContext) {
+    public void call(CallContext callContext) {
         checkAllowedArgs(callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit());
-        return getCaller().arrayCall(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
-                callContext.getWorkUnit());
+        callContext.withEndpointState(getCaller().arrayCall(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
+                callContext.getWorkUnit())[0]);
     }
 
     @Override
@@ -244,7 +248,8 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                     submitTask(this);
                 }
 
-                else if(getPhase() == WorkPhase.COMPLETED && bulkOutputCallerImpl.getCallContextQueue().isEmpty()) {
+                else if(bulkOutputCallerImpl.getCallContextQueue().isEmpty() &&
+                        getCallerThreadPoolExecutor().getActiveCount() == 0) {
                     getCallerThreadPoolExecutor().shutdown();
                 }
                 return true;

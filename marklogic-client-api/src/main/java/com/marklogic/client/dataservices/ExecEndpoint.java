@@ -61,28 +61,27 @@ public interface ExecEndpoint extends IOEndpoint {
     BulkExecCaller bulkCaller();
 
     /**
-     * Makes one call to the endpoint for the instance.
+     * Makes one call to the endpoint for the instance and sets the endpoint state in the Call Context.
      * @param callContext the collection of endpointState, sessionState and workUnit
-     * @return the endpoint state for the next call, if returned by the endpoint, or null
      */
-    InputStream call(CallContext callContext);
+    void call(CallContext callContext);
     /**
      * Constructs an instance of a bulk caller, which completes
-     * a unit of work by repeated calls to the endpoint.
+     * a unit of work by repeated calls to the endpoint. The calls occur in the current thread.
      * @param callContext the collection of endpointState, sessionState and workUnit
      * @return  the bulk caller for the endpoint
      */
     BulkExecCaller bulkCaller(CallContext callContext);
     /**
      * Constructs an instance of a bulk caller, which completes
-     * a unit of work by repeated calls to the endpoint.
+     * a unit of work by repeated calls to the endpoint. The calls occur in worker threads.
      * @param callContexts array of callContexts
      * @return  the bulk caller for the endpoint
      */
     BulkExecCaller bulkCaller(CallContext[] callContexts);
     /**
      * Constructs an instance of a bulk caller, which completes
-     * a unit of work by repeated calls to the endpoint.
+     * a unit of work by repeated calls to the endpoint. The calls occur in worker threads.
      * @param callContexts array of callContexts
      * @param threadCount the number of threads
      * @return  the bulk caller for the endpoint
