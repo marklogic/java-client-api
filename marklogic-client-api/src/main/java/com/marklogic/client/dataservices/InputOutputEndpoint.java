@@ -58,29 +58,29 @@ public interface InputOutputEndpoint extends IOEndpoint {
     BulkInputOutputCaller bulkCaller();
 
     /**
-     * Makes one call to an endpoint that doesn't take an endpoint state, session, or work unit.
+     * Makes one call to an endpoint that doesn't take an endpoint state, session, or work unit and sets the
+     * endpoint state in the Call Context.
      * @param callContext  the collection of endpointState, sessionState and workUnit
      * @param input  the request data sent to the endpoint
-     * @return  the response data from the endpoint
      */
-    InputStream[] call(CallContext callContext, InputStream[] input);
+    void call(CallContext callContext, InputStream[] input);
     /**
      * Constructs an instance of a bulk caller, which completes
-     * a unit of work by repeated calls to the endpoint.
+     * a unit of work by repeated calls to the endpoint. The calls occur in the current thread.
      * @param callContext  the collection of endpointState, sessionState and workUnit
      * @return  the bulk caller for the input-output endpoint
      */
     BulkInputOutputCaller bulkCaller(CallContext callContext);
     /**
      * Constructs an instance of a bulk caller, which completes
-     * a unit of work by repeated calls to the endpoint.
+     * a unit of work by repeated calls to the endpoint. The calls occur in worker threads.
      * @param callContexts  the collection of callContexts
      * @return  the bulk caller for the input-output endpoint
      */
     BulkInputOutputCaller bulkCaller(CallContext[] callContexts);
     /**
      * Constructs an instance of a bulk caller, which completes
-     * a unit of work by repeated calls to the endpoint.
+     * a unit of work by repeated calls to the endpoint. The calls occur in worker threads.
      * @param callContexts  the collection of callContexts
      * @param threadCount the number of threads
      * @return  the bulk caller for the input-output endpoint

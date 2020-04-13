@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoint {
     private static Logger logger = LoggerFactory.getLogger(ExecEndpointImpl.class);
@@ -52,7 +51,8 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
     public InputStream call(InputStream endpointState, SessionState session, InputStream workUnit) {
         CallContext callContext = newCallContext().withEndpointState(endpointState).withSessionState(session)
                 .withWorkUnit(workUnit);
-        return call(callContext);
+        call(callContext);
+        return callContext.getEndpointState();
     }
 
     @Override
@@ -62,10 +62,10 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
     }
 
     @Override
-    public InputStream call(CallContext callContext) {
+    public void call(CallContext callContext) {
         checkAllowedArgs(callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit());
-        return getCaller().call(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
-                callContext.getWorkUnit());
+        callContext.withEndpointState(getCaller().call(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
+                callContext.getWorkUnit()));
     }
 
     @Override
@@ -212,7 +212,8 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
                     bulkExecCallerImpl.getCallContextQueue().put(callContext);
                     submitTask(this);
                 }
-                else if(getPhase() == WorkPhase.COMPLETED && bulkExecCallerImpl.getCallContextQueue().isEmpty()) {
+                else if(bulkExecCallerImpl.getCallContextQueue().isEmpty() &&
+                        getCallerThreadPoolExecutor().getActiveCount() == 0) {
                     getCallerThreadPoolExecutor().shutdown();
                 }
 

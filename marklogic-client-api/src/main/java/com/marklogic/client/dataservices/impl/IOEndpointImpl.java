@@ -133,8 +133,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
         }
 
         private WorkPhase phase = WorkPhase.INITIALIZING;
-        private SessionState   session;
-        private CallContext callContext;
+        private CallContextImpl callContext;
         private long           callCount = 0;
         private int threadCount;
 
@@ -142,7 +141,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
         private LinkedBlockingQueue<CallContext> callContextQueue;
 
         BulkIOEndpointCallerImpl(CallContext callContext) {
-            this.callContext = callContext;
+            this.callContext = (CallContextImpl) callContext;
         }
 
         BulkIOEndpointCallerImpl(CallContext[] callContexts, int threadCount, int queueSize) {
@@ -151,12 +150,8 @@ abstract class IOEndpointImpl implements IOEndpoint {
             this.threadCount = threadCount;
         }
 
-        private IOEndpointImpl getEndpoint() {
-            return getEndpoint();
-        }
-
         String getEndpointPath() {
-            return getEndpoint().getEndpointPath();
+            return callContext.getEndpoint().getEndpointPath();
         }
         long getCallCount() {
             return callCount;
@@ -178,7 +173,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
         }
 
         boolean allowsEndpointState() {
-            return getEndpoint().allowsEndpointState();
+            return callContext.getEndpoint().allowsEndpointState();
         }
         @Override
         @Deprecated
@@ -198,18 +193,16 @@ abstract class IOEndpointImpl implements IOEndpoint {
         @Override
         @Deprecated
         public void setEndpointState(InputStream endpointState) {
-            checkCallContext();
-            callContext.withEndpointState(NodeConverter.InputStreamToBytes(endpointState));
+            setEndpointState(NodeConverter.InputStreamToBytes(endpointState));
         }
         @Override
         @Deprecated
         public void setEndpointState(BufferableHandle endpointState) {
-            checkCallContext();
-            callContext.withEndpointState((endpointState == null) ? null : endpointState.toBuffer());
+            setEndpointState((endpointState == null) ? null : endpointState.toBuffer());
         }
 
         boolean allowsWorkUnit() {
-            return getEndpoint().allowsWorkUnit();
+            return callContext.getEndpoint().allowsWorkUnit();
         }
 
         @Override
@@ -230,35 +223,33 @@ abstract class IOEndpointImpl implements IOEndpoint {
         @Override
         @Deprecated
         public void setWorkUnit(InputStream workUnit) {
-            checkCallContext();
-            callContext.withWorkUnit(NodeConverter.InputStreamToBytes(workUnit));
+            setWorkUnit(NodeConverter.InputStreamToBytes(workUnit));
         }
         @Override
         @Deprecated
         public void setWorkUnit(BufferableHandle workUnit) {
-            checkCallContext();
-            callContext.withWorkUnit((workUnit == null) ? null : workUnit.toBuffer());
+            setWorkUnit((workUnit == null) ? null : workUnit.toBuffer());
         }
 
         DatabaseClient getClient() {
-            return getEndpoint().getClient();
+            return callContext.getEndpoint().getClient();
         }
         boolean allowsSession() {
-            return getEndpoint().allowsSession();
+            return callContext.getEndpoint().allowsSession();
         }
         SessionState getSession() {
             if (!allowsSession())
                 return null;
 
-            if (session == null) {
+            if (callContext.getSessionState() == null) {
                 // no need to refresh the session id preemptively before timeout
                 // because a timed-out session id is merely a new session id
-                session = getEndpoint().getCaller().newSessionState();
+                callContext.withSessionState(callContext.getEndpoint().getCaller().newSessionState());
             }
-            return session;
+            return callContext.getSessionState();
         }
         boolean allowsInput() {
-            return getEndpoint().allowsInput();
+            return callContext.getEndpoint().allowsInput();
         }
 
         boolean queueInput(InputStream input, BlockingQueue<InputStream> queue, int batchSize) {
@@ -348,7 +339,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
 
         private void checkCallContext() {
             if(this.callContext == null)
-                throw new InternalError("Can only call methods with single callcontext.");
+                throw new InternalError("Can only call set and get methods for call state when using a single CallContext.");
         }
 
         void submitTask(Callable<Boolean> callable) {
