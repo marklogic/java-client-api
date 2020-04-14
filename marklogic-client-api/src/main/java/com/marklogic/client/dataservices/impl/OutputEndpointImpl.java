@@ -23,15 +23,16 @@ import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint {
     private static Logger logger = LoggerFactory.getLogger(OutputEndpointImpl.class);
     private OutputCallerImpl caller;
+    private InputStream[] values;
 
     public OutputEndpointImpl(DatabaseClient client, JSONWriteHandle apiDecl) {
         this(client, new OutputCallerImpl(apiDecl));
@@ -48,8 +49,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
     @Override
     public InputStream[] call() {
         call(newCallContext());
-        InputStream[] endpointStateValue = {getCallContext().getEndpointState()};
-        return endpointStateValue;
+        return this.values;
     }
 
     @Override
@@ -58,8 +58,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         CallContext callContext = newCallContext().withEndpointState(endpointState).withSessionState(session)
                 .withWorkUnit(workUnit);
         call(callContext);
-        InputStream[] endpointStateValue = {callContext.getEndpointState()};
-        return endpointStateValue;
+        return this.values;
     }
 
     @Override
@@ -70,9 +69,17 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
 
     @Override
     public void call(CallContext callContext) {
-        checkAllowedArgs(callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit());
-        callContext.withEndpointState(getCaller().arrayCall(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
-                callContext.getWorkUnit())[0]);
+        try {
+            checkAllowedArgs(callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit());
+            this.values = getCaller().arrayCall(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
+                    callContext.getWorkUnit());
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            values[0].transferTo(baos);
+            callContext.withEndpointState(baos.toByteArray());
+            values[0] = new ByteArrayInputStream(baos.toByteArray());
+        } catch(Exception ex) {
+            throw new InternalError("Error occurred while fetching data.");
+        }
     }
 
     @Override
@@ -111,11 +118,13 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
 
         private BulkOutputCallerImpl(OutputEndpointImpl endpoint, CallContext callContext) {
             super(callContext);
+            checkEndpoint(endpoint, "OutputEndpointImpl");
             this.endpoint = endpoint;
             this.callContext = callContext;
         }
         private BulkOutputCallerImpl(OutputEndpointImpl endpoint, CallContext[] callContexts, int threadCount) {
             super(callContexts, threadCount, threadCount);
+            checkEndpoint(endpoint, "OutputEndpointImpl");
             this.endpoint = endpoint;
         }
 

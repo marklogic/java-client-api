@@ -56,16 +56,15 @@ public class BulkInputCallerTest {
 
     @Test
     public void bulkInputEndpointTest() {
-        String apiName = "bulkInputCallerImpl.api";
 
         String endpointState = "{\"next\":"+startValue+"}";
         String workUnit      = "{\"max\":"+workMax+"}";
 
         InputEndpoint loadEndpt = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
 
-        InputEndpoint.BulkInputCaller loader = loadEndpt.bulkCaller();
-        loader.setEndpointState(new ByteArrayInputStream(endpointState.getBytes()));
-        loader.setWorkUnit(new ByteArrayInputStream(workUnit.getBytes()));
+        InputEndpoint.BulkInputCaller loader = loadEndpt.bulkCaller(loadEndpt.newCallContext()
+                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes()))
+                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes())));
 
         Stream<InputStream> input         = Stream.of(
                 IOTestUtil.asInputStream("{\"docNum\":1, \"docName\":\"doc1\"}"),
@@ -106,9 +105,9 @@ public class BulkInputCallerTest {
         IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
         InputEndpoint loadEndpt = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
 
-        InputEndpoint.BulkInputCaller loader = loadEndpt.bulkCaller();
-        loader.setEndpointState(new ByteArrayInputStream(endpointState.getBytes()));
-        loader.setWorkUnit(new ByteArrayInputStream(workUnit.getBytes()));
+        InputEndpoint.BulkInputCaller loader = loadEndpt.bulkCaller(loadEndpt.newCallContext()
+                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes()))
+                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes())));
 
         Stream<InputStream> input         = Stream.of(
                 IOTestUtil.asInputStream("{\"docNum\":1, \"docName\":\"doc1\"}"),

@@ -54,9 +54,9 @@ public class BulkIOEndpointTest {
 
         ExecEndpoint endpoint = ExecEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
 
-        ExecEndpoint.BulkExecCaller bulkCaller = endpoint.bulkCaller();
-        bulkCaller.setEndpointState(new ByteArrayInputStream(endpointState.getBytes()));
-        bulkCaller.setWorkUnit(new ByteArrayInputStream(workUnit.getBytes()));
+        ExecEndpoint.BulkExecCaller bulkCaller = endpoint.bulkCaller(endpoint.newCallContext()
+                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes()))
+                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes())));
         bulkCaller.awaitCompletion();
 
         JSONDocumentManager docMgr = IOTestUtil.db.newJSONDocumentManager();
@@ -111,9 +111,9 @@ public class BulkIOEndpointTest {
 
         InputOutputEndpoint endpoint = InputOutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
 
-        InputOutputEndpoint.BulkInputOutputCaller bulkCaller = endpoint.bulkCaller();
-        bulkCaller.setEndpointState(new ByteArrayInputStream(endpointState.getBytes()));
-        bulkCaller.setWorkUnit(new ByteArrayInputStream(workUnit.getBytes()));
+        InputOutputEndpoint.BulkInputOutputCaller bulkCaller = endpoint.bulkCaller(endpoint.newCallContext()
+                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes()))
+                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes())));
         bulkCaller.setOutputListener(value -> output.add(NodeConverter.InputStreamToString(value)));
 
         input.stream().forEach(value -> bulkCaller.accept(IOTestUtil.asInputStream(value)));

@@ -63,7 +63,7 @@ public class BulkOutputCallerTest {
     @Test
     public void bulkOutputCallerWithNullConsumer() {
         OutputEndpoint loadEndpt = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
-        OutputEndpoint.BulkOutputCaller loader = loadEndpt.bulkCaller();
+        OutputEndpoint.BulkOutputCaller loader = loadEndpt.bulkCaller(loadEndpt.newCallContext());
 
         expectedException.expect(IllegalStateException.class);
         expectedException.expect(new ThrowableMessageMatcher(new StringContains("Output consumer is null")));
@@ -88,9 +88,10 @@ public class BulkOutputCallerTest {
             list.add(IOTestUtil.mapper.readValue(resultArray[i], ObjectNode.class).toString());
         }
         String workUnit2      = "{\"max\":"+3+"}";
-        OutputEndpoint.BulkOutputCaller bulkCaller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj)).bulkCaller();
-        bulkCaller.setEndpointState(new ByteArrayInputStream(endpointState.getBytes()));
-        bulkCaller.setWorkUnit(new ByteArrayInputStream(workUnit2.getBytes()));
+        OutputEndpoint endpoint = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        OutputEndpoint.BulkOutputCaller bulkCaller = endpoint.bulkCaller(endpoint.newCallContext()
+                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes()))
+                .withWorkUnit(new ByteArrayInputStream(workUnit2.getBytes())));
         class Output {
             int counter =0;
         }

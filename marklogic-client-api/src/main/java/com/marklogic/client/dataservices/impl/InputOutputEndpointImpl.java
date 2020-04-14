@@ -22,6 +22,8 @@ import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -29,7 +31,7 @@ import java.util.function.Consumer;
 
 public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutputEndpoint {
     private static Logger logger = LoggerFactory.getLogger(InputOutputEndpointImpl.class);
-
+    private InputStream[] values;
     private InputOutputCallerImpl caller;
     private int batchSize;
 
@@ -53,8 +55,7 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
     @Override
     public InputStream[] call(InputStream[] input) {
         call(newCallContext(), input);
-        InputStream[] endpointStateValue = {getCallContext().getEndpointState()};
-        return endpointStateValue;
+        return this.values;
     }
 
     @Override
@@ -64,8 +65,7 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
         CallContext callContext = newCallContext().withEndpointState(endpointState).withSessionState(session)
                 .withWorkUnit(workUnit);
         call(callContext, input);
-        InputStream[] endpointStateValue = {callContext.getEndpointState()};
-        return endpointStateValue;
+        return this.values;
     }
 
     @Override
@@ -76,9 +76,17 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
 
     @Override
     public void call(CallContext callContext, InputStream[] input) {
-        checkAllowedArgs(callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit());
-        callContext.withEndpointState(getCaller().arrayCall(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
-                callContext.getWorkUnit(), input)[0]);
+        try {
+            checkAllowedArgs(callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit());
+            this.values = getCaller().arrayCall(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
+                    callContext.getWorkUnit(), input);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            values[0].transferTo(baos);
+            callContext.withEndpointState(baos.toByteArray());
+            values[0] = new ByteArrayInputStream(baos.toByteArray());
+        } catch(Exception ex) {
+            throw new InternalError("Error occurred while fetching data");
+        }
     }
 
     @Override
@@ -118,6 +126,7 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
 
         BulkInputOutputCallerImpl(InputOutputEndpointImpl endpoint, int batchSize, CallContext callContext) {
             super(callContext);
+            checkEndpoint(endpoint, "InputOutputEndpointImpl");
             this.endpoint = endpoint;
             this.batchSize = batchSize;
             this.inputQueue = new LinkedBlockingQueue<>();
@@ -126,6 +135,7 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
         private BulkInputOutputCallerImpl(InputOutputEndpointImpl endpoint, int batchSize, CallContext[] callContexts,
                                           int threadCount) {
             super(callContexts, threadCount, (2*callContexts.length));
+            checkEndpoint(endpoint, "InputOutputEndpointImpl");
             this.endpoint = endpoint;
             this.batchSize = batchSize;
             this.inputQueue = new LinkedBlockingQueue<>();
@@ -214,7 +224,8 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
                 while (!getInputQueue().isEmpty()) {
                     processInput();
                 }
-                getCallerThreadPoolExecutor().awaitTermination();
+                if(getCallerThreadPoolExecutor() != null)
+                    getCallerThreadPoolExecutor().awaitTermination();
             } catch (Throwable throwable) {
                 throw new RuntimeException("Error occurred while awaiting termination "+throwable.getMessage());
             }
