@@ -66,7 +66,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
             throw new IllegalArgumentException("null caller");
         this.client = client;
         this.caller = caller;
-        setCallContext(new CallContextImpl());
+        setCallContext(this.newCallContext());
     }
 
     int initBatchSize(IOCallerImpl caller) {
@@ -115,7 +115,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
     }
     @Override
     public CallContext newCallContext(){
-        return new CallContextImpl();
+        return new CallContextImpl(this);
     }
 
     public void checkAllowedArgs(InputStream endpointState, SessionState session, InputStream workUnit) {
@@ -142,6 +142,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
 
         BulkIOEndpointCallerImpl(CallContext callContext) {
             this.callContext = (CallContextImpl) callContext;
+            getSession();
         }
 
         BulkIOEndpointCallerImpl(CallContext[] callContexts, int threadCount, int queueSize) {
@@ -159,7 +160,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
         void incrementCallCount() {
             callCount++;
         }
-        CallContext getCallContext() {
+        CallContextImpl getCallContext() {
             return this.callContext;
         }
         CallerThreadPoolExecutor getCallerThreadPoolExecutor() {
@@ -347,6 +348,10 @@ abstract class IOEndpointImpl implements IOEndpoint {
             getCallerThreadPoolExecutor().execute(futureTask);
         }
 
+        void checkEndpoint(IOEndpointImpl endpoint, String endpointType) {
+            if(getCallContext().getEndpoint() != endpoint)
+                throw new IllegalArgumentException("Endpoint must be "+endpointType);
+        }
 
         static class CallerThreadPoolExecutor extends ThreadPoolExecutor {
 
@@ -380,6 +385,9 @@ abstract class IOEndpointImpl implements IOEndpoint {
 
         public IOEndpointImpl getEndpoint() {
             return endpoint;
+        }
+        private CallContextImpl(IOEndpointImpl endpoint) {
+            this.endpoint = endpoint;
         }
 
         @Override

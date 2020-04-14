@@ -112,6 +112,7 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 
 		private BulkInputCallerImpl(InputEndpointImpl endpoint, int batchSize, CallContext callContext) {
 			super(callContext);
+			checkEndpoint(endpoint, "InputEndpointImpl");
 			this.endpoint = endpoint;
 			this.batchSize = batchSize;
 			this.inputQueue = new LinkedBlockingQueue<>();
@@ -119,6 +120,7 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 
 		private BulkInputCallerImpl(InputEndpointImpl endpoint, int batchSize, CallContext[] callContexts, int threadCount) {
 			super(callContexts, threadCount, (2*callContexts.length));
+			checkEndpoint(endpoint, "InputEndpointImpl");
 			this.endpoint = endpoint;
 			this.batchSize = batchSize;
 			this.inputQueue = new LinkedBlockingQueue<>();
@@ -161,7 +163,8 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 				while (!getInputQueue().isEmpty()) {
 					processInput();
 				}
-				getCallerThreadPoolExecutor().awaitTermination();
+				if(getCallerThreadPoolExecutor() != null)
+					getCallerThreadPoolExecutor().awaitTermination();
 			} catch (Throwable throwable) {
 				throw new RuntimeException("Error occurred while awaiting termination "+throwable.getMessage());
 			}

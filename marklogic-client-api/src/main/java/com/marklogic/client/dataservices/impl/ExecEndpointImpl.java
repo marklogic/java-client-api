@@ -103,10 +103,12 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
 
         private BulkExecCallerImpl(ExecEndpointImpl endpoint, CallContext callContext) {
             super(callContext);
+            checkEndpoint(endpoint, "ExecEndpointImpl");
             this.endpoint = endpoint;
         }
         private BulkExecCallerImpl(ExecEndpointImpl endpoint, CallContext[] callContexts, int threadCount) {
             super(callContexts, threadCount, threadCount);
+            checkEndpoint(endpoint, "ExecEndpointImpl");
             this.endpoint = endpoint;
         }
 
@@ -129,7 +131,8 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
                         BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this);
                         submitTask(bulkCallableImpl);
                     }
-                    getCallerThreadPoolExecutor().awaitTermination();
+                    if(getCallerThreadPoolExecutor() != null)
+                        getCallerThreadPoolExecutor().awaitTermination();
                 }
                 catch(Throwable throwable) {
                     throw new RuntimeException("Error occurred while awaiting termination ", throwable);

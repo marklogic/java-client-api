@@ -62,9 +62,10 @@ public class BulkOutputCallerNext {
 
         IOTestUtil.writeDocuments(10,collectionName);
 
-        OutputEndpoint.BulkOutputCaller bulkCaller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj)).bulkCaller();
-        bulkCaller.setEndpointState(new ByteArrayInputStream(endpointState.getBytes()));
-        bulkCaller.setWorkUnit(new ByteArrayInputStream(workUnit.getBytes()));
+        OutputEndpoint endpoint = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        OutputEndpoint.BulkOutputCaller bulkCaller = endpoint.bulkCaller(endpoint.newCallContext()
+                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes()))
+                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes())));
         InputStream[] outputArray = bulkCaller.next();
         assertNotNull(outputArray);
         assertTrue(outputArray.length == 5);
