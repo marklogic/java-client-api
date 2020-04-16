@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 5.2.0
+#### New Functionality
+- [#1185](https://github.com/marklogic/java-client-api/issues/1185) - Splitter for large XML file
+- [#1209](https://github.com/marklogic/java-client-api/issues/1209) - Cookbook example bridging from QueryBatcher to Data Services
+
+#### Improvements and Bug Fixes
+- [#1118](https://github.com/marklogic/java-client-api/issues/1118) - Upgrade to OkHttp 4.4.0 release and gradle wrapper upgrade
+- [#1153](https://github.com/marklogic/java-client-api/issues/1153) - Able to write empty document properties
+- [#1196](https://github.com/marklogic/java-client-api/issues/1196) - Optional forest name parameter on DocumentManager search
+
 ## 5.1.0
 #### New Functionality
 - New package to make it easy to implement connectors for dataflow frameworks. Refer to https://github.com/marklogic/java-client-api/wiki/Bulk-Data-Services page for details.
