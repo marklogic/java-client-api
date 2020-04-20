@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -367,7 +367,7 @@ public interface QueryBatcher extends Batcher {
   void retryWithFailureListeners(QueryEvent queryEvent);
   
   /**
-   * Sets the limit for the maximum number of uris that can be collected.
+   * Sets the limit for the maximum number of batches that can be collected.
    * 
    * @param maxBatches is the value of the limit.
    */

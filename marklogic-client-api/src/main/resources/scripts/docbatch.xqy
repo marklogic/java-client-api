@@ -1,6 +1,6 @@
 xquery version "1.0-ml";
 
-(: Copyright 2011-2019 MarkLogic Corporation.  All Rights Reserved. :)
+(: Copyright (c) 2019 MarkLogic Corporation :)
 
 module namespace docbatch = "http://marklogic.com/rest-api/resource/docbatch";
 

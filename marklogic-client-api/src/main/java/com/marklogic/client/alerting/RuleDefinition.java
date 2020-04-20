@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -255,7 +255,8 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 
       serializer.writeStartElement(RequestConstants.RESTAPI_PREFIX,
         "name", RequestConstants.RESTAPI_NS);
-      serializer.writeCharacters(getName());
+      if(getName() != null)
+        serializer.writeCharacters(getName());
       serializer.writeEndElement();
 
       serializer.writeStartElement(RequestConstants.RESTAPI_PREFIX,
@@ -471,7 +472,8 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
         serializer.writeAttribute("xsi",
           XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type",
           type);
-        serializer.writeCharacters(value);
+        if(value != null)
+          serializer.writeCharacters(value);
       } catch (XMLStreamException e) {
         throw new MarkLogicIOException(e);
       }

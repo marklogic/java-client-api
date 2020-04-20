@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -439,7 +439,8 @@ public class Bootstrapper {
       writer.writeDefaultNamespace("http://marklogic.com/rest-api");
 
       writer.writeStartElement("name");
-      writer.writeCharacters(server);
+      if(server != null)
+        writer.writeCharacters(server);
       writer.writeEndElement();
 
       if (group != null && group.length() > 0) {
@@ -449,7 +450,8 @@ public class Bootstrapper {
       }
 
       writer.writeStartElement("database");
-      writer.writeCharacters(database);
+      if(database != null)
+        writer.writeCharacters(database);
       writer.writeEndElement();
 
       if (modulesDatabase != null && modulesDatabase.length() > 0) {

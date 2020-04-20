@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -146,7 +146,8 @@ public interface RESTServices {
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
   public DocumentPage getBulkDocuments(RequestLogger logger, long serverTimestamp, QueryDefinition querydef,
                                        long start, long pageLength, Transaction transaction, SearchReadHandle searchHandle,
-                                       QueryView view, Set<Metadata> categories, Format format, ServerTransform responseTransform, RequestParameters extraParams)
+                                       QueryView view, Set<Metadata> categories, Format format, ServerTransform responseTransform,
+                                       RequestParameters extraParams, String forestName)
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
   public void postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
@@ -451,7 +452,7 @@ public interface RESTServices {
     @Override
     public boolean equals(Object arg0) {
         CallField callField = (CallField)arg0;
-        if(this.getParamName()!=null && callField.getParamName()!=null && 
+        if(this.getParamName()!=null && callField.getParamName()!=null &&
                 this.getParamName().equals(callField.getParamName()))
             return true;
         return false;

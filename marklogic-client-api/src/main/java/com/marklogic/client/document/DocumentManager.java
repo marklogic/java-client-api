@@ -1,4 +1,4 @@
-/* * Copyright 2012-2019 MarkLogic Corporation
+/* * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -594,6 +594,19 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
   DocumentPage search(QueryDefinition querydef, long start);
 
   /**
+   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, String) QueryManager.search}
+   * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
+   * documents in each DocumentPage. If setMetadataCategories has
+   * been called, populates metadata for each result in the format specified by
+   * {@link #setNonDocumentFormat setNonDocumentFormat}.
+   * @param querydef	the definition of query criteria and query options
+   * @param start	the offset of the first document in the page (where 1 is the first result)
+   * @param forestName a forest to limit this search
+   * @return the DocumentPage of matching documents and metadata
+   */
+  DocumentPage search(QueryDefinition querydef, long start, String forestName);
+
+  /**
    * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long) QueryManager.search}
    * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
    * documents in each DocumentPage. If setMetadataCategories has
@@ -622,6 +635,20 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @return the DocumentPage of matching documents and metadata
    */
   DocumentPage search(QueryDefinition querydef, long start, Transaction transaction);
+
+  /**
+   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction, String) QueryManager.search}
+   * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
+   * documents in each DocumentPage. If setMetadataCategories has
+   * been called, populates metadata for each result in the format specified by
+   * {@link #setNonDocumentFormat setNonDocumentFormat}.
+   * @param querydef	the definition of query criteria and query options
+   * @param start	the offset of the first document in the page (where 1 is the first result)
+   * @param transaction	an open transaction for matching documents
+   * @param forestName a forest to limit this search
+   * @return the DocumentPage of matching documents and metadata
+   */
+  DocumentPage search(QueryDefinition querydef, long start, Transaction transaction, String forestName);
 
   /**
    * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction) QueryManager.search}
@@ -658,6 +685,23 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
   DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle);
 
   /**
+   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, String) QueryManager.search}
+   * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
+   * documents in each DocumentPage.  If searchHandle is not null,
+   * requests a search response and populates searchHandle with it. If setMetadataCategories has
+   * been called, populates metadata for each result in the format specified by
+   * {@link #setNonDocumentFormat setNonDocumentFormat}.
+   * @param querydef	the definition of query criteria and query options
+   * @param start	the offset of the first document in the page (where 1 is the first result)
+   * @param searchHandle	a handle for reading the search response which will include view types
+   *     specified by {@link #setSearchView setSearchView} and format specified by
+   *     {@link #setNonDocumentFormat setNonDocumentFormat}
+   * @param forestName a forest to limit this search
+   * @return the DocumentPage of matching documents and metadata
+   */
+  DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle, String forestName);
+
+  /**
    * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction)}
    * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
    * documents in each DocumentPage.  If searchHandle is not null,
@@ -673,6 +717,24 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @return the DocumentPage of matching documents and metadata
    */
   DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle, Transaction transaction);
+
+  /**
+   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction, String)}
+   * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
+   * documents in each DocumentPage.  If searchHandle is not null,
+   * requests a search response and populates searchHandle with it. If setMetadataCategories has
+   * been called, populates metadata for each result in the format specified by
+   * {@link #setNonDocumentFormat setNonDocumentFormat}.
+   * @param querydef	the definition of query criteria and query options
+   * @param start	the offset of the first document in the page (where 1 is the first result)
+   * @param searchHandle	a handle for reading the search response which will include view types
+   *     specified by {@link #setSearchView setSearchView} and format specified by
+   *     {@link #setNonDocumentFormat setNonDocumentFormat}
+   * @param transaction	an open transaction for matching documents
+   * @param forestName a forest to limit this search
+   * @return the DocumentPage of matching documents and metadata
+   */
+  DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle, Transaction transaction, String forestName);
 
   /** Get the maximum number of records to return in a page from calls to {@link #search search}
    *  @return the maximum number of records to return in a page from calls to

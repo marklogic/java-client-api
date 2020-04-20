@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -812,7 +812,8 @@ public class DocumentMetadataHandle
     for (Map.Entry<String, String> value : getMetadataValues().entrySet()) {
       serializer.writeStartElement("rapi", "metadata-value", REST_API_NS);
       serializer.writeAttribute("key", value.getKey());
-      serializer.writeCharacters(value.getValue());
+      if(value.getValue() != null)
+        serializer.writeCharacters(value.getValue());
       serializer.writeEndElement();
     }
 
@@ -825,7 +826,8 @@ public class DocumentMetadataHandle
 
     for (String collection: getCollections()) {
       serializer.writeStartElement("rapi", "collection", REST_API_NS);
-      serializer.writeCharacters(collection);
+      if(collection != null)
+        serializer.writeCharacters(collection);
       serializer.writeEndElement();
     }
 
@@ -839,7 +841,8 @@ public class DocumentMetadataHandle
       serializer.writeStartElement("rapi", "permission", REST_API_NS);
 
       serializer.writeStartElement("rapi", "role-name", REST_API_NS);
-      serializer.writeCharacters(permission.getKey());
+      if(permission.getKey() != null)
+        serializer.writeCharacters(permission.getKey());
       serializer.writeEndElement();
 
       for (Capability capability: permission.getValue()) {
@@ -913,7 +916,8 @@ public class DocumentMetadataHandle
       try {
         serializer.writeAttribute(
           "xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type", type);
-        serializer.writeCharacters(value);
+        if(value != null)
+          serializer.writeCharacters(value);
       } catch(XMLStreamException e) {
         throw new MarkLogicIOException(e);
       }

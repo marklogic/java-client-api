@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2019 MarkLogic Corporation
+ * Copyright (c) 2019 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import org.junit.runner.notification.Failure;
 public class JavaApiBatchSuite {
 
   /*
-   * Copyright 2003-2013 MarkLogic Corporation. All Rights Reserved.
+   * Copyright (c) 2019 MarkLogic Corporation
    */
 
   private static final Class<?>[] testClasses = { TestAggregates.class,

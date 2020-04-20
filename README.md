@@ -32,6 +32,7 @@ implemented by an endpoint on the server.
 
 ### What's New in Java Client API 5
 
+*  Upgrade to OkHttp 4.4.0 release.
 *  Splitters for CSV records, for entries in a ZipInputStream, and for line-delimited JSON or XML
 for streaming to WriteBatcher.
 *  Support for Bulk IO Data Services to make it easy to implement connectors for dataflow
@@ -69,7 +70,7 @@ To use the API in your maven project, include the following in your pom.xml:
     <dependency>
         <groupId>com.marklogic</groupId>
         <artifactId>marklogic-client-api</artifactId>
-        <version>4.1.1</version>
+        <version>5.2.0</version>
     </dependency>
 
 And add this repository to your pom.xml repositories section:
@@ -82,7 +83,7 @@ And add this repository to your pom.xml repositories section:
 For gradle projects, include the following:
 
     dependencies {
-        compile group: 'com.marklogic', name: 'marklogic-client-api', version: '4.1.1'
+        compile group: 'com.marklogic', name: 'marklogic-client-api', version: '5.2.0'
     }
 
 Use gradle 1.7+ and add this to your build.gradle repositories section:
@@ -111,14 +112,14 @@ https://developer.marklogic.com/free-developer
 
 To obtain verified downloads signed with MarkLogic's PGP key, use maven tools or directly download
 the .jar and .asc files from
-[maven central](http://repo1.maven.org/maven2/com/marklogic/marklogic-client-api/4.1.0/).  MarkLogic's
+[maven central](http://repo1.maven.org/maven2/com/marklogic/marklogic-client-api/5.2.0/).  MarkLogic's
 pgp key ID is 48D4B86E and it is available from pgp.mit.edu by installing gnupg and running the command:
 
     $ gpg --keyserver pgp.mit.edu --recv-key 48D4B86E
 
 Files can be verified with the command:
 
-    $ gpg marklogic-client-api-4.1.0.jar.asc
+    $ gpg marklogic-client-api-5.2.0.jar.asc
 
 
 ### Building and Contributing

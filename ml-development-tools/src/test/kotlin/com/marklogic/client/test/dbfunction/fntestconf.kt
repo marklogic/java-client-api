@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,14 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.marklogic.client.DatabaseClientFactory
 import com.marklogic.client.io.DocumentMetadataHandle
 import com.marklogic.client.io.InputStreamHandle
-import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
-val contentDbName = "DBFUnitTest"
-val modulesDbName = "DBFUnitTestModules"
-val serverName    = "DBFUnitTest"
+const val contentDbName = "DBFUnitTest"
+const val modulesDbName = "DBFUnitTestModules"
+const val serverName    = "DBFUnitTest"
 val host          = System.getenv("TEST_HOST") ?: "localhost"
 val serverPort    = System.getenv("TEST_PORT")?.toInt() ?: 8016
 
@@ -43,11 +43,10 @@ amp the test inspector to add header
 create roles and users
 parameterize the port, user name, etc
    */
-  val operation = if (args.size > 0) args[0] else "setup"
-  when(operation) {
+  when(val operation = if (args.isNotEmpty()) args[0] else "setup") {
     "setup"    -> dbfTestSetup(serializer)
     "teardown" -> dbfTestTeardown(serializer)
-    else       -> throw java.lang.IllegalArgumentException("unknown operation: "+operation)
+    else       -> throw java.lang.IllegalArgumentException("unknown operation: $operation")
   }
 }
 fun dbfTestSetup(serializer: ObjectWriter) {
@@ -64,18 +63,18 @@ fun setupServer(serializer: ObjectWriter) {
       DatabaseClientFactory.DigestAuthContext("admin", "admin")
   )
 
-  val client = dbClient.getClientImplementation() as OkHttpClient
+  val client = dbClient.clientImplementation as OkHttpClient
 
   for (dbName in listOf(contentDbName, modulesDbName)) {
     createEntity(
       client, serializer, "databases", "database", dbName,
-      mapOf<String,String>("database-name" to dbName)
+      mapOf("database-name" to dbName)
       )
 
-    val forestName = dbName+"-1"
+    val forestName = "$dbName-1"
     createEntity(
       client, serializer, "forests", "forest", forestName,
-      mapOf<String,String>("forest-name" to forestName, "database" to dbName)
+      mapOf("forest-name" to forestName, "database" to dbName)
       )
   }
 
@@ -83,17 +82,17 @@ fun setupServer(serializer: ObjectWriter) {
   if (!existsEntity(client, "users", "user", userName)) {
     createEntity(
             client, serializer, "users", "user", userName,
-            mapOf<String,Any>(
+            mapOf(
                     "user-name"        to userName,
                     "password"         to "x",
-                    "role"             to listOf<String>(userName)
+                    "role"             to listOf(userName)
             )
     )
   }
 
   createEntity(
       client, serializer, "servers?group-id=Default&server-type=http", "appserver", serverName,
-      mapOf<String,Any>(
+      mapOf(
         "server-name"      to serverName,
         "root"             to "/",
         "port"             to serverPort,
@@ -111,10 +110,10 @@ fun existsEntity(client: OkHttpClient, address: String, name: String, instanceNa
                   .get()
                   .build()
   ).execute()
-  val status = response.code()
+  val status = response.code
   if (status < 400) return true
   if (status == 404) return false
-  throw RuntimeException("""Could not create ${instanceName} ${name}: ${status}""")
+  throw RuntimeException("""Could not create $instanceName ${name}: $status""")
 }
 fun createEntity(client: OkHttpClient, serializer: ObjectWriter, address: String, name: String,
     instanceName: String, instancedef: Map<String,Any>) {
@@ -122,12 +121,12 @@ fun createEntity(client: OkHttpClient, serializer: ObjectWriter, address: String
     Request.Builder()
       .url("""http://${host}:8002/manage/v2/${address}""")
       .post(
-        RequestBody.create(MediaType.parse("application/json"), serializer.writeValueAsString(instancedef))
+        serializer.writeValueAsString(instancedef).toRequestBody("application/json".toMediaTypeOrNull())
         )
       .build()
     ).execute()
-  if (response.code() >= 400) {
-    throw RuntimeException("""Could not create ${instanceName} ${name}: ${response.code()}""")
+  if (response.code >= 400) {
+    throw RuntimeException("""Could not create $instanceName ${name}: ${response.code}""")
   }
 }
 fun setupModules() {
@@ -163,27 +162,26 @@ fun teardownServer(serializer: ObjectWriter) {
       DatabaseClientFactory.DigestAuthContext("admin", "admin")
   )
 
-  val client = dbClient.getClientImplementation() as OkHttpClient
+  val client = dbClient.clientImplementation as OkHttpClient
 
   val response = client.newCall(
     Request.Builder()
-      .url("""http://${host}:8002/manage/v2/servers/${serverName}/properties?group-id=Default""")
-      .put(
-        RequestBody.create(MediaType.parse("application/json"), serializer.writeValueAsString(
-          mapOf<String, Int>("content-database" to 0, "modules-database" to 0)
-          ))
+      .url("""http://${host}:8002/manage/v2/servers/$serverName/properties?group-id=Default""")
+      .put(serializer.writeValueAsString(
+           mapOf("content-database" to 0, "modules-database" to 0)
+           ).toRequestBody("application/json".toMediaTypeOrNull())
         )
       .build()
     ).execute()
-  if (response.code() >= 400) {
-    throw RuntimeException("""Could not detach ${serverName} appserver: ${response.code()}""")
+  if (response.code >= 400) {
+    throw RuntimeException("""Could not detach $serverName appserver: ${response.code}""")
   }
 
   for (dbName in listOf(contentDbName, modulesDbName)) {
     deleteEntity(client, """databases/${dbName}?forest-delete=data""", "database", dbName)
   }
 
-  deleteEntity(client, """servers/${serverName}?group-id=Default""", "appserver", serverName)
+  deleteEntity(client, """servers/$serverName?group-id=Default""", "appserver", serverName)
 
   dbClient.release()
 }
@@ -194,7 +192,7 @@ fun deleteEntity(client: OkHttpClient, address: String, name: String, instanceNa
       .delete()
       .build()
   ).execute()
-  if (response.code() >= 400) {
-    throw RuntimeException("""Could not delete ${instanceName} ${name}: ${response.code()}""")
+  if (response.code >= 400) {
+    throw RuntimeException("""Could not delete $instanceName ${name}: ${response.code}""")
   }
 }

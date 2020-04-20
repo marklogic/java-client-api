@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,7 +136,8 @@ public class DOMWriter {
     }
   }
   public void serializeText(Text text) throws XMLStreamException {
-    serializer.writeCharacters(text.getData());
+    if(text != null)
+      serializer.writeCharacters(text.getData());
   }
   public void serializeCDATASection(CDATASection cdata) throws XMLStreamException {
     serializer.writeCData(cdata.getData());

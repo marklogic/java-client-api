@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,8 @@ import com.marklogic.client.row.RowManager;
 import com.marklogic.client.type.CtsReferenceExpr;
 import com.marklogic.client.type.PlanColumn;
 import com.marklogic.client.type.PlanPrefixer;
+import com.marklogic.client.type.PlanTripleOption;
+import com.marklogic.client.type.PlanTriplePatternSeq;
 
 /* The tests here are for sanity checks when we have plans from different sources
  * such as fromLexicons and fromtriples.
@@ -458,13 +460,15 @@ public class TestOpticOnMixedViews extends BasicJavaClientREST {
     row.put("colorId", 4);
     row.put("colorDesc", "yellow");
     literals2[3] = row;
+    
+    PlanTriplePatternSeq playerSeq = p.patternSeq( 
+    		p.pattern(playerIdCol, bb.iri("age"), playerAgeCol),
+            p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
+            p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
+            );
 
     // plan1 - fromTriples
-    ModifyPlan plan1 = p.fromTriples(
-        p.pattern(playerIdCol, bb.iri("age"), playerAgeCol),
-        p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
-        p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
-        );
+    ModifyPlan plan1 = p.fromTriples(playerSeq, "",  null, PlanTripleOption.DEDUPLICATED);
     // plan2 - fromLiterals
     ModifyPlan plan2 = p.fromLiterals(literals2);
 
@@ -531,13 +535,13 @@ public class TestOpticOnMixedViews extends BasicJavaClientREST {
     row.put("colorId", 4);
     row.put("colorDesc", "yellow");
     literals2[3] = row;
-
+    PlanTriplePatternSeq playerSeq = p.patternSeq( 
+    		p.pattern(playerIdCol, bb.iri("age"), playerAgeCol),
+            p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
+            p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
+            );
     // plan1 - fromTriples
-    ModifyPlan plan1 = p.fromTriples(
-        p.pattern(playerIdCol, bb.iri("age"), playerAgeCol),
-        p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
-        p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
-        );
+    ModifyPlan plan1 = p.fromTriples(playerSeq,  "",  null, PlanTripleOption.DEDUPLICATED);
     // plan2 - fromLiterals
     ModifyPlan plan2 = p.fromLiterals(literals2);
 

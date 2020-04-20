@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
 package com.marklogic.client.tools
 
 import com.marklogic.client.tools.proxy.Generator
+import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
   if (args.size == 2) {
     Generator().endpointDeclToModStubImpl(args[0], args[1])
   } else {
     System.err.println("usage: fnmodinit endpointDeclarationFile moduleExtension")
-    System.exit(-1)
+    exitProcess(-1)
   }
 }

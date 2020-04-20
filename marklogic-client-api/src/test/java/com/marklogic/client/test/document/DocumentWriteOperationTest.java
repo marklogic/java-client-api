@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,25 @@
  */
 package com.marklogic.client.test.document;
 
-import com.marklogic.client.document.DocumentWriteOperation;
-import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.document.TextDocumentManager;
+import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.ForestConfiguration;
+import com.marklogic.client.document.*;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.test.Common;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class DocumentWriteOperationTest {
 
@@ -307,6 +308,54 @@ public class DocumentWriteOperationTest {
             i++;
         }
         textDocumentManager.write(batch);
+    }
+
+    @Test
+    public void DocumentQueryWithForest() {
+        DocumentWriteSet batch = textDocumentManager.newWriteSet();
+        batch.addDefault(defaultMetadata1);
+
+        for (int i = 0; i < 30; i++) {
+            String uri = "doc" + i + ".txt";
+            StringHandle handle = new StringHandle("Document - " + i).withFormat(Format.TEXT);
+            batch.add(uri, handle);
+        }
+
+        textDocumentManager.write(batch);
+        StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collectionName);
+
+        int forestCount;
+        DataMovementManager moveMgr = Common.client.newDataMovementManager();
+        ForestConfiguration forest = moveMgr.readForestConfig();
+        forestCount = forest.listForests().length;
+
+        DocumentPage[] documents = new DocumentPage[forestCount];
+        ArrayList<Set<String>> sets = new ArrayList<Set<String>>();
+
+        long totalCount = 0;
+
+        for (int i = 0; i < forestCount; i++) {
+            documents[i] = textDocumentManager.search(query, 1, "java-unittest-" + String.valueOf(i+1));
+            totalCount += documents[i].getTotalSize();
+            sets.add(new HashSet<String>());
+            for (DocumentRecord document : documents[i]) {
+                sets.get(i).add(document.getUri());
+            }
+
+        }
+        assertEquals(30, totalCount);
+
+        Set<String> intersectSet = new HashSet<>(sets.get(0));
+        intersectSet.retainAll(sets.get(1));
+        assertTrue(intersectSet.isEmpty());
+
+        intersectSet.addAll(sets.get(0));
+        intersectSet.retainAll(sets.get(2));
+        assertTrue(intersectSet.isEmpty());
+
+        intersectSet.addAll(sets.get(1));
+        intersectSet.retainAll(sets.get(2));
+        assertTrue(intersectSet.isEmpty());
     }
 
     @AfterClass
