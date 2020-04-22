@@ -148,6 +148,42 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	  </tr>
 <tr class="altColor">
 	    <td class="colFirst">xs:boolean</td>
+	    <td class="colLast"><span class="memberNameLink">geo:box-intersects</span>(<span><a href="cts_box.html">cts:box</a> <i>box</i></span>, <span><a href="cts_region.html">cts:region</a> <i>region</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-box-intersects">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:box-intersects" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">xs:boolean</td>
+	    <td class="colLast"><span class="memberNameLink">geo:circle-intersects</span>(<span><a href="cts_circle.html">cts:circle</a> <i>circle</i></span>, <span><a href="cts_region.html">cts:region</a> <i>region</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-circle-intersects">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:circle-intersects" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">xs:boolean</td>
+	    <td class="colLast"><span class="memberNameLink">geo:region-contains</span>(<span><a href="cts_region.html">cts:region</a> <i>target</i></span>, <span><a href="cts_region.html">cts:region</a> <i>region</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-region-contains">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:region-contains" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">xs:boolean</td>
+	    <td class="colLast"><span class="memberNameLink">geo:region-intersects</span>(<span><a href="cts_region.html">cts:region</a> <i>target</i></span>, <span><a href="cts_region.html">cts:region</a> <i>region</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-region-intersects">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:region-intersects" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">xs:boolean</td>
+	    <td class="colLast"><span class="memberNameLink">geo:region-relate</span>(<span><a href="cts_region.html">cts:region</a> <i>region-1</i></span>, <span><a href="xs_string.html">xs:string</a> <i>operation</i></span>, <span><a href="cts_region.html">cts:region</a> <i>region-2</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-region-relate">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:region-relate" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">xs:boolean</td>
+	    <td class="colLast"><span class="memberNameLink">geo:validate-wkt</span>(<span><a href="xs_string.html">xs:string</a> <i>wkt</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-validate-wkt">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:validate-wkt" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">xs:boolean</td>
 	    <td class="colLast"><span class="memberNameLink">map:contains</span>(<span><a href="map_map.html">map:map</a> <i>map</i></span>, <span><a href="xs_string.html">xs:string</a> <i>key</i></span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/MapExpr.html#ml-server-type-contains">java</a></td>
 	    <td><a href="http://docs.marklogic.com/map:contains" target="mlserverdoc">server</a></td>
@@ -187,6 +223,18 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td class="colLast"><span class="memberNameLink">sem:sameTerm</span>(<span><a href="xs_anyAtomicType.html">xs:anyAtomicType</a> <i>a</i></span>, <span><a href="xs_anyAtomicType.html">xs:anyAtomicType</a> <i>b</i></span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/SemExpr.html#ml-server-type-sameTerm">java</a></td>
 	    <td><a href="http://docs.marklogic.com/sem:sameTerm" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">xs:boolean?</td>
+	    <td class="colLast"><span class="memberNameLink">sql:glob</span>(<span><a href="xs_string.html">xs:string</a> <i>input</i>?</span>, <span><a href="xs_string.html">xs:string</a> <i>pattern</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/SqlExpr.html#ml-server-type-glob">java</a></td>
+	    <td><a href="http://docs.marklogic.com/sql:glob" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">xs:boolean?</td>
+	    <td class="colLast"><span class="memberNameLink">sql:like</span>(<span><a href="xs_string.html">xs:string</a> <i>input</i>?</span>, <span><a href="xs_string.html">xs:string</a> <i>pattern</i></span>, <span><a href="xs_string.html">xs:string</a> <i>escape</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/SqlExpr.html#ml-server-type-like">java</a></td>
+	    <td><a href="http://docs.marklogic.com/sql:like" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="rowColor">
 	    <td class="colFirst">xs:boolean</td>

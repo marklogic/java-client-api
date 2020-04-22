@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -139,7 +139,7 @@ public interface XdmpExpr {
   */
   public ServerExpression crypt2(ServerExpression password);
 /**
-  * Returns an xs:string representing the dayname value in the localized value of arg. 
+  * Returns string representing the dayname value in the localized value of arg.
   *
   * <a name="ml-server-type-dayname-from-date"></a>
   
@@ -213,7 +213,7 @@ public interface XdmpExpr {
   */
   public ServerExpression elementContentType(ServerExpression element);
 /**
-  * Invertible function that escapes characters required to be part of an NCName. This is useful when translating names from other representations such as JSON to XML. Given any string, the result is always a valid NCName. Providing all names are passed through this function the result is distinct NCNames so the results can be used for searching as well as name generation. The inverse function is xdmp:decode-for-NCName.
+  * Invertible function that escapes characters required to be part of an NCName. This is useful when translating names from other representations such as JSON to XML. Given any string, the result is always a valid NCName. Providing all names are passed through this function the result is distinct NCNames so the results can be used for searching as well as name generation. The inverse function is xdmp:decode-from-NCName.
   *
   * <a name="ml-server-type-encode-for-NCName"></a>
   
@@ -302,7 +302,7 @@ public interface XdmpExpr {
   * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
   public ServerExpression formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar);
@@ -314,7 +314,7 @@ public interface XdmpExpr {
   * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
   public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar);
@@ -326,7 +326,7 @@ public interface XdmpExpr {
   * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
@@ -339,7 +339,7 @@ public interface XdmpExpr {
   * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
@@ -352,7 +352,7 @@ public interface XdmpExpr {
   * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param groupingSeparator  Value of $grouping-separator is a character, used to groups of digits, especially useful in making long sequence of digits more readable. For example, 10,000,000- here "," is used as a separator after each group of three digits. An empty sequence must be passed in even if a user doesn't want to specify this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
@@ -366,7 +366,7 @@ public interface XdmpExpr {
   * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param groupingSeparator  Value of $grouping-separator is a character, used to groups of digits, especially useful in making long sequence of digits more readable. For example, 10,000,000- here "," is used as a separator after each group of three digits. An empty sequence must be passed in even if a user doesn't want to specify this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
@@ -380,7 +380,7 @@ public interface XdmpExpr {
   * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param groupingSeparator  Value of $grouping-separator is a character, used to groups of digits, especially useful in making long sequence of digits more readable. For example, 10,000,000- here "," is used as a separator after each group of three digits. An empty sequence must be passed in even if a user doesn't want to specify this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param groupingSize  Represents size of the group, i.e. the number of digits before after which grouping separator is inserted. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
@@ -395,7 +395,7 @@ public interface XdmpExpr {
   * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param groupingSeparator  Value of $grouping-separator is a character, used to groups of digits, especially useful in making long sequence of digits more readable. For example, 10,000,000- here "," is used as a separator after each group of three digits. An empty sequence must be passed in even if a user doesn't want to specify this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param groupingSize  Represents size of the group, i.e. the number of digits before after which grouping separator is inserted. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
@@ -690,7 +690,7 @@ public interface XdmpExpr {
   */
   public ServerExpression monthNameFromDate(ServerExpression arg);
 /**
-  * Muliply two 64-bit integer values, discarding overflow.
+  * Multiply two 64-bit integer values, discarding overflow.
   *
   * <a name="ml-server-type-mul64"></a>
   
@@ -738,11 +738,11 @@ public interface XdmpExpr {
   * Returns the metadata value of a node for a particular key.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:node-metadata-value" target="mlserverdoc">xdmp:node-metadata-value</a> server function.
-  * @param uri  The node whose metadata are to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
+  * @param node  The node whose metadata are to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @param keyName  Name of the key for the metadata.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public ServerExpression nodeMetadataValue(ServerExpression uri, String keyName);
+  public ServerExpression nodeMetadataValue(ServerExpression node, String keyName);
 /**
   * Returns the metadata value of a node for a particular key.
   *
@@ -750,11 +750,11 @@ public interface XdmpExpr {
   
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:node-metadata-value" target="mlserverdoc">xdmp:node-metadata-value</a> server function.
-  * @param uri  The node whose metadata are to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
+  * @param node  The node whose metadata are to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
   * @param keyName  Name of the key for the metadata.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public ServerExpression nodeMetadataValue(ServerExpression uri, ServerExpression keyName);
+  public ServerExpression nodeMetadataValue(ServerExpression node, ServerExpression keyName);
 /**
   * Returns the permissions to a node's document.
   *
@@ -1085,7 +1085,7 @@ public interface XdmpExpr {
   */
   public ServerExpression QNameFromKey(ServerExpression key);
 /**
-  * Returns an xs:integer between 1 and 4, both inclusive, calculating the quarter component in the localized value of arg. 
+  * Returns an integer between 1 and 4, both inclusive, calculating the quarter component in the localized value of arg.
   *
   * <a name="ml-server-type-quarter-from-date"></a>
   
@@ -1389,7 +1389,7 @@ public interface XdmpExpr {
   */
   public ServerExpression wallclockToTimestamp(ServerExpression timestamp);
 /**
-  * Returns an xs:integer between 1 and 53, both inclusive, representing the week value in the localized value of arg. 
+  * Returns an integer between 1 and 53, both inclusive, representing the week value in the localized value of arg.
   *
   * <a name="ml-server-type-week-from-date"></a>
   
@@ -1400,7 +1400,7 @@ public interface XdmpExpr {
   */
   public ServerExpression weekFromDate(ServerExpression arg);
 /**
-  * Returns an xs:integer in the range 1 to 7, inclusive, representing the weekday value in the localized value of arg. Monday is the first weekday value (value of 1), and Sunday is the last (value of 7). 
+  * Returns an integer in the range 1 to 7, inclusive, representing the weekday value in the localized value of arg. Monday is the first weekday value (value of 1), and Sunday is the last (value of 7).
   *
   * <a name="ml-server-type-weekday-from-date"></a>
   
@@ -1423,7 +1423,7 @@ public interface XdmpExpr {
   */
   public ServerExpression xor64(ServerExpression x, ServerExpression y);
 /**
-  * Returns an xs:integer between 1 and 366, both inclusive, representing the yearday value in the localized value of arg. 
+  * Returns an integer between 1 and 366, both inclusive, representing the yearday value in the localized value of arg.
   *
   * <a name="ml-server-type-yearday-from-date"></a>
   

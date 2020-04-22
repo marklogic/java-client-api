@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,8 @@ import com.marklogic.client.type.PlanTriplePositionSeq;
 
 import com.marklogic.client.expression.CtsExpr; 
 import com.marklogic.client.expression.FnExpr; 
-import com.marklogic.client.expression.JsonExpr; 
+import com.marklogic.client.expression.GeoExpr;
+import com.marklogic.client.expression.JsonExpr;
 import com.marklogic.client.expression.MapExpr; 
 import com.marklogic.client.expression.MathExpr; 
 import com.marklogic.client.expression.RdfExpr; 

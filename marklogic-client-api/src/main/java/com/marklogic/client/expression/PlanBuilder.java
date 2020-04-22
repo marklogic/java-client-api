@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,8 @@ import com.marklogic.client.type.PlanTriplePositionSeq;
 
 import com.marklogic.client.expression.CtsExpr; 
 import com.marklogic.client.expression.FnExpr; 
-import com.marklogic.client.expression.JsonExpr; 
+import com.marklogic.client.expression.GeoExpr;
+import com.marklogic.client.expression.JsonExpr;
 import com.marklogic.client.expression.MapExpr; 
 import com.marklogic.client.expression.MathExpr; 
 import com.marklogic.client.expression.RdfExpr; 
@@ -84,10 +85,11 @@ import com.marklogic.client.expression.PlanBuilderBase;
  */
 public abstract class PlanBuilder implements PlanBuilderBase {
   protected PlanBuilder(
-    CtsExpr cts, FnExpr fn, JsonExpr json, MapExpr map, MathExpr math, RdfExpr rdf, SemExpr sem, SpellExpr spell, SqlExpr sql, XdmpExpr xdmp, XsExpr xs
+    CtsExpr cts, FnExpr fn, GeoExpr geo, JsonExpr json, MapExpr map, MathExpr math, RdfExpr rdf, SemExpr sem, SpellExpr spell, SqlExpr sql, XdmpExpr xdmp, XsExpr xs
     ) {
     this.cts = cts;
      this.fn = fn;
+     this.geo = geo;
      this.json = json;
      this.map = map;
      this.math = math;
@@ -107,6 +109,10 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * Builds expressions with fn server functions.
   */
   public final FnExpr fn;
+ /**
+  * Builds expressions with geo server functions.
+  */
+  public final GeoExpr geo;
  /**
   * Builds expressions with json server functions.
   */
@@ -152,7 +158,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ServerExpression add(ServerExpression... left);
   /**
-  * This function returns true if the specified expressions all return true. Otherwise, it returns false. You can either compair 
+  * This function returns true if the specified expressions all return true. Otherwise, it returns false.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:and" target="mlserverdoc">op:and</a> server function.
   * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
@@ -222,7 +228,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ServerExpression lt(ServerExpression left, ServerExpression right);
   /**
-  * This function multipies the left numericExpression by the right numericExpression and returns the value. 
+  * This function multiplies the left numericExpression by the right numericExpression and returns the value.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:multiply" target="mlserverdoc">op:multiply</a> server function.
   * @param left  The left numeric expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
@@ -539,28 +545,28 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract AccessPlan fromLexicons(Map<String,CtsReferenceExpr> indexes, XsStringVal qualifierName, PlanSystemColumn sysCols);
   /**
-  * This function dynamically constructs a row set based on an SPARQL SELECT query from triples.
+  * This function dynamically constructs a row set based on a SPARQL SELECT query from triples.
   * @param select  A SPARQL SELECT query expressed as a string.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan fromSparql(String select);
   /**
-  * This function dynamically constructs a row set based on an SPARQL SELECT query from triples.
+  * This function dynamically constructs a row set based on a SPARQL SELECT query from triples.
   * @param select  A SPARQL SELECT query expressed as a string.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan fromSparql(XsStringVal select);
   /**
-  * This function dynamically constructs a row set based on an SPARQL SELECT query from triples.
+  * This function dynamically constructs a row set based on a SPARQL SELECT query from triples.
   * @param select  A SPARQL SELECT query expressed as a string.
-  * @param qualifierName  Specifies a name for qualifying the column names. Placeholder parameters in the SPARQL string may be bound in the result() call
+  * @param qualifierName  Specifies a name for qualifying the column names. An "@" in front of the name specifies a parameter placeholder. A parameter placeholder in the SPARQL string must be bound to a parameter value in the result() call.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan fromSparql(String select, String qualifierName);
   /**
-  * This function dynamically constructs a row set based on an SPARQL SELECT query from triples.
+  * This function dynamically constructs a row set based on a SPARQL SELECT query from triples.
   * @param select  A SPARQL SELECT query expressed as a string.
-  * @param qualifierName  Specifies a name for qualifying the column names. Placeholder parameters in the SPARQL string may be bound in the result() call
+  * @param qualifierName  Specifies a name for qualifying the column names. An "@" in front of the name specifies a parameter placeholder. A parameter placeholder in the SPARQL string must be bound to a parameter value in the result() call.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan fromSparql(XsStringVal select, XsStringVal qualifierName);
@@ -707,7 +713,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function counts the rows where the specified input column has a value. If the input column is omitted, all rows in the group or row set are counted. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the column values.
   * @param column  The columns to be counted.
-  * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
+  * @param option  The options can take a values key with a 'distinct' value to average the distinct values of the column.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol count(String name, String column, PlanValueOption option);
@@ -715,7 +721,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function counts the rows where the specified input column has a value. If the input column is omitted, all rows in the group or row set are counted. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the column values.
   * @param column  The columns to be counted.
-  * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
+  * @param option  The options can take a values key with a 'distinct' value to average the distinct values of the column.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol count(PlanColumn name, PlanExprCol column, PlanValueOption option);
@@ -1430,26 +1436,26 @@ public abstract Plan bindParam(PlanParamExpr param, PlanParamBindingVal literal)
   public interface PreparePlan extends ExportablePlan, PlanBuilderBase.PreparePlanBase {
 /**
   * This method applies the specified function to each row returned by the plan to produce a different result row.
-  * @param func  The function to be appied.
+  * @param func  The function to be applied.
   * @return  a ExportablePlan object
   */
   public abstract ExportablePlan map(PlanFunction func);
 /**
   * This method applies a function or the builtin reducer to each row returned by the plan to produce a single result as with the reduce() method of JavaScript Array. 
-  * @param func  The function to be appied.
+  * @param func  The function to be applied.
   * @return  a ExportablePlan object
   */
   public abstract ExportablePlan reduce(PlanFunction func);
 /**
   * This method applies a function or the builtin reducer to each row returned by the plan to produce a single result as with the reduce() method of JavaScript Array. 
-  * @param func  The function to be appied.
+  * @param func  The function to be applied.
   * @param seed  The value returned by the previous request.
   * @return  a ExportablePlan object
   */
   public abstract ExportablePlan reduce(PlanFunction func, String seed);
 /**
   * This method applies a function or the builtin reducer to each row returned by the plan to produce a single result as with the reduce() method of JavaScript Array. 
-  * @param func  The function to be appied.
+  * @param func  The function to be applied.
   * @param seed  The value returned by the previous request.
   * @return  a ExportablePlan object
   */

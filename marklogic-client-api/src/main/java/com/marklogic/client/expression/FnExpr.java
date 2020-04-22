@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1980,7 +1980,7 @@ public interface FnExpr {
   */
   public ServerExpression timezoneFromTime(ServerExpression arg);
 /**
-  * Returns a sequence of strings contructed by breaking the specified input into substrings separated by the specified pattern. The specified pattern is not returned as part of the returned items.
+  * Returns a sequence of strings constructed by breaking the specified input into substrings separated by the specified pattern. The specified pattern is not returned as part of the returned items.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/fn:tokenize" target="mlserverdoc">fn:tokenize</a> server function.
   * @param input  The string to tokenize.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1989,7 +1989,7 @@ public interface FnExpr {
   */
   public ServerExpression tokenize(ServerExpression input, String pattern);
 /**
-  * Returns a sequence of strings contructed by breaking the specified input into substrings separated by the specified pattern. The specified pattern is not returned as part of the returned items.
+  * Returns a sequence of strings constructed by breaking the specified input into substrings separated by the specified pattern. The specified pattern is not returned as part of the returned items.
   *
   * <a name="ml-server-type-tokenize"></a>
   
@@ -2001,7 +2001,7 @@ public interface FnExpr {
   */
   public ServerExpression tokenize(ServerExpression input, ServerExpression pattern);
 /**
-  * Returns a sequence of strings contructed by breaking the specified input into substrings separated by the specified pattern. The specified pattern is not returned as part of the returned items.
+  * Returns a sequence of strings constructed by breaking the specified input into substrings separated by the specified pattern. The specified pattern is not returned as part of the returned items.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/fn:tokenize" target="mlserverdoc">fn:tokenize</a> server function.
   * @param input  The string to tokenize.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -2011,7 +2011,7 @@ public interface FnExpr {
   */
   public ServerExpression tokenize(ServerExpression input, String pattern, String flags);
 /**
-  * Returns a sequence of strings contructed by breaking the specified input into substrings separated by the specified pattern. The specified pattern is not returned as part of the returned items.
+  * Returns a sequence of strings constructed by breaking the specified input into substrings separated by the specified pattern. The specified pattern is not returned as part of the returned items.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/fn:tokenize" target="mlserverdoc">fn:tokenize</a> server function.
   * @param input  The string to tokenize.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)

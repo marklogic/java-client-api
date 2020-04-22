@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -164,7 +164,7 @@ public interface JsonExpr {
   */
   public ServerExpression subarray(ServerExpression array, ServerExpression startingLoc, ServerExpression length);
 /**
-  * Constructs json:array from a sequence of items.
+  * Constructs a json:array from a sequence of items.
   *
   * <a name="ml-server-type-to-array"></a>
   
@@ -174,46 +174,46 @@ public interface JsonExpr {
   */
   public ServerExpression toArray();
 /**
-  * Constructs json:array from a sequence of items.
+  * Constructs a json:array from a sequence of items.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/json:to-array" target="mlserverdoc">json:to-array</a> server function.
-  * @param items  A sequence of items.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param items  The items to be used as elements in the constructed array.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type
   */
   public ServerExpression toArray(ServerExpression items);
 /**
-  * Constructs json:array from a sequence of items.
+  * Constructs a json:array from a sequence of items.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/json:to-array" target="mlserverdoc">json:to-array</a> server function.
-  * @param items  A sequence of items.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param items  The items to be used as elements in the constructed array.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @param limit  The size of the array to construct. If the size is less than the length of the item sequence, only as "limit" items are put into the array. If the size is more than the length of the sequence, the array is filled with null values up to the limit.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type
   */
   public ServerExpression toArray(ServerExpression items, double limit);
 /**
-  * Constructs json:array from a sequence of items.
+  * Constructs a json:array from a sequence of items.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/json:to-array" target="mlserverdoc">json:to-array</a> server function.
-  * @param items  A sequence of items.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param items  The items to be used as elements in the constructed array.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @param limit  The size of the array to construct. If the size is less than the length of the item sequence, only as "limit" items are put into the array. If the size is more than the length of the sequence, the array is filled with null values up to the limit.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type
   */
   public ServerExpression toArray(ServerExpression items, ServerExpression limit);
 /**
-  * Constructs json:array from a sequence of items.
+  * Constructs a json:array from a sequence of items.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/json:to-array" target="mlserverdoc">json:to-array</a> server function.
-  * @param items  A sequence of items.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param items  The items to be used as elements in the constructed array.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @param limit  The size of the array to construct. If the size is less than the length of the item sequence, only as "limit" items are put into the array. If the size is more than the length of the sequence, the array is filled with null values up to the limit.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @param zero  The value to use to pad out the array, if necessary. By default the empty sequence is used.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type
   */
   public ServerExpression toArray(ServerExpression items, double limit, ServerExpression zero);
 /**
-  * Constructs json:array from a sequence of items.
+  * Constructs a json:array from a sequence of items.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/json:to-array" target="mlserverdoc">json:to-array</a> server function.
-  * @param items  A sequence of items.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param items  The items to be used as elements in the constructed array.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @param limit  The size of the array to construct. If the size is less than the length of the item sequence, only as "limit" items are put into the array. If the size is more than the length of the sequence, the array is filled with null values up to the limit.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @param zero  The value to use to pad out the array, if necessary. By default the empty sequence is used.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a> server data type

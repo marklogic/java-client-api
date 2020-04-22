@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.type.XsAnyAtomicTypeVal;
+import com.marklogic.client.type.XsBooleanVal;
 import com.marklogic.client.type.XsDecimalVal;
 import com.marklogic.client.type.XsIntegerVal;
 import com.marklogic.client.type.XsIntVal;
@@ -123,11 +125,32 @@ class SqlExprImpl implements SqlExpr {
 
   
   @Override
+  public ServerExpression glob(ServerExpression input, String pattern) {
+    return glob(input, (pattern == null) ? (ServerExpression) null : xs.string(pattern));
+  }
+
+
+  @Override
+  public ServerExpression glob(ServerExpression input, ServerExpression pattern) {
+    if (pattern == null) {
+      throw new IllegalArgumentException("pattern parameter for glob() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("sql", "glob", new Object[]{ input, pattern });
+  }
+
+
+  @Override
   public ServerExpression hours(ServerExpression arg) {
     return new XsExprImpl.IntegerCallImpl("sql", "hours", new Object[]{ arg });
   }
 
   
+  @Override
+  public ServerExpression ifnull(ServerExpression expr1, ServerExpression expr2) {
+    return new XsExprImpl.AnyAtomicTypeCallImpl("sql", "ifnull", new Object[]{ expr1, expr2 });
+  }
+
+
   @Override
   public ServerExpression insert(ServerExpression str, double start, double length, String str2) {
     return insert(str, xs.doubleVal(start), xs.doubleVal(length), (str2 == null) ? (ServerExpression) null : xs.string(str2));
@@ -186,6 +209,39 @@ class SqlExprImpl implements SqlExpr {
 
   
   @Override
+  public ServerExpression like(ServerExpression input, String pattern) {
+    return like(input, (pattern == null) ? (ServerExpression) null : xs.string(pattern));
+  }
+
+
+  @Override
+  public ServerExpression like(ServerExpression input, ServerExpression pattern) {
+    if (pattern == null) {
+      throw new IllegalArgumentException("pattern parameter for like() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("sql", "like", new Object[]{ input, pattern });
+  }
+
+
+  @Override
+  public ServerExpression like(ServerExpression input, String pattern, String escape) {
+    return like(input, (pattern == null) ? (ServerExpression) null : xs.string(pattern), (escape == null) ? (ServerExpression) null : xs.string(escape));
+  }
+
+
+  @Override
+  public ServerExpression like(ServerExpression input, ServerExpression pattern, ServerExpression escape) {
+    if (pattern == null) {
+      throw new IllegalArgumentException("pattern parameter for like() cannot be null");
+    }
+    if (escape == null) {
+      throw new IllegalArgumentException("escape parameter for like() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("sql", "like", new Object[]{ input, pattern, escape });
+  }
+
+
+  @Override
   public ServerExpression ltrim(ServerExpression str) {
     if (str == null) {
       throw new IllegalArgumentException("str parameter for ltrim() cannot be null");
@@ -212,6 +268,12 @@ class SqlExprImpl implements SqlExpr {
   }
 
   
+  @Override
+  public ServerExpression nullif(ServerExpression expr1, ServerExpression expr2) {
+    return new XsExprImpl.AnyAtomicTypeCallImpl("sql", "nullif", new Object[]{ expr1, expr2 });
+  }
+
+
   @Override
   public ServerExpression octetLength(ServerExpression x) {
     return new XsExprImpl.IntegerCallImpl("sql", "octet-length", new Object[]{ x });
@@ -263,6 +325,11 @@ class SqlExprImpl implements SqlExpr {
   }
 
   
+  public ServerExpression rowID(ServerExpression arg1) {
+    return new RowIDCallImpl("sql", "rowID", new Object[]{ arg1 });
+  }
+
+
   @Override
   public ServerExpression rtrim(ServerExpression str) {
     if (str == null) {
@@ -285,6 +352,12 @@ class SqlExprImpl implements SqlExpr {
 
   
   @Override
+  public ServerExpression soundex(ServerExpression arg) {
+    return new XsExprImpl.StringCallImpl("sql", "soundex", new Object[]{ arg });
+  }
+
+
+  @Override
   public ServerExpression space(ServerExpression n) {
     if (n == null) {
       throw new IllegalArgumentException("n parameter for space() cannot be null");
@@ -293,6 +366,30 @@ class SqlExprImpl implements SqlExpr {
   }
 
   
+  @Override
+  public ServerExpression strpos(ServerExpression target, String test) {
+    return strpos(target, (test == null) ? (ServerExpression) null : xs.string(test));
+  }
+
+
+  @Override
+  public ServerExpression strpos(ServerExpression target, ServerExpression test) {
+    return new XsExprImpl.IntegerCallImpl("sql", "strpos", new Object[]{ target, test });
+  }
+
+
+  @Override
+  public ServerExpression strpos(ServerExpression target, String test, String collation) {
+    return strpos(target, (test == null) ? (ServerExpression) null : xs.string(test), (collation == null) ? (ServerExpression) null : xs.string(collation));
+  }
+
+
+  @Override
+  public ServerExpression strpos(ServerExpression target, ServerExpression test, ServerExpression collation) {
+    return new XsExprImpl.IntegerCallImpl("sql", "strpos", new Object[]{ target, test, collation });
+  }
+
+
   @Override
   public ServerExpression timestampadd(ServerExpression dateTimeType, int value, ServerExpression timestamp) {
     return timestampadd(dateTimeType, xs.intVal(value), timestamp);
@@ -359,6 +456,17 @@ class SqlExprImpl implements SqlExpr {
   @Override
   public ServerExpression yearday(ServerExpression arg) {
     return new XsExprImpl.IntegerCallImpl("sql", "yearday", new Object[]{ arg });
+  }
+
+  static class RowIDSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
+    RowIDSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+  static class RowIDCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
+    RowIDCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
   }
 
   }
