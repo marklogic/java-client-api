@@ -22,6 +22,9 @@ import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
@@ -61,7 +64,11 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
 
         CallContext callContext = newCallContext().withEndpointState(endpointState).withSessionState(session)
                 .withWorkUnit(workUnit);
-        return getResponseData(callContext, input, true);
+        try {
+            return getResponseData(callContext, input, true);
+        } catch(Exception ex) {
+            throw new InternalError("Exception occurred while fetching data");
+        }
     }
 
     @Override
@@ -72,7 +79,11 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
 
     @Override
     public InputStream[] call(CallContext callContext, InputStream[] input) {
-        return getResponseData(callContext, input, false);
+        try {
+            return getResponseData(callContext, input, false);
+        } catch(Exception ex) {
+            throw new InternalError("Exception occurred while fetching data");
+        }
     }
 
     @Override
@@ -101,15 +112,17 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
         }
     }
 
-    private InputStream[] getResponseData(CallContext callContext, InputStream[] input, boolean withEndpointState){
+    private InputStream[] getResponseData(CallContext callContext, InputStream[] input, boolean withEndpointState) throws IOException {
 
         checkAllowedArgs(callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit());
         InputStream[] values = getCaller().arrayCall(getClient(), callContext.getEndpointState(),
                 callContext.getSessionState(), callContext.getWorkUnit(), input);
-
+        ByteArrayOutputStream endpointState = new ByteArrayOutputStream();
+        values[0].transferTo(endpointState);
         callContext.withEndpointState(values[0]);
 
         if(withEndpointState) {
+            values[0] = new ByteArrayInputStream(endpointState.toByteArray());
             return values;
         }
         InputStream[] outputValues = Arrays.copyOfRange(values, 1, values.length);
