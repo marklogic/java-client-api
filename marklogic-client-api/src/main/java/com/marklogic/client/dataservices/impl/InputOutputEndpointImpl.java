@@ -61,7 +61,7 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
 
         CallContext callContext = newCallContext().withEndpointState(endpointState).withSessionState(session)
                 .withWorkUnit(workUnit);
-        return call(callContext, input);
+        return getResponseData(callContext, input, true);
     }
 
     @Override
@@ -72,18 +72,7 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
 
     @Override
     public InputStream[] call(CallContext callContext, InputStream[] input) {
-        InputStream[] outputValues;
-        try {
-            checkAllowedArgs(callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit());
-            InputStream[] values = getCaller().arrayCall(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
-                    callContext.getWorkUnit(), input);
-
-            callContext.withEndpointState(values[0]);
-            outputValues = Arrays.copyOfRange(values, 1, values.length);
-        } catch(Exception ex) {
-            throw new InternalError("Error occurred while fetching data");
-        }
-        return outputValues;
+        return getResponseData(callContext, input, false);
     }
 
     @Override
@@ -110,6 +99,21 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
             case 1: return new BulkInputOutputCallerImpl(this, getBatchSize(), callContexts[0]);
             default: return new BulkInputOutputCallerImpl(this, getBatchSize(), callContexts, threadCount);
         }
+    }
+
+    private InputStream[] getResponseData(CallContext callContext, InputStream[] input, boolean withEndpointState){
+
+        checkAllowedArgs(callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit());
+        InputStream[] values = getCaller().arrayCall(getClient(), callContext.getEndpointState(),
+                callContext.getSessionState(), callContext.getWorkUnit(), input);
+
+        callContext.withEndpointState(values[0]);
+
+        if(withEndpointState) {
+            return values;
+        }
+        InputStream[] outputValues = Arrays.copyOfRange(values, 1, values.length);
+        return outputValues;
     }
 
     final static class BulkInputOutputCallerImpl extends IOEndpointImpl.BulkIOEndpointCallerImpl
