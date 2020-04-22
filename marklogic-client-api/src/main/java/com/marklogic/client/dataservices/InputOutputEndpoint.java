@@ -62,8 +62,9 @@ public interface InputOutputEndpoint extends IOEndpoint {
      * endpoint state in the Call Context.
      * @param callContext  the collection of endpointState, sessionState and workUnit
      * @param input  the request data sent to the endpoint
+     * @return the response data from the endpoint
      */
-    void call(CallContext callContext, InputStream[] input);
+    InputStream[] call(CallContext callContext, InputStream[] input);
     /**
      * Constructs an instance of a bulk caller, which completes
      * a unit of work by repeated calls to the endpoint. The calls occur in the current thread.

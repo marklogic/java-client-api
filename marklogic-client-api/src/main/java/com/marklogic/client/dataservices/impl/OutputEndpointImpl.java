@@ -23,16 +23,14 @@ import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint {
     private static Logger logger = LoggerFactory.getLogger(OutputEndpointImpl.class);
     private OutputCallerImpl caller;
-    private InputStream[] values;
 
     public OutputEndpointImpl(DatabaseClient client, JSONWriteHandle apiDecl) {
         this(client, new OutputCallerImpl(apiDecl));
@@ -48,8 +46,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
 
     @Override
     public InputStream[] call() {
-        call(newCallContext());
-        return this.values;
+        return call(newCallContext());
     }
 
     @Override
@@ -57,8 +54,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
     public InputStream[] call(InputStream endpointState, SessionState session, InputStream workUnit) {
         CallContext callContext = newCallContext().withEndpointState(endpointState).withSessionState(session)
                 .withWorkUnit(workUnit);
-        call(callContext);
-        return this.values;
+        return call(callContext);
     }
 
     @Override
@@ -68,18 +64,19 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
     }
 
     @Override
-    public void call(CallContext callContext) {
+    public InputStream[] call(CallContext callContext) {
+        InputStream[] outputValues;
         try {
             checkAllowedArgs(callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit());
-            this.values = getCaller().arrayCall(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
+            InputStream[] values = getCaller().arrayCall(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
                     callContext.getWorkUnit());
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            values[0].transferTo(baos);
-            callContext.withEndpointState(baos.toByteArray());
-            values[0] = new ByteArrayInputStream(baos.toByteArray());
+
+            callContext.withEndpointState(values[0]);
+            outputValues = Arrays.copyOfRange(values, 1, values.length);
         } catch(Exception ex) {
             throw new InternalError("Error occurred while fetching data.");
         }
+        return outputValues;
     }
 
     @Override

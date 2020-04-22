@@ -22,16 +22,14 @@ import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 
 public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutputEndpoint {
     private static Logger logger = LoggerFactory.getLogger(InputOutputEndpointImpl.class);
-    private InputStream[] values;
     private InputOutputCallerImpl caller;
     private int batchSize;
 
@@ -54,8 +52,7 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
 
     @Override
     public InputStream[] call(InputStream[] input) {
-        call(newCallContext(), input);
-        return this.values;
+        return call(newCallContext(), input);
     }
 
     @Override
@@ -64,8 +61,7 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
 
         CallContext callContext = newCallContext().withEndpointState(endpointState).withSessionState(session)
                 .withWorkUnit(workUnit);
-        call(callContext, input);
-        return this.values;
+        return call(callContext, input);
     }
 
     @Override
@@ -75,18 +71,19 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
     }
 
     @Override
-    public void call(CallContext callContext, InputStream[] input) {
+    public InputStream[] call(CallContext callContext, InputStream[] input) {
+        InputStream[] outputValues;
         try {
             checkAllowedArgs(callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit());
-            this.values = getCaller().arrayCall(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
+            InputStream[] values = getCaller().arrayCall(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
                     callContext.getWorkUnit(), input);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            values[0].transferTo(baos);
-            callContext.withEndpointState(baos.toByteArray());
-            values[0] = new ByteArrayInputStream(baos.toByteArray());
+
+            callContext.withEndpointState(values[0]);
+            outputValues = Arrays.copyOfRange(values, 1, values.length);
         } catch(Exception ex) {
             throw new InternalError("Error occurred while fetching data");
         }
+        return outputValues;
     }
 
     @Override
