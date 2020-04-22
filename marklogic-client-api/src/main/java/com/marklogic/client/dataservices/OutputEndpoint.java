@@ -63,8 +63,9 @@ public interface OutputEndpoint extends IOEndpoint {
     /**
      * Makes one call to the endpoint for the instance and sets the endpoint state in the Call Context.
      * @param callContext the collection of endpointState, sessionState and workUnit
+     * @return  the response data from the endpoint
      */
-    void call(CallContext callContext);
+    InputStream[] call(CallContext callContext);
 
     /**
      * Constructs an instance of a bulk caller, which completes

@@ -47,23 +47,23 @@ public class OutputEndpointImplTest {
         String workUnit = "{\"workUnit\":\"/workUnit1\"}";
 
         OutputEndpoint caller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
-        InputStream[] resultArray = caller.call(IOTestUtil.asInputStream(endpointState), caller.newSessionState(),
-                IOTestUtil.asInputStream(workUnit));
+        InputStream[] resultArray = caller.call(caller.newCallContext().withEndpointState(IOTestUtil.asInputStream(endpointState))
+                .withSessionState(caller.newSessionState())
+                .withWorkUnit(IOTestUtil.asInputStream(workUnit)));
         assertNotNull(resultArray);
 
         ObjectNode resultObj = IOTestUtil.mapper.readValue(resultArray[0], ObjectNode.class);
         assertNotNull(resultObj);
-        assertEquals("Endpoint value not as expected.",endpointState, resultObj.get("endpointState").toString());
-        assertEquals("Workunit not as expected.",workUnit, resultObj.get("workUnit").toString());
     }
 
     @Test
-    public void testOutputCallerImplWithNullEndpointState() throws IOException {
+    public void testOutputCallerImplWithNullCallcontextEndpointState() throws IOException {
         String workUnit = "{\"collection\":\"/dataset1\"}";
 
         OutputEndpoint caller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
-        InputStream[] resultArray = caller.call(null, caller.newSessionState(),
-                IOTestUtil.asInputStream(workUnit));
+        InputStream[] resultArray = caller.call(caller.newCallContext()
+                .withSessionState(caller.newSessionState())
+                .withWorkUnit(IOTestUtil.asInputStream(workUnit)));
         assertNotNull(resultArray);
 
         ObjectNode resultObj = IOTestUtil.mapper.readValue(resultArray[0], ObjectNode.class);
@@ -71,24 +71,24 @@ public class OutputEndpointImplTest {
     }
 
     @Test
-    public void testOutputCallerImplWithNullSession() throws IOException {
+    public void testOutputCallerImplWithNullCallcontextSession() throws IOException {
         String workUnit = "{\"workUnit\":\"/1\"}";
         OutputEndpoint caller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
-        InputStream[] resultArray = caller.call(IOTestUtil.asInputStream("{\"endpoint\":1}"), null,
-                IOTestUtil.asInputStream(workUnit));
+        InputStream[] resultArray = caller.call(caller.newCallContext().withEndpointState(IOTestUtil.asInputStream("{\"endpoint\":1}"))
+                .withWorkUnit(IOTestUtil.asInputStream(workUnit)));
         assertNotNull(resultArray);
         ObjectNode resultObj = IOTestUtil.mapper.readValue(resultArray[0], ObjectNode.class);
         assertNull(resultObj.get("session"));
     }
 
     @Test
-    public void testOutputCallerImplWithNull() throws IOException {
+    public void testOutputCallerImplWithEmptyCallcontext() throws IOException {
         OutputEndpoint caller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
-        InputStream[] resultArray = caller.call( null, null, null);
+        InputStream[] resultArray = caller.call( caller.newCallContext());
         assertNotNull(resultArray);
         ObjectNode resultObj = IOTestUtil.mapper.readValue(resultArray[0], ObjectNode.class);
         assertNotNull(resultObj);
-        assertTrue("Result object is not empty", resultObj.size() == 0);
+        assertTrue("Result object is empty", resultObj.size() != 0);
     }
 
     @AfterClass

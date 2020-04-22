@@ -77,13 +77,15 @@ public class BulkOutputCallerTest {
 
         OutputEndpoint caller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
 
-        InputStream[] resultArray = caller.call(IOTestUtil.asInputStream(endpointState), caller.newSessionState(),
-                IOTestUtil.asInputStream(workUnit));
+        InputStream[] resultArray = caller.call(caller.newCallContext()
+                        .withEndpointState(IOTestUtil.asInputStream(endpointState))
+                .withSessionState(caller.newSessionState())
+                .withWorkUnit(IOTestUtil.asInputStream(workUnit)));
 
         assertNotNull(resultArray);
-        assertTrue(resultArray.length-1 == count);
+        assertTrue(resultArray.length-1 == count-1);
         List<String> list = new ArrayList<>();
-        for(int i=1;i<resultArray.length;i++) {
+        for(int i=0;i<resultArray.length;i++) {
             assertNotNull(resultArray[i]);
             list.add(IOTestUtil.mapper.readValue(resultArray[i], ObjectNode.class).toString());
         }
