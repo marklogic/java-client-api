@@ -89,7 +89,7 @@ public class PlanGeneratedBase {
   protected void executeTester(String testName, ServerExpression expression, boolean isVolatile, String type, String kind, Format format, String expected, ServerExpression[] expressions) {
     PlanBuilder.ModifyPlan plan = makePlan(expressions).select(p.as("t", expression));
 
-System.out.println(plan.exportAs(String.class));
+// System.out.println(plan.exportAs(String.class));
 
     RowSet<RowRecord>   rowSet = rowMgr.resultRows(plan);
     Iterator<RowRecord> rowItr = rowSet.iterator();

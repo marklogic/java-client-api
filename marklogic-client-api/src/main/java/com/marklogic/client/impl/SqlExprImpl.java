@@ -129,7 +129,7 @@ class SqlExprImpl implements SqlExpr {
     return glob(input, (pattern == null) ? (ServerExpression) null : xs.string(pattern));
   }
 
-
+  
   @Override
   public ServerExpression glob(ServerExpression input, ServerExpression pattern) {
     if (pattern == null) {
@@ -138,7 +138,7 @@ class SqlExprImpl implements SqlExpr {
     return new XsExprImpl.BooleanCallImpl("sql", "glob", new Object[]{ input, pattern });
   }
 
-
+  
   @Override
   public ServerExpression hours(ServerExpression arg) {
     return new XsExprImpl.IntegerCallImpl("sql", "hours", new Object[]{ arg });
@@ -150,7 +150,7 @@ class SqlExprImpl implements SqlExpr {
     return new XsExprImpl.AnyAtomicTypeCallImpl("sql", "ifnull", new Object[]{ expr1, expr2 });
   }
 
-
+  
   @Override
   public ServerExpression insert(ServerExpression str, double start, double length, String str2) {
     return insert(str, xs.doubleVal(start), xs.doubleVal(length), (str2 == null) ? (ServerExpression) null : xs.string(str2));
@@ -213,7 +213,7 @@ class SqlExprImpl implements SqlExpr {
     return like(input, (pattern == null) ? (ServerExpression) null : xs.string(pattern));
   }
 
-
+  
   @Override
   public ServerExpression like(ServerExpression input, ServerExpression pattern) {
     if (pattern == null) {
@@ -222,13 +222,13 @@ class SqlExprImpl implements SqlExpr {
     return new XsExprImpl.BooleanCallImpl("sql", "like", new Object[]{ input, pattern });
   }
 
-
+  
   @Override
   public ServerExpression like(ServerExpression input, String pattern, String escape) {
     return like(input, (pattern == null) ? (ServerExpression) null : xs.string(pattern), (escape == null) ? (ServerExpression) null : xs.string(escape));
   }
 
-
+  
   @Override
   public ServerExpression like(ServerExpression input, ServerExpression pattern, ServerExpression escape) {
     if (pattern == null) {
@@ -240,7 +240,7 @@ class SqlExprImpl implements SqlExpr {
     return new XsExprImpl.BooleanCallImpl("sql", "like", new Object[]{ input, pattern, escape });
   }
 
-
+  
   @Override
   public ServerExpression ltrim(ServerExpression str) {
     if (str == null) {
@@ -273,7 +273,7 @@ class SqlExprImpl implements SqlExpr {
     return new XsExprImpl.AnyAtomicTypeCallImpl("sql", "nullif", new Object[]{ expr1, expr2 });
   }
 
-
+  
   @Override
   public ServerExpression octetLength(ServerExpression x) {
     return new XsExprImpl.IntegerCallImpl("sql", "octet-length", new Object[]{ x });
@@ -325,11 +325,12 @@ class SqlExprImpl implements SqlExpr {
   }
 
   
+  @Override
   public ServerExpression rowID(ServerExpression arg1) {
     return new RowIDCallImpl("sql", "rowID", new Object[]{ arg1 });
   }
 
-
+  
   @Override
   public ServerExpression rtrim(ServerExpression str) {
     if (str == null) {
@@ -356,7 +357,7 @@ class SqlExprImpl implements SqlExpr {
     return new XsExprImpl.StringCallImpl("sql", "soundex", new Object[]{ arg });
   }
 
-
+  
   @Override
   public ServerExpression space(ServerExpression n) {
     if (n == null) {
@@ -371,25 +372,25 @@ class SqlExprImpl implements SqlExpr {
     return strpos(target, (test == null) ? (ServerExpression) null : xs.string(test));
   }
 
-
+  
   @Override
   public ServerExpression strpos(ServerExpression target, ServerExpression test) {
     return new XsExprImpl.IntegerCallImpl("sql", "strpos", new Object[]{ target, test });
   }
 
-
+  
   @Override
   public ServerExpression strpos(ServerExpression target, String test, String collation) {
     return strpos(target, (test == null) ? (ServerExpression) null : xs.string(test), (collation == null) ? (ServerExpression) null : xs.string(collation));
   }
 
-
+  
   @Override
   public ServerExpression strpos(ServerExpression target, ServerExpression test, ServerExpression collation) {
     return new XsExprImpl.IntegerCallImpl("sql", "strpos", new Object[]{ target, test, collation });
   }
 
-
+  
   @Override
   public ServerExpression timestampadd(ServerExpression dateTimeType, int value, ServerExpression timestamp) {
     return timestampadd(dateTimeType, xs.intVal(value), timestamp);

@@ -148,7 +148,7 @@ public interface SqlExpr {
   * Returns true if the specified input glob the specified pattern, otherwise returns false.
   *
   * <a name="ml-server-type-glob"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:glob" target="mlserverdoc">sql:glob</a> server function.
   * @param input  The input from which to match.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -157,7 +157,7 @@ public interface SqlExpr {
   */
   public ServerExpression glob(ServerExpression input, ServerExpression pattern);
 /**
-  * Returns an xs:integer between 0 and 23, both inclusive, representing the value of the hours component in the localized value of arg.
+  * Returns an xs:integer between 0 and 23, both inclusive, representing the value of the hours component in the localized value of arg. 
   *
   * <a name="ml-server-type-hours"></a>
   
@@ -171,7 +171,7 @@ public interface SqlExpr {
   * If the first expression is NULL, then the value of the second expression is returned. If not null, the first expression is returned.
   *
   * <a name="ml-server-type-ifnull"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:ifnull" target="mlserverdoc">sql:ifnull</a> server function.
   * @param expr1  First expression to be evaluated.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
@@ -259,7 +259,7 @@ public interface SqlExpr {
   * Returns true if the specified input like the specified pattern, otherwise returns false.
   *
   * <a name="ml-server-type-like"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:like" target="mlserverdoc">sql:like</a> server function.
   * @param input  The input from which to match.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -335,7 +335,7 @@ public interface SqlExpr {
   * Returns a NULL value if the two specified values are equal. Returns the first value if they are not equal
   *
   * <a name="ml-server-type-nullif"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:nullif" target="mlserverdoc">sql:nullif</a> server function.
   * @param expr1  First expression to be evaluated.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
@@ -418,6 +418,7 @@ public interface SqlExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
   public ServerExpression right(ServerExpression str, ServerExpression n);
+public ServerExpression rowID(ServerExpression arg1);
 /**
   * Return a string that removes trailing empty spaces in the input string.
   *
@@ -452,10 +453,10 @@ public interface SqlExpr {
   */
   public ServerExpression sign(ServerExpression x);
 /**
-  * Returns a four-character (SOUNDEX) code to evaluate the similarity of two strings.
+  * Returns a four-character (SOUNDEX) code to evaluate the similarity of two strings. 
   *
   * <a name="ml-server-type-soundex"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:soundex" target="mlserverdoc">sql:soundex</a> server function.
   * @param arg  The string whose soundex will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -486,7 +487,7 @@ public interface SqlExpr {
   * Returns an integer value representing the starting position of a string within the search string. Note, the string starting position is 1. If the first parameter is empty, the result is the empty sequence.
   *
   * <a name="ml-server-type-strpos"></a>
-
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:strpos" target="mlserverdoc">sql:strpos</a> server function.
   * @param target  The string from which to test.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
