@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.dataservices.ExecEndpoint;
+import com.marklogic.client.dataservices.IOEndpoint;
 import com.marklogic.client.dataservices.InputOutputEndpoint;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.impl.NodeConverter;
@@ -141,6 +142,97 @@ public class BulkIOEndpointTest {
         assertNotNull("null final sessionCounter", sessionCounter);
         assertTrue("final sessionCounter not number", sessionCounter.isNumber());
         assertEquals("mismatch on final sessionCounter", callCount - 1, sessionCounter.asInt());
+
+        IOTestUtil.modMgr.delete(scriptPath, apiPath);
+    }
+
+    @Test
+    public void testInputOutputCallerImplWithMultipleCallContexts() throws IOException {
+        String apiName = "bulkIOInputOutputCaller.api";
+
+        int nextStart = 1;
+        int workMax   = 4;
+
+        ObjectNode apiObj     = IOTestUtil.readApi(apiName);
+        String     scriptPath = IOTestUtil.getScriptPath(apiObj);
+        String     apiPath    = IOTestUtil.getApiPath(scriptPath);
+        IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
+
+        String              endpointState = "{\"next\":"+nextStart+"}";
+        String              workUnit      = "{\"max\":"+workMax+"}";
+
+        String              endpointState1 = "{\"next\":"+5+"}";
+        String              workUnit1      = "{\"max\":"+8+"}";
+        Set<String>         input         = Set.of(
+                "{\"docNum\":1, \"docName\":\"doc1\"}",
+                "{\"docNum\":2, \"docName\":\"doc2\"}",
+                "{\"docNum\":3, \"docName\":\"doc3\"}",
+                "{\"docNum\":4, \"docName\":\"doc4\"}",
+                "{\"docNum\":5, \"docName\":\"doc5\"}",
+                "{\"docNum\":6, \"docName\":\"doc6\"}"
+        );
+        Set<String> output = new HashSet<>();
+
+        InputOutputEndpoint endpoint = InputOutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
+                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes()))
+                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes())),
+                endpoint.newCallContext()
+                .withEndpointState(new ByteArrayInputStream(endpointState1.getBytes()))
+                .withWorkUnit(new ByteArrayInputStream(workUnit1.getBytes()))};
+
+        InputOutputEndpoint.BulkInputOutputCaller bulkCaller = endpoint.bulkCaller(callContextArray);
+        bulkCaller.setOutputListener(value -> {output.add(NodeConverter.InputStreamToString(value));
+        System.out.println("value is "+value);
+        });
+
+        input.stream().forEach(value -> bulkCaller.accept(IOTestUtil.asInputStream(value)));
+        bulkCaller.awaitCompletion();
+
+        assertEquals("mismatch between input and output size"+input+":"+output, input.size(), output.size());
+        assertEquals("mismatch between input and output elements", input, output);
+
+        IOTestUtil.modMgr.delete(scriptPath, apiPath);
+    }
+
+    @Test
+    public void testBulkExecCallerImplWithMultipleCallContexts() throws IOException {
+        String apiName = "bulkIOExecCaller.api";
+
+        String finalStateUri = "/marklogic/ds/test/bulkIOExecCaller.json";
+
+        int nextStart = 5;
+        int workMax = 15;
+
+        String endpointState = "{\"next\":"+nextStart+"}";
+        String workUnit      = "{\"max\":"+workMax+"}";
+
+        String endpointState1 = "{\"next\":"+16+"}";
+        String workUnit1      = "{\"max\":"+26+"}";
+
+        ObjectNode apiObj     = IOTestUtil.readApi(apiName);
+        String     scriptPath = IOTestUtil.getScriptPath(apiObj);
+        String     apiPath    = IOTestUtil.getApiPath(scriptPath);
+        IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
+
+        ExecEndpoint endpoint = ExecEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+
+        IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
+                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes()))
+                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes())),
+                endpoint.newCallContext()
+                        .withWorkUnit(new ByteArrayInputStream(workUnit1.getBytes()))
+                        .withEndpointState(new ByteArrayInputStream(endpointState1.getBytes()))};
+        ExecEndpoint.BulkExecCaller bulkCaller = endpoint.bulkCaller(callContextArray);
+        bulkCaller.awaitCompletion();
+
+        JSONDocumentManager docMgr = IOTestUtil.db.newJSONDocumentManager();
+
+        JsonNode finalState = docMgr.read(finalStateUri, new JacksonHandle()).get();
+        assertNotNull("null final state", finalState);
+        assertTrue("final state not object", finalState.isObject());
+
+        docMgr.delete(finalStateUri);
 
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
