@@ -120,7 +120,6 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 
 		private BulkInputCallerImpl(InputEndpointImpl endpoint, int batchSize, CallContext[] callContexts, int threadCount) {
 			super(callContexts, threadCount, (2*callContexts.length));
-			checkEndpoint(endpoint, "InputEndpointImpl");
 			this.endpoint = endpoint;
 			this.batchSize = batchSize;
 			this.inputQueue = new LinkedBlockingQueue<>();
@@ -157,11 +156,11 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 		@Override
 		public void awaitCompletion() {
 			try {
-				if (getInputQueue() == null)
-					return;
 
-				while (!getInputQueue().isEmpty()) {
-					processInput();
+				if (getInputQueue() != null) {
+					while (!getInputQueue().isEmpty()) {
+						processInput();
+					}
 				}
 				if(getCallerThreadPoolExecutor() != null)
 					getCallerThreadPoolExecutor().awaitTermination();
@@ -174,7 +173,7 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 			if(getCallContext()!=null)
 				processInput(getCallContext(), inputBatch);
 			// TODO : optimize the case of a single thread with a callContextQueue.
-			else if(getCallContextQueue() != null && !getCallContextQueue().isEmpty()){
+			else if(getCallContextQueue() != null){
 					BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this, inputBatch);
 					submitTask(bulkCallableImpl);
 			} else {
@@ -182,24 +181,25 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 			}
 		}
 
-		private void processInput(CallContext callContext, InputStream[] inputBatch) {
-			logger.trace("input endpoint running endpoint={} count={} state={}", getEndpointPath(), getCallCount(),
+		private void processInput(CallContextImpl callContext, InputStream[] inputBatch) {
+			logger.trace("input endpoint running endpoint={} count={} state={}", (callContext).getEndpoint().getEndpointPath(), getCallCount(),
 					callContext.getEndpointState());
-
-			InputStream output = null;
 			try {
+			InputStream output = null;
+
 				output = getEndpoint().getCaller().arrayCall(
-						getClient(), callContext.getEndpointState(), callContext.getSessionState(),
+						callContext.getClient(), callContext.getEndpointState(), callContext.getSessionState(),
 						callContext.getWorkUnit(), inputBatch
 				);
-			} catch (Throwable throwable) {
-				throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
-			}
+
 
 			incrementCallCount();
 
-			if (allowsEndpointState()) {
+			if (callContext.getEndpoint().allowsEndpointState()) {
 				callContext.withEndpointState(output);
+			}
+			} catch (Throwable throwable) {
+				throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
 			}
 		}
 
@@ -216,15 +216,15 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 					CallContext callContext = bulkInputCallerImpl.getCallContextQueue().poll();
 
 					if(callContext != null) {
-						bulkInputCallerImpl.processInput(callContext, inputBatch);
+						bulkInputCallerImpl.processInput((CallContextImpl) callContext, inputBatch);
 						bulkInputCallerImpl.getCallContextQueue().put(callContext);
 					}
-					else if(bulkInputCallerImpl.getCallContextQueue().isEmpty() &&
-							getCallerThreadPoolExecutor().getActiveCount() == 0) {
+					if(getCallerThreadPoolExecutor().isAwaitingTermination() && getInputQueue().isEmpty()) {
 						getCallerThreadPoolExecutor().shutdown();
 					}
-				} catch(Exception ex) {
-					throw new InternalError("Error occurred while processing CallContext - "+ex.getMessage());
+
+				} catch(Throwable throwable) {
+					throw new InternalError("Error occurred while processing CallContext - "+throwable.getMessage());
 				}
 				return true;
 			}

@@ -138,7 +138,6 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         }
         private BulkOutputCallerImpl(OutputEndpointImpl endpoint, CallContext[] callContexts, int threadCount) {
             super(callContexts, threadCount, threadCount);
-            checkEndpoint(endpoint, "OutputEndpointImpl");
             this.endpoint = endpoint;
         }
 
@@ -156,9 +155,11 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
 
         @Override
         public InputStream[] next() {
+            if(getCallContext() == null)
+                throw new UnsupportedOperationException("Callcontext cannot be null.");
             if (getOutputListener() != null)
                 throw new IllegalStateException("Cannot call next while current output consumer is not empty.");
-            return getOutput(getOutputStream());
+            return getOutput(getOutputStream(getCallContext()));
         }
 
         @Override
@@ -170,8 +171,6 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         public void awaitCompletion() {
             if (getOutputListener() == null)
                 throw new IllegalStateException("Output consumer is null");
-
-            logger.trace("output endpoint running endpoint={} work={}", getEndpointPath(), callContext.getWorkUnit());
 
             if(getPhase() != WorkPhase.INITIALIZING) {
                 throw new IllegalStateException(
@@ -199,12 +198,23 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
             }
         }
 
-        private InputStream[] getOutputStream() {
+        private InputStream[] getOutputStream(CallContextImpl callContext) {
             InputStream[] output;
             try {
+
                 output = getEndpoint().getCaller().arrayCall(
-                        getClient(), callContext.getEndpointState(), getSession(), callContext.getWorkUnit()
+                        (callContext).getClient(), callContext.getEndpointState(), callContext.getSessionState(),
+                        callContext.getWorkUnit()
                 );
+                if(callContext.getEndpoint().allowsEndpointState()) {
+                    if (output != null && output.length > 0) {
+                        callContext.withEndpointState(output[0]);
+                        output = (output.length >1)?Arrays.copyOfRange(output,1, output.length):new InputStream[0];
+                    }
+                    else
+                        callContext.withEndpointState((InputStream) null);
+                }
+
             } catch(Throwable throwable) {
                 throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
             }
@@ -216,15 +226,15 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         private void processOutput() {
             CallContext callContext = getCallContext();
             if(callContext != null) {
-                while (processOutput(callContext));
+                while (processOutput((CallContextImpl) callContext));
             }
         }
 
-        private boolean processOutput(CallContext callContext){
+        private boolean processOutput(CallContextImpl callContext){
                 logger.trace("output endpoint={} count={} state={}",
-                        getEndpointPath(), getCallCount(), callContext.getEndpointState());
+                        (callContext).getEndpoint().getEndpointPath(), getCallCount(), callContext.getEndpointState());
 
-                InputStream[] output = getOutputStream();
+                InputStream[] output = getOutputStream( callContext);
 
                 processOutputBatch(output, getOutputListener());
 
@@ -232,13 +242,14 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                     case INTERRUPTING:
                         setPhase(WorkPhase.INTERRUPTED);
                         logger.info("output interrupted endpoint={} count={} work={}",
-                                getEndpointPath(), getCallCount(), getWorkUnit());
+                                (callContext).getEndpoint().getEndpointPath(), getCallCount(), callContext.getWorkUnit());
                         return false;
                     case RUNNING:
                         if (output == null || output.length == 0) {
-                            setPhase(WorkPhase.COMPLETED);
+                            if(getCallerThreadPoolExecutor() == null || getCallerThreadPoolExecutor().getActiveCount() <= 1)
+                                setPhase(WorkPhase.COMPLETED);
                             logger.info("output completed endpoint={} count={} work={}",
-                                    getEndpointPath(), getCallCount(), callContext.getWorkUnit());
+                                    (callContext).getEndpoint().getEndpointPath(), getCallCount(), callContext.getWorkUnit());
                             return false;
                         }
                         return true;
@@ -248,7 +259,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                                 "cannot process more output as current phase is  " + getPhase().name());
                     default:
                         throw new MarkLogicInternalException(
-                                "unexpected state for "+getEndpointPath()+" during loop: "+getPhase().name()
+                                "unexpected state for "+(callContext).getEndpoint().getEndpointPath()+" during loop: "+getPhase().name()
                         );
                 }
 
@@ -263,19 +274,21 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
             }
             @Override
             public Boolean call() throws InterruptedException {
-                CallContext callContext = bulkOutputCallerImpl.getCallContextQueue().poll();
+                try {
+                    CallContext callContext = bulkOutputCallerImpl.getCallContextQueue().poll();
 
-                continueCalling = (callContext == null)? false:bulkOutputCallerImpl.processOutput(callContext);
-                if(continueCalling) {
-                    bulkOutputCallerImpl.getCallContextQueue().put(callContext);
-                    submitTask(this);
+                    continueCalling = (callContext == null) ? false : bulkOutputCallerImpl.processOutput((CallContextImpl) callContext);
+                    if (continueCalling) {
+                        bulkOutputCallerImpl.getCallContextQueue().put(callContext);
+                        submitTask(this);
+                    } else if (bulkOutputCallerImpl.getCallContextQueue().isEmpty() &&
+                            getCallerThreadPoolExecutor().getActiveCount() <= 1) {
+                        getCallerThreadPoolExecutor().shutdown();
+                    }
+                    return true;
+                } catch (Throwable throwable) {
+                    throw new InternalError("Error occurred while processing CallContext - "+throwable.getMessage());
                 }
-
-                else if(bulkOutputCallerImpl.getCallContextQueue().isEmpty() &&
-                        getCallerThreadPoolExecutor().getActiveCount() == 0) {
-                    getCallerThreadPoolExecutor().shutdown();
-                }
-                return true;
             }
         }
     }

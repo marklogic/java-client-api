@@ -108,7 +108,6 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
         }
         private BulkExecCallerImpl(ExecEndpointImpl endpoint, CallContext[] callContexts, int threadCount) {
             super(callContexts, threadCount, threadCount);
-            checkEndpoint(endpoint, "ExecEndpointImpl");
             this.endpoint = endpoint;
         }
 
@@ -119,7 +118,6 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
         @Override
         public void awaitCompletion() {
             setPhase(WorkPhase.RUNNING);
-            logger.trace("exec running endpoint={} work={}", getEndpointPath(), getCallContext().getWorkUnit());
 
             if(getCallContext() != null)
                 processOutput();
@@ -150,21 +148,23 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
         private void processOutput() {
             CallContext callContext = getCallContext();
             if(callContext != null) {
-                while (processOutput(callContext));
+                while (processOutput((CallContextImpl) callContext));
             }
         }
 
-        private boolean processOutput(CallContext callContext){
+        private boolean processOutput(CallContextImpl callContext){
                 InputStream output = null;
                 try {
                     logger.trace("exec calling endpoint={} count={} state={}",
-                            getEndpointPath(), getCallCount(), callContext.getEndpointState());
+                            callContext.getEndpoint().getEndpointPath(), getCallCount(), callContext.getEndpointState());
 // TODO: use byte[] for IO internally (and InputStream externally)
                     output = getEndpoint().getCaller().call(
-                            getClient(), callContext.getEndpointState(), callContext.getSessionState(),
+                            callContext.getClient(), callContext.getEndpointState(), callContext.getSessionState(),
                             callContext.getWorkUnit()
                     );
-
+                    if (callContext.getEndpoint().allowsEndpointState()) {
+                        callContext.withEndpointState(output);
+                    }
                     incrementCallCount();
                 } catch(Throwable throwable) {
                     // TODO: logging
@@ -172,27 +172,24 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
                 }
 // TODO -- retry with new session if times out
 
-                if (allowsEndpointState()) {
-                    callContext.withEndpointState(output);
-                }
-
                 switch(getPhase()) {
                     case INTERRUPTING:
                         setPhase(WorkPhase.INTERRUPTED);
                         logger.info("exec interrupted endpoint={} count={} work={}",
-                                getEndpointPath(), getCallCount(), callContext.getWorkUnit());
+                                callContext.getEndpoint().getEndpointPath(), getCallCount(), callContext.getWorkUnit());
                         return false;
                     case RUNNING:
-                        if (output == null) {
-                            setPhase(WorkPhase.COMPLETED);
+                        if (output == null ) {
+                            if(getCallerThreadPoolExecutor() == null || getCallerThreadPoolExecutor().getActiveCount() <= 1)
+                                setPhase(WorkPhase.COMPLETED);
                             logger.info("exec completed endpoint={} count={} work={}",
-                                    getEndpointPath(), getCallCount(), callContext.getWorkUnit());
+                                    callContext.getEndpoint().getEndpointPath(), getCallCount(), callContext.getWorkUnit());
                             return false;
                         }
                         return true;
                     default:
                         throw new MarkLogicInternalException(
-                                "unexpected state for "+getEndpointPath()+" during loop: "+getPhase().name()
+                                "unexpected state for "+callContext.getEndpoint().getEndpointPath()+" during loop: "+getPhase().name()
                         );
                 }
         }
@@ -209,14 +206,14 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
             public Boolean call() throws InterruptedException{
                 CallContext callContext = bulkExecCallerImpl.getCallContextQueue().poll();
 
-                continueCalling = (callContext == null)? false:bulkExecCallerImpl.processOutput(callContext);
+                continueCalling = (callContext == null)? false:bulkExecCallerImpl.processOutput((CallContextImpl) callContext);
 
                 if(continueCalling) {
                     bulkExecCallerImpl.getCallContextQueue().put(callContext);
                     submitTask(this);
                 }
                 else if(bulkExecCallerImpl.getCallContextQueue().isEmpty() &&
-                        getCallerThreadPoolExecutor().getActiveCount() == 0) {
+                        getCallerThreadPoolExecutor().getActiveCount() <= 1) {
                     getCallerThreadPoolExecutor().shutdown();
                 }
 

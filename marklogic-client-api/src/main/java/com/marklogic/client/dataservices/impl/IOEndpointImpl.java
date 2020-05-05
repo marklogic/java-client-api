@@ -151,9 +151,6 @@ abstract class IOEndpointImpl implements IOEndpoint {
             this.threadCount = threadCount;
         }
 
-        String getEndpointPath() {
-            return callContext.getEndpoint().getEndpointPath();
-        }
         long getCallCount() {
             return callCount;
         }
@@ -189,7 +186,8 @@ abstract class IOEndpointImpl implements IOEndpoint {
             if (allowsEndpointState())
                 callContext.withEndpointState(endpointState);
             else if (endpointState != null)
-                throw new IllegalArgumentException("endpoint state not accepted by endpoint: "+ getEndpointPath());
+                throw new IllegalArgumentException("endpoint state not accepted by endpoint: "+
+                        callContext.getEndpoint().getEndpointPath());
         }
         @Override
         @Deprecated
@@ -203,6 +201,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
         }
 
         boolean allowsWorkUnit() {
+            checkCallContext();
             return callContext.getEndpoint().allowsWorkUnit();
         }
 
@@ -219,7 +218,8 @@ abstract class IOEndpointImpl implements IOEndpoint {
             if (allowsWorkUnit())
                 callContext.withWorkUnit(workUnit);
             else if (workUnit != null)
-                throw new IllegalArgumentException("work unit not accepted by endpoint: "+ getEndpointPath());
+                throw new IllegalArgumentException("work unit not accepted by endpoint: "+
+                        callContext.getEndpoint().getEndpointPath());
         }
         @Override
         @Deprecated
@@ -232,16 +232,14 @@ abstract class IOEndpointImpl implements IOEndpoint {
             setWorkUnit((workUnit == null) ? null : workUnit.toBuffer());
         }
 
-        DatabaseClient getClient() {
-            return callContext.getEndpoint().getClient();
-        }
+
         boolean allowsSession() {
             return callContext.getEndpoint().allowsSession();
         }
         SessionState getSession() {
             if (!allowsSession())
                 return null;
-
+            checkCallContext();
             if (callContext.getSessionState() == null) {
                 // no need to refresh the session id preemptively before timeout
                 // because a timed-out session id is merely a new session id
@@ -291,7 +289,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
                     );
                 default:
                     throw new MarkLogicInternalException(
-                            "unexpected state for " + getEndpointPath() + " during loop: " + getPhase().name());
+                            "unexpected state for " + callContext.getEndpoint().getEndpointPath() + " during loop: " + getPhase().name());
             }
 
             return true;
@@ -304,9 +302,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
         void processOutputBatch(InputStream[] output, Consumer<InputStream> outputListener) {
             if (output == null || output.length == 0) return;
 
-            assignEndpointState(output);
-
-            for (int i=allowsEndpointState()?1:0; i < output.length; i++) {
+            for (int i=0; i < output.length; i++) {
                 outputListener.accept(output[i]);
             }
         }
@@ -368,10 +364,13 @@ abstract class IOEndpointImpl implements IOEndpoint {
                 return this.awaitingTermination;
             }
             synchronized void awaitTermination() throws InterruptedException {
-                if(bulkIOEndpointCaller.getCallContextQueue().isEmpty())
+                if(bulkIOEndpointCaller.getCallContextQueue().isEmpty() && getActiveCount()<=1) {
                     shutdown();
-                awaitingTermination = true;
-                awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+                }
+                else {
+                    awaitingTermination = true;
+                    awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+                }
             }
         }
     }
@@ -388,6 +387,10 @@ abstract class IOEndpointImpl implements IOEndpoint {
         }
         private CallContextImpl(IOEndpointImpl endpoint) {
             this.endpoint = endpoint;
+        }
+
+        DatabaseClient getClient() {
+            return getEndpoint().getClient();
         }
 
         @Override
