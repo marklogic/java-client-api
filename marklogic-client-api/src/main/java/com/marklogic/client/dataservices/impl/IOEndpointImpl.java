@@ -51,11 +51,11 @@ abstract class IOEndpointImpl implements IOEndpoint {
         return threadCount;
     }
 
-    public void setCallContext(CallContext callContext) {
+    void setCallContext(CallContext callContext) {
         this.callContext = callContext;
     }
 
-    public void setThreadCount(int threadCount) {
+    void setThreadCount(int threadCount) {
         this.threadCount = threadCount;
     }
 
@@ -382,7 +382,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
         private byte[]         workUnit;
         private SessionState   session;
 
-        public IOEndpointImpl getEndpoint() {
+        IOEndpointImpl getEndpoint() {
             return endpoint;
         }
         private CallContextImpl(IOEndpointImpl endpoint) {

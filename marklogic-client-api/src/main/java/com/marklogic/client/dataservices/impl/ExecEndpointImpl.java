@@ -146,9 +146,9 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
         }
 
         private void processOutput() {
-            CallContext callContext = getCallContext();
+            CallContextImpl callContext = getCallContext();
             if(callContext != null) {
-                while (processOutput((CallContextImpl) callContext));
+                while (processOutput(callContext));
             }
         }
 
