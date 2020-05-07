@@ -82,8 +82,8 @@ public class JAXBHandleTest {
     assertTrue("Failed to read JAXB list", refers2.list != null);
     assertEquals("JAXB document with different list", refers.list.size(), refers2.list.size());
 
-    // Again with a specified generic -- useful for convenience and strong typing
-    JAXBHandle<Refers> objectHandle2 = new JAXBHandle<>(context);
+    // Again with a type token -- useful for convenience and strong typing
+    JAXBHandle<Refers> objectHandle2 = new JAXBHandle<>(context, Refers.class);
 
     docMgr.write(docId, objectHandle2.with(refers));
 

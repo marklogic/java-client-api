@@ -63,6 +63,7 @@ public class JAXBHandle<C>
   private JAXBContext  context;
   private Unmarshaller unmarshaller;
   private Marshaller   marshaller;
+  private Class<C>     contentClass;
   private C            content;
 
   /**
@@ -99,6 +100,16 @@ public class JAXBHandle<C>
    * @param context	the JAXB context
    */
   public JAXBHandle(JAXBContext context) {
+    this(context, null);
+  }
+
+  /**
+   * Initializes the JAXB handle with the JAXB context for the classes
+   * of the marshalled or unmarshalled structure.
+   * @param context	the JAXB context
+   * @param contentClass the class of the content
+   */
+  public JAXBHandle(JAXBContext context, Class<C> contentClass) {
     super();
     if (context == null) {
       throw new IllegalArgumentException(
@@ -108,6 +119,7 @@ public class JAXBHandle<C>
     super.setFormat(Format.XML);
     setResendable(true);
     this.context = context;
+    this.contentClass = contentClass;
   }
 
   /**
@@ -158,6 +170,14 @@ public class JAXBHandle<C>
   public JAXBHandle<C> with(C content) {
     set(content);
     return this;
+  }
+  @Override
+  public Class<C> getContentClass() {
+    if (contentClass != null)
+      return contentClass;
+    if (content != null)
+      return (Class<C>) content.getClass();
+    return null;
   }
 
   /**
@@ -342,9 +362,7 @@ public class JAXBHandle<C>
     }
     @Override
     public <C> ContentHandle<C> newHandle(Class<C> type) {
-      ContentHandle<C> handle = isHandled(type) ?
-                                (ContentHandle<C>) new JAXBHandle<>(factoryContext) : null;
-      return handle;
+      return isHandled(type) ? new JAXBHandle<>(factoryContext, type) : null;
     }
   }
 }

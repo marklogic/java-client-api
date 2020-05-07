@@ -32,4 +32,19 @@ public interface ContentHandle<C>
    * @param content	the content
    */
   void set(C content);
+  /**
+   * Returns the class of the handled content, which may be a base
+   * class of the actual class of a content object.
+   *
+   * Note that implementations should override the default method,
+   * which returns null if the handle doesn't have any content.
+   *
+   * @return  the class for the handled content
+   */
+  default Class<C> getContentClass() {
+    C value = get();
+    if (value != null)
+      return (Class<C>) value.getClass();
+    return null;
+  }
 }

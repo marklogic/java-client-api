@@ -131,6 +131,7 @@ public class JacksonParserHandle
   }
   /**
    * Available for the edge case that content from a JsonParser must be written.
+   * @param parser the JsonParser over the content to be written
    */
   @Override
   public void set(JsonParser parser) {
@@ -140,6 +141,19 @@ public class JacksonParserHandle
     } else if ( parser.getInputSource() instanceof InputStream ) {
       content = (InputStream) parser.getInputSource();
     }
+  }
+  /**
+   * Assigns the JsonParser and returns the handle.
+   * @param parser the JsonParser over the content to be written
+   * @return this handle
+   */
+  public JacksonParserHandle with(JsonParser parser) {
+    set(parser);
+    return this;
+  }
+  @Override
+  public Class<JsonParser> getContentClass() {
+    return JsonParser.class;
   }
 
   /**

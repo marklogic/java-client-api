@@ -154,6 +154,10 @@ public class SourceHandle
     set(content);
     return this;
   }
+  @Override
+  public Class<Source> getContentClass() {
+    return Source.class;
+  }
 
   /**
    * Transforms the source for the content output to the result.  If

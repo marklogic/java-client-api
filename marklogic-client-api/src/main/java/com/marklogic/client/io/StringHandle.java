@@ -120,6 +120,10 @@ public class StringHandle
     set(content);
     return this;
   }
+  @Override
+  public Class<String> getContentClass() {
+    return String.class;
+  }
 
   /**
    * Specifies the format of the content and returns the handle

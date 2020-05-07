@@ -154,6 +154,10 @@ public class DOMHandle
     set(content);
     return this;
   }
+  @Override
+  public Class<Document> getContentClass() {
+    return Document.class;
+  }
 
   /**
    * Restricts the format to XML.

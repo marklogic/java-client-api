@@ -133,6 +133,10 @@ public class JacksonHandle
     set(content);
     return this;
   }
+  @Override
+  public Class<JsonNode> getContentClass() {
+    return JsonNode.class;
+  }
 
   @Override
   protected void receiveContent(InputStream content) {

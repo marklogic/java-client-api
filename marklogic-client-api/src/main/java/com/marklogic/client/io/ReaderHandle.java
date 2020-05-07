@@ -143,6 +143,10 @@ public class ReaderHandle
     set(content);
     return this;
   }
+  @Override
+  public Class<Reader> getContentClass() {
+    return Reader.class;
+  }
 
   /**
    * Specifies the format of the content and returns the handle

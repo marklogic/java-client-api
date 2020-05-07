@@ -147,6 +147,10 @@ public class InputStreamHandle
     set(content);
     return this;
   }
+  @Override
+  public Class<InputStream> getContentClass() {
+    return InputStream.class;
+  }
 
   /**
    * Specifies the format of the content and returns the handle

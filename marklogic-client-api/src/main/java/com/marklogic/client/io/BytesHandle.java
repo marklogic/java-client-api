@@ -140,6 +140,10 @@ public class BytesHandle
     set(content);
     return this;
   }
+  @Override
+  public Class<byte[]> getContentClass() {
+    return byte[].class;
+  }
 
   /**
    * Specifies the format of the content and returns the handle

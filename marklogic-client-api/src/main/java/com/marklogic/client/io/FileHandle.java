@@ -132,6 +132,10 @@ public class FileHandle
     set(content);
     return this;
   }
+  @Override
+  public Class<File> getContentClass() {
+    return File.class;
+  }
 
   /**
    * Specifies the format of the content and returns the handle

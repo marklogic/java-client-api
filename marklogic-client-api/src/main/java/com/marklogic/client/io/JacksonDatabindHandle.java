@@ -56,7 +56,7 @@ public class JacksonDatabindHandle<T>
     XMLReadHandle, XMLWriteHandle,
     StructureReadHandle, StructureWriteHandle, CtsQueryWriteHandle
 {
-  private Class<?> contentClass;
+  private Class<T> contentClass;
   private T content;
 
   /**
@@ -137,6 +137,10 @@ public class JacksonDatabindHandle<T>
   public JacksonDatabindHandle<T> with(T content) {
     set(content);
     return this;
+  }
+  @Override
+  public Class<T> getContentClass() {
+    return this.contentClass;
   }
 
   /**
