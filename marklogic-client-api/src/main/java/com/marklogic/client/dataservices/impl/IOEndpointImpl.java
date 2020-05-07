@@ -320,20 +320,6 @@ abstract class IOEndpointImpl implements IOEndpoint {
                 setPhase(WorkPhase.INTERRUPTING);
         }
 
-        void assignEndpointState(InputStream[] output) {
-            if (allowsEndpointState() && output.length > 0) {
-                setEndpointState(output[0]);
-            }
-        }
-
-        InputStream[] getOutput(InputStream[] output) {
-            assignEndpointState(output);
-            if(allowsEndpointState() && output.length>0) {
-                 return Arrays.copyOfRange(output, 1, output.length);
-            }
-            return output;
-        }
-
         private void checkCallContext() {
             if(this.callContext == null)
                 throw new InternalError("Can only call set and get methods for call state when using a single CallContext.");

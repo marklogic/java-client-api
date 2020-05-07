@@ -159,7 +159,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                 throw new UnsupportedOperationException("Callcontext cannot be null.");
             if (getOutputListener() != null)
                 throw new IllegalStateException("Cannot call next while current output consumer is not empty.");
-            return getOutput(getOutputStream(getCallContext()));
+            return getOutputStream(getCallContext());
         }
 
         @Override
