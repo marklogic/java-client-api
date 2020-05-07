@@ -16,7 +16,7 @@
 package com.marklogic.client.datamovement;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.io.marker.StructureReadHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
@@ -203,9 +203,8 @@ public interface DataMovementManager {
    */
   public DatabaseClient.ConnectionType getConnectionType();
 
-  <T extends StructureReadHandle> RowBatcher<T> newRowBatcher(T sampleHandle);
+  <T> RowBatcher<T> newRowBatcher(ContentHandle<T> rowsHandle);
 
   JobTicket startJob(RowBatcher batcher);
-
 
 }

@@ -15,18 +15,17 @@
  */
 package com.marklogic.client.datamovement.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.datamovement.*;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.impl.BatchPlanImpl;
-import com.marklogic.client.impl.DatabaseClientImpl;
-import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.BaseHandle;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.row.RowManager;
-import com.marklogic.client.row.RowRecord;
-import com.marklogic.client.row.RowSet;
-import com.marklogic.client.util.RequestParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,35 +34,85 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class RowBatcherImpl extends BatcherImpl implements RowBatcher {
-
+public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     private JobTicket jobTicket;
     private Calendar jobStartTime;
     private Calendar jobEndTime;
     AtomicLong batchNum = new AtomicLong(0);
-    private long rowCount = 0;
-    private long bucketSize;
+    private long bucketSize = 0;
+    private long batchCount = 0;
+    private long lastBucket = 0;
     private BatchThreadPoolExecutor threadPool;
-    private final Object lock = new Object();
     private static Logger logger = LoggerFactory.getLogger(RowBatcherImpl.class);
     private final AtomicBoolean stopped = new AtomicBoolean(false);
     private final AtomicBoolean started = new AtomicBoolean(false);
     private RowBatchFailureListener[] failureListeners;
     private RowBatchSuccessListener[] sucessListeners;
-    private RequestParameters params;
     private BatchPlanImpl batchPlanImpl;
+    private RowManager rowMgr;
+    private ContentHandle<T> rowsHandle;
+    private Class<T> rowsClass;
     private HostInfo[] hostInfos;
 
-    public <T extends StructureReadHandle> RowBatcherImpl(T sampleHandle, DataMovementManager moveMgr) {
+    // TODO: START EXAMPLE DELETE
+    static public void main(String... args) {
+        DatabaseClient db = DatabaseClientFactory.newClient("localhost", 8012,
+                new DatabaseClientFactory.DigestAuthContext("rest-writer", "x"));
+
+        DataMovementManager moveMgr = db.newDataMovementManager();
+
+        RowBatcher<String> rowBatcher =
+                moveMgr.newRowBatcher(new StringHandle().withFormat(Format.JSON).withMimetype("application/json-seq"));
+
+        RowManager rowMgr = rowBatcher.getRowManager();
+        rowMgr.setDatatypeStyle(RowManager.RowSetPart.HEADER);
+        rowMgr.setRowStructureStyle(RowManager.RowStructure.ARRAY);
+
+        PlanBuilder planBuilder = rowMgr.newPlanBuilder();
+        PlanBuilder.ModifyPlan plan = planBuilder.fromView("test", "record");
+
+        rowBatcher.withBatchView(plan)
+                  .onSuccess(event -> System.out.println(
+                      "batch="+event.getLowerBound()+" through "+event.getUpperBound()+"\n"+
+                      event.getRowsDoc()
+                      ));
+
+        moveMgr.startJob(rowBatcher);
+        rowBatcher.awaitCompletion();
+    }
+    // TODO: END EXAMPLE DELETE
+
+    public RowBatcherImpl(DataMovementManager moveMgr, ContentHandle<T> rowsHandle) {
         super(moveMgr);
-        params = new RequestParameters();
+        if (rowsHandle == null)
+            throw new IllegalArgumentException("Cannot create RowBatcher with null rows manager");
+        if (!(rowsHandle instanceof StructureReadHandle))
+            throw new IllegalArgumentException("Rows handle must also be StructureReadHandle");
+        if (!(rowsHandle instanceof BaseHandle))
+            throw new IllegalArgumentException("Rows handle must also be BaseHandle");
+        if (((BaseHandle) rowsHandle).getFormat() == Format.UNKNOWN)
+            throw new IllegalArgumentException("Rows handle must specify a format");
+        this.rowsHandle = rowsHandle;
+        this.rowsClass = rowsHandle.getContentClass();
+        if (this.rowsClass == null)
+            throw new IllegalArgumentException("Rows handle cannot have a null content class");
+        if (!DatabaseClientFactory.getHandleRegistry().isRegistered(this.rowsClass))
+            throw new IllegalArgumentException(
+                    "Rows handle must be registered with DatabaseClientFactory.HandleFactoryRegistry"
+            );
+        rowMgr = getPrimaryClient().newRowManager();
+    }
+
+    @Override
+    public RowManager getRowManager() {
+        return rowMgr;
     }
 
     @Override
     public RowBatcher withBatchView(PlanBuilder.ModifyPlan viewPlan) {
         // produces an batching plan from the supplied
         if(this.isStarted())
-            throw new IllegalStateException(("Cannot change batch view after the job is started."));
+            throw new IllegalStateException("Cannot change batch view after the job is started.");
 
         this.batchPlanImpl = new BatchPlanImpl(viewPlan, getPrimaryClient());
         return this;
@@ -72,7 +121,7 @@ public class RowBatcherImpl extends BatcherImpl implements RowBatcher {
     @Override
     public RowBatcher withBatchSize(int batchSize) {
         if(this.isStarted())
-            throw new IllegalStateException(("Cannot change batch size after the job is started."));
+            throw new IllegalStateException("Cannot change batch size after the job is started.");
 
         super.withBatchSize(batchSize);
         return this;
@@ -85,17 +134,21 @@ public class RowBatcherImpl extends BatcherImpl implements RowBatcher {
     }
 
     @Override
-    public int getThreadCount() {
-        return super.getThreadCount();
-    }
-
-    @Override
     public RowBatcher onSuccess(RowBatchSuccessListener listener) {
+        if (listener == null) {
+            sucessListeners = null;
+        } else if (sucessListeners == null || sucessListeners.length == 0) {
+            sucessListeners = new RowBatchSuccessListener[]{listener};
+        } else {
+            sucessListeners = Arrays.copyOf(sucessListeners, sucessListeners.length + 1);
+            sucessListeners[sucessListeners.length - 1] = listener;
+        }
         return this;
     }
 
     @Override
     public RowBatcher onFailure(RowBatchFailureListener listener) {
+        // TODO
         return this;
     }
 
@@ -106,24 +159,14 @@ public class RowBatcherImpl extends BatcherImpl implements RowBatcher {
     }
 
     @Override
-    public String getJobId() {
-        return super.getJobId();
-    }
-
-    @Override
     public RowBatcher withJobName(String jobName) {
         super.withJobName(jobName);
         return this;
     }
 
     @Override
-    public String getJobName() {
-        return super.getJobName();
-    }
-
-    @Override
     public RowBatcher withConsistentSnapshot() {
-
+        // TODO
         return this;
     }
 
@@ -131,20 +174,22 @@ public class RowBatcherImpl extends BatcherImpl implements RowBatcher {
     public RowBatchSuccessListener[] getSuccessListeners() {
         return sucessListeners;
     }
-
     @Override
     public RowBatchFailureListener[] getFailureListeners() {
         return failureListeners;
     }
-
     @Override
-    public void setSuccessListeners(RowBatchSuccessListener[] listeners) {
+    public void setSuccessListeners(RowBatchSuccessListener... listeners) {
         this.sucessListeners = listeners;
     }
-
     @Override
     public void setFailureListeners(RowBatchFailureListener... listeners) {
         this.failureListeners = listeners;
+    }
+    private void notifySuccess(RowBatchResponseEvent<T> event) {
+        for (RowBatchSuccessListener sucessListener: sucessListeners) {
+            sucessListener.processEvent(event);
+        }
     }
 
     @Override
@@ -180,7 +225,9 @@ public class RowBatcherImpl extends BatcherImpl implements RowBatcher {
 
     @Override
     public long getRowEstimate() {
-        return this.rowCount;
+        if (this.batchPlanImpl == null)
+            throw new IllegalStateException("Plan must be supplied before getting the row estimate");
+        return this.batchPlanImpl.getRowCount();
     }
 
     @Override
@@ -190,7 +237,6 @@ public class RowBatcherImpl extends BatcherImpl implements RowBatcher {
 
     @Override
     public void stop() {
-
         stopped.set(true);
         if ( threadPool != null ) threadPool.shutdownNow();
         jobEndTime = Calendar.getInstance();
@@ -207,35 +253,77 @@ public class RowBatcherImpl extends BatcherImpl implements RowBatcher {
     }
 
     @Override
-    public DatabaseClient getPrimaryClient() {
-        return null;
-    }
-
-    @Override
     public synchronized void start(JobTicket ticket) {
-
-        if(this.batchPlanImpl.getView() == null)
+        if (this.batchPlanImpl == null)
             throw new InternalError("Plan must be supplied before starting the job");
-        if ( threadPool != null ) {
+        if (threadPool != null) {
             logger.warn("startJob called more than once");
             return;
         }
-        params.add("schema", batchPlanImpl.getSchema());
-        params.add("view", batchPlanImpl.getView());
-        if ( super.getBatchSize() <= 0 ) {
-            withBatchSize(1);
-            logger.warn("batchSize should be 1 or greater--setting batchSize to 1");
+
+        if (sucessListeners == null || sucessListeners.length == 0)
+            throw new IllegalStateException("No listener for rows");
+
+        if (super.getBatchSize() <= 0) {
+            withBatchSize(1000);
+            logger.warn("batchSize should be 1 or greater--setting batchSize to 1000");
         }
         this.threadPool = new BatchThreadPoolExecutor(super.getThreadCount());
-        getRowCount();
-        for(int i=0; i<super.getThreadCount(); i++) {
-            RowBatchCallable rowBatchCallable = new RowBatchCallable(this);
-            rowBatchCallable.call();
+
+        this.batchCount = (getRowEstimate() / super.getBatchSize());
+        this.bucketSize = (Long.MAX_VALUE / this.batchCount);
+        this.lastBucket = Long.MAX_VALUE - bucketSize;
+
+        BaseHandle<?,?> rowsBaseHandle = (BaseHandle<?,?>) rowsHandle;
+        Format rowsFormat = rowsBaseHandle.getFormat();
+        String rowsMimeType = rowsBaseHandle.getMimetype();
+
+        for (int i=0; i<super.getThreadCount(); i++) {
+            ContentHandle<T> threadHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(rowsClass);
+            BaseHandle<?,?> threadBaseHandle = (BaseHandle<?,?>) threadHandle;
+            threadBaseHandle.setFormat(rowsFormat);
+            threadBaseHandle.setMimetype(rowsMimeType);
+            RowBatchCallable<T> threadCallable = new RowBatchCallable<T>(this, threadHandle);
+            submit(threadCallable);
         }
 
         jobTicket = ticket;
         jobStartTime = Calendar.getInstance();
         started.set(true);
+    }
+
+    private boolean readRows(RowBatchCallable<T> callable) {
+        long lowerBound = this.batchNum.getAndIncrement() * this.bucketSize;
+        boolean isLastBucket = (lowerBound >= this.lastBucket);
+        long upperBound = isLastBucket ? Long.MAX_VALUE : lowerBound + this.bucketSize;
+
+        PlanBuilder.Plan plan = this.batchPlanImpl.getEncapsulatedPlan()
+                .bindParam(BatchPlanImpl.LOWER_BOUND, lowerBound)
+                .bindParam(BatchPlanImpl.UPPER_BOUND, upperBound);
+
+        ContentHandle<T> threadHandle = callable.getHandle();
+
+        T rowsDoc = null;
+        try {
+            if (this.rowMgr.resultDoc(plan, (StructureReadHandle) threadHandle) != null) {
+                rowsDoc = threadHandle.get();
+            }
+        } catch(Throwable e) {
+            // TODO: send to failure listener
+        }
+
+        // if the plan filters the rows, a bucket could be empty
+        if (rowsDoc != null) {
+            notifySuccess(new RowBatchResponseEventImpl<>(lowerBound, upperBound, rowsDoc));
+        }
+
+        if (isLastBucket) {
+            this.threadPool.shutdown();
+        } else {
+            this.submit(callable);
+        }
+
+        return (rowsDoc != null);
     }
 
     @Override
@@ -256,17 +344,6 @@ public class RowBatcherImpl extends BatcherImpl implements RowBatcher {
         return this;
     }
 
-    private void getRowCount(){
-
-            JsonNode jn = ((DatabaseClientImpl) getPrimaryClient()).getServices()
-                    .getResource(null, "internal/viewinfo", null, params,
-                            new JacksonHandle())
-                    .get();
-        // extract tableID and rowCount
-        long batchCount = (this.rowCount/super.getBatchSize());
-        this.bucketSize = (Long.MAX_VALUE/batchCount);
-    }
-
     private void submit(Callable<Boolean> callable) {
         FutureTask futureTask = new FutureTask(callable);
         submit(futureTask);
@@ -275,50 +352,50 @@ public class RowBatcherImpl extends BatcherImpl implements RowBatcher {
         threadPool.execute(task);
     }
 
-    static private class RowBatchCallable implements Callable<Boolean> {
+    static private class RowBatchCallable<T> implements Callable<Boolean> {
         private RowBatcherImpl rowBatcher;
-        RowBatchCallable(RowBatcherImpl rowBatcher) {
+        private ContentHandle<T> handle;
+        RowBatchCallable(RowBatcherImpl<T> rowBatcher, ContentHandle<T> handle) {
             this.rowBatcher = rowBatcher;
+            this.handle = handle;
+        }
+        private ContentHandle<T> getHandle() {
+            return handle;
         }
         @Override
         public Boolean call() {
-            long lowerBound = rowBatcher.batchNum.getAndIncrement() * rowBatcher.bucketSize;
-            long upperBound = lowerBound+rowBatcher.bucketSize;
+            return rowBatcher.readRows(this);
+        }
+    }
 
-            BatchPlanImpl batchPlan = rowBatcher.batchPlanImpl;
-            PlanBuilder.Plan plan = batchPlan.getEncapsulatedPlan().bindParam(BatchPlanImpl.LOWER_BOUND, lowerBound)
-                    .bindParam(BatchPlanImpl.UPPER_BOUND, upperBound);
-            RowManager rowMgr = rowBatcher.getPrimaryClient().newRowManager();
-
-            RowSet<RowRecord> rowSet = rowMgr.resultRows(plan);
-            if(rowSet == null) {
-                rowBatcher.onFailure((batch, throwable) -> {
-                    throw new InternalError(throwable);
-                });
-                return false;
-            }
-            else {
-                Iterator<RowRecord> rowItr = rowSet.iterator();
-                while(rowItr.hasNext()) {
-                    rowBatcher.onSuccess((RowBatchSuccessListener) rowItr.next());
-                }
-                if(upperBound == Long.MAX_VALUE)
-                    rowBatcher.threadPool.shutdown();
-                else
-                    rowBatcher.submit(this);
-                return true;
-            }
-
+    static private class RowBatchResponseEventImpl<T> extends BatchEventImpl implements RowBatchResponseEvent<T> {
+        private long lowerBound = 0;
+        private long upperBound = 0;
+        private T handle;
+        public RowBatchResponseEventImpl(long lowerBound, long upperBound, T handle) {
+            this.lowerBound = lowerBound;
+            this.upperBound = upperBound;
+            this.handle     = handle;
+        }
+        @Override
+        public T getRowsDoc() {
+            return handle;
+        }
+        @Override
+        public long getLowerBound() {
+            return lowerBound;
+        }
+        @Override
+        public long getUpperBound() {
+            return upperBound;
         }
     }
 
     private class BatchThreadPoolExecutor extends ThreadPoolExecutor {
         BatchThreadPoolExecutor(int threadCount) {
-
             super(threadCount, threadCount, 0, TimeUnit.MILLISECONDS,
                     new LinkedBlockingQueue<Runnable>(threadCount), new ThreadPoolExecutor.CallerRunsPolicy());
         }
-
     }
 
     synchronized HostInfo[] forestHosts(ForestConfiguration forestConfig, HostInfo[] hostInfos) {
@@ -362,5 +439,5 @@ public class RowBatcherImpl extends BatcherImpl implements RowBatcher {
     private static class HostInfo {
             public String hostName;
             public DatabaseClient client;
-        }
+    }
 }
