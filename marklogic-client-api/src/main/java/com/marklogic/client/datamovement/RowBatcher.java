@@ -16,11 +16,12 @@
 package com.marklogic.client.datamovement;
 
 import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.io.marker.StructureReadHandle;
+import com.marklogic.client.row.RowManager;
 
 import java.util.concurrent.TimeUnit;
 
-public interface RowBatcher<T extends StructureReadHandle> extends Batcher {
+public interface RowBatcher<T> extends Batcher {
+    RowManager getRowManager();
 
     RowBatcher<T> withBatchView(PlanBuilder.ModifyPlan viewPlan);
 

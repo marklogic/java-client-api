@@ -20,7 +20,7 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.datamovement.*;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
@@ -215,15 +215,15 @@ public class DataMovementManagerImpl implements DataMovementManager {
   }
 
   @Override
-  public <T extends StructureReadHandle> RowBatcher<T> newRowBatcher(T sampleHandle) {
-    return new RowBatcherImpl(sampleHandle, this);
+  public <T> RowBatcher<T> newRowBatcher(ContentHandle<T> rowsHandle) {
+    return new RowBatcherImpl(this, rowsHandle);
   }
-
 
   @Override
   public JobTicket startJob(RowBatcher batcher) {
-    if (batcher == null) throw new IllegalArgumentException("batcher must not be null");
-    return new RowBatcherImpl(null, this).getJobTicket();
+    if (batcher == null)
+      throw new IllegalArgumentException("batcher must not be null");
+    return service.startJob(batcher, activeJobs);
   }
 
   public DataMovementServices getDataMovementServices() {
