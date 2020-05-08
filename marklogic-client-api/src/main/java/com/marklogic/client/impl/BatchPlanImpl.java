@@ -68,6 +68,7 @@ public class BatchPlanImpl  {
 
         PlanBuilder p = client.newRowManager().newPlanBuilder();
 
+        // TODO: filter out rowID column
         ServerExpression tablePrefix = p.xs.string(tableID + ":");
         this.encapsulatedPlan = (PlanBuilderImpl.PreparePlanImpl)
                 p.fromView(schema, view)
@@ -75,13 +76,14 @@ public class BatchPlanImpl  {
                      p.ge(p.col("rowID"), p.sql.rowID(p.fn.concat(tablePrefix, p.param(LOWER_BOUND)))),
                      p.le(p.col("rowID"), p.sql.rowID(p.fn.concat(tablePrefix, p.param(UPPER_BOUND))))
                      ))
+                 .orderBy(p.col("rowID"))
                  .prepare(2);
 
         BaseTypeImpl.BaseCallImpl[] arrForEncapsulated = encapsulatedPlan.getChain();
         BaseTypeImpl.BaseCallImpl[] arrForModified = new BaseTypeImpl.BaseCallImpl[arrWithView.length + arrForEncapsulated.length - 1];
         int i=0;
         arrForModified[i] = arrWithView[i];
-        for(i=1; i<(arrForEncapsulated.length-1); i++){
+        for(i=1; i<(arrForEncapsulated.length - 1); i++){
             arrForModified[i] = arrForEncapsulated[i];
         }
         for(int j=1; j<arrWithView.length; j++) {
