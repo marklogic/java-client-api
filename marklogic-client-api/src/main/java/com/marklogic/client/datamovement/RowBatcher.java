@@ -24,20 +24,21 @@ public interface RowBatcher<T> extends Batcher {
     RowManager getRowManager();
 
     RowBatcher<T> withBatchView(PlanBuilder.ModifyPlan viewPlan);
-
-    @Override
-    RowBatcher<T> withBatchSize(int batchSize);
+    RowBatcher<T> withConsistentSnapshot();
 
     RowBatcher<T> onSuccess(RowBatchSuccessListener<T> listener);
     RowBatcher<T> onFailure(RowBatchFailureListener listener);
 
     @Override
+    RowBatcher<T> withBatchSize(int batchSize);
+    @Override
+    RowBatcher<T> withForestConfig(ForestConfiguration forestConfig);
+    @Override
     RowBatcher<T> withJobId(String jobId);
-
     @Override
     RowBatcher<T> withJobName(String jobName);
-
-    RowBatcher<T> withConsistentSnapshot();
+    @Override
+    RowBatcher<T> withThreadCount(int threadCount);
 
     RowBatchSuccessListener<T>[] getSuccessListeners();
     RowBatchFailureListener[] getFailureListeners();

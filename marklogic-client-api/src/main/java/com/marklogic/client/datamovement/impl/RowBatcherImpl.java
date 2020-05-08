@@ -32,20 +32,24 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
+    final static private int DEFAULT_BATCH_SIZE = 1000;
+
+    private static Logger logger = LoggerFactory.getLogger(RowBatcherImpl.class);
+
     private JobTicket jobTicket;
     private Calendar jobStartTime;
     private Calendar jobEndTime;
-    AtomicLong batchNum = new AtomicLong(0);
     private long bucketSize = 0;
     private long batchCount = 0;
-    private long lastBucket = 0;
     private BatchThreadPoolExecutor threadPool;
-    private static Logger logger = LoggerFactory.getLogger(RowBatcherImpl.class);
+    private final AtomicLong batchNum = new AtomicLong(0);
     private final AtomicBoolean stopped = new AtomicBoolean(false);
     private final AtomicBoolean started = new AtomicBoolean(false);
+    private final AtomicInteger runningThreads = new AtomicInteger(0);
     private RowBatchFailureListener[] failureListeners;
     private RowBatchSuccessListener[] sucessListeners;
     private BatchPlanImpl batchPlanImpl;
@@ -53,34 +57,6 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     private ContentHandle<T> rowsHandle;
     private Class<T> rowsClass;
     private HostInfo[] hostInfos;
-
-    // TODO: START EXAMPLE DELETE
-    static public void main(String... args) {
-        DatabaseClient db = DatabaseClientFactory.newClient("localhost", 8012,
-                new DatabaseClientFactory.DigestAuthContext("rest-writer", "x"));
-
-        DataMovementManager moveMgr = db.newDataMovementManager();
-
-        RowBatcher<String> rowBatcher =
-                moveMgr.newRowBatcher(new StringHandle().withFormat(Format.JSON).withMimetype("application/json-seq"));
-
-        RowManager rowMgr = rowBatcher.getRowManager();
-        rowMgr.setDatatypeStyle(RowManager.RowSetPart.HEADER);
-        rowMgr.setRowStructureStyle(RowManager.RowStructure.ARRAY);
-
-        PlanBuilder planBuilder = rowMgr.newPlanBuilder();
-        PlanBuilder.ModifyPlan plan = planBuilder.fromView("test", "record");
-
-        rowBatcher.withBatchView(plan)
-                  .onSuccess(event -> System.out.println(
-                      "batch="+event.getLowerBound()+" through "+event.getUpperBound()+"\n"+
-                      event.getRowsDoc()
-                      ));
-
-        moveMgr.startJob(rowBatcher);
-        rowBatcher.awaitCompletion();
-    }
-    // TODO: END EXAMPLE DELETE
 
     public RowBatcherImpl(DataMovementManager moveMgr, ContentHandle<T> rowsHandle) {
         super(moveMgr);
@@ -101,6 +77,7 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
                     "Rows handle must be registered with DatabaseClientFactory.HandleFactoryRegistry"
             );
         rowMgr = getPrimaryClient().newRowManager();
+        super.withBatchSize(DEFAULT_BATCH_SIZE);
     }
 
     @Override
@@ -109,9 +86,8 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     }
 
     @Override
-    public RowBatcher withBatchView(PlanBuilder.ModifyPlan viewPlan) {
-        // produces an batching plan from the supplied
-        if(this.isStarted())
+    public RowBatcher<T> withBatchView(PlanBuilder.ModifyPlan viewPlan) {
+        if (this.isStarted())
             throw new IllegalStateException("Cannot change batch view after the job is started.");
 
         this.batchPlanImpl = new BatchPlanImpl(viewPlan, getPrimaryClient());
@@ -119,22 +95,22 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     }
 
     @Override
-    public RowBatcher withBatchSize(int batchSize) {
-        if(this.isStarted())
+    public RowBatcher<T> withBatchSize(int batchSize) {
+        if (this.isStarted())
             throw new IllegalStateException("Cannot change batch size after the job is started.");
-
         super.withBatchSize(batchSize);
         return this;
     }
-
     @Override
-    public Batcher withThreadCount(int threadCount) {
+    public RowBatcher<T> withThreadCount(int threadCount) {
+        if (this.isStarted())
+            throw new IllegalStateException("Cannot change thread count after the job is started.");
         super.withThreadCount(threadCount);
         return this;
     }
 
     @Override
-    public RowBatcher onSuccess(RowBatchSuccessListener listener) {
+    public RowBatcher<T> onSuccess(RowBatchSuccessListener listener) {
         if (listener == null) {
             sucessListeners = null;
         } else if (sucessListeners == null || sucessListeners.length == 0) {
@@ -147,25 +123,24 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     }
 
     @Override
-    public RowBatcher onFailure(RowBatchFailureListener listener) {
+    public RowBatcher<T> onFailure(RowBatchFailureListener listener) {
         // TODO
         return this;
     }
 
     @Override
-    public RowBatcher withJobId(String jobId) {
+    public RowBatcher<T> withJobId(String jobId) {
         super.setJobId(jobId);
         return this;
     }
-
     @Override
-    public RowBatcher withJobName(String jobName) {
+    public RowBatcher<T> withJobName(String jobName) {
         super.withJobName(jobName);
         return this;
     }
 
     @Override
-    public RowBatcher withConsistentSnapshot() {
+    public RowBatcher<T> withConsistentSnapshot() {
         // TODO
         return this;
     }
@@ -265,19 +240,21 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
             throw new IllegalStateException("No listener for rows");
 
         if (super.getBatchSize() <= 0) {
-            withBatchSize(1000);
-            logger.warn("batchSize should be 1 or greater--setting batchSize to 1000");
+            logger.warn("batchSize should be 1 or greater--setting batchSize to "+DEFAULT_BATCH_SIZE);
+            super.withBatchSize(DEFAULT_BATCH_SIZE);
         }
-        this.threadPool = new BatchThreadPoolExecutor(super.getThreadCount());
 
-        this.batchCount = (getRowEstimate() / super.getBatchSize());
+        this.batchCount = (getRowEstimate() / super.getBatchSize()) + 1;
+        //  TODO:  better as unsigned long
         this.bucketSize = (Long.MAX_VALUE / this.batchCount);
-        this.lastBucket = Long.MAX_VALUE - bucketSize;
+        logger.info("batch count: {}, bucket size: {}", batchCount, bucketSize);
 
         BaseHandle<?,?> rowsBaseHandle = (BaseHandle<?,?>) rowsHandle;
         Format rowsFormat = rowsBaseHandle.getFormat();
         String rowsMimeType = rowsBaseHandle.getMimetype();
 
+        this.threadPool = new BatchThreadPoolExecutor(super.getThreadCount());
+        this.runningThreads.set(super.getThreadCount());
         for (int i=0; i<super.getThreadCount(); i++) {
             ContentHandle<T> threadHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(rowsClass);
             BaseHandle<?,?> threadBaseHandle = (BaseHandle<?,?>) threadHandle;
@@ -287,15 +264,26 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
             submit(threadCallable);
         }
 
-        jobTicket = ticket;
-        jobStartTime = Calendar.getInstance();
-        started.set(true);
+        this.jobTicket = ticket;
+        this.jobStartTime = Calendar.getInstance();
+        this.started.set(true);
     }
 
     private boolean readRows(RowBatchCallable<T> callable) {
-        long lowerBound = this.batchNum.getAndIncrement() * this.bucketSize;
-        boolean isLastBucket = (lowerBound >= this.lastBucket);
-        long upperBound = isLastBucket ? Long.MAX_VALUE : lowerBound + this.bucketSize;
+        long currentBatch = this.batchNum.incrementAndGet();
+        if (currentBatch > this.batchCount) {
+            endThread();
+            return false;
+        }
+
+        boolean isLastBatch = (currentBatch == this.batchCount);
+
+        // TODO: better as unsigned longs
+        long lowerBound = (currentBatch - 1) * this.bucketSize;
+        long upperBound = isLastBatch ? Long.MAX_VALUE : (lowerBound + (this.bucketSize - 1));
+
+        logger.info("current batch: {}, lower bound: {}, upper bound: {}, last batch: {}",
+                currentBatch, lowerBound, upperBound, isLastBatch);
 
         PlanBuilder.Plan plan = this.batchPlanImpl.getEncapsulatedPlan()
                 .bindParam(BatchPlanImpl.LOWER_BOUND, lowerBound)
@@ -314,16 +302,22 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 
         // if the plan filters the rows, a bucket could be empty
         if (rowsDoc != null) {
-            notifySuccess(new RowBatchResponseEventImpl<>(lowerBound, upperBound, rowsDoc));
+            notifySuccess(new RowBatchResponseEventImpl<>(currentBatch, lowerBound, upperBound, rowsDoc));
         }
 
-        if (isLastBucket) {
-            this.threadPool.shutdown();
+        if (isLastBatch) {
+            endThread();
         } else {
             this.submit(callable);
         }
 
         return (rowsDoc != null);
+    }
+    private void endThread() {
+        int stillRunning = this.runningThreads.decrementAndGet();
+        if (stillRunning == 0) {
+            this.threadPool.shutdown();
+        }
     }
 
     @Override
@@ -337,7 +331,7 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     }
 
     @Override
-    public synchronized RowBatcher withForestConfig(ForestConfiguration forestConfig) {
+    public synchronized RowBatcher<T> withForestConfig(ForestConfiguration forestConfig) {
         super.withForestConfig(forestConfig);
 
         this.hostInfos = forestHosts(forestConfig, this.hostInfos);
@@ -369,10 +363,12 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     }
 
     static private class RowBatchResponseEventImpl<T> extends BatchEventImpl implements RowBatchResponseEvent<T> {
+        private long batchnum = 0;
         private long lowerBound = 0;
         private long upperBound = 0;
         private T handle;
-        public RowBatchResponseEventImpl(long lowerBound, long upperBound, T handle) {
+        public RowBatchResponseEventImpl(long batchnum, long lowerBound, long upperBound, T handle) {
+            this.batchnum   = batchnum;
             this.lowerBound = lowerBound;
             this.upperBound = upperBound;
             this.handle     = handle;
@@ -380,6 +376,10 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         @Override
         public T getRowsDoc() {
             return handle;
+        }
+        @Override
+        public long getBatchNumber() {
+            return batchnum;
         }
         @Override
         public long getLowerBound() {
