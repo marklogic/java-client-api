@@ -12,6 +12,8 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
@@ -24,6 +26,7 @@ public class BulkIOInputCallerTest {
     static String apiPath;
     static JSONDocumentManager docMgr;
     int counter = 0;
+    static Map<String, Integer> map;
 
     @BeforeClass
     public static void setup() throws Exception {
@@ -32,6 +35,7 @@ public class BulkIOInputCallerTest {
         scriptPath = IOTestUtil.getScriptPath(apiObj);
         apiPath = IOTestUtil.getApiPath(scriptPath);
         IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
+        map = new HashMap<>();
     }
     @Test
     public void bulkInputEndpointTestWithMultipleCallContexts() {
@@ -65,6 +69,10 @@ public class BulkIOInputCallerTest {
         checkDocuments("bulkInputTest_1");
         checkDocuments("bulkInputTest_2");
         assertTrue("Number of documents written not as expected.", counter == 4);
+        assertTrue("No documents written by first callContext in - bulkInputTest_1 collection.",
+                map.get("bulkInputTest_1") >= 1);
+        assertTrue("No documents written by second callContext in - bulkInputTest_2 collection.",
+                map.get("bulkInputTest_2") >= 1);
     }
 
     @AfterClass
@@ -88,6 +96,7 @@ public class BulkIOInputCallerTest {
                 assertEquals("state mismatch", i, doc.get("state").get("next").asInt());
                 assertEquals("state mismatch", 6, doc.get("work").get("max").asInt());
                 counter++;
+                map.put(collection, map.get(collection)!=null?map.get(collection)+1:1);
             }
         }
     }
