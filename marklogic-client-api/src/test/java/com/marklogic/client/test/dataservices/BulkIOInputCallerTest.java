@@ -14,8 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class BulkIOInputCallerTest {
 
@@ -24,6 +23,7 @@ public class BulkIOInputCallerTest {
     static String scriptPath;
     static String apiPath;
     static JSONDocumentManager docMgr;
+    int counter = 0;
 
     @BeforeClass
     public static void setup() throws Exception {
@@ -64,12 +64,13 @@ public class BulkIOInputCallerTest {
         loader.awaitCompletion();
         checkDocuments("bulkInputTest_1");
         checkDocuments("bulkInputTest_2");
+        assertTrue("Number of documents written not as expected.", counter == 4);
     }
 
     @AfterClass
     public static void cleanup(){
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
-        for(int i=2; i<4; i++) {
+        for(int i=2; i<5; i++) {
             String uri = "/marklogic/ds/test/bulkInputCaller/bulkInputTest_1/" +i+".json";
             docMgr.delete(uri);
             uri = "/marklogic/ds/test/bulkInputCaller/bulkInputTest_2/" +i+".json";
@@ -78,12 +79,16 @@ public class BulkIOInputCallerTest {
     }
 
     private void checkDocuments(String collection) {
-        for(int i=2; i<4; i++) {
+
+        for(int i=2; i<5; i++) {
             String uri = "/marklogic/ds/test/bulkInputCaller/"+collection+"/"+i+".json";
-            JsonNode doc = docMgr.read(uri, new JacksonHandle()).get();
-            assertNotNull("Could not find file "+uri, doc);
-            assertEquals("state mismatch", i, doc.get("state").get("next").asInt());
-            assertEquals("state mismatch", 6, doc.get("work").get("max").asInt());
+            if(docMgr.exists(uri)!=null) {
+                JsonNode doc = docMgr.read(uri, new JacksonHandle()).get();
+                assertNotNull("Could not find file "+uri, doc);
+                assertEquals("state mismatch", i, doc.get("state").get("next").asInt());
+                assertEquals("state mismatch", 6, doc.get("work").get("max").asInt());
+                counter++;
+            }
         }
     }
 }
