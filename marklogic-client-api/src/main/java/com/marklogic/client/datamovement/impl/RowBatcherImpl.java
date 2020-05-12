@@ -15,16 +15,19 @@
  */
 package com.marklogic.client.datamovement.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.datamovement.*;
 import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.impl.BatchPlanImpl;
+import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
+import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,8 +40,12 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     final static private int DEFAULT_BATCH_SIZE = 1000;
+    final static private long MAX_UNSIGNED_LONG = -1;
 
     private static Logger logger = LoggerFactory.getLogger(RowBatcherImpl.class);
+
+    final private static String LOWER_BOUND = "ML_LOWER_BOUND";
+    final private static String UPPER_BOUND = "ML_UPPER_BOUND";
 
     private JobTicket jobTicket;
     private Calendar jobStartTime;
@@ -52,7 +59,13 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     private final AtomicInteger runningThreads = new AtomicInteger(0);
     private RowBatchFailureListener[] failureListeners;
     private RowBatchSuccessListener[] sucessListeners;
-    private BatchPlanImpl batchPlanImpl;
+
+    private PlanBuilder.ModifyPlan inputPlan;
+    private String schemaName;
+    private String viewName;
+    private RawPlanDefinition pagedPlan;
+    private long rowCount = 0;
+
     private RowManager rowMgr;
     private ContentHandle<T> rowsHandle;
     private Class<T> rowsClass;
@@ -86,12 +99,33 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     }
 
     @Override
-    public RowBatcher<T> withBatchView(PlanBuilder.ModifyPlan viewPlan) {
+    public RowBatcher<T> withBatchView(PlanBuilder.ModifyPlan inputPlan) {
         if (this.isStarted())
             throw new IllegalStateException("Cannot change batch view after the job is started.");
 
-        this.batchPlanImpl = new BatchPlanImpl(viewPlan, getPrimaryClient());
+        this.inputPlan = inputPlan;
+        analyzePlan(inputPlan);
+
         return this;
+    }
+    private void analyzePlan(PlanBuilder.ModifyPlan inputPlan) {
+        if (inputPlan == null)
+            throw new IllegalArgumentException("modify plan cannot be null");
+
+        StringHandle initialPlan = inputPlan.export(new StringHandle().withFormat(Format.JSON));
+
+        DatabaseClientImpl client = (DatabaseClientImpl) getPrimaryClient();
+        JsonNode viewInfo = client.getServices().postResource(
+           null, "internal/viewinfo", null, null, initialPlan, new JacksonHandle()
+           ).get();
+// System.out.println(viewInfo.toPrettyString());
+
+        JsonNode schemaNode = viewInfo.get("schemaName");
+        this.schemaName = (schemaNode != null) ? schemaNode.asText(null) : null;
+        this.viewName   = viewInfo.get("viewName").asText(null);
+        this.rowCount   = viewInfo.get("rowCount").asLong(0);
+        this.pagedPlan  = client.newRowManager().newRawPlanDefinition(new JacksonHandle(viewInfo.get("modifiedPlan")));
+// TODO: also viewColumns? tableID?
     }
 
     @Override
@@ -200,9 +234,9 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 
     @Override
     public long getRowEstimate() {
-        if (this.batchPlanImpl == null)
+        if (this.pagedPlan == null)
             throw new IllegalStateException("Plan must be supplied before getting the row estimate");
-        return this.batchPlanImpl.getRowCount();
+        return this.rowCount;
     }
 
     @Override
@@ -229,7 +263,7 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 
     @Override
     public synchronized void start(JobTicket ticket) {
-        if (this.batchPlanImpl == null)
+        if (this.pagedPlan == null)
             throw new InternalError("Plan must be supplied before starting the job");
         if (threadPool != null) {
             logger.warn("startJob called more than once");
@@ -245,8 +279,7 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         }
 
         this.batchCount = (getRowEstimate() / super.getBatchSize()) + 1;
-        //  TODO:  better as unsigned long
-        this.bucketSize = (Long.MAX_VALUE / this.batchCount);
+        this.bucketSize = Long.divideUnsigned(MAX_UNSIGNED_LONG, this.batchCount);
         logger.info("batch count: {}, bucket size: {}", batchCount, bucketSize);
 
         BaseHandle<?,?> rowsBaseHandle = (BaseHandle<?,?>) rowsHandle;
@@ -276,19 +309,22 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
             return false;
         }
 
+        // assumes a bucket size of at least 2 to avoid unsigned overflow
         boolean isLastBatch = (currentBatch == this.batchCount);
 
-        // TODO: better as unsigned longs
         long lowerBound = (currentBatch - 1) * this.bucketSize;
-        long upperBound = isLastBatch ? Long.MAX_VALUE : (lowerBound + (this.bucketSize - 1));
+
+        String lowerBoundStr = Long.toUnsignedString(lowerBound);
+        String upperBoundStr = Long.toUnsignedString(
+                isLastBatch ? MAX_UNSIGNED_LONG : (lowerBound + (this.bucketSize - 1))
+        );
 
         logger.info("current batch: {}, lower bound: {}, upper bound: {}, last batch: {}",
-                currentBatch, lowerBound, upperBound, isLastBatch);
+                currentBatch, lowerBoundStr, upperBoundStr, isLastBatch);
 
-        PlanBuilder.Plan plan = this.batchPlanImpl.getEncapsulatedPlan()
-                .bindParam(BatchPlanImpl.LOWER_BOUND, lowerBound)
-                .bindParam(BatchPlanImpl.UPPER_BOUND, upperBound);
-
+        PlanBuilder.Plan plan = this.pagedPlan
+                .bindParam(LOWER_BOUND, lowerBoundStr)
+                .bindParam(UPPER_BOUND, upperBoundStr);
         ContentHandle<T> threadHandle = callable.getHandle();
 
         T rowsDoc = null;
@@ -302,7 +338,7 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 
         // if the plan filters the rows, a bucket could be empty
         if (rowsDoc != null) {
-            notifySuccess(new RowBatchResponseEventImpl<>(currentBatch, lowerBound, upperBound, rowsDoc));
+            notifySuccess(new RowBatchResponseEventImpl<>(currentBatch, lowerBoundStr, upperBoundStr, rowsDoc));
         }
 
         if (isLastBatch) {
@@ -364,10 +400,10 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 
     static private class RowBatchResponseEventImpl<T> extends BatchEventImpl implements RowBatchResponseEvent<T> {
         private long batchnum = 0;
-        private long lowerBound = 0;
-        private long upperBound = 0;
+        private String lowerBound = "0";
+        private String upperBound = "0";
         private T handle;
-        public RowBatchResponseEventImpl(long batchnum, long lowerBound, long upperBound, T handle) {
+        public RowBatchResponseEventImpl(long batchnum, String lowerBound, String upperBound, T handle) {
             this.batchnum   = batchnum;
             this.lowerBound = lowerBound;
             this.upperBound = upperBound;
@@ -382,11 +418,11 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
             return batchnum;
         }
         @Override
-        public long getLowerBound() {
+        public String getLowerBound() {
             return lowerBound;
         }
         @Override
-        public long getUpperBound() {
+        public String getUpperBound() {
             return upperBound;
         }
     }
