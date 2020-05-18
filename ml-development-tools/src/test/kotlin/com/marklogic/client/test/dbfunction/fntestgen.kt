@@ -1600,9 +1600,16 @@ if (true) {
 }
 
 if (true) {
-  for (testName in listOf("decoratorBase", "decoratorCustom", "described", "mimetype", "sessions")) {
+  for (testType in listOf("negative", "positive")) {
+  val testList =
+      when (testType) {
+          "negative" -> listOf("badExecution")
+          "positive" -> listOf("decoratorBase", "decoratorCustom", "described", "mimetype", "sessions")
+          else       -> throw IllegalStateException("Unknown test type of $testType")
+      }
+  for (testName in testList) {
     val testModMgr = modMgr
-    val manualBundleJSONPath = "${testDir}ml-modules/root/dbfunctiondef/positive/${testName}/"
+    val manualBundleJSONPath = "${testDir}ml-modules/root/dbfunctiondef/${testType}/${testName}/"
     val manualBundleEndpoint = "$endpointBase$testName/"
     val manualBundleFilename = manualBundleJSONPath+"service.json"
 
@@ -1636,7 +1643,7 @@ if (true) {
                   .add(manualBundleEndpoint+modName, modMeta, FileHandle(modFile))
           )
         }
-  }
+  }}
 }
 
 if (true) {

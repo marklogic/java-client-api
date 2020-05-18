@@ -1,0 +1,4 @@
+{
+  "endpointDirectory" : "/dbf/test/badExecution/",
+  "$javaClass" : "com.marklogic.client.test.dbfunction.negative.BadExecutionBundle"
+}
