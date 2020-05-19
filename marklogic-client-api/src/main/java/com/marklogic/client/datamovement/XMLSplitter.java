@@ -38,7 +38,6 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -110,6 +109,38 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
         return split(reader);
     }
 
+    /**
+     * Takes an input stream of an XML file and split it into a steam of DocumentWriteOperation.
+     * @param input is the incoming input stream.
+     * @return a stream of DocumentWriteOperation to write to database
+     * @throws Exception
+     */
+    @Override
+    public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input) throws Exception {
+        if (input == null) {
+            throw new IllegalArgumentException("Input cannot be null");
+        }
+
+        return splitWriteOperations(input, null);
+    }
+
+    /**
+     * Takes an input stream of an XML file and input file name, split it into a steam of DocumentWriteOperation.
+     * @param input is the incoming input stream.
+     * @param inputName is the file name, including name and extension
+     * @return a stream of DocumentWriteOperation to write to database
+     * @throws Exception
+     */
+    @Override
+    public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input, String inputName) throws Exception {
+        if (input == null) {
+            throw new IllegalArgumentException("Input cannot be null");
+        }
+
+        XMLStreamReader reader = XMLInputFactory.newFactory().createXMLStreamReader(input);
+        return splitWriteOperations(reader, inputName);
+    }
+
     @Override
     public long getCount() {
         return count;
@@ -136,13 +167,24 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
      * Take an input of XMLStreamReader of the XML file and split it into a stream of DocumentWriteOperations
      * to write to database.
      * @param input an XMLStreamReader of the XML file
+     * @param inputName is the name of the input file, including name and extension
      * @return a stream of DocumentWriteOperation to write to database
      */
-    public Stream<DocumentWriteOperation> splitWriteOperations(XMLStreamReader input) {
+    public Stream<DocumentWriteOperation> splitWriteOperations(XMLStreamReader input, String inputName) {
 
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
+
+        if (getUriMaker() == null) {
+            XMLSplitter.UriMakerImpl uriMaker = new XMLSplitter.UriMakerImpl();
+            setUriMaker(uriMaker);
+        }
+        getUriMaker().setInputName(inputName);
+        if (getUriMaker().getInputName() == null) {
+            ((XMLSplitter.UriMakerImpl) getUriMaker()).setExtension("xml");
+        }
+
 
         XMLSplitter.DocumentWriteOperationSpliterator<T> documentWriteOperationSpliterator =
                 new XMLSplitter.DocumentWriteOperationSpliterator<>(this, input);
@@ -211,12 +253,12 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
          * @param handle the handle contains target elements as content
          * @return DocumentWriteOperations to write to database
          */
-        public DocumentWriteOperation makeDocumentWriteOperation(T handle) {
+        public DocumentWriteOperation makeDocumentWriteOperation(UriMaker uriMaker, int count, T handle) {
             if (handle == null) {
                 throw new IllegalArgumentException("Handle cannot be null");
             }
 
-            String uri = UUID.randomUUID().toString() + ".xml";
+            String uri = uriMaker.makeUri(count, handle);
 
             return new DocumentWriteOperationImpl(
                     DocumentWriteOperation.OperationType.DOCUMENT_WRITE,
@@ -437,8 +479,8 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
                 return false;
             }
 
-            action.accept(handle);
             getSplitter().count++;
+            action.accept(handle);
 
             return true;
         }
@@ -457,10 +499,13 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
                 return false;
             }
 
-            DocumentWriteOperation documentWriteOperation = getSplitter().getVisitor().makeDocumentWriteOperation(handle);
+            getSplitter().count++;
+            DocumentWriteOperation documentWriteOperation = getSplitter().getVisitor().makeDocumentWriteOperation(
+                    getSplitter().getUriMaker(),
+                    (int) getSplitter().getCount(),
+                    handle);
 
             action.accept(documentWriteOperation);
-            getSplitter().count++;
 
             return true;
         }
@@ -514,5 +559,43 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
             throw new UnsupportedOperationException("Current XML branch cannot be closed.");
         }
     }
+
+    private XMLSplitter.UriMaker uriMaker;
+
+    /**
+     * Get the UriMaker of the splitter
+     * @return the UriMaker of the splitter
+     */
+    public XMLSplitter.UriMaker getUriMaker() {
+        return this.uriMaker;
+    }
+
+    /**
+     * Set the UriMaker to the splitter
+     * @param uriMaker the uriMaker to generate URI of each split file.
+     */
+    public void setUriMaker(XMLSplitter.UriMaker uriMaker) {
+        this.uriMaker = uriMaker;
+    }
+
+    /**
+     * UriMaker which generates URI for each split file
+     */
+    interface UriMaker extends Splitter.UriMaker {
+        /**
+         * Generates URI for each split
+         * @param num the count of each split
+         * @param handle the handle which contains the content of each split
+         * @return the generated URI of current split
+         */
+        String makeUri(int num, XMLWriteHandle handle);
+    }
+
+    private static class UriMakerImpl extends com.marklogic.client.datamovement.impl.UriMakerImpl<XMLWriteHandle>
+            implements XMLSplitter.UriMaker {
+
+    }
+
+
 
 }

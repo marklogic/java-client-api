@@ -19,6 +19,7 @@ package com.marklogic.client.datamovement;
 import java.io.InputStream;
 import java.util.stream.Stream;
 
+import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 
 /**
@@ -32,6 +33,52 @@ public interface Splitter<T extends AbstractWriteHandle> {
      * @throws Exception if the input cannot be split
      */
     Stream<T> split(InputStream input) throws Exception;
+
+    /**
+     * Converts the incoming input stream to a stream of DocumentWriteOperation objects.
+     * @param input is the incoming input stream.
+     * @return a stream of DocumentWriteOperation objects.
+     * @throws Exception if the input cannot be split
+     */
+    Stream<DocumentWriteOperation> splitWriteOperations(InputStream input) throws Exception;
+
+    /**
+     * Converts the incoming input stream to a stream of DocumentWriteOperation objects.
+     * @param input is the incoming input stream.
+     * @param inputName
+     * @return a stream of DocumentWriteOperation objects.
+     * @throws Exception if the input cannot be split
+     */
+    Stream<DocumentWriteOperation> splitWriteOperations(InputStream input, String inputName) throws Exception;
+
+    /**
+     * UriMaker generates URI for each split file.
+     */
+    interface UriMaker {
+        /**
+         * Get inputAfter of the UriMaker, which could be base directory
+         * @return inputAfter of the UriMaker
+         */
+        String getInputAfter();
+
+        /**
+         * Set inputAfter of the UriMaker, which could be base URI
+         * @param base inputAfter of the UriMaker
+         */
+        void setInputAfter(String base);
+
+        /**
+         * Get inputName of the UriMaker, which should include name and extension.
+         * @return inputName of the UriMaker
+         */
+        String getInputName();
+
+        /**
+         * Set inputName to the UriMaker
+         * @param name inputName of UriMaker, which should include both name and extension.
+         */
+        void setInputName(String name);
+    }
 
     /**
      * @return the number of objects in the stream.
