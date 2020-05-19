@@ -15,9 +15,6 @@
  */
 package com.marklogic.client.test.datamovement;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -26,15 +23,13 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
+import com.marklogic.client.datamovement.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.JacksonCSVSplitter;
-import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteOperation.OperationType;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
@@ -45,9 +40,12 @@ import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.opencsv.CSVReader;
 
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
 public class JacksonCSVSplitterTest {
     
-    static final private String csvFile = "src/test/resources/data" + File.separator + "test.csv";
+    static final private String csvFile = "src/test/resources/data/pathSplitter" + File.separator + "test.csv";
     private DatabaseClient client;
     private DataMovementManager moveMgr;
     
@@ -80,6 +78,139 @@ public class JacksonCSVSplitterTest {
                 assertNotNull(result[i].get().findValue(headerValues[j]));
             }
         }
+        fileReader.close();
+        csvReader.close();
+    }
+
+    @Test
+    public void testCSVSplitterWriteOperation() throws Exception {
+
+        JacksonCSVSplitter splitter = new JacksonCSVSplitter();
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(new FileInputStream(csvFile));
+        assertNotNull(contentStream);
+
+        Iterator<DocumentWriteOperation> itr = contentStream.iterator();
+
+        FileReader fileReader = new FileReader(csvFile);
+        CSVReader csvReader = new CSVReader(fileReader);
+        String[] headerValues = csvReader.readNext();
+
+        int i = 0;
+        while (itr.hasNext()) {
+            DocumentWriteOperation docOp = itr.next();
+            String uri = docOp.getUri();
+            assertNotNull(docOp.getUri());
+
+            assertNotNull(docOp.getContent());
+            JacksonHandle docOpContent = (JacksonHandle) docOp.getContent();
+            for(int j=0; j<headerValues.length;j++) {
+                assertNotNull(docOpContent.get().findValue(headerValues[j]));
+            }
+            i++;
+        }
+
+        assertEquals(11, splitter.getCount());
+        fileReader.close();
+        csvReader.close();
+    }
+
+    @Test
+    public void testCSVSplitterWriteOperationSetName() throws Exception {
+
+        JacksonCSVSplitter splitter = new JacksonCSVSplitter();
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(new FileInputStream(csvFile));
+        Splitter.UriMaker uriMaker = splitter.getUriMaker();
+        uriMaker.setInputAfter("/SystemPath/");
+        uriMaker.setInputName("NewCSV.json");
+        assertNotNull(contentStream);
+
+        Iterator<DocumentWriteOperation> itr = contentStream.iterator();
+
+        FileReader fileReader = new FileReader(csvFile);
+        CSVReader csvReader = new CSVReader(fileReader);
+        String[] headerValues = csvReader.readNext();
+
+        int i = 0;
+        while (itr.hasNext()) {
+            DocumentWriteOperation docOp = itr.next();
+            String uri = docOp.getUri();
+            assertNotNull(docOp.getUri());
+
+            assertNotNull(docOp.getContent());
+            JacksonHandle docOpContent = (JacksonHandle) docOp.getContent();
+            for(int j=0; j<headerValues.length;j++) {
+                assertNotNull(docOpContent.get().findValue(headerValues[j]));
+            }
+            i++;
+        }
+
+        assertEquals(11, splitter.getCount());
+        fileReader.close();
+        csvReader.close();
+    }
+
+    @Test
+    public void testCSVSplitterWriteOperationWithName() throws Exception {
+
+        JacksonCSVSplitter splitter = new JacksonCSVSplitter();
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(new FileInputStream(csvFile), "csv.json");
+        Splitter.UriMaker uriMaker = splitter.getUriMaker();
+        assertNotNull(contentStream);
+
+        Iterator<DocumentWriteOperation> itr = contentStream.iterator();
+
+        FileReader fileReader = new FileReader(csvFile);
+        CSVReader csvReader = new CSVReader(fileReader);
+        String[] headerValues = csvReader.readNext();
+
+        int i = 0;
+        while (itr.hasNext()) {
+            DocumentWriteOperation docOp = itr.next();
+            String uri = docOp.getUri();
+            assertNotNull(docOp.getUri());
+
+            assertNotNull(docOp.getContent());
+            JacksonHandle docOpContent = (JacksonHandle) docOp.getContent();
+            for(int j=0; j<headerValues.length;j++) {
+                assertNotNull(docOpContent.get().findValue(headerValues[j]));
+            }
+            i++;
+        }
+
+        assertEquals(11, splitter.getCount());
+        fileReader.close();
+        csvReader.close();
+    }
+
+    @Test
+    public void testCSVSplitterWriteOperationWithReader() throws Exception {
+
+        JacksonCSVSplitter splitter = new JacksonCSVSplitter();
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(new FileReader(csvFile), "csv.json");
+        Splitter.UriMaker uriMaker = splitter.getUriMaker();
+        assertNotNull(contentStream);
+
+        Iterator<DocumentWriteOperation> itr = contentStream.iterator();
+
+        FileReader fileReader = new FileReader(csvFile);
+        CSVReader csvReader = new CSVReader(fileReader);
+        String[] headerValues = csvReader.readNext();
+
+        int i = 0;
+        while (itr.hasNext()) {
+            DocumentWriteOperation docOp = itr.next();
+            String uri = docOp.getUri();
+            assertNotNull(docOp.getUri());
+
+            assertNotNull(docOp.getContent());
+            JacksonHandle docOpContent = (JacksonHandle) docOp.getContent();
+            for(int j=0; j<headerValues.length;j++) {
+                assertNotNull(docOpContent.get().findValue(headerValues[j]));
+            }
+            i++;
+        }
+
+        assertEquals(11, splitter.getCount());
         fileReader.close();
         csvReader.close();
     }

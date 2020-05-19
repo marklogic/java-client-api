@@ -16,6 +16,8 @@
 
 package com.marklogic.client.datamovement;
 
+import com.marklogic.client.document.DocumentWriteOperation;
+import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 
@@ -75,6 +77,64 @@ public class LineSplitter implements Splitter<StringHandle> {
     }
 
     /**
+     * Takes the input stream and converts it into a stream of DocumentWriteOperation. The content could be
+     * line-delimited JSON, XML or TEXT file. It could also be gzip-compressed line-delimited files.
+     * Provide GZIPInputStream to the splitter when splitting gzip files.
+     * @param input is the incoming input stream.
+     * @return a stream of DocumentWriteOperation.
+     * @throws Exception
+     */
+    @Override
+    public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input) throws Exception {
+        if (input == null) {
+            throw new IllegalArgumentException("InputStream cannot be null.");
+        }
+        return splitWriteOperations(input, null);
+    }
+
+    /**
+     * Takes the input stream and input file name and converts it into a stream of DocumentWriteOperation. The content
+     * could be line-delimited JSON, XML or TEXT file. It could also be gzip-compressed line-delimited files.
+     * Provide GZIPInputStream to the splitter when splitting gzip files.
+     * @param input is the incoming input stream.
+     * @param inputName is the name of the input file, including name and extension. However, we'll set extension of the
+     *                  URL of extracted document according to it's format.
+     * @return a stream of DocumentWriteOperation.
+     * @throws Exception
+     */
+    @Override
+    public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input, String inputName) throws Exception {
+        if (input == null) {
+            throw new IllegalArgumentException("InputStream cannot be null.");
+        }
+
+        if (getUriMaker() == null) {
+            LineSplitter.UriMakerImpl uriMaker = new LineSplitter.UriMakerImpl();
+            setUriMaker(uriMaker);
+        }
+        getUriMaker().setInputName(inputName);
+        LineSplitter.UriMakerImpl uriMaker = (UriMakerImpl) getUriMaker();
+        String extension = getFormat().getDefaultMimetype();
+        extension = extension.substring(extension.indexOf("/") + 1);
+        uriMaker.setExtension(extension);
+
+
+        return new BufferedReader(new InputStreamReader(input))
+                .lines()
+                .map(line -> {
+                    count++;
+                    StringHandle handle = new StringHandle(line);
+                    String uri = getUriMaker().makeUri(count, handle);
+                    return new DocumentWriteOperationImpl(
+                            DocumentWriteOperation.OperationType.DOCUMENT_WRITE,
+                            uri,
+                            null,
+                            handle
+                    );
+                });
+    }
+
+    /**
      * Takes the input stream and converts it into a stream of StringHandle. The content could be
      * line-delimited JSON file, line-delimited XML file or gzip-compressed line-delimited JSON file.
      * @param input is the incoming input stream.
@@ -109,5 +169,39 @@ public class LineSplitter implements Splitter<StringHandle> {
                     count++;
                     return new StringHandle(line).withFormat(getFormat());
                 });
+    }
+
+    private LineSplitter.UriMaker uriMaker;
+
+    /**
+     * Get the UriMaker of the splitter
+     * @return the UriMaker of the splitter
+     */
+    public LineSplitter.UriMaker getUriMaker() {
+        return this.uriMaker;
+    }
+
+    /**
+     * Set the UriMaker to the splitter
+     * @param uriMaker the uriMaker to generate URI of each split file.
+     */
+    public void setUriMaker(LineSplitter.UriMaker uriMaker) {
+        this.uriMaker = uriMaker;
+    }
+
+    /**
+     * UriMaker which generates URI for each split file
+     */
+    interface UriMaker extends Splitter.UriMaker {
+        /**
+         * Generates URI for each split
+         * @param num the count of each split
+         * @param handle the handle which contains the content of each split
+         * @return the generated URI of current split
+         */
+        String makeUri(int num, StringHandle handle);
+    }
+
+    private static class UriMakerImpl extends com.marklogic.client.datamovement.impl.UriMakerImpl<StringHandle> implements LineSplitter.UriMaker {
     }
 }

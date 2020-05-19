@@ -16,12 +16,10 @@
 
 package com.marklogic.client.test.datamovement;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
 import com.marklogic.client.datamovement.JSONSplitter;
 import com.marklogic.client.datamovement.NodeOperation;
+import com.marklogic.client.datamovement.Splitter;
 import com.marklogic.client.document.DocumentWriteOperation;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 
 import java.io.File;
@@ -34,10 +32,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class JSONSplitterTest {
-    static final private String jsonObjectFile = "src/test/resources/data" + File.separator + "JsonSplitterObject.json";
-    static final private String jsonArrayFile = "src/test/resources/data" + File.separator + "JsonSplitterArray.json";
-    static final private String jsonMultiArrayFile = "src/test/resources/data" + File.separator + "JsonMultiDiArray.json";
-    static final private String jsonCustMultiArrayFile = "src/test/resources/data" + File.separator + "jsonCustMultiArray.json";
+    static final private String jsonObjectFile = "src/test/resources/data" + File.separator + "pathSplitter/JsonSplitterObject.json";
+    static final private String jsonArrayFile = "src/test/resources/data" + File.separator + "pathSplitter/JsonSplitterArray.json";
+    static final private String jsonMultiArrayFile = "src/test/resources/data" + File.separator + "pathSplitter/JsonMultiDiArray.json";
+    static final private String jsonCustMultiArrayFile = "src/test/resources/data" + File.separator + "pathSplitter/jsonCustMultiArray.json";
     static final private String[] expectedArray = new String[]{
             "{\"record\":\"first record\"}",
             "{\"record\":\"second record\"}",
@@ -113,7 +111,10 @@ public class JSONSplitterTest {
 
         JSONSplitter splitter = JSONSplitter.makeArraySplitter();
         FileInputStream fileInputStream = new FileInputStream(new File(jsonArrayFile));
-        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(new JsonFactory().createParser(fileInputStream));
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream, "TestJson.json");
+        Splitter.UriMaker uriMaker = splitter.getUriMaker();
+        uriMaker.setInputAfter("/SystemPath/");
+        uriMaker.setInputName("NewTestJson.json");
         assertNotNull(contentStream);
 
         Iterator<DocumentWriteOperation> itr = contentStream.iterator();
