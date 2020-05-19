@@ -21,11 +21,13 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.util.JsonParserDelegate;
+import com.marklogic.client.datamovement.impl.UriMakerImpl;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.JSONWriteHandle;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +35,6 @@ import java.io.StringWriter;
 import java.util.ArrayDeque;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -44,7 +45,7 @@ import java.util.stream.StreamSupport;
  * into separate files.
  * @param <T> The type of the handle used for each split payload
  */
-public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> {
+public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
 
     /**
      * Construct a simple JSONSplitter which split objects or arrays under an array.
@@ -108,6 +109,38 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
     }
 
     /**
+     * Takes an InputStream of a JSON file and split it into a steam of DocumentWriteOperation to write to database.
+     * @param input is the incoming input stream of a JSON file
+     * @return a stream of DocumentWriteOperation to write to database
+     * @throws Exception
+     */
+    @Override
+    public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input) throws Exception {
+        if (input == null) {
+            throw new IllegalArgumentException("Input cannot be null");
+        }
+        return splitWriteOperations(input, null);
+    }
+
+    /**
+     * Takes an InputStream of a JSON file and file name and split it into a steam of DocumentWriteOperation
+     * to write to database.
+     * @param input is the incoming input stream of a JSON file
+     * @param inputName is the file name plus extension
+     * @return a stream of DocumentWriteOperation to write to database
+     * @throws Exception
+     */
+    @Override
+    public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input, String inputName) throws Exception {
+        if (input == null) {
+            throw new IllegalArgumentException("Input cannot be null");
+        }
+
+        JsonParser jsonParser = new JsonFactory().createParser(input);
+        return splitWriteOperations(jsonParser, inputName);
+    }
+
+    /**
      * Take an input of JsonParser created from the JSON file and split it into a stream of handles to write to database.
      * @param input JsonParser created from the JSON file
      * @return a stream of handles to write to database
@@ -128,9 +161,18 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
      * @param input JsonParser created from the JSON file
      * @return a stream of DocumentWriteOperation to write to database
      */
-    public Stream<DocumentWriteOperation> splitWriteOperations(JsonParser input) {
+    public Stream<DocumentWriteOperation> splitWriteOperations(JsonParser input, String inputName) {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
+        }
+
+        if (getUriMaker() == null) {
+            JSONSplitter.UriMakeImpl uriMaker = new UriMakeImpl();
+            setUriMaker(uriMaker);
+        }
+        getUriMaker().setInputName(inputName);
+        if (getUriMaker().getInputName() == null) {
+            ((JSONSplitter.UriMakeImpl) getUriMaker()).setExtension("json");
         }
 
         JSONSplitter.DocumentWriteOperationSpliterator spliterator =
@@ -192,15 +234,16 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
 
         /**
          * Construct buffered DocumentWriteOperations from the handle which contains target content
+         * @param uriMaker the UriMake to construct the URI for each document
          * @param handle the handle contains target object or array
          * @return DocumentWriteOperations to write to database
          */
-        public DocumentWriteOperation makeDocumentWriteOperation(T handle) {
+        public DocumentWriteOperation makeDocumentWriteOperation(UriMaker uriMaker, long count, T handle) {
             if (handle == null) {
                 throw new IllegalArgumentException("Handle cannot be null");
             }
 
-            String uri = UUID.randomUUID().toString() + ".json";
+            String uri = uriMaker.makeUri((int) count, (JSONWriteHandle) handle);
 
             return new DocumentWriteOperationImpl(
                     DocumentWriteOperation.OperationType.DOCUMENT_WRITE,
@@ -313,7 +356,7 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
         }
     }
 
-    private static abstract class JSONSpliterator<U, T extends AbstractWriteHandle> extends Spliterators.AbstractSpliterator<U> {
+    private static abstract class JSONSpliterator<U, T extends JSONWriteHandle> extends Spliterators.AbstractSpliterator<U> {
 
         private JsonParser jsonParser;
 
@@ -428,7 +471,7 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
 
     }
 
-    private static class HandleSpliterator<T extends AbstractWriteHandle> extends JSONSpliterator<T, T> {
+    private static class HandleSpliterator<T extends JSONWriteHandle> extends JSONSpliterator<T, T> {
 
         HandleSpliterator(JSONSplitter<T> splitter, JsonParser jsonParser) {
             super(splitter, jsonParser);
@@ -441,14 +484,14 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
                 return false;
             }
 
-            action.accept(handle);
             getSplitter().count++;
+            action.accept(handle);
 
             return true;
         }
     }
 
-    private static class DocumentWriteOperationSpliterator<T extends AbstractWriteHandle> extends JSONSpliterator<DocumentWriteOperation, T> {
+    private static class DocumentWriteOperationSpliterator<T extends JSONWriteHandle> extends JSONSpliterator<DocumentWriteOperation, T> {
 
         DocumentWriteOperationSpliterator(JSONSplitter<T> splitter, JsonParser jsonParser) {
             super(splitter, jsonParser);
@@ -461,10 +504,13 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
                 return false;
             }
 
-            DocumentWriteOperation documentWriteOperation = getSplitter().getVisitor().makeDocumentWriteOperation(handle);
+            getSplitter().count++;
+            DocumentWriteOperation documentWriteOperation = getSplitter().getVisitor().makeDocumentWriteOperation(
+                    getSplitter().getUriMaker(),
+                    getSplitter().getCount(),
+                    handle);
 
             action.accept(documentWriteOperation);
-            getSplitter().count++;
 
             return true;
         }
@@ -567,5 +613,40 @@ public class JSONSplitter<T extends AbstractWriteHandle> implements Splitter<T> 
         public void close() {
             throw new UnsupportedOperationException("Current JSON branch cannot be closed.");
         }
+    }
+
+    private UriMaker uriMaker;
+
+    /**
+     * Get the UriMaker of the splitter
+     * @return the UriMaker of the splitter
+     */
+    public UriMaker getUriMaker() {
+        return this.uriMaker;
+    }
+
+    /**
+     * Set the UriMaker to the splitter
+     * @param uriMaker the uriMaker to generate URI of each split file.
+     */
+    public void setUriMaker(UriMaker uriMaker) {
+        this.uriMaker = uriMaker;
+    }
+
+    /**
+     * UriMaker which generates URI for each split file
+     */
+    interface UriMaker extends Splitter.UriMaker {
+        /**
+         * Generates URI for each split
+         * @param num the count of each split
+         * @param handle the handle which contains the content of each split
+         * @return the generated URI of current split
+         */
+        String makeUri(int num, JSONWriteHandle handle);
+    }
+
+    private static class UriMakeImpl extends UriMakerImpl<JSONWriteHandle> implements JSONSplitter.UriMaker {
+
     }
 }

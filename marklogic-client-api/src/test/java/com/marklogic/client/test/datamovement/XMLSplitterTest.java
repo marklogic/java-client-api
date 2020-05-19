@@ -17,6 +17,7 @@
 package com.marklogic.client.test.datamovement;
 
 import com.marklogic.client.datamovement.NodeOperation;
+import com.marklogic.client.datamovement.Splitter;
 import com.marklogic.client.datamovement.XMLSplitter;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.io.Format;
@@ -34,7 +35,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class XMLSplitterTest {
-    static final private String xmlFile = "src/test/resources/data" + File.separator + "people.xml";
+    static final private String xmlFile = "src/test/resources/data" + File.separator + "pathSplitter/people.xml";
     static final private String[] expected = new String[]{
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?><person xmlns=\"http://www.marklogic.com/people/\" president=\"yes\"><first>George</first><last>Washington</last></person>",
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?><person xmlns=\"http://www.marklogic.com/people/\" president=\"no\"><first>Betsy</first><last>Ross</last></person>",
@@ -91,7 +92,6 @@ public class XMLSplitterTest {
     public void testSplitterWrite() throws Exception {
 
         FileInputStream fileInputStream = new FileInputStream(new File(xmlFile));
-        XMLStreamReader xmlStreamReader = XMLInputFactory.newFactory().createXMLStreamReader(fileInputStream);
 
         AttributeVisitor visitor = new AttributeVisitor("http://www.marklogic.com/people/",
                 "person",
@@ -100,7 +100,10 @@ public class XMLSplitterTest {
 
         XMLSplitter splitter = new XMLSplitter(visitor);
 
-        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(xmlStreamReader);
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream, "people.xml");
+        Splitter.UriMaker uriMaker = splitter.getUriMaker();
+        uriMaker.setInputAfter("/SystemPath/");
+        uriMaker.setInputName("NewPeople.xml");
         assertNotNull(contentStream);
 
         Iterator<DocumentWriteOperation> itr = contentStream.iterator();

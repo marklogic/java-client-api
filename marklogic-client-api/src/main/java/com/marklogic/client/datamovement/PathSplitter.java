@@ -1,0 +1,185 @@
+/*
+ * Copyright 2020 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.marklogic.client.datamovement;
+
+import com.marklogic.client.document.DocumentWriteOperation;
+import com.marklogic.client.io.marker.AbstractWriteHandle;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipInputStream;
+
+/**
+ * The PathSplitter utility class splits the Stream of paths into a Stream of AbstractWriteHandles or
+ * DocumentWriteOperations suitable for writing in batches.
+ */
+public class PathSplitter {
+    /**
+     * The default splitter key in splitterMap
+     */
+    public final static String DEFAULT_SPLITTER_KEY = "default";
+
+    private Map<String, Splitter<? extends AbstractWriteHandle>> splitterMap;
+    private Path documentUriAfter;
+    private String fileName = "";
+    private String extension = "";
+
+    /**
+     * Create a new PathSplitter with set splitterMap
+     * File with extension "csv" will be applied with JacksonCSVSplitter
+     * File with extension "jsonl" will be applied with LineSplitter
+     * File with extension "zip" will be applied with ZipSplitter
+     * File with other extension will be applied with UnarySplitter.
+     * You could change the default behavior for all other extensions.
+     */
+    public PathSplitter() {
+        splitterMap = new HashMap<>();
+        splitterMap.put("csv", new JacksonCSVSplitter());
+        splitterMap.put("jsonl", new LineSplitter());
+        splitterMap.put("zip", new ZipSplitter());
+        splitterMap.put("default", new UnarySplitter());
+    }
+
+    /**
+     * Get the splitterMap of the PathSplitter
+     * @return the splitterMap of extensions and splitters
+     */
+    public Map<String, Splitter<? extends AbstractWriteHandle>> getSplitters() {
+        return this.splitterMap;
+    }
+
+    /**
+     * Get documentUriAfter, which is the path of the directory to process
+     * @return documentUriAfter of the PathSplitter
+     */
+    public Path getDocumentUriAfter() {
+        return this.documentUriAfter;
+    }
+
+    /**
+     * set documentUriAfter to the PathSplitter
+     * @param path the path of the directory which contains documents
+     * @return  the created PathSplitter with documentUriAfter set
+     * @throws IOException if the path is not accessible
+     */
+    public PathSplitter withDocumentUriAfter(Path path) throws IOException {
+        documentUriAfter = path;
+        return this;
+    }
+
+    /**
+     * Take a stream of Paths and convert the content into a stream of AbstractWriteHandle
+     * @param paths a stream of Paths of target files
+     * @return a stream of AbstractWriteHandle
+     * @throws Exception if the path is not accessible
+     */
+    public Stream<? extends AbstractWriteHandle> splitHandles(Stream<Path> paths) throws Exception{
+        if (paths == null) {
+            throw new IllegalArgumentException("Stream<Path> cannot be null.");
+        }
+        return paths.flatMap(this::flatMapHandles);
+    }
+
+    /**
+     * Take a stream of Paths and convert the content into a stream of DocumentWriteOperation
+     * @param paths a stream of Paths of target files
+     * @return a stream of DocumentWriteOperation
+     * @throws Exception if the path is not accessible
+     */
+    public Stream<DocumentWriteOperation> splitDocumentWriteOperations(Stream<Path> paths) throws Exception{
+        if (paths == null) {
+            throw new IllegalArgumentException("Stream<Path> cannot be null.");
+        }
+        return paths.flatMap(this::flatMapDocumentWriteOperations);
+    }
+
+    private Stream<? extends AbstractWriteHandle> flatMapHandles(Path path) {
+        Splitter splitter = lookupSplitter(path);
+        if (splitter == null) {
+            return Stream.empty();
+        }
+        try {
+            InputStream inputStream = openInputStream(path);
+            return splitter.split(inputStream);
+        } catch (Exception e) {
+            throw new RuntimeException("", e);
+        }
+    }
+
+    private Stream<DocumentWriteOperation> flatMapDocumentWriteOperations(Path path)  {
+        Splitter splitter = lookupSplitter(path);
+        if (splitter == null) {
+            return Stream.empty();
+        }
+
+        try {
+            InputStream inputStream = openInputStream(path);
+            return splitter.splitWriteOperations(inputStream, this.fileName);
+        } catch (Exception e) {
+            throw new RuntimeException("", e);
+        }
+
+    }
+
+    private Splitter<? extends AbstractWriteHandle> lookupSplitter(Path path) {
+        if (path == null) {
+            throw new IllegalArgumentException("Path cannot be null.");
+        }
+        Pattern extensionRegex = Pattern.compile("\\.([^.]+)$");
+        String fileName = path.getName(path.getNameCount() - 1).toString();
+        Matcher matcher = extensionRegex.matcher(fileName);
+        matcher.find();
+        String extension = matcher.group(1);
+        this.fileName = fileName;
+        this.extension = extension;
+
+        Splitter splitter = splitterMap.get(extension);
+        if (splitter == null && splitterMap.get(DEFAULT_SPLITTER_KEY) != null) {
+            return splitterMap.get(DEFAULT_SPLITTER_KEY);
+        }
+        return splitter;
+    }
+
+    @NotNull
+    @Contract("null -> fail")
+    private InputStream openInputStream(Path path) throws IOException {
+        if (path == null) {
+            throw new IllegalArgumentException("Path cannot be null.");
+        }
+
+        InputStream inputStream = new BufferedInputStream(Files.newInputStream(path));
+        if ("zip".equals(this.extension)) {
+            return new ZipInputStream(inputStream);
+        }
+        //TODO: extension for UnarySplitter case, eg line-delimited.jsonl_23efa244-ba04-4318-a43d-276290b8b63e.gz
+        if ("gz".equals(this.extension)) {
+            return new GZIPInputStream(inputStream);
+        }
+        return inputStream;
+    }
+}
