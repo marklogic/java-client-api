@@ -15,5 +15,22 @@
  */
 package com.marklogic.client.datamovement;
 
-public interface RowBatchFailureListener extends BatchFailureListener<RowBatchRequestEvent> {
-        }
+public interface RowBatchFailureListener extends BatchFailureListener<RowBatchFailureListener.RowBatchFailureEvent> {
+    interface RowBatchFailureEvent extends BatchEvent {
+        BatchFailureDisposition getDisposition();
+        RowBatchFailureEvent withDisposition(BatchFailureDisposition disposition);
+        int getMaxRetries();
+        RowBatchFailureEvent withMaxRetries(int maxRetries);
+
+        String getLowerBound();
+        String getUpperBound();
+        int getBatchRetries();
+        long getFailedJobBatches();
+    }
+
+    enum BatchFailureDisposition {
+        RETRY, SKIP, STOP;
+    }
+
+    void processFailure(RowBatchFailureEvent batch, Throwable throwable);
+}

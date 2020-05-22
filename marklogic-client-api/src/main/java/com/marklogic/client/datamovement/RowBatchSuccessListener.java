@@ -15,5 +15,10 @@
  */
 package com.marklogic.client.datamovement;
 
-public interface RowBatchSuccessListener<T> extends BatchListener<RowBatchResponseEvent<T>> {
+public interface RowBatchSuccessListener<T> extends BatchListener<RowBatchSuccessListener.RowBatchResponseEvent<T>> {
+    interface RowBatchResponseEvent<T> extends BatchEvent {
+        String getLowerBound();
+        String getUpperBound();
+        T getRowsDoc();
+    }
 }

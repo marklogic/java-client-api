@@ -49,12 +49,12 @@ public interface RowBatcher<T> extends Batcher {
     boolean awaitCompletion();
     boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException;
 
+    long getRowEstimate();
+    long getBatchCount();
+    long getFailedBatches();
+
     JobTicket getJobTicket();
     boolean isStopped();
-
-    void retry(RowBatchRequestEvent event);
-    void retryWithFailureListeners(RowBatchRequestEvent event);
-    long getRowEstimate();
 }
 
 

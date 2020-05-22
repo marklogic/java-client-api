@@ -73,14 +73,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private Map<Forest,AtomicBoolean> forestIsDone = new HashMap<>();
   private Map<Forest, AtomicInteger> retryForestMap = new HashMap<>();
   private AtomicBoolean runJobCompletionListeners = new AtomicBoolean(false);
-  private final AtomicBoolean stopped = new AtomicBoolean(false);
-  private final AtomicBoolean started = new AtomicBoolean(false);
   private final Object lock = new Object();
   private final Map<Forest,List<QueryTask>> blackListedTasks = new HashMap<>();
   private boolean isSingleThreaded = false;
-  private JobTicket jobTicket;
-  private Calendar jobStartTime;
-  private Calendar jobEndTime;
   private long maxUris = Long.MAX_VALUE;
   private long maxBatches = Long.MAX_VALUE;
 
@@ -315,14 +310,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
   @Override
-  public boolean isStarted() {
-    return started.get();
-  }
-
-  @Override
   public JobTicket getJobTicket() {
     requireJobStarted();
-    return jobTicket;
+    return super.getJobTicket();
   }
 
   private void requireJobStarted() {
@@ -347,13 +337,13 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       withBatchSize(1);
       logger.warn("batchSize should be 1 or greater--setting batchSize to 1");
     }
-    jobTicket = ticket;
+    super.setJobTicket(ticket);
     initialize();
     for (QueryBatchListener urisReadyListener : urisReadyListeners) {
       urisReadyListener.initializeListener(this);
     }
-    jobStartTime = Calendar.getInstance();
-    started.set(true);
+    super.setJobStartTime();
+    super.getStarted().set(true);
     if(this.maxBatches < Long.MAX_VALUE) {
     	setMaxUris(getMaxBatches());
     }
@@ -559,7 +549,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
 
   private class QueryTask implements Runnable {
     private DataMovementManager moveMgr;
-    private QueryBatcher batcher;
+    private QueryBatcherImpl batcher;
     private Forest forest;
     private QueryDefinition query;
     private long forestBatchNum;
@@ -569,19 +559,17 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     private String afterUri;
     private String nextAfterUri;
 
-    QueryTask(DataMovementManager moveMgr, QueryBatcher batcher, Forest forest,
+    QueryTask(DataMovementManager moveMgr, QueryBatcherImpl batcher, Forest forest,
       QueryDefinition query, long forestBatchNum, long start)
     {
       this(moveMgr, batcher, forest, query, forestBatchNum, start, null, -1, true);
     }
-
-    QueryTask(DataMovementManager moveMgr, QueryBatcher batcher, Forest forest,
+    QueryTask(DataMovementManager moveMgr, QueryBatcherImpl batcher, Forest forest,
       QueryDefinition query, long forestBatchNum, long start, String afterUri)
     {
       this(moveMgr, batcher, forest, query, forestBatchNum, start, afterUri, -1, true);
     }
-
-    QueryTask(DataMovementManager moveMgr, QueryBatcher batcher, Forest forest,
+    QueryTask(DataMovementManager moveMgr, QueryBatcherImpl batcher, Forest forest,
       QueryDefinition query, long forestBatchNum, long start, String afterUri,
       long retryBatchNumber, boolean callFailListeners)
     {
@@ -610,7 +598,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       }
       
       // don't proceed if this job is stopped (because dataMovementManager.stopJob was called)
-      if ( stopped.get() == true ) {
+      if (batcher.getStopped().get() == true ) {
         logger.warn("Cancelling task to query forest '{}' forestBatchNum {} with start {} after the job is stopped",
           forest.getForestName(), forestBatchNum, start);
         return;
@@ -715,7 +703,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
 
     private void launchNextTask() {
-      if ( stopped.get() == true ) {
+      if (batcher.getStopped().get() == true ) {
         // we're stopping, so don't do anything more
         return;
       }
@@ -749,7 +737,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
         logger.error("Exception thrown by an onJobCompletion listener", e);
       }
     }
-    if(jobEndTime == null) jobEndTime = Calendar.getInstance();
+    super.setJobEndTime();
   }
 
   private class IteratorTask implements Runnable {
@@ -866,9 +854,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
 
   @Override
   public void stop() {
-    stopped.set(true);
+    super.getStopped().set(true);
     if ( threadPool != null ) threadPool.shutdownNow();
-    if(jobEndTime == null) jobEndTime = Calendar.getInstance();
+    super.setJobEndTime();
     if ( query != null ) {
       for ( AtomicBoolean isDone : forestIsDone.values() ) {
         // if even one isn't done, log a warning
@@ -909,7 +897,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
   protected void finalize() {
-    if ( stopped.get() == false ) {
+    if (this.getStopped().get() == false ) {
       logger.warn("QueryBatcher instance \"{}\" was never cleanly stopped.  You should call dataMovementManager.stopJob.",
         getJobName());
     }
@@ -1009,7 +997,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     if(! this.isStarted()) {
       return null;
     } else {
-      return jobStartTime;
+      return super.getJobStartTime();
     }
   }
 
@@ -1018,7 +1006,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     if(! this.isStopped()) {
       return null;
     } else {
-      return jobEndTime;
+      return super.getJobEndTime();
     }
   }
 
