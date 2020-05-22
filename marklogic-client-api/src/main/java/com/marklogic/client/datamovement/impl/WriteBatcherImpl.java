@@ -210,12 +210,7 @@ public class WriteBatcherImpl
   private HostInfo[] hostInfos;
   private boolean initialized = false;
   private CompletableThreadPoolExecutor threadPool = null;
-  private final AtomicBoolean stopped = new AtomicBoolean(false);
-  private final AtomicBoolean started = new AtomicBoolean(false);
   private boolean usingTransactions = false;
-  private JobTicket jobTicket;
-  private Calendar jobStartTime;
-  private Calendar jobEndTime;
   private DocumentMetadataHandle defaultMetadata;
 
   public WriteBatcherImpl(DataMovementManager moveMgr, ForestConfiguration forestConfig) {
@@ -248,8 +243,8 @@ public class WriteBatcherImpl
       logger.info("threadCount={}", getThreadCount());
       logger.info("batchSize={}", getBatchSize());
       if ( usingTransactions == true ) logger.info("transactionSize={}", transactionSize);
-      jobStartTime = Calendar.getInstance();
-      started.set(true);
+      super.setJobStartTime();
+      super.getStarted().set(true);
     }
   }
 
@@ -646,14 +641,14 @@ public class WriteBatcherImpl
 
   @Override
   public void start(JobTicket ticket) {
-    jobTicket = ticket;
+    super.setJobTicket(ticket);
     initialize();
   }
 
   @Override
   public void stop() {
-    jobEndTime = Calendar.getInstance();
-    stopped.set(true);
+    super.setJobEndTime();
+    super.getStopped().set(true);
     if ( threadPool != null ) threadPool.shutdownNow();
     closeAllListeners();
   }
@@ -680,36 +675,26 @@ public class WriteBatcherImpl
   }
 
   @Override
-  public boolean isStopped() {
-    return stopped.get();
-  }
-
-  @Override
-  public boolean isStarted() {
-    return started.get();
-  }
-
-  @Override
   public JobTicket getJobTicket() {
     requireInitialized();
-    return jobTicket;
+    return super.getJobTicket();
   }
 
   @Override
   public Calendar getJobStartTime() {
-    if(! this.isStarted()) {
+    if (!this.isStarted()) {
       return null;
     } else {
-      return jobStartTime;
+      return super.getJobStartTime();
     }
   }
 
   @Override
   public Calendar getJobEndTime() {
-    if(! this.isStopped()) {
+    if (!this.isStopped()) {
       return null;
     } else {
-      return jobEndTime;
+      return super.getJobEndTime();
     }
   }
 

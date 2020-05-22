@@ -18,6 +18,7 @@ package com.marklogic.client.datamovement.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.datamovement.*;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.impl.DatabaseClientImpl;
@@ -34,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -47,22 +47,20 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     final private static String LOWER_BOUND = "ML_LOWER_BOUND";
     final private static String UPPER_BOUND = "ML_UPPER_BOUND";
 
-    private JobTicket jobTicket;
-    private Calendar jobStartTime;
-    private Calendar jobEndTime;
-    private long bucketSize = 0;
+    private long batchSize = 0;
     private long batchCount = 0;
     private BatchThreadPoolExecutor threadPool;
     private final AtomicLong batchNum = new AtomicLong(0);
-    private final AtomicBoolean stopped = new AtomicBoolean(false);
-    private final AtomicBoolean started = new AtomicBoolean(false);
+    private final AtomicLong failedBatches = new AtomicLong(0);
     private final AtomicInteger runningThreads = new AtomicInteger(0);
     private RowBatchFailureListener[] failureListeners;
     private RowBatchSuccessListener[] sucessListeners;
 
+    // TODO: remove inputPlan, schemaName, and viewName?
     private PlanBuilder.ModifyPlan inputPlan;
     private String schemaName;
     private String viewName;
+
     private RawPlanDefinition pagedPlan;
     private long rowCount = 0;
 
@@ -102,15 +100,13 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     public RowBatcher<T> withBatchView(PlanBuilder.ModifyPlan inputPlan) {
         if (this.isStarted())
             throw new IllegalStateException("Cannot change batch view after the job is started.");
-
-        this.inputPlan = inputPlan;
         analyzePlan(inputPlan);
-
         return this;
     }
     private void analyzePlan(PlanBuilder.ModifyPlan inputPlan) {
         if (inputPlan == null)
             throw new IllegalArgumentException("modify plan cannot be null");
+        this.inputPlan = inputPlan;
 
         StringHandle initialPlan = inputPlan.export(new StringHandle().withFormat(Format.JSON));
 
@@ -118,7 +114,7 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         JsonNode viewInfo = client.getServices().postResource(
            null, "internal/viewinfo", null, null, initialPlan, new JacksonHandle()
            ).get();
-// System.out.println(viewInfo.toPrettyString());
+        // System.out.println(viewInfo.toPrettyString());
 
         JsonNode schemaNode = viewInfo.get("schemaName");
         this.schemaName = (schemaNode != null) ? schemaNode.asText(null) : null;
@@ -155,10 +151,16 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         }
         return this;
     }
-
     @Override
     public RowBatcher<T> onFailure(RowBatchFailureListener listener) {
-        // TODO
+        if (listener == null) {
+            failureListeners = null;
+        } else if (failureListeners == null || failureListeners.length == 0) {
+            failureListeners = new RowBatchFailureListener[]{listener};
+        } else {
+            failureListeners = Arrays.copyOf(failureListeners, failureListeners.length + 1);
+            failureListeners[failureListeners.length - 1] = listener;
+        }
         return this;
     }
 
@@ -175,7 +177,7 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 
     @Override
     public RowBatcher<T> withConsistentSnapshot() {
-        // TODO
+// TODO
         return this;
     }
 
@@ -195,9 +197,58 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     public void setFailureListeners(RowBatchFailureListener... listeners) {
         this.failureListeners = listeners;
     }
-    private void notifySuccess(RowBatchResponseEvent<T> event) {
+    private void initRequestEvent(RowBatchEventImpl event) {
+        event.withClient(getPrimaryClient());
+        event.withJobTicket(getJobTicket());
+    }
+    private void notifySuccess(RowBatchSuccessListener.RowBatchResponseEvent<T> event) {
+        if (sucessListeners == null || sucessListeners.length == 0) return;
         for (RowBatchSuccessListener sucessListener: sucessListeners) {
-            sucessListener.processEvent(event);
+            try {
+                sucessListener.processEvent(event);
+            } catch(Throwable e) {
+                logger.info("error in success listener: {}", e.toString());
+            }
+        }
+    }
+    private void notifyFailure(RowBatchFailureEventImpl event, Throwable throwable) {
+        RowBatchFailureListener.BatchFailureDisposition priorDisposition = null;
+        int priorMaxRetries = 0;
+        // notify all failure listeners
+        for (RowBatchFailureListener failureListener: failureListeners) {
+            priorDisposition = event.getDisposition();
+            priorMaxRetries  = event.getMaxRetries();
+
+            try {
+                failureListener.processFailure(event, throwable);
+            } catch(Throwable e) {
+                logger.info("error in failure listener: {}", e.toString());
+            }
+
+            int nextMaxRetries = event.getMaxRetries();
+            if (priorMaxRetries < nextMaxRetries) {
+                event.withMaxRetries(priorMaxRetries);
+            }
+
+            RowBatchFailureListener.BatchFailureDisposition nextDisposition = event.getDisposition();
+            if (priorDisposition != nextDisposition) {
+                // in precedence order
+                switch(priorDisposition) {
+                    case SKIP:
+                        break;
+                    case RETRY:
+                        if (nextDisposition == RowBatchFailureListener.BatchFailureDisposition.SKIP)
+                            event.withDisposition(priorDisposition);
+                        break;
+                    case STOP:
+                        event.withDisposition(priorDisposition);
+                        break;
+                    default:
+                        throw new MarkLogicInternalException(
+                                "unknown failure disposition: "+priorDisposition.toString()
+                        );
+                }
+            }
         }
     }
 
@@ -212,24 +263,13 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 
     @Override
     public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
-        if ( threadPool == null ) {
+        if (!this.isStarted()) {
             throw new IllegalStateException("Job not started.");
         }
-        return threadPool.awaitTermination(timeout, unit);
-    }
-
-    @Override
-    public void retry(RowBatchRequestEvent event) {
-        if ( isStopped() == true ) {
-            logger.warn("Job is now stopped, aborting the retry");
-            return;
+        if (threadPool != null) {
+            return threadPool.awaitTermination(timeout, unit);
         }
-        start(event.getJobTicket());
-    }
-
-    @Override
-    public void retryWithFailureListeners(RowBatchRequestEvent event) {
-        retry(event);
+        return true;
     }
 
     @Override
@@ -238,27 +278,35 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
             throw new IllegalStateException("Plan must be supplied before getting the row estimate");
         return this.rowCount;
     }
+    @Override
+    public long getBatchCount() {
+        if (!this.isStarted()) {
+            throw new IllegalStateException("Job not started.");
+        }
+        return this.batchNum.get();
+    }
+    @Override
+    public long getFailedBatches() {
+        if (!this.isStarted()) {
+            throw new IllegalStateException("Job not started.");
+        }
+        return this.failedBatches.get();
+    }
 
     @Override
     public JobTicket getJobTicket() {
-        return this.jobTicket;
+        if (!this.isStarted()) {
+            throw new IllegalStateException("Job not started.");
+        }
+        return super.getJobTicket();
     }
 
     @Override
     public void stop() {
-        stopped.set(true);
+// TODO: also set stop and jobEndTime after awaiting completion
+        super.getStopped().set(true);
         if ( threadPool != null ) threadPool.shutdownNow();
-        jobEndTime = Calendar.getInstance();
-    }
-
-    @Override
-    public Calendar getJobStartTime() {
-        return this.jobStartTime;
-    }
-
-    @Override
-    public Calendar getJobEndTime() {
-        return this.jobEndTime;
+        super.setJobEndTime();
     }
 
     @Override
@@ -266,21 +314,28 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         if (this.pagedPlan == null)
             throw new InternalError("Plan must be supplied before starting the job");
         if (threadPool != null) {
-            logger.warn("startJob called more than once");
+            logger.warn("job already started");
             return;
         }
 
         if (sucessListeners == null || sucessListeners.length == 0)
             throw new IllegalStateException("No listener for rows");
 
+        if (failureListeners == null || failureListeners.length == 0) {
+            logger.warn("starting job with default failure listener");
+            onFailure((batch, throwable) -> {
+                logger.warn("batch "+batch.getJobBatchNumber()+" failed with error: "+throwable.getMessage());
+            });
+        }
+
         if (super.getBatchSize() <= 0) {
-            logger.warn("batchSize should be 1 or greater--setting batchSize to "+DEFAULT_BATCH_SIZE);
+            logger.warn("batchSize must be 1 or greater--setting batchSize to "+DEFAULT_BATCH_SIZE);
             super.withBatchSize(DEFAULT_BATCH_SIZE);
         }
 
         this.batchCount = (getRowEstimate() / super.getBatchSize()) + 1;
-        this.bucketSize = Long.divideUnsigned(MAX_UNSIGNED_LONG, this.batchCount);
-        logger.info("batch count: {}, bucket size: {}", batchCount, bucketSize);
+        this.batchSize = Long.divideUnsigned(MAX_UNSIGNED_LONG, this.batchCount);
+        logger.info("batch count: {}, batch size: {}", batchCount, batchSize);
 
         BaseHandle<?,?> rowsBaseHandle = (BaseHandle<?,?>) rowsHandle;
         Format rowsFormat = rowsBaseHandle.getFormat();
@@ -297,9 +352,9 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
             submit(threadCallable);
         }
 
-        this.jobTicket = ticket;
-        this.jobStartTime = Calendar.getInstance();
-        this.started.set(true);
+        super.setJobTicket(ticket);
+        super.setJobStartTime();
+        super.getStarted().set(true);
     }
 
     private boolean readRows(RowBatchCallable<T> callable) {
@@ -309,14 +364,14 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
             return false;
         }
 
-        // assumes a bucket size of at least 2 to avoid unsigned overflow
+        // assumes a batch size of at least 2 to avoid unsigned overflow
         boolean isLastBatch = (currentBatch == this.batchCount);
 
-        long lowerBound = (currentBatch - 1) * this.bucketSize;
+        long lowerBound = (currentBatch - 1) * this.batchSize;
 
         String lowerBoundStr = Long.toUnsignedString(lowerBound);
         String upperBoundStr = Long.toUnsignedString(
-                isLastBatch ? MAX_UNSIGNED_LONG : (lowerBound + (this.bucketSize - 1))
+                isLastBatch ? MAX_UNSIGNED_LONG : (lowerBound + (this.batchSize - 1))
         );
 
         logger.info("current batch: {}, lower bound: {}, upper bound: {}, last batch: {}",
@@ -327,27 +382,68 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
                 .bindParam(UPPER_BOUND, upperBoundStr);
         ContentHandle<T> threadHandle = callable.getHandle();
 
-        T rowsDoc = null;
-        try {
-            if (this.rowMgr.resultDoc(plan, (StructureReadHandle) threadHandle) != null) {
-                rowsDoc = threadHandle.get();
+        RowBatchFailureEventImpl requestEvent = null;
+        for (int batchRetries = 0; shouldRequestBatch(requestEvent, batchRetries); batchRetries++) {
+            Throwable throwable = null;
+            T rowsDoc = null;
+            try {
+// TODO: should round-robin over available row managers (one per client in the non-gateway scenario)
+                if (this.rowMgr.resultDoc(plan, (StructureReadHandle) threadHandle) != null) {
+                    rowsDoc = threadHandle.get();
+                }
+            } catch(Throwable e) {
+                throwable = e;
             }
-        } catch(Throwable e) {
-            // TODO: send to failure listener
+
+            if (throwable != null) {
+                logger.debug("failed for batch: {}, retry: {}", currentBatch, batchRetries);
+                if (requestEvent == null) {
+                    requestEvent = new RowBatchFailureEventImpl(
+                            currentBatch, lowerBoundStr, upperBoundStr
+                    );
+                    initRequestEvent(requestEvent);
+                }
+                notifyFailure(
+                    requestEvent
+                        .withBatchRetries(batchRetries)
+                        .withFailedJobBatches(this.getFailedBatches()),
+                    throwable);
+            // if the plan filters the rows, a batch could be empty
+            } else if (rowsDoc != null) {
+                RowBatchResponseEventImpl responseEvent = new RowBatchResponseEventImpl<>(
+                        currentBatch, lowerBoundStr, upperBoundStr, rowsDoc
+                );
+                initRequestEvent(responseEvent);
+                notifySuccess(responseEvent);
+                if (requestEvent != null)
+                    requestEvent = null;
+                break;
+            }
+        }
+        if (requestEvent != null) {
+            this.failedBatches.incrementAndGet();
         }
 
-        // if the plan filters the rows, a bucket could be empty
-        if (rowsDoc != null) {
-            notifySuccess(new RowBatchResponseEventImpl<>(currentBatch, lowerBoundStr, upperBoundStr, rowsDoc));
-        }
-
-        if (isLastBatch) {
+        if (requestEvent != null && requestEvent.getDisposition() == RowBatchFailureListener.BatchFailureDisposition.STOP) {
+// TODO: set stopped and end time
+            logger.debug("stopped for failed batch: {}", currentBatch);
+            this.threadPool.shutdown();
+        } else if (isLastBatch) {
+            logger.debug("last batch: {}", currentBatch);
             endThread();
         } else {
+            logger.debug("finished batch: {}", currentBatch);
             this.submit(callable);
         }
 
-        return (rowsDoc != null);
+        return (requestEvent == null);
+    }
+    private boolean shouldRequestBatch(RowBatchFailureEventImpl requestEvent, int batchRetries) {
+        if (batchRetries == 0)      return true; // first request
+        if (requestEvent == null) return false;  // request succeeded
+        // retry request
+        return (requestEvent.getDisposition() == RowBatchFailureListener.BatchFailureDisposition.RETRY &&
+                batchRetries < requestEvent.getMaxRetries());
     }
     private void endThread() {
         int stillRunning = this.runningThreads.decrementAndGet();
@@ -357,26 +453,14 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     }
 
     @Override
-    public boolean isStopped() {
-        return stopped.get();
-    }
-
-    @Override
-    public boolean isStarted() {
-        return started.get();
-    }
-
-    @Override
     public synchronized RowBatcher<T> withForestConfig(ForestConfiguration forestConfig) {
         super.withForestConfig(forestConfig);
-
         this.hostInfos = forestHosts(forestConfig, this.hostInfos);
         return this;
     }
 
     private void submit(Callable<Boolean> callable) {
-        FutureTask futureTask = new FutureTask(callable);
-        submit(futureTask);
+        submit(new FutureTask(callable));
     }
     private void submit(FutureTask<Boolean> task) {
         threadPool.execute(task);
@@ -398,32 +482,81 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         }
     }
 
-    static private class RowBatchResponseEventImpl<T> extends BatchEventImpl implements RowBatchResponseEvent<T> {
-        private long batchnum = 0;
+    static private class RowBatchEventImpl extends BatchEventImpl {
         private String lowerBound = "0";
         private String upperBound = "0";
-        private T handle;
-        public RowBatchResponseEventImpl(long batchnum, String lowerBound, String upperBound, T handle) {
-            this.batchnum   = batchnum;
+        private RowBatchEventImpl(long batchnum, String lowerBound, String upperBound) {
             this.lowerBound = lowerBound;
             this.upperBound = upperBound;
-            this.handle     = handle;
+            withJobBatchNumber(batchnum);
+        }
+        public String getLowerBound() {
+            return lowerBound;
+        }
+        public String getUpperBound() {
+            return upperBound;
+        }
+    }
+    static private class RowBatchFailureEventImpl extends RowBatchEventImpl
+            implements RowBatchFailureListener.RowBatchFailureEvent {
+        private final static int DEFAULT_MAX_RETRIES = 10;
+
+        private RowBatchFailureListener.BatchFailureDisposition disposition;
+        private int  maxRetries       = DEFAULT_MAX_RETRIES;
+        private int  batchRetries     = 0;
+        private long failedJobBatches = 0;
+        private RowBatchFailureEventImpl(long batchnum, String lowerBound, String upperBound) {
+            super(batchnum, lowerBound, upperBound);
+            disposition = RowBatchFailureListener.BatchFailureDisposition.SKIP;
+        }
+
+        @Override
+        public int getBatchRetries() {
+            return this.batchRetries;
+        }
+        private RowBatchFailureEventImpl withBatchRetries(int batchRetries) {
+            this.batchRetries = batchRetries;
+            return this;
+        }
+        @Override
+        public long getFailedJobBatches() {
+            return this.failedJobBatches;
+        }
+        private RowBatchFailureEventImpl withFailedJobBatches(long failedJobBatches) {
+            this.failedJobBatches = failedJobBatches;
+            return this;
+        }
+        @Override
+        public RowBatchFailureListener.BatchFailureDisposition getDisposition() {
+            return this.disposition;
+        }
+        @Override
+        public RowBatchFailureListener.RowBatchFailureEvent withDisposition(
+                RowBatchFailureListener.BatchFailureDisposition disposition
+        ) {
+            this.disposition = disposition;
+            return this;
+        }
+        @Override
+        public int getMaxRetries() {
+            return this.maxRetries;
+        }
+        @Override
+        public RowBatchFailureEventImpl withMaxRetries(int maxRetries) {
+            this.maxRetries = maxRetries;
+            return this;
+        }
+    }
+    static private class RowBatchResponseEventImpl<T> extends RowBatchEventImpl
+            implements RowBatchSuccessListener.RowBatchResponseEvent<T> {
+        private T handle;
+        private RowBatchResponseEventImpl(long batchnum, String lowerBound, String upperBound, T handle) {
+            super(batchnum, lowerBound, upperBound);
+            this.handle = handle;
         }
         @Override
         public T getRowsDoc() {
             return handle;
-        }
-        @Override
-        public long getBatchNumber() {
-            return batchnum;
-        }
-        @Override
-        public String getLowerBound() {
-            return lowerBound;
-        }
-        @Override
-        public String getUpperBound() {
-            return upperBound;
         }
     }
 

@@ -19,6 +19,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.*;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class BatcherImpl implements Batcher {
   private String jobName = "unnamed";
@@ -27,6 +28,11 @@ public abstract class BatcherImpl implements Batcher {
   private int threadCount = 1;
   private ForestConfiguration forestConfig;
   private DataMovementManagerImpl moveMgr;
+  private JobTicket jobTicket;
+  private Calendar jobStartTime;
+  private Calendar jobEndTime;
+  private final AtomicBoolean stopped = new AtomicBoolean(false);
+  private final AtomicBoolean started = new AtomicBoolean(false);
 
   protected BatcherImpl(DataMovementManager moveMgr){
     if (moveMgr == null)
@@ -104,14 +110,46 @@ public abstract class BatcherImpl implements Batcher {
   }
 
   public abstract void start(JobTicket ticket);
-  public abstract JobTicket getJobTicket();
   public abstract void stop();
 
   @Override
-  public abstract boolean isStopped();
-
+  public JobTicket getJobTicket() {
+    return jobTicket;
+  }
+  void setJobTicket(JobTicket ticket) {
+    this.jobTicket = ticket;
+  }
   @Override
-  public abstract boolean isStarted();
+  public Calendar getJobStartTime() {
+    return this.jobStartTime;
+  }
+  void setJobStartTime() {
+    if (this.jobStartTime != null) return;
+    this.jobStartTime = Calendar.getInstance();
+  }
+  @Override
+  public Calendar getJobEndTime() {
+    return this.jobEndTime;
+  }
+  void setJobEndTime() {
+    if (this.jobEndTime != null) return;
+    this.jobEndTime = Calendar.getInstance();
+  }
+
+  AtomicBoolean getStarted() {
+    return this.started;
+  }
+  @Override
+  public boolean isStarted() {
+    return started.get();
+  }
+  @Override
+  public boolean isStopped() {
+    return stopped.get();
+  }
+  AtomicBoolean getStopped() {
+    return this.stopped;
+  }
 
   protected DataMovementManagerImpl getMoveMgr() {
     return moveMgr;
