@@ -158,7 +158,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
     return batcher;
   }
 
-  private ForestConfiguration getForestConfig() {
+  ForestConfiguration getForestConfig() {
     if ( forestConfig != null ) return forestConfig;
     return readForestConfig();
   }

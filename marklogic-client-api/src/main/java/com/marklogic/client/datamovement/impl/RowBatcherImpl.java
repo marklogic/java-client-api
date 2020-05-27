@@ -38,7 +38,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
+class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     final static private int DEFAULT_BATCH_SIZE = 1000;
     final static private long MAX_UNSIGNED_LONG = -1;
 
@@ -64,12 +64,12 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     private RawPlanDefinition pagedPlan;
     private long rowCount = 0;
 
-    private RowManager rowMgr;
+    private RowManager defaultRowManager;
     private ContentHandle<T> rowsHandle;
     private Class<T> rowsClass;
     private HostInfo[] hostInfos;
 
-    public RowBatcherImpl(DataMovementManager moveMgr, ContentHandle<T> rowsHandle) {
+    RowBatcherImpl(DataMovementManagerImpl moveMgr, ContentHandle<T> rowsHandle) {
         super(moveMgr);
         if (rowsHandle == null)
             throw new IllegalArgumentException("Cannot create RowBatcher with null rows manager");
@@ -87,13 +87,16 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
             throw new IllegalArgumentException(
                     "Rows handle must be registered with DatabaseClientFactory.HandleFactoryRegistry"
             );
-        rowMgr = getPrimaryClient().newRowManager();
+        defaultRowManager = getPrimaryClient().newRowManager();
         super.withBatchSize(DEFAULT_BATCH_SIZE);
+        if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.DIRECT) {
+            withForestConfig(moveMgr.getForestConfig());
+        }
     }
 
     @Override
     public RowManager getRowManager() {
-        return rowMgr;
+        return defaultRowManager;
     }
 
     @Override
@@ -120,7 +123,7 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         this.schemaName = (schemaNode != null) ? schemaNode.asText(null) : null;
         this.viewName   = viewInfo.get("viewName").asText(null);
         this.rowCount   = viewInfo.get("rowCount").asLong(0);
-        this.pagedPlan  = client.newRowManager().newRawPlanDefinition(new JacksonHandle(viewInfo.get("modifiedPlan")));
+        this.pagedPlan  = getRowManager().newRawPlanDefinition(new JacksonHandle(viewInfo.get("modifiedPlan")));
 // TODO: also viewColumns? tableID?
     }
 
@@ -341,6 +344,15 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         Format rowsFormat = rowsBaseHandle.getFormat();
         String rowsMimeType = rowsBaseHandle.getMimetype();
 
+        if (this.hostInfos != null && getMoveMgr().getConnectionType() == DatabaseClient.ConnectionType.DIRECT) {
+            RowManager.RowSetPart    datatypeStyle = getRowManager().getDatatypeStyle();
+            RowManager.RowStructure structureStyle = getRowManager().getRowStructureStyle();
+            for (HostInfo hostInfo: this.hostInfos) {
+                hostInfo.rowMgr.setDatatypeStyle(datatypeStyle);
+                hostInfo.rowMgr.setRowStructureStyle(structureStyle);
+            }
+        }
+
         this.threadPool = new BatchThreadPoolExecutor(super.getThreadCount());
         this.runningThreads.set(super.getThreadCount());
         for (int i=0; i<super.getThreadCount(); i++) {
@@ -382,13 +394,20 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
                 .bindParam(UPPER_BOUND, upperBoundStr);
         ContentHandle<T> threadHandle = callable.getHandle();
 
+        boolean isDirect =
+                (this.hostInfos != null && getMoveMgr().getConnectionType() == DatabaseClient.ConnectionType.DIRECT);
+
         RowBatchFailureEventImpl requestEvent = null;
         for (int batchRetries = 0; shouldRequestBatch(requestEvent, batchRetries); batchRetries++) {
+            RowManager requestRowMgr = isDirect ?
+                    // batches round-robin over the direct hosts as do retries
+                    this.hostInfos[(int) ((currentBatch + batchRetries) % hostInfos.length)].rowMgr :
+                    this.getRowManager();
+
             Throwable throwable = null;
             T rowsDoc = null;
             try {
-// TODO: should round-robin over available row managers (one per client in the non-gateway scenario)
-                if (this.rowMgr.resultDoc(plan, (StructureReadHandle) threadHandle) != null) {
+                if (requestRowMgr.resultDoc(plan, (StructureReadHandle) threadHandle) != null) {
                     rowsDoc = threadHandle.get();
                 }
             } catch(Throwable e) {
@@ -478,7 +497,12 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         }
         @Override
         public Boolean call() {
-            return rowBatcher.readRows(this);
+            try {
+                return rowBatcher.readRows(this);
+            } catch(Throwable e) {
+                logger.error("internal error", e);
+                return false;
+            }
         }
     }
 
@@ -572,12 +596,10 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         Forest[] forests = forests(forestConfig);
         Set<String> hosts = hosts(forests);
         Map<String, HostInfo> existingHostInfos = new HashMap<>();
-        Map<String, HostInfo> removedHostInfos = new HashMap<>();
 
         if (hostInfos != null) {
             for (HostInfo hostInfo : hostInfos) {
                 existingHostInfos.put(hostInfo.hostName, hostInfo);
-                removedHostInfos.put(hostInfo.hostName, hostInfo);
             }
         }
         logger.info("(withForestConfig) Using forests on {} hosts for \"{}\"", hosts, forests[0].getDatabaseName());
@@ -585,28 +607,30 @@ public class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         HostInfo[] newHostInfos = new HostInfo[hosts.size()];
         int i = 0;
         for (String host : hosts) {
-            if (existingHostInfos.get(host) != null) {
-                newHostInfos[i] = existingHostInfos.get(host);
-                removedHostInfos.remove(host);
+            HostInfo existingHost = existingHostInfos.get(host);
+            if (existingHost != null) {
+                newHostInfos[i] = existingHost;
             } else {
-                newHostInfos[i] = new HostInfo();
-                newHostInfos[i].hostName = host;
+                existingHost = new HostInfo();
+                newHostInfos[i] = existingHost;
+                existingHost.hostName = host;
                 // this is a host-specific client (no DatabaseClient is actually forest-specific)
-                newHostInfos[i].client = getMoveMgr().getHostClient(host);
+                existingHost.client = getMoveMgr().getHostClient(host);
                 if (getMoveMgr().getConnectionType() == DatabaseClient.ConnectionType.DIRECT) {
                     logger.info("Adding DatabaseClient on port {} for host \"{}\" to the rotation",
                             newHostInfos[i].client.getPort(), host);
+                    existingHost.rowMgr = existingHost.client.newRowManager();
                 }
             }
             i++;
         }
-        super.withForestConfig(forestConfig);
 
         return newHostInfos;
     }
 
     private static class HostInfo {
-            public String hostName;
-            public DatabaseClient client;
+        private String hostName;
+        private DatabaseClient client;
+        private RowManager rowMgr;
     }
 }
