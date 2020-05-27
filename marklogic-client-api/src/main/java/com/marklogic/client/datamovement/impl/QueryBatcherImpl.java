@@ -631,8 +631,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
           // if we're doing consistentSnapshot and this is the first result set, let's capture the
           // serverTimestamp so we can use it for all future queries
           if ( consistentSnapshot == true && serverTimestamp.get() == -1 ) {
-            serverTimestamp.set(results.getServerTimestamp());
-            logger.info("Consistent snapshot timestamp=[{}]", serverTimestamp);
+            if (serverTimestamp.compareAndSet(-1, results.getServerTimestamp())) {
+              logger.info("Consistent snapshot timestamp=[{}]", serverTimestamp);
+            }
           }
           List<String> uris = new ArrayList<>();
           for ( String uri : results ) {

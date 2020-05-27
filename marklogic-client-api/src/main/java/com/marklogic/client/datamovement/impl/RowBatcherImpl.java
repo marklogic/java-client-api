@@ -69,6 +69,9 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     private Class<T> rowsClass;
     private HostInfo[] hostInfos;
 
+    private boolean consistentSnapshot = false;
+    private final AtomicLong serverTimestamp = new AtomicLong(-1);
+
     RowBatcherImpl(DataMovementManagerImpl moveMgr, ContentHandle<T> rowsHandle) {
         super(moveMgr);
         if (rowsHandle == null)
@@ -101,8 +104,7 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 
     @Override
     public RowBatcher<T> withBatchView(PlanBuilder.ModifyPlan inputPlan) {
-        if (this.isStarted())
-            throw new IllegalStateException("Cannot change batch view after the job is started.");
+        requireNotStarted("Must specify batch view before starting job");
         analyzePlan(inputPlan);
         return this;
     }
@@ -129,21 +131,20 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 
     @Override
     public RowBatcher<T> withBatchSize(int batchSize) {
-        if (this.isStarted())
-            throw new IllegalStateException("Cannot change batch size after the job is started.");
+        requireNotStarted("Must set batch size before starting job");
         super.withBatchSize(batchSize);
         return this;
     }
     @Override
     public RowBatcher<T> withThreadCount(int threadCount) {
-        if (this.isStarted())
-            throw new IllegalStateException("Cannot change thread count after the job is started.");
+        requireNotStarted("Must set thread count before starting job");
         super.withThreadCount(threadCount);
         return this;
     }
 
     @Override
     public RowBatcher<T> onSuccess(RowBatchSuccessListener listener) {
+        requireNotStarted("Must set success listener before starting job");
         if (listener == null) {
             sucessListeners = null;
         } else if (sucessListeners == null || sucessListeners.length == 0) {
@@ -156,6 +157,7 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     }
     @Override
     public RowBatcher<T> onFailure(RowBatchFailureListener listener) {
+        requireNotStarted("Must set failure listener before starting job");
         if (listener == null) {
             failureListeners = null;
         } else if (failureListeners == null || failureListeners.length == 0) {
@@ -169,18 +171,24 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 
     @Override
     public RowBatcher<T> withJobId(String jobId) {
+        requireNotStarted("Must set job id before starting job");
         super.setJobId(jobId);
         return this;
     }
     @Override
     public RowBatcher<T> withJobName(String jobName) {
+        requireNotStarted("Must set job name before starting job");
         super.withJobName(jobName);
         return this;
     }
 
     @Override
     public RowBatcher<T> withConsistentSnapshot() {
-// TODO
+        requireNotStarted("Must set consistent snapshot before starting job");
+        if (!(rowsHandle instanceof BaseHandle)) {
+            throw new IllegalStateException("Content handle for consistent snapshot must extend BaseHandle");
+        }
+        consistentSnapshot = true;
         return this;
     }
 
@@ -194,10 +202,12 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     }
     @Override
     public void setSuccessListeners(RowBatchSuccessListener... listeners) {
+        requireNotStarted("Must set success listeners before starting job");
         this.sucessListeners = listeners;
     }
     @Override
     public void setFailureListeners(RowBatchFailureListener... listeners) {
+        requireNotStarted("Must set failure listeners before starting job");
         this.failureListeners = listeners;
     }
     private void initRequestEvent(RowBatchEventImpl event) {
@@ -263,12 +273,9 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
             return false;
         }
     }
-
     @Override
     public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
-        if (!this.isStarted()) {
-            throw new IllegalStateException("Job not started.");
-        }
+        requireStarted("Must start job before awaiting completion");
         if (threadPool != null) {
             return threadPool.awaitTermination(timeout, unit);
         }
@@ -277,49 +284,57 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 
     @Override
     public long getRowEstimate() {
-        if (this.pagedPlan == null)
-            throw new IllegalStateException("Plan must be supplied before getting the row estimate");
+        if (this.pagedPlan == null) {
+            throw new IllegalStateException("Must supply plan before getting the row estimate");
+        }
         return this.rowCount;
     }
     @Override
     public long getBatchCount() {
-        if (!this.isStarted()) {
-            throw new IllegalStateException("Job not started.");
-        }
+        requireStarted("Must start job before getting batch count");
         return this.batchNum.get();
     }
     @Override
     public long getFailedBatches() {
-        if (!this.isStarted()) {
-            throw new IllegalStateException("Job not started.");
-        }
+        requireStarted("Must start job before getting failed batches");
         return this.failedBatches.get();
     }
-
     @Override
     public JobTicket getJobTicket() {
-        if (!this.isStarted()) {
-            throw new IllegalStateException("Job not started.");
-        }
+        requireStarted("Must start job before getting ticket");
         return super.getJobTicket();
+    }
+    private void requireNotStarted(String msg) {
+        if (this.isStarted()) {
+            throw new IllegalStateException(msg);
+        }
+    }
+    private void requireStarted(String msg) {
+        if (!this.isStarted()) {
+            throw new IllegalStateException(msg);
+        }
     }
 
     @Override
     public void stop() {
-// TODO: also set stop and jobEndTime after awaiting completion
+        if (super.getStopped().get()) return;
         super.getStopped().set(true);
-        if ( threadPool != null ) threadPool.shutdownNow();
+        if (threadPool != null) threadPool.shutdownNow();
+        super.setJobEndTime();
+    }
+    private void orderlyStop() {
+        if (super.getStopped().get()) return;
+        super.getStopped().set(true);
+        if (threadPool != null) threadPool.shutdown();
         super.setJobEndTime();
     }
 
     @Override
     public synchronized void start(JobTicket ticket) {
+        requireNotStarted("Job already started");
+
         if (this.pagedPlan == null)
-            throw new InternalError("Plan must be supplied before starting the job");
-        if (threadPool != null) {
-            logger.warn("job already started");
-            return;
-        }
+            throw new IllegalStateException("Plan must be supplied before starting the job");
 
         if (sucessListeners == null || sucessListeners.length == 0)
             throw new IllegalStateException("No listener for rows");
@@ -407,8 +422,21 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
             Throwable throwable = null;
             T rowsDoc = null;
             try {
+                if (consistentSnapshot == true) {
+                    long snapshotTimestamp = serverTimestamp.get();
+                    if (snapshotTimestamp > -1) {
+                        ((BaseHandle) threadHandle).setServerTimestamp(snapshotTimestamp);
+                    }
+                }
                 if (requestRowMgr.resultDoc(plan, (StructureReadHandle) threadHandle) != null) {
                     rowsDoc = threadHandle.get();
+                }
+                if (consistentSnapshot == true && serverTimestamp.get() == -1) {
+                    if (serverTimestamp.compareAndSet(
+                            -1, ((BaseHandle) threadHandle).getServerTimestamp()
+                    )) {
+                        logger.info("Consistent snapshot timestamp=[{}]", serverTimestamp);
+                    }
                 }
             } catch(Throwable e) {
                 throwable = e;
@@ -444,9 +472,8 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         }
 
         if (requestEvent != null && requestEvent.getDisposition() == RowBatchFailureListener.BatchFailureDisposition.STOP) {
-// TODO: set stopped and end time
             logger.debug("stopped for failed batch: {}", currentBatch);
-            this.threadPool.shutdown();
+            this.orderlyStop();
         } else if (isLastBatch) {
             logger.debug("last batch: {}", currentBatch);
             endThread();
@@ -467,7 +494,7 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     private void endThread() {
         int stillRunning = this.runningThreads.decrementAndGet();
         if (stillRunning == 0) {
-            this.threadPool.shutdown();
+            this.orderlyStop();
         }
     }
 
