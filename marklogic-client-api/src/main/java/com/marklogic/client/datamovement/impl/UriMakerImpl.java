@@ -65,12 +65,12 @@ public class UriMakerImpl<T extends AbstractWriteHandle>  implements Splitter.Ur
             return;
         }
 
-        Pattern extensionRegex = Pattern.compile("^(.+)\\.([^.]+)$");
+        Pattern extensionRegex = Pattern.compile("^(.*)\\.([^.]*)$");
         Matcher matcher = extensionRegex.matcher(getInputName());
         boolean found = matcher.find();
         if (!found) {
             this.name = getInputName();
-            this.extension = getInputName();
+            this.extension = null;
         } else {
             this.name = matcher.group(1);
             this.extension = matcher.group(2);
@@ -78,23 +78,22 @@ public class UriMakerImpl<T extends AbstractWriteHandle>  implements Splitter.Ur
 
     }
 
-    public String makeUri(int num, T handle) {
-        String prefix = "";
-        String uri;
+    public String makeUri(long num, T handle) {
+        StringBuilder uri = new StringBuilder();
 
         if (getInputAfter() != null && getInputAfter().length() != 0) {
-            prefix += getInputAfter();
+            uri.append(getInputAfter());
         }
 
         if (getInputName() != null && getInputName().length() != 0) {
-            prefix += getName();
+            uri.append(getName());
         }
 
-        if (prefix.length() == 0) {
-            prefix = "/";
+        if (uri.length() == 0) {
+            uri.append("/");
         }
 
-        uri = prefix + num + "_" + UUID.randomUUID() + "." + getExtension();
-        return uri;
+        uri.append(num).append("_").append(UUID.randomUUID()).append(".").append(getExtension());
+        return uri.toString();
     }
 }

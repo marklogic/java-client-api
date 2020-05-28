@@ -17,22 +17,20 @@
 package com.marklogic.client.test.datamovement;
 
 import com.marklogic.client.datamovement.NodeOperation;
-import com.marklogic.client.datamovement.Splitter;
 import com.marklogic.client.datamovement.XMLSplitter;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
 import org.junit.Test;
 
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class XMLSplitterTest {
     static final private String xmlFile = "src/test/resources/data" + File.separator + "pathSplitter/people.xml";
@@ -65,8 +63,6 @@ public class XMLSplitterTest {
     public void testXMLSplitterAttr() throws Exception {
 
         FileInputStream fileInputStream = new FileInputStream(new File(xmlFile));
-        //XMLStreamReader xmlStreamReader = XMLInputFactory.newFactory().createXMLStreamReader(fileInputStream);
-
         AttributeVisitor visitor = new AttributeVisitor("http://www.marklogic.com/people/",
                 "person",
                 "president",
@@ -91,6 +87,83 @@ public class XMLSplitterTest {
     @Test
     public void testSplitterWrite() throws Exception {
 
+        String[] expectedURIs = {"/SystemPath/NewPeople1_abcd.xml"};
+        FileInputStream fileInputStream = new FileInputStream(new File(xmlFile));
+
+        AttributeVisitor visitor = new AttributeVisitor("http://www.marklogic.com/people/",
+                "person",
+                "president",
+                "no");
+
+        XMLSplitter splitter = new XMLSplitter(visitor);
+        XMLSplitter.UriMaker uriMaker = new UriMakerTest();
+        uriMaker.setInputAfter("/SystemPath/");
+        uriMaker.setInputName("NewPeople");
+        splitter.setUriMaker(uriMaker);
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream);
+        assertNotNull(contentStream);
+
+        Iterator<DocumentWriteOperation> itr = contentStream.iterator();
+        int i = 0;
+        while (itr.hasNext()) {
+            DocumentWriteOperation docOp = itr.next();
+            String uri = docOp.getUri();
+            assertEquals(docOp.getUri(), expectedURIs[i]);
+
+            assertNotNull(docOp.getContent());
+            String docOpContent = docOp.getContent().toString();
+            assertEquals(docOpContent, expected[1]);
+            i++;
+        }
+        assertEquals(1, splitter.getCount());
+
+    }
+
+    private class UriMakerTest implements XMLSplitter.UriMaker {
+        private String inputAfter;
+        private String inputName;
+
+        @Override
+        public String makeUri(long num, XMLWriteHandle handle) {
+            StringBuilder uri = new StringBuilder();
+            String randomUUIDForTest = "abcd";
+
+            if (getInputAfter() != null && getInputAfter().length() != 0) {
+                uri.append(getInputAfter());
+            }
+
+            if (getInputName() != null && getInputName().length() != 0) {
+                uri.append(getInputName());
+            }
+
+            uri.append(num).append("_").append(randomUUIDForTest).append(".xml");
+            return uri.toString();
+        }
+
+        @Override
+        public String getInputAfter() {
+            return this.inputAfter;
+        }
+
+        @Override
+        public void setInputAfter(String base) {
+            this.inputAfter = base;
+        }
+
+        @Override
+        public String getInputName() {
+            return this.inputName;
+        }
+
+        @Override
+        public void setInputName(String name) {
+            this.inputName = name;
+        }
+    }
+
+    @Test
+    public void testSplitterWriteWithoutInputName() throws Exception {
+
         FileInputStream fileInputStream = new FileInputStream(new File(xmlFile));
 
         AttributeVisitor visitor = new AttributeVisitor("http://www.marklogic.com/people/",
@@ -100,10 +173,7 @@ public class XMLSplitterTest {
 
         XMLSplitter splitter = new XMLSplitter(visitor);
 
-        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream, "people.xml");
-        Splitter.UriMaker uriMaker = splitter.getUriMaker();
-        uriMaker.setInputAfter("/SystemPath/");
-        uriMaker.setInputName("NewPeople.xml");
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream);
         assertNotNull(contentStream);
 
         Iterator<DocumentWriteOperation> itr = contentStream.iterator();
@@ -111,6 +181,39 @@ public class XMLSplitterTest {
             DocumentWriteOperation docOp = itr.next();
             String uri = docOp.getUri();
             assertNotNull(docOp.getUri());
+            assertTrue(docOp.getUri().startsWith("/1"));
+            assertTrue(docOp.getUri().endsWith(".xml"));
+
+            assertNotNull(docOp.getContent());
+            String docOpContent = docOp.getContent().toString();
+            assertEquals(docOpContent, expected[1]);
+        }
+        assertEquals(1, splitter.getCount());
+
+    }
+
+    @Test
+    public void testSplitterWriteWithInputName() throws Exception {
+
+        FileInputStream fileInputStream = new FileInputStream(new File(xmlFile));
+
+        AttributeVisitor visitor = new AttributeVisitor("http://www.marklogic.com/people/",
+                "person",
+                "president",
+                "no");
+
+        XMLSplitter splitter = new XMLSplitter(visitor);
+
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream, "TestSplitter.xml");
+        assertNotNull(contentStream);
+
+        Iterator<DocumentWriteOperation> itr = contentStream.iterator();
+        while (itr.hasNext()) {
+            DocumentWriteOperation docOp = itr.next();
+            String uri = docOp.getUri();
+            assertNotNull(docOp.getUri());
+            assertTrue(docOp.getUri().startsWith("TestSplitter1"));
+            assertTrue(docOp.getUri().endsWith(".xml"));
 
             assertNotNull(docOp.getContent());
             String docOpContent = docOp.getContent().toString();

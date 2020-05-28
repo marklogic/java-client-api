@@ -100,6 +100,8 @@ public class JacksonCSVSplitterTest {
             DocumentWriteOperation docOp = itr.next();
             String uri = docOp.getUri();
             assertNotNull(docOp.getUri());
+            assertTrue(docOp.getUri().startsWith("/" + (i+1)));
+            assertTrue(docOp.getUri().endsWith(".json"));
 
             assertNotNull(docOp.getContent());
             JacksonHandle docOpContent = (JacksonHandle) docOp.getContent();
@@ -118,10 +120,7 @@ public class JacksonCSVSplitterTest {
     public void testCSVSplitterWriteOperationSetName() throws Exception {
 
         JacksonCSVSplitter splitter = new JacksonCSVSplitter();
-        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(new FileInputStream(csvFile));
-        Splitter.UriMaker uriMaker = splitter.getUriMaker();
-        uriMaker.setInputAfter("/SystemPath/");
-        uriMaker.setInputName("NewCSV.json");
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(new FileInputStream(csvFile), "NewCSV.csv");
         assertNotNull(contentStream);
 
         Iterator<DocumentWriteOperation> itr = contentStream.iterator();
@@ -135,6 +134,8 @@ public class JacksonCSVSplitterTest {
             DocumentWriteOperation docOp = itr.next();
             String uri = docOp.getUri();
             assertNotNull(docOp.getUri());
+            assertTrue(docOp.getUri().startsWith("NewCSV" + (i+1)));
+            assertTrue(docOp.getUri().endsWith(".json"));
 
             assertNotNull(docOp.getContent());
             JacksonHandle docOpContent = (JacksonHandle) docOp.getContent();
@@ -150,11 +151,14 @@ public class JacksonCSVSplitterTest {
     }
 
     @Test
-    public void testCSVSplitterWriteOperationWithName() throws Exception {
+    public void testCSVSplitterWriteOperationWithCustomeUriMaker() throws Exception {
 
         JacksonCSVSplitter splitter = new JacksonCSVSplitter();
-        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(new FileInputStream(csvFile), "csv.json");
-        Splitter.UriMaker uriMaker = splitter.getUriMaker();
+        JacksonCSVSplitter.UriMaker uriMaker = new TestUriMaker();
+        uriMaker.setInputAfter("/Directory/");
+        uriMaker.setInputName("NewCsv");
+        splitter.setUriMaker(uriMaker);
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(new FileInputStream(csvFile));
         assertNotNull(contentStream);
 
         Iterator<DocumentWriteOperation> itr = contentStream.iterator();
@@ -165,28 +169,70 @@ public class JacksonCSVSplitterTest {
 
         int i = 0;
         while (itr.hasNext()) {
+            i++;
             DocumentWriteOperation docOp = itr.next();
             String uri = docOp.getUri();
-            assertNotNull(docOp.getUri());
+            assertEquals(docOp.getUri(), "/Directory/NewCsv" + i + "_abcd.json");
 
             assertNotNull(docOp.getContent());
             JacksonHandle docOpContent = (JacksonHandle) docOp.getContent();
             for(int j=0; j<headerValues.length;j++) {
                 assertNotNull(docOpContent.get().findValue(headerValues[j]));
             }
-            i++;
         }
 
         assertEquals(11, splitter.getCount());
         fileReader.close();
         csvReader.close();
+    }
+
+    public class TestUriMaker implements JacksonCSVSplitter.UriMaker {
+        String inputName;
+        String inputAfter;
+
+        @Override
+        public String makeUri(long num, JacksonHandle handle) {
+            StringBuilder uri = new StringBuilder();
+            String randomUUIDForTest = "abcd";
+
+            if (getInputAfter() != null && getInputAfter().length() != 0) {
+                uri.append(getInputAfter());
+            }
+
+            if (getInputName() != null && getInputName().length() != 0) {
+                uri.append(getInputName());
+            }
+
+            uri.append(num).append("_").append(randomUUIDForTest).append(".json");
+            return uri.toString();
+        }
+
+        @Override
+        public String getInputAfter() {
+            return this.inputAfter;
+        }
+
+        @Override
+        public void setInputAfter(String base) {
+            this.inputAfter = base;
+        }
+
+        @Override
+        public String getInputName() {
+            return this.inputName;
+        }
+
+        @Override
+        public void setInputName(String name) {
+            this.inputName = name;
+        }
     }
 
     @Test
     public void testCSVSplitterWriteOperationWithReader() throws Exception {
 
         JacksonCSVSplitter splitter = new JacksonCSVSplitter();
-        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(new FileReader(csvFile), "csv.json");
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(new FileReader(csvFile), "NewCSV.csv");
         Splitter.UriMaker uriMaker = splitter.getUriMaker();
         assertNotNull(contentStream);
 
@@ -201,6 +247,8 @@ public class JacksonCSVSplitterTest {
             DocumentWriteOperation docOp = itr.next();
             String uri = docOp.getUri();
             assertNotNull(docOp.getUri());
+            assertTrue(docOp.getUri().startsWith("NewCSV" + (i+1)));
+            assertTrue(docOp.getUri().endsWith(".json"));
 
             assertNotNull(docOp.getContent());
             JacksonHandle docOpContent = (JacksonHandle) docOp.getContent();
