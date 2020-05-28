@@ -63,7 +63,8 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
     }
 
     private XMLSplitter.Visitor<T> visitor;
-    private int count = 0;
+    private long count = 0;
+    private String inputName;
 
     /**
      * Construct an XMLSplitter which split the XML file according to the visitor.
@@ -117,10 +118,6 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
      */
     @Override
     public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input) throws Exception {
-        if (input == null) {
-            throw new IllegalArgumentException("Input cannot be null");
-        }
-
         return splitWriteOperations(input, null);
     }
 
@@ -157,6 +154,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
+        count = 0;
 
         XMLSplitter.HandleSpliterator<T> handleSpliterator = new XMLSplitter.HandleSpliterator<>(this, input);
 
@@ -175,17 +173,9 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
+        count = 0;
 
-        if (getUriMaker() == null) {
-            XMLSplitter.UriMakerImpl uriMaker = new XMLSplitter.UriMakerImpl();
-            setUriMaker(uriMaker);
-        }
-        getUriMaker().setInputName(inputName);
-        if (getUriMaker().getInputName() == null) {
-            ((XMLSplitter.UriMakerImpl) getUriMaker()).setExtension("xml");
-        }
-
-
+        this.inputName = inputName;
         XMLSplitter.DocumentWriteOperationSpliterator<T> documentWriteOperationSpliterator =
                 new XMLSplitter.DocumentWriteOperationSpliterator<>(this, input);
 
@@ -253,7 +243,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
          * @param handle the handle contains target elements as content
          * @return DocumentWriteOperations to write to database
          */
-        public DocumentWriteOperation makeDocumentWriteOperation(UriMaker uriMaker, int count, T handle) {
+        public DocumentWriteOperation makeDocumentWriteOperation(XMLSplitter.UriMaker uriMaker, long count, T handle) {
             if (handle == null) {
                 throw new IllegalArgumentException("Handle cannot be null");
             }
@@ -499,10 +489,22 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
                 return false;
             }
 
-            getSplitter().count++;
-            DocumentWriteOperation documentWriteOperation = getSplitter().getVisitor().makeDocumentWriteOperation(
-                    getSplitter().getUriMaker(),
-                    (int) getSplitter().getCount(),
+            XMLSplitter splitter = getSplitter();
+            if (splitter.getUriMaker() == null) {
+                XMLSplitter.UriMakerImpl uriMaker = new XMLSplitter.UriMakerImpl();
+                uriMaker.setInputName(splitter.inputName);
+                uriMaker.setExtension("xml");
+                splitter.setUriMaker(uriMaker);
+            } else {
+                if (splitter.inputName != null) {
+                    splitter.getUriMaker().setInputName(splitter.inputName);
+                }
+            }
+
+            splitter.count++;
+            DocumentWriteOperation documentWriteOperation = splitter.getVisitor().makeDocumentWriteOperation(
+                    splitter.getUriMaker(),
+                    splitter.getCount(),
                     handle);
 
             action.accept(documentWriteOperation);
@@ -581,14 +583,14 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
     /**
      * UriMaker which generates URI for each split file
      */
-    interface UriMaker extends Splitter.UriMaker {
+    public interface UriMaker extends Splitter.UriMaker {
         /**
          * Generates URI for each split
          * @param num the count of each split
          * @param handle the handle which contains the content of each split
          * @return the generated URI of current split
          */
-        String makeUri(int num, XMLWriteHandle handle);
+        String makeUri(long num, XMLWriteHandle handle);
     }
 
     private static class UriMakerImpl extends com.marklogic.client.datamovement.impl.UriMakerImpl<XMLWriteHandle>

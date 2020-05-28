@@ -21,7 +21,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.util.JsonParserDelegate;
-import com.marklogic.client.datamovement.impl.UriMakerImpl;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.io.Format;
@@ -58,7 +57,8 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
     }
 
     private JSONSplitter.Visitor<T> visitor;
-    private int count = 0;
+    private long count = 0;
+    private String inputName;
 
     /**
      * Construct a JSONSplitter which splits the JSON file according to the visitor.
@@ -116,9 +116,6 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
      */
     @Override
     public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input) throws Exception {
-        if (input == null) {
-            throw new IllegalArgumentException("Input cannot be null");
-        }
         return splitWriteOperations(input, null);
     }
 
@@ -150,6 +147,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
+        count = 0;
 
         JSONSplitter.HandleSpliterator<T> handleSpliterator = new JSONSplitter.HandleSpliterator<>(this, input);
         return StreamSupport.stream(handleSpliterator, true);
@@ -165,16 +163,9 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
+        count = 0;
 
-        if (getUriMaker() == null) {
-            JSONSplitter.UriMakeImpl uriMaker = new UriMakeImpl();
-            setUriMaker(uriMaker);
-        }
-        getUriMaker().setInputName(inputName);
-        if (getUriMaker().getInputName() == null) {
-            ((JSONSplitter.UriMakeImpl) getUriMaker()).setExtension("json");
-        }
-
+        this.inputName = inputName;
         JSONSplitter.DocumentWriteOperationSpliterator spliterator =
                 new JSONSplitter.DocumentWriteOperationSpliterator<>(this, input);
         return StreamSupport.stream(spliterator, true);
@@ -243,7 +234,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
                 throw new IllegalArgumentException("Handle cannot be null");
             }
 
-            String uri = uriMaker.makeUri((int) count, (JSONWriteHandle) handle);
+            String uri = uriMaker.makeUri(count, (JSONWriteHandle) handle);
 
             return new DocumentWriteOperationImpl(
                     DocumentWriteOperation.OperationType.DOCUMENT_WRITE,
@@ -504,6 +495,18 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
                 return false;
             }
 
+            JSONSplitter splitter = getSplitter();
+            if (splitter.getUriMaker() == null) {
+                JSONSplitter.UriMakerImpl uriMaker = new JSONSplitter.UriMakerImpl();
+                uriMaker.setInputName(splitter.inputName);
+                uriMaker.setExtension("json");
+                splitter.setUriMaker(uriMaker);
+            } else {
+                if (splitter.inputName != null) {
+                    splitter.getUriMaker().setInputName(splitter.inputName);
+                }
+            }
+
             getSplitter().count++;
             DocumentWriteOperation documentWriteOperation = getSplitter().getVisitor().makeDocumentWriteOperation(
                     getSplitter().getUriMaker(),
@@ -615,13 +618,13 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
         }
     }
 
-    private UriMaker uriMaker;
+    private JSONSplitter.UriMaker uriMaker;
 
     /**
      * Get the UriMaker of the splitter
      * @return the UriMaker of the splitter
      */
-    public UriMaker getUriMaker() {
+    public JSONSplitter.UriMaker getUriMaker() {
         return this.uriMaker;
     }
 
@@ -629,24 +632,25 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
      * Set the UriMaker to the splitter
      * @param uriMaker the uriMaker to generate URI of each split file.
      */
-    public void setUriMaker(UriMaker uriMaker) {
+    public void setUriMaker(JSONSplitter.UriMaker uriMaker) {
         this.uriMaker = uriMaker;
     }
 
     /**
      * UriMaker which generates URI for each split file
      */
-    interface UriMaker extends Splitter.UriMaker {
+    public interface UriMaker extends Splitter.UriMaker {
         /**
          * Generates URI for each split
          * @param num the count of each split
          * @param handle the handle which contains the content of each split
          * @return the generated URI of current split
          */
-        String makeUri(int num, JSONWriteHandle handle);
+        String makeUri(long num, JSONWriteHandle handle);
     }
 
-    private static class UriMakeImpl extends UriMakerImpl<JSONWriteHandle> implements JSONSplitter.UriMaker {
+    private static class UriMakerImpl extends com.marklogic.client.datamovement.impl.UriMakerImpl<JSONWriteHandle>
+            implements JSONSplitter.UriMaker {
 
     }
 }

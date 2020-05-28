@@ -22,6 +22,7 @@ import java.io.Reader;
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -138,10 +139,6 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
      */
     @Override
     public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input) throws Exception {
-        if (input == null) {
-            throw new IllegalArgumentException("Input cannot be null");
-        }
-
         return splitWriteOperations(input, null);
     }
 
@@ -163,8 +160,10 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
             JacksonCSVSplitter.UriMakerImpl uriMaker = new UriMakerImpl();
             setUriMaker(uriMaker);
         }
-        getUriMaker().setInputName(inputName);
-        ((JacksonCSVSplitter.UriMakerImpl) getUriMaker()).setExtension("json");
+
+        if (inputName != null) {
+            getUriMaker().setInputName(inputName);
+        }
 
         Iterator<JsonNode> nodeItr = configureObjReader().readValues(input);
         return configureInputDocumentWriteOperation(nodeItr);
@@ -178,10 +177,6 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
      * @throws Exception if the input cannot be split
      */
     public Stream<DocumentWriteOperation> splitWriteOperations(Reader input) throws Exception {
-        if (input == null) {
-            throw new IllegalArgumentException("Input cannot be null");
-        }
-
         return splitWriteOperations(input, null);
     }
 
@@ -202,8 +197,16 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
             JacksonCSVSplitter.UriMakerImpl uriMaker = new UriMakerImpl();
             setUriMaker(uriMaker);
         }
-        getUriMaker().setInputName(inputName);
-        ((JacksonCSVSplitter.UriMakerImpl) getUriMaker()).setExtension("json");
+
+        if (inputName != null) {
+            getUriMaker().setInputName(inputName);
+        }
+
+        //for case file.csv, to generate uris with extension "json"
+        //for default UriMaker only, not custom UriMaker
+        if (getUriMaker() instanceof JacksonCSVSplitter.UriMakerImpl) {
+            ((UriMakerImpl) getUriMaker()).setExtension("json");
+        }
 
         Iterator<JsonNode> nodeItr = configureObjReader().readValues(input);
         return configureInputDocumentWriteOperation(nodeItr);
@@ -246,7 +249,7 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
 
     private DocumentWriteOperation wrapDocumentWriteOperation(JsonNode content) {
         JacksonHandle handle = wrapJacksonHandle(content);
-        String uri = uriMaker.makeUri((int) count, handle);
+        String uri = uriMaker.makeUri(count, handle);
 
         return new DocumentWriteOperationImpl(
                 DocumentWriteOperation.OperationType.DOCUMENT_WRITE,
@@ -309,17 +312,35 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
     /**
      * UriMaker which generates URI for each split file
      */
-    interface UriMaker extends Splitter.UriMaker {
+    public interface UriMaker extends Splitter.UriMaker {
         /**
          * Generates URI for each split
          * @param num the count of each split
          * @param handle the handle which contains the content of each split
          * @return the generated URI of current split
          */
-        String makeUri(int num, JacksonHandle handle);
+        String makeUri(long num, JacksonHandle handle);
     }
 
     private static class UriMakerImpl extends com.marklogic.client.datamovement.impl.UriMakerImpl<JacksonHandle> implements UriMaker {
+        @Override
+        public String makeUri(long num, JacksonHandle handle) {
+            StringBuilder uri = new StringBuilder();
 
+            if (getInputAfter() != null && getInputAfter().length() != 0) {
+                uri.append(getInputAfter());
+            }
+
+            if (getInputName() != null && getInputName().length() != 0) {
+                uri.append(getName());
+            }
+
+            if (uri.length() == 0) {
+                uri.append("/");
+            }
+
+            uri.append(num).append("_").append(UUID.randomUUID()).append(".json");
+            return uri.toString();
+        }
     }
 }

@@ -31,7 +31,7 @@ import java.util.stream.Stream;
  */
 public class UnarySplitter implements Splitter<InputStreamHandle> {
     private UnarySplitter.UriMaker uriMaker;
-    private int count = 0;
+    private long count = 0;
 
     /**
      * Get the UriMaker of the splitter
@@ -62,6 +62,7 @@ public class UnarySplitter implements Splitter<InputStreamHandle> {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
+        count = 0;
 
         InputStreamHandle handle = new InputStreamHandle(input);
         return Stream.of(handle);
@@ -74,10 +75,6 @@ public class UnarySplitter implements Splitter<InputStreamHandle> {
      * @throws Exception if input cannot be split
      */
     public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input) throws Exception {
-        if (input == null) {
-            throw new IllegalArgumentException("Input cannot be null");
-        }
-
         return splitWriteOperations(input, null);
     }
 
@@ -92,18 +89,18 @@ public class UnarySplitter implements Splitter<InputStreamHandle> {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
-
-        if (inputName == null || inputName.length() == 0) {
-            throw new IllegalArgumentException("InputName cannot be empty");
-        }
-
+        count = 0;
         InputStreamHandle handle = new InputStreamHandle(input);
 
         if (getUriMaker() == null) {
             UnarySplitter.UriMaker uriMaker = new UnarySplitter.UriMakerImpl();
             setUriMaker(uriMaker);
         }
-        uriMaker.setInputName(inputName);
+
+        if (inputName != null) {
+            uriMaker.setInputName(inputName);
+        }
+
         String uri = uriMaker.makeUri(handle);
 
         DocumentWriteOperationImpl documentWriteOperation = new DocumentWriteOperationImpl(
@@ -112,6 +109,7 @@ public class UnarySplitter implements Splitter<InputStreamHandle> {
                 null,
                 handle
         );
+
         this.count++;
         return Stream.of(documentWriteOperation);
     }
@@ -127,7 +125,7 @@ public class UnarySplitter implements Splitter<InputStreamHandle> {
     /**
      * UriMaker which generates URI for each split file
      */
-    interface UriMaker extends Splitter.UriMaker {
+    public interface UriMaker extends Splitter.UriMaker {
         String makeUri(InputStreamHandle handle);
     }
 
@@ -135,19 +133,18 @@ public class UnarySplitter implements Splitter<InputStreamHandle> {
 
         @Override
         public String makeUri(InputStreamHandle handle) {
-            String prefix = "";
-            String uri;
+            StringBuilder uri = new StringBuilder();
 
             if (getInputAfter() != null && getInputAfter().length() != 0) {
-                prefix += getInputAfter();
+                uri.append(getInputAfter());
             }
 
             if (getInputName() != null && getInputName().length() != 0) {
-                prefix += getName();
+                uri.append(getName());
             }
 
-            uri = prefix + "_" + UUID.randomUUID() + "." + getExtension();
-            return uri;
+            uri.append("_").append(UUID.randomUUID()).append(".").append(getExtension());
+            return uri.toString();
         }
     }
 

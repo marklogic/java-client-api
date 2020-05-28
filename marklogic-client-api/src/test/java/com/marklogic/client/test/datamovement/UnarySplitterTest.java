@@ -20,11 +20,14 @@ import com.marklogic.client.datamovement.Splitter;
 import com.marklogic.client.datamovement.UnarySplitter;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.JacksonHandle;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
@@ -74,38 +77,15 @@ public class UnarySplitterTest {
             "  ]\n" +
             "}";
 
-//    @Test
-//    public void testUnarySplitterDocWrite() throws Exception {
-//expect exception
-//        UnarySplitter splitter = new UnarySplitter();
-//        FileInputStream fileInputStream = new FileInputStream(new File(xmlFile));
-//
-//        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream);
-//        assertNotNull(contentStream);
-//
-//        Iterator<DocumentWriteOperation> itr = contentStream.iterator();
-//        while (itr.hasNext()) {
-//            DocumentWriteOperation docOp = itr.next();
-//            String uri = docOp.getUri();
-//            assertNotNull(docOp.getUri());
-//
-//            assertNotNull(docOp.getContent());
-//            String docOpContent = docOp.getContent().toString();
-//            assertEquals(docOpContent, xmlContent);
-//        }
-//        assertTrue(splitter.getCount() <= 1);
-//    }
-
     @Test
-    public void testUnarySplitterDocWriteWithName() throws Exception {
-
+    public void testUnarySplitterDocWrite() throws Exception {
         UnarySplitter splitter = new UnarySplitter();
         FileInputStream fileInputStream = new FileInputStream(new File(jsonObjectFile));
-        Splitter.UriMaker uriMaker1 = splitter.getUriMaker();
-        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream, "TestJson.json");
-        Splitter.UriMaker uriMaker = splitter.getUriMaker();
+        UnarySplitter.UriMaker uriMaker = new UriMakerTest();
         uriMaker.setInputAfter("/FilePath/");
         uriMaker.setInputName("NewTestJson.json");
+        splitter.setUriMaker(uriMaker);
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream);
         assertNotNull(contentStream);
 
 
@@ -114,6 +94,79 @@ public class UnarySplitterTest {
             DocumentWriteOperation docOp = itr.next();
             String uri = docOp.getUri();
             assertNotNull(docOp.getUri());
+            assertEquals(docOp.getUri(), "/FilePath/NewTestJson_abcd.json");
+
+            assertNotNull(docOp.getContent());
+            String docOpContent = docOp.getContent().toString();
+            assertEquals(docOpContent, jsonContent);
+        }
+        assertTrue(splitter.getCount() <= 1);
+    }
+
+    private class UriMakerTest implements UnarySplitter.UriMaker {
+        String inputName;
+        String inputAfter;
+        private Pattern extensionRegex = Pattern.compile("^(.+)\\.([^.]+)$");
+
+        @Override
+        public String makeUri(InputStreamHandle handle) {
+            StringBuilder uri = new StringBuilder();
+            String randomUUIDForTest = "abcd";
+
+            Matcher matcher = extensionRegex.matcher(inputName);
+            matcher.find();
+            String name = matcher.group(1);
+            String extension = matcher.group(2);
+
+            if (getInputAfter() != null && getInputAfter().length() != 0) {
+                uri.append(getInputAfter());
+            }
+
+            if (name != null && name.length() != 0) {
+                uri.append(name);
+            }
+
+            uri.append("_").append(randomUUIDForTest).append(".").append(extension);
+            return uri.toString();
+        }
+
+        @Override
+        public String getInputAfter() {
+            return this.inputAfter;
+        }
+
+        @Override
+        public void setInputAfter(String base) {
+            this.inputAfter = base;
+        }
+
+        @Override
+        public String getInputName() {
+            return this.inputName;
+        }
+
+        @Override
+        public void setInputName(String name) {
+            this.inputName = name;
+        }
+    }
+
+    @Test
+    public void testUnarySplitterDocWriteWithName() throws Exception {
+
+        UnarySplitter splitter = new UnarySplitter();
+        FileInputStream fileInputStream = new FileInputStream(new File(jsonObjectFile));
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream, "TestJson.json");
+        assertNotNull(contentStream);
+
+
+        Iterator<DocumentWriteOperation> itr = contentStream.iterator();
+        while (itr.hasNext()) {
+            DocumentWriteOperation docOp = itr.next();
+            String uri = docOp.getUri();
+            assertNotNull(docOp.getUri());
+            assertTrue(docOp.getUri().startsWith("TestJson"));
+            assertTrue(docOp.getUri().endsWith(".json"));
 
             assertNotNull(docOp.getContent());
             String docOpContent = docOp.getContent().toString();

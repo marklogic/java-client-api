@@ -18,7 +18,6 @@ package com.marklogic.client.test.datamovement;
 
 import com.marklogic.client.datamovement.JSONSplitter;
 import com.marklogic.client.datamovement.NodeOperation;
-import com.marklogic.client.datamovement.Splitter;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.io.StringHandle;
 
@@ -27,9 +26,10 @@ import java.io.FileInputStream;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
+import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+
+import static org.junit.Assert.*;
 
 public class JSONSplitterTest {
     static final private String jsonObjectFile = "src/test/resources/data" + File.separator + "pathSplitter/JsonSplitterObject.json";
@@ -107,14 +107,88 @@ public class JSONSplitterTest {
     }
 
     @Test
-    public void testJSONSplitterWrite() throws Exception {
+    public void testJSONSplitterWriteWithCustomUriMaker() throws Exception {
+
+        String[] expectedURIs = {
+                "/SystemPath/NewTestJson1_abcd.json",
+                "/SystemPath/NewTestJson2_abcd.json",
+                "/SystemPath/NewTestJson3_abcd.json",
+                "/SystemPath/NewTestJson4_abcd.json",
+                "/SystemPath/NewTestJson5_abcd.json"
+        };
+        JSONSplitter splitter = JSONSplitter.makeArraySplitter();
+        FileInputStream fileInputStream = new FileInputStream(new File(jsonArrayFile));
+        JSONSplitter.UriMaker uriMaker = new UriMakerTest();
+        uriMaker.setInputAfter("/SystemPath/");
+        uriMaker.setInputName("NewTestJson");
+        splitter.setUriMaker(uriMaker);
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream);
+        assertNotNull(contentStream);
+
+        Iterator<DocumentWriteOperation> itr = contentStream.iterator();
+        int i = 0;
+        while (itr.hasNext()) {
+            DocumentWriteOperation docOp = itr.next();
+            String uri = docOp.getUri();
+            assertEquals(docOp.getUri(), expectedURIs[i]);
+
+            assertNotNull(docOp.getContent());
+            String docOpContent = docOp.getContent().toString();
+            assertEquals(docOpContent, expectedArray[i]);
+            i++;
+        }
+
+        assertEquals(5, splitter.getCount());
+    }
+
+    private class UriMakerTest implements JSONSplitter.UriMaker {
+        private String inputAfter;
+        private String inputName;
+
+        @Override
+        public String makeUri(long num, JSONWriteHandle handle) {
+            StringBuilder uri = new StringBuilder();
+            String randomUUIDForTest = "abcd";
+
+            if (getInputAfter() != null && getInputAfter().length() != 0) {
+                uri.append(getInputAfter());
+            }
+
+            if (getInputName() != null && getInputName().length() != 0) {
+                uri.append(getInputName());
+            }
+
+            uri.append(num).append("_").append(randomUUIDForTest).append(".json");
+            return uri.toString();
+        }
+
+        @Override
+        public String getInputAfter() {
+            return this.inputAfter;
+        }
+
+        @Override
+        public void setInputAfter(String base) {
+            this.inputAfter = base;
+        }
+
+        @Override
+        public String getInputName() {
+            return this.inputName;
+        }
+
+        @Override
+        public void setInputName(String name) {
+            this.inputName = name;
+        }
+    }
+
+    @Test
+    public void testJSONSplitterWriteWithInputName() throws Exception {
 
         JSONSplitter splitter = JSONSplitter.makeArraySplitter();
         FileInputStream fileInputStream = new FileInputStream(new File(jsonArrayFile));
         Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream, "TestJson.json");
-        Splitter.UriMaker uriMaker = splitter.getUriMaker();
-        uriMaker.setInputAfter("/SystemPath/");
-        uriMaker.setInputName("NewTestJson.json");
         assertNotNull(contentStream);
 
         Iterator<DocumentWriteOperation> itr = contentStream.iterator();
@@ -123,6 +197,35 @@ public class JSONSplitterTest {
             DocumentWriteOperation docOp = itr.next();
             String uri = docOp.getUri();
             assertNotNull(docOp.getUri());
+            assertTrue(docOp.getUri().startsWith("TestJson" + (i+1)));
+            assertTrue(docOp.getUri().endsWith(".json"));
+
+            assertNotNull(docOp.getContent());
+            String docOpContent = docOp.getContent().toString();
+            assertEquals(docOpContent, expectedArray[i]);
+            i++;
+        }
+
+        assertEquals(5, splitter.getCount());
+
+    }
+
+    @Test
+    public void testJSONSplitterWriteWithoutInputName() throws Exception {
+
+        JSONSplitter splitter = JSONSplitter.makeArraySplitter();
+        FileInputStream fileInputStream = new FileInputStream(new File(jsonArrayFile));
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream);
+        assertNotNull(contentStream);
+
+        Iterator<DocumentWriteOperation> itr = contentStream.iterator();
+        int i = 0;
+        while (itr.hasNext()) {
+            DocumentWriteOperation docOp = itr.next();
+            String uri = docOp.getUri();
+            assertNotNull(docOp.getUri());
+            assertTrue(docOp.getUri().startsWith("/" + (i+1)));
+            assertTrue(docOp.getUri().endsWith(".json"));
 
             assertNotNull(docOp.getContent());
             String docOpContent = docOp.getContent().toString();
