@@ -23,6 +23,8 @@ import com.marklogic.client.io.StringHandle;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -31,7 +33,7 @@ import java.util.stream.Stream;
  */
 public class LineSplitter implements Splitter<StringHandle> {
     private Format format = Format.JSON;
-    private int count = 0;
+    private long count = 0;
 
     /**
      * Returns the document format set to splitter.
@@ -86,9 +88,6 @@ public class LineSplitter implements Splitter<StringHandle> {
      */
     @Override
     public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input) throws Exception {
-        if (input == null) {
-            throw new IllegalArgumentException("InputStream cannot be null.");
-        }
         return splitWriteOperations(input, null);
     }
 
@@ -108,16 +107,22 @@ public class LineSplitter implements Splitter<StringHandle> {
             throw new IllegalArgumentException("InputStream cannot be null.");
         }
 
-        if (getUriMaker() == null) {
-            LineSplitter.UriMakerImpl uriMaker = new LineSplitter.UriMakerImpl();
-            setUriMaker(uriMaker);
-        }
-        getUriMaker().setInputName(inputName);
-        LineSplitter.UriMakerImpl uriMaker = (UriMakerImpl) getUriMaker();
+        count = 0;
         String extension = getFormat().getDefaultMimetype();
         extension = extension.substring(extension.indexOf("/") + 1);
-        uriMaker.setExtension(extension);
-
+        if ("plain".equals(extension)) {
+            extension = "txt";
+        }
+        if (getUriMaker() == null) {
+            LineSplitter.UriMakerImpl uriMaker = new LineSplitter.UriMakerImpl();
+            uriMaker.setInputName(inputName);
+            uriMaker.setExtension(extension);
+            setUriMaker(uriMaker);
+        } else {
+            if (inputName != null) {
+                getUriMaker().setInputName(inputName);
+            }
+        }
 
         return new BufferedReader(new InputStreamReader(input))
                 .lines()
@@ -163,6 +168,8 @@ public class LineSplitter implements Splitter<StringHandle> {
         if (input == null) {
             throw new IllegalArgumentException("Reader cannot be null.");
         }
+
+        count = 0;
         return new BufferedReader(input)
                 .lines()
                 .map(line -> {
@@ -192,16 +199,34 @@ public class LineSplitter implements Splitter<StringHandle> {
     /**
      * UriMaker which generates URI for each split file
      */
-    interface UriMaker extends Splitter.UriMaker {
+    public interface UriMaker extends Splitter.UriMaker {
         /**
          * Generates URI for each split
          * @param num the count of each split
          * @param handle the handle which contains the content of each split
          * @return the generated URI of current split
          */
-        String makeUri(int num, StringHandle handle);
+        String makeUri(long num, StringHandle handle);
     }
 
     private static class UriMakerImpl extends com.marklogic.client.datamovement.impl.UriMakerImpl<StringHandle> implements LineSplitter.UriMaker {
+        private static Pattern extensionRegex = Pattern.compile("^(.+)\\.([^.]+)$");
+
+        @Override
+        public void setInputName(String inputName) {
+            if (inputName != null) {
+                Matcher matcher = extensionRegex.matcher(inputName);
+                boolean found = matcher.find();
+                if (found){
+                    String name = matcher.group(1);
+                    String extension = matcher.group(2);
+                    if ("jsonl".equals(extension) || "gz".equals(extension)) {
+                        inputName = name + ".json";
+                    }
+                }
+            }
+
+            super.setInputName(inputName);
+        }
     }
 }

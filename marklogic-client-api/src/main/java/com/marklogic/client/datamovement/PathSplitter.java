@@ -46,16 +46,16 @@ public class PathSplitter {
 
     private Map<String, Splitter<? extends AbstractWriteHandle>> splitterMap;
     private Path documentUriAfter;
-    private String fileName = "";
-    private String extension = "";
+    private final Pattern extensionRegex = Pattern.compile("\\.([^.]+)$");
 
     /**
-     * Create a new PathSplitter with set splitterMap
+     * Create a new PathSplitter with set splitterMap. By default,
      * File with extension "csv" will be applied with JacksonCSVSplitter
      * File with extension "jsonl" will be applied with LineSplitter
      * File with extension "zip" will be applied with ZipSplitter
      * File with other extension will be applied with UnarySplitter.
      * You could change the default behavior for all other extensions.
+     * For example, splitting large XML file with XMLSplitter or splitting large JSON file with JSONSplitter.
      */
     public PathSplitter() {
         splitterMap = new HashMap<>();
@@ -119,12 +119,13 @@ public class PathSplitter {
     }
 
     private Stream<? extends AbstractWriteHandle> flatMapHandles(Path path) {
-        Splitter splitter = lookupSplitter(path);
+        String extension = getExtension(path);
+        Splitter splitter = lookupSplitter(extension);
         if (splitter == null) {
             return Stream.empty();
         }
         try {
-            InputStream inputStream = openInputStream(path);
+            InputStream inputStream = openInputStream(path, extension);
             return splitter.split(inputStream);
         } catch (Exception e) {
             throw new RuntimeException("", e);
@@ -132,32 +133,39 @@ public class PathSplitter {
     }
 
     private Stream<DocumentWriteOperation> flatMapDocumentWriteOperations(Path path)  {
-        Splitter splitter = lookupSplitter(path);
+        String extension = getExtension(path);
+        Splitter splitter = lookupSplitter(extension);
         if (splitter == null) {
             return Stream.empty();
         }
 
         try {
-            InputStream inputStream = openInputStream(path);
-            return splitter.splitWriteOperations(inputStream, this.fileName);
+            InputStream inputStream = openInputStream(path, extension);
+            String filename = getFileName(path).toString();
+            return splitter.splitWriteOperations(inputStream, getFileName(path).toString());
         } catch (Exception e) {
             throw new RuntimeException("", e);
         }
 
     }
 
-    private Splitter<? extends AbstractWriteHandle> lookupSplitter(Path path) {
-        if (path == null) {
-            throw new IllegalArgumentException("Path cannot be null.");
+    private Path getFileName(Path path) {
+        if (this.documentUriAfter == null) {
+            return path;
         }
-        Pattern extensionRegex = Pattern.compile("\\.([^.]+)$");
-        String fileName = path.getName(path.getNameCount() - 1).toString();
-        Matcher matcher = extensionRegex.matcher(fileName);
-        matcher.find();
-        String extension = matcher.group(1);
-        this.fileName = fileName;
-        this.extension = extension;
 
+        Path relative = documentUriAfter.relativize(path);
+        return path.toAbsolutePath().getRoot().resolve(relative);
+    }
+
+    private String getExtension(Path path) {
+        Path fileName = getFileName(path);
+        Matcher matcher = extensionRegex.matcher(fileName.toString());
+        matcher.find();
+        return matcher.group(1);
+    }
+
+    private Splitter<? extends AbstractWriteHandle> lookupSplitter(String extension) {
         Splitter splitter = splitterMap.get(extension);
         if (splitter == null && splitterMap.get(DEFAULT_SPLITTER_KEY) != null) {
             return splitterMap.get(DEFAULT_SPLITTER_KEY);
@@ -167,19 +175,19 @@ public class PathSplitter {
 
     @NotNull
     @Contract("null -> fail")
-    private InputStream openInputStream(Path path) throws IOException {
+    private InputStream openInputStream(Path path, String extension) throws IOException {
         if (path == null) {
             throw new IllegalArgumentException("Path cannot be null.");
         }
 
         InputStream inputStream = new BufferedInputStream(Files.newInputStream(path));
-        if ("zip".equals(this.extension)) {
+        if ("zip".equals(extension)) {
             return new ZipInputStream(inputStream);
-        }
-        //TODO: extension for UnarySplitter case, eg line-delimited.jsonl_23efa244-ba04-4318-a43d-276290b8b63e.gz
-        if ("gz".equals(this.extension)) {
+        } else if ("gz".equals(extension)) {
+            //TODO: extension for UnarySplitter case, eg line-delimited.jsonl_23efa244-ba04-4318-a43d-276290b8b63e.gz
             return new GZIPInputStream(inputStream);
         }
+
         return inputStream;
     }
 }

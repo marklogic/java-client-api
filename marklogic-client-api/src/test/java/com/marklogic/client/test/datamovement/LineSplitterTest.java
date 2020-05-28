@@ -1,7 +1,6 @@
 package com.marklogic.client.test.datamovement;
 
 import com.marklogic.client.datamovement.LineSplitter;
-import com.marklogic.client.datamovement.Splitter;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
@@ -82,10 +81,81 @@ public class LineSplitterTest {
     @Test
     public void testSplitterDocumentWriteOperation() throws Exception {
         LineSplitter splitter = new LineSplitter();
-        splitter.setFormat(Format.XML);
-        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(new FileInputStream(xmlFile), "line-delimited.txt");
-        Splitter.UriMaker uriMaker = splitter.getUriMaker();
+        //splitter.setFormat(Format.XML); //this works for default uriMaker
+        LineSplitter.UriMaker uriMaker = new UriMakerTest();
         uriMaker.setInputAfter("/test/");
+        uriMaker.setInputName("new-uriMaker-inputName");
+        splitter.setUriMaker(uriMaker);
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(new FileInputStream(xmlFile));
+        assertNotNull(contentStream);
+
+        String[] originalResult = Files.lines(Paths.get(xmlFile))
+                .toArray(size -> new String[size]);
+
+        Iterator<DocumentWriteOperation> itr = contentStream.iterator();
+        int i = 0;
+        while (itr.hasNext()) {
+            i++;
+            DocumentWriteOperation docOp = itr.next();
+            String uri = docOp.getUri();
+            assertEquals(docOp.getUri(), "/test/new-uriMaker-inputName" + i + "_abcd.xml");
+
+            assertNotNull(docOp.getContent());
+            String docOpContent = docOp.getContent().toString();
+            assertEquals(docOpContent, originalResult[i-1]);
+        }
+
+        assertEquals(4, splitter.getCount());
+    }
+
+    private class UriMakerTest implements LineSplitter.UriMaker {
+
+        private String inputAfter;
+        private String inputName;
+
+        @Override
+        public String makeUri(long num, StringHandle handle) {
+            StringBuilder uri = new StringBuilder();
+            String randomUUIDForTest = "abcd";
+
+            if (getInputAfter() != null && getInputAfter().length() != 0) {
+                uri.append(getInputAfter());
+            }
+
+            if (getInputName() != null && getInputName().length() != 0) {
+                uri.append(getInputName());
+            }
+
+            uri.append(num).append("_").append(randomUUIDForTest).append(".xml");
+            return uri.toString();
+        }
+
+        @Override
+        public String getInputAfter() {
+            return this.inputAfter;
+        }
+
+        @Override
+        public void setInputAfter(String base) {
+            this.inputAfter = base;
+        }
+
+        @Override
+        public String getInputName() {
+            return this.inputName;
+        }
+
+        @Override
+        public void setInputName(String name) {
+            this.inputName = name;
+        }
+    }
+
+    @Test
+    public void testSplitterDocumentWriteOperationWithInputName() throws Exception {
+        LineSplitter splitter = new LineSplitter();
+        splitter.setFormat(Format.XML);
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(new FileInputStream(xmlFile), "line-delimited.xml");
         assertNotNull(contentStream);
 
         String[] originalResult = Files.lines(Paths.get(xmlFile))
@@ -97,6 +167,36 @@ public class LineSplitterTest {
             DocumentWriteOperation docOp = itr.next();
             String uri = docOp.getUri();
             assertNotNull(docOp.getUri());
+            assertTrue(docOp.getUri().startsWith("line-delimited" + (i+1)));
+            assertTrue(docOp.getUri().endsWith("xml"));
+
+            assertNotNull(docOp.getContent());
+            String docOpContent = docOp.getContent().toString();
+            assertEquals(docOpContent, originalResult[i]);
+            i++;
+        }
+
+        assertEquals(4, splitter.getCount());
+    }
+
+    @Test
+    public void testSplitterDocumentWriteOperationWithoutInputName() throws Exception {
+        LineSplitter splitter = new LineSplitter();
+        splitter.setFormat(Format.XML);
+        Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(new FileInputStream(xmlFile));
+        assertNotNull(contentStream);
+
+        String[] originalResult = Files.lines(Paths.get(xmlFile))
+                .toArray(size -> new String[size]);
+
+        Iterator<DocumentWriteOperation> itr = contentStream.iterator();
+        int i = 0;
+        while (itr.hasNext()) {
+            DocumentWriteOperation docOp = itr.next();
+            String uri = docOp.getUri();
+            assertNotNull(docOp.getUri());
+            assertTrue(docOp.getUri().startsWith("/" + (i+1)));
+            assertTrue(docOp.getUri().endsWith("xml"));
 
             assertNotNull(docOp.getContent());
             String docOpContent = docOp.getContent().toString();

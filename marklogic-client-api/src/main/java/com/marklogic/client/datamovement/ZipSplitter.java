@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,7 +41,10 @@ import java.util.zip.ZipInputStream;
 public class ZipSplitter implements Splitter<BytesHandle> {
     private Map<String, Format> extensionFormats;
     private Predicate<ZipEntry> entryFilter;
-    private int count = 0;
+    private Function<String, String> uriTransformer;
+    private String inputName;
+    private long count = 0;
+    private static Pattern extensionRegex = Pattern.compile("^(.+)\\.([^.]+)$");
 
     /**
      * Returns the extensionFormats set to splitter. The extensionFormat is pre-defined in splitter.
@@ -67,6 +71,27 @@ public class ZipSplitter implements Splitter<BytesHandle> {
      */
     public void setEntryFilter(Predicate<ZipEntry> entryFilter) {
         this.entryFilter = entryFilter;
+    }
+
+    /**
+     * Returns the uriTransformer set to splitter.
+     * @return the uriTransformer set to splitter
+     */
+    public Function<String, String> getUriTransformer() {
+        return this.uriTransformer;
+    }
+
+    /**
+     * Used to set uriTransformer to splitter. The uriTransformer is a lambda function, which can be used to
+     * transform the name of the document in the zipfile into the document URI for the database.
+     * @param uriTransformer the uriTransformer which applied on each document URI
+     */
+    public void setUriTransformer(Function<String, String> uriTransformer) {
+        if (getUriMaker() != null) {
+            throw new IllegalStateException("It's illegal to set UriTransformer when UriMaker is used");
+        }
+
+        this.uriTransformer = uriTransformer;
     }
 
     /**
@@ -117,6 +142,7 @@ public class ZipSplitter implements Splitter<BytesHandle> {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
+        count = 0;
 
         BytesHandleSpliterator bytesHandleSpliterator = new BytesHandleSpliterator(this);
         bytesHandleSpliterator.setZipStream(input);
@@ -136,15 +162,7 @@ public class ZipSplitter implements Splitter<BytesHandle> {
      */
     @Override
     public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input) throws Exception {
-        if (input == null) {
-            throw new IllegalArgumentException("Input cannot be null");
-        }
-
-        if (!(input instanceof ZipInputStream)) {
-            throw new IllegalArgumentException("Input should be an instance of ZipInputStream");
-        }
-
-        return splitWriteOperations((ZipInputStream) input);
+        return splitWriteOperations(input, null);
     }
 
     /**
@@ -178,10 +196,6 @@ public class ZipSplitter implements Splitter<BytesHandle> {
      * @throws IOException if input cannot be split
      */
     public Stream<DocumentWriteOperation> splitWriteOperations(ZipInputStream input) throws IOException {
-        if (input == null) {
-            throw new IllegalArgumentException("Input cannot be null");
-        }
-
         return splitWriteOperations(input, null);
     }
 
@@ -197,18 +211,14 @@ public class ZipSplitter implements Splitter<BytesHandle> {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
+        count = 0;
 
         DocumentWriteOperationSpliterator documentWriteOperationSpliterator =
                 new DocumentWriteOperationSpliterator(this);
         documentWriteOperationSpliterator.setZipStream(input);
         documentWriteOperationSpliterator.setEntryFilter(this.entryFilter);
         documentWriteOperationSpliterator.setExtensionFormats(this.extensionFormats);
-
-        if (getUriMaker() == null) {
-            ZipSplitter.UriMakerImpl uriMaker = new ZipSplitter.UriMakerImpl();
-            setUriMaker(uriMaker);
-        }
-        getUriMaker().setInputName(inputName);
+        this.inputName = inputName;
 
         return StreamSupport.stream(documentWriteOperationSpliterator, true);
     }
@@ -243,11 +253,10 @@ public class ZipSplitter implements Splitter<BytesHandle> {
     }
 
     private static abstract class ZipEntrySpliterator<T> extends Spliterators.AbstractSpliterator<T> {
-        private static Pattern extensionRegex = Pattern.compile("^(.+)\\.([^.]+)$");
+
         private ZipInputStream zipStream;
         private Map<String,Format> extensionFormats;
         private Predicate<ZipEntry> entryFilter;
-        private String[] entryNameExtension = new String[] {"", ""};
 
         ZipEntrySpliterator(long est, int additionalCharacteristics) {
             super(est, additionalCharacteristics);
@@ -284,15 +293,6 @@ public class ZipSplitter implements Splitter<BytesHandle> {
             this.entryFilter = entryFilter;
         }
 
-        String[] getEntryNameExtension() {
-            return this.entryNameExtension;
-        }
-
-        void setEntryNameExtension(String name, String extension) {
-            this.entryNameExtension[0] = name;
-            this.entryNameExtension[1] = extension;
-        }
-
         protected FormatEntry getNextEntry() throws IOException {
             ZipEntry candidateEntry;
 
@@ -304,8 +304,7 @@ public class ZipSplitter implements Splitter<BytesHandle> {
                 String name = candidateEntry.getName();
                 Matcher matcher = extensionRegex.matcher(name);
                 matcher.find();
-                setEntryNameExtension(matcher.group(1), matcher.group(2));
-                Format format = getExtensionFormats().get(entryNameExtension[1]);
+                Format format = getExtensionFormats().get(matcher.group(2));
 
                 if (format == null) {
                     format = getExtensionFormats().get("");
@@ -381,11 +380,23 @@ public class ZipSplitter implements Splitter<BytesHandle> {
 
                 splitter.count++;
                 BytesHandle nextBytesHandle = readEntry(nextEntry);
-                String name = this.getEntryNameExtension()[0];
-                String extension = this.getEntryNameExtension()[1];
-                ZipSplitter.UriMakerImpl uriMaker = (ZipSplitter.UriMakerImpl) splitter.getUriMaker();
-                uriMaker.setExtension(extension);
-                String uri = uriMaker.makeUri(splitter.count, name, nextBytesHandle);
+                String name = nextEntry.getZipEntry().getName();
+                String uri = name;
+
+                if (splitter.getUriTransformer() == null && splitter.getUriMaker() == null) {
+                    ZipSplitter.UriMakerImpl uriMaker = new ZipSplitter.UriMakerImpl();
+                    uriMaker.setInputName(splitter.inputName);
+                    splitter.setUriMaker(uriMaker);
+                }
+
+                if (splitter.getUriMaker() != null) {
+                    splitter.getUriMaker().setInputName(splitter.inputName);
+                    uri = splitter.getUriMaker().makeUri(splitter.count, name, nextBytesHandle);
+                }
+
+                if (splitter.getUriTransformer() != null) {
+                    uri = splitter.uriTransformer.apply(name);
+                }
 
                 DocumentWriteOperationImpl documentWriteOperation = new DocumentWriteOperationImpl(
                         DocumentWriteOperation.OperationType.DOCUMENT_WRITE,
@@ -403,13 +414,13 @@ public class ZipSplitter implements Splitter<BytesHandle> {
         }
     }
 
-    private UriMaker uriMaker;
+    private ZipSplitter.UriMaker uriMaker;
 
     /**
      * Get the UriMaker of the splitter
      * @return the UriMaker of the splitter
      */
-    public UriMaker getUriMaker() {
+    public ZipSplitter.UriMaker getUriMaker() {
         return this.uriMaker;
     }
 
@@ -417,14 +428,18 @@ public class ZipSplitter implements Splitter<BytesHandle> {
      * Set the UriMaker to the splitter
      * @param uriMaker the uriMaker to generate URI of each split file.
      */
-    public void setUriMaker(UriMaker uriMaker) {
+    public void setUriMaker(ZipSplitter.UriMaker uriMaker) {
+        if (getUriTransformer() != null) {
+            throw new IllegalStateException("It's illegal to set UriMaker when UriTransformer is used");
+        }
+
         this.uriMaker = uriMaker;
     }
 
     /**
      * UriMaker which generates URI for each split file
      */
-    interface UriMaker extends Splitter.UriMaker {
+    public interface UriMaker extends Splitter.UriMaker {
         /**
          * Generates URI for each split
          * @param num the count of each split
@@ -432,27 +447,31 @@ public class ZipSplitter implements Splitter<BytesHandle> {
          * @param handle the handle which contains the content of each split
          * @return the generated URI of current split
          */
-        String makeUri(int num, String entryName, BytesHandle handle);
+        String makeUri(long num, String entryName, BytesHandle handle);
     }
 
     static private class UriMakerImpl extends com.marklogic.client.datamovement.impl.UriMakerImpl<BytesHandle> implements ZipSplitter.UriMaker {
 
         @Override
-        public String makeUri(int num, String entryName, BytesHandle handle) {
-            String prefix = "";
-            String uri;
+        public String makeUri(long num, String entryName, BytesHandle handle) {
+            StringBuilder uri = new StringBuilder();
+
+            Matcher matcher = extensionRegex.matcher(entryName);
+            matcher.find();
+            String name = matcher.group(1);
+            String extension = matcher.group(2);
 
             if (getInputAfter() != null && getInputAfter().length() != 0) {
-                prefix += getInputAfter();
+                uri.append(getInputAfter());
             }
 
             if (getInputName() != null && getInputName().length() != 0) {
-                prefix += getName();
+                uri.append(getName());
             }
 
-            prefix += "/" + entryName;
-            uri = prefix + num + "_" + UUID.randomUUID() + "." + getExtension();
-            return uri;
+            uri.append("/").append(name);
+            uri.append(num).append("_").append(UUID.randomUUID()).append(".").append(extension);
+            return uri.toString();
         }
     }
 }
