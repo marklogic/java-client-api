@@ -73,6 +73,10 @@ public enum Format {
     }
   }
 
+  /**
+   * Returns the default extension for the format.
+   * @return the default extension
+   */
   public String getDefaultExtension() {
     switch(this) {
       case UNKNOWN:

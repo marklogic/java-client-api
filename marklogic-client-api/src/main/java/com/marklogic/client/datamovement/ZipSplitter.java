@@ -170,7 +170,8 @@ public class ZipSplitter implements Splitter<BytesHandle> {
      * The input stream must be a ZipInputStream, otherwise it will throw an exception.
      * The ZIP file could contain XML, JSON, TXT and BINARY files.
      * @param input is the incoming input stream.
-     * @param inputName is the file name, including name and extension
+     * @param inputName is the input file name, including name and extension. It is used to generate URLs for split
+     *                  files.The inputName could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation
      * @throws Exception
      */
@@ -203,7 +204,8 @@ public class ZipSplitter implements Splitter<BytesHandle> {
      * Takes a ZipInputStream and name of a ZIP file and convert it to a stream of DocumentWriteOperation.
      * The ZIP file could contain XML, JSON, TXT and BINARY files.
      * @param input is a ZipInputStream of a zip file
-     * @param inputName is the file name, including name and extension
+     * @param inputName is the file name of input file, including name and extension. It is used to generate URLs for
+     *                  split files.The inputName could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation
      * @throws IOException if input cannot be split
      */
@@ -390,7 +392,9 @@ public class ZipSplitter implements Splitter<BytesHandle> {
                 }
 
                 if (splitter.getUriMaker() != null) {
-                    splitter.getUriMaker().setInputName(splitter.inputName);
+                    if (splitter.inputName != null) {
+                        splitter.getUriMaker().setInputName(splitter.inputName);
+                    }
                     uri = splitter.getUriMaker().makeUri(splitter.count, name, nextBytesHandle);
                 }
 
