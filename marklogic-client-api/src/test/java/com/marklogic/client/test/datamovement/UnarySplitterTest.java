@@ -78,7 +78,7 @@ public class UnarySplitterTest {
             "}";
 
     @Test
-    public void testUnarySplitterDocWrite() throws Exception {
+    public void testUnarySplitterDocWriteWithCustomUriMaker() throws Exception {
         UnarySplitter splitter = new UnarySplitter();
         FileInputStream fileInputStream = new FileInputStream(new File(jsonObjectFile));
         UnarySplitter.UriMaker uriMaker = new UriMakerTest();

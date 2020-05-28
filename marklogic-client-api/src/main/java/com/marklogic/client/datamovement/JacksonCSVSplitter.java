@@ -146,7 +146,8 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
      * Takes the input stream and the input name, then converts the input into a stream of DocumentWriteOperation
      * by setting the schema and wrapping the JsonNode into DocumentWriteOperation.
      * @param input is the incoming input stream.
-     * @param inputName the name of the input stream.
+     * @param inputName the name of the input stream, including name and extension. It is used to generate URLs for
+     *                  split files.The inputName could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation.
      * @throws Exception if the input cannot be split
      */
@@ -184,7 +185,8 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
      * Takes the input Reader and the input name, then converts the input Reader into a stream of DocumentWriteOperation
      * by setting the schema and wrapping the JsonNode into DocumentWriteOperation.
      * @param input is the incoming input Reader.
-     * @param inputName the name of the input Reader.
+     * @param inputName the name of the input Reader, including name and extension. It is used to generate URLs for
+     *                  split files.The inputName could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation.
      * @throws Exception if the input cannot be split
      */
@@ -258,7 +260,7 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
                 handle
         );
     }
-    
+
     private PeekingIterator<JsonNode> configureSplitObj(Iterator<JsonNode> nodeItr){
         if (nodeItr == null || !nodeItr.hasNext()) {
             throw new MarkLogicIOException("No header found.");
