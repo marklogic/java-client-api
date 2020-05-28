@@ -108,11 +108,7 @@ public class LineSplitter implements Splitter<StringHandle> {
         }
 
         count = 0;
-        String extension = getFormat().getDefaultMimetype();
-        extension = extension.substring(extension.indexOf("/") + 1);
-        if ("plain".equals(extension)) {
-            extension = "txt";
-        }
+        String extension = getFormat().getDefaultExtension();
         if (getUriMaker() == null) {
             LineSplitter.UriMakerImpl uriMaker = new LineSplitter.UriMakerImpl();
             uriMaker.setInputName(inputName);
@@ -121,6 +117,9 @@ public class LineSplitter implements Splitter<StringHandle> {
         } else {
             if (inputName != null) {
                 getUriMaker().setInputName(inputName);
+            }
+            if (getUriMaker() instanceof LineSplitter.UriMakerImpl) {
+                ((LineSplitter.UriMakerImpl)getUriMaker()).setExtension(extension);
             }
         }
 
@@ -210,23 +209,5 @@ public class LineSplitter implements Splitter<StringHandle> {
     }
 
     private static class UriMakerImpl extends com.marklogic.client.datamovement.impl.UriMakerImpl<StringHandle> implements LineSplitter.UriMaker {
-        private static Pattern extensionRegex = Pattern.compile("^(.+)\\.([^.]+)$");
-
-        @Override
-        public void setInputName(String inputName) {
-            if (inputName != null) {
-                Matcher matcher = extensionRegex.matcher(inputName);
-                boolean found = matcher.find();
-                if (found){
-                    String name = matcher.group(1);
-                    String extension = matcher.group(2);
-                    if ("jsonl".equals(extension) || "gz".equals(extension)) {
-                        inputName = name + ".json";
-                    }
-                }
-            }
-
-            super.setInputName(inputName);
-        }
     }
 }
