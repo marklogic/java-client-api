@@ -23,8 +23,6 @@ import com.marklogic.client.io.StringHandle;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -44,7 +42,7 @@ public class LineSplitter implements Splitter<StringHandle> {
     }
 
     /**
-     * Used to set document format to splitter.
+     * Used to set document format to splitter. The extension of URLs generated for splits is determined by this format.
      * The format should be set before splitting. If not set, the default is JSON.
      * @param format the document content format.
      */
@@ -96,8 +94,8 @@ public class LineSplitter implements Splitter<StringHandle> {
      * could be line-delimited JSON, XML or TEXT file. It could also be gzip-compressed line-delimited files.
      * Provide GZIPInputStream to the splitter when splitting gzip files.
      * @param input is the incoming input stream.
-     * @param inputName is the name of the input file, including name and extension. However, we'll set extension of the
-     *                  URL of extracted document according to it's format.
+     * @param inputName is the name of the input file, including name and extension. It is used to generate URLs for
+     *                  split files. The inputName could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation.
      * @throws Exception
      */

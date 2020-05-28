@@ -123,7 +123,8 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
      * Takes an InputStream of a JSON file and file name and split it into a steam of DocumentWriteOperation
      * to write to database.
      * @param input is the incoming input stream of a JSON file
-     * @param inputName is the file name plus extension
+     * @param inputName is the name of input file, including name and extension. It is used to generate URLs for split
+     *                  files.The inputName could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation to write to database
      * @throws Exception
      */
@@ -157,6 +158,8 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
      * Take an input of JsonParser created from the JSON file and split it into a stream of DocumentWriteOperations
      * to write to database.
      * @param input JsonParser created from the JSON file
+     * @param inputName is the name of input file, including name and extension. It is used to generate URLs for split
+     *                  files.The inputName could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation to write to database
      */
     public Stream<DocumentWriteOperation> splitWriteOperations(JsonParser input, String inputName) {

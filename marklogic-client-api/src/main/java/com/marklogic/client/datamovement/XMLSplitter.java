@@ -124,7 +124,8 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
     /**
      * Takes an input stream of an XML file and input file name, split it into a steam of DocumentWriteOperation.
      * @param input is the incoming input stream.
-     * @param inputName is the file name, including name and extension
+     * @param inputName is the name of input file, including name and extension. It is used to generate URLs for split
+     *                  files.The inputName could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation to write to database
      * @throws Exception
      */
@@ -165,7 +166,8 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
      * Take an input of XMLStreamReader of the XML file and split it into a stream of DocumentWriteOperations
      * to write to database.
      * @param input an XMLStreamReader of the XML file
-     * @param inputName is the name of the input file, including name and extension
+     * @param inputName is the name of the input file, including name and extension. It is used to generate URLs for
+     *                  split files.The inputName could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation to write to database
      */
     public Stream<DocumentWriteOperation> splitWriteOperations(XMLStreamReader input, String inputName) {
