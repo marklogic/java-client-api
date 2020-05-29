@@ -396,9 +396,7 @@ public class ZipSplitter implements Splitter<BytesHandle> {
                         splitter.getUriMaker().setInputName(splitter.inputName);
                     }
                     uri = splitter.getUriMaker().makeUri(splitter.count, name, nextBytesHandle);
-                }
-
-                if (splitter.getUriTransformer() != null) {
+                } else {
                     uri = splitter.uriTransformer.apply(name);
                 }
 

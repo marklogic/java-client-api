@@ -18,8 +18,6 @@ package com.marklogic.client.datamovement;
 
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -173,8 +171,6 @@ public class PathSplitter {
         return splitter;
     }
 
-    @NotNull
-    @Contract("null -> fail")
     private InputStream openInputStream(Path path, String extension) throws IOException {
         if (path == null) {
             throw new IllegalArgumentException("Path cannot be null.");
