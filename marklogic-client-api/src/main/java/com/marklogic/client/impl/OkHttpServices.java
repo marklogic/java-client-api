@@ -3369,6 +3369,8 @@ public class OkHttpServices implements RESTServices {
     HandleImplementation outputBase = HandleAccessor.checkHandle(output,
       "read");
 
+    addPointInTimeQueryParam(params, outputBase);
+
     String inputMimetype = null;
     if(inputBase != null) {
       inputMimetype = inputBase.getMimetype();
@@ -3408,9 +3410,13 @@ public class OkHttpServices implements RESTServices {
     checkStatus(response, status, operation, "resource", path,
       ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
+    Headers headers = response.headers();
     if ( responseHeaders != null ) {
       // add all the headers from the OkHttp Headers object to the caller-provided map
-      responseHeaders.putAll( response.headers().toMultimap() );
+      responseHeaders.putAll(headers.toMultimap());
+    } else if (outputBase != null){
+        updateLength(outputBase, headers);
+        updateServerTimestamp(outputBase, headers);
     }
 
     if (as != null) {
@@ -3930,8 +3936,7 @@ public class OkHttpServices implements RESTServices {
   {
     if ( params == null ) params = new RequestParameters();
     if ( transaction != null ) params.add("txid", transaction.getTransactionId());
-    HandleImplementation inputBase = HandleAccessor.checkHandle(input,
-      "write");
+    HandleImplementation inputBase = HandleAccessor.checkHandle(input, "write");
 
     String inputMimetype = inputBase.getMimetype();
     boolean isResendable = inputBase.isResendable();
@@ -4204,12 +4209,11 @@ public class OkHttpServices implements RESTServices {
     return response;
   }
 
-
   private void addPointInTimeQueryParam(RequestParameters params, Object outputHandle) {
-    HandleImplementation handleBase = HandleAccessor.as(outputHandle);
-    if ( params != null && handleBase != null &&
-      handleBase.getPointInTimeQueryTimestamp() != -1 )
-    {
+    addPointInTimeQueryParam(params, HandleAccessor.as(outputHandle));
+  }
+  private void addPointInTimeQueryParam(RequestParameters params, HandleImplementation handleBase) {
+    if (params != null && handleBase != null && handleBase.getPointInTimeQueryTimestamp() != -1) {
       logger.trace("param timestamp=[" + handleBase.getPointInTimeQueryTimestamp() + "]");
       params.add("timestamp", Long.toString(handleBase.getPointInTimeQueryTimestamp()));
     }

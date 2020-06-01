@@ -126,6 +126,8 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         this.viewName   = viewInfo.get("viewName").asText(null);
         this.rowCount   = viewInfo.get("rowCount").asLong(0);
         this.pagedPlan  = getRowManager().newRawPlanDefinition(new JacksonHandle(viewInfo.get("modifiedPlan")));
+        logger.info("plan analysis schema name: {}, view name: {}, row estimate: {}",
+                this.schemaName, this.viewName, this.rowCount);
 // TODO: also viewColumns? tableID?
     }
 
@@ -370,39 +372,40 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 
         this.threadPool = new BatchThreadPoolExecutor(super.getThreadCount());
         this.runningThreads.set(super.getThreadCount());
+
+        super.setJobTicket(ticket);
+        super.setJobStartTime();
+        super.getStarted().set(true);
+
         for (int i=0; i<super.getThreadCount(); i++) {
             ContentHandle<T> threadHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(rowsClass);
             BaseHandle<?,?> threadBaseHandle = (BaseHandle<?,?>) threadHandle;
             threadBaseHandle.setFormat(rowsFormat);
             threadBaseHandle.setMimetype(rowsMimeType);
             RowBatchCallable<T> threadCallable = new RowBatchCallable<T>(this, threadHandle);
+            if (i == 0 && consistentSnapshot) {
+                // make the first call synchronously to establish the timestamp
+                readRows(threadCallable);
+            }
             submit(threadCallable);
         }
-
-        super.setJobTicket(ticket);
-        super.setJobStartTime();
-        super.getStarted().set(true);
     }
 
     private boolean readRows(RowBatchCallable<T> callable) {
+        // assumes a batch size of at least 2 to avoid unsigned overflow
         long currentBatch = this.batchNum.incrementAndGet();
+        // submitted before reaching last batch
         if (currentBatch > this.batchCount) {
             endThread();
             return false;
         }
 
-        // assumes a batch size of at least 2 to avoid unsigned overflow
-        boolean isLastBatch = (currentBatch == this.batchCount);
-
         long lowerBound = (currentBatch - 1) * this.batchSize;
-
         String lowerBoundStr = Long.toUnsignedString(lowerBound);
         String upperBoundStr = Long.toUnsignedString(
-                isLastBatch ? MAX_UNSIGNED_LONG : (lowerBound + (this.batchSize - 1))
+                (currentBatch == this.batchCount) ? MAX_UNSIGNED_LONG : (lowerBound + (this.batchSize - 1))
         );
-
-        logger.info("current batch: {}, lower bound: {}, upper bound: {}, last batch: {}",
-                currentBatch, lowerBoundStr, upperBoundStr, isLastBatch);
+        logger.info("current batch: {}, lower bound: {}, upper bound: {}", currentBatch, lowerBoundStr, upperBoundStr);
 
         PlanBuilder.Plan plan = this.pagedPlan
                 .bindParam(LOWER_BOUND, lowerBoundStr)
@@ -422,20 +425,25 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
             Throwable throwable = null;
             T rowsDoc = null;
             try {
-                if (consistentSnapshot == true) {
-                    long snapshotTimestamp = serverTimestamp.get();
-                    if (snapshotTimestamp > -1) {
-                        ((BaseHandle) threadHandle).setServerTimestamp(snapshotTimestamp);
-                    }
+                BaseHandle baseThreadHandle = (BaseHandle) threadHandle;
+                if (consistentSnapshot && baseThreadHandle.getPointInTimeQueryTimestamp() == -1) {
+                  long snapshotTimestamp = serverTimestamp.get();
+                  if (snapshotTimestamp > -1) {
+                    logger.info("Initializing thread snapshot timestamp=[{}]", snapshotTimestamp);
+                    baseThreadHandle.setPointInTimeQueryTimestamp(snapshotTimestamp);
+                  }
                 }
                 if (requestRowMgr.resultDoc(plan, (StructureReadHandle) threadHandle) != null) {
                     rowsDoc = threadHandle.get();
                 }
-                if (consistentSnapshot == true && serverTimestamp.get() == -1) {
-                    if (serverTimestamp.compareAndSet(
-                            -1, ((BaseHandle) threadHandle).getServerTimestamp()
-                    )) {
-                        logger.info("Consistent snapshot timestamp=[{}]", serverTimestamp);
+                if (consistentSnapshot && serverTimestamp.get() == -1) {
+                    long snapshotTimestamp = baseThreadHandle.getServerTimestamp();
+                    if (serverTimestamp.compareAndSet(-1, snapshotTimestamp)) {
+                        logger.info("Established snapshot timestamp=[{}]", snapshotTimestamp);
+                        baseThreadHandle.setPointInTimeQueryTimestamp(snapshotTimestamp);
+                    } else {
+                        logger.info("Correcting thread snapshot timestamp=[{}]", snapshotTimestamp);
+                        baseThreadHandle.setPointInTimeQueryTimestamp(serverTimestamp.get());
                     }
                 }
             } catch(Throwable e) {
@@ -474,20 +482,23 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         if (requestEvent != null && requestEvent.getDisposition() == RowBatchFailureListener.BatchFailureDisposition.STOP) {
             logger.debug("stopped for failed batch: {}", currentBatch);
             this.orderlyStop();
-        } else if (isLastBatch) {
-            logger.debug("last batch: {}", currentBatch);
-            endThread();
         } else {
             logger.debug("finished batch: {}", currentBatch);
-            this.submit(callable);
+            if (this.batchNum.get() >= this.batchCount) {
+                logger.debug("finished thread after batch: {}", currentBatch);
+                endThread();
+            } else {
+                this.submit(callable);
+            }
         }
 
         return (requestEvent == null);
     }
     private boolean shouldRequestBatch(RowBatchFailureEventImpl requestEvent, int batchRetries) {
-        if (batchRetries == 0)      return true; // first request
-        if (requestEvent == null) return false;  // request succeeded
-        // retry request
+        if (batchRetries == 0)        return true;  // first request
+        if (requestEvent == null)     return false; // request succeeded
+        if (super.getStopped().get()) return false; // stopped
+        // whether to retry request
         return (requestEvent.getDisposition() == RowBatchFailureListener.BatchFailureDisposition.RETRY &&
                 batchRetries < requestEvent.getMaxRetries());
     }
