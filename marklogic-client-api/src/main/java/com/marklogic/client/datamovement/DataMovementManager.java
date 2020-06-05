@@ -73,6 +73,13 @@ public interface DataMovementManager {
   public JobTicket startJob(QueryBatcher batcher);
 
   /**
+   * Starts the RowBatcher job.
+   * @param batcher the RowBatcher instance to start
+   * @return a JobTicket which can be used to track the job
+   */
+  JobTicket startJob(RowBatcher batcher);
+
+  /**
    * Get a snapshot report of the state of the job when the call is made.
    * Depends on some pre-installed listeners attached to the job to collect the
    * details.
@@ -189,6 +196,23 @@ public interface DataMovementManager {
   public QueryBatcher newQueryBatcher(Iterator<String> iterator);
 
   /**
+   * Create a new RowBatcher instance to export all of the rows
+   * from a view in batches.
+   *
+   * <p>You pass a sample handle (that is, an adapter for the Java class that
+   * should store a batch of retrieved rows). The handle must implement the
+   * {@link ContentHandle ContentHandle}
+   * and
+   * {@link com.marklogic.client.io.marker.StructureReadHandle StructuredReadHandle}
+   * interfaces.</p>
+   *
+   * @param rowsHandle a sample handle for storing a batch of rows
+   * @param <T> the Java class that stores a batch of retrieved roles
+   * @return the new RowBatcher instance
+   */
+  <T> RowBatcher<T> newRowBatcher(ContentHandle<T> rowsHandle);
+
+  /**
    * Update the ForestConfiguration with the latest from the server.
    *
    * @return the latest ForestConfiguration from the server
@@ -202,9 +226,4 @@ public interface DataMovementManager {
    * @return the connection type
    */
   public DatabaseClient.ConnectionType getConnectionType();
-
-  <T> RowBatcher<T> newRowBatcher(ContentHandle<T> rowsHandle);
-
-  JobTicket startJob(RowBatcher batcher);
-
 }
