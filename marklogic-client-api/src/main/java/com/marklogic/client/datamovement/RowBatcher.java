@@ -66,6 +66,11 @@ import java.util.concurrent.TimeUnit;
  * documents with the initial view. The plan may also project columns from the initial
  * view or create expression columns with a select() operation. </p>
  *
+ * <p>To export different sets of rows for different purposes, construct a view for each
+ * export in the TDE. The export can get the data from the documents instead of from the
+ * index by joining documents in the plan. When joining documents, the view must have one
+ * row per document but may have a single column.</p>
+ *
  * <p>Specify the number of threads for retrieving rows with the
  * {@link RowBatcher#withThreadCount(int) withThreadCount()}
  * method and the number of rows in a batch with the
@@ -79,6 +84,14 @@ import java.util.concurrent.TimeUnit;
  * method to to get the rows in the batch. The rows are returned as an instance of the Java
  * class adapted by the sample handle passed to the factory that constructs the RowBatcher
  * (that is, the generic type of the RowBatcher).</p>
+ *
+ * <pre>{@code
+ *    RowBatcher<String> rowBatcher = ...construct the row batcher...;
+ *    rowBatcher.onSuccess(event -> {
+ *        String rowBatch = event.getRowsDoc();
+ *        ...process the batch of rows...
+ *        });
+ *}</pre>
  *
  * <p>Specify a failure listener to handle any errors during retrieval.</p>
  *
