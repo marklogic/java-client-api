@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.stream.Stream;
 
 import org.apache.http.HttpEntity;
@@ -19,10 +20,11 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.SessionState;
@@ -34,6 +36,11 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
+
+import okhttp3.Credentials;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class ClientApiFunctionalTest extends BasicJavaClientREST {
 	private static String dbName = "TestClientAPIOneDB";
@@ -59,11 +66,19 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 	private static String endPointURI_1 = "/ext/TestE2EIntegerParamReturnDouble/TestE2EIntegerParamReturnDouble";
 	private static String endPointURI_2 = "/ext/TestE2EIntegerParamReturnDouble/TestE2EIntegerParamReturnDoubleErrorCond";
 	private static String endPointURI_3 = "/ext/TestE2EIntegerParamReturnDouble/TestRequiredParam";
-	
+
 	private static String endPointURI_5 = "/ext/TestE2EMultiStringsInStringsOut/TestE2EJsonStringsInStringsOut";
 	private static String endPointURI_6 = "/ext/TestE2EModuleNotFound/TestE2EModuleNotFound";
-	private static String endPointURI_7 = "/ext/TestE2ESession/TestE2ESession";	
-	
+	private static String endPointURI_7 = "/ext/TestE2ESession/TestE2ESession";
+
+	// For testing Open API start
+	// Atomic params in and params out
+	private static String endPointURI_8 = endPointURI_1;
+	private static String endPointURI_9 = "/ext/TestOpenApi/TestOpenApiParamsInDocOut";
+	private static String endPointURI_10 = "/ext/TestOpenApi/TestOpenApiParamInReturnsNone";
+	// Atomic params in and param out with "$javaClass"
+	private static String endPointURI_11 = endPointURI_5;
+	// For testing Open API end
 	@BeforeClass
 	public static void setUp() throws Exception {
 		System.out.println("In setup");
@@ -77,7 +92,7 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		/*if (IsSecurityEnabled())
 			setupJavaRESTServer(dbName, fNames[0], restSslServerName, getRestServerPort());
 		else*/
-			setupJavaRESTServer(dbName, fNames[0], "TestRESTServerOnAPI", restTestport);
+		setupJavaRESTServer(dbName, fNames[0], "TestRESTServerOnAPI", restTestport);
 		createDB(dbName);
 		createForest(fNames[0], dbName);
 
@@ -93,30 +108,30 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		createUserRolesWithPrevilages("ForbiddenRole", "any-uri");
 		createRESTUser("ForbiddenUser", "ap1U53r", "apiRole", "rest-admin", "rest-writer", "rest-reader",
 				"manage-user");
-		SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("apiUser", "ap1U53r"); 
-		dbclient = DatabaseClientFactory.newClient(host, port, secContext, getConnType());		
+		SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("apiUser", "ap1U53r");
+		dbclient = DatabaseClientFactory.newClient(host, port, secContext, getConnType());
 		schemaDBclient = getDatabaseClientOnDatabase(host, modulesPort, dbNameMod, user, "admin",
-				getConnType());	
+				getConnType());
 
 		TextDocumentManager docMgr = schemaDBclient.newTextDocumentManager();
 		File file = new File(
 				"src/test/java/com/marklogic/client/functionaltest/data/api/TestE2EIntegerParamReturnDouble.sjs");
-				
+
 		// create a handle on the content
 		FileHandle handle = new FileHandle(file);
 		DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
 		metadataHandle.getPermissions().add("apiRole", Capability.UPDATE, Capability.READ, Capability.EXECUTE);
-		
+
 		// write the document content
 		docMgr.write(endPointURI_1+".sjs", metadataHandle, handle);
 		file = null;
 		handle = null;
 		file = new File(
-					"src/test/java/com/marklogic/client/functionaltest/data/api/TestE2EIntegerParamReturnDouble.api");
+				"src/test/java/com/marklogic/client/functionaltest/data/api/TestE2EIntegerParamReturnDouble.api");
 		handle = new FileHandle(file);
 		docMgr.write(endPointURI_1+".api", metadataHandle, handle);
 		file = null;
-		handle = null;		
+		handle = null;
 
 		file = new File(
 				"src/test/java/com/marklogic/client/functionaltest/data/api/TestE2EIntegerParamReturnDoubleErrorCond.sjs");
@@ -136,13 +151,13 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		docMgr.write(endPointURI_3+".sjs", metadataHandle, handle);
 		file = null;
 		handle = null;
-		
+
 		file = new File("src/test/java/com/marklogic/client/functionaltest/data/api/TestRequiredParam.api");
 		handle = new FileHandle(file);
 		docMgr.write(endPointURI_3+".api", metadataHandle, handle);
 		file = null;
-		handle = null;		
-		
+		handle = null;
+
 		file = new File("src/test/java/com/marklogic/client/functionaltest/data/api/TestE2EJsonStringsInStringsOut.sjs");
 		handle = new FileHandle(file);
 		docMgr.write(endPointURI_5+".sjs", metadataHandle, handle);
@@ -153,14 +168,14 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		docMgr.write(endPointURI_5+".api", metadataHandle, handle);
 		file = null;
 		handle = null;
-		
+
 		// Do not add the SJS module to DB
 		file = new File("src/test/java/com/marklogic/client/functionaltest/data/api/TestE2EModuleNotFound.api");
 		handle = new FileHandle(file);
 		docMgr.write(endPointURI_6+".api", metadataHandle, handle);
 		file = null;
 		handle = null;
-		
+
 		file = new File("src/test/java/com/marklogic/client/functionaltest/data/api/TestE2ESession.sjs");
 		handle = new FileHandle(file);
 		docMgr.write(endPointURI_7+".sjs", metadataHandle, handle);
@@ -170,16 +185,34 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		handle = new FileHandle(file);
 		docMgr.write(endPointURI_7+".api", metadataHandle, handle);
 		file = null;
-		handle = null;	
-		
-		/*file = new File("src/test/java/com/marklogic/client/functionaltest/data/api/TestE2EJsonDocsInStringsOut.sjs");
+		handle = null;
+
+		// For Open API tests begin. Note - These SJS modules need not or may not produce valid outputs.
+		file = new File("src/test/java/com/marklogic/client/functionaltest/data/api/TestOpenApiParamsInDocOut.sjs");
 		handle = new FileHandle(file);
-		docMgr.write(endPointURI_4, metadataHandle, handle);
+		docMgr.write(endPointURI_9+".sjs", metadataHandle, handle);
 		file = null;
-		handle = null;*/
-		
+		handle = null;
+		file = new File("src/test/java/com/marklogic/client/functionaltest/data/api/TestOpenApiParamsInDocOut.api");
+		handle = new FileHandle(file);
+		docMgr.write(endPointURI_9+".api", metadataHandle, handle);
+		file = null;
+		handle = null;
+
+		file = new File("src/test/java/com/marklogic/client/functionaltest/data/api/TestOpenApiParamsInReturnsNone.sjs");
+		handle = new FileHandle(file);
+		docMgr.write(endPointURI_10+".sjs", metadataHandle, handle);
+		file = null;
+		handle = null;
+		file = new File("src/test/java/com/marklogic/client/functionaltest/data/api/TestOpenApiParamsInReturnsNone.api");
+		handle = new FileHandle(file);
+		docMgr.write(endPointURI_10+".api", metadataHandle, handle);
+		file = null;
+		handle = null;
+		// For Open API tests end
+
 	}
-	
+
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down");
@@ -204,7 +237,7 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 			client.getCredentialsProvider().setCredentials(new AuthScope(host, getAdminPort()),
 					new UsernamePasswordCredentials("admin", "admin"));
 			HttpPost post = new HttpPost("http://" + host + ":" + admin_port
-					+ "/manage/v2/servers?group-id=Default&server-type=http&format=json");		
+					+ "/manage/v2/servers?group-id=Default&server-type=http&format=json");
 			String JSONString = "{\"server-name\":\"" + serverName + "\",\"port\":\"" + port + "\"," + "\"root\":\"/\""
 					+ ", \"content-database\":\"" + dbName + "\"," + "\"modules-database\":\"" + dbNameMod + "\"" + "}";
 
@@ -345,7 +378,7 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		System.out.println("Running TestE2EUnAuthorizedUser");
 		associateRESTServerWithDefaultUser(serverName, "security", "digest");
 		SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("ForbiddenUser", "ap1U53r");
-		DatabaseClient dbForbiddenclient = DatabaseClientFactory.newClient(host, port, secContext, getConnType()); 				
+		DatabaseClient dbForbiddenclient = DatabaseClientFactory.newClient(host, port, secContext, getConnType());
 		String msg;
 		try {
 			Float responseBack1 = TestE2EIntegerParaReturnDouble.on(dbForbiddenclient).TestE2EItemPriceErrorCond(10, 50);
@@ -360,7 +393,7 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 			associateRESTServerWithDefaultUser(serverName, "nobody", "digest");
 		}
 	}
-	
+
 	// No module installed for test.
 	@Test
 	public void TestE2EModuleNotFound() throws Exception {
@@ -441,7 +474,7 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		}
 	}
 
-	// Test users with invalid roles	
+	// Test users with invalid roles
 	@Test
 	public void TestE2EuserWithInvalidRole() throws Exception {
 		// Used this test to verify ResourceNotFoundException when sjs module is installed with incorrect doc URI
@@ -460,10 +493,10 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 			assertTrue("Expected exception returned", msg.contains(
 					"Could not POST at /ext/TestE2EIntegerParaReturnDouble/TestE2EIntegerParamReturnDoubleErrorCond.sjs"));
 		} finally {
-		
+
 		}
 	}
-	
+
 	// This test requires TestE2EJsonDocsInStringsOut.api Fn Decl file
 	@Test
 	public void TestE2EJsonDocsInStringsOut() throws Exception {
@@ -479,21 +512,21 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		String s1 = "Vannevar Bush wrote an article for The Atlantic Monthly";
 		String s2 = "Lisa wrote an article for The Strait Times";
 
-		Stream<String> inputFiles = Stream.of(s1,s2);	
+		Stream<String> inputFiles = Stream.of(s1,s2);
 
 		Stream<java.lang.String> uris = Stream.of(filenames);
 		Stream<java.lang.String> searchItem =  Stream.of("Bush");
 
-		try {				
+		try {
 			outputStrSeq = TestE2EMultipleStringsInMultipleStringsout.on(dbclient).stringsInAndStringOutAsArray(inputFiles, uris, searchItem);
 			System.out.println("outputStrSeq " + outputStrSeq.toString());
 			assertTrue("Correct URI not returned", outputStrSeq.get(0).asText().contains("constraint1.json"));;
 		} catch (Exception ex) {
 			msg = ex.toString();
-			System.out.println("Exception response from the Client API call is " + ex.toString());				
+			System.out.println("Exception response from the Client API call is " + ex.toString());
 		}
 	}
-	
+
 	// Tests API calls with session data-type.
 	@Test
 	public void TestE2ESessions() throws Exception {
@@ -514,7 +547,7 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 			Thread.sleep(5000);
 			SessionState apiSession3 = TestE2ESession.on(dbclient).newSessionState();
 			TestE2ESession.on(dbclient).SessionChecks(apiSession3, "/session3.json", "{\"value\":\"Checking sessions 3\"}");
-			
+
 		} catch (Exception ex) {
 			System.out.println("Exception - session2.json / session3.json - Client API call is " + ex.toString());
 		}
@@ -522,13 +555,13 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		DatabaseClient dbclientRest = DatabaseClientFactory.newClient(host, restTestport, secContext, getConnType());
 		this.waitForPropertyPropagate();
 		JSONDocumentManager docMgr = dbclientRest.newJSONDocumentManager();
-		 JacksonHandle jh = new JacksonHandle();
-	    // Validate the content
-	    docMgr.read("/session1.json", jh);
-	    String nodeStr = jh.get().get("value").asText();
-	    System.out.println("JacksonHandle 1: " + jh.toString());
+		JacksonHandle jh = new JacksonHandle();
+		// Validate the content
+		docMgr.read("/session1.json", jh);
+		String nodeStr = jh.get().get("value").asText();
+		System.out.println("JacksonHandle 1: " + jh.toString());
 		assertTrue("Server module returned false. session1.json not inserted? See Logs", nodeStr.contains("Checking first sessions") );
-		
+
 		// Try multiple calls sequentially - same session
 		try {
 			SessionState apiSession4 = TestE2ESession.on(dbclient).newSessionState();
@@ -549,7 +582,7 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		System.out.println("JacksonHandle 5 " + jh.toString());
 		assertTrue("Server module returned false. session5.json not inserted? See Logs",
 				nodeStr.contains("Checking sessions 5"));
-		
+
 		// Use null session
 		try {
 			TestE2ESession.on(dbclient).SessionChecks(null, "/session6.json",
@@ -561,17 +594,17 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 			assertTrue("Exception incorrect - when sessions is null",msg.contains("RequiredParamException"));
 			assertTrue("Exception incorrect - when sessions is null",msg.contains("null value for required session parameter: api_session"));
 		}
-		
+
 		// Use session with cleared cookies
-		SessionState apiSession7 = TestE2ESession.on(dbclient).newSessionState();				
-		
-		try {			
+		SessionState apiSession7 = TestE2ESession.on(dbclient).newSessionState();
+
+		try {
 			TestE2ESession.on(dbclient).SessionChecks(apiSession7, "/session7.json",
 					"{\"value\":\"Checking sessions 7\"}");
 
 		} catch (Exception ex) {
 			String msg = ex.toString();
-			System.out.println("Exception - session6.json - Client API call is " + msg);		
+			System.out.println("Exception - session6.json - Client API call is " + msg);
 		}
 		jh = new JacksonHandle();
 		nodeStr = null;
@@ -581,8 +614,164 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		assertTrue("Server module returned false. session7.json not inserted? See Logs",
 				nodeStr.contains("Checking sessions 7"));
 	}
+
+	//Test Open API docs for Param In and Param Out
+	@Test
+	public void TestOpenApiParamInParamOut() throws Exception {
+		System.out.println("Running TestOpenApiParamInParamOut");
+
+		OkHttpClient OpenAPIClient = (OkHttpClient) dbclient.getClientImplementation();
+
+		String url = "http://" + host+ ":" + restTestport + endPointURI_8 + ".sjs";
+
+		String credential = Credentials.basic("admin", "admin");
+
+		Request.Builder requestBuilder = new Request.Builder()
+				.addHeader("Accept", "application/vnd.oai.openapi+json")
+				.addHeader("Authorization", credential)
+				.url(url);
+
+		Request request = requestBuilder.header("Authorization", credential)
+				.build();
+		Response response = OpenAPIClient.newCall(request).execute();
+		if (!response.isSuccessful())
+			throw new IOException("Unexpected code " + response);
+		String respStr = response.body().string();
+		ObjectMapper mapper = new ObjectMapper();
+
+		JsonNode jsNode = mapper.readTree(respStr);
+		System.out.println(respStr);
+
+		assertTrue("OpenAPI response in TestOpenApiParamInParamOut incorrect", jsNode.path("openapi").asText().contains("3.0.0"));
+		assertTrue("OpenAPI response in TestOpenApiParamInParamOut incorrect", jsNode.path("info").path("title").asText().contains("TestE2EIntegerParamReturnDouble.sjs services"));
+	}
+
+	//Test Open API docs for Param In and doc Out
+	@Test
+	public void TestOpenApiParamInDocOut() throws Exception {
+		System.out.println("Running TestOpenApiParamInDocOut");
+
+		OkHttpClient OpenAPIClient = (OkHttpClient) dbclient.getClientImplementation();
+
+		String url = "http://" + host+ ":" + restTestport + endPointURI_9 + ".sjs";
+
+		String credential = Credentials.basic("admin", "admin");
+
+		Request.Builder requestBuilder = new Request.Builder()
+				.addHeader("Accept", "application/vnd.oai.openapi+json")
+				.addHeader("Authorization", credential)
+				.url(url);
+
+		Request request = requestBuilder.header("Authorization", credential)
+				.build();
+		Response response = OpenAPIClient.newCall(request).execute();
+		if (!response.isSuccessful())
+			throw new IOException("Unexpected code " + response);
+		String respStr = response.body().string();
+		ObjectMapper mapper = new ObjectMapper();
+
+		JsonNode jsNode = mapper.readTree(respStr);
+		System.out.println(respStr);
+
+		assertTrue("OpenAPI response in TestOpenApiParamInDocOut incorrect", jsNode.path("openapi").asText().contains("3.0.0"));
+		assertTrue("OpenAPI response in TestOpenApiParamInDocOut incorrect", jsNode.path("info").path("title").asText().contains("TestOpenApiParamsInDocOut.sjs services"));
+	}
+
+	//Test Open API docs for Param In and returns none from module function
+	@Test
+	public void TestOpenApiParamInReturnsNone() throws Exception {
+		System.out.println("Running TestOpenApiParamInReturnsNone");
+
+		OkHttpClient OpenAPIClient = (OkHttpClient) dbclient.getClientImplementation();
+
+		String url = "http://" + host+ ":" + restTestport + endPointURI_10 + ".sjs";
+
+		String credential = Credentials.basic("admin", "admin");
+
+		Request.Builder requestBuilder = new Request.Builder()
+				.addHeader("Accept", "application/vnd.oai.openapi+json")
+				.addHeader("Authorization", credential)
+				.url(url);
+
+		Request request = requestBuilder.header("Authorization", credential)
+				.build();
+		Response response = OpenAPIClient.newCall(request).execute();
+		if (!response.isSuccessful())
+			throw new IOException("Unexpected code " + response);
+		String respStr = response.body().string();
+		ObjectMapper mapper = new ObjectMapper();
+
+		JsonNode jsNode = mapper.readTree(respStr);
+		System.out.println(respStr);
+
+		assertTrue("OpenAPI response in TestOpenApiParamInReturnsNone incorrect", jsNode.path("openapi").asText().contains("3.0.0"));
+		assertTrue("OpenAPI response in TestOpenApiParamInReturnsNone incorrect", jsNode.path("info").path("title").asText().contains("TestOpenApiParamInReturnsNone.sjs services"));
+	}
+
+	//Test Open API docs for Param In and returns "$javaClass" from module function
+	@Test
+	public void TestOpenApiParamInReturnsJavaClass() throws Exception {
+		System.out.println("Running TestOpenApiParamInReturnsJavaClass");
+
+		OkHttpClient OpenAPIClient = (OkHttpClient) dbclient.getClientImplementation();
+
+		String url = "http://" + host+ ":" + restTestport + endPointURI_11 + ".sjs";
+
+		String credential = Credentials.basic("admin", "admin");
+
+		Request.Builder requestBuilder = new Request.Builder()
+				.addHeader("Accept", "application/vnd.oai.openapi+json")
+				.addHeader("Authorization", credential)
+				.url(url);
+
+		Request request = requestBuilder.header("Authorization", credential)
+				.build();
+		Response response = OpenAPIClient.newCall(request).execute();
+		if (!response.isSuccessful())
+			throw new IOException("Unexpected code " + response);
+		String respStr = response.body().string();
+		ObjectMapper mapper = new ObjectMapper();
+
+		JsonNode jsNode = mapper.readTree(respStr);
+		System.out.println(respStr);
+
+		assertTrue("OpenAPI response in TestOpenApiParamInReturnsJavaClass incorrect", jsNode.path("openapi").asText().contains("3.0.0"));
+		assertTrue("OpenAPI response in TestOpenApiParamInReturnsJavaClass incorrect", jsNode.path("info").path("title").asText().contains("TestE2EJsonStringsInStringsOut.sjs services"));
+	}
+
+	//Test Open API docs for directory
+	@Test
+	public void TestOpenApiDirectory() throws Exception {
+		System.out.println("Running TestOpenApiDirectory");
+
+		OkHttpClient OpenAPIClient = (OkHttpClient) dbclient.getClientImplementation();
+
+		String url = "http://" + host+ ":" + restTestport + "/ext/TestOpenApi/";
+
+		String credential = Credentials.basic("admin", "admin");
+
+		Request.Builder requestBuilder = new Request.Builder()
+				.addHeader("Accept", "application/vnd.oai.openapi+json")
+				.addHeader("Authorization", credential)
+				.url(url);
+
+		Request request = requestBuilder.header("Authorization", credential)
+				.build();
+		Response response = OpenAPIClient.newCall(request).execute();
+		if (!response.isSuccessful())
+			throw new IOException("Unexpected code " + response);
+		String respStr = response.body().string();
+		ObjectMapper mapper = new ObjectMapper();
+
+		JsonNode jsNode = mapper.readTree(respStr);
+		System.out.println(respStr);
+
+		assertTrue("OpenAPI response in TestOpenApiDirectory incorrect", jsNode.path("openapi").asText().contains("3.0.0"));
+		assertTrue("OpenAPI response in TestOpenApiDirectory incorrect", jsNode.path("info").path("title").asText().contains("/ext/TestOpenApi services"));
+	}
+
 // TODO Tests API calls to multiple endpoints with same DBClient and different client
-	
+
 	public static void modifyConcurrentUsersOnHttpServer(String restServerName, int numberOfUsers) throws Exception {
 		DefaultHttpClient client = new DefaultHttpClient();
 		client.getCredentialsProvider().setCredentials(new AuthScope(host, getAdminPort()),
@@ -603,101 +792,101 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		client.getConnectionManager().shutdown();
 	}
 }
-	
+
 /**
  * Provides a set of operations on the database server
  */
 interface TestE2EIntegerParaReturnDouble {
-    /**
-     * Creates a TestE2EIntegerParaReturnDouble object for executing operations on the database server.
-     *
-     * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
-     * client object can be used for any number of requests and in multiple threads.
-     *
-     * @param db	provides a client for communicating with the database server
-     * @return	an object for session state
-     */
-    static TestE2EIntegerParaReturnDouble on(DatabaseClient db) {
-        final class TestE2EIntegerParaReturnDoubleImpl implements TestE2EIntegerParaReturnDouble {
-            private BaseProxy baseProxy;
+	/**
+	 * Creates a TestE2EIntegerParaReturnDouble object for executing operations on the database server.
+	 *
+	 * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
+	 * client object can be used for any number of requests and in multiple threads.
+	 *
+	 * @param db	provides a client for communicating with the database server
+	 * @return	an object for session state
+	 */
+	static TestE2EIntegerParaReturnDouble on(DatabaseClient db) {
+		final class TestE2EIntegerParaReturnDoubleImpl implements TestE2EIntegerParaReturnDouble {
+			private BaseProxy baseProxy;
 
-            private TestE2EIntegerParaReturnDoubleImpl(DatabaseClient dbClient) {
-                baseProxy = new BaseProxy(dbClient, "/ext/TestE2EIntegerParamReturnDouble/");
-            }
+			private TestE2EIntegerParaReturnDoubleImpl(DatabaseClient dbClient) {
+				baseProxy = new BaseProxy(dbClient, "/ext/TestE2EIntegerParamReturnDouble/");
+			}
 
-            @Override
-            public Double TestE2EItemPrice(Integer itemId) {
-              return BaseProxy.DoubleType.toDouble(
-                baseProxy
-                .request("TestE2EIntegerParamReturnDouble.sjs", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC)
-                .withSession()
-                .withParams(
-                    BaseProxy.atomicParam("itemId", true, BaseProxy.IntegerType.fromInteger(itemId)))
-                .withMethod("POST")
-                .responseSingle(true, null)
-                );
-            }
-
-
-            @Override
-            public java.lang.Float TestE2EItemPriceErrorCond(Integer items, java.lang.Integer price) {
-              return BaseProxy.FloatType.toFloat(
-                baseProxy
-                .request("TestE2EIntegerParamReturnDoubleErrorCond.sjs", BaseProxy.ParameterValuesKind.MULTIPLE_ATOMICS)
-                .withSession()
-                .withParams(
-                    BaseProxy.atomicParam("items", true, BaseProxy.IntegerType.fromInteger(items)),
-                    BaseProxy.atomicParam("price", true, BaseProxy.IntegerType.fromInteger(price)))
-                .withMethod("POST")
-                .responseSingle(true, null)
-                );
-            }
+			@Override
+			public Double TestE2EItemPrice(Integer itemId) {
+				return BaseProxy.DoubleType.toDouble(
+						baseProxy
+								.request("TestE2EIntegerParamReturnDouble.sjs", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC)
+								.withSession()
+								.withParams(
+										BaseProxy.atomicParam("itemId", true, BaseProxy.IntegerType.fromInteger(itemId)))
+								.withMethod("POST")
+								.responseSingle(true, null)
+				);
+			}
 
 
-            @Override
-            public java.lang.Float TestE2ERequiredParam(Integer items, java.lang.Integer price) {
-              return BaseProxy.FloatType.toFloat(
-                baseProxy
-                .request("TestRequiredParam.sjs", BaseProxy.ParameterValuesKind.MULTIPLE_ATOMICS)
-                .withSession()
-                .withParams(
-                    BaseProxy.atomicParam("items", false, BaseProxy.IntegerType.fromInteger(items)),
-                    BaseProxy.atomicParam("price", false, BaseProxy.IntegerType.fromInteger(price)))
-                .withMethod("POST")
-                .responseSingle(true, null)
-                );
-            }
+			@Override
+			public java.lang.Float TestE2EItemPriceErrorCond(Integer items, java.lang.Integer price) {
+				return BaseProxy.FloatType.toFloat(
+						baseProxy
+								.request("TestE2EIntegerParamReturnDoubleErrorCond.sjs", BaseProxy.ParameterValuesKind.MULTIPLE_ATOMICS)
+								.withSession()
+								.withParams(
+										BaseProxy.atomicParam("items", true, BaseProxy.IntegerType.fromInteger(items)),
+										BaseProxy.atomicParam("price", true, BaseProxy.IntegerType.fromInteger(price)))
+								.withMethod("POST")
+								.responseSingle(true, null)
+				);
+			}
 
-        }
 
-        return new TestE2EIntegerParaReturnDoubleImpl(db);
-    }
+			@Override
+			public java.lang.Float TestE2ERequiredParam(Integer items, java.lang.Integer price) {
+				return BaseProxy.FloatType.toFloat(
+						baseProxy
+								.request("TestRequiredParam.sjs", BaseProxy.ParameterValuesKind.MULTIPLE_ATOMICS)
+								.withSession()
+								.withParams(
+										BaseProxy.atomicParam("items", false, BaseProxy.IntegerType.fromInteger(items)),
+										BaseProxy.atomicParam("price", false, BaseProxy.IntegerType.fromInteger(price)))
+								.withMethod("POST")
+								.responseSingle(true, null)
+				);
+			}
 
-  /**
-   * Invokes the TestE2EItemPrice operation on the database server
-   *
-   * @param itemId	provides input
-   * @return	as output
-   */
-    Double TestE2EItemPrice(Integer itemId);
+		}
 
-  /**
-   * Invokes the TestE2EItemPriceErrorCond operation on the database server
-   *
-   * @param items	provides input
-   * @param price	provides input
-   * @return	as output
-   */
-    java.lang.Float TestE2EItemPriceErrorCond(Integer items, java.lang.Integer price);
+		return new TestE2EIntegerParaReturnDoubleImpl(db);
+	}
 
-  /**
-   * Invokes the TestE2ERequiredParam operation on the database server
-   *
-   * @param items	provides input
-   * @param price	provides input
-   * @return	as output
-   */
-    java.lang.Float TestE2ERequiredParam(Integer items, java.lang.Integer price);
+	/**
+	 * Invokes the TestE2EItemPrice operation on the database server
+	 *
+	 * @param itemId	provides input
+	 * @return	as output
+	 */
+	Double TestE2EItemPrice(Integer itemId);
+
+	/**
+	 * Invokes the TestE2EItemPriceErrorCond operation on the database server
+	 *
+	 * @param items	provides input
+	 * @param price	provides input
+	 * @return	as output
+	 */
+	java.lang.Float TestE2EItemPriceErrorCond(Integer items, java.lang.Integer price);
+
+	/**
+	 * Invokes the TestE2ERequiredParam operation on the database server
+	 *
+	 * @param items	provides input
+	 * @param price	provides input
+	 * @return	as output
+	 */
+	java.lang.Float TestE2ERequiredParam(Integer items, java.lang.Integer price);
 
 }
 
@@ -705,52 +894,52 @@ interface TestE2EIntegerParaReturnDouble {
  *  This class verifies the stream of Json documents written into DB and accepts a string query. REturns URIs
  */
 interface TestE2EMultipleStringsInMultipleStringsout {
-    /**
-     * Creates a TestE2EMultipleStringsInMultipleStringsout object for executing operations on the database server.
-     *
-     * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
-     * client object can be used for any number of requests and in multiple threads.
-     *
-     * @param db	provides a client for communicating with the database server
-     * @return	an object for session state
-     */
-    static TestE2EMultipleStringsInMultipleStringsout on(DatabaseClient db) {
-        final class TestE2EMultipleStringsInMultipleStringsoutImpl implements TestE2EMultipleStringsInMultipleStringsout {
-            private BaseProxy baseProxy;
+	/**
+	 * Creates a TestE2EMultipleStringsInMultipleStringsout object for executing operations on the database server.
+	 *
+	 * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
+	 * client object can be used for any number of requests and in multiple threads.
+	 *
+	 * @param db	provides a client for communicating with the database server
+	 * @return	an object for session state
+	 */
+	static TestE2EMultipleStringsInMultipleStringsout on(DatabaseClient db) {
+		final class TestE2EMultipleStringsInMultipleStringsoutImpl implements TestE2EMultipleStringsInMultipleStringsout {
+			private BaseProxy baseProxy;
 
-            private TestE2EMultipleStringsInMultipleStringsoutImpl(DatabaseClient dbClient) {
-                baseProxy = new BaseProxy(dbClient, "/ext/TestE2EMultiStringsInStringsOut/");
-            }
+			private TestE2EMultipleStringsInMultipleStringsoutImpl(DatabaseClient dbClient) {
+				baseProxy = new BaseProxy(dbClient, "/ext/TestE2EMultiStringsInStringsOut/");
+			}
 
-            @Override
-            public com.fasterxml.jackson.databind.node.ArrayNode stringsInAndStringOutAsArray(Stream<String> inputFiles, Stream<String> uris, Stream<String> searchItem) {
-              return BaseProxy.ArrayType.toArrayNode(
-                baseProxy
-                .request("TestE2EJsonStringsInStringsOut.sjs", BaseProxy.ParameterValuesKind.MULTIPLE_ATOMICS)
-                .withSession()
-                .withParams(
-                    BaseProxy.atomicParam("inputFiles", false, BaseProxy.StringType.fromString(inputFiles)),
-                    BaseProxy.atomicParam("uris", false, BaseProxy.StringType.fromString(uris)),
-                    BaseProxy.atomicParam("searchItem", false, BaseProxy.StringType.fromString(searchItem)))
-                .withMethod("POST")
-                .responseSingle(false, Format.JSON)
-                );
-            }
+			@Override
+			public com.fasterxml.jackson.databind.node.ArrayNode stringsInAndStringOutAsArray(Stream<String> inputFiles, Stream<String> uris, Stream<String> searchItem) {
+				return BaseProxy.ArrayType.toArrayNode(
+						baseProxy
+								.request("TestE2EJsonStringsInStringsOut.sjs", BaseProxy.ParameterValuesKind.MULTIPLE_ATOMICS)
+								.withSession()
+								.withParams(
+										BaseProxy.atomicParam("inputFiles", false, BaseProxy.StringType.fromString(inputFiles)),
+										BaseProxy.atomicParam("uris", false, BaseProxy.StringType.fromString(uris)),
+										BaseProxy.atomicParam("searchItem", false, BaseProxy.StringType.fromString(searchItem)))
+								.withMethod("POST")
+								.responseSingle(false, Format.JSON)
+				);
+			}
 
-        }
+		}
 
-        return new TestE2EMultipleStringsInMultipleStringsoutImpl(db);
-    }
+		return new TestE2EMultipleStringsInMultipleStringsoutImpl(db);
+	}
 
-  /**
-   * Invokes the stringsInAndStringOutAsArray operation on the database server
-   *
-   * @param inputFiles	A sequence of strings that need to be written to Database
-   * @param uris	A sequence of document uris for docs written to Database
-   * @param searchItem	Search string with 1 word or multiples
-   * @return	Module to return array of doc Ids
-   */
-    com.fasterxml.jackson.databind.node.ArrayNode stringsInAndStringOutAsArray(Stream<String> inputFiles, Stream<String> uris, Stream<String> searchItem);
+	/**
+	 * Invokes the stringsInAndStringOutAsArray operation on the database server
+	 *
+	 * @param inputFiles	A sequence of strings that need to be written to Database
+	 * @param uris	A sequence of document uris for docs written to Database
+	 * @param searchItem	Search string with 1 word or multiples
+	 * @return	Module to return array of doc Ids
+	 */
+	com.fasterxml.jackson.databind.node.ArrayNode stringsInAndStringOutAsArray(Stream<String> inputFiles, Stream<String> uris, Stream<String> searchItem);
 
 }
 
@@ -759,49 +948,49 @@ interface TestE2EMultipleStringsInMultipleStringsout {
  */
 interface TestE2EModuleNotFound {
 	/**
-     * Creates a TestE2EModuleNotFound object for executing operations on the database server.
-     *
-     * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
-     * client object can be used for any number of requests and in multiple threads.
-     *
-     * @param db	provides a client for communicating with the database server
-     * @return	an object for session state
-     */
-    static TestE2EModuleNotFound on(DatabaseClient db) {
-        final class TestE2EModuleNotFoundImpl implements TestE2EModuleNotFound {
-            private BaseProxy baseProxy;
+	 * Creates a TestE2EModuleNotFound object for executing operations on the database server.
+	 *
+	 * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
+	 * client object can be used for any number of requests and in multiple threads.
+	 *
+	 * @param db	provides a client for communicating with the database server
+	 * @return	an object for session state
+	 */
+	static TestE2EModuleNotFound on(DatabaseClient db) {
+		final class TestE2EModuleNotFoundImpl implements TestE2EModuleNotFound {
+			private BaseProxy baseProxy;
 
-            private TestE2EModuleNotFoundImpl(DatabaseClient dbClient) {
-                baseProxy = new BaseProxy(dbClient, "/ext/TestE2EModuleNotFound/");
-            }
+			private TestE2EModuleNotFoundImpl(DatabaseClient dbClient) {
+				baseProxy = new BaseProxy(dbClient, "/ext/TestE2EModuleNotFound/");
+			}
 
-            @Override
-            public java.lang.String ModuleNotFound(String count, String starttime) {
-              return BaseProxy.TextDocumentType.toString(
-                baseProxy
-                .request("TestE2EModuleNotFound.sjs", BaseProxy.ParameterValuesKind.MULTIPLE_ATOMICS)
-                .withSession()
-                .withParams(
-                    BaseProxy.atomicParam("count", false, BaseProxy.DecimalType.fromString(count)),
-                    BaseProxy.atomicParam("starttime", false, BaseProxy.TimeType.fromString(starttime)))
-                .withMethod("POST")
-                .responseSingle(false, Format.TEXT)
-                );
-            }
+			@Override
+			public java.lang.String ModuleNotFound(String count, String starttime) {
+				return BaseProxy.TextDocumentType.toString(
+						baseProxy
+								.request("TestE2EModuleNotFound.sjs", BaseProxy.ParameterValuesKind.MULTIPLE_ATOMICS)
+								.withSession()
+								.withParams(
+										BaseProxy.atomicParam("count", false, BaseProxy.DecimalType.fromString(count)),
+										BaseProxy.atomicParam("starttime", false, BaseProxy.TimeType.fromString(starttime)))
+								.withMethod("POST")
+								.responseSingle(false, Format.TEXT)
+				);
+			}
 
-        }
+		}
 
-        return new TestE2EModuleNotFoundImpl(db);
-    }
+		return new TestE2EModuleNotFoundImpl(db);
+	}
 
-  /**
-   * Invokes the ModuleNotFound operation on the database server
-   *
-   * @param count	Big Decimal numbers
-   * @param starttime	Java Local time
-   * @return	Module to return text document
-   */
-    java.lang.String ModuleNotFound(String count, String starttime);
+	/**
+	 * Invokes the ModuleNotFound operation on the database server
+	 *
+	 * @param count	Big Decimal numbers
+	 * @param starttime	Java Local time
+	 * @return	Module to return text document
+	 */
+	java.lang.String ModuleNotFound(String count, String starttime);
 
 }
 
@@ -809,59 +998,59 @@ interface TestE2EModuleNotFound {
  * This class verifies the sessions
  */
 interface TestE2ESession {
-	 /**
-     * Creates a TestE2ESession object for executing operations on the database server.
-     *
-     * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
-     * client object can be used for any number of requests and in multiple threads.
-     *
-     * @param db	provides a client for communicating with the database server
-     * @return	an object for session state
-     */
-    static TestE2ESession on(DatabaseClient db) {
-        final class TestE2ESessionImpl implements TestE2ESession {
-            private BaseProxy baseProxy;
+	/**
+	 * Creates a TestE2ESession object for executing operations on the database server.
+	 *
+	 * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
+	 * client object can be used for any number of requests and in multiple threads.
+	 *
+	 * @param db	provides a client for communicating with the database server
+	 * @return	an object for session state
+	 */
+	static TestE2ESession on(DatabaseClient db) {
+		final class TestE2ESessionImpl implements TestE2ESession {
+			private BaseProxy baseProxy;
 
-            private TestE2ESessionImpl(DatabaseClient dbClient) {
-                baseProxy = new BaseProxy(dbClient, "/ext/TestE2ESession/");
-            }
-            @Override
-            public SessionState newSessionState() {
-              return baseProxy.newSessionState();
-            }
+			private TestE2ESessionImpl(DatabaseClient dbClient) {
+				baseProxy = new BaseProxy(dbClient, "/ext/TestE2ESession/");
+			}
+			@Override
+			public SessionState newSessionState() {
+				return baseProxy.newSessionState();
+			}
 
-            @Override
-            public void SessionChecks(SessionState api_session, String uri, String content) {
-              baseProxy
-                .request("TestE2ESession.sjs", BaseProxy.ParameterValuesKind.MULTIPLE_ATOMICS)
-                .withSession("api_session", api_session, false)
-                .withParams(
-                    BaseProxy.atomicParam("uri", false, BaseProxy.StringType.fromString(uri)),
-                    BaseProxy.atomicParam("content", false, BaseProxy.StringType.fromString(content)))
-                .withMethod("POST")
-                .responseNone();
-            }
+			@Override
+			public void SessionChecks(SessionState api_session, String uri, String content) {
+				baseProxy
+						.request("TestE2ESession.sjs", BaseProxy.ParameterValuesKind.MULTIPLE_ATOMICS)
+						.withSession("api_session", api_session, false)
+						.withParams(
+								BaseProxy.atomicParam("uri", false, BaseProxy.StringType.fromString(uri)),
+								BaseProxy.atomicParam("content", false, BaseProxy.StringType.fromString(content)))
+						.withMethod("POST")
+						.responseNone();
+			}
 
-        }
+		}
 
-        return new TestE2ESessionImpl(db);
-    }
-    /**
-     * Creates an object to track a session for a set of operations
-     * that require session state on the database server.
-     *
-     * @return	an object for session state
-     */
-    SessionState newSessionState();
+		return new TestE2ESessionImpl(db);
+	}
+	/**
+	 * Creates an object to track a session for a set of operations
+	 * that require session state on the database server.
+	 *
+	 * @return	an object for session state
+	 */
+	SessionState newSessionState();
 
-  /**
-   * Invokes the SessionChecks operation on the database server
-   *
-   * @param api_session	Holds the session object
-   * @param uri	Doc Id of the inserted document
-   * @param content	Doc contents of the inserted document
-   * 
-   */
-    void SessionChecks(SessionState api_session, String uri, String content);
+	/**
+	 * Invokes the SessionChecks operation on the database server
+	 *
+	 * @param api_session	Holds the session object
+	 * @param uri	Doc Id of the inserted document
+	 * @param content	Doc contents of the inserted document
+	 *
+	 */
+	void SessionChecks(SessionState api_session, String uri, String content);
 
 }

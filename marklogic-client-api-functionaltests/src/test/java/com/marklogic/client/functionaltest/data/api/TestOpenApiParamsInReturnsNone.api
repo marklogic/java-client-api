@@ -1,0 +1,15 @@
+{
+  "functionName" : "OpenApiItemInv",
+ "params" : [ {
+    "name" : "itemId",
+    "datatype" : "int",
+    "multiple" : false,
+    "nullable" : true
+  },
+  {
+    "name" : "itemName",
+    "datatype" : "string",
+    "multiple" : false,
+    "nullable" : true
+  }  ]
+}

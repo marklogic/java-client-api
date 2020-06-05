@@ -1,0 +1,19 @@
+{
+  "functionName" : "OpenApidocOut",
+  "params" : [
+  {
+    "name" : "uri",
+    "datatype" : "string",
+    "multiple" : true,
+    "nullable" : false,
+    "desc" : "A document uri for doc written to Database"    
+  }
+  ],
+  "return" : {
+    "desc" : "Module to return a doc",
+	"datatype" : "jsonDocument",
+    "multiple" : false,
+    "nullable" : false
+	
+	}
+}
