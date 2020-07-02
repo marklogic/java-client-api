@@ -16,9 +16,12 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class BulkIOOutputCallerTest {
@@ -27,7 +30,7 @@ public class BulkIOOutputCallerTest {
     static String scriptPath;
     static String apiPath;
     static JSONDocumentManager docMgr;
-    static List<String> list = new ArrayList<>();
+    static Set<String> expected = new HashSet<>();
 
     private static String collectionName_1 = "bulkOutputTest_1";
     private static String collectionName_2 = "bulkOutputTest_2";
@@ -61,21 +64,28 @@ public class BulkIOOutputCallerTest {
                 .withEndpointState(new ByteArrayInputStream(endpointState1.getBytes()))
                 .withWorkUnit(new ByteArrayInputStream(workUnit1.getBytes()))};
         OutputEndpoint.BulkOutputCaller bulkCaller = endpoint.bulkCaller(callContextArray);
-        class Output {
-            int counter =0;
-        }
-        Output output = new Output();
-        bulkCaller.setOutputListener(i-> {
+        Set<String> actual = new ConcurrentSkipListSet<>();
+        final AtomicBoolean duplicated = new AtomicBoolean(false);
+        final AtomicBoolean exceptional = new AtomicBoolean(false);
+        bulkCaller.setOutputListener(output -> {
             try {
-                assertTrue(list.contains(IOTestUtil.mapper.readValue(i, ObjectNode.class).toString()));
-                output.counter++;
+                String serialized = IOTestUtil.mapper.readValue(output, ObjectNode.class).toString();
+                if (actual.contains(serialized)) {
+                    duplicated.compareAndSet(false, true);
+                } else {
+                    actual.add(serialized);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
+                exceptional.compareAndSet(false, true);
             }
         });
 
         bulkCaller.awaitCompletion();
-        assertTrue(output.counter == 20);
+        assertEquals("exceptions on calls", false, exceptional.get());
+        assertEquals("duplicate output", false, duplicated.get());
+        assertEquals("unexpected output count", expected.size(), actual.size());
+        assertEquals("unexpected output values", expected, actual);
     }
 
     @AfterClass
@@ -97,7 +107,7 @@ public class BulkIOOutputCallerTest {
         for(int i=startCount;i<endCount;i++) {
             StringHandle data = new StringHandle("{\"docNum\":"+i+",\"docName\":\"doc"+i+"\"}");
             manager.write("/test/"+collection+"/"+i+".json", metadata, data);
-            list.add(data.toString());
+            expected.add(data.toString());
         }
     }
 }
