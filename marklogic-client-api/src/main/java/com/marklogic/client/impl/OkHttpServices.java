@@ -3049,15 +3049,27 @@ public class OkHttpServices implements RESTServices {
   }
 
   @Override
-  public <R extends UrisReadHandle> R uris(RequestLogger reqlog, Transaction transaction,
-        QueryDefinition qdef, long start, String afterUri, long pageLength, String forestName, R output)
-    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
-  {
-    RequestParameters params = new RequestParameters();
-    if ( forestName != null )        params.add("forest-name", forestName);
-    if (start > 1)                   params.add("start",       Long.toString(start));
-    if (afterUri != null )           params.add("after",       afterUri);
-    if (pageLength >= 1)             params.add("pageLength",  Long.toString(pageLength));
+  public <R extends UrisReadHandle> R uris(RequestLogger reqlog, String method, QueryDefinition qdef,
+        Boolean filtered, long start, String afterUri, long pageLength, String forestName, R output
+  ) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+      logger.debug("Querying for uris");
+      RequestParameters params = new RequestParameters();
+      if (filtered != null) params.add("filtered", filtered.toString());
+      if (forestName != null) params.add("forest-name", forestName);
+      if (start > 1) params.add("start", Long.toString(start));
+      if (afterUri != null) params.add("after", afterUri);
+      if (pageLength >= 1) params.add("pageLength", Long.toString(pageLength));
+      return processQuery(reqlog, "internal/uris", method, params, qdef, output);
+  }
+  @Override
+  public <R extends AbstractReadHandle> R forestInfo(RequestLogger reqlog,
+        String method, RequestParameters params, QueryDefinition qdef, R output
+  ) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+      return processQuery(reqlog, "internal/forestinfo", method, params, qdef, output);
+  }
+  private <R extends AbstractReadHandle> R processQuery(RequestLogger reqlog, String path,
+        String method, RequestParameters params, QueryDefinition qdef, R output
+  ) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
     if (qdef.getDirectory() != null) params.add("directory",   qdef.getDirectory());
     if (qdef.getCollections() != null ) {
       for ( String collection : qdef.getCollections() ) {
@@ -3069,62 +3081,85 @@ public class OkHttpServices implements RESTServices {
     }
 
     if (qdef instanceof RawQueryByExampleDefinition) {
-      throw new UnsupportedOperationException("Cannot search with RawQueryByExampleDefinition");
+      throw new UnsupportedOperationException(path+" cannot process RawQueryByExampleDefinition");
     }
+
+    boolean sendQueryAsPayload = "POST".equals(method);
 
     String text = null;
-    if (qdef instanceof StringQueryDefinition) {
-      text = ((StringQueryDefinition) qdef).getCriteria();
-    } else if (qdef instanceof StructuredQueryDefinition) {
-      text = ((StructuredQueryDefinition) qdef).getCriteria();
-    } else if (qdef instanceof RawStructuredQueryDefinition) {
-      text = ((RawStructuredQueryDefinition) qdef).getCriteria();
-    } else if (qdef instanceof RawCtsQueryDefinition) {
-      text = ((RawCtsQueryDefinition) qdef).getCriteria();
-    }
-
-    String qtextMessage = "";
-    if (text != null) {
-      params.add("q", text);
-      qtextMessage = " and string query \"" + text + "\"";
-    }
-
+    String structure = null;
+    StructureWriteHandle input = null;
     if (qdef instanceof RawCtsQueryDefinition) {
-      String structure = qdef instanceof RawQueryDefinitionImpl.CtsQuery ?
-              ((RawQueryDefinitionImpl.CtsQuery) qdef).serialize() : "";
-      logger.debug("Query uris with raw cts query {}{}", structure, qtextMessage);
-      CtsQueryWriteHandle input = ((RawCtsQueryDefinition) qdef).getHandle();
-      return postResource(reqlog, "internal/uris", transaction, params, input, output);
-    } else if (qdef instanceof StructuredQueryDefinition) {
-      String structure = ((StructuredQueryDefinition) qdef).serialize();
-      logger.debug("Query uris with structured query {}{}", structure, qtextMessage);
+      if (!(qdef instanceof RawQueryDefinitionImpl.CtsQuery)) {
+        throw new IllegalArgumentException(
+                "unknown implementation of RawCtsQueryDefinition: "+qdef.getClass().getName());
+      }
+      RawQueryDefinitionImpl.CtsQuery ctsQuery = (RawQueryDefinitionImpl.CtsQuery) qdef;
+      text = ctsQuery.getCriteria();
+      structure = ctsQuery.serialize();
+      logger.debug("{} processing raw cts query {} and string query \"{}\"", path, structure, text);
       if (structure != null) {
-        params.add("structuredQuery", structure);
+        input = ctsQuery.getHandle();
+      }
+    } else if (qdef instanceof StructuredQueryDefinition) {
+      StructuredQueryDefinition builtStructuredQuery = (StructuredQueryDefinition) qdef;
+      text = builtStructuredQuery.getCriteria();
+      structure = builtStructuredQuery.serialize();
+      logger.debug("{} processing structured query {} and string query \"{}\"", path, structure, text);
+      if (sendQueryAsPayload && structure != null) {
+        input = new StringHandle(structure).withFormat(Format.XML);
       }
     } else if (qdef instanceof RawStructuredQueryDefinition) {
-      String structure = ((RawStructuredQueryDefinition) qdef).serialize();
-      logger.debug("Query uris with raw structured query {}{}", structure, qtextMessage);
-      if (structure != null) {
-        params.add("structuredQuery", structure);
+      RawStructuredQueryDefinition rawStructuredQuery = (RawStructuredQueryDefinition) qdef;
+      text = rawStructuredQuery.getCriteria();
+      structure = rawStructuredQuery.serialize();
+      logger.debug("{} processing raw structured query {} and string query \"{}\"", path, structure, text);
+      if (sendQueryAsPayload && structure != null) {
+        input = rawStructuredQuery.getHandle();
       }
     } else if (qdef instanceof CombinedQueryDefinition) {
-      String structure = ((CombinedQueryDefinition) qdef).serialize();
-      logger.debug("Query uris with combined query {}", structure);
-      if (structure != null) {
-        params.add("structuredQuery", structure);
+      CombinedQueryDefinition combinedQuery = (CombinedQueryDefinition) qdef;
+      structure = combinedQuery.serialize();
+      logger.debug("{} processing combined query {}", path, structure);
+      if (sendQueryAsPayload && structure != null) {
+        input = new StringHandle(structure).withFormat(combinedQuery.getFormat());
       }
     } else if (qdef instanceof StringQueryDefinition) {
-      logger.debug("Query uris with string query \"{}\"", text);
+      StringQueryDefinition stringQuery = (StringQueryDefinition) qdef;
+      text = stringQuery.getCriteria();
+      logger.debug("{} processing string query \"{}\"", path, text);
     } else if (qdef instanceof RawQueryDefinition) {
-      logger.debug("Raw uris query");
-      StructureWriteHandle input = ((RawQueryDefinition) qdef).getHandle();
-      return postResource(reqlog, "internal/uris", transaction, params, input, output);
+      RawQueryDefinition rawQuery = (RawQueryDefinition) qdef;
+      logger.debug("{} processing raw query", path);
+      input = rawQuery.getHandle();
     } else {
-      throw new UnsupportedOperationException("Cannot query uris with " + qdef.getClass().getName());
+      throw new UnsupportedOperationException(path+" cannot process query of "+qdef.getClass().getName());
     }
-    return getResource(reqlog, "internal/uris", transaction, params, output);
-  }
 
+    if (text != null) {
+      params.add("q", text);
+    }
+
+    if (input != null) {
+      if (!(input instanceof HandleImplementation)) {
+        throw new IllegalArgumentException(
+            "unknown implementation of handle for query definition: "+input.getClass().getName());
+      }
+      HandleImplementation inputHandle = (HandleImplementation) input;
+      Format handleFormat = inputHandle.getFormat();
+      Format inputFormat = (handleFormat == Format.UNKNOWN) ? Format.TEXT : handleFormat;
+      if (structure != null) {
+        input = new StringHandle(structure).withFormat(inputFormat);
+      } else if (handleFormat == Format.UNKNOWN) {
+        inputHandle.setFormat(Format.TEXT);
+      }
+
+      return postResource(reqlog, path, null, params, input, output);
+    } else if (structure != null) {
+      params.add("structuredQuery", structure);
+    }
+    return getResource(reqlog, path, null, params, output);
+  }
 
   @Override
   public <R extends AbstractReadHandle> R getResource(RequestLogger reqlog,
@@ -4388,7 +4423,6 @@ public class OkHttpServices implements RESTServices {
 
   private Request.Builder setupRequest(Request.Builder requestBldr,
                                        Object inputMimetype, Object outputMimetype) {
-
     if (inputMimetype == null) {
     } else if (inputMimetype instanceof String) {
       requestBldr = requestBldr.header(HEADER_CONTENT_TYPE, (String) inputMimetype);

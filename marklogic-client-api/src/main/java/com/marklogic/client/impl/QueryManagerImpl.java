@@ -175,8 +175,9 @@ public class QueryManagerImpl
     return services.search(requestLogger, searchHandle, querydef, start, pageLen, view, transaction, forestName);
   }
 
-  public <T extends UrisReadHandle> T uris(QueryDefinition querydef, T urisHandle, long start, String afterUri, Transaction transaction, String forestName) {
-    return services.uris(requestLogger, transaction, querydef, start, afterUri, pageLen, forestName, urisHandle);
+  public <T extends UrisReadHandle> T uris(String method, QueryDefinition querydef, Boolean filtered, T urisHandle,
+        long start, String afterUri, String forestName) {
+    return services.uris(requestLogger, method, querydef, filtered, start, afterUri, pageLen, forestName, urisHandle);
   }
 
   @Override

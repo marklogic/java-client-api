@@ -139,7 +139,18 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   private QueryBatcher newQueryBatcherImpl(QueryDefinition query) {
     if ( query == null ) throw new IllegalArgumentException("query must not be null");
-    return newQueryBatcher(new QueryBatcherImpl(query, this, getForestConfig()));
+
+    QueryBatcherImpl queryBatcher = null;
+    // preprocess the query if the effective version is at least 10.0-5
+    if (Long.compareUnsigned(getServerVersion(), Long.parseUnsignedLong("10000500")) >= 0) {
+      DataMovementServices.QueryConfig queryConfig = service.initConfig("POST", query);
+      queryBatcher = new QueryBatcherImpl(query, this, queryConfig.forestConfig,
+              queryConfig.serializedCtsQuery, queryConfig.filtered);
+    } else {
+      queryBatcher = new QueryBatcherImpl(query, this, getForestConfig());
+    }
+
+    return newQueryBatcher(queryBatcher);
   }
 
   @Override

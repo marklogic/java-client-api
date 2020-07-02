@@ -229,11 +229,15 @@ public interface RESTServices {
   public void deleteValues(RequestLogger logger, String type)
     throws ForbiddenUserException, FailedRequestException;
 
-  public <R extends UrisReadHandle> R uris(RequestLogger reqlog, Transaction transaction,
-                                           QueryDefinition qdef, long start, String afterUri, long pageLength, String forestName, R output)
+  public <R extends UrisReadHandle> R uris(RequestLogger reqlog, String method, QueryDefinition qdef,
+                       Boolean filtered, long start, String afterUri, long pageLength, String forestName, R output)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  public <R extends AbstractReadHandle> R forestInfo(RequestLogger reqlog,
+                       String method, RequestParameters params, QueryDefinition qdef, R output
+    ) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+
   public <R extends AbstractReadHandle> R getResource(RequestLogger reqlog, String path,
-                                                      Transaction transaction, RequestParameters params, R output)
+                                                        Transaction transaction, RequestParameters params, R output)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
   public RESTServiceResultIterator getIteratedResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params, String... mimetypes)
