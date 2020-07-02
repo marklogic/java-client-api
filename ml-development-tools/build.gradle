@@ -21,7 +21,7 @@ plugins {
 dependencies {
     compileOnly gradleApi()
     compile project (':marklogic-client-api')
-    compile ('org.jetbrains.kotlin:kotlin-stdlib')
+    compile ('org.jetbrains.kotlin:kotlin-stdlib:1.3.61')
     compile ('com.fasterxml.jackson.module:jackson-module-kotlin:2.10.3')
     testCompileOnly gradleTestKit()
 }
