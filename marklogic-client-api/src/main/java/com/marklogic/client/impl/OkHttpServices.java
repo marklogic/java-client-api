@@ -3099,7 +3099,7 @@ public class OkHttpServices implements RESTServices {
       structure = ctsQuery.serialize();
       logger.debug("{} processing raw cts query {} and string query \"{}\"", path, structure, text);
       if (structure != null) {
-        input = ctsQuery.getHandle();
+        input = checkStructure(structure, ctsQuery.getHandle());
       }
     } else if (qdef instanceof StructuredQueryDefinition) {
       StructuredQueryDefinition builtStructuredQuery = (StructuredQueryDefinition) qdef;
@@ -3115,23 +3115,28 @@ public class OkHttpServices implements RESTServices {
       structure = rawStructuredQuery.serialize();
       logger.debug("{} processing raw structured query {} and string query \"{}\"", path, structure, text);
       if (sendQueryAsPayload && structure != null) {
-        input = rawStructuredQuery.getHandle();
+        input = checkStructure(structure, rawStructuredQuery.getHandle());
       }
     } else if (qdef instanceof CombinedQueryDefinition) {
       CombinedQueryDefinition combinedQuery = (CombinedQueryDefinition) qdef;
       structure = combinedQuery.serialize();
       logger.debug("{} processing combined query {}", path, structure);
       if (sendQueryAsPayload && structure != null) {
-        input = new StringHandle(structure).withFormat(combinedQuery.getFormat());
+        input = checkStructure(structure, combinedQuery.getFormat());
       }
     } else if (qdef instanceof StringQueryDefinition) {
       StringQueryDefinition stringQuery = (StringQueryDefinition) qdef;
       text = stringQuery.getCriteria();
       logger.debug("{} processing string query \"{}\"", path, text);
+    } else if (qdef instanceof RawQueryDefinitionImpl) {
+      RawQueryDefinitionImpl<StructureWriteHandle> rawQueryImpl = (RawQueryDefinitionImpl<StructureWriteHandle>) qdef;
+      structure = rawQueryImpl.serialize();
+      logger.debug("{} processing raw query implementation {}", path, structure);
+      input = checkStructure(structure, rawQueryImpl.getHandle());
     } else if (qdef instanceof RawQueryDefinition) {
       RawQueryDefinition rawQuery = (RawQueryDefinition) qdef;
       logger.debug("{} processing raw query", path);
-      input = rawQuery.getHandle();
+      input = checkFormat(rawQuery.getHandle());
     } else {
       throw new UnsupportedOperationException(path+" cannot process query of "+qdef.getClass().getName());
     }
@@ -3141,24 +3146,31 @@ public class OkHttpServices implements RESTServices {
     }
 
     if (input != null) {
-      if (!(input instanceof HandleImplementation)) {
-        throw new IllegalArgumentException(
-            "unknown implementation of handle for query definition: "+input.getClass().getName());
-      }
-      HandleImplementation inputHandle = (HandleImplementation) input;
-      Format handleFormat = inputHandle.getFormat();
-      Format inputFormat = (handleFormat == Format.UNKNOWN) ? Format.TEXT : handleFormat;
-      if (structure != null) {
-        input = new StringHandle(structure).withFormat(inputFormat);
-      } else if (handleFormat == Format.UNKNOWN) {
-        inputHandle.setFormat(Format.TEXT);
-      }
-
       return postResource(reqlog, path, null, params, input, output);
     } else if (structure != null) {
       params.add("structuredQuery", structure);
     }
     return getResource(reqlog, path, null, params, output);
+  }
+  private StructureWriteHandle checkStructure(String structure, StructureWriteHandle handle) {
+    return checkStructure(structure,
+            (handle == null || !(handle instanceof HandleImplementation)) ? Format.UNKNOWN :
+            ((HandleImplementation) handle).getFormat());
+  }
+  private StructureWriteHandle checkStructure(String structure, Format format) {
+      return new StringHandle(structure).withFormat(
+              (format == null || format == Format.UNKNOWN) ? Format.TEXT : format);
+  }
+  private StructureWriteHandle checkFormat(StructureWriteHandle handle) {
+    if (handle != null && handle instanceof HandleImplementation) {
+      HandleImplementation handleImpl = (HandleImplementation) handle;
+      Format format = handleImpl.getFormat();
+      if (format == null || format == Format.UNKNOWN) {
+        handleImpl.setFormat(Format.TEXT);
+        handleImpl.setMimetype(Format.TEXT.getDefaultMimetype());
+      }
+    }
+    return handle;
   }
 
   @Override

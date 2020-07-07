@@ -57,7 +57,6 @@ public class DataMovementServices {
     // System.out.println(result.toPrettyString());
 
     QueryConfig queryConfig = new QueryConfig();
-    queryConfig.forestConfig = makeForestConfig(result.get("forests"));
 
     if (qdef != null) {
       try {
@@ -76,6 +75,8 @@ public class DataMovementServices {
         logger.error("failed to initialize query", e);
       }
     }
+
+    queryConfig.forestConfig = makeForestConfig(result.has("forests") ? result.get("forests") : result);
 
     return queryConfig;
   }
