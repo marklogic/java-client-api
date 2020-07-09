@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright (c) 2019 MarkLogic Corporation -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://marklogic.com/appservices/search" xmlns:search="http://marklogic.com/appservices/search">
+<!-- Copyright 2002-2019 MarkLogic Corporation.  All Rights Reserved. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+      targetNamespace="http://marklogic.com/appservices/search"
+      xmlns:search="http://marklogic.com/appservices/search"
+      xmlns:query-plan="http://marklogic.com/cts/query"
+      xmlns:qbe="http://marklogic.com/appservices/querybyexample">
+  <xs:import namespace="http://marklogic.com/cts/query" schemaLocation="query-plan.xsd"/>
   <!-- Root element -->
   <xs:complexType name="OptionsType">
     <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -183,6 +188,7 @@
         <xs:element ref="search:parent-property"/>
         <xs:element ref="search:json-property"/>
         <xs:element ref="search:geo-option"/>
+        <xs:element ref="search:weight"/>
         <xs:element ref="search:fragment-scope"/>
       </xs:choice>
     </xs:sequence>
@@ -207,6 +213,7 @@
           </xs:complexType>
         </xs:element>
         <xs:element ref="search:geo-option"/>
+        <xs:element ref="search:weight"/>
         <xs:element ref="search:fragment-scope"/>
       </xs:choice>
     </xs:sequence>
@@ -232,6 +239,7 @@
         <xs:element ref="search:lat-property"/>
         <xs:element ref="search:lon-property"/>
         <xs:element ref="search:geo-option"/>
+        <xs:element ref="search:weight"/>
         <xs:element ref="search:fragment-scope"/>
       </xs:choice>
     </xs:sequence>
@@ -253,6 +261,7 @@
         <xs:element ref="search:lat"/>
         <xs:element ref="search:lon"/>
         <xs:element ref="search:geo-option"/>
+        <xs:element ref="search:weight"/>
         <xs:element ref="search:fragment-scope"/>
       </xs:choice>
     </xs:sequence>
@@ -284,6 +293,7 @@
         <xs:element ref="search:lat"/>
         <xs:element ref="search:lon"/>
         <xs:element ref="search:geo-option"/>
+        <xs:element ref="search:weight"/>
         <xs:element ref="search:fragment-scope"/>
       </xs:choice>
     </xs:sequence>
@@ -301,6 +311,7 @@
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="search:path-index"/>
         <xs:element ref="search:geo-option"/>
+        <xs:element ref="search:weight"/>
         <xs:element ref="search:fragment-scope"/>
       </xs:choice>
     </xs:sequence>
@@ -605,6 +616,7 @@
         <xs:group ref="search:RangeIndexDef"/>
         <xs:group ref="search:RangeFacetDef"/>
         <xs:element ref="search:range-option"/>
+        <xs:element ref="search:weight"/>
       </xs:choice>
       <xs:attributeGroup ref="search:RangeIndexAttrs"/>
       <xs:attribute name="facet" type="xs:boolean"/>
@@ -632,15 +644,19 @@
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:choice>
-          <xs:choice>
-            <xs:group ref="search:Element"/>
-            <xs:element ref="search:attribute"/>
-          </xs:choice>
-          <xs:element ref="search:field"/>
-          <xs:element ref="search:json-property"/>
-          <xs:element ref="search:path-index"/>
+          <xs:group ref="search:Element"/>
+          <xs:element ref="search:attribute"/>
         </xs:choice>
+        <xs:element ref="search:field"/>
+        <xs:element ref="search:json-property"/>
+        <xs:element ref="search:path-index"/>
         <xs:element ref="search:score"/>
+        <xs:element ref="search:confidence-order"/>
+        <xs:element ref="search:document-order"/>
+        <xs:element ref="search:fitness-order"/>
+        <xs:element ref="search:quality-order"/>
+        <xs:element ref="search:score-order"/>
+        <xs:element ref="search:unordered"/>
         <xs:element ref="search:annotation"/>
       </xs:choice>
       <xs:attribute name="type"/>
@@ -654,6 +670,24 @@
         </xs:simpleType>
       </xs:attribute>
     </xs:complexType>
+  </xs:element>
+  <xs:element name="confidence-order">
+      <xs:complexType/>
+  </xs:element>
+  <xs:element name="document-order">
+      <xs:complexType/>
+  </xs:element>
+  <xs:element name="fitness-order">
+      <xs:complexType/>
+  </xs:element>
+  <xs:element name="quality-order">
+      <xs:complexType/>
+  </xs:element>
+  <xs:element name="score-order">
+      <xs:complexType/>
+  </xs:element>
+  <xs:element name="unordered">
+      <xs:complexType/>
   </xs:element>
   <xs:element name="score">
     <xs:complexType/>
@@ -871,6 +905,8 @@
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:similar"/>
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:snippet"/>
         <xs:element minOccurs="0" ref="search:metadata"/>
+<!-- TODO: add extracted results -->
+        <xs:element minOccurs="0" ref="query-plan:relevance-info"/>
       </xs:sequence>
       <xs:attribute name="index" use="required" type="xs:unsignedLong"/>
       <xs:attribute name="uri" use="required"/>
@@ -1006,10 +1042,13 @@
   <xs:element name="search">
     <xs:complexType>
       <xs:sequence>
-        <xs:element minOccurs="0" ref="search:qtext"/>
-        <xs:element minOccurs="0" ref="search:query"/>
-        <xs:element minOccurs="0" ref="search:options"/>
-        <xs:element minOccurs="0" ref="search:sparql"/>
+        <xs:element minOccurs="0" maxOccurs="1" ref="search:qtext"/>
+        <xs:element minOccurs="0" maxOccurs="1" ref="search:query"/>
+        <xs:element minOccurs="0" maxOccurs="1" ref="search:options"/>
+        <xs:element minOccurs="0" maxOccurs="1" ref="search:sparql"/>
+        <!-- actual constraint is to qbe:query -->
+        <xs:any minOccurs="0" maxOccurs="1" namespace="http://marklogic.com/appservices/querybyexample" processContents="skip"/>
+        <xs:any minOccurs="0" maxOccurs="1" namespace="http://marklogic.com/cts" processContents="skip"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -1326,6 +1365,7 @@
         <xs:element ref="search:constraint-name"/>
         <xs:group ref="search:RangeQueryCriteria"/>
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:range-option"/>
+        <xs:element minOccurs="0" ref="search:weight"/>
       </xs:sequence>
       <xs:attributeGroup ref="search:any-attribute"/>
     </xs:complexType>
@@ -1336,6 +1376,7 @@
         <xs:group ref="search:RangeIndexDef"/>
         <xs:group ref="search:RangeQueryCriteria"/>
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:range-option"/>
+        <xs:element minOccurs="0" ref="search:weight"/>
       </xs:sequence>
       <xs:attributeGroup ref="search:RangeIndexAttrs"/>
     </xs:complexType>
@@ -1346,6 +1387,7 @@
         <xs:element ref="search:constraint-name"/>
         <xs:group ref="search:RegionType"/>
         <xs:element ref="search:geo-option"/>
+        <xs:element ref="search:weight"/>
       </xs:choice>
       <xs:attributeGroup ref="search:any-attribute"/>
     </xs:complexType>
@@ -1540,6 +1582,20 @@
         <xs:element ref="search:temporal-operator"/>
         <xs:element minOccurs="1" maxOccurs="unbounded" ref="search:period"/>
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:temporal-option"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="before-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="timestamp" type="xs:unsignedLong" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="after-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="timestamp" type="xs:unsignedLong" minOccurs="1" maxOccurs="1"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

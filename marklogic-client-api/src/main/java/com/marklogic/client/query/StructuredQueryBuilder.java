@@ -616,7 +616,7 @@ public class StructuredQueryBuilder {
    */
   public StructuredQueryDefinition range(RangeIndex index, String type,
                                          Operator operator, Object... values) {
-    return new RangeQuery(index, type, null, null, null, operator, values);
+    return new RangeQuery(index, type, null, null, null, null, operator, values);
   }
   /**
    * Matches an element, attribute, JSON property, field, or path
@@ -631,7 +631,7 @@ public class StructuredQueryBuilder {
    */
   public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
                                          Operator operator, Object... values) {
-    return new RangeQuery(index, type, collation, null, null, operator, values);
+    return new RangeQuery(index, type, collation, null, null, null, operator, values);
   }
   /**
    * Matches an element, attribute, JSON property, field, or path
@@ -648,7 +648,7 @@ public class StructuredQueryBuilder {
   public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
                                          FragmentScope scope, Operator operator,
                                          Object... values) {
-    return new RangeQuery(index, type, collation, scope, null, operator, values);
+    return new RangeQuery(index, type, collation, scope, null, null, operator, values);
   }
   /**
    * Matches an element, attribute, JSON property, field, or path
@@ -663,7 +663,23 @@ public class StructuredQueryBuilder {
    */
   public StructuredQueryDefinition range(RangeIndex index, String type, String[] options, Operator operator,
                                          Object... values) {
-    return new RangeQuery(index, type, null, null, options, operator, values);
+    return new RangeQuery(index, type, null, null, options, null, operator, values);
+  }
+  /**
+   * Matches an element, attribute, JSON property, field, or path
+   * whose value that has the correct datatyped comparison with
+   * one of the criteria values.
+   * @param index    the range container
+   * @param type    the datatype of the container and specified values
+   * @param options    options for fine tuning the query
+   * @param weight    the multiplier for the match in the document ranking
+   * @param operator    the comparison with the criteria values
+   * @param values    the possible datatyped values for the comparison
+   * @return    the StructuredQueryDefinition for the range query
+   */
+  public StructuredQueryDefinition range(RangeIndex index, String type, String[] options, double weight,
+                                         Operator operator, Object... values) {
+    return new RangeQuery(index, type, null, null, options, weight, operator, values);
   }
   /**
    * Matches an element, attribute, JSON property, field, or path
@@ -677,9 +693,26 @@ public class StructuredQueryBuilder {
    * @param values    the possible datatyped values for the comparison
    * @return    the StructuredQueryDefinition for the range query
    */
-  public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
-                                         String[] options, Operator operator, Object... values) {
-    return new RangeQuery(index, type, collation, null, options, operator, values);
+  public StructuredQueryDefinition range(RangeIndex index, String type, String collation, String[] options,
+                                         Operator operator, Object... values) {
+    return new RangeQuery(index, type, collation, null, options, null, operator, values);
+  }
+  /**
+   * Matches an element, attribute, JSON property, field, or path
+   * whose value that has the correct datatyped comparison with
+   * one of the criteria values.
+   * @param index    the range container
+   * @param type    the datatype of the container and specified values
+   * @param collation    the identifier for the strategy for comparing types
+   * @param options    options for fine tuning the query
+   * @param weight    the multiplier for the match in the document ranking
+   * @param operator    the comparison with the criteria values
+   * @param values    the possible datatyped values for the comparison
+   * @return    the StructuredQueryDefinition for the range query
+   */
+  public StructuredQueryDefinition range(RangeIndex index, String type, String collation, String[] options,
+                                         double weight, Operator operator, Object... values) {
+    return new RangeQuery(index, type, collation, null, options, weight, operator, values);
   }
   /**
    * Matches an element, attribute, JSON property, field, or path
@@ -697,7 +730,26 @@ public class StructuredQueryBuilder {
   public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
                                          FragmentScope scope, String[] options, Operator operator,
                                          Object... values) {
-    return new RangeQuery(index, type, collation, scope, options, operator, values);
+    return new RangeQuery(index, type, collation, scope, options, null, operator, values);
+  }
+  /**
+   * Matches an element, attribute, JSON property, field, or path
+   * whose value that has the correct datatyped comparison with
+   * one of the criteria values.
+   * @param index    the range container
+   * @param type    the datatype of the container and specified values
+   * @param collation    the identifier for the strategy for comparing types
+   * @param scope    whether the query matches the document content or properties
+   * @param options    options for fine tuning the query
+   * @param weight    the multiplier for the match in the document ranking
+   * @param operator    the comparison with the criteria values
+   * @param values    the possible datatyped values for the comparison
+   * @return    the StructuredQueryDefinition for the range query
+   */
+  public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
+                                         FragmentScope scope, String[] options, double weight,
+                                         Operator operator, Object... values) {
+    return new RangeQuery(index, type, collation, scope, options, weight, operator, values);
   }
 
   /**
@@ -709,7 +761,7 @@ public class StructuredQueryBuilder {
    */
   public StructuredQueryDefinition geospatial(GeospatialIndex index, Region... regions) {
     checkRegions(regions);
-    return new GeospatialPointQuery(index, null, regions, null);
+    return new GeospatialPointQuery(index, null, regions, null, null);
   }
   /**
    * Matches an element, element pair, element attribute, pair, or path
@@ -720,11 +772,26 @@ public class StructuredQueryBuilder {
    * @param regions    the possible regions containing the point
    * @return    the StructuredQueryDefinition for the geospatial query
    */
-  public StructuredQueryDefinition geospatial(GeospatialIndex index, FragmentScope scope, String[] options, Region... regions) {
+  public StructuredQueryDefinition geospatial(GeospatialIndex index, FragmentScope scope,
+                                              String[] options, Region... regions) {
     checkRegions(regions);
-    return new GeospatialPointQuery(index, scope, regions, options);
+    return new GeospatialPointQuery(index, scope, regions, options, null);
   }
-
+  /**
+   * Matches an element, element pair, element attribute, pair, or path
+   * specifying a geospatial point that appears within one of the criteria regions.
+   * @param index    the container for the coordinates of the geospatial point
+   * @param scope    whether the query matches the document content or properties
+   * @param options    options for fine tuning the query
+   * @param weight    the multiplier for the match in the document ranking
+   * @param regions    the possible regions containing the point
+   * @return    the StructuredQueryDefinition for the geospatial query
+   */
+  public StructuredQueryDefinition geospatial(GeospatialIndex index, FragmentScope scope,
+                                              String[] options, Double weight, Region... regions) {
+    checkRegions(regions);
+    return new GeospatialPointQuery(index, scope, regions, options, weight);
+  }
 
   /**
    * Matches a path specifying a geospatial region, which is indexed via
@@ -738,7 +805,7 @@ public class StructuredQueryBuilder {
    */
   public StructuredQueryDefinition geospatial(GeospatialRegionIndex index, GeospatialOperator operator, Region... regions) {
     checkRegions(regions);
-    return new GeospatialRegionQuery((GeoRegionPathImpl)index, operator, null, regions, null);
+    return new GeospatialRegionQuery((GeoRegionPathImpl)index, operator, null, regions, null, null);
   }
 
   /**
@@ -753,9 +820,28 @@ public class StructuredQueryBuilder {
    * @param regions    the possible regions containing the region
    * @return    the StructuredQueryDefinition for the geospatial query
    */
-  public StructuredQueryDefinition geospatial(GeospatialRegionIndex index, GeospatialOperator operator, FragmentScope scope, String[] options, Region... regions) {
+  public StructuredQueryDefinition geospatial(GeospatialRegionIndex index, GeospatialOperator operator,
+                                              FragmentScope scope, String[] options, Region... regions) {
     checkRegions(regions);
-    return new GeospatialRegionQuery((GeoRegionPathImpl)index, operator, scope, regions, options);
+    return new GeospatialRegionQuery((GeoRegionPathImpl)index, operator, scope, regions, options, null);
+  }
+  /**
+   * Matches a path specifying a geospatial region, which is indexed via
+   * geospatial region index, that has the relationship given by the operator
+   * with at least one of the criteria regions.
+   * @param index    the container for the geospatial regions
+   * @param operator    the geospatial operator to be applied with the regions in the
+   *                  index and the specified regions
+   * @param scope    whether the query matches the document content or properties
+   * @param options    options for fine tuning the query
+   * @param weight    the multiplier for the match in the document ranking
+   * @param regions    the possible regions containing the region
+   * @return    the StructuredQueryDefinition for the geospatial query
+   */
+  public StructuredQueryDefinition geospatial(GeospatialRegionIndex index, GeospatialOperator operator,
+                                              FragmentScope scope, String[] options, Double weight, Region... regions) {
+    checkRegions(regions);
+    return new GeospatialRegionQuery((GeoRegionPathImpl)index, operator, scope, regions, options, weight);
   }
 
   /**
@@ -1763,7 +1849,6 @@ public class StructuredQueryBuilder {
     }
   }
 
-
   protected class RangeQuery
     extends AbstractStructuredQuery {
     RangeIndex    index;
@@ -1771,16 +1856,18 @@ public class StructuredQueryBuilder {
     String        type;
     String        collation;
     String[]      options;
+    Double        weight;
     Operator      operator;
     String[]      values;
     RangeQuery(RangeIndex index, String type, String collation,
-               FragmentScope scope, String[] rangeOptions, Operator operator,
-               Object[] values) {
+               FragmentScope scope, String[] rangeOptions, Double weight,
+               Operator operator, Object[] values) {
       this.index     = index;
       this.type      = type;
       this.collation = collation;
       this.scope     = scope;
-      this.options = rangeOptions;
+      this.options   = rangeOptions;
+      this.weight    = weight;
       this.operator  = operator;
       this.values    = new String[values.length];
       for (int i=0; i < values.length; i++) {
@@ -1835,6 +1922,7 @@ public class StructuredQueryBuilder {
           operator.toString().toUpperCase());
       }
       writeTextList(serializer, "range-option", options);
+      writeText(serializer, "weight", weight);
       serializer.writeEndElement();
     }
   }
@@ -1843,11 +1931,13 @@ public class StructuredQueryBuilder {
     FragmentScope scope;
     Region[] regions;
     String[] options;
+    Double   weight;
 
-    GeospatialBaseQuery(FragmentScope scope, Region[] regions, String[] options) {
+    GeospatialBaseQuery(FragmentScope scope, Region[] regions, String[] options, Double weight) {
       this.scope = scope;
       this.regions = regions;
       this.options = options;
+      this.weight = weight;
     }
   }
 
@@ -1855,8 +1945,8 @@ public class StructuredQueryBuilder {
     extends GeospatialBaseQuery {
     GeospatialIndex index;
     GeospatialPointQuery(GeospatialIndex index, FragmentScope scope, Region[] regions,
-                         String[] options) {
-      super(scope, regions, options);
+                         String[] options, Double weight) {
+      super(scope, regions, options, weight);
       this.index   = index;
     }
     @Override
@@ -1886,6 +1976,7 @@ public class StructuredQueryBuilder {
           scope.toString().toLowerCase());
       }
       writeTextList(serializer, "geo-option", options);
+      writeText(serializer, "weight", weight);
       for (Region region : regions) {
         ((RegionImpl) region).innerSerialize(serializer);
       }
@@ -1898,8 +1989,8 @@ public class StructuredQueryBuilder {
     GeospatialOperator operator;
 
     GeospatialRegionQuery(GeoRegionPathImpl index, GeospatialOperator operator, FragmentScope scope,
-                          Region[] regions, String[] options) {
-      super(scope, regions, options);
+                          Region[] regions, String[] options, Double weight) {
+      super(scope, regions, options, weight);
       this.index = index;
       this.operator = operator;
     }
@@ -1917,6 +2008,7 @@ public class StructuredQueryBuilder {
         writeText(serializer, "fragment-scope", scope.toString().toLowerCase());
       }
       writeTextList(serializer, "geo-option", options);
+      writeText(serializer, "weight", weight);
       for (Region region : regions) {
         ((RegionImpl) region).innerSerialize(serializer);
       }

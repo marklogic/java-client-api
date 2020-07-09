@@ -21,16 +21,14 @@ import org.custommonkey.xmlunit.XpathEngine;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.HashMap;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -86,11 +84,13 @@ public class StructuredQueryBuilderTest {
     StructuredQueryBuilder qb = new StructuredQueryBuilder();
     StructuredQueryDefinition t, u, v, m;
 
-    InputStream fileInputStream = new FileInputStream("src/test/resources/search.xsd");
+    File schemaFile = new File("src/test/resources/search.xsd");
+    InputStream fileInputStream = new FileInputStream(schemaFile);
     StreamSource[] sources = new StreamSource[1];
     sources[0] = new StreamSource(fileInputStream);
+    sources[0].setSystemId(schemaFile);
 
-    SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+    SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/XML/XMLSchema/v1.1");
     Schema schema = schemaFactory.newSchema(sources);
 
     SAXParserFactory parserFactory = SAXParserFactory.newInstance();
@@ -380,13 +380,13 @@ public class StructuredQueryBuilderTest {
         + "<range-query type=\"xs:string\"><element ns=\"\" name=\"name\"></element><value>value1</value><value>value2</value><range-operator>GE</range-operator></range-query></query>", q);
     }
 
-    m = qb.range(qb.element("name"), "xs:string", "http://marklogic.com/collation", FragmentScope.DOCUMENTS, new String[] {"score-function=linear", "scale-factor=4.2"}, Operator.GE, "value1", "value2");
+    m = qb.range(qb.element("name"), "xs:string", "http://marklogic.com/collation", FragmentScope.DOCUMENTS, new String[] {"score-function=linear", "scale-factor=4.2"}, 10, Operator.GE, "value1", "value2");
     for (String q: new String[]{qb.build(m).toString()}) {
       xml = new StringInputStream(q);
       parser.parse(xml, handler);
       assertXMLEqual("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" "
           + "xmlns:search=\"http://marklogic.com/appservices/search\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
-          + "<range-query type=\"xs:string\" collation=\"http://marklogic.com/collation\"><element ns=\"\" name=\"name\"></element><fragment-scope>documents</fragment-scope><value>value1</value><value>value2</value><range-operator>GE</range-operator><range-option>score-function=linear</range-option><range-option>scale-factor=4.2</range-option></range-query></query>",
+          + "<range-query type=\"xs:string\" collation=\"http://marklogic.com/collation\"><element ns=\"\" name=\"name\"></element><fragment-scope>documents</fragment-scope><value>value1</value><value>value2</value><range-operator>GE</range-operator><range-option>score-function=linear</range-option><range-option>scale-factor=4.2</range-option><weight>10.0</weight></range-query></query>",
         q);
     }
 
@@ -439,6 +439,7 @@ public class StructuredQueryBuilderTest {
       qb.geoElementPair(qb.element("parent"), qb.element("lat"), qb.element("lon")),
       FragmentScope.DOCUMENTS,
       new String[] {"score-function=linear", "scale-factor=2.0"},
+      (double) 10,
       qb.box(1, 2, 3, 4), qb.circle(0, 0, 100), qb.point(5, 6),
       qb.polygon(qb.point(1, 2), qb.point(2, 3), qb.point(3, 4), qb.point(4, 1)));
     for (String q: new String[]{qb.build(m).toString()}) {
@@ -458,6 +459,7 @@ public class StructuredQueryBuilderTest {
               + "<point><latitude>3.0</latitude><longitude>4.0</longitude></point>"
               + "<point><latitude>4.0</latitude><longitude>1.0</longitude></point>"
             + "</polygon>"
+            + "<weight>10.0</weight>"
           + "</geo-elem-pair-query></query>",
         q);
     }
