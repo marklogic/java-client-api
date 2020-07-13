@@ -334,32 +334,26 @@ public class OkHttpServices implements RESTServices {
 
     if (sslContext != null) {
       if (trustManager == null) {
-        String javaVersion = System.getProperty("java.version");
-        int javaMajorVersion = Integer.parseInt(javaVersion.substring(0, javaVersion.indexOf(".")));
-        // OKHttp starts requiring the trust manager in Java 9
-        if (javaMajorVersion < 9) {
-          clientBldr.sslSocketFactory(sslContext.getSocketFactory());
-        } else {
-          // transitional workaround -- at next backward incompatibility boundary, replace try with thrown exception
-          try {
-            TrustManagerFactory trustMgrFactory =
-                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            trustMgrFactory.init((KeyStore) null);
-            TrustManager[] trustMgrs = trustMgrFactory.getTrustManagers();
-            if (trustMgrs == null || trustMgrs.length == 0)
-              throw new IllegalArgumentException("no trust manager and could not get default trust manager");
-            if (!(trustMgrs[0] instanceof X509TrustManager))
-              throw new IllegalArgumentException("no trust manager and default is not an X509TrustManager");
-            trustManager = (X509TrustManager) trustMgrs[0];
-            sslContext.init(null, trustMgrs, null);
-            clientBldr.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
-          } catch (KeyStoreException e) {
-            throw new IllegalArgumentException("no trust manager and cannot initialize factory for default", e);
-          } catch (NoSuchAlgorithmException e) {
-            throw new IllegalArgumentException("no trust manager and no algorithm for default manager", e);
-          } catch (KeyManagementException e) {
-            throw new IllegalArgumentException("no trust manager and cannot initialize context with default", e);
-          }
+        // OkHttp requires the trust manager on Java 9 and on Java 8 after 8u251
+        // transitional workaround -- at next backward incompatibility boundary, replace try with thrown exception
+        try {
+          TrustManagerFactory trustMgrFactory =
+              TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+          trustMgrFactory.init((KeyStore) null);
+          TrustManager[] trustMgrs = trustMgrFactory.getTrustManagers();
+          if (trustMgrs == null || trustMgrs.length == 0)
+            throw new IllegalArgumentException("no trust manager and could not get default trust manager");
+          if (!(trustMgrs[0] instanceof X509TrustManager))
+            throw new IllegalArgumentException("no trust manager and default is not an X509TrustManager");
+          trustManager = (X509TrustManager) trustMgrs[0];
+          sslContext.init(null, trustMgrs, null);
+          clientBldr.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+        } catch (KeyStoreException e) {
+          throw new IllegalArgumentException("no trust manager and cannot initialize factory for default", e);
+        } catch (NoSuchAlgorithmException e) {
+          throw new IllegalArgumentException("no trust manager and no algorithm for default manager", e);
+        } catch (KeyManagementException e) {
+          throw new IllegalArgumentException("no trust manager and cannot initialize context with default", e);
         }
       } else {
         clientBldr.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
