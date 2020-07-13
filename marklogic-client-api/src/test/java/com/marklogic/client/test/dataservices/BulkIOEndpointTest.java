@@ -103,7 +103,7 @@ public class BulkIOEndpointTest {
 
         String              endpointState = "{\"next\":"+nextStart+"}";
         String              workUnit      = "{\"max\":"+workMax+"}";
-        Set<String>         input         = Set.of(
+        Set<String>         input         = IOTestUtil.setOf( // Set.of(
                 "{\"docNum\":1, \"docName\":\"alpha\"}",
                 "{\"docNum\":2, \"docName\":\"beta\"}",
                 "{\"docNum\":3, \"docName\":\"gamma\"}"
@@ -163,7 +163,7 @@ public class BulkIOEndpointTest {
 
         String              endpointState1 = "{\"next\":"+5+"}";
         String              workUnit1      = "{\"max\":"+8+"}";
-        Set<String>         input         = Set.of(
+        Set<String>         input          = IOTestUtil.setOf( // Set.of(
                 "{\"docNum\":1, \"docName\":\"doc1\"}",
                 "{\"docNum\":2, \"docName\":\"doc2\"}",
                 "{\"docNum\":3, \"docName\":\"doc3\"}",

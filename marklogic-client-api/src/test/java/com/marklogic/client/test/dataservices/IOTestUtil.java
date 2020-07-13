@@ -31,6 +31,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
 
 public class IOTestUtil {
     public final static String TEST_DIR = "dataservices";
@@ -83,6 +85,13 @@ public class IOTestUtil {
         writeSet.add(apiPath,    docMeta,    new JacksonHandle(apiObj));
         writeSet.add(scriptPath, scriptMeta, new StringHandle(scriptBody));
         modMgr.write(writeSet);
+    }
+    public static <T> Set<T> setOf(T... items) {
+        Set<T> set = new HashSet<>();
+        for (T item: items) {
+            set.add(item);
+        }
+        return set;
     }
 
     static InputStream[] asInputStreamArray(String... values) {

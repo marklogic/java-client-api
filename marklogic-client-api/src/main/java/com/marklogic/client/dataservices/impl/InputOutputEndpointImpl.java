@@ -18,6 +18,7 @@ package com.marklogic.client.dataservices.impl;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.InputOutputEndpoint;
+import com.marklogic.client.impl.Utilities;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,7 +119,8 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
         InputStream[] values = getCaller().arrayCall(getClient(), callContext.getEndpointState(),
                 callContext.getSessionState(), callContext.getWorkUnit(), input);
         ByteArrayOutputStream endpointState = new ByteArrayOutputStream();
-        values[0].transferTo(endpointState);
+        // values[0].transferTo(endpointState);
+        Utilities.write(values[0], endpointState);
         callContext.withEndpointState(values[0]);
 
         if(withEndpointState) {
