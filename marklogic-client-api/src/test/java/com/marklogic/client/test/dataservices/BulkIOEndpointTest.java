@@ -103,11 +103,15 @@ public class BulkIOEndpointTest {
 
         String              endpointState = "{\"next\":"+nextStart+"}";
         String              workUnit      = "{\"max\":"+workMax+"}";
-        Set<String>         input         = Set.of(
+        Set<String>         input         = new HashSet<>();
+        input.add("{\"docNum\":1, \"docName\":\"alpha\"}");
+        input.add("{\"docNum\":2, \"docName\":\"beta\"}");
+        input.add("{\"docNum\":3, \"docName\":\"gamma\"}");
+                /*Set.of(
                 "{\"docNum\":1, \"docName\":\"alpha\"}",
                 "{\"docNum\":2, \"docName\":\"beta\"}",
                 "{\"docNum\":3, \"docName\":\"gamma\"}"
-        );
+        );*/
         Set<String> output = new HashSet<>();
 
         InputOutputEndpoint endpoint = InputOutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
@@ -163,14 +167,21 @@ public class BulkIOEndpointTest {
 
         String              endpointState1 = "{\"next\":"+5+"}";
         String              workUnit1      = "{\"max\":"+8+"}";
-        Set<String>         input         = Set.of(
+        Set<String>         input         = new HashSet<>();
+        input.add("{\"docNum\":1, \"docName\":\"doc1\"}");
+        input.add("{\"docNum\":2, \"docName\":\"doc2\"}");
+        input.add("{\"docNum\":3, \"docName\":\"doc3\"}");
+        input.add("{\"docNum\":4, \"docName\":\"doc4\"}");
+        input.add("{\"docNum\":5, \"docName\":\"doc5\"}");
+        input.add("{\"docNum\":6, \"docName\":\"doc6\"}");
+          /*      Set.of(
                 "{\"docNum\":1, \"docName\":\"doc1\"}",
                 "{\"docNum\":2, \"docName\":\"doc2\"}",
                 "{\"docNum\":3, \"docName\":\"doc3\"}",
                 "{\"docNum\":4, \"docName\":\"doc4\"}",
                 "{\"docNum\":5, \"docName\":\"doc5\"}",
                 "{\"docNum\":6, \"docName\":\"doc6\"}"
-        );
+        );*/
         Set<String> output = new HashSet<>();
 
         InputOutputEndpoint endpoint = InputOutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));

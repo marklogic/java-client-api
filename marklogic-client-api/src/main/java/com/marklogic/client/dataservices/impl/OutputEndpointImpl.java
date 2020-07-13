@@ -111,7 +111,13 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         InputStream[] values = getCaller().arrayCall(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
                 callContext.getWorkUnit());
         ByteArrayOutputStream endpointState = new ByteArrayOutputStream();
-        values[0].transferTo(endpointState);
+        //values[0].transferTo(endpointState);
+        int bufLen = 1024;
+        byte[] buf = new byte[bufLen];
+        int readLen;
+        while (( readLen = values[0].read(buf, 0, bufLen)) != -1)
+            endpointState.write(buf, 0, readLen);
+
         callContext.withEndpointState(values[0]);
 
         if(withEndpointState) {

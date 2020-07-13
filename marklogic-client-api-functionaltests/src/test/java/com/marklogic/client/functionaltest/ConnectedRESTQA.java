@@ -291,7 +291,7 @@ public abstract class ConnectedRESTQA {
 			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			client.close();
+			//client.close();
 		}
 	}
 
