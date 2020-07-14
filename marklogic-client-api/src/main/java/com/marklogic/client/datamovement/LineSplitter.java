@@ -123,6 +123,7 @@ public class LineSplitter implements Splitter<StringHandle> {
 
         return new BufferedReader(new InputStreamReader(input))
                 .lines()
+                .filter(line -> line.length() != 0)
                 .map(line -> {
                     count++;
                     StringHandle handle = new StringHandle(line);
@@ -169,6 +170,7 @@ public class LineSplitter implements Splitter<StringHandle> {
         count = 0;
         return new BufferedReader(input)
                 .lines()
+                .filter(line -> line.length() != 0)
                 .map(line -> {
                     count++;
                     return new StringHandle(line).withFormat(getFormat());
