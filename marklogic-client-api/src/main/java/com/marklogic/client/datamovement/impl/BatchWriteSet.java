@@ -23,7 +23,6 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.datamovement.WriteBatch;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.WriteEvent;
-import com.marklogic.client.datamovement.impl.WriteBatcherImpl.TransactionInfo;
 
 public class BatchWriteSet {
   private WriteBatcher batcher;
@@ -31,7 +30,6 @@ public class BatchWriteSet {
   private long batchNumber;
   private long itemsSoFar;
   private DatabaseClient client;
-  private TransactionInfo transactionInfo;
   private ServerTransform transform;
   private String temporalCollection;
   private Runnable onSuccess;
@@ -74,14 +72,6 @@ public class BatchWriteSet {
 
   public void setClient(DatabaseClient client) {
     this.client = client;
-  }
-
-  public TransactionInfo getTransactionInfo() {
-    return transactionInfo;
-  }
-
-  public void setTransactionInfo(TransactionInfo transactionInfo) {
-    this.transactionInfo = transactionInfo;
   }
 
   public ServerTransform getTransform() {
