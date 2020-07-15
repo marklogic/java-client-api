@@ -63,7 +63,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
     }
 
     private XMLSplitter.Visitor<T> visitor;
-    private long count = 0;
+    private ThreadLocal<Long> count = new ThreadLocal<>();
     private String inputName;
 
     /**
@@ -141,7 +141,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
 
     @Override
     public long getCount() {
-        return count;
+        return count.get();
     }
 
     /**
@@ -155,7 +155,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
-        count = 0;
+        count.set(0L);
 
         XMLSplitter.HandleSpliterator<T> handleSpliterator = new XMLSplitter.HandleSpliterator<>(this, input);
 
@@ -175,7 +175,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
-        count = 0;
+        count.set(0L);
 
         this.inputName = inputName;
         XMLSplitter.DocumentWriteOperationSpliterator<T> documentWriteOperationSpliterator =
@@ -471,7 +471,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
                 return false;
             }
 
-            getSplitter().count++;
+            getSplitter().count.set(getSplitter().getCount() + 1);
             action.accept(handle);
 
             return true;
@@ -503,7 +503,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
                 }
             }
 
-            splitter.count++;
+            splitter.count.set(splitter.getCount() + 1);
             DocumentWriteOperation documentWriteOperation = splitter.getVisitor().makeDocumentWriteOperation(
                     splitter.getUriMaker(),
                     splitter.getCount(),

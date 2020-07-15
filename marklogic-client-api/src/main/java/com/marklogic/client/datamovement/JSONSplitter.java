@@ -57,7 +57,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
     }
 
     private JSONSplitter.Visitor<T> visitor;
-    private long count = 0;
+    private ThreadLocal<Long> count = new ThreadLocal<>();
     private String inputName;
 
     /**
@@ -89,7 +89,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
 
     @Override
     public long getCount() {
-        return count;
+        return count.get();
     }
 
     /**
@@ -148,7 +148,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
-        count = 0;
+        count.set(0L);
 
         JSONSplitter.HandleSpliterator<T> handleSpliterator = new JSONSplitter.HandleSpliterator<>(this, input);
         return StreamSupport.stream(handleSpliterator, true);
@@ -166,7 +166,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
-        count = 0;
+        count.set(0L);
 
         this.inputName = inputName;
         JSONSplitter.DocumentWriteOperationSpliterator spliterator =
@@ -478,7 +478,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
                 return false;
             }
 
-            getSplitter().count++;
+            getSplitter().count.set(getSplitter().getCount() + 1);
             action.accept(handle);
 
             return true;
@@ -510,7 +510,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
                 }
             }
 
-            getSplitter().count++;
+            getSplitter().count.set(getSplitter().getCount() + 1);
             DocumentWriteOperation documentWriteOperation = getSplitter().getVisitor().makeDocumentWriteOperation(
                     getSplitter().getUriMaker(),
                     getSplitter().getCount(),

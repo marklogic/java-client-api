@@ -31,7 +31,7 @@ import java.util.stream.Stream;
  */
 public class UnarySplitter implements Splitter<InputStreamHandle> {
     private UnarySplitter.UriMaker uriMaker;
-    private long count = 0;
+    private ThreadLocal<Long> count = new ThreadLocal<>();
 
     /**
      * Get the UriMaker of the splitter
@@ -62,7 +62,7 @@ public class UnarySplitter implements Splitter<InputStreamHandle> {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
-        count = 0;
+        count.set(0L);
 
         InputStreamHandle handle = new InputStreamHandle(input);
         return Stream.of(handle);
@@ -90,7 +90,7 @@ public class UnarySplitter implements Splitter<InputStreamHandle> {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
-        count = 0;
+        count.set(0L);
         InputStreamHandle handle = new InputStreamHandle(input);
 
         if (getUriMaker() == null) {
@@ -111,7 +111,7 @@ public class UnarySplitter implements Splitter<InputStreamHandle> {
                 handle
         );
 
-        this.count++;
+        this.count.set(getCount() + 1);
         return Stream.of(documentWriteOperation);
     }
 
@@ -120,7 +120,7 @@ public class UnarySplitter implements Splitter<InputStreamHandle> {
      * @return the number of splits
      */
     public long getCount() {
-        return this.count;
+        return this.count.get();
     }
 
     /**
