@@ -31,7 +31,7 @@ import java.util.stream.Stream;
  */
 public class LineSplitter implements Splitter<StringHandle> {
     private Format format = Format.JSON;
-    private long count = 0;
+    private static ThreadLocal<Long> count = new ThreadLocal<>();
 
     /**
      * Returns the document format set to splitter.
@@ -60,7 +60,7 @@ public class LineSplitter implements Splitter<StringHandle> {
      */
     @Override
     public long getCount() {
-        return count;
+        return count.get();
     }
 
     /**
@@ -105,7 +105,7 @@ public class LineSplitter implements Splitter<StringHandle> {
             throw new IllegalArgumentException("InputStream cannot be null.");
         }
 
-        count = 0;
+        count.set(0L);
         String extension = getFormat().getDefaultExtension();
         if (getUriMaker() == null) {
             LineSplitter.UriMakerImpl uriMaker = new LineSplitter.UriMakerImpl();
@@ -125,9 +125,9 @@ public class LineSplitter implements Splitter<StringHandle> {
                 .lines()
                 .filter(line -> line.length() != 0)
                 .map(line -> {
-                    count++;
+                    count.set(count.get() + 1);
                     StringHandle handle = new StringHandle(line);
-                    String uri = getUriMaker().makeUri(count, handle);
+                    String uri = getUriMaker().makeUri(count.get(), handle);
                     return new DocumentWriteOperationImpl(
                             DocumentWriteOperation.OperationType.DOCUMENT_WRITE,
                             uri,
@@ -167,12 +167,12 @@ public class LineSplitter implements Splitter<StringHandle> {
             throw new IllegalArgumentException("Reader cannot be null.");
         }
 
-        count = 0;
+        count.set(0L);
         return new BufferedReader(input)
                 .lines()
                 .filter(line -> line.length() != 0)
                 .map(line -> {
-                    count++;
+                    count.set(count.get() + 1);
                     return new StringHandle(line).withFormat(getFormat());
                 });
     }
