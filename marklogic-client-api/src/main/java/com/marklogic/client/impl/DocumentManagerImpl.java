@@ -15,11 +15,8 @@
  */
 package com.marklogic.client.impl;
 
-
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.nio.charset.CharsetEncoder;
+import java.util.*;
 
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.datatype.Duration;
@@ -632,10 +629,27 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
                     Transaction transaction, String temporalCollection) {
     if ( writeSet == null ) throw new IllegalArgumentException("writeSet must not be null");
     Format defaultFormat = contentFormat;
+    RequestParameters extraParams = getWriteParams();
+    String extraContentDispositionParams = "";
+    if (extraParams != null && extraParams.size() > 0) {
+      CharsetEncoder asciiEncoder = java.nio.charset.StandardCharsets.US_ASCII.newEncoder();
+      StringBuilder extraParamBldr = new StringBuilder();
+      for (Map.Entry<String, List<String>> entry: extraParams.entrySet()) {
+        String key = entry.getKey();
+        for (String value: entry.getValue()) {
+          extraParamBldr.append("; ");
+          extraParamBldr.append(key);
+          extraParamBldr.append(Utilities.escapeMultipartParamAssignment(asciiEncoder, value));
+        }
+      }
+      if (extraParamBldr.length() > 0) {
+        extraContentDispositionParams = extraParamBldr.toString();
+      }
+    }
     services.postBulkDocuments(requestLogger, writeSet,
       (transform != null) ? transform : getWriteTransform(),
       transaction,
-      defaultFormat, null, temporalCollection);
+      defaultFormat, null, temporalCollection, extraContentDispositionParams);
   }
 
   // shortcut writers

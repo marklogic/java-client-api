@@ -3557,53 +3557,47 @@ public class OkHttpServices implements RESTServices {
   }
 
   @Override
-  public void postBulkDocuments(
-    RequestLogger reqlog, DocumentWriteSet writeSet,
-    ServerTransform transform, Transaction transaction, Format defaultFormat)
-    throws ForbiddenUserException,  FailedRequestException
-  {
-    postBulkDocuments(reqlog, writeSet, transform, transaction, defaultFormat, null, null);
-  }
-
-  @Override
   public <R extends AbstractReadHandle> R postBulkDocuments(
     RequestLogger reqlog, DocumentWriteSet writeSet,
     ServerTransform transform, Transaction transaction, Format defaultFormat, R output,
-    String temporalCollection)
+    String temporalCollection, String extraContentDispositionParams)
     throws ForbiddenUserException,  FailedRequestException
   {
+    CharsetEncoder asciiEncoder = java.nio.charset.StandardCharsets.US_ASCII.newEncoder();
+
     List<AbstractWriteHandle> writeHandles = new ArrayList<AbstractWriteHandle>();
     List<RequestParameters> headerList = new ArrayList<RequestParameters>();
     for ( DocumentWriteOperation write : writeSet ) {
-      String temporalDocumentURI = write.getTemporalDocumentURI();
       HandleImplementation metadata = HandleAccessor.checkHandle(write.getMetadata(), "write");
       HandleImplementation content = HandleAccessor.checkHandle(write.getContent(), "write");
-      String contentDispositionTemporal = "";
-      if (temporalDocumentURI != null) {
-        // escape any quotes or back-slashes in the uri
-        temporalDocumentURI = escapeContentDispositionFilename(temporalDocumentURI);
-        contentDispositionTemporal = "; temporal-document="+temporalDocumentURI;
-      }
+
+      String dispositionFilename = (write.getUri() == null) ? "" :
+              ("; " + DISPOSITION_PARAM_FILENAME + Utilities.escapeMultipartParamAssignment(asciiEncoder, write.getUri()));
+      String dispositionTemporalDoc = (write.getTemporalDocumentURI() == null) ? "" :
+              ("; " + DISPOSITION_PARAM_TEMPORALDOC + Utilities.escapeMultipartParamAssignment(asciiEncoder, write.getTemporalDocumentURI()));
+
       if ( write.getOperationType() == DocumentWriteOperation.OperationType.DISABLE_METADATA_DEFAULT ) {
         RequestParameters headers = new RequestParameters();
         headers.add(HEADER_CONTENT_TYPE, metadata.getMimetype());
-        headers.add(HEADER_CONTENT_DISPOSITION, DISPOSITION_TYPE_INLINE + "; category=metadata" + contentDispositionTemporal);
+        headers.add(HEADER_CONTENT_DISPOSITION,
+                DISPOSITION_TYPE_INLINE + "; "+DISPOSITION_PARAM_CATEGORY+"=metadata");
         headerList.add(headers);
         writeHandles.add(write.getMetadata());
       } else if ( metadata != null ) {
         RequestParameters headers = new RequestParameters();
         headers.add(HEADER_CONTENT_TYPE, metadata.getMimetype());
         if ( write.getOperationType() == DocumentWriteOperation.OperationType.METADATA_DEFAULT ) {
-          headers.add(HEADER_CONTENT_DISPOSITION, DISPOSITION_TYPE_INLINE + "; category=metadata" + contentDispositionTemporal);
+          headers.add(HEADER_CONTENT_DISPOSITION,
+                  DISPOSITION_TYPE_INLINE + "; "+DISPOSITION_PARAM_CATEGORY+"=metadata");
         } else {
-          String disposition = DISPOSITION_TYPE_ATTACHMENT  + "; " +
-            DISPOSITION_PARAM_FILENAME + "=" + escapeContentDispositionFilename(write.getUri()) +
-            "; category=metadata" + contentDispositionTemporal;
-          headers.add(HEADER_CONTENT_DISPOSITION, disposition);
+          headers.add(HEADER_CONTENT_DISPOSITION,
+                  DISPOSITION_TYPE_ATTACHMENT + dispositionFilename + dispositionTemporalDoc +
+                  "; " + DISPOSITION_PARAM_CATEGORY + "=metadata");
         }
         headerList.add(headers);
         writeHandles.add(write.getMetadata());
       }
+
       if ( content != null ) {
         RequestParameters headers = new RequestParameters();
         String mimeType = content.getMimetype();
@@ -3611,22 +3605,9 @@ public class OkHttpServices implements RESTServices {
           mimeType = defaultFormat.getDefaultMimetype();
         }
         headers.add(HEADER_CONTENT_TYPE, mimeType);
-        String disposition = null;
-        CharsetEncoder asciiEncoder = java.nio.charset.StandardCharsets.US_ASCII.newEncoder();
-        if(asciiEncoder.canEncode(write.getUri())) {
-            disposition = DISPOSITION_TYPE_ATTACHMENT + "; " +
-                      DISPOSITION_PARAM_FILENAME + "=" + escapeContentDispositionFilename(write.getUri()) + contentDispositionTemporal;
-        }
-        else {
-            try {
-                disposition = DISPOSITION_TYPE_ATTACHMENT + "; " +
-                          DISPOSITION_PARAM_FILENAME + "*=UTF-8''" + URLEncoder.encode(write.getUri(), "UTF-8") + contentDispositionTemporal;
-              } catch (Exception ex) {
-                  throw new IllegalArgumentException("Uri cannot be encoded as UFT-8");
-              }
-        }
-        asciiEncoder.reset();
-        headers.add(HEADER_CONTENT_DISPOSITION, disposition);
+        headers.add(HEADER_CONTENT_DISPOSITION,
+                DISPOSITION_TYPE_ATTACHMENT + dispositionFilename + dispositionTemporalDoc +
+                        extraContentDispositionParams);
         headerList.add(headers);
         writeHandles.add(write.getContent());
       }
@@ -3642,14 +3623,7 @@ public class OkHttpServices implements RESTServices {
       output);
   }
 
-  // TODO: See what other escaping we need to do for filenames
-  private String escapeContentDispositionFilename(String str) {
-    if ( str == null ) return null;
-    // escape any quotes or back-slashes
-    return "\"" + str.replace("\"", "\\\"").replace("\\", "\\\\") + "\"";
-  }
-
-  public class OkHttpEvalResultIterator implements EvalResultIterator {
+    public class OkHttpEvalResultIterator implements EvalResultIterator {
     private OkHttpResultIterator iterator;
 
     OkHttpEvalResultIterator(OkHttpResultIterator iterator) {

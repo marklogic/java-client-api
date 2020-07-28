@@ -28,7 +28,9 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -521,6 +523,7 @@ public final class Utilities {
 
     return new XMLEventListReader(events);
   }
+
   static class XMLEventListReader implements XMLEventReader {
     private List<XMLEvent> events;
     private int curr = -1;
@@ -721,5 +724,22 @@ public final class Utilities {
    */
   static public void write(Reader in, OutputStream out) throws IOException {
       write(in, new OutputStreamWriter(out));
+  }
+
+  static String escapeMultipartParamAssignment(CharsetEncoder asciiEncoder, String value) {
+    if (value == null) return null;
+    String assignment = null;
+    if (asciiEncoder.canEncode(value)) {
+      // escape any quotes or back-slashes
+      assignment = "=\"" + value.replace("\"", "\\\"").replace("\\", "\\\\") + "\"";
+    } else {
+      try {
+        assignment = "*=UTF-8''" + URLEncoder.encode(value, "UTF-8");
+      } catch (Throwable ex) {
+        throw new IllegalArgumentException("Uri cannot be encoded as UFT-8: "+value, ex);
+      }
+    }
+    asciiEncoder.reset();
+    return assignment;
   }
 }

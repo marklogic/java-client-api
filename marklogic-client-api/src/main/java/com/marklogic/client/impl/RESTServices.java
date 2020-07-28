@@ -92,6 +92,7 @@ public interface RESTServices {
   String DISPOSITION_TYPE_ATTACHMENT = "attachment";
   String DISPOSITION_TYPE_INLINE = "inline";
   String DISPOSITION_PARAM_FILENAME = "filename";
+  String DISPOSITION_PARAM_TEMPORALDOC = "temporal-document";
   String DISPOSITION_PARAM_CATEGORY = "category";
 
   String MIMETYPE_WILDCARD = "*/*";
@@ -148,14 +149,11 @@ public interface RESTServices {
                                        long start, long pageLength, Transaction transaction, SearchReadHandle searchHandle,
                                        QueryView view, Set<Metadata> categories, Format format, ServerTransform responseTransform,
                                        RequestParameters extraParams, String forestName)
-    throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+          throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
-  public void postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
-                                ServerTransform transform, Transaction transaction, Format defaultFormat)
-    throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
   public <T extends AbstractReadHandle> T postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
                                                             ServerTransform transform, Transaction transaction, Format defaultFormat, T output,
-                                                            String temporalCollection)
+                                                            String temporalCollection, String extraContentDispositionParams)
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
   public TemporalDescriptor putDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,
