@@ -56,7 +56,6 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     private RowBatchFailureListener[] failureListeners;
     private RowBatchSuccessListener[] sucessListeners;
 
-    // TODO: remove inputPlan, schemaName, and viewName?
     private PlanBuilder.ModifyPlan inputPlan;
     private String schemaName;
     private String viewName;
@@ -128,7 +127,6 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         this.pagedPlan  = getRowManager().newRawPlanDefinition(new JacksonHandle(viewInfo.get("modifiedPlan")));
         logger.info("plan analysis schema name: {}, view name: {}, row estimate: {}",
                 this.schemaName, this.viewName, this.rowCount);
-// TODO: also viewColumns? tableID?
     }
 
     @Override
