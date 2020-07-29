@@ -45,11 +45,12 @@ public interface Splitter<T extends AbstractWriteHandle> {
     /**
      * Converts the incoming input stream to a stream of DocumentWriteOperation objects.
      * @param input is the incoming input stream.
-     * @param inputName
+     * @param splitFilename the name and extension given to current input file. The names of split files are generated
+     *                      from it.
      * @return a stream of DocumentWriteOperation objects.
      * @throws Exception if the input cannot be split
      */
-    Stream<DocumentWriteOperation> splitWriteOperations(InputStream input, String inputName) throws Exception;
+    Stream<DocumentWriteOperation> splitWriteOperations(InputStream input, String splitFilename) throws Exception;
 
     /**
      * UriMaker generates URI for each split file.
