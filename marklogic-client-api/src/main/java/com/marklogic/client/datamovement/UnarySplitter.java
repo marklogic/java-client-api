@@ -81,12 +81,12 @@ public class UnarySplitter implements Splitter<InputStreamHandle> {
     /**
      * Takes a input stream and the name of a file, then convert the entire file to a stream of DocumentWriteOperation
      * @param input is the incoming input stream.
-     * @param inputName is the file name, including name and extension. It is used to generate URLs for split files.
+     * @param splitFilename is the file name, including name and extension. It is used to generate URLs for split files.
      *                  The inputName could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation
      * @throws Exception if input cannot be split
      */
-    public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input, String inputName) throws Exception {
+    public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input, String splitFilename) throws Exception {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
@@ -98,8 +98,8 @@ public class UnarySplitter implements Splitter<InputStreamHandle> {
             setUriMaker(uriMaker);
         }
 
-        if (inputName != null) {
-            uriMaker.setInputName(inputName);
+        if (splitFilename != null) {
+            uriMaker.setInputName(splitFilename);
         }
 
         String uri = uriMaker.makeUri(handle);

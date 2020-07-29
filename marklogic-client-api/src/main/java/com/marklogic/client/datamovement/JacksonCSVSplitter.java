@@ -185,12 +185,12 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
      * Takes the input Reader and the input name, then converts the input Reader into a stream of DocumentWriteOperation
      * by setting the schema and wrapping the JsonNode into DocumentWriteOperation.
      * @param input is the incoming input Reader.
-     * @param inputName the name of the input Reader, including name and extension. It is used to generate URLs for
+     * @param splitFilename the name of the input Reader, including name and extension. It is used to generate URLs for
      *                  split files.The inputName could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation.
      * @throws Exception if the input cannot be split
      */
-    public Stream<DocumentWriteOperation> splitWriteOperations(Reader input, String inputName) throws Exception {
+    public Stream<DocumentWriteOperation> splitWriteOperations(Reader input, String splitFilename) throws Exception {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
@@ -200,8 +200,8 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
             setUriMaker(uriMaker);
         }
 
-        if (inputName != null) {
-            getUriMaker().setInputName(inputName);
+        if (splitFilename != null) {
+            getUriMaker().setInputName(splitFilename);
         }
 
         //for case file.csv, to generate uris with extension "json"

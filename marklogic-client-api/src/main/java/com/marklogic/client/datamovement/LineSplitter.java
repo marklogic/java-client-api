@@ -94,13 +94,13 @@ public class LineSplitter implements Splitter<StringHandle> {
      * could be line-delimited JSON, XML or TEXT file. It could also be gzip-compressed line-delimited files.
      * Provide GZIPInputStream to the splitter when splitting gzip files.
      * @param input is the incoming input stream.
-     * @param inputName is the name of the input file, including name and extension. It is used to generate URLs for
+     * @param splitFilename is the name of the input file, including name and extension. It is used to generate URLs for
      *                  split files. The inputName could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation.
      * @throws Exception
      */
     @Override
-    public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input, String inputName) throws Exception {
+    public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input, String splitFilename) throws Exception {
         if (input == null) {
             throw new IllegalArgumentException("InputStream cannot be null.");
         }
@@ -109,12 +109,12 @@ public class LineSplitter implements Splitter<StringHandle> {
         String extension = getFormat().getDefaultExtension();
         if (getUriMaker() == null) {
             LineSplitter.UriMakerImpl uriMaker = new LineSplitter.UriMakerImpl();
-            uriMaker.setInputName(inputName);
+            uriMaker.setInputName(splitFilename);
             uriMaker.setExtension(extension);
             setUriMaker(uriMaker);
         } else {
-            if (inputName != null) {
-                getUriMaker().setInputName(inputName);
+            if (splitFilename != null) {
+                getUriMaker().setInputName(splitFilename);
             }
             if (getUriMaker() instanceof LineSplitter.UriMakerImpl) {
                 ((LineSplitter.UriMakerImpl)getUriMaker()).setExtension(extension);
