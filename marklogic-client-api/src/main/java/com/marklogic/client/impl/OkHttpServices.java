@@ -166,7 +166,6 @@ public class OkHttpServices implements RESTServices {
   private HttpUrl baseUri;
   private OkHttpClient client;
   private boolean released = false;
-  private Authentication type = null;
 
   private Random randRetry    = new Random();
 
@@ -284,7 +283,6 @@ public class OkHttpServices implements RESTServices {
 	    clientBldr = configureAuthentication(kerberosContext, host,clientBldr); 
 	} else if (securityContext instanceof CertificateAuthContext) {
 		CertificateAuthContext certificateContext = (CertificateAuthContext) securityContext;
-		type = Authentication.CERTIFICATE;
 		sslContext = certificateContext.getSSLContext();
 		if (certificateContext.getTrustManager() != null)
 			trustManager = certificateContext.getTrustManager();
@@ -425,8 +423,7 @@ public class OkHttpServices implements RESTServices {
   public OkHttpClient.Builder configureAuthentication(BasicAuthContext basicAuthContext, OkHttpClient.Builder clientBuilder) {
       String user = basicAuthContext.getUser();
       String password = basicAuthContext.getPassword();
-      type = Authentication.BASIC;
-      if (user == null) 
+      if (user == null)
           throw new IllegalArgumentException("No user provided");
       if (password == null) 
           throw new IllegalArgumentException("No password provided");
@@ -444,8 +441,7 @@ public class OkHttpServices implements RESTServices {
 	  	OkHttpClient.Builder builder = clientBuilder;
         String user = digestAuthContext.getUser();
         String password = digestAuthContext.getPassword();
-        type = Authentication.DIGEST;
-        if (user == null) 
+        if (user == null)
             throw new IllegalArgumentException("No user provided");
         if (password == null) 
             throw new IllegalArgumentException("No password provided");
@@ -465,7 +461,6 @@ public class OkHttpServices implements RESTServices {
   }
   
   public OkHttpClient.Builder configureAuthentication(KerberosAuthContext keberosAuthContext, String host, OkHttpClient.Builder clientBuilder) {
-	  type = Authentication.KERBEROS;
 	  Map<String, String> kerberosOptions = keberosAuthContext.getKrbOptions();
 	  Interceptor interceptor = new HTTPKerberosAuthInterceptor(host, kerberosOptions);
       checkFirstRequest = false;
@@ -476,7 +471,6 @@ public class OkHttpServices implements RESTServices {
   }
   
   public OkHttpClient.Builder configureAuthentication(SAMLAuthContext samlAuthContext, OkHttpClient.Builder clientBuilder) {
-      type = Authentication.SAML;
       Interceptor interceptor = null;
       String authorizationTokenValue = samlAuthContext.getToken();
       
@@ -1753,7 +1747,7 @@ public class OkHttpServices implements RESTServices {
 
     Function<Request.Builder, Response> doPostFunction = new Function<Request.Builder, Response>() {
       public Response apply(Request.Builder funcBuilder) {
-        return sendRequestOnce(funcBuilder.post(RequestBody.create(null, "")));
+        return sendRequestOnce(funcBuilder.post(RequestBody.create("", null)));
       }
     };
     Response response = sendRequestWithRetry(requestBldr, doPostFunction, null);
@@ -1816,7 +1810,7 @@ public class OkHttpServices implements RESTServices {
 
     Function<Request.Builder, Response> doPostFunction = new Function<Request.Builder, Response>() {
       public Response apply(Request.Builder funcBuilder) {
-        return sendRequestOnce(funcBuilder.post(RequestBody.create(null, "")).build());
+        return sendRequestOnce(funcBuilder.post(RequestBody.create("", null)).build());
       }
     };
     Response response = sendRequestWithRetry(requestBldr, false, doPostFunction, null);
@@ -2922,7 +2916,7 @@ public class OkHttpServices implements RESTServices {
         }
 
         response = (sentValue == null) ?
-                   sendRequestOnce(requestBldr.post(RequestBody.create(null, "")).build()) :
+                   sendRequestOnce(requestBldr.post(RequestBody.create("", null)).build()) :
                    sendRequestOnce(requestBldr.post(sentValue).build());
       } else {
         throw new MarkLogicInternalException("unknown method type "
@@ -5777,7 +5771,7 @@ public class OkHttpServices implements RESTServices {
           .map(param -> encodeParamValue(param))
           .filter(param -> param != null)
           .collect(Collectors.joining("&"));
-      requestBody = RequestBody.create(URLENCODED_MIME_TYPE, (atomics == null) ? "" : atomics);
+      requestBody = RequestBody.create((atomics == null) ? "" : atomics, URLENCODED_MIME_TYPE);
       return this;
     }
 
