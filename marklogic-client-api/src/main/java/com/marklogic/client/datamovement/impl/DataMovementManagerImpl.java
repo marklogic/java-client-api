@@ -19,7 +19,6 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.datamovement.*;
 import com.marklogic.client.impl.DatabaseClientImpl;
-import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.RawCtsQueryDefinition;
@@ -37,26 +36,16 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DataMovementManagerImpl implements DataMovementManager {
-  private static Logger logger = LoggerFactory.getLogger(DataMovementManager.class);
+  private static final Logger logger = LoggerFactory.getLogger(DataMovementManager.class);
   private DataMovementServices service = new DataMovementServices();
-  private static ConcurrentHashMap<String, JobTicket> activeJobs = new ConcurrentHashMap<>();
+  private static final ConcurrentHashMap<String, JobTicket> activeJobs = new ConcurrentHashMap<>();
   private ForestConfiguration forestConfig;
   private DatabaseClient primaryClient;
   // clientMap key is the hostname_database
-  private Map<String,DatabaseClient> clientMap = new HashMap<>();
-
-  private long serverVersion = Long.parseUnsignedLong("9000000");
+  private final Map<String,DatabaseClient> clientMap = new HashMap<>();
 
   public DataMovementManagerImpl(DatabaseClient client) {
     setPrimaryClient(client);
-
-    try {
-      String version = ((DatabaseClientImpl) client).getServices()
-              .getResource(null, "internal/effective-version", null, null, new StringHandle())
-              .get();
-      serverVersion = Long.parseUnsignedLong(version);
-    } catch(Throwable e) {
-    }
 
     clientMap.put(primaryClient.getHost(), primaryClient);
   }
@@ -213,11 +202,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
   @Override
   public JobTicket getActiveJob(String jobId) {
     if (jobId == null)  throw new IllegalArgumentException("Job id must not be null");
-    if (activeJobs.containsKey(jobId)) {
-      return activeJobs.get(jobId);
-    } else {
-      return null;
-    }
+    return activeJobs.getOrDefault(jobId, null);
   }
 
   @Override
@@ -227,11 +212,11 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   @Override
   public <T> RowBatcher<T> newRowBatcher(ContentHandle<T> rowsHandle) {
-    return new RowBatcherImpl(this, rowsHandle);
+    return new RowBatcherImpl<>(this, rowsHandle);
   }
 
   @Override
-  public JobTicket startJob(RowBatcher batcher) {
+  public JobTicket startJob(RowBatcher<?> batcher) {
     if (batcher == null)
       throw new IllegalArgumentException("batcher must not be null");
     return service.startJob(batcher, activeJobs);
@@ -255,6 +240,6 @@ public class DataMovementManagerImpl implements DataMovementManager {
   }
 
   public long getServerVersion() {
-    return serverVersion;
+    return ((DatabaseClientImpl) getPrimaryClient()).getServerVersion();
   }
 }

@@ -17,7 +17,6 @@ package com.marklogic.client.impl;
 
 import com.marklogic.client.*;
 import com.marklogic.client.DatabaseClient.ConnectionResult;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.BasicAuthContext;
 import com.marklogic.client.DatabaseClientFactory.CertificateAuthContext;
 import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
@@ -167,14 +166,14 @@ public class OkHttpServices implements RESTServices {
   private OkHttpClient client;
   private boolean released = false;
 
-  private Random randRetry    = new Random();
+  private final Random randRetry = new Random();
 
   private int maxDelay = DEFAULT_MAX_DELAY;
   private int minRetry = DEFAULT_MIN_RETRY;
 
   private boolean checkFirstRequest = true;
 
-  private Set<Integer> retryStatus = new HashSet<>();
+  private final Set<Integer> retryStatus = new HashSet<>();
 
   static protected class ThreadState {
     boolean isFirstRequest;
@@ -183,12 +182,8 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  private final ThreadLocal<ThreadState> threadState = new ThreadLocal<ThreadState>() {
-    @Override
-    protected ThreadState initialValue() {
-      return new ThreadState(checkFirstRequest);
-    }
-  };
+  private final ThreadLocal<ThreadState> threadState =
+          ThreadLocal.withInitial(() -> new ThreadState(checkFirstRequest));
 
   public OkHttpServices() {
     retryStatus.add(STATUS_BAD_GATEWAY);
@@ -220,14 +215,12 @@ public class OkHttpServices implements RESTServices {
         return failure;
       }
       String responseBody = getEntity(response.body(), String.class);
-      InputStream is = new ByteArrayInputStream(responseBody.getBytes("UTF-8"));
+      InputStream is = new ByteArrayInputStream(responseBody.getBytes(StandardCharsets.UTF_8));
       FailedRequest handler = FailedRequest.getFailedRequest(response.code(), response.header(HEADER_CONTENT_TYPE), is);
       if (handler.getMessage() == null) {
         handler.setMessageString(responseBody);
       }
       return handler;
-    } catch (UnsupportedEncodingException e) {
-      throw new IllegalStateException("UTF-8 is unsupported", e);
     } finally {
       closeResponse(response);
     }
@@ -942,9 +935,9 @@ public class OkHttpServices implements RESTServices {
   }
 
   private class OkHttpDocumentPage extends BasicPage<DocumentRecord> implements DocumentPage, Iterator<DocumentRecord> {
-    private OkHttpResultIterator iterator;
-    private boolean hasMetadata;
-    private boolean hasContent;
+    private final OkHttpResultIterator iterator;
+    private final boolean hasMetadata;
+    private final boolean hasContent;
 
     OkHttpDocumentPage(OkHttpResultIterator iterator, boolean hasContent, boolean hasMetadata) {
       super(
@@ -3036,6 +3029,14 @@ public class OkHttpServices implements RESTServices {
     logRequest(reqlog, "deleted %s values", type);
   }
 
+  @Override
+  public <R extends AbstractReadHandle> R getSystemSchema(RequestLogger reqlog, String schemaName, R output)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    RequestParameters params = new RequestParameters();
+    params.add("system", schemaName);
+    return getResource(reqlog, "internal/schemas", null, params, output);
+  }
   @Override
   public <R extends UrisReadHandle> R uris(RequestLogger reqlog, String method, QueryDefinition qdef,
         Boolean filtered, long start, String afterUri, long pageLength, String forestName, R output

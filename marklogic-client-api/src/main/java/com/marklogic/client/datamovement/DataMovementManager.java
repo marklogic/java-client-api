@@ -77,7 +77,7 @@ public interface DataMovementManager {
    * @param batcher the RowBatcher instance to start
    * @return a JobTicket which can be used to track the job
    */
-  JobTicket startJob(RowBatcher batcher);
+  JobTicket startJob(RowBatcher<?>  batcher);
 
   /**
    * Get a snapshot report of the state of the job when the call is made.

@@ -1,0 +1,75 @@
+{"$schema":      "http://json-schema.org/draft-07/schema#",
+  "title":       "MarkLogic Endpoint Function Declaration",
+  "$comment":    "SIMPLIFIED TO THE STABLE DECLARATIONS USED FOR CODE GENERATION",
+  "type":        "object",
+  "definitions": {
+    "desc": {
+      "type":"string", "description":"Documentation about the property"
+    },
+    "datatype": {
+      "type":"string", "description":"The type of the value",
+      "enum":[
+        "boolean", "date", "dateTime", "dayTimeDuration", "decimal", "double", "float",
+        "int", "long", "string", "time", "unsignedInt", "unsignedLong",
+        "array", "object",
+        "binaryDocument", "jsonDocument", "textDocument", "xmlDocument",
+        "session"
+      ]
+    },
+    "nullable": {
+      "type":"boolean", "description":"Whether a null value is allowed",
+      "default":false
+    },
+    "multiple": {
+      "type":"boolean", "description":"Whether multiple values are allowed",
+      "default":false
+    },
+    "$comment": "SIMPLIFIED BY DELETING doubleMeter, doubleLiteral, ulMeter, AND unsignedLongLiteral"
+  },
+  "propertyNames": {
+    "$comment": "MODIFIED TO ALLOW FOR PROPERTIES DELETED DURING SIMPLIFICATION OR ADDED IN LATER RELEASES",
+    "pattern": "^\\$?[A-Za-z_][\\w.-]*$"
+  },
+  "properties":  {
+    "functionName": {
+      "type":"string", "description":"The name of a database function provided by a service declared by service.json"
+    },
+    "endpoint": {
+      "type":"string", "description":"The full path name of a standalone bulk IO endpoint"
+    },
+    "desc":         {"$ref":"#/definitions/desc"},
+    "params":       {
+      "type":"array", "description":"The parameters of the function",
+      "items": {
+        "type":"object",
+        "required":   ["name", "datatype"],
+        "propertyNames": {
+          "pattern": "^(\\$[A-Za-z_][\\w.-]*|name|desc|datatype|nullable|multiple)$"
+        },
+        "properties": {
+          "name":  {
+            "type":"string", "description":"The name of the function parameter"
+          },
+          "desc":     {"$ref":"#/definitions/desc"},
+          "datatype": {"$ref":"#/definitions/datatype"},
+          "nullable": {"$ref":"#/definitions/nullable"},
+          "multiple": {"$ref":"#/definitions/multiple"}
+        }
+      }
+    },
+    "return": {
+      "type":"object", "description":"The return value of the function",
+      "required":   ["datatype"],
+      "propertyNames": {
+        "pattern": "^(\\$[A-Za-z_][\\w.-]*|desc|datatype|nullable|multiple)$"
+      },
+      "properties": {
+        "desc":     {"$ref":"#/definitions/desc"},
+        "datatype": {"$ref":"#/definitions/datatype"},
+        "nullable": {"$ref":"#/definitions/nullable"},
+        "multiple": {"$ref":"#/definitions/multiple"}
+      }
+    },
+    "$comment": "SIMPLIFIED BY DELETING errorDetail AND monitoring"
+  }
+}
