@@ -75,10 +75,6 @@ import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 
-/**
- * @author gvaidees
- *
- */
 public abstract class ConnectedRESTQA {
 	private String serverName = "";
 	private static String restServerName = null;
@@ -1835,7 +1831,7 @@ public abstract class ConnectedRESTQA {
 				// does not have a value.
 				// For example : as in namespace, collections below.
 				{ "date", "http://purl.org/dc/elements/1.1/", "date", "", "false", "reject" },
-				{ "int", "", "popularity", "", "false", "reject" },
+				{ "decimal", "", "popularity", "", "false", "reject" },
 				{ "int", "http://test.tups.com", "rate", "", "false", "reject" },
 				{ "decimal", "http://test.aggr.com", "score", "", "false", "reject" },
 				{ "string", "", "title", "http://marklogic.com/collation/", "false", "reject" }
