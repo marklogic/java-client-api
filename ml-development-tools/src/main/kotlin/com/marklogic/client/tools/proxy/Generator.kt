@@ -29,7 +29,6 @@ class Generator {
   companion object {
     val mapper = jacksonObjectMapper()
     val schema: JsonSchema = JsonSchemaFactory.Builder()
-            // TODO: negative tests; jar
             .addMetaSchema(
                     JsonMetaSchema.builder(JsonMetaSchema.getV7().uri, JsonMetaSchema.getV7())
                             .addKeyword(NonValidationKeyword("\$comment"))

@@ -1,21 +1,16 @@
-buildscript {
-    repositories {
-        jcenter()
-        mavenCentral()
-        maven { url 'http://developer.marklogic.com/maven2' }
-    }
-
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.71"
-    }
-}
-
 plugins {
-    id 'java'
-    id 'java-gradle-plugin'
+    id "groovy"
     id 'maven-publish'
     id 'com.gradle.plugin-publish' version '0.12.0'
+    id 'java-gradle-plugin'
     id 'org.jetbrains.kotlin.jvm'  version '1.3.71'
+}
+
+repositories {
+    mavenLocal()
+    jcenter()
+    mavenCentral()
+    maven { url 'http://developer.marklogic.com/maven2' }
 }
 
 dependencies {
@@ -27,14 +22,27 @@ dependencies {
     testCompileOnly gradleTestKit()
 }
 
-task mlDevelopmentToolsPlugin(type: Jar) {
+task mlDevelopmentToolsJar(type: Jar, dependsOn: classes) {
+    archivesBaseName = 'ml-development-tools'
     baseName = 'ml-development-tools'
+}
+
+gradlePlugin {
+    plugins {
+        mlDevelopmentToolsPlugin {
+            id = 'com.marklogic.ml-development-tools'
+            implementationClass = 'com.marklogic.client.tools.gradle.ToolsPlugin'
+            displayName = 'ml-development-tools MarkLogic Data Service Tools'
+            description = 'ml-development-tools plugin for developing data services on MarkLogic'
+            version = project.version
+        }
+    }
 }
 
 publishing {
     publications {
         main(MavenPublication) {
-            artifact mlDevelopmentToolsPlugin
+            from components.java
         }
     }
 }
@@ -48,6 +56,7 @@ pluginBundle {
             displayName = 'ml-development-tools MarkLogic Data Service Tools'
             description = 'ml-development-tools plugin for developing data services on MarkLogic'
             tags = ['marklogic', 'development tools', 'data services']
+            version = project.version
         }
     }
 }
