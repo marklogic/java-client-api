@@ -139,7 +139,7 @@ public interface XdmpExpr {
   */
   public ServerExpression crypt2(ServerExpression password);
 /**
-  * Returns string representing the dayname value in the localized value of arg.
+  * Returns string representing the dayname value in the localized value of arg. 
   *
   * <a name="ml-server-type-dayname-from-date"></a>
   
@@ -1085,7 +1085,7 @@ public interface XdmpExpr {
   */
   public ServerExpression QNameFromKey(ServerExpression key);
 /**
-  * Returns an integer between 1 and 4, both inclusive, calculating the quarter component in the localized value of arg.
+  * Returns an integer between 1 and 4, both inclusive, calculating the quarter component in the localized value of arg. 
   *
   * <a name="ml-server-type-quarter-from-date"></a>
   
@@ -1389,7 +1389,7 @@ public interface XdmpExpr {
   */
   public ServerExpression wallclockToTimestamp(ServerExpression timestamp);
 /**
-  * Returns an integer between 1 and 53, both inclusive, representing the week value in the localized value of arg.
+  * Returns an integer between 1 and 53, both inclusive, representing the week value in the localized value of arg. 
   *
   * <a name="ml-server-type-week-from-date"></a>
   
@@ -1400,7 +1400,7 @@ public interface XdmpExpr {
   */
   public ServerExpression weekFromDate(ServerExpression arg);
 /**
-  * Returns an integer in the range 1 to 7, inclusive, representing the weekday value in the localized value of arg. Monday is the first weekday value (value of 1), and Sunday is the last (value of 7).
+  * Returns an integer in the range 1 to 7, inclusive, representing the weekday value in the localized value of arg. Monday is the first weekday value (value of 1), and Sunday is the last (value of 7). 
   *
   * <a name="ml-server-type-weekday-from-date"></a>
   
@@ -1423,7 +1423,7 @@ public interface XdmpExpr {
   */
   public ServerExpression xor64(ServerExpression x, ServerExpression y);
 /**
-  * Returns an integer between 1 and 366, both inclusive, representing the yearday value in the localized value of arg.
+  * Returns an integer between 1 and 366, both inclusive, representing the yearday value in the localized value of arg. 
   *
   * <a name="ml-server-type-yearday-from-date"></a>
   

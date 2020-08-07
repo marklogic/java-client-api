@@ -552,7 +552,7 @@ public ServerExpression rowID(ServerExpression arg1);
   */
   public ServerExpression timestampdiff(ServerExpression dateTimeType, ServerExpression timestamp1, ServerExpression timestamp2);
 /**
-  * Return a string that removes leading empty spaces in the input string.
+  * Return a string that removes leading and trailing empty spaces in the input string.
   *
   * <a name="ml-server-type-trim"></a>
   

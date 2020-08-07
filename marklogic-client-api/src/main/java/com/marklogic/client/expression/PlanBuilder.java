@@ -65,8 +65,8 @@ import com.marklogic.client.type.PlanTriplePositionSeq;
 
 import com.marklogic.client.expression.CtsExpr; 
 import com.marklogic.client.expression.FnExpr; 
-import com.marklogic.client.expression.GeoExpr;
-import com.marklogic.client.expression.JsonExpr;
+import com.marklogic.client.expression.GeoExpr; 
+import com.marklogic.client.expression.JsonExpr; 
 import com.marklogic.client.expression.MapExpr; 
 import com.marklogic.client.expression.MathExpr; 
 import com.marklogic.client.expression.RdfExpr; 
@@ -158,7 +158,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ServerExpression add(ServerExpression... left);
   /**
-  * This function returns true if the specified expressions all return true. Otherwise, it returns false.
+  * This function returns true if the specified expressions all return true. Otherwise, it returns false. 
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:and" target="mlserverdoc">op:and</a> server function.
   * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
@@ -228,7 +228,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ServerExpression lt(ServerExpression left, ServerExpression right);
   /**
-  * This function multiplies the left numericExpression by the right numericExpression and returns the value.
+  * This function multiplies the left numericExpression by the right numericExpression and returns the value. 
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:multiply" target="mlserverdoc">op:multiply</a> server function.
   * @param left  The left numeric expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
@@ -609,14 +609,14 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanCondition sqlCondition(XsStringVal expression);
   /**
-  * Specifies an equijoin using one columndef each from the left and right rows. The result is used by the op:join-inner and op:join-left-outer functions. 
+  * Specifies an equijoin using one columndef each from the left and right rows. The result is used by the op:join-inner, op:join-left-outer, and op:join-full-outer, and functions. 
   * @param left  The rows from the left view.
   * @param right  The row set from the right view.
   * @return  a PlanJoinKey object
   */
   public abstract PlanJoinKey on(String left, String right);
   /**
-  * Specifies an equijoin using one columndef each from the left and right rows. The result is used by the op:join-inner and op:join-left-outer functions. 
+  * Specifies an equijoin using one columndef each from the left and right rows. The result is used by the op:join-inner, op:join-left-outer, and op:join-full-outer, and functions. 
   * @param left  The rows from the left view.
   * @param right  The row set from the right view.
   * @return  a PlanJoinKey object
@@ -1327,27 +1327,27 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
 /**
-  * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
   * @param right  The row set from the right view.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right);
 /**
-  * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKey... keys);
 /**
-  * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys);
 /**
-  * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function.
   * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
@@ -1355,13 +1355,49 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
 /**
-  * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function.
   * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
+/**
+  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets. 
+  * @param right  The row set from the right view.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan joinFullOuter(ModifyPlan right);
+/**
+  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets. 
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKey... keys);
+/**
+  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets. 
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKeySeq keys);
+/**
+  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets. 
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
+/**
+  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets. 
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
 /**
   * This method sorts the row set by the specified order definition.
   * @param keys  The specified column or sortdef output from the op:asc or op:desc function.
