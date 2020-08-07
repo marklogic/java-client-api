@@ -97,7 +97,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
         this.filtered = filtered;
       }
     } else {
-      initQuery(query);
+      initQuery(originalQuery);
     }
   }
   public QueryBatcherImpl(QueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
@@ -114,6 +114,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     withBatchSize(1000);
   }
   private void initQuery(QueryDefinition query) {
+    if (query == null) {
+      throw new IllegalArgumentException("Cannot create QueryBatcher with null query");
+    }
     // post if the effective version is at least 10.0-5
     this.queryMethod =
         (Long.compareUnsigned(getMoveMgr().getServerVersion(), Long.parseUnsignedLong("10000500")) >= 0) ?
@@ -375,10 +378,12 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     if(this.maxBatches < Long.MAX_VALUE) {
     	setMaxUris(getMaxBatches());
     }
-    if ( query != null ) {
+    if (query != null) {
       startQuerying();
-    } else {
+    } else if (iterator != null) {
       startIterating();
+    } else {
+      throw new IllegalStateException("Cannot start QueryBatcher without query or iterator");
     }
   }
 
