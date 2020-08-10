@@ -57,10 +57,12 @@ javadoc {
     options.overview = "src/main/javadoc/overview.html"
     options.windowTitle = "$rootProject.describedName $rootProject.version"
     options.docTitle = "$rootProject.describedName $rootProject.version"
-    options.bottom = "Copyright &copy; 2013-2019 MarkLogic Corporation."
+    options.bottom = "Copyright &copy; 2013-2020 MarkLogic Corporation."
     options.links = [ 'http://docs.oracle.com/javase/8/docs/api/' ]
     options.use = true
-    options.addBooleanOption('html4', true)
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html4', true)
+    }
     exclude([
             '**/impl/**', '**/jaxb/**', '**/test/**'
     ])
