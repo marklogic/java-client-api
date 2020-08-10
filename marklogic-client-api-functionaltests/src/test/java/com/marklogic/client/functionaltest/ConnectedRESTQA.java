@@ -1831,7 +1831,7 @@ public abstract class ConnectedRESTQA {
 				// does not have a value.
 				// For example : as in namespace, collections below.
 				{ "date", "http://purl.org/dc/elements/1.1/", "date", "", "false", "reject" },
-				{ "decimal", "", "popularity", "", "false", "reject" },
+				{ "int", "", "popularity", "", "false", "reject" },
 				{ "int", "http://test.tups.com", "rate", "", "false", "reject" },
 				{ "decimal", "http://test.aggr.com", "score", "", "false", "reject" },
 				{ "string", "", "title", "http://marklogic.com/collation/", "false", "reject" }
