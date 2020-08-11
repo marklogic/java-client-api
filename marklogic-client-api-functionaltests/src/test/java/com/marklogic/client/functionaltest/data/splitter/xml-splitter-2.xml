@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ml:SalesOrders xmlns:ml="http://www.mlqa.com/">
+    <catalog>
+    <book id="bk101">
+        <author>Gambardella, Matthew</author>
+        <title>XML Developer's Guide</title>
+        <genre>Computer</genre>
+        <price>44.95</price>
+        <OrderedDate>2000-10-01
+        </OrderedDate>
+        <description>An in-depth look at creating applications
+            with XML.</description>
+    </book>
+    <book id="bk102">
+        <author>Ralls, Kim</author>
+        <title>Midnight Rain</title>
+        <genre>Fantasy</genre>
+        <price>5.95</price>
+        <OrderedDate>2000-12-16</OrderedDate>
+        <description>A former architect battles corporate zombies,
+            an evil sorceress, and her own childhood to become queen
+            of the world.</description>
+    </book>
+    </catalog>
+    <note>
+        <OrderedDate>
+            <year>2008</year>
+            <month>01</month>
+            <day>10</day>
+        </OrderedDate>
+        <to>Tove</to>
+        <from>Jan </from>
+    </note>
+    <Vehicle id="bk102" OrderedDate="2000-12-16">
+        <Make>BMW</Make>
+        <Model>X7</Model>
+        <Year>2019</Year>
+        <color>White</color>
+        <price>63500.95</price>
+        <description>Good car to wreck</description>
+    </Vehicle>
+    <ml:backOrder>
+        <ml:Items>
+            <ml:Item ml:PartNumber="MY-872-GEO">
+                <ml:ProductName>MayTag Gold</ml:ProductName>
+                <ml:Quantity>1</ml:Quantity>
+                <ml:USPrice>860.42</ml:USPrice>
+                <ml:OrderedDate>2020-07-10</ml:OrderedDate>
+                <ml:Comment>Confirm this is available</ml:Comment>
+            </ml:Item>
+            <ml:Item ml:PartNumber="SG-2372-LEE">
+                <ml:ProductName>Samsung TV</ml:ProductName>
+                <ml:Quantity>2</ml:Quantity>
+                <ml:USPrice>2776.78</ml:USPrice>
+                <!-- This order has a date issue -->
+                <ml:OrderedDate/>
+                <ml:Comment>To be shipped</ml:Comment>
+            </ml:Item>
+            <ml:Item ml:PartNumber="SG-478-TUT">
+                <ml:ProductName>Samsung Note</ml:ProductName>
+                <ml:Quantity>5</ml:Quantity>
+                <ml:USPrice>1780.00</ml:USPrice>
+                <!-- This order has a date issue -->
+                <ml:OrderedDate></ml:OrderedDate>
+                <ml:Comment>To be shipped</ml:Comment>
+            </ml:Item>
+
+            <ml:Item ml:PartNumber="SY-650-ANI">
+                <ml:ProductName>Sony BLU-RAY</ml:ProductName>
+                <ml:Quantity>2</ml:Quantity>
+                <ml:USPrice>523.45</ml:USPrice>
+                <!-- This order has a date issue -->
+                <ml:OrderedDate> </ml:OrderedDate>
+                <ml:Comment>To be shipped</ml:Comment>
+            </ml:Item>
+            <ml:Item ml:PartNumber="LG-926-VAK">
+                <ml:ProductName>TV Monitor</ml:ProductName>
+                <ml:Quantity>2</ml:Quantity>
+                <ml:USPrice>2339.00</ml:USPrice>
+                <ml:OrderedDate>2020-06-21</ml:OrderedDate>
+            </ml:Item>
+        </ml:Items>
+    </ml:backOrder>
+    <ml:SalesOrder ml:SalesOrderNumber="ML31303" ml:OrderDate="2020-07-31">
+        <ml:Address ml:Type="Commercial">
+            <ml:Name>Mikeal Adams</ml:Name>
+            <ml:Street>5505 Lionsgate Drive</ml:Street>
+            <ml:City>Mill Valley</ml:City>
+            <ml:State>CA</ml:State>
+            <ml:Zip>10999</ml:Zip>
+            <ml:Country>USA</ml:Country>
+        </ml:Address>
+        <ml:Address ml:Type="Shipping">
+            <ml:Name>Mikeal Adams</ml:Name>
+            <ml:Street>440 Lionsgate Drive</ml:Street>
+            <ml:City>Mill Valley</ml:City>
+            <ml:State>CA</ml:State>
+            <ml:Zip>10999</ml:Zip>
+            <ml:Country>USA</ml:Country>
+        </ml:Address>
+        <ml:Address ml:Type="Billing">
+            <ml:Name>Yuval Bergenstein</ml:Name>
+            <ml:Street>1440 Cedar Road</ml:Street>
+            <ml:City>Tarry Town</ml:City>
+            <ml:State>PA</ml:State>
+            <ml:Zip>95819</ml:Zip>
+            <ml:Country>USA</ml:Country>
+        </ml:Address>
+        <ml:DeliveryNotes>Text to Mailbox IoT device</ml:DeliveryNotes>
+        <ml:Items>
+            <ml:Item ml:PartNumber="872-AA">
+                <ml:ProductName>Lmlnmower</ml:ProductName>
+                <ml:Quantity>1</ml:Quantity>
+                <ml:USPrice>148.42</ml:USPrice>
+                <ml:Comment>Confirm this is electric</ml:Comment>
+            </ml:Item>
+            <ml:Item ml:PartNumber="926-AA">
+                <ml:ProductName>Baby Monitor</ml:ProductName>
+                <ml:Quantity>2</ml:Quantity>
+                <ml:USPrice>39.12</ml:USPrice>
+                <ml:ShipDate>2020-08-21</ml:ShipDate>
+            </ml:Item>
+        </ml:Items>
+    </ml:SalesOrder>
+    <ml:SalesOrder ml:SalesOrderNumber="ML31305" ml:OrderDate="2020-08-01">
+        <ml:Address ml:Type="Shipping">
+            <ml:Name>Fern Lingham</ml:Name>
+            <ml:Street>9326 Artois Way</ml:Street>
+            <ml:City>Buffalo</ml:City>
+            <ml:State>NY</ml:State>
+            <ml:Zip>98112</ml:Zip>
+            <ml:Country>USA</ml:Country>
+        </ml:Address>
+        <ml:Address ml:Type="Billing">
+            <ml:Name>Vlad Russo</ml:Name>
+            <ml:Street>6098 AppleTree Ave</ml:Street>
+            <ml:City>Buffalo</ml:City>
+            <ml:State>NY</ml:State>
+            <ml:Zip>98112</ml:Zip>
+            <ml:Country>USA</ml:Country>
+        </ml:Address>
+        <ml:DeliveryNotes>Leave message on door device</ml:DeliveryNotes>
+        <ml:Items>
+            <ml:Item ml:PartNumber="456-NM">
+                <ml:ProductName>Power Supply</ml:ProductName>
+                <ml:Quantity>1</ml:Quantity>
+                <ml:USPrice>45.23</ml:USPrice>
+            </ml:Item>
+        </ml:Items>
+    </ml:SalesOrder>
+    <ml:SalesOrder ml:SalesOrderNumber="ML31304" ml:OrderDate="2020-07-15">
+        <ml:Address ml:Type="Shipping">
+            <ml:Name>Ann-Marie Fritz</ml:Name>
+            <ml:Street>9255 Penn Ave</ml:Street>
+            <ml:City>Seattle</ml:City>
+            <ml:State>WA</ml:State>
+            <ml:Zip>98112</ml:Zip>
+            <ml:Country>USA</ml:Country>
+        </ml:Address>
+        <ml:Address ml:Type="Billing">
+            <ml:Name>Jeb Berns</ml:Name>
+            <ml:Street>9255 Penn Ave</ml:Street>
+            <ml:City>Buffalo</ml:City>
+            <ml:State>NY</ml:State>
+            <ml:Zip>98112</ml:Zip>
+            <ml:Country>USA</ml:Country>
+        </ml:Address>
+        <ml:Items>
+            <ml:Item ml:PartNumber="898-AZ">
+                <ml:ProductName>Computer Keyboard</ml:ProductName>
+                <ml:Quantity>1</ml:Quantity>
+                <ml:USPrice>29.57</ml:USPrice>
+            </ml:Item>
+            <ml:Item ml:PartNumber="898-AM">
+                <ml:ProductName>Wireless Mouse</ml:ProductName>
+                <ml:Quantity>1</ml:Quantity>
+                <ml:USPrice>14.27</ml:USPrice>
+            </ml:Item>
+        </ml:Items>
+    </ml:SalesOrder>
+</ml:SalesOrders>

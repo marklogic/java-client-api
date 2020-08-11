@@ -1,0 +1,12 @@
+
+{ "cityName": "london", "cityTeam": "arsenal", "cityPopulation": 2000000 }
+{ "cityName": "new york", "cityTeam": "yankee", "cityPopulation": 11000000 }
+{ "cityName": "new jersey", "cityTeam": "nets", "cityPopulation": 3000000 }
+{ "cityName": "beijing", "cityTeam": "ducks", "cityPopulation": 55000000 }
+{ "cityName": "cape town", "cityTeam": "pirates", "cityPopulation": 650000 }
+
+
+{ "cityName": "万里长城", "cityTeam": "pirates", "cityPopulation": 650000 }
+
+{ "city":"london", "distance":50.4, "date":"2007-01-01", "metro":true, "description":"Two recent discoveries indicate probable very early settlements near the Thames", "popularity":5, "location":{ "latLonPoint":"51.50, -0.12", "latLonPair":{ "lat":51.5, "long":-0.12 }, "latLonParent":{ "latLonChild":"51.50, -0.12" } } }
+{ "employees": [{"firstName":"John" , "lastName":"Doe" }, { "firstName":"Ann" , "lastName":"Smith" }, { "firstName":"Bob" , "lastName":"Foo" }] }

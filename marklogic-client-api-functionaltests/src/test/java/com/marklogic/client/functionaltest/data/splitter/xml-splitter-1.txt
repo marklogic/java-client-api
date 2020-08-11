@@ -1,0 +1,8 @@
+
+<root><title>万里长城</title><popularity>5</popularity><id>第一</id><p>中国长城是一系列的石雕，砖雕，夯实土，木，和其他材料，一般都建部分沿整个中国历史的北部边界，东到西线，以保护中国的帝国或作出的防御工事对各种游牧群体，或通过各种好战的民族或势力的军事入侵入侵其典型状态</p></root>
+
+
+<root><title>上海</title><popularity>9</popularity><id>第二</id><p>上海是中国人民共和国（“中国”）最大的城市按人口和最大的城市在世界人口适当</p></root>
+<root><title>武汉</title><popularity>1</popularity><id>第三</id><p>由于其在国内运输的关键作用，武汉有时也被称为“中国的芝加哥。它是公认的中国中部地区的政治，经济，金融，文化，教育和交通中心</p></root>
+<?xml version="1.0" encoding="UTF-8"?><!-- This is a comment --><product><name>Flipper</name><industry>Real Estate</industry><description>Discovers correlations and trending criteria.</description></product>
+<?xml version="1.0" encoding="UTF-8" ?><xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:template match="name"><firstname><xsl:apply-templates select="node()"/></firstname></xsl:template></xsl:stylesheet>
