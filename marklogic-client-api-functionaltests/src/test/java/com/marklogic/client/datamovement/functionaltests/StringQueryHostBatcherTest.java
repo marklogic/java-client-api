@@ -1884,7 +1884,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       }
 
       // Run a range query.
-      StructuredQueryDefinition queryRangedef = qb.range(qb.element("popularity"), "xs:decimal", Operator.GE, 4);
+      StructuredQueryDefinition queryRangedef = qb.range(qb.element("popularity"), "xs:int", Operator.GE, 4);
       QueryBatcher queryBatcher2 = dmManagerTmp.newQueryBatcher(queryRangedef);
       // StringBuilder batchRangeResults = new StringBuilder();
       List<String> batchRangeResults = new ArrayList<String>();
