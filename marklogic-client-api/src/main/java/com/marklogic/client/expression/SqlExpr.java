@@ -418,7 +418,14 @@ public interface SqlExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
   public ServerExpression right(ServerExpression str, ServerExpression n);
-public ServerExpression rowID(ServerExpression arg1);
+/**
+  * Constructs a row identifier from the string form of the temporary identifier assigned to a row during processing.
+  *
+  * <a name="ml-server-type-rowID"></a>
+  * @param arg1  the arg1  value.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sql_rowID.html">sql:rowID</a> server data type
+  */
+  public ServerExpression rowID(ServerExpression arg1);
 /**
   * Return a string that removes trailing empty spaces in the input string.
   *
@@ -573,7 +580,14 @@ public ServerExpression rowID(ServerExpression arg1);
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
   public ServerExpression week(ServerExpression arg);
-public ServerExpression weekday(ServerExpression arg1);
+/**
+  * Returns the day of the week.
+  *
+  * <a name="ml-server-type-weekday"></a>
+  * @param arg1  the arg1  value.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
+  */
+  public ServerExpression weekday(ServerExpression arg1);
 /**
   * Returns an xs:integer representing the year component in the localized value of arg. The result may be negative. 
   *
