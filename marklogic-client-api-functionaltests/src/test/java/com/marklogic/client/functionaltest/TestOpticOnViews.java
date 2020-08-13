@@ -1162,6 +1162,71 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     assertEquals("Element 12 Detail Color value incorrect", "blue", jsonBindingsNodes.get(11).path("opticFunctionalTest.detail.color").path("value").asText());
   }
 
+  @Test
+  public void testJoinFullOuter() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  {
+    System.out.println("In testJoinFullOuter method");
+
+    // Create a new Plan.
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
+            .orderBy(p.col( "id"));
+    ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+    ModifyPlan plan3 = plan1.joinFullOuter(plan2)
+            .select(
+                    p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
+                    p.schemaCol("opticFunctionalTest", "master", "date"),
+                    p.as("DetailName",p.schemaCol("opticFunctionalTest", "detail", "name")),
+                    p.col( "amount"),
+                    p.col( "color")
+            )
+            .orderBy(p.sortKeySeq(p.desc(p.col("DetailName")), p.desc(p.schemaCol("opticFunctionalTest", "master", "date"))));
+
+    RowSet<RowRecord> rowSet = rowMgr.resultRows(plan3);
+    // Verify RowRecords using Iterator
+    Iterator<RowRecord> rowItr = rowSet.iterator();
+
+    RowRecord record = null;
+    if (rowItr.hasNext()) {
+      record = rowItr.next();
+      assertEquals("Date from RowSet Iterator first node value incorrect", "2015-12-02", record.getString("opticFunctionalTest.master.date"));
+
+      assertEquals("Master Name RowSet Iterator first node value incorrect", "Master 2", record.getString("MasterName"));
+      assertEquals("Detail Name RowSet Iterator first node value incorrect", "Detail 6", record.getString("DetailName"));
+      assertEquals("Color Name RowSet Iterator first node value incorrect", "green", record.getString("color"));
+      assertEquals(60.06, record.getDouble("opticFunctionalTest.detail.amount"), 0.00);
+    }
+    else {
+      fail("Could not traverse Iterator<RowRecord> in testJoinFullOuter method");
+    }
+
+    // Using Jackson to traverse the list.
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(plan3, jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get();
+    JsonNode jsonBindingsNodes = jsonResults.path("rows");
+
+    // Should have 12 nodes returned.
+    assertEquals("Twelve nodes not returned from testJoinFullOuter method ", 12, jsonBindingsNodes.size());
+    // Verify first node
+    assertEquals("Element 1 MasterName value incorrect", "Master 2", jsonBindingsNodes.get(0).path("MasterName").path("value").asText());
+    assertEquals("Element 1 Master Date value incorrect", "2015-12-02", jsonBindingsNodes.get(0).path("opticFunctionalTest.master.date").path("value").asText());
+    assertEquals("Element 1 DetailName value incorrect", "Detail 6", jsonBindingsNodes.get(0).path("DetailName").path("value").asText());
+    assertEquals(60.06, jsonBindingsNodes.get(0).path("opticFunctionalTest.detail.amount").path("value").asDouble(), 0.00d);
+    assertEquals("Element 1 Detail Color value incorrect", "green", jsonBindingsNodes.get(0).path("opticFunctionalTest.detail.color").path("value").asText());
+
+    // Verify twelveth node
+    assertEquals("Element 12 MasterName value incorrect", "Master 1", jsonBindingsNodes.get(11).path("MasterName").path("value").asText());
+    assertEquals("Element 12 Master Date value incorrect", "2015-12-01", jsonBindingsNodes.get(11).path("opticFunctionalTest.master.date").path("value").asText());
+    assertEquals("Element 12 DetailName value incorrect", "Detail 1", jsonBindingsNodes.get(11).path("DetailName").path("value").asText());
+    assertEquals(10.01, jsonBindingsNodes.get(11).path("opticFunctionalTest.detail.amount").path("value").asDouble(), 0.00d);
+    assertEquals("Element 12 Detail Color value incorrect", "blue", jsonBindingsNodes.get(11).path("opticFunctionalTest.detail.color").path("value").asText());
+  }
+
   /*
    * This test checks union and except with a view. Should return 8 items. Uses
    * schemaCol for Columns selection
