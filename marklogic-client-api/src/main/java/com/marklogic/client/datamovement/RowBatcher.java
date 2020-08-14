@@ -22,12 +22,12 @@ import com.marklogic.client.row.RowManager;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Coordinates threads to export all of the rows from a view in batches.
+ * Coordinates threads to export all rows from a TDE view in batches.
  *
  * <p>To construct a RowBatcher, use the
  * {@link DataMovementManager#newRowBatcher(ContentHandle) DataMovementManager.newRowBatcher()}
  * factory method. You pass a sample handle (that is, an adapter for the Java class that stores
- * a batch of retrieved rows). The sample handle must implement both the
+ * a batch of exported rows). The sample handle must implement both the
  * {@link ContentHandle ContentHandle}
  * and
  * {@link com.marklogic.client.io.marker.StructureReadHandle StructuredReadHandle}
@@ -57,19 +57,11 @@ import java.util.concurrent.TimeUnit;
  * method provides a factory for constructing a {@link PlanBuilder}.</p>
  *
  * <p>Use the RowManager's {@link PlanBuilder} to build a plan for retrieving the rows.
+ * The plan must start with the accessor for the view being exported and should ensure
+ * that each row indexed by the view yields exactly one row in the result.
  * Pass the built plan to the
  * {@link RowBatcher#withBatchView(PlanBuilder.ModifyPlan) withBatchView()}
- * method to initialize the RowBatcher with the plan. The plan must start with a view
- * and should get all rows from the initial view without filtering, limiting, grouping,
- * or sorting the rows of the view. The plan may filter, limit,  group over, or sort
- * other views prior to joining another view with the initial view. The plan may join
- * documents with the initial view. The plan may also project columns from the initial
- * view or create expression columns with a select() operation. </p>
- *
- * <p>To export different sets of rows for different purposes, construct a view for each
- * export in the TDE. The export can get the data from the documents instead of from the
- * index by joining documents in the plan. When joining documents, the view must have one
- * row per document but may have a single column.</p>
+ * method to initialize the RowBatcher with the plan. </p>
  *
  * <p>Specify the number of threads for retrieving rows with the
  * {@link RowBatcher#withThreadCount(int) withThreadCount()}
@@ -77,7 +69,7 @@ import java.util.concurrent.TimeUnit;
  * {@link RowBatcher#withBatchSize(int) withBatchSize()}
  * method.</p>
  *
- * <p>Specify a success listener for processing each batch of rows retrieved from the server.
+ * <p>Specify a success listener for processing each batch of exported rows.
  * The RowBatcher passes a response event to the success listener.
  * The success listener calls the
  * {@link RowBatchSuccessListener.RowBatchResponseEvent#getRowsDoc() RowBatchResponseEvent.getRowsDoc()}
@@ -85,17 +77,10 @@ import java.util.concurrent.TimeUnit;
  * class adapted by the sample handle passed to the factory that constructs the RowBatcher
  * (that is, the generic type of the RowBatcher).</p>
  *
- * <pre>{@code
- *    RowBatcher<String> rowBatcher = ...construct the row batcher...;
- *    rowBatcher.onSuccess(event -> {
- *        String rowBatch = event.getRowsDoc();
- *        ...process the batch of rows...
- *        });
- *}</pre>
- *
  * <p>Specify a failure listener to handle any errors during retrieval.</p>
  *
- * @param <T> the Java class that stores a batch of retrieved roles
+ * @param <T> the Java class that stores a batch of exported rows
+ * @see <a href="https://github.com/marklogic/java-client-api/wiki/Row-Batcher">Exporting a TDE View</a>
  */
 public interface RowBatcher<T> extends Batcher {
     /**
