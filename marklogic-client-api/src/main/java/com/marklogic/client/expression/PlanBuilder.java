@@ -179,10 +179,9 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:eq" target="mlserverdoc">op:eq</a> server function.
   * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
-  * @param right  The right value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract ServerExpression eq(ServerExpression left, ServerExpression right);
+  public abstract ServerExpression eq(ServerExpression... left);
   /**
   * This function returns true if the value of the left expression is greater than or equal to the value of the right expression. Otherwise, it returns false.
   * <p>
@@ -274,7 +273,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:param" target="mlserverdoc">op:param</a> server function.
   * @param name  The name of the parameter.
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/plan_param.html">plan:param</a> server data type
+  * @return  a <a href="http://docs.marklogic.com/op:param" target="mlserverdoc">op:param()</a> server expression
   */
   public abstract PlanParamExpr param(String name);
   /**
@@ -282,7 +281,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:param" target="mlserverdoc">op:param</a> server function.
   * @param name  The name of the parameter.
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/plan_param.html">plan:param</a> server data type
+  * @return  a <a href="http://docs.marklogic.com/op:param" target="mlserverdoc">op:param()</a> server expression
   */
   public abstract PlanParamExpr param(XsStringVal name);
   /**

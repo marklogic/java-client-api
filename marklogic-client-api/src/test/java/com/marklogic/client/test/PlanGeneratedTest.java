@@ -1864,6 +1864,11 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     }
 
     @Test
+    public void testOperatorEq3Exec() {
+        executeTester("testOperatorEq3", p.eq(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "true", new ServerExpression[]{ p.xs.doubleVal(1), p.xs.doubleVal(1), p.xs.doubleVal(1) });
+    }
+
+    @Test
     public void testOperatorGe2Exec() {
         executeTester("testOperatorGe2", p.ge(p.col("1"), p.col("2")), false, null, null, null, "true", new ServerExpression[]{ p.xs.doubleVal(1), p.xs.doubleVal(1) });
     }

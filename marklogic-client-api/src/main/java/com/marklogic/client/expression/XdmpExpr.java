@@ -1284,7 +1284,7 @@ public interface XdmpExpr {
   */
   public ServerExpression step64(ServerExpression initial, ServerExpression step);
 /**
-  * Formats a dateTime value using POSIX strftime. This function uses the POSIX strftime system call in the way it is implemented on each platform. For other XQuery functions that have more functionality (for example, for things like timezones), use one or more if the various XQuery or XSLT standard functions such as fn:format-dateTime.
+  * Formats a dateTime value using POSIX strftime. This function uses the POSIX strftime system call in the way it is implemented on each platform. For other XQuery functions that have more functionality (for example, for things like timezones), use one or more if the various XQuery or XSLT standard functions such as fn:format-dateTime .
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:strftime" target="mlserverdoc">xdmp:strftime</a> server function.
   * @param format  The strftime format string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1293,7 +1293,7 @@ public interface XdmpExpr {
   */
   public ServerExpression strftime(ServerExpression format, String value);
 /**
-  * Formats a dateTime value using POSIX strftime. This function uses the POSIX strftime system call in the way it is implemented on each platform. For other XQuery functions that have more functionality (for example, for things like timezones), use one or more if the various XQuery or XSLT standard functions such as fn:format-dateTime.
+  * Formats a dateTime value using POSIX strftime. This function uses the POSIX strftime system call in the way it is implemented on each platform. For other XQuery functions that have more functionality (for example, for things like timezones), use one or more if the various XQuery or XSLT standard functions such as fn:format-dateTime .
   *
   * <a name="ml-server-type-strftime"></a>
   
