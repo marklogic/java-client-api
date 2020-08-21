@@ -37,10 +37,10 @@ class GeneratorTest {
                 """{"functionName":"stringParamsMultiple", "params":[{"name":"p1", "datatype":"int", "multiple":"true"}]}""",
                 """{"functionName":"stringParamsNullable", "params":[{"name":"p1", "datatype":"int", "nullable":"true"}]}""",
                 """{"functionName":"numericReturn", "return":1}""",
-                """{"functionName":"missingReturnDataType", "return":{"multiple":true}}}""",
-                """{"functionName":"incorrectReturnDataType", "return":{"datatype":"notAType"}}}""",
-                """{"functionName":"stringReturnMultiple", "return":{"datatype":"int", "multiple":"true"}}}""",
-                """{"functionName":"stringReturnNullable", "return":{"datatype":"int", "nullable":"true"}}}"""
+                """{"functionName":"missingReturnDataType", "return":{"multiple":true}}""",
+                """{"functionName":"incorrectReturnDataType", "return":{"datatype":"notAType"}}""",
+                """{"functionName":"stringReturnMultiple", "return":{"datatype":"int", "multiple":"true"}}""",
+                """{"functionName":"stringReturnNullable", "return":{"datatype":"int", "nullable":"true"}}"""
         )
         for (i in badApis.indices) {
             val badApi = badApis[i]
