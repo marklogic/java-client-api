@@ -536,6 +536,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
         }
 
         private void maintainDepth(JsonToken currentToken) {
+            if (currentToken == null) return;
 
             switch(currentToken) {
                 case START_OBJECT:

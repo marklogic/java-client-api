@@ -50,6 +50,7 @@ public class DataMovementServices {
 
   QueryConfig initConfig(String method, QueryDefinition qdef) {
     logger.debug("initializing forest configuration with query");
+    if (qdef == null) throw new IllegalArgumentException("null query definition");
 
     JsonNode result = ((DatabaseClientImpl) this.client).getServices()
       .forestInfo(null, method, new RequestParameters(), qdef, new JacksonHandle())
@@ -58,22 +59,20 @@ public class DataMovementServices {
 
     QueryConfig queryConfig = new QueryConfig();
 
-    if (qdef != null) {
-      try {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode queryResult = result.get("query");
-        if (queryResult != null && queryResult.isObject() && queryResult.has("ctsquery")) {
-          queryConfig.serializedCtsQuery = mapper.writeValueAsString(queryResult);
-          logger.debug("initialized query to: {}", queryConfig.serializedCtsQuery);
-        }
-        JsonNode filteredResult = result.get("filtered");
-        if (filteredResult != null && filteredResult.isBoolean()) {
-          queryConfig.filtered = filteredResult.asBoolean();
-          logger.debug("initialized filtering to: {}", queryConfig.filtered.toString());
-        }
-      } catch (JsonProcessingException e) {
-        logger.error("failed to initialize query", e);
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode queryResult = result.get("query");
+      if (queryResult != null && queryResult.isObject() && queryResult.has("ctsquery")) {
+        queryConfig.serializedCtsQuery = mapper.writeValueAsString(queryResult);
+        logger.debug("initialized query to: {}", queryConfig.serializedCtsQuery);
       }
+      JsonNode filteredResult = result.get("filtered");
+      if (filteredResult != null && filteredResult.isBoolean()) {
+        queryConfig.filtered = filteredResult.asBoolean();
+        logger.debug("initialized filtering to: {}", queryConfig.filtered.toString());
+      }
+    } catch (JsonProcessingException e) {
+      logger.error("failed to initialize query", e);
     }
 
     queryConfig.forestConfig = makeForestConfig(result.has("forests") ? result.get("forests") : result);
