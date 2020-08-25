@@ -2575,7 +2575,9 @@ public class OkHttpServices implements RESTServices {
       } :
       new Function<Request.Builder, Response>() {
         public Response apply(Request.Builder funcBuilder) {
-          return doPost(null, funcBuilder.header(HEADER_CONTENT_TYPE, tempBaseHandle.getMimetype()),
+          String contentType = tempBaseHandle.getMimetype();
+          return doPost(null,
+            (contentType == null) ? funcBuilder : funcBuilder.header(HEADER_CONTENT_TYPE, contentType),
             tempBaseHandle.sendContent());
         }
       };
@@ -3777,19 +3779,21 @@ public class OkHttpServices implements RESTServices {
 
     @Override
     public Number getNumber() {
-      if      ( getType() == EvalResult.Type.DECIMAL ) return new BigDecimal(getString());
-      else if ( getType() == EvalResult.Type.DOUBLE )  return Double.valueOf(getString());
-      else if ( getType() == EvalResult.Type.FLOAT )   return Float.valueOf(getString());
-        // MarkLogic integers can be much larger than Java integers, so we'll use Long instead
-      else if ( getType() == EvalResult.Type.INTEGER ) return Long.valueOf(getString());
-      else return new BigDecimal(getString());
+      String value = getString();
+      if      ( value == null )                        return null;
+      if      ( getType() == EvalResult.Type.DECIMAL ) return new BigDecimal(value);
+      else if ( getType() == EvalResult.Type.DOUBLE )  return new Double(value);
+      else if ( getType() == EvalResult.Type.FLOAT )   return new Float(value);
+      // MarkLogic integers can be much larger than Java integers, so we'll use Long instead
+      else if ( getType() == EvalResult.Type.INTEGER ) return new Long(value);
+      else                                             return new BigDecimal(value);
     }
 
     @Override
     public Boolean getBoolean() {
+      // converts null to false
       return Boolean.valueOf(getString());
     }
-
   }
 
   @Override
@@ -6433,7 +6437,8 @@ public class OkHttpServices implements RESTServices {
   }
 
   Request.Builder forDocumentResponse(Request.Builder requestBldr, Format format) {
-    return requestBldr.addHeader(HEADER_ACCEPT, (format == Format.BINARY) ? "application/x-unknown-content-type" : format.getDefaultMimetype());
+    return requestBldr.addHeader(HEADER_ACCEPT, (format == null || format == Format.BINARY) ?
+            "application/x-unknown-content-type" : format.getDefaultMimetype());
   }
 
   Request.Builder forMultipartMixedResponse(Request.Builder requestBldr) {

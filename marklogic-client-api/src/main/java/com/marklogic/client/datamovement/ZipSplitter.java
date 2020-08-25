@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -327,8 +328,21 @@ public class ZipSplitter implements Splitter<BytesHandle> {
         }
 
         protected BytesHandle readEntry(FormatEntry entry) throws IOException {
-            byte[] content = new byte[(int) entry.getZipEntry().getSize()];
-            getZipStream().read(content, 0, content.length);
+            long entrySize = entry.getZipEntry().getSize();
+            if (entrySize > Integer.MAX_VALUE) {
+                throw new IllegalArgumentException(
+                    "zip entry "+entry.getZipEntry().getName()+" too large: "+entrySize);
+            }
+            byte[] content = new byte[(int) entrySize];
+            int readSize = getZipStream().read(content, 0, content.length);
+            if (readSize == -1) {
+                throw new ZipException(
+                    "failed to read entry for "+entry.getZipEntry().getName());
+            } else if (readSize != content.length) {
+                throw new ZipException(
+                    "read "+entry.getZipEntry().getName()+
+                    " expecting length of "+content.length+" instead of "+readSize);
+            }
             return new BytesHandle(content).withFormat(entry.getFormat());
         }
     }

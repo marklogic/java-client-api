@@ -323,7 +323,12 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
                 throw new IllegalArgumentException("StartElementReader cannot be null");
             }
 
-            if (startElementReader.getNamespaceURI().equals(nsUri) && startElementReader.getLocalName().equals(localName)) {
+            final String startNsUri = startElementReader.getNamespaceURI();
+            final String startLocalName = startElementReader.getLocalName();
+            if (((startNsUri != null && startNsUri.equals(nsUri)) ||
+                    (startNsUri == null && (nsUri == null || nsUri.length() == 0))) &&
+                (startLocalName != null && startLocalName.equals(localName) ||
+                    (startLocalName == null && (localName == null || localName.length() == 0)))) {
                 return NodeOperation.PROCESS;
             }
 

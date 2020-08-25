@@ -817,7 +817,9 @@ public class RowManagerImpl
       return value;
     }
     private RowRecord.ColumnKind getColumnKind(String datatype, RowRecord.ColumnKind defaultKind) {
-      if ("cid".equals(datatype)) {
+      if (datatype == null) {
+        throw new MarkLogicInternalException("Column value with null datatype");
+      } else if ("cid".equals(datatype)) {
         return RowRecord.ColumnKind.CONTENT;
       } else if ("null".equals(datatype)) {
         return RowRecord.ColumnKind.NULL;
@@ -1429,7 +1431,8 @@ public class RowManagerImpl
               break;
             case CONTENT:
               buf.append("format: \"");
-              buf.append(getContentFormat(colName).name().toLowerCase());
+              Format contentFormat = getContentFormat(colName);
+              buf.append((contentFormat == null) ? "unknown" : contentFormat.name().toLowerCase());
               buf.append("\", mimetype: \"");
               buf.append(getContentMimetype(colName));
               buf.append("\"");

@@ -40,6 +40,10 @@ abstract class IOCallerImpl extends BaseCallerImpl {
     IOCallerImpl(JSONWriteHandle apiDeclaration) {
         super();
 
+        if (apiDeclaration== null) {
+            throw new IllegalArgumentException("null endpoint declaration");
+        }
+
         this.apiDeclaration = NodeConverter.handleToJsonNode(apiDeclaration);
         if (!this.apiDeclaration.isObject()) {
             throw new IllegalArgumentException(

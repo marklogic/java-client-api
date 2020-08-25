@@ -127,24 +127,27 @@ public class BulkExportWithDataService {
     }
 
     private void writeScriptFile(String fileName) throws IOException {
-        TextDocumentManager modMgr     = dbModulesClient.newTextDocumentManager();
-        DocumentWriteSet writeSet = modMgr.newWriteSet();
-        DocumentMetadataHandle metadata = new DocumentMetadataHandle().withCollections("BulkExportWithDataService");
-        metadata.getPermissions().add("rest-writer", DocumentMetadataHandle.Capability.UPDATE);
-        metadata.getPermissions().add("rest-reader", DocumentMetadataHandle.Capability.READ, DocumentMetadataHandle.Capability.EXECUTE);
+        try (InputStream in = (Util.openStream("scripts"+ File.separator+"bulkExport"+File.separator+fileName))) {
+            final TextDocumentManager modMgr = dbModulesClient.newTextDocumentManager();
 
-        InputStream in = (Util.openStream("scripts"+ File.separator+"bulkExport"+File.separator+fileName));
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        StringBuilder out = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            out.append(line);
+            final DocumentWriteSet writeSet = modMgr.newWriteSet();
+            final DocumentMetadataHandle metadata = new DocumentMetadataHandle().withCollections("BulkExportWithDataService");
+            metadata.getPermissions().add("rest-writer", DocumentMetadataHandle.Capability.UPDATE);
+            metadata.getPermissions().add("rest-reader", DocumentMetadataHandle.Capability.READ, DocumentMetadataHandle.Capability.EXECUTE);
+
+            final StringBuilder out = new StringBuilder();
+
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                out.append(line);
+            }
+
+            writeSet.add("/example/cookbook/bulkExport/"+fileName, metadata,
+                    new StringHandle(out.toString()));
+
+            modMgr.write(writeSet);
         }
-        reader.close();
-
-        writeSet.add("/example/cookbook/bulkExport/"+fileName, metadata,
-                (new StringHandle(out.toString())));
-        modMgr.write(writeSet);
     }
 
     private static Util.ExampleProperties getProperties() {
