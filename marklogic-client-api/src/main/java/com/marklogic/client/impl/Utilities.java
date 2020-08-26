@@ -742,4 +742,23 @@ public final class Utilities {
     asciiEncoder.reset();
     return assignment;
   }
+
+  public static double parseDouble(String value) {
+    return parseDouble(value, -1);
+  }
+  public static double parseDouble(String value, double defaultValue) {
+    return (value == null || value.length() == 0) ? defaultValue : Double.parseDouble(value);
+  }
+  public static int parseInt(String value) {
+    return parseInt(value, -1);
+  }
+  public static int parseInt(String value, int defaultValue) {
+    return (value == null || value.length() == 0) ? defaultValue : Integer.parseInt(value);
+  }
+  public static long parseLong(String value) {
+    return parseLong(value, -1l);
+  }
+  public static long parseLong(String value, long defaultValue) {
+    return (value == null || value.length() == 0) ? defaultValue : Long.parseLong(value);
+  }
 }

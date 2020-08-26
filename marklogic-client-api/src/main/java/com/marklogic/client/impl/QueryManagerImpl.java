@@ -390,7 +390,10 @@ public class QueryManagerImpl
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends StructureReadHandle> T convertOrValidate(RawQueryByExampleDefinition query, T convertedHandle, String view) {
+  private <T extends StructureReadHandle> T convertOrValidate(RawQueryByExampleDefinition query, T convertedHandle, String view) {
+    if (convertedHandle == null)
+      throw new IllegalArgumentException("null handle for query");
+
     RequestParameters params = new RequestParameters();
     params.add("view", view);
     @SuppressWarnings("rawtypes")

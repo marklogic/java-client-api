@@ -42,6 +42,7 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
+import com.marklogic.client.impl.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -53,10 +54,6 @@ import org.xml.sax.SAXException;
 
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.impl.ClientPropertiesImpl;
-import com.marklogic.client.impl.DOMWriter;
-import com.marklogic.client.impl.ValueConverter;
-import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
@@ -750,15 +747,13 @@ public class DocumentMetadataHandle
     }
 
     String qualityText = quality.getTextContent();
-    if (qualityText == null) {
-      setQuality(0);
-      return;
-    }
 
     int qualityNum = 0;
     try {
-      qualityNum = Integer.parseInt(qualityText);
-
+      qualityNum = Utilities.parseInt(qualityText);
+      if (qualityNum < 0) {
+        qualityNum = 0;
+      }
     } catch(NumberFormatException ex) {
       if (logger.isWarnEnabled())
         logger.warn("Could not parse quality integer from", qualityText);

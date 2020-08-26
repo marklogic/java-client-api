@@ -386,21 +386,15 @@ public class OkHttpServices implements RESTServices {
     }
 
     if (props.containsKey(MAX_DELAY_PROP)) {
-      String maxDelayStr = props.getProperty(MAX_DELAY_PROP);
-      if (maxDelayStr != null && maxDelayStr.length() > 0) {
-        int max = Integer.parseInt(maxDelayStr);
-        if (max > 0) {
-          maxDelay = max * 1000;
-        }
+      int max = Utilities.parseInt(props.getProperty(MAX_DELAY_PROP));
+      if (max > 0) {
+        maxDelay = max * 1000;
       }
     }
     if (props.containsKey(MIN_RETRY_PROP)) {
-      String minRetryStr = props.getProperty(MIN_RETRY_PROP);
-      if (minRetryStr != null && minRetryStr.length() > 0) {
-        int min = Integer.parseInt(minRetryStr);
-        if (min > 0) {
-          minRetry = min;
-        }
+      int min = Utilities.parseInt(props.getProperty(MIN_RETRY_PROP));
+      if (min > 0) {
+        minRetry = min;
       }
     }
 
@@ -547,7 +541,7 @@ public class OkHttpServices implements RESTServices {
     String retryAfterRaw = response.header("Retry-After");
     closeResponse(response);
 
-    int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+    int retryAfter = Utilities.parseInt(retryAfterRaw);
     return Math.max(retryAfter, calculateDelay(randRetry, retry));
   }
 
@@ -722,8 +716,7 @@ public class OkHttpServices implements RESTServices {
   }
 
   private int getRetryAfterTime(Response response) {
-    String retryAfterRaw = response.header("Retry-After");
-    return (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+    return Utilities.parseInt(response.header("Retry-After")) ;
   }
 
   private Response sendRequestOnce(Request.Builder requestBldr) {
@@ -1488,7 +1481,7 @@ public class OkHttpServices implements RESTServices {
             ((uri != null) ? uri : "new document"));
       }
 
-      int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+      int retryAfter = Utilities.parseInt(retryAfterRaw);
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
     if (retryStatus.contains(status)) {
@@ -1633,7 +1626,7 @@ public class OkHttpServices implements RESTServices {
             ((uri != null) ? uri : "new document"));
       }
 
-      int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+      int retryAfter = Utilities.parseInt(retryAfterRaw);
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
     if (retryStatus.contains(status)) {
@@ -2018,11 +2011,7 @@ public class OkHttpServices implements RESTServices {
   }
 
   static private long getHeaderServerTimestamp(Headers headers) {
-    String timestamp = headers.get(HEADER_ML_EFFECTIVE_TIMESTAMP);
-    if (timestamp != null && timestamp.length() > 0) {
-      return Long.parseLong(timestamp);
-    }
-    return -1;
+    return Utilities.parseLong(headers.get(HEADER_ML_EFFECTIVE_TIMESTAMP));
   }
 
   static private void updateServerTimestamp(ContentDescriptor descriptor, long timestamp) {
@@ -2034,10 +2023,7 @@ public class OkHttpServices implements RESTServices {
   }
 
   static private long getHeaderLength(String length) {
-    if (length != null) {
-      return Long.parseLong(length);
-    }
-    return ContentDescriptor.UNKNOWN_LENGTH;
+    return Utilities.parseLong(length, ContentDescriptor.UNKNOWN_LENGTH);
   }
 
   static private String getHeaderUri(BodyPart part) {
@@ -2333,7 +2319,7 @@ public class OkHttpServices implements RESTServices {
         }
 
         String retryAfterRaw = response.header("Retry-After");
-        int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+        int retryAfter = Utilities.parseInt(retryAfterRaw);
 
         closeResponse(response);
 
@@ -2934,7 +2920,7 @@ public class OkHttpServices implements RESTServices {
           "Cannot retry request for " + connectPath);
       }
 
-      int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+      int retryAfter = Utilities.parseInt(retryAfterRaw);
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
     if (retryStatus.contains(status)) {
@@ -3349,7 +3335,7 @@ public class OkHttpServices implements RESTServices {
           "Cannot retry request for " + path);
       }
 
-      int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+      int retryAfter = Utilities.parseInt(retryAfterRaw);
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
     if (retryStatus.contains(status)) {
@@ -3528,7 +3514,7 @@ public class OkHttpServices implements RESTServices {
           "Cannot retry request for " + path);
       }
 
-      int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+      int retryAfter = Utilities.parseInt(retryAfterRaw);
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
     if (retryStatus.contains(status)) {
@@ -4042,7 +4028,7 @@ public class OkHttpServices implements RESTServices {
           "Cannot retry request for " + path);
       }
 
-      int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+      int retryAfter = Utilities.parseInt(retryAfterRaw);
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
     if (retryStatus.contains(status)) {
@@ -4501,14 +4487,17 @@ public class OkHttpServices implements RESTServices {
     try {
       OkHttpResultIterator result = constructor.construct(reqlog, partList, closeable);
       Headers headers = response.headers();
-      if (headers.get(HEADER_VND_MARKLOGIC_START) != null) {
-        result.setStart(Long.parseLong(headers.get(HEADER_VND_MARKLOGIC_START)));
+      long pageStart = Utilities.parseLong(headers.get(HEADER_VND_MARKLOGIC_START));
+      if (pageStart > -1l) {
+        result.setStart(pageStart);
       }
-      if (headers.get(HEADER_VND_MARKLOGIC_PAGELENGTH) != null) {
-        result.setPageSize(Long.parseLong(headers.get(HEADER_VND_MARKLOGIC_PAGELENGTH)));
+      long pageLength = Utilities.parseLong(headers.get(HEADER_VND_MARKLOGIC_PAGELENGTH));
+      if (pageLength > -1l) {
+        result.setPageSize(pageLength);
       }
-      if (headers.get(HEADER_VND_MARKLOGIC_RESULT_ESTIMATE) != null) {
-        result.setTotalSize(Long.parseLong(headers.get(HEADER_VND_MARKLOGIC_RESULT_ESTIMATE)));
+      long totalSize = Utilities.parseLong(headers.get(HEADER_VND_MARKLOGIC_RESULT_ESTIMATE));
+      if (totalSize > -1l) {
+        result.setTotalSize(totalSize);
       }
       return (U) result;
     } catch (Throwable t) {
@@ -5090,7 +5079,7 @@ public class OkHttpServices implements RESTServices {
       }
 
       String retryAfterRaw = response.header("Retry-After");
-      int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+      int retryAfter = Utilities.parseInt(retryAfterRaw);
 
       closeResponse(response);
 
