@@ -399,10 +399,12 @@ public class QueryManagerImpl
     @SuppressWarnings("rawtypes")
     HandleImplementation convertedBase = HandleAccessor.checkHandle(convertedHandle, "convert");
 
+    StructureWriteHandle queryHandle = query.getHandle();
+
     Format convertedFormat = convertedBase.getFormat();
-    if(convertedFormat == Format.UNKNOWN ) {
+    if(convertedFormat == Format.UNKNOWN && queryHandle != null) {
       @SuppressWarnings("rawtypes")
-      HandleImplementation queryBase = HandleAccessor.checkHandle(query.getHandle(), "validate");
+      HandleImplementation queryBase = HandleAccessor.checkHandle(queryHandle, "validate");
       if (queryBase.getFormat() == Format.UNKNOWN) {
         convertedBase.setFormat(Format.XML);
       }
@@ -412,7 +414,7 @@ public class QueryManagerImpl
       params.add("options", optionsName);
     }
 
-    services.postResource(requestLogger, "qbe", null, params, query.getHandle(), convertedHandle);
+    services.postResource(requestLogger, "qbe", null, params, queryHandle, convertedHandle);
 
     return convertedHandle;
   }

@@ -173,7 +173,12 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
     if (queryDef == null) {
       throw new IllegalArgumentException("Query definition is null");
     }
+
     List<XMLEvent> importedList = Utilities.importFromHandle(queryDef);
+    if (importedList == null || importedList.size() == 0) {
+      throw new IllegalArgumentException("Query definition is empty");
+    }
+
     // modify XMLEvent list if the imported XML was a structured query.
     XMLEvent firstEvent = importedList.get(0);
     if (firstEvent.getEventType() ==  XMLStreamConstants.START_ELEMENT) {
