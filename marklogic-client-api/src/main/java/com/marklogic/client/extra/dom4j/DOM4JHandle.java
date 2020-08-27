@@ -25,6 +25,7 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
+import com.marklogic.client.io.marker.*;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.OutputFormat;
@@ -35,13 +36,6 @@ import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.OutputStreamSender;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
 import org.xml.sax.SAXException;
 
 /**
@@ -50,7 +44,7 @@ import org.xml.sax.SAXException;
  */
 public class DOM4JHandle
   extends BaseHandle<InputStream, OutputStreamSender>
-  implements OutputStreamSender, BufferableHandle, ContentHandle<Document>,
+  implements OutputStreamSender, BufferableHandle, ResendableHandle<Document>,
     XMLReadHandle, XMLWriteHandle,
     StructureReadHandle, StructureWriteHandle
 {

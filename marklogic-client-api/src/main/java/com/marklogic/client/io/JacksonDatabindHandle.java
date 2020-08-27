@@ -28,18 +28,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
-import com.marklogic.client.io.marker.CtsQueryWriteHandle;
-import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.io.marker.TextReadHandle;
-import com.marklogic.client.io.marker.TextWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
+import com.marklogic.client.io.marker.*;
 import com.marklogic.client.impl.JacksonBaseHandle;
 
 /**
@@ -49,7 +38,7 @@ import com.marklogic.client.impl.JacksonBaseHandle;
  */
 public class JacksonDatabindHandle<T>
   extends JacksonBaseHandle<T>
-  implements ContentHandle<T>,
+  implements ResendableHandle<T>,
     OutputStreamSender, BufferableHandle,
     JSONReadHandle, JSONWriteHandle,
     TextReadHandle, TextWriteHandle,

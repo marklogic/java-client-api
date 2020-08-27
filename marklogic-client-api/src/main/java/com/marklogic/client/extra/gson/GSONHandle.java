@@ -29,13 +29,7 @@ import com.google.gson.JsonSyntaxException;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
-import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
+import com.marklogic.client.io.marker.*;
 
 /**
  * A GSONHandle represents JSON content as a GSON JsonElement for reading or
@@ -43,7 +37,7 @@ import com.marklogic.client.io.marker.StructureWriteHandle;
  */
 public class GSONHandle
   extends BaseHandle<InputStream, String>
-  implements BufferableHandle, ContentHandle<JsonElement>,
+  implements BufferableHandle, ResendableHandle<JsonElement>,
     JSONReadHandle, JSONWriteHandle,
     StructureReadHandle, StructureWriteHandle
 {

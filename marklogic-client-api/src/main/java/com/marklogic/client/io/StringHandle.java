@@ -17,33 +17,20 @@ package com.marklogic.client.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
-import com.marklogic.client.io.marker.CtsQueryWriteHandle;
-import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.QuadsWriteHandle;
-import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.io.marker.TextReadHandle;
-import com.marklogic.client.io.marker.TextWriteHandle;
-import com.marklogic.client.io.marker.TriplesReadHandle;
-import com.marklogic.client.io.marker.TriplesWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
+import com.marklogic.client.impl.NodeConverter;
+import com.marklogic.client.io.marker.*;
 
 /**
  * A String Handle represents document content as a string for reading or writing.
  */
 public class StringHandle
   extends BaseHandle<byte[], OutputStreamSender>
-  implements OutputStreamSender, BufferableHandle, ContentHandle<String>,
+  implements OutputStreamSender, BufferableHandle, ResendableHandle<String>,
     JSONReadHandle, JSONWriteHandle,
     TextReadHandle, TextWriteHandle,
     XMLReadHandle, XMLWriteHandle,
@@ -93,6 +80,15 @@ public class StringHandle
     this();
     set(content);
   }
+  /**
+   * Initializes the handle by constructing a string from
+   * the content of a reader.
+   * @param content	the reader with the content
+   */
+  public StringHandle(Reader content) {
+    this();
+    from(content);
+  }
 
   /**
    * Returns the string for the content.
@@ -118,6 +114,16 @@ public class StringHandle
    */
   public StringHandle with(String content) {
     set(content);
+    return this;
+  }
+  /**
+   * Assigns a string constructed from the content of a reader
+   * and returns the handle as a fluent convenience.
+   * @param content	the reader with the content
+   * @return	this handle
+   */
+  public StringHandle from(Reader content) {
+    set(NodeConverter.ReaderToString(content));
     return this;
   }
   @Override

@@ -31,15 +31,11 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
+import com.marklogic.client.io.marker.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * A JAXB Handle roundtrips a POJO (a Java data structure) to and from a database document.
@@ -56,7 +52,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class JAXBHandle<C>
   extends BaseHandle<InputStream, OutputStreamSender>
-  implements OutputStreamSender, BufferableHandle, ContentHandle<C>, XMLReadHandle, XMLWriteHandle
+  implements OutputStreamSender, BufferableHandle, ResendableHandle<C>, XMLReadHandle, XMLWriteHandle
 {
   static final private Logger logger = LoggerFactory.getLogger(JAXBHandle.class);
 
