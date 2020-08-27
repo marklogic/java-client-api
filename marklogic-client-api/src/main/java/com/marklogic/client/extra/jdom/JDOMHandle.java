@@ -42,7 +42,7 @@ import com.marklogic.client.io.OutputStreamSender;
  */
 public class JDOMHandle
   extends BaseHandle<InputStream, OutputStreamSender>
-  implements OutputStreamSender, BufferableHandle, ResendableHandle<Document>,
+  implements OutputStreamSender, ResendableHandle<Document>,
     XMLReadHandle, XMLWriteHandle,
     StructureReadHandle, StructureWriteHandle
 {

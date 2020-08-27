@@ -55,8 +55,6 @@ public class JacksonParserHandle
   implements ContentHandle<JsonParser>,
     OutputStreamSender, BufferableHandle,
     JSONReadHandle, JSONWriteHandle,
-    TextReadHandle, TextWriteHandle,
-    XMLReadHandle, XMLWriteHandle,
     StructureReadHandle, StructureWriteHandle, CtsQueryWriteHandle,
     Closeable
 {

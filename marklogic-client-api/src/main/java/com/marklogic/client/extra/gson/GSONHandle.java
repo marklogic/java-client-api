@@ -37,7 +37,7 @@ import com.marklogic.client.io.marker.*;
  */
 public class GSONHandle
   extends BaseHandle<InputStream, String>
-  implements BufferableHandle, ResendableHandle<JsonElement>,
+  implements ResendableHandle<JsonElement>,
     JSONReadHandle, JSONWriteHandle,
     StructureReadHandle, StructureWriteHandle
 {

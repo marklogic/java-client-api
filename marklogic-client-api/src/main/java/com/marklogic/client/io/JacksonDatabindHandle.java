@@ -38,8 +38,7 @@ import com.marklogic.client.impl.JacksonBaseHandle;
  */
 public class JacksonDatabindHandle<T>
   extends JacksonBaseHandle<T>
-  implements ResendableHandle<T>,
-    OutputStreamSender, BufferableHandle,
+  implements OutputStreamSender, ResendableHandle<T>,
     JSONReadHandle, JSONWriteHandle,
     TextReadHandle, TextWriteHandle,
     XMLReadHandle, XMLWriteHandle,

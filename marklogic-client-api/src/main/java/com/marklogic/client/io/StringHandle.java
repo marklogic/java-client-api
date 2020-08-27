@@ -30,7 +30,7 @@ import com.marklogic.client.io.marker.*;
  */
 public class StringHandle
   extends BaseHandle<byte[], OutputStreamSender>
-  implements OutputStreamSender, BufferableHandle, ResendableHandle<String>,
+  implements OutputStreamSender, ResendableHandle<String>,
     JSONReadHandle, JSONWriteHandle,
     TextReadHandle, TextWriteHandle,
     XMLReadHandle, XMLWriteHandle,

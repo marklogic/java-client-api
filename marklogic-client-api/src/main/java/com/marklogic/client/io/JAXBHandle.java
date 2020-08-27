@@ -52,7 +52,8 @@ import com.marklogic.client.MarkLogicIOException;
  */
 public class JAXBHandle<C>
   extends BaseHandle<InputStream, OutputStreamSender>
-  implements OutputStreamSender, BufferableHandle, ResendableHandle<C>, XMLReadHandle, XMLWriteHandle
+  implements OutputStreamSender, ResendableHandle<C>,
+    XMLReadHandle, XMLWriteHandle
 {
   static final private Logger logger = LoggerFactory.getLogger(JAXBHandle.class);
 

@@ -44,7 +44,7 @@ import org.xml.sax.SAXException;
  */
 public class DOM4JHandle
   extends BaseHandle<InputStream, OutputStreamSender>
-  implements OutputStreamSender, BufferableHandle, ResendableHandle<Document>,
+  implements OutputStreamSender, ResendableHandle<Document>,
     XMLReadHandle, XMLWriteHandle,
     StructureReadHandle, StructureWriteHandle
 {

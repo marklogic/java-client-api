@@ -54,7 +54,7 @@ import com.marklogic.client.MarkLogicInternalException;
  */
 public class DOMHandle
   extends BaseHandle<InputStream, OutputStreamSender>
-  implements OutputStreamSender, BufferableHandle, ResendableHandle<Document>,
+  implements OutputStreamSender, ResendableHandle<Document>,
     XMLReadHandle, XMLWriteHandle,
     StructureReadHandle, StructureWriteHandle, CtsQueryWriteHandle
 {

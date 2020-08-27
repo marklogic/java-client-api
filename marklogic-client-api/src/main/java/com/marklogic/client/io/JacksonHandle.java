@@ -35,11 +35,8 @@ import com.marklogic.client.impl.JacksonBaseHandle;
  */
 public class JacksonHandle
   extends JacksonBaseHandle<JsonNode>
-  implements ResendableHandle<JsonNode>,
-    OutputStreamSender, BufferableHandle,
+  implements OutputStreamSender, ResendableHandle<JsonNode>,
     JSONReadHandle, JSONWriteHandle,
-    TextReadHandle, TextWriteHandle,
-    XMLReadHandle, XMLWriteHandle,
     StructureReadHandle, StructureWriteHandle, CtsQueryWriteHandle,
     SPARQLResultsReadHandle
 {

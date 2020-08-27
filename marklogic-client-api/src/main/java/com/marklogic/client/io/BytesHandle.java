@@ -32,7 +32,7 @@ import com.marklogic.client.io.marker.*;
  */
 public class BytesHandle
   extends BaseHandle<byte[], byte[]>
-  implements BufferableHandle, ResendableHandle<byte[]>,
+  implements ResendableHandle<byte[]>,
     BinaryReadHandle, BinaryWriteHandle,
     GenericReadHandle, GenericWriteHandle,
     JSONReadHandle, JSONWriteHandle,

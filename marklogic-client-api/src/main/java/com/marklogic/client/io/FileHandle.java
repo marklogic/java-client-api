@@ -44,7 +44,7 @@ public class FileHandle
     XMLReadHandle, XMLWriteHandle,
     StructureReadHandle, StructureWriteHandle, CtsQueryWriteHandle,
     QuadsWriteHandle,
-    TriplesReadHandle, TriplesWriteHandle, BufferableHandle
+    TriplesReadHandle, TriplesWriteHandle
 {
   private File content;
 
