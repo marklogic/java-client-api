@@ -30,6 +30,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.Assert.*;
 
@@ -159,10 +160,10 @@ public class BulkIOEndpointTest {
         IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
 
         String              endpointState = "{\"next\":"+nextStart+"}";
-        String              workUnit      = "{\"max\":"+workMax+"}";
+        String              workUnit      = "{\"max\":"+workMax+",\"collection\":\"bulkInputOutputTest_1\"}";
 
-        String              endpointState1 = "{\"next\":"+5+"}";
-        String              workUnit1      = "{\"max\":"+8+"}";
+        String              endpointState1 = "{\"next\":"+1+"}";
+        String              workUnit1      = "{\"max\":"+4+",\"collection\":\"bulkInputOutputTest_2\"}";
         Set<String>         input          = IOTestUtil.setOf( // Set.of(
                 "{\"docNum\":1, \"docName\":\"doc1\"}",
                 "{\"docNum\":2, \"docName\":\"doc2\"}",
@@ -171,7 +172,7 @@ public class BulkIOEndpointTest {
                 "{\"docNum\":5, \"docName\":\"doc5\"}",
                 "{\"docNum\":6, \"docName\":\"doc6\"}"
         );
-        Set<String> output = new HashSet<>();
+        Set<String> output = new ConcurrentHashMap<String, Long>().keySet(1L);
 
         InputOutputEndpoint endpoint = InputOutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()

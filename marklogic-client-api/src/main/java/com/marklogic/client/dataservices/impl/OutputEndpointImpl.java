@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint {
@@ -131,6 +132,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         private Consumer<InputStream> outputListener;
         private CallContext callContext;
         private ErrorListener errorListener;
+        private AtomicInteger aliveCallContextCount;
 
         private BulkOutputCallerImpl(OutputEndpointImpl endpoint, CallContext callContext) {
             super(callContext);
@@ -141,6 +143,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         private BulkOutputCallerImpl(OutputEndpointImpl endpoint, CallContext[] callContexts, int threadCount) {
             super(callContexts, threadCount, threadCount);
             this.endpoint = endpoint;
+            this.aliveCallContextCount = new AtomicInteger(threadCount);
         }
 
         private OutputEndpointImpl getEndpoint() {
@@ -167,6 +170,10 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         @Override
         public void setErrorListener(ErrorListener errorListener) {
             this.errorListener = errorListener;
+        }
+
+        private ErrorListener getErrorListener() {
+            return this.errorListener;
         }
 
         @Override
@@ -201,28 +208,70 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         }
 
         private InputStream[] getOutputStream(CallContextImpl callContext) {
-            InputStream[] output;
-            try {
+            final int DEFAULT_MAX_RETRIES = 10;
+            ErrorDisposition error = ErrorDisposition.RETRY;
+            InputStream[] output = null;
 
-                output = getEndpoint().getCaller().arrayCall(
-                        (callContext).getClient(), callContext.getEndpointState(), callContext.getSessionState(),
-                        callContext.getWorkUnit()
-                );
-                if(callContext.getEndpoint().allowsEndpointState()) {
-                    if (output != null && output.length > 0) {
-                        callContext.withEndpointState(output[0]);
-                        output = (output.length >1)?Arrays.copyOfRange(output,1, output.length):new InputStream[0];
+            for (int retryCount = 0; retryCount < DEFAULT_MAX_RETRIES && error == ErrorDisposition.RETRY; retryCount++) {
+                Throwable throwable = null;
+                try {
+                    output = getEndpoint().getCaller().arrayCall(
+                            (callContext).getClient(), callContext.getEndpointState(), callContext.getSessionState(),
+                            callContext.getWorkUnit()
+                    );
+
+                    if(callContext.getEndpoint().allowsEndpointState()) {
+                        if (output != null && output.length > 0) {
+                            callContext.withEndpointState(output[0]);
+                            output = (output.length >1)?Arrays.copyOfRange(output,1, output.length):new InputStream[0];
+                        } else {
+                            callContext.withEndpointState((InputStream) null);
+                        }
                     }
-                    else
-                        callContext.withEndpointState((InputStream) null);
+
+                    incrementCallCount();
+                    return output;
+
+                } catch(Throwable catchedThrowable) {
+                    throwable = catchedThrowable;
                 }
 
-            } catch(Throwable throwable) {
-                throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
+                if (throwable != null) {
+                    if (getErrorListener() == null) {
+                        logger.error("Error while calling " + getEndpoint().getEndpointPath(), throwable);
+                        throw new RuntimeException("Error while calling " + getEndpoint().getEndpointPath(), throwable);
+                    } else {
+
+                        try {
+                            if (retryCount < DEFAULT_MAX_RETRIES - 1) {
+
+                                error = getErrorListener().processError(retryCount, throwable, callContext);
+                            } else {
+                                error = ErrorDisposition.SKIP_CALL; //used to be STOP_ALL_CALLS
+                            }
+                        } catch (Throwable throwable1) {
+                            logger.error("Error Listener failed with " , throwable1);
+                            error = ErrorDisposition.STOP_ALL_CALLS;
+                        }
+
+                        switch (error) {
+                            case RETRY:
+                                continue;
+
+                            case SKIP_CALL:
+                                if(callContext.getEndpoint().allowsEndpointState()) {
+                                    callContext.withEndpointState((InputStream) null);
+                                }
+                                return new InputStream[0];
+
+                            case STOP_ALL_CALLS:
+                                getCallerThreadPoolExecutor().shutdown();
+                        }
+                    }
+                }
             }
 
-            incrementCallCount();
-            return output;
+            return (output == null) ? new InputStream[0] : output;
         }
 
         private void processOutput() {
@@ -283,10 +332,14 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                     if (continueCalling) {
                         bulkOutputCallerImpl.getCallContextQueue().put(callContext);
                         submitTask(this);
-                    } else if (bulkOutputCallerImpl.getCallContextQueue().isEmpty() &&
-                            getCallerThreadPoolExecutor().getActiveCount() <= 1) {
-                        getCallerThreadPoolExecutor().shutdown();
+                    } else {
+                        aliveCallContextCount.decrementAndGet();
+                        if (aliveCallContextCount.get() == 0) {
+                            getCallerThreadPoolExecutor().shutdown();
+                        }
+
                     }
+
                     return true;
                 } catch (Throwable throwable) {
                     throw new InternalError("Error occurred while processing CallContext - "+throwable.getMessage());

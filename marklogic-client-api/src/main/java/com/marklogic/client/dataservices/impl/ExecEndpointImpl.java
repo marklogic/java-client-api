@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoint {
     private static Logger logger = LoggerFactory.getLogger(ExecEndpointImpl.class);
@@ -100,6 +101,7 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
     {
         private ExecEndpointImpl endpoint;
         private ErrorListener errorListener;
+        private AtomicInteger aliveCallContextCount;
 
         private BulkExecCallerImpl(ExecEndpointImpl endpoint, CallContext callContext) {
             super(callContext);
@@ -109,6 +111,7 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
         private BulkExecCallerImpl(ExecEndpointImpl endpoint, CallContext[] callContexts, int threadCount) {
             super(callContexts, threadCount, threadCount);
             this.endpoint = endpoint;
+            this.aliveCallContextCount = new AtomicInteger(threadCount);
         }
 
         private ExecEndpointImpl getEndpoint() {
@@ -145,19 +148,21 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
             this.errorListener = errorListener;
         }
 
-        private void processOutput() {
-            CallContextImpl callContext = getCallContext();
-            if(callContext != null) {
-                while (processOutput(callContext));
-            }
+        private ExecEndpoint.BulkExecCaller.ErrorListener getErrorListener() {
+            return this.errorListener;
         }
 
-        private boolean processOutput(CallContextImpl callContext){
-                InputStream output = null;
+        private InputStream processExec(CallContextImpl callContext) {
+            final int DEFAULT_MAX_RETRIES = 10;
+            ErrorDisposition error = ErrorDisposition.RETRY;
+            InputStream output = null;
+
+            for (int retryCount = 0; retryCount < DEFAULT_MAX_RETRIES && error == ErrorDisposition.RETRY; retryCount++) {
+                Throwable throwable = null;
                 try {
                     logger.trace("exec calling endpoint={} count={} state={}",
                             callContext.getEndpoint().getEndpointPath(), getCallCount(), callContext.getEndpointState());
-// TODO: use byte[] for IO internally (and InputStream externally)
+                    // TODO: use byte[] for IO internally (and InputStream externally)
                     output = getEndpoint().getCaller().call(
                             callContext.getClient(), callContext.getEndpointState(), callContext.getSessionState(),
                             callContext.getWorkUnit()
@@ -166,32 +171,78 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
                         callContext.withEndpointState(output);
                     }
                     incrementCallCount();
-                } catch(Throwable throwable) {
+                    return output;
+                } catch(Throwable catchedThrowable) {
                     // TODO: logging
-                    throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
+                    throwable = catchedThrowable;
                 }
-// TODO -- retry with new session if times out
+                // TODO -- retry with new session if times out
 
-                switch(getPhase()) {
-                    case INTERRUPTING:
-                        setPhase(WorkPhase.INTERRUPTED);
-                        logger.info("exec interrupted endpoint={} count={} work={}",
+                if (throwable != null) {
+                    if (getErrorListener() == null) {
+                        logger.error("Error while calling " + getEndpoint().getEndpointPath(), throwable);
+                        throw new RuntimeException("Error while calling " + getEndpoint().getEndpointPath(), throwable);
+                    } else {
+                        try {
+                            if (retryCount < DEFAULT_MAX_RETRIES - 1) {
+                                error = getErrorListener().processError(retryCount, throwable, callContext);
+                            } else {
+                                error = ErrorDisposition.SKIP_CALL; //used to be STOP_ALL_CALLS
+                            }
+                        } catch (Throwable throwable1) {
+                            logger.error("Error Listener failed with " , throwable1);
+                            error = ErrorDisposition.STOP_ALL_CALLS;
+                        }
+
+                        switch (error) {
+                            case RETRY:
+                                continue;
+
+                            case SKIP_CALL:
+                                if(callContext.getEndpoint().allowsEndpointState()) {
+                                    callContext.withEndpointState((InputStream) null);
+                                }
+                                return output;
+
+                            case STOP_ALL_CALLS:
+                                getCallerThreadPoolExecutor().shutdown();
+                        }
+                    }
+                }
+            }
+            return output;
+        }
+
+        private void processOutput() {
+            CallContextImpl callContext = getCallContext();
+            if(callContext != null) {
+                while (processOutput(callContext));
+            }
+        }
+
+        private boolean processOutput(CallContextImpl callContext){
+            InputStream output = processExec(callContext);
+
+            switch(getPhase()) {
+                case INTERRUPTING:
+                    setPhase(WorkPhase.INTERRUPTED);
+                    logger.info("exec interrupted endpoint={} count={} work={}",
+                            callContext.getEndpoint().getEndpointPath(), getCallCount(), callContext.getWorkUnit());
+                    return false;
+                case RUNNING:
+                    if (output == null ) {
+                        if(getCallerThreadPoolExecutor() == null || getCallerThreadPoolExecutor().getActiveCount() <= 1)
+                            setPhase(WorkPhase.COMPLETED);
+                        logger.info("exec completed endpoint={} count={} work={}",
                                 callContext.getEndpoint().getEndpointPath(), getCallCount(), callContext.getWorkUnit());
                         return false;
-                    case RUNNING:
-                        if (output == null ) {
-                            if(getCallerThreadPoolExecutor() == null || getCallerThreadPoolExecutor().getActiveCount() <= 1)
-                                setPhase(WorkPhase.COMPLETED);
-                            logger.info("exec completed endpoint={} count={} work={}",
-                                    callContext.getEndpoint().getEndpointPath(), getCallCount(), callContext.getWorkUnit());
-                            return false;
-                        }
-                        return true;
-                    default:
-                        throw new MarkLogicInternalException(
-                                "unexpected state for "+callContext.getEndpoint().getEndpointPath()+" during loop: "+getPhase().name()
-                        );
-                }
+                    }
+                    return true;
+                default:
+                    throw new MarkLogicInternalException(
+                            "unexpected state for "+callContext.getEndpoint().getEndpointPath()+" during loop: "+getPhase().name()
+                    );
+            }
         }
 
         private class BulkCallableImpl implements Callable<Boolean> {
@@ -212,9 +263,11 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
                     bulkExecCallerImpl.getCallContextQueue().put(callContext);
                     submitTask(this);
                 }
-                else if(bulkExecCallerImpl.getCallContextQueue().isEmpty() &&
-                        getCallerThreadPoolExecutor().getActiveCount() <= 1) {
-                    getCallerThreadPoolExecutor().shutdown();
+                else {
+                    aliveCallContextCount.decrementAndGet();
+                    if (aliveCallContextCount.get() == 0) {
+                        getCallerThreadPoolExecutor().shutdown();
+                    }
                 }
 
                 return true;
