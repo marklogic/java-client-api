@@ -142,9 +142,14 @@ public class BytesHandle
     set(content);
     return this;
   }
+
   @Override
   public Class<byte[]> getContentClass() {
     return byte[].class;
+  }
+  @Override
+  public BytesHandle newHandle() {
+    return new BytesHandle().withFormat(getFormat()).withMimetype(getMimetype());
   }
 
   /**

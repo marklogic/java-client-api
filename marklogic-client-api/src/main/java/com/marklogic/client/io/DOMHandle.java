@@ -147,9 +147,14 @@ public class DOMHandle
     set(content);
     return this;
   }
+
   @Override
   public Class<Document> getContentClass() {
     return Document.class;
+  }
+  @Override
+  public DOMHandle newHandle() {
+    return new DOMHandle().withMimetype(getMimetype());
   }
 
   /**

@@ -91,6 +91,11 @@ public class JDOMHandle
     set(content);
   }
 
+  @Override
+  public JDOMHandle newHandle() {
+    return new JDOMHandle();
+  }
+
   /**
    * Returns the JDOM structure builder for XML content.
    * @return	the JDOM builder.

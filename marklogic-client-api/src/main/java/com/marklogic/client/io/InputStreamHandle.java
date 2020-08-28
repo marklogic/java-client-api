@@ -147,9 +147,14 @@ public class InputStreamHandle
     set(content);
     return this;
   }
+
   @Override
   public Class<InputStream> getContentClass() {
     return InputStream.class;
+  }
+  @Override
+  public InputStreamHandle newHandle() {
+    return new InputStreamHandle().withFormat(getFormat()).withMimetype(getMimetype());
   }
 
   /**

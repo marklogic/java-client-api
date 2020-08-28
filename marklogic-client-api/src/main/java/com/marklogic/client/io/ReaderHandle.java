@@ -143,9 +143,14 @@ public class ReaderHandle
     set(content);
     return this;
   }
+
   @Override
   public Class<Reader> getContentClass() {
     return Reader.class;
+  }
+  @Override
+  public ReaderHandle newHandle() {
+    return new ReaderHandle().withFormat(getFormat()).withMimetype(getMimetype());
   }
 
   /**

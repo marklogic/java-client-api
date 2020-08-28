@@ -156,9 +156,14 @@ public class XMLStreamReaderHandle
     set(content);
     return this;
   }
+
   @Override
   public Class<XMLStreamReader> getContentClass() {
     return XMLStreamReader.class;
+  }
+  @Override
+  public XMLStreamReaderHandle newHandle() {
+    return new XMLStreamReaderHandle().withMimetype(getMimetype());
   }
 
   /**

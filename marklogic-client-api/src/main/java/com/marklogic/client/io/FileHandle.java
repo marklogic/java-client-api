@@ -114,9 +114,14 @@ public class FileHandle
     set(content);
     return this;
   }
+
   @Override
   public Class<File> getContentClass() {
     return File.class;
+  }
+  @Override
+  public FileHandle newHandle() {
+    return new FileHandle().withFormat(getFormat()).withMimetype(getMimetype());
   }
 
   /**

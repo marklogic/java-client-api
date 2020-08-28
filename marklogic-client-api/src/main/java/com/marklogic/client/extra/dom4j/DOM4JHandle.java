@@ -93,6 +93,11 @@ public class DOM4JHandle
     set(content);
   }
 
+  @Override
+  public DOM4JHandle newHandle() {
+    return new DOM4JHandle();
+  }
+
   /**
    * Returns the dom4j reader for XML content.
    * @return	the dom4j reader.

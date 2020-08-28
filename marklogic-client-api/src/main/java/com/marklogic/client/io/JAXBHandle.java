@@ -168,6 +168,7 @@ public class JAXBHandle<C>
     set(content);
     return this;
   }
+
   @Override
   public Class<C> getContentClass() {
     if (contentClass != null)
@@ -175,6 +176,10 @@ public class JAXBHandle<C>
     if (content != null)
       return (Class<C>) content.getClass();
     return null;
+  }
+  @Override
+  public JAXBHandle<C> newHandle() {
+    return new JAXBHandle<>(context, getContentClass()).withMimetype(getMimetype());
   }
 
   /**

@@ -126,9 +126,14 @@ public class StringHandle
     set(NodeConverter.ReaderToString(content));
     return this;
   }
+
   @Override
   public Class<String> getContentClass() {
     return String.class;
+  }
+  @Override
+  public StringHandle newHandle() {
+    return new StringHandle().withFormat(getFormat()).withMimetype(getMimetype());
   }
 
   /**

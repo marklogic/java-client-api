@@ -155,9 +155,14 @@ public class XMLEventReaderHandle
     set(content);
     return this;
   }
+
   @Override
   public Class<XMLEventReader> getContentClass() {
     return XMLEventReader.class;
+  }
+  @Override
+  public XMLEventReaderHandle newHandle() {
+    return new XMLEventReaderHandle().withMimetype(getMimetype());
   }
 
   /**

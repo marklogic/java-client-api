@@ -92,6 +92,16 @@ public class JacksonHandle
     setFormat(format);
     return this;
   }
+  /**
+   * Specifies the mime type of the content and returns the handle
+   * as a fluent convenience.
+   * @param mimetype	the mime type of the content
+   * @return	this handle
+   */
+  public JacksonHandle withMimetype(String mimetype) {
+    setMimetype(mimetype);
+    return this;
+  }
 
   /**
    * Returns the root node of the JSON tree.
@@ -118,9 +128,14 @@ public class JacksonHandle
     set(content);
     return this;
   }
+
   @Override
   public Class<JsonNode> getContentClass() {
     return JsonNode.class;
+  }
+  @Override
+  public JacksonHandle newHandle() {
+    return new JacksonHandle().withMimetype(getMimetype());
   }
 
   @Override

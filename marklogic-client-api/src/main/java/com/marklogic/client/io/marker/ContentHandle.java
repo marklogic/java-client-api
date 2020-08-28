@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 package com.marklogic.client.io.marker;
+
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.io.BaseHandle;
 
 /**
  * A Content Handle provides get / set access to a representation
@@ -46,5 +49,31 @@ public interface ContentHandle<C>
     if (value != null)
       return (Class<C>) value.getClass();
     return null;
+  }
+  /**
+   * Constructs a new handle for the same content representation,
+   * initializing the new handle with the same format and mime type.
+   * @return  the new handle
+   */
+  default ContentHandle<C> newHandle() {
+    Class<C> contentClass = getContentClass();
+    if (contentClass == null) {
+      throw new IllegalArgumentException("For default newHandle(), ContentHandle cannot have a null content class");
+    } else if (!DatabaseClientFactory.getHandleRegistry().isRegistered(contentClass)) {
+      throw new IllegalArgumentException(
+              "For default newHandle(), ContentHandle must be registered with DatabaseClientFactory.HandleFactoryRegistry"
+      );
+    }
+    ContentHandle<C> newHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(contentClass);
+
+    if (!(this instanceof BaseHandle)) {
+      throw new IllegalArgumentException("ContentHandle must also be BaseHandle");
+    }
+    BaseHandle<?,?> thisBaseHandle = (BaseHandle<?,?>) this;
+    BaseHandle<?,?> newBaseHandle = (BaseHandle<?,?>) newHandle;
+    newBaseHandle.setFormat(thisBaseHandle.getFormat());
+    newBaseHandle.setMimetype(thisBaseHandle.getMimetype());
+
+    return newHandle;
   }
 }

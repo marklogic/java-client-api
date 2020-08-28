@@ -355,10 +355,6 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         this.batchSize = Long.divideUnsigned(MAX_UNSIGNED_LONG, this.batchCount);
         logger.info("batch count: {}, batch size: {}", batchCount, batchSize);
 
-        BaseHandle<?,?> rowsBaseHandle = (BaseHandle<?,?>) rowsHandle;
-        Format rowsFormat = rowsBaseHandle.getFormat();
-        String rowsMimeType = rowsBaseHandle.getMimetype();
-
         if (this.hostInfos != null && getMoveMgr().getConnectionType() == DatabaseClient.ConnectionType.DIRECT) {
             RowManager.RowSetPart    datatypeStyle = getRowManager().getDatatypeStyle();
             RowManager.RowStructure structureStyle = getRowManager().getRowStructureStyle();
@@ -376,10 +372,7 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         super.getStarted().set(true);
 
         for (int i=0; i<super.getThreadCount(); i++) {
-            ContentHandle<T> threadHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(rowsClass);
-            BaseHandle<?,?> threadBaseHandle = (BaseHandle<?,?>) threadHandle;
-            threadBaseHandle.setFormat(rowsFormat);
-            threadBaseHandle.setMimetype(rowsMimeType);
+            ContentHandle<T> threadHandle = rowsHandle.newHandle();
             RowBatchCallable<T> threadCallable = new RowBatchCallable<T>(this, threadHandle);
             if (i == 0 && consistentSnapshot) {
                 // make the first call synchronously to establish the timestamp

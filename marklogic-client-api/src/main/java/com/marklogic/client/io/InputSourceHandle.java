@@ -173,9 +173,14 @@ public class InputSourceHandle
     set(content);
     return this;
   }
+
   @Override
   public Class<InputSource> getContentClass() {
     return InputSource.class;
+  }
+  @Override
+  public InputSourceHandle newHandle() {
+    return new InputSourceHandle().withMimetype(getMimetype());
   }
 
   /**

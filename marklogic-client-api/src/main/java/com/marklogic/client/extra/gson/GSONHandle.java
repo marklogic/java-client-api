@@ -85,6 +85,11 @@ public class GSONHandle
     set(content);
   }
 
+  @Override
+  public GSONHandle newHandle() {
+    return new GSONHandle();
+  }
+
   /**
    * Returns the parser used to construct element objects from JSON.
    * @return	the JSON parser.

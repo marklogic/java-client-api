@@ -98,6 +98,16 @@ public class JacksonDatabindHandle<T>
     setFormat(format);
     return this;
   }
+  /**
+   * Specifies the mime type of the content and returns the handle
+   * as a fluent convenience.
+   * @param mimetype	the mime type of the content
+   * @return	this handle
+   */
+  public JacksonDatabindHandle<T> withMimetype(String mimetype) {
+    setMimetype(mimetype);
+    return this;
+  }
 
   /**
    * Returns the content.
@@ -126,9 +136,14 @@ public class JacksonDatabindHandle<T>
     set(content);
     return this;
   }
+
   @Override
   public Class<T> getContentClass() {
     return this.contentClass;
+  }
+  @Override
+  public JacksonDatabindHandle<T> newHandle() {
+    return new JacksonDatabindHandle<>(getContentClass()).withFormat(getFormat()).withMimetype(getMimetype());
   }
 
   /**

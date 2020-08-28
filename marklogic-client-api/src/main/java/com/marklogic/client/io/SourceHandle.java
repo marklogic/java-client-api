@@ -154,9 +154,14 @@ public class SourceHandle
     set(content);
     return this;
   }
+
   @Override
   public Class<Source> getContentClass() {
     return Source.class;
+  }
+  @Override
+  public SourceHandle newHandle() {
+    return new SourceHandle().withMimetype(getMimetype());
   }
 
   /**

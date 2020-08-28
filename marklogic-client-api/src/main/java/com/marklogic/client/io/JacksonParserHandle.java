@@ -92,7 +92,6 @@ public class JacksonParserHandle
 
   public JacksonParserHandle() {
     super();
-    setFormat(Format.JSON);
     setResendable(false);
   }
 
@@ -104,6 +103,16 @@ public class JacksonParserHandle
    */
   public JacksonParserHandle withFormat(Format format) {
     setFormat(format);
+    return this;
+  }
+  /**
+   * Specifies the mime type of the content and returns the handle
+   * as a fluent convenience.
+   * @param mimetype	the mime type of the content
+   * @return	this handle
+   */
+  public JacksonParserHandle withMimetype(String mimetype) {
+    setMimetype(mimetype);
     return this;
   }
 
@@ -149,9 +158,14 @@ public class JacksonParserHandle
     set(parser);
     return this;
   }
+
   @Override
   public Class<JsonParser> getContentClass() {
     return JsonParser.class;
+  }
+  @Override
+  public JacksonParserHandle newHandle() {
+    return new JacksonParserHandle().withMimetype(getMimetype());
   }
 
   /**
