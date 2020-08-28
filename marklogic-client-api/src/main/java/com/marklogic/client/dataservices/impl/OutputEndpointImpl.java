@@ -208,7 +208,6 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
         }
 
         private InputStream[] getOutputStream(CallContextImpl callContext) {
-            final int DEFAULT_MAX_RETRIES = 10;
             ErrorDisposition error = ErrorDisposition.RETRY;
             InputStream[] output = null;
 
@@ -238,8 +237,8 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
 
                 if (throwable != null) {
                     if (getErrorListener() == null) {
-                        logger.error("Error while calling " + getEndpoint().getEndpointPath(), throwable);
-                        throw new RuntimeException("Error while calling " + getEndpoint().getEndpointPath(), throwable);
+                        logger.error("No error listener set. Stop all calls. " + getEndpoint().getEndpointPath(), throwable);
+                        error = ErrorDisposition.STOP_ALL_CALLS;
                     } else {
 
                         try {
@@ -297,7 +296,7 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                         return false;
                     case RUNNING:
                         if (output == null || output.length == 0) {
-                            if(getCallerThreadPoolExecutor() == null || getCallerThreadPoolExecutor().getActiveCount() <= 1)
+                            if(getCallerThreadPoolExecutor() == null || aliveCallContextCount.get() == 0)
                                 setPhase(WorkPhase.COMPLETED);
                             logger.info("output completed endpoint={} count={} work={}",
                                     (callContext).getEndpoint().getEndpointPath(), getCallCount(), callContext.getWorkUnit());
@@ -333,11 +332,9 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                         bulkOutputCallerImpl.getCallContextQueue().put(callContext);
                         submitTask(this);
                     } else {
-                        aliveCallContextCount.decrementAndGet();
-                        if (aliveCallContextCount.get() == 0) {
+                        if (aliveCallContextCount.decrementAndGet() == 0) {
                             getCallerThreadPoolExecutor().shutdown();
                         }
-
                     }
 
                     return true;
