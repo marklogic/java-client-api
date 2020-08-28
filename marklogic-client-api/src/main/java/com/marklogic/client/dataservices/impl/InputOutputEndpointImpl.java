@@ -198,6 +198,10 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
             this.errorListener = errorListener;
         }
 
+        private ErrorListener getErrorListener() {
+            return this.errorListener;
+        }
+
         private void processInput() {
             InputStream[] inputBatch = getInputBatch(getInputQueue(), getBatchSize());
             if(getCallContext()!=null)
@@ -215,23 +219,57 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
         private void processInput(CallContextImpl callContext, InputStream[] inputBatch) {
             logger.trace("input endpoint running endpoint={} count={} state={}", (callContext).getEndpoint().getEndpointPath(), getCallCount(),
                     callContext.getEndpointState());
+            final int DEFAULT_MAX_RETRIES = 100;
+            ErrorDisposition error = ErrorDisposition.RETRY;
 
-            InputStream[] output = null;
-            try {
-                output = getEndpoint().getCaller().arrayCall(
-                        callContext.getClient(), callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit(),
-                        inputBatch
-                );
+            for (int retryCount = 0; retryCount < DEFAULT_MAX_RETRIES && error == ErrorDisposition.RETRY; retryCount++) {
+                Throwable throwable = null;
+                InputStream[] output = null;
+                try {
+                    output = getEndpoint().getCaller().arrayCall(
+                            callContext.getClient(), callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit(),
+                            inputBatch
+                    );
 
+                    incrementCallCount();
+                    if (callContext.getEndpoint().allowsEndpointState()) {
+                        callContext.withEndpointState(output[0]);
+                    }
+                    output = Arrays.copyOfRange(output, 1, output.length);
+                    processOutputBatch(output, getOutputListener());
+                    return;
+                } catch(Throwable catchedThrowable) {
+                    throwable = catchedThrowable;
+                }
 
-            incrementCallCount();
-            if (callContext.getEndpoint().allowsEndpointState()) {
-                callContext.withEndpointState(output[0]);
-            }
-            output = Arrays.copyOfRange(output, 1, output.length);
-            processOutputBatch(output, getOutputListener());
-            } catch(Throwable throwable) {
-                throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
+                if (throwable != null) {
+                    if (getErrorListener() == null) {
+                        logger.error("Error while calling " + getEndpoint().getEndpointPath(), throwable);
+                        throw new RuntimeException("Error while calling " + getEndpoint().getEndpointPath(), throwable);
+                    } else {
+                        try {
+                            if (retryCount < DEFAULT_MAX_RETRIES - 1) {
+                                error = getErrorListener().processError(retryCount, throwable, callContext, inputBatch);
+                            } else {
+                                error = ErrorDisposition.SKIP_CALL;
+                            }
+                        } catch (Throwable throwable1) {
+                            logger.error("Error Listener failed with " , throwable1);
+                            error = ErrorDisposition.STOP_ALL_CALLS;
+                        }
+
+                        switch (error) {
+                            case RETRY:
+                                continue;
+
+                            case SKIP_CALL:
+                                return;
+
+                            case STOP_ALL_CALLS:
+                                getCallerThreadPoolExecutor().shutdown();
+                        }
+                    }
+                }
             }
         }
 
@@ -244,8 +282,10 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
                     }
                 }
 
-                if(getCallerThreadPoolExecutor() != null)
+                if(getCallerThreadPoolExecutor() != null) {
+                    getCallerThreadPoolExecutor().shutdown();
                     getCallerThreadPoolExecutor().awaitTermination();
+                }
             } catch (Throwable throwable) {
                 throw new RuntimeException("Error occurred while awaiting termination "+throwable.getMessage());
             }
@@ -261,15 +301,11 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
             @Override
             public Boolean call() {
                 try {
-                    CallContext callContext = bulkInputOutputCallerImpl.getCallContextQueue().poll();
+                    CallContext callContext = bulkInputOutputCallerImpl.getCallContextQueue().take();
 
-                    if(callContext != null) {
-                        bulkInputOutputCallerImpl.processInput((CallContextImpl) callContext, inputBatch);
-                        bulkInputOutputCallerImpl.getCallContextQueue().put(callContext);
-                    }
-                    if(getCallerThreadPoolExecutor().isAwaitingTermination() && getInputQueue().isEmpty()) {
-                        getCallerThreadPoolExecutor().shutdown();
-                    }
+                    bulkInputOutputCallerImpl.processInput((CallContextImpl) callContext, inputBatch);
+                    bulkInputOutputCallerImpl.getCallContextQueue().put(callContext);
+
                 } catch(Exception ex) {
                     throw new InternalError("Error occurred while processing CallContext - "+ex.getMessage());
                 }

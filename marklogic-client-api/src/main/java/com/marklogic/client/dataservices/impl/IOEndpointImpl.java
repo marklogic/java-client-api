@@ -325,7 +325,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
                 throw new InternalError("Can only call set and get methods for call state when using a single CallContext.");
         }
 
-        void submitTask(Callable<Boolean> callable) {
+        void submitTask(Callable<Boolean> callable) throws RejectedExecutionException{
             FutureTask futureTask = new FutureTask(callable);
             getCallerThreadPoolExecutor().execute(futureTask);
         }

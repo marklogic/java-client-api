@@ -91,6 +91,7 @@ public class BulkIOOutputCallerTest {
     @AfterClass
     public static void cleanup() {
 
+        IOTestUtil.modMgr.delete(scriptPath, apiPath);
         QueryManager queryMgr = IOTestUtil.db.newQueryManager();
         DeleteQueryDefinition deletedef = queryMgr.newDeleteDefinition();
         deletedef.setCollections(collectionName_1);

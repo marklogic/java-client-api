@@ -135,6 +135,10 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 			return inputQueue;
 		}
 
+		private ErrorListener getErrorListener() {
+			return this.errorListener;
+		}
+
 		@Override
 		public void accept(InputStream input) {
 			boolean hasBatch = queueInput(input, getInputQueue(), getBatchSize());
@@ -162,8 +166,11 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 						processInput();
 					}
 				}
-				if(getCallerThreadPoolExecutor() != null)
+
+				if(getCallerThreadPoolExecutor() != null) {
+					getCallerThreadPoolExecutor().shutdown();
 					getCallerThreadPoolExecutor().awaitTermination();
+				}
 			} catch (Throwable throwable) {
 				throw new RuntimeException("Error occurred while awaiting termination "+throwable.getMessage());
 			}
@@ -184,22 +191,60 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 		private void processInput(CallContextImpl callContext, InputStream[] inputBatch) {
 			logger.trace("input endpoint running endpoint={} count={} state={}", (callContext).getEndpoint().getEndpointPath(), getCallCount(),
 					callContext.getEndpointState());
-			try {
-			InputStream output = null;
+			final int DEFAULT_MAX_RETRIES = 100;
+			ErrorDisposition error = ErrorDisposition.RETRY;
 
-				output = getEndpoint().getCaller().arrayCall(
-						callContext.getClient(), callContext.getEndpointState(), callContext.getSessionState(),
-						callContext.getWorkUnit(), inputBatch
-				);
+			for (int retryCount = 0; retryCount < DEFAULT_MAX_RETRIES && error == ErrorDisposition.RETRY; retryCount++) {
+				Throwable throwable = null;
+				try {
+					InputStream output = null;
 
+					output = getEndpoint().getCaller().arrayCall(
+							callContext.getClient(), callContext.getEndpointState(), callContext.getSessionState(),
+							callContext.getWorkUnit(), inputBatch
+					);
 
-			incrementCallCount();
+					incrementCallCount();
 
-			if (callContext.getEndpoint().allowsEndpointState()) {
-				callContext.withEndpointState(output);
-			}
-			} catch (Throwable throwable) {
-				throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
+					if (callContext.getEndpoint().allowsEndpointState()) {
+						callContext.withEndpointState(output);
+					}
+
+					return;
+				} catch (Throwable catchedThrowable) {
+					throwable = catchedThrowable;
+				}
+
+				if (throwable != null) {
+					if (getErrorListener() == null) {
+						logger.error("Error while calling " + getEndpoint().getEndpointPath(), throwable);
+						throw new RuntimeException("Error while calling " + getEndpoint().getEndpointPath(), throwable);
+					} else {
+
+						try {
+							if (retryCount < DEFAULT_MAX_RETRIES - 1) {
+								error = getErrorListener().processError(retryCount, throwable, callContext, inputBatch);
+							} else {
+								error = ErrorDisposition.SKIP_CALL;
+							}
+
+						} catch (Throwable throwable1) {
+							logger.error("Error Listener failed with " , throwable1);
+							error = ErrorDisposition.STOP_ALL_CALLS;
+						}
+
+						switch (error) {
+							case RETRY:
+								continue;
+
+							case SKIP_CALL:
+								return;
+
+							case STOP_ALL_CALLS:
+								getCallerThreadPoolExecutor().shutdown();
+						}
+					}
+				}
 			}
 		}
 
@@ -213,15 +258,10 @@ public class InputEndpointImpl extends IOEndpointImpl implements InputEndpoint {
 			@Override
 			public Boolean call() {
 				try {
-					CallContext callContext = bulkInputCallerImpl.getCallContextQueue().poll();
+					CallContext callContext = bulkInputCallerImpl.getCallContextQueue().take();
 
-					if(callContext != null) {
-						bulkInputCallerImpl.processInput((CallContextImpl) callContext, inputBatch);
-						bulkInputCallerImpl.getCallContextQueue().put(callContext);
-					}
-					if(getCallerThreadPoolExecutor().isAwaitingTermination() && getInputQueue().isEmpty()) {
-						getCallerThreadPoolExecutor().shutdown();
-					}
+					bulkInputCallerImpl.processInput((CallContextImpl) callContext, inputBatch);
+					bulkInputCallerImpl.getCallContextQueue().put(callContext);
 
 				} catch(Throwable throwable) {
 					throw new InternalError("Error occurred while processing CallContext - "+throwable.getMessage());
