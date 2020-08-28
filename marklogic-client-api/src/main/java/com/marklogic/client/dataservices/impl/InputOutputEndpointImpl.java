@@ -219,7 +219,6 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
         private void processInput(CallContextImpl callContext, InputStream[] inputBatch) {
             logger.trace("input endpoint running endpoint={} count={} state={}", (callContext).getEndpoint().getEndpointPath(), getCallCount(),
                     callContext.getEndpointState());
-            final int DEFAULT_MAX_RETRIES = 100;
             ErrorDisposition error = ErrorDisposition.RETRY;
 
             for (int retryCount = 0; retryCount < DEFAULT_MAX_RETRIES && error == ErrorDisposition.RETRY; retryCount++) {
@@ -244,8 +243,8 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
 
                 if (throwable != null) {
                     if (getErrorListener() == null) {
-                        logger.error("Error while calling " + getEndpoint().getEndpointPath(), throwable);
-                        throw new RuntimeException("Error while calling " + getEndpoint().getEndpointPath(), throwable);
+                        logger.error("No error listener set. Stop all calls. " + getEndpoint().getEndpointPath(), throwable);
+                        error = ErrorDisposition.STOP_ALL_CALLS;
                     } else {
                         try {
                             if (retryCount < DEFAULT_MAX_RETRIES - 1) {

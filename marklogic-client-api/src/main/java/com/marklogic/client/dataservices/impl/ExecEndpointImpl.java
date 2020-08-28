@@ -153,7 +153,6 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
         }
 
         private InputStream processExec(CallContextImpl callContext) {
-            final int DEFAULT_MAX_RETRIES = 10;
             ErrorDisposition error = ErrorDisposition.RETRY;
             InputStream output = null;
 
@@ -176,12 +175,11 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
                     // TODO: logging
                     throwable = catchedThrowable;
                 }
-                // TODO -- retry with new session if times out
 
                 if (throwable != null) {
                     if (getErrorListener() == null) {
-                        logger.error("Error while calling " + getEndpoint().getEndpointPath(), throwable);
-                        throw new RuntimeException("Error while calling " + getEndpoint().getEndpointPath(), throwable);
+                        logger.error("No error listener set. Stop all calls. " + getEndpoint().getEndpointPath(), throwable);
+                        error = ErrorDisposition.STOP_ALL_CALLS;
                     } else {
                         try {
                             if (retryCount < DEFAULT_MAX_RETRIES - 1) {
@@ -231,7 +229,7 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
                     return false;
                 case RUNNING:
                     if (output == null ) {
-                        if(getCallerThreadPoolExecutor() == null || getCallerThreadPoolExecutor().getActiveCount() <= 1)
+                        if(getCallerThreadPoolExecutor() == null || aliveCallContextCount.get() == 0)
                             setPhase(WorkPhase.COMPLETED);
                         logger.info("exec completed endpoint={} count={} work={}",
                                 callContext.getEndpoint().getEndpointPath(), getCallCount(), callContext.getWorkUnit());
@@ -264,8 +262,7 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
                     submitTask(this);
                 }
                 else {
-                    aliveCallContextCount.decrementAndGet();
-                    if (aliveCallContextCount.get() == 0) {
+                    if (aliveCallContextCount.decrementAndGet() == 0) {
                         getCallerThreadPoolExecutor().shutdown();
                     }
                 }

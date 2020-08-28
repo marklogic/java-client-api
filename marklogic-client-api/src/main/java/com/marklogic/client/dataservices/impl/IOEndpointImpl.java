@@ -36,6 +36,7 @@ import java.util.function.Consumer;
 abstract class IOEndpointImpl implements IOEndpoint {
     private static Logger logger = LoggerFactory.getLogger(IOEndpointImpl.class);
 
+    final static int DEFAULT_MAX_RETRIES = 100;
     final static int DEFAULT_BATCH_SIZE = 100;
 
     private DatabaseClient client;
