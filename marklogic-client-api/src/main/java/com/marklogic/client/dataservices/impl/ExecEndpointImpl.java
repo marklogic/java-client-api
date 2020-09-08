@@ -53,11 +53,11 @@ public class ExecEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements ExecCa
     }
 
     @Deprecated
-    public InputStream call(InputStream endpointState, SessionState session, InputStream workUnit) {
+    public InputStream call(InputStream endpointState, SessionState session, InputStream endpointConstants) {
         CallContextImpl<I,O> callContext = newCallContext(true)
                 .withEndpointStateAs(endpointState)
                 .withSessionState(session)
-                .withWorkUnitAs(workUnit);
+                .withEndpointConstantsAs(endpointConstants);
         call(callContext);
         return callContext.getEndpointStateAsInputStream();
     }
@@ -215,14 +215,14 @@ public class ExecEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements ExecCa
                 case INTERRUPTING:
                     setPhase(WorkPhase.INTERRUPTED);
                     logger.info("exec interrupted endpoint={} count={} work={}",
-                            callContext.getEndpoint().getEndpointPath(), getCallCount(), callContext.getWorkUnit());
+                            callContext.getEndpoint().getEndpointPath(), getCallCount(), callContext.getEndpointConstants());
                     return false;
                 case RUNNING:
                     if (!continueCalling) {
                         if(getCallerThreadPoolExecutor() == null || aliveCallContextCount.get() == 0)
                             setPhase(WorkPhase.COMPLETED);
                         logger.info("exec completed endpoint={} count={} work={}",
-                                callContext.getEndpoint().getEndpointPath(), getCallCount(), callContext.getWorkUnit());
+                                callContext.getEndpoint().getEndpointPath(), getCallCount(), callContext.getEndpointConstants());
                         return false;
                     }
                     return true;

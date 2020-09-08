@@ -1,9 +1,9 @@
 'use strict';
 var endpointState; // jsonDocument?
-var workUnit;      // jsonDocument?
+var endpointConstants;      // jsonDocument?
 
 const returnValue = {
     endpointState: endpointState,
-    workUnit:      workUnit
+    endpointConstants:      endpointConstants
 };
 returnValue;

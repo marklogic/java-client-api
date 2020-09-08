@@ -72,14 +72,14 @@ public class BulkOutputCallerTest {
     @Test
     public void bulkOutputCallerTest() throws Exception {
         String endpointState = "{\"next\":"+1+"}";
-        String workUnit      = "{\"max\":"+6+"}";
+        String endpointConstants      = "{\"max\":"+6+"}";
 
         OutputCaller<InputStream> caller = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
 
         InputStream[] resultArray = caller.call(caller.newCallContext()
                         .withEndpointStateAs(endpointState)
                 .withSessionState(caller.newSessionState())
-                .withWorkUnitAs(workUnit));
+                .withEndpointConstantsAs(endpointConstants));
 
         assertNotNull(resultArray);
         assertTrue(resultArray.length-1 == count-1);
@@ -88,11 +88,11 @@ public class BulkOutputCallerTest {
             assertNotNull(resultArray[i]);
             list.add(IOTestUtil.mapper.readValue(resultArray[i], ObjectNode.class).toString());
         }
-        String workUnit2      = "{\"max\":"+3+"}";
+        String endpointConstants2      = "{\"max\":"+3+"}";
         OutputCaller<InputStream> endpoint = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
         OutputCaller.BulkOutputCaller<InputStream> bulkCaller = endpoint.bulkCaller(endpoint.newCallContext()
                 .withEndpointStateAs(endpointState)
-                .withWorkUnitAs(workUnit2));
+                .withEndpointConstantsAs(endpointConstants2));
         class Output {
             int counter =0;
         }

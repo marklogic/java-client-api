@@ -23,7 +23,6 @@ import com.marklogic.client.impl.NodeConverter;
 import com.marklogic.client.impl.RESTServices;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.BufferableContentHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
@@ -39,7 +38,7 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
 
     private ParamdefImpl  endpointStateParamdef;
     private ParamdefImpl  sessionParamdef;
-    private ParamdefImpl  workUnitParamdef;
+    private ParamdefImpl  endpointConstantsParamdef;
     private ParamdefImpl  inputParamdef;
     private ReturndefImpl returndef;
 
@@ -119,11 +118,15 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
                             }
                             this.sessionParamdef = paramdef;
                             break;
+                        case "endpointConstants":
                         case "workUnit":
-                            if (paramdef.isMultiple()) {
-                                throw new IllegalArgumentException("workUnit parameter cannot be multiple");
+                            if (this.endpointConstantsParamdef != null) {
+                                throw new IllegalArgumentException("can only declare one of "+paramName+" and "+
+                                        this.endpointConstantsParamdef.getParamName());
+                            } else if (paramdef.isMultiple()) {
+                                throw new IllegalArgumentException(paramName+" parameter cannot be multiple");
                             }
-                            this.workUnitParamdef = paramdef;
+                            this.endpointConstantsParamdef  = paramdef;
                             nodeArgCount++;
                             break;
                         default:
@@ -250,18 +253,19 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
             throw new IllegalArgumentException("endpointState parameter not supported by endpoint: "+getEndpointPath());
         }
 
-        RESTServices.CallField workUnitField = null;
-        BytesHandle workUnit = callCtxt.getWorkUnit();
-        if (getWorkUnitParamdef() != null) {
-            workUnitField = BaseProxy.documentParam(
-                    "workUnit",
-                    getWorkUnitParamdef().isNullable(),
-                    NodeConverter.withFormat(workUnit, getWorkUnitParamdef().getFormat())
+        RESTServices.CallField endpointConstantsField = null;
+        BytesHandle endpointConstants = callCtxt.getEndpointConstants();
+        if (getEndpointConstantsParamdef() != null) {
+            endpointConstantsField = BaseProxy.documentParam(
+                    getEndpointConstantsParamdef().getParamName(),
+                    getEndpointConstantsParamdef().isNullable(),
+                    NodeConverter.withFormat(endpointConstants, getEndpointConstantsParamdef().getFormat())
                     );
-            if (workUnit != null)
+            if (endpointConstants != null)
                 fieldNum++;
-        } else if (workUnit != null) {
-            throw new IllegalArgumentException("workUnit parameter not supported by endpoint: "+getEndpointPath());
+        } else if (endpointConstants != null) {
+            throw new IllegalArgumentException(callCtxt.getEndpointConstantsParamName()+
+                    " parameter not supported by endpoint: "+getEndpointPath());
         }
 
         if (inputField != null)
@@ -273,8 +277,8 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
             if (endpointStateField != null) {
                 fields[fieldNum++] = endpointStateField;
             }
-            if (workUnitField != null) {
-                fields[fieldNum++] = workUnitField;
+            if (endpointConstantsField != null) {
+                fields[fieldNum++] = endpointConstantsField;
             }
             if (inputField != null) {
                 fields[fieldNum++] = inputField;
@@ -335,8 +339,8 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
     ParamdefImpl getSessionParamdef() {
         return this.sessionParamdef;
     }
-    ParamdefImpl getWorkUnitParamdef() {
-        return this.workUnitParamdef;
+    ParamdefImpl getEndpointConstantsParamdef() {
+        return this.endpointConstantsParamdef;
     }
     ParamdefImpl getInputParamdef() {
         return this.inputParamdef;

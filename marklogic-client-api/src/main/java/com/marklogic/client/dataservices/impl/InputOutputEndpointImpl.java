@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
@@ -64,11 +63,11 @@ public class InputOutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements
     }
 
     @Deprecated
-    public O[] call(InputStream endpointState, SessionState session, InputStream workUnit, I[] input) {
+    public O[] call(InputStream endpointState, SessionState session, InputStream endpointConstants, I[] input) {
         CallContextImpl<I,O> callContext = newCallContext(true)
                 .withEndpointStateAs(endpointState)
                 .withSessionState(session)
-                .withWorkUnitAs(workUnit);
+                .withEndpointConstantsAs(endpointConstants);
         return getResponseData(callContext, input);
     }
 

@@ -58,7 +58,7 @@ public class OutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Outp
         CallContextImpl<I,O> callContext = newCallContext(true)
                 .withEndpointStateAs(endpointState)
                 .withSessionState(session)
-                .withWorkUnitAs(workUnit);
+                .withEndpointConstantsAs(workUnit);
         return getResponseData(callContext);
     }
 
@@ -248,14 +248,14 @@ public class OutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Outp
                     case INTERRUPTING:
                         setPhase(WorkPhase.INTERRUPTED);
                         logger.info("output interrupted endpoint={} count={} work={}",
-                                (callContext).getEndpoint().getEndpointPath(), getCallCount(), callContext.getWorkUnit());
+                                (callContext).getEndpoint().getEndpointPath(), getCallCount(), callContext.getEndpointConstants());
                         return false;
                     case RUNNING:
                         if (output == null || output.length == 0) {
                             if(getCallerThreadPoolExecutor() == null || aliveCallContextCount.get() == 0)
                                 setPhase(WorkPhase.COMPLETED);
                             logger.info("output completed endpoint={} count={} work={}",
-                                    (callContext).getEndpoint().getEndpointPath(), getCallCount(), callContext.getWorkUnit());
+                                    (callContext).getEndpoint().getEndpointPath(), getCallCount(), callContext.getEndpointConstants());
                             return false;
                         }
                         return true;

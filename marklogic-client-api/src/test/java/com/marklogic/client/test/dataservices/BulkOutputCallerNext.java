@@ -58,14 +58,14 @@ public class BulkOutputCallerNext {
     @Test
     public void bulkOutputCallerNextTest() throws Exception {
         String endpointState = "{\"next\":"+1+"}";
-        String workUnit      = "{\"limit\":"+5+"}";
+        String endpointConstants      = "{\"limit\":"+5+"}";
 
         IOTestUtil.writeDocuments(10,collectionName);
 
         OutputCaller<InputStream> endpoint = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
         OutputCaller.BulkOutputCaller<InputStream> bulkCaller = endpoint.bulkCaller(endpoint.newCallContext()
                 .withEndpointStateAs(endpointState)
-                .withWorkUnitAs(workUnit));
+                .withEndpointConstantsAs(endpointConstants));
         InputStream[] outputArray = bulkCaller.next();
         assertNotNull(outputArray);
         assertTrue(outputArray.length == 5);

@@ -56,17 +56,17 @@ public class BulkIOInputCallerTest {
     public void bulkInputEndpointTestWithMultipleCallContexts() {
 
         String endpointState = "{\"next\":"+1+"}";
-        String workUnit      = "{\"max\":6,\"collection\":\"bulkInputTest_1\"}";
+        String endpointConstants      = "{\"max\":6,\"collection\":\"bulkInputTest_1\"}";
 
         String endpointState1 = "{\"next\":"+1+"}";
-        String workUnit1      = "{\"max\":6,\"collection\":\"bulkInputTest_2\"}";
+        String endpointConstants1      = "{\"max\":6,\"collection\":\"bulkInputTest_2\"}";
 
         InputCaller<InputStream> loadEndpt = InputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
         IOEndpoint.CallContext[] callContextArray = {loadEndpt.newCallContext()
                 .withEndpointStateAs(endpointState)
-                .withWorkUnitAs(workUnit), loadEndpt.newCallContext()
+                .withEndpointConstantsAs(endpointConstants), loadEndpt.newCallContext()
                 .withEndpointStateAs(endpointState1)
-                .withWorkUnitAs(workUnit1)};
+                .withEndpointConstantsAs(endpointConstants1)};
         InputCaller.BulkInputCaller<InputStream> loader = loadEndpt.bulkCaller(callContextArray);
 
         Stream<InputStream> input         = Stream.of(

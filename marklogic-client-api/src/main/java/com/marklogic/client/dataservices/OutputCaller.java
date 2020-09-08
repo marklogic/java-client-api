@@ -41,13 +41,13 @@ public interface OutputCaller<O> extends IOEndpoint {
     }
 
     /**
-     * Makes one call to an endpoint that doesn't take an endpoint state, session, or work unit.
+     * Makes one call to an endpoint that doesn't take endpoint constants, endpoint state, or a session.
      * @return  the response data from the endpoint
      */
     O[] call();
     /**
      * Makes one call to the endpoint for the instance and sets the endpoint state in the Call Context.
-     * @param callContext the collection of endpointState, sessionState and workUnit
+     * @param callContext the context consisting of the optional endpointConstants, endpointState, and session
      * @return  the response data from the endpoint
      */
     O[] call(CallContext callContext);
@@ -61,7 +61,7 @@ public interface OutputCaller<O> extends IOEndpoint {
     /**
      * Constructs an instance of a bulk caller, which completes
      * a unit of work by repeated calls to the endpoint. The calls occur in current thread.
-     * @param callContext the collection of endpointState, sessionState and workUnit
+     * @param callContext the context consisting of the optional endpointConstants, endpointState, and session
      * @return  the bulk caller for the output endpoint
      */
     BulkOutputCaller<O> bulkCaller(CallContext callContext);

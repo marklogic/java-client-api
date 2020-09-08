@@ -80,11 +80,16 @@ abstract class IOEndpointImpl<I,O> implements IOEndpoint {
         return getCaller().getEndpointStateParamdef();
     }
     @Override
+    @Deprecated
     public boolean allowsWorkUnit() {
-        return (getWorkUnitParamdef() != null);
+        return (getEndpointConstantsParamdef() != null);
     }
-    BaseCallerImpl.ParamdefImpl getWorkUnitParamdef() {
-        return getCaller().getWorkUnitParamdef();
+    @Override
+    public boolean allowsEndpointConstants() {
+        return (getEndpointConstantsParamdef() != null);
+    }
+    BaseCallerImpl.ParamdefImpl getEndpointConstantsParamdef() {
+        return getCaller().getEndpointConstantsParamdef();
     }
     @Override
     public boolean allowsInput() {
@@ -130,11 +135,12 @@ abstract class IOEndpointImpl<I,O> implements IOEndpoint {
         }
         CallContextImpl<I,O> context = (CallContextImpl<I,O>) callCtxt;
         if (context.getEndpointState() != null && !allowsEndpointState())
-            throw new IllegalArgumentException("endpoint does not accept endpoint state");
+            throw new IllegalArgumentException("endpoint does not accept endpointState parameter");
         if (context.getSessionState() != null && !allowsSession())
-            throw new IllegalArgumentException("endpoint does not accept session");
-        if (context.getWorkUnit() != null && !allowsWorkUnit())
-            throw new IllegalArgumentException("endpoint does not accept work unit");
+            throw new IllegalArgumentException("endpoint does not accept session parameter");
+        if (context.getEndpointConstants() != null && !allowsEndpointConstants())
+            throw new IllegalArgumentException(
+                    "endpoint does not accept "+context.getEndpointConstantsParamName()+" parameter");
         return context;
     }
 
@@ -220,26 +226,26 @@ abstract class IOEndpointImpl<I,O> implements IOEndpoint {
             setEndpointState((endpointState == null) ? null : endpointState.toBuffer());
         }
 
-        boolean allowsWorkUnit() {
+        boolean allowsEndpointConstants() {
             checkCallContext();
-            return callContext.getEndpoint().allowsWorkUnit();
+            return callContext.getEndpoint().allowsEndpointConstants();
         }
 
         @Override
         @Deprecated
         public InputStream getWorkUnit() {
             checkCallContext();
-            return new ByteArrayInputStream(callContext.getWorkUnit().get());
+            return new ByteArrayInputStream(callContext.getEndpointConstants().get());
         }
         @Override
         @Deprecated
         public void setWorkUnit(byte[] workUnit) {
             checkCallContext();
-            if (allowsWorkUnit())
-                callContext.withWorkUnitAs(workUnit);
+            if (allowsEndpointConstants())
+                callContext.withEndpointConstantsAs(workUnit);
             else if (workUnit != null)
-                throw new IllegalArgumentException("work unit not accepted by endpoint: "+
-                        callContext.getEndpoint().getEndpointPath());
+                throw new IllegalArgumentException(callContext.getEndpointConstantsParamName()+
+                        " parameter not accepted by endpoint: "+callContext.getEndpoint().getEndpointPath());
         }
         @Override
         @Deprecated

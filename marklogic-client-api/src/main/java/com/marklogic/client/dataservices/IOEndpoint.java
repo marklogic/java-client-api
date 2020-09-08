@@ -49,7 +49,14 @@ public interface IOEndpoint {
      * the unit of work to be done by the endpoint.
      * @return  whether the endpoint takes a work unit
      */
+    @Deprecated
     boolean allowsWorkUnit();
+    /**
+     * Identifies whether the endpoint accepts a data structure that defines
+     * constant input to provide to the endpoint.
+     * @return  whether the endpoint takes endpoint constants
+     */
+    boolean allowsEndpointConstants();
     /**
      * Identifies whether the endpoint accepts one or more input data structures
      * to work on.
@@ -70,24 +77,28 @@ public interface IOEndpoint {
     interface BulkIOEndpointCaller {
         /**
          * Gets the current snapshot of the mutable endpoint state.
+         * Provide a CallContext when constructing the bulk caller instead of using this deprecated method.
          * @return  the data structure with the endpoint state
          */
         @Deprecated
         InputStream getEndpointState();
         /**
          * Initializes the endpoint state, typically prior to the first call.
+         * Provide a CallContext when constructing the bulk caller instead of using this deprecated method.
          * @param endpointState the data structure for the endpoint state as a byte[] array
          */
         @Deprecated
         void setEndpointState(byte[] endpointState);
         /**
          * Initializes the endpoint state, typically prior to the first call.
+         * Provide a CallContext when constructing the bulk caller instead of using this deprecated method.
          * @param endpointState the data structure for the endpoint state as an InputStream
          */
         @Deprecated
         void setEndpointState(InputStream endpointState);
         /**
          * Initializes the endpoint state, typically prior to the first call.
+         * Provide a CallContext when constructing the bulk caller instead of using this deprecated method.
          * @param endpointState the data structure for the endpoint state as a bufferable handle
          */
         @Deprecated
@@ -95,24 +106,28 @@ public interface IOEndpoint {
 
         /**
          * Gets the definition for the unit of  work to be done by the endpoint.
+         * Provide a CallContext with endpoint constants when constructing the bulk caller instead of using this deprecated method.
          * @return  the data structure for the unit of work
          */
         @Deprecated
         InputStream getWorkUnit();
         /**
-         * Initializes the defintion of the work unit prior to the first call.
+         * Initializes the definition of the work unit prior to the first call.
+         * Provide a CallContext with endpoint constants when constructing the bulk caller instead of using this deprecated method.
          * @param workUnit the data structure for the work unit as a byte[] array
          */
         @Deprecated
         void setWorkUnit(byte[] workUnit);
         /**
-         * Initializes the defintion of the work unit prior to the first call.
+         * Initializes the definition of the work unit prior to the first call.
+         * Provide a CallContext with endpoint constants when constructing the bulk caller instead of using this deprecated method.
          * @param workUnit the data structure for the work unit as an InputStream
          */
         @Deprecated
         void setWorkUnit(InputStream workUnit);
         /**
-         * Initializes the defintion of the work unit prior to the first call.
+         * Initializes the definition of the work unit prior to the first call.
+         * Provide a CallContext with endpoint constants when constructing the bulk caller instead of using this deprecated method.
          * @param workUnit the data structure for the work unit as a bufferable handle
          */
         @Deprecated
@@ -128,52 +143,68 @@ public interface IOEndpoint {
          */
         void interrupt();
 
+        /**
+         * Indicates the disposition of an error.
+         */
         enum ErrorDisposition {
-            RETRY, SKIP_CALL, STOP_CONTEXT_CALLS, STOP_ALL_CALLS;
+            RETRY, SKIP_CALL, STOP_ALL_CALLS;
         }
     }
     /**
-     * Gets the current snapshot of the endpoint state, work unit and session.
-     * @return  the data structure with the endpoint state, work unit and session.
+     * Constructs a context for the calls that specifying the optional endpoint constants,
+     * endpoint state, and session.
+     * @return  the context for calls
      */
     CallContext newCallContext();
 
+    /**
+     * Provides the optional endpoint constants, endpoint state, and session as a context
+     * for calls to the server.
+     */
     interface CallContext {
         /**
-         * Gets the current snapshot of the mutable endpoint state.
+         * Gets the current snapshot of the mutable state of the endpoint.
          * @return  the data structure with the endpoint state
          */
         BytesHandle getEndpointState();
         /**
-         * Initializes the endpoint state.
-         * @param endpointState the data structure for the endpoint state as a bufferable handle
+         * Initializes the stateful properties of the endpoint prior to the first call to the endpoint.
+         * The endpoint returns the state as the first value in the response.
+         * The caller resends the modified state on the next call to the endpoint.
+         * @param endpointState the data structure for the endpoint state in a representation supported by a bufferable content handle
          * @return the callContext
          */
         CallContext withEndpointState(BufferableHandle endpointState);
         /**
-         * Initializes the endpoint state.
-         * @param endpointState the data structure for the endpoint state as an InputStream
+         * Initializes the stateful properties of the endpoint prior to the first call to the endpoint.
+         * The endpoint returns the state as the first value in the response.
+         * The caller resends the modified state on the next call to the endpoint.
+         * @param endpointState the data structure for the endpoint state in a representation supported by a bufferable content handle
          * @return the callContext
          */
         CallContext withEndpointStateAs(Object endpointState);
 
         /**
-         * Gets the definition for the unit of  work to be done by the endpoint.
-         * @return  the data structure for the unit of work
+         * Gets the definition for constant inputs to the endpoint.
+         * @return  the data structure for the constants
          */
-        BytesHandle getWorkUnit();
+        BytesHandle getEndpointConstants();
         /**
-         * Initializes the defintion of the work unit.
-         * @param workUnit the data structure for the work unit as a bufferable handle
+         * Sets the constant inputs prior to the first call to the endpoint.
+         * Examples of such constants might include the query when paging
+         * over a result set or the provenance when ingesting records.
+         * @param constants the data structure in a representation supported by a bufferable content handle
          * @return the callContext
          */
-        CallContext withWorkUnit(BufferableHandle workUnit);
+        CallContext withEndpointConstants(BufferableHandle constants);
         /**
-         * Initializes the defintion of the work unit.
-         * @param workUnit the data structure for the work unit as an InputStream
+         * Sets the constant inputs prior to the first call to the endpoint.
+         * Examples of such constants might include the query when paging
+         * over a result set or the provenance when ingesting records.
+         * @param constants the data structure in a representation supported by a bufferable content handle
          * @return  the callContext
          */
-        CallContext withWorkUnitAs(Object workUnit);
+        CallContext withEndpointConstantsAs(Object constants);
 
         /**
          * Returns an identifier for an endpoint to use when accessing a session cache on the server.

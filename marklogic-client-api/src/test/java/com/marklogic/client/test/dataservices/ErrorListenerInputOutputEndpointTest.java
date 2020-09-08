@@ -55,10 +55,10 @@ public class ErrorListenerInputOutputEndpointTest {
 
 
         String              endpointState = "{\"next\":1}";
-        String              workUnit      = "{\"max\":4,\"collection\":\"bulkInputOutputTest_1\"}";
+        String              endpointConstants      = "{\"max\":4,\"collection\":\"bulkInputOutputTest_1\"}";
 
         String              endpointState1 = "{\"next\":1}";
-        String              workUnit1      = "{\"max\":4,\"collection\":\"bulkInputOutputTest_2\"}";
+        String              endpointConstants1      = "{\"max\":4,\"collection\":\"bulkInputOutputTest_2\"}";
         Set<String>         input          = IOTestUtil.setOf(
                 "{\"docNum\":1, \"docName\":\"doc1\"}",
                 "{\"docNum\":2, \"docName\":\"doc2\"}",
@@ -83,10 +83,10 @@ public class ErrorListenerInputOutputEndpointTest {
                 IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle(), new InputStreamHandle());
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
                 .withEndpointStateAs(endpointState)
-                .withWorkUnitAs(workUnit),
+                .withEndpointConstantsAs(endpointConstants),
                 endpoint.newCallContext()
                         .withEndpointStateAs(endpointState1)
-                        .withWorkUnitAs(workUnit1)};
+                        .withEndpointConstantsAs(endpointConstants1)};
         InputOutputCaller.BulkInputOutputCaller<InputStream,InputStream> bulkCaller = endpoint.bulkCaller(callContextArray);
 
 
@@ -113,10 +113,10 @@ public class ErrorListenerInputOutputEndpointTest {
 
 
         String              endpointState = "{\"next\":1}";
-        String              workUnit      = "{\"max\":4,\"collection\":\"bulkInputOutputTest_1\"}";
+        String              endpointConstants      = "{\"max\":4,\"collection\":\"bulkInputOutputTest_1\"}";
 
         String              endpointState1 = "{\"next\":1}";
-        String              workUnit1      = "{\"max\":4,\"collection\":\"bulkInputOutputTest_2\"}";
+        String              endpointConstants1      = "{\"max\":4,\"collection\":\"bulkInputOutputTest_2\"}";
         Set<String>         input          = IOTestUtil.setOf(
                 "{\"docNum\":1, \"docName\":\"doc1\"}",
                 "{\"docNum\":2, \"docName\":\"doc2\"}",
@@ -140,10 +140,10 @@ public class ErrorListenerInputOutputEndpointTest {
         InputOutputCaller<InputStream,InputStream> endpoint = InputOutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle(), new InputStreamHandle());
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
                 .withEndpointStateAs(endpointState)
-                .withWorkUnitAs(workUnit),
+                .withEndpointConstantsAs(endpointConstants),
                 endpoint.newCallContext()
                         .withEndpointStateAs(endpointState1)
-                        .withWorkUnitAs(workUnit1)};
+                        .withEndpointConstantsAs(endpointConstants1)};
         InputOutputCaller.BulkInputOutputCaller<InputStream,InputStream> bulkCaller = endpoint.bulkCaller(callContextArray);
 
 
@@ -167,10 +167,10 @@ public class ErrorListenerInputOutputEndpointTest {
 
 
         String              endpointState = "{\"next\":1}";
-        String              workUnit      = "{\"max\":4,\"collection\":\"bulkInputOutputTest_1\"}";
+        String              endpointConstants      = "{\"max\":4,\"collection\":\"bulkInputOutputTest_1\"}";
 
         String              endpointState1 = "{\"next\":1}";
-        String              workUnit1      = "{\"max\":4,\"collection\":\"bulkInputOutputTest_2\"}";
+        String              endpointConstants1      = "{\"max\":4,\"collection\":\"bulkInputOutputTest_2\"}";
         Set<String>         input          = IOTestUtil.setOf(
                 "{\"docNum\":1, \"docName\":\"doc1\"}",
                 "{\"docNum\":2, \"docName\":\"doc2\"}",
@@ -194,10 +194,10 @@ public class ErrorListenerInputOutputEndpointTest {
         InputOutputCaller<InputStream,InputStream> endpoint = InputOutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle(), new InputStreamHandle());
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
                 .withEndpointStateAs(endpointState)
-                .withWorkUnitAs(workUnit),
+                .withEndpointConstantsAs(endpointConstants),
                 endpoint.newCallContext()
                         .withEndpointStateAs(endpointState1)
-                        .withWorkUnitAs(workUnit1)};
+                        .withEndpointConstantsAs(endpointConstants1)};
         InputOutputCaller.BulkInputOutputCaller<InputStream,InputStream> bulkCaller = endpoint.bulkCaller(callContextArray);
 
 

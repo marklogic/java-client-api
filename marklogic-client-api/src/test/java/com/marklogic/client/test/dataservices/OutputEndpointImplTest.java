@@ -45,12 +45,12 @@ public class OutputEndpointImplTest {
     @Test
     public void testOutputCallerImpl() throws IOException {
         String endpointState = "{\"endpoint\":1}";
-        String workUnit = "{\"workUnit\":\"/workUnit1\"}";
+        String endpointConstants = "{\"endpointConstants\":\"/endpointConstants1\"}";
 
         OutputCaller<InputStream> caller = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
         InputStream[] resultArray = caller.call(caller.newCallContext().withEndpointStateAs(endpointState)
                 .withSessionState(caller.newSessionState())
-                .withWorkUnitAs(workUnit));
+                .withEndpointConstantsAs(endpointConstants));
         assertNotNull(resultArray);
 
         ObjectNode resultObj = IOTestUtil.mapper.readValue(resultArray[0], ObjectNode.class);
@@ -59,12 +59,12 @@ public class OutputEndpointImplTest {
 
     @Test
     public void testOutputCallerImplWithNullCallcontextEndpointState() throws IOException {
-        String workUnit = "{\"collection\":\"/dataset1\"}";
+        String endpointConstants = "{\"collection\":\"/dataset1\"}";
 
         OutputCaller<InputStream> caller = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
         InputStream[] resultArray = caller.call(caller.newCallContext()
                 .withSessionState(caller.newSessionState())
-                .withWorkUnitAs(workUnit));
+                .withEndpointConstantsAs(endpointConstants));
         assertNotNull(resultArray);
 
         ObjectNode resultObj = IOTestUtil.mapper.readValue(resultArray[0], ObjectNode.class);
@@ -73,10 +73,10 @@ public class OutputEndpointImplTest {
 
     @Test
     public void testOutputCallerImplWithNullCallcontextSession() throws IOException {
-        String workUnit = "{\"workUnit\":\"/1\"}";
+        String endpointConstants = "{\"endpointConstants\":\"/1\"}";
         OutputCaller<InputStream> caller = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
         InputStream[] resultArray = caller.call(caller.newCallContext().withEndpointStateAs("{\"endpoint\":1}")
-                .withWorkUnitAs(workUnit));
+                .withEndpointConstantsAs(endpointConstants));
         assertNotNull(resultArray);
         ObjectNode resultObj = IOTestUtil.mapper.readValue(resultArray[0], ObjectNode.class);
         assertNull(resultObj.get("session"));

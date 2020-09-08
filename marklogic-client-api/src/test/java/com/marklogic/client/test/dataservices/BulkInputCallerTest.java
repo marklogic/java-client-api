@@ -59,13 +59,13 @@ public class BulkInputCallerTest {
     public void bulkInputEndpointTest() {
 
         String endpointState = "{\"next\":"+startValue+"}";
-        String workUnit      = "{\"max\":"+workMax+"}";
+        String endpointConstants      = "{\"max\":"+workMax+"}";
 
         InputCaller<InputStream> loadEndpt = InputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
 
         InputCaller.BulkInputCaller<InputStream> loader = loadEndpt.bulkCaller(loadEndpt.newCallContext()
                 .withEndpointStateAs(endpointState)
-                .withWorkUnitAs(workUnit.getBytes()));
+                .withEndpointConstantsAs(endpointConstants.getBytes()));
 
         Stream<InputStream> input         = Stream.of(
                 IOTestUtil.asInputStream("{\"docNum\":1, \"docName\":\"doc1\"}"),
@@ -99,7 +99,7 @@ public class BulkInputCallerTest {
         String apiName = "bulkInputCallerImpl.api";
 
         String endpointState = "{\"next\":"+startValue+"}";
-        String workUnit      = "{\"max\":"+workMax+"}";
+        String endpointConstants      = "{\"max\":"+workMax+"}";
         ObjectNode apiObj     = IOTestUtil.readApi(apiName);
         String     scriptPath = IOTestUtil.getScriptPath(apiObj);
         String     apiPath    = IOTestUtil.getApiPath(scriptPath);
@@ -107,7 +107,7 @@ public class BulkInputCallerTest {
         InputCaller<InputStream> loadEndpt = InputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
 
         InputCaller.BulkInputCaller<InputStream> loader = loadEndpt.bulkCaller(loadEndpt.newCallContext()
-                .withWorkUnitAs(workUnit)
+                .withEndpointConstantsAs(endpointConstants)
                 .withEndpointStateAs(endpointState));
 
         Stream<InputStream> input         = Stream.of(

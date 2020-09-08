@@ -73,9 +73,7 @@ public interface ExecEndpoint extends ExecCaller {
      * by repeated calls to an endpoint that doesn't take input
      * data structure or return output data structures.
      *
-     * Use the inherited methods to set the endpoint state
-     * and / or work unit if accepted by the endpoint.
-     * Then, call awaitCompletion() to start making calls.
+     * Call awaitCompletion() to start making calls.
      */
     @Deprecated
     interface BulkExecCaller extends ExecCaller.BulkExecCaller {

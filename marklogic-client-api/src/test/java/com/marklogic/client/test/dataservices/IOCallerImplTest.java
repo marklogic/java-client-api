@@ -27,7 +27,6 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
@@ -42,14 +41,14 @@ public class IOCallerImplTest {
         IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
 
         String endpointState = getEndpointState();
-        String workUnit      = getWorkUnit();
+        String endpointConstants = getEndpointConstants();
 
         ExecEndpoint caller = ExecEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
         InputStream result = caller.call(
-                asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit)
+                asInputStream(endpointState), caller.newSessionState(), asInputStream(endpointConstants)
         );
 
-        checkNoInputState(endpointState, workUnit, result);
+        checkNoInputState(endpointState, endpointConstants, result);
 
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
@@ -63,7 +62,7 @@ public class IOCallerImplTest {
         IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
 
         String        endpointState = getEndpointState();
-        String        workUnit      = getWorkUnit();
+        String        endpointConstants      = getEndpointConstants();
         InputStream[] input         = IOTestUtil.asInputStreamArray(
                 "{\"docNum\":1, \"docName\":\"alpha\"}",
                 "{\"docNum\":2, \"docName\":\"beta\"}"
@@ -71,10 +70,10 @@ public class IOCallerImplTest {
 
         InputEndpoint caller = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
         InputStream result = caller.call(
-                asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit), input
+                asInputStream(endpointState), caller.newSessionState(), asInputStream(endpointConstants), input
         );
 
-        checkInputState(endpointState, workUnit, result);
+        checkInputState(endpointState, endpointConstants, result);
 
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
@@ -88,17 +87,17 @@ public class IOCallerImplTest {
         IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
 
         String        endpointState = getEndpointState();
-        String        workUnit      = getWorkUnit();
+        String        endpointConstants      = getEndpointConstants();
         InputStream[] input         = IOTestUtil.asInputStreamArray(
                 "{\"docNum\":1, \"docName\":\"alpha\"}",
                 "{\"docNum\":2, \"docName\":\"beta\"}"
         );
 
         InputOutputEndpoint caller = InputOutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
-        InputStream[] results = caller.call(asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit), input
+        InputStream[] results = caller.call(asInputStream(endpointState), caller.newSessionState(), asInputStream(endpointConstants), input
         );
 
-        checkResults(endpointState, workUnit, results);
+        checkResults(endpointState, endpointConstants, results);
 
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
@@ -112,14 +111,14 @@ public class IOCallerImplTest {
         IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
 
         String endpointState = getEndpointState();
-        String workUnit      = getWorkUnit();
+        String endpointConstants      = getEndpointConstants();
 
         OutputEndpoint caller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
         InputStream[] results = caller.call(
-                asInputStream(endpointState), caller.newSessionState(), asInputStream(workUnit)
+                asInputStream(endpointState), caller.newSessionState(), asInputStream(endpointConstants)
         );
 
-        checkResults(endpointState, workUnit, results);
+        checkResults(endpointState, endpointConstants, results);
 
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
@@ -128,31 +127,31 @@ public class IOCallerImplTest {
     private String getEndpointState() {
         return "{\"offset\":0}";
     }
-    private String getWorkUnit() {
+    private String getEndpointConstants() {
         return "{\"collection\":\"/dataset1\"}";
     }
     private InputStream asInputStream(String value) {
         return new ByteArrayInputStream(value.getBytes());
     }
-    private void checkResults(String endpointState, String workUnit, InputStream[] results) throws IOException {
+    private void checkResults(String endpointState, String endpointConstants, InputStream[] results) throws IOException {
         assertNotNull("null result Stream<InputStream>", results);
 
         assertEquals("mismatch for result size", 3, results.length);
 
-        checkNoInputState(endpointState, workUnit, results[0]);
+        checkNoInputState(endpointState, endpointConstants, results[0]);
         checkDoc1(results[1]);
         checkDoc2(results[2]);
     }
-    private void checkNoInputState(String endpointState, String workUnit, InputStream result) throws IOException {
+    private void checkNoInputState(String endpointState, String endpointConstants, InputStream result) throws IOException {
         ObjectNode resultObj = checkResult(result);
         checkEndpointState(endpointState, resultObj);
-        checkWorkUnit(workUnit,           resultObj);
+        checkendpointConstants(endpointConstants,           resultObj);
     }
-    private void checkInputState(String endpointState, String workUnit, InputStream result) throws IOException {
+    private void checkInputState(String endpointState, String endpointConstants, InputStream result) throws IOException {
         ObjectNode resultObj = checkResult(result);
 
         checkEndpointState(endpointState, resultObj);
-        checkWorkUnit(workUnit,           resultObj);
+        checkendpointConstants(endpointConstants,           resultObj);
 
         JsonNode input = resultObj.get("input");
         assertNotNull("null for property input", input);
@@ -161,11 +160,11 @@ public class IOCallerImplTest {
         checkDoc1(input.get(0));
         checkDoc2(input.get(1));
     }
-    private void checkEndpointState(String endpointState, ObjectNode result) throws IOException {
+    private void checkEndpointState(String endpointState, ObjectNode result) {
         checkContainer("endpointState", endpointState, result);
     }
-    private void checkWorkUnit(String workUnit, ObjectNode result) throws IOException {
-        checkContainer("workUnit", workUnit, result);
+    private void checkendpointConstants(String endpointConstants, ObjectNode result) {
+        checkContainer("endpointConstants", endpointConstants, result);
     }
     private void checkDoc1(InputStream doc) throws IOException {
         checkDoc1(checkResult(doc));

@@ -27,7 +27,6 @@ import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
@@ -49,7 +48,7 @@ public class BulkIOEndpointTest {
         int workMax = 15;
 
         String endpointState = "{\"next\":"+nextStart+"}";
-        String workUnit      = "{\"max\":"+workMax+"}";
+        String endpointConstants      = "{\"max\":"+workMax+"}";
 
         ObjectNode apiObj     = IOTestUtil.readApi(apiName);
         String     scriptPath = IOTestUtil.getScriptPath(apiObj);
@@ -59,7 +58,7 @@ public class BulkIOEndpointTest {
         ExecCaller endpoint = ExecCaller.on(IOTestUtil.db, new JacksonHandle(apiObj));
 
         ExecCaller.BulkExecCaller bulkCaller = endpoint.bulkCaller(endpoint.newCallContext()
-                .withWorkUnitAs(workUnit)
+                .withEndpointConstantsAs(endpointConstants)
                 .withEndpointStateAs(endpointState));
         bulkCaller.awaitCompletion();
 
@@ -105,7 +104,7 @@ public class BulkIOEndpointTest {
                 (((workMax - nextStart) % batchSize) > 0 ? 1 : 0);
 
         String              endpointState = "{\"next\":"+nextStart+"}";
-        String              workUnit      = "{\"max\":"+workMax+"}";
+        String              endpointConstants      = "{\"max\":"+workMax+"}";
         Set<String>         input         = IOTestUtil.setOf( // Set.of(
                 "{\"docNum\":1, \"docName\":\"alpha\"}",
                 "{\"docNum\":2, \"docName\":\"beta\"}",
@@ -120,7 +119,7 @@ public class BulkIOEndpointTest {
         InputOutputCaller.BulkInputOutputCaller<InputStream, InputStream> bulkCaller =
                 endpoint.bulkCaller(endpoint.newCallContext()
                         .withEndpointStateAs(endpointState)
-                        .withWorkUnitAs(workUnit));
+                        .withEndpointConstantsAs(endpointConstants));
         bulkCaller.setOutputListener(value -> {
             String v = NodeConverter.InputStreamToString(value);
             // System.out.println("received: "+v);
@@ -172,10 +171,10 @@ public class BulkIOEndpointTest {
         IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
 
         String              endpointState = "{\"next\":"+nextStart+"}";
-        String              workUnit      = "{\"max\":"+workMax+",\"collection\":\"bulkInputOutputTest_1\"}";
+        String              endpointConstants      = "{\"max\":"+workMax+",\"collection\":\"bulkInputOutputTest_1\"}";
 
         String              endpointState1 = "{\"next\":"+1+"}";
-        String              workUnit1      = "{\"max\":"+4+",\"collection\":\"bulkInputOutputTest_2\"}";
+        String              endpointConstants1      = "{\"max\":"+4+",\"collection\":\"bulkInputOutputTest_2\"}";
         Set<String>         input          = IOTestUtil.setOf( // Set.of(
                 "{\"docNum\":1, \"docName\":\"doc1\"}",
                 "{\"docNum\":2, \"docName\":\"doc2\"}",
@@ -191,10 +190,10 @@ public class BulkIOEndpointTest {
         );
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
                 .withEndpointStateAs(endpointState)
-                .withWorkUnitAs(workUnit),
+                .withEndpointConstantsAs(endpointConstants),
                 endpoint.newCallContext()
                 .withEndpointStateAs(endpointState1)
-                .withWorkUnitAs(workUnit1)};
+                .withEndpointConstantsAs(endpointConstants1)};
 
         InputOutputCaller.BulkInputOutputCaller<InputStream,InputStream> bulkCaller = endpoint.bulkCaller(callContextArray);
         bulkCaller.setOutputListener(value -> {
@@ -225,10 +224,10 @@ public class BulkIOEndpointTest {
         int workMax = 15;
 
         String endpointState = "{\"next\":"+nextStart+"}";
-        String workUnit      = "{\"max\":"+workMax+"}";
+        String endpointConstants      = "{\"max\":"+workMax+"}";
 
         String endpointState1 = "{\"next\":"+16+"}";
-        String workUnit1      = "{\"max\":"+26+"}";
+        String endpointConstants1      = "{\"max\":"+26+"}";
 
         ObjectNode apiObj     = IOTestUtil.readApi(apiName);
         String     scriptPath = IOTestUtil.getScriptPath(apiObj);
@@ -238,10 +237,10 @@ public class BulkIOEndpointTest {
         ExecCaller endpoint = ExecCaller.on(IOTestUtil.db, new JacksonHandle(apiObj));
 
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
-                .withWorkUnitAs(workUnit)
+                .withEndpointConstantsAs(endpointConstants)
                 .withEndpointStateAs(endpointState),
                 endpoint.newCallContext()
-                        .withWorkUnitAs(workUnit1)
+                        .withEndpointConstantsAs(endpointConstants1)
                         .withEndpointStateAs(endpointState1)};
         ExecCaller.BulkExecCaller bulkCaller = endpoint.bulkCaller(callContextArray);
         bulkCaller.awaitCompletion();

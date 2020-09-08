@@ -51,18 +51,18 @@ public class ErrorListenerExecEndpointTest {
     @Test
     public void testBulkExecCallerImplWithRetry() throws IOException {
         String endpointState = "{\"next\":5}";
-        String workUnit      = "{\"max\":15,\"collection\":\"bulkExecTest_1\"}";
+        String endpointConstants      = "{\"max\":15,\"collection\":\"bulkExecTest_1\"}";
 
         String endpointState1 = "{\"next\":16}";
-        String workUnit1      = "{\"max\":26,\"collection\":\"bulkExecTest_2\"}";
+        String endpointConstants1      = "{\"max\":26,\"collection\":\"bulkExecTest_2\"}";
 
         ExecCaller endpoint = ExecCaller.on(IOTestUtil.db, new JacksonHandle(apiObj));
 
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
-                .withWorkUnitAs(workUnit)
+                .withEndpointConstantsAs(endpointConstants)
                 .withEndpointStateAs(endpointState),
                 endpoint.newCallContext()
-                        .withWorkUnitAs(workUnit1)
+                        .withEndpointConstantsAs(endpointConstants1)
                         .withEndpointStateAs(endpointState1)};
         ExecCaller.BulkExecCaller bulkCaller = endpoint.bulkCaller(callContextArray);
 
@@ -89,18 +89,18 @@ public class ErrorListenerExecEndpointTest {
     @Test
     public void testBulkExecCallerImplWithSkip() throws IOException {
         String endpointState = "{\"next\":5}";
-        String workUnit      = "{\"max\":15,\"collection\":\"bulkExecTest_1\"}";
+        String endpointConstants      = "{\"max\":15,\"collection\":\"bulkExecTest_1\"}";
 
         String endpointState1 = "{\"next\":16}";
-        String workUnit1      = "{\"max\":26,\"collection\":\"bulkExecTest_2\"}";
+        String endpointConstants1      = "{\"max\":26,\"collection\":\"bulkExecTest_2\"}";
 
         ExecCaller endpoint = ExecCaller.on(IOTestUtil.db, new JacksonHandle(apiObj));
 
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
-                .withWorkUnitAs(workUnit)
+                .withEndpointConstantsAs(endpointConstants)
                 .withEndpointStateAs(endpointState),
                 endpoint.newCallContext()
-                        .withWorkUnitAs(workUnit1)
+                        .withEndpointConstantsAs(endpointConstants1)
                         .withEndpointStateAs(endpointState1)};
         ExecCaller.BulkExecCaller bulkCaller = endpoint.bulkCaller(callContextArray);
 
@@ -127,18 +127,18 @@ public class ErrorListenerExecEndpointTest {
     @Test
     public void testBulkExecCallerImplWithStop() throws IOException {
         String endpointState = "{\"next\":5}";
-        String workUnit      = "{\"max\":15,\"collection\":\"bulkExecTest_1\"}";
+        String endpointConstants      = "{\"max\":15,\"collection\":\"bulkExecTest_1\"}";
 
         String endpointState1 = "{\"next\":16}";
-        String workUnit1      = "{\"max\":26,\"collection\":\"bulkExecTest_2\"}";
+        String endpointConstants1      = "{\"max\":26,\"collection\":\"bulkExecTest_2\"}";
 
         ExecCaller endpoint = ExecCaller.on(IOTestUtil.db, new JacksonHandle(apiObj));
 
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
-                .withWorkUnitAs(workUnit)
+                .withEndpointConstantsAs(endpointConstants)
                 .withEndpointStateAs(endpointState),
                 endpoint.newCallContext()
-                        .withWorkUnitAs(workUnit1)
+                        .withEndpointConstantsAs(endpointConstants1)
                         .withEndpointStateAs(endpointState1)};
         ExecCaller.BulkExecCaller bulkCaller = endpoint.bulkCaller(callContextArray);
 

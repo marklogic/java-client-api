@@ -60,11 +60,11 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 	}
 
 	@Deprecated
-	public InputStream call(InputStream endpointState, SessionState session, InputStream workUnit, I[] input) {
+	public InputStream call(InputStream endpointState, SessionState session, InputStream endpointConstants, I[] input) {
 		CallContextImpl<I,O> callContext = newCallContext(true)
 				.withEndpointStateAs(endpointState)
 				.withSessionState(session)
-				.withWorkUnitAs(workUnit);
+				.withEndpointConstantsAs(endpointConstants);
 		call(callContext, input);
 		return callContext.getEndpointStateAsInputStream();
 	}

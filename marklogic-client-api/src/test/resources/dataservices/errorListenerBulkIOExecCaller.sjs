@@ -1,10 +1,10 @@
 'use strict';
 var endpointState; // jsonDocument?
-var workUnit;      // jsonDocument?
+var endpointConstants;      // jsonDocument?
 declareUpdate();
 
 
-const work = fn.head(xdmp.fromJSON(workUnit));
+const work = fn.head(xdmp.fromJSON(endpointConstants));
 
 const state = fn.head(xdmp.fromJSON(endpointState));
 state.next = state.next + 1;

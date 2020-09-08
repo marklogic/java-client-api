@@ -1,7 +1,7 @@
 'use strict';
 
 const state  = fn.head(xdmp.fromJSON(endpointState));
-const work = fn.head(xdmp.fromJSON(workUnit));
+const work = fn.head(xdmp.fromJSON(endpointConstants));
 
 const res = [];
 const d = fn.subsequence(fn.collection("bulkOutputCallerNext"), state.next, work.limit);

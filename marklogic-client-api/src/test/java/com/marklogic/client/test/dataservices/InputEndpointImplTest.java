@@ -46,20 +46,20 @@ public class InputEndpointImplTest {
     public void testInputCallerImpl() throws IOException {
 
         String endpointState = "{\"offset\":0}";
-        String workUnit = "{\"collection\":\"/dataset1\"}";
+        String endpointConstants = "{\"collection\":\"/dataset1\"}";
         InputStream[] input = IOTestUtil.asInputStreamArray("{\"docNum\":1, \"docName\":\"doc1\"}",
                 "{\"docNum\":2, \"docName\":\"doc2\"}"
         );
 
         InputEndpoint caller = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));;
         InputStream result = caller.call(IOTestUtil.asInputStream(endpointState), caller.newSessionState(),
-                IOTestUtil.asInputStream(workUnit), input);
+                IOTestUtil.asInputStream(endpointConstants), input);
         assertNotNull(result);
 
         ObjectNode resultObj = IOTestUtil.mapper.readValue(result, ObjectNode.class);
         assertNotNull(resultObj);
         assertEquals("Endpoint value not as expected.",endpointState, resultObj.get("endpointState").toString());
-        assertEquals("Workunit not as expected.",workUnit, resultObj.get("workUnit").toString());
+        assertEquals("Endpoint constants not as expected.",endpointConstants, resultObj.get("endpointConstants").toString());
         assertTrue(resultObj.get("input").get(0).toString().contains("doc1"));
         assertTrue(resultObj.get("input").get(1).toString().contains("doc2"));
     }
@@ -67,13 +67,13 @@ public class InputEndpointImplTest {
     @Test
     public void testInputCallerImplWithNullEndpointState() throws IOException {
 
-        String workUnit = "{\"collection\":\"/dataset1\"}";
+        String endpointConstants = "{\"collection\":\"/dataset1\"}";
         InputStream[] input = IOTestUtil.asInputStreamArray("{\"docNum\":1, \"docName\":\"doc1\"}",
                 "{\"docNum\":2, \"docName\":\"doc2\"}");
 
         InputEndpoint caller = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));;
         InputStream result = caller.call(null, caller.newSessionState(),
-                IOTestUtil.asInputStream(workUnit), input);
+                IOTestUtil.asInputStream(endpointConstants), input);
         assertNotNull(result);
 
         ObjectNode resultObj = IOTestUtil.mapper.readValue(result, ObjectNode.class);
@@ -83,13 +83,13 @@ public class InputEndpointImplTest {
     @Test
     public void testInputCallerImplWithNullSession() throws IOException {
 
-        String workUnit = "{\"collection\":\"/dataset1\"}";
+        String endpointConstants = "{\"collection\":\"/dataset1\"}";
         InputStream[] input = IOTestUtil.asInputStreamArray("{\"docNum\":1, \"docName\":\"doc1\"}",
                 "{\"docNum\":2, \"docName\":\"doc2\"}");
 
         InputEndpoint caller = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));;
         InputStream result = caller.call(IOTestUtil.asInputStream("{\"endpoint\":0}"), null,
-                IOTestUtil.asInputStream(workUnit), input);
+                IOTestUtil.asInputStream(endpointConstants), input);
         assertNotNull(result);
 
         ObjectNode resultObj = IOTestUtil.mapper.readValue(result, ObjectNode.class);
@@ -99,13 +99,13 @@ public class InputEndpointImplTest {
     @Test
     public void testInputCallerImplWithNullInput() throws IOException {
 
-        String workUnit = "{\"collection\":\"/dataset1\"}";
+        String endpointConstants = "{\"collection\":\"/dataset1\"}";
         InputStream[] input = IOTestUtil.asInputStreamArray("{\"docNum\":1, \"docName\":\"doc1\"}",
                 "{\"docNum\":2, \"docName\":\"doc2\"}");
 
         InputEndpoint caller = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));;
         InputStream result = caller.call(IOTestUtil.asInputStream("{\"endpoint\":0}"), caller.newSessionState(),
-                IOTestUtil.asInputStream(workUnit), null);
+                IOTestUtil.asInputStream(endpointConstants), null);
         assertNotNull(result);
 
         ObjectNode resultObj = IOTestUtil.mapper.readValue(result, ObjectNode.class);
@@ -116,7 +116,7 @@ public class InputEndpointImplTest {
     @Test
     public void testInputCallerImplWithNull() throws IOException {
 
-        String workUnit = "{\"collection\":\"/dataset1\"}";
+        String endpointConstants = "{\"collection\":\"/dataset1\"}";
         InputStream[] input = IOTestUtil.asInputStreamArray("{\"docNum\":1, \"docName\":\"doc1\"}",
                 "{\"docNum\":2, \"docName\":\"doc2\"}");
 

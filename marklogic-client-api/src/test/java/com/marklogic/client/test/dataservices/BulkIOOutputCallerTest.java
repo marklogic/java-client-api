@@ -54,16 +54,16 @@ public class BulkIOOutputCallerTest {
     public void bulkOutputCallerTestWithMultipleCallContexts() {
 
         String endpointState1 = "{\"next\":"+1+"}";
-        String workUnit1      = "{\"max\":6,\"limit\":5,\"collection\":\"bulkOutputTest_1\"}";
+        String endpointConstants1      = "{\"max\":6,\"limit\":5,\"collection\":\"bulkOutputTest_1\"}";
 
         String endpointState2 = "{\"next\":"+1+"}";
-        String workUnit2      =  "{\"max\":6,\"limit\":5,\"collection\":\"bulkOutputTest_2\"}";
+        String endpointConstants2      =  "{\"max\":6,\"limit\":5,\"collection\":\"bulkOutputTest_2\"}";
         OutputCaller<InputStream> endpoint = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
                 .withEndpointStateAs(endpointState2)
-                .withWorkUnitAs(workUnit2), endpoint.newCallContext()
+                .withEndpointConstantsAs(endpointConstants2), endpoint.newCallContext()
                 .withEndpointStateAs(endpointState1)
-                .withWorkUnitAs(workUnit1)};
+                .withEndpointConstantsAs(endpointConstants1)};
         OutputCaller.BulkOutputCaller<InputStream> bulkCaller = endpoint.bulkCaller(callContextArray);
         Set<String> actual = new ConcurrentSkipListSet<>();
         final AtomicBoolean duplicated = new AtomicBoolean(false);

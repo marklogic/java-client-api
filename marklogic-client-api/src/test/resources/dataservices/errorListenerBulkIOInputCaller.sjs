@@ -1,13 +1,13 @@
 'use strict';
 var endpointState; // jsonDocument?
-var workUnit;      // jsonDocument?
+var endpointConstants;      // jsonDocument?
 var input;         // jsonDocument*
 declareUpdate();
 
 const state  = fn.head(xdmp.fromJSON(endpointState));
 state.next = state.next + 1;
 
-const work = fn.head(xdmp.fromJSON(workUnit));
+const work = fn.head(xdmp.fromJSON(endpointConstants));
 
 const inputs =
     (input instanceof Sequence) ? input.toArray().map(item => fn.head(xdmp.fromJSON(item))) :

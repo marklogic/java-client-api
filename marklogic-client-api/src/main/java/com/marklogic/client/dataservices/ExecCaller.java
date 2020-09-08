@@ -36,12 +36,12 @@ public interface ExecCaller extends IOEndpoint {
     }
 
     /**
-     * Makes one call to an endpoint that doesn't take an endpoint state, session, or work unit.
+     * Makes one call to an endpoint that doesn't take endpoint constants, endpoint state, or a session.
      */
     void call();
     /**
      * Makes one call to the endpoint for the instance and sets the endpoint state in the Call Context.
-     * @param callContext the collection of endpointState, sessionState and workUnit
+     * @param callContext the context consisting of the optional endpointConstants, endpointState, and session
      */
     void call(CallContext callContext);
 
@@ -54,7 +54,7 @@ public interface ExecCaller extends IOEndpoint {
     /**
      * Constructs an instance of a bulk caller, which completes
      * a unit of work by repeated calls to the endpoint. The calls occur in the current thread.
-     * @param callContext the collection of endpointState, sessionState and workUnit
+     * @param callContext the context consisting of the optional endpointConstants, endpointState, and session
      * @return  the bulk caller for the endpoint
      */
     BulkExecCaller bulkCaller(CallContext callContext);
@@ -79,9 +79,7 @@ public interface ExecCaller extends IOEndpoint {
      * by repeated calls to an endpoint that doesn't take input
      * data structure or return output data structures.
      *
-     * Use the inherited methods to set the endpoint state
-     * and / or work unit if accepted by the endpoint.
-     * Then, call awaitCompletion() to start making calls.
+     * Call awaitCompletion() to start making calls.
      */
     interface BulkExecCaller extends BulkIOEndpointCaller {
         void setErrorListener(ErrorListener errorListener);

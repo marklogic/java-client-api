@@ -33,7 +33,7 @@ class CallContextImpl<I,O> implements IOEndpoint.CallContext {
     private final boolean legacyContext;
 
     private BytesHandle endpointState;
-    private BytesHandle workUnit;
+    private BytesHandle endpointConstants;
     private SessionState session;
 
     CallContextImpl(IOEndpointImpl<I,O> endpoint, boolean legacyContext) {
@@ -42,8 +42,8 @@ class CallContextImpl<I,O> implements IOEndpoint.CallContext {
         if (endpoint.allowsEndpointState()) {
             endpointState = new BytesHandle().withFormat(endpoint.getEndpointStateParamdef().getFormat());
         }
-        if (endpoint.allowsWorkUnit()) {
-            workUnit = new BytesHandle().withFormat(endpoint.getWorkUnitParamdef().getFormat());
+        if (endpoint.allowsEndpointConstants()) {
+            endpointConstants = new BytesHandle().withFormat(endpoint.getEndpointConstantsParamdef().getFormat());
         }
     }
 
@@ -57,6 +57,9 @@ class CallContextImpl<I,O> implements IOEndpoint.CallContext {
 
     boolean isLegacyContext() {
         return legacyContext;
+    }
+    String getEndpointConstantsParamName() {
+        return isLegacyContext() ? "workUnit" : "endpointConstants";
     }
 
     @Override
@@ -80,19 +83,19 @@ class CallContextImpl<I,O> implements IOEndpoint.CallContext {
     }
 
     @Override
-    public BytesHandle getWorkUnit() {
-        return this.workUnit;
+    public BytesHandle getEndpointConstants() {
+        return this.endpointConstants;
     }
     @Override
-    public CallContextImpl<I,O> withWorkUnit(BufferableHandle workUnit) {
-        return assignBytes(this.workUnit, workUnit);
+    public CallContextImpl<I,O> withEndpointConstants(BufferableHandle constants) {
+        return assignBytes(this.endpointConstants, constants);
     }
-    CallContextImpl<I,O> withWorkUnitAs(InputStream workUnit) {
-        return assignBytes(this.workUnit, workUnit);
+    CallContextImpl<I,O> withEndpointConstantsAs(InputStream contants) {
+        return assignBytes(this.endpointConstants, contants);
     }
     @Override
-    public CallContextImpl<I,O> withWorkUnitAs(Object workUnit) {
-        return assignBytes(this.workUnit, workUnit);
+    public CallContextImpl<I,O> withEndpointConstantsAs(Object constants) {
+        return assignBytes(this.endpointConstants, constants);
     }
 
     @Override
