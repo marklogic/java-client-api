@@ -1,17 +1,33 @@
+/*
+ * Copyright (c) 2020 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.dataservices.IOEndpoint;
-import com.marklogic.client.dataservices.InputOutputEndpoint;
+import com.marklogic.client.dataservices.InputOutputCaller;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.impl.NodeConverter;
+import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,7 +51,7 @@ public class ErrorListenerInputOutputEndpointTest {
     }
 
     @Test
-    public void testInputOutputCallerWithRetry() throws IOException {
+    public void testInputOutputCallerWithRetry() {
 
 
         String              endpointState = "{\"next\":1}";
@@ -63,17 +79,18 @@ public class ErrorListenerInputOutputEndpointTest {
         );
         Set<String> output = new ConcurrentHashMap<String, Long>().keySet(1L);
 
-        InputOutputEndpoint endpoint = InputOutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputOutputCaller<InputStream,InputStream> endpoint = InputOutputCaller.on(
+                IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle(), new InputStreamHandle());
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes())),
+                .withEndpointStateAs(endpointState)
+                .withWorkUnitAs(workUnit),
                 endpoint.newCallContext()
-                        .withEndpointState(new ByteArrayInputStream(endpointState1.getBytes()))
-                        .withWorkUnit(new ByteArrayInputStream(workUnit1.getBytes()))};
-        InputOutputEndpoint.BulkInputOutputCaller bulkCaller = endpoint.bulkCaller(callContextArray);
+                        .withEndpointStateAs(endpointState1)
+                        .withWorkUnitAs(workUnit1)};
+        InputOutputCaller.BulkInputOutputCaller<InputStream,InputStream> bulkCaller = endpoint.bulkCaller(callContextArray);
 
 
-        InputOutputEndpoint.BulkInputOutputCaller.ErrorListener errorListener =
+        InputOutputCaller.BulkInputOutputCaller.ErrorListener<InputStream> errorListener =
                 (retryCount, throwable, callContext, inputStreams)
                         -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.RETRY;
         bulkCaller.setErrorListener(errorListener);
@@ -120,17 +137,17 @@ public class ErrorListenerInputOutputEndpointTest {
         );
         Set<String> output = new ConcurrentHashMap<String, Long>().keySet(1L);
 
-        InputOutputEndpoint endpoint = InputOutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputOutputCaller<InputStream,InputStream> endpoint = InputOutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle(), new InputStreamHandle());
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes())),
+                .withEndpointStateAs(endpointState)
+                .withWorkUnitAs(workUnit),
                 endpoint.newCallContext()
-                        .withEndpointState(new ByteArrayInputStream(endpointState1.getBytes()))
-                        .withWorkUnit(new ByteArrayInputStream(workUnit1.getBytes()))};
-        InputOutputEndpoint.BulkInputOutputCaller bulkCaller = endpoint.bulkCaller(callContextArray);
+                        .withEndpointStateAs(endpointState1)
+                        .withWorkUnitAs(workUnit1)};
+        InputOutputCaller.BulkInputOutputCaller<InputStream,InputStream> bulkCaller = endpoint.bulkCaller(callContextArray);
 
 
-        InputOutputEndpoint.BulkInputOutputCaller.ErrorListener errorListener =
+        InputOutputCaller.BulkInputOutputCaller.ErrorListener<InputStream> errorListener =
                 (retryCount, throwable, callContext, inputStreams)
                         -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.SKIP_CALL;
         bulkCaller.setErrorListener(errorListener);
@@ -174,17 +191,17 @@ public class ErrorListenerInputOutputEndpointTest {
         );
         Set<String> output = new ConcurrentHashMap<String, Long>().keySet(1L);
 
-        InputOutputEndpoint endpoint = InputOutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputOutputCaller<InputStream,InputStream> endpoint = InputOutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle(), new InputStreamHandle());
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes())),
+                .withEndpointStateAs(endpointState)
+                .withWorkUnitAs(workUnit),
                 endpoint.newCallContext()
-                        .withEndpointState(new ByteArrayInputStream(endpointState1.getBytes()))
-                        .withWorkUnit(new ByteArrayInputStream(workUnit1.getBytes()))};
-        InputOutputEndpoint.BulkInputOutputCaller bulkCaller = endpoint.bulkCaller(callContextArray);
+                        .withEndpointStateAs(endpointState1)
+                        .withWorkUnitAs(workUnit1)};
+        InputOutputCaller.BulkInputOutputCaller<InputStream,InputStream> bulkCaller = endpoint.bulkCaller(callContextArray);
 
 
-        InputOutputEndpoint.BulkInputOutputCaller.ErrorListener errorListener =
+        InputOutputCaller.BulkInputOutputCaller.ErrorListener<InputStream> errorListener =
                 (retryCount, throwable, callContext, inputStreams)
                         -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.STOP_ALL_CALLS;
         bulkCaller.setErrorListener(errorListener);

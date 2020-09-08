@@ -77,7 +77,7 @@ public class InputEndpointImplTest {
         assertNotNull(result);
 
         ObjectNode resultObj = IOTestUtil.mapper.readValue(result, ObjectNode.class);
-        assertNull(resultObj.get("endpointState"));
+        assertTrue(resultObj.get("endpointState").isNull());
     }
 
     @Test
@@ -126,7 +126,7 @@ public class InputEndpointImplTest {
 
         ObjectNode resultObj = IOTestUtil.mapper.readValue(result, ObjectNode.class);
         assertNotNull(resultObj);
-        assertTrue("Result object is not empty", resultObj.size() == 0);
+        assertTrue(resultObj.get("endpointState").isNull());
 
     }
 

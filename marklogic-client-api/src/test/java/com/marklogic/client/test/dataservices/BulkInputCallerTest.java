@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,9 @@ package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.dataservices.InputEndpoint;
+import com.marklogic.client.dataservices.InputCaller;
 import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import org.hamcrest.core.StringContains;
 import org.junit.AfterClass;
@@ -60,11 +61,11 @@ public class BulkInputCallerTest {
         String endpointState = "{\"next\":"+startValue+"}";
         String workUnit      = "{\"max\":"+workMax+"}";
 
-        InputEndpoint loadEndpt = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputCaller<InputStream> loadEndpt = InputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
 
-        InputEndpoint.BulkInputCaller loader = loadEndpt.bulkCaller(loadEndpt.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes())));
+        InputCaller.BulkInputCaller<InputStream> loader = loadEndpt.bulkCaller(loadEndpt.newCallContext()
+                .withEndpointStateAs(endpointState)
+                .withWorkUnitAs(workUnit.getBytes()));
 
         Stream<InputStream> input         = Stream.of(
                 IOTestUtil.asInputStream("{\"docNum\":1, \"docName\":\"doc1\"}"),
@@ -103,11 +104,11 @@ public class BulkInputCallerTest {
         String     scriptPath = IOTestUtil.getScriptPath(apiObj);
         String     apiPath    = IOTestUtil.getApiPath(scriptPath);
         IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
-        InputEndpoint loadEndpt = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputCaller<InputStream> loadEndpt = InputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
 
-        InputEndpoint.BulkInputCaller loader = loadEndpt.bulkCaller(loadEndpt.newCallContext()
-                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes()))
-                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes())));
+        InputCaller.BulkInputCaller<InputStream> loader = loadEndpt.bulkCaller(loadEndpt.newCallContext()
+                .withWorkUnitAs(workUnit)
+                .withEndpointStateAs(endpointState));
 
         Stream<InputStream> input         = Stream.of(
                 IOTestUtil.asInputStream("{\"docNum\":1, \"docName\":\"doc1\"}"),

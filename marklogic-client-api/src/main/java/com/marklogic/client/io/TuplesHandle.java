@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 import javax.xml.bind.JAXBContext;
@@ -104,11 +105,8 @@ public class TuplesHandle
   protected void receiveContent(InputStream content) {
     try {
       tuplesHolder = (TuplesBuilder.Tuples) unmarshaller.unmarshal(
-        new InputStreamReader(content, "UTF-8")
+        new InputStreamReader(content, StandardCharsets.UTF_8)
       );
-    } catch (UnsupportedEncodingException e) {
-      logger.error("Failed to unmarshall tuples",e);
-      throw new MarkLogicIOException(e);
     } catch (JAXBException e) {
       logger.error("Failed to unmarshall tuples",e);
       throw new MarkLogicIOException(e);

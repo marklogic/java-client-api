@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLEventReader;
@@ -164,6 +165,11 @@ public class XMLEventReaderHandle
   public XMLEventReaderHandle newHandle() {
     return new XMLEventReaderHandle().withMimetype(getMimetype());
   }
+  @Override
+  public XMLEventReader[] newArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new XMLEventReader[length];
+  }
 
   /**
    * Restricts the format to XML.
@@ -214,12 +220,8 @@ public class XMLEventReaderHandle
    */
   @Override
   public String toString() {
-    try {
-      byte[] buffer = toBuffer();
-      return (buffer == null) ? null : new String(buffer,"UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new MarkLogicIOException(e);
-    }
+    byte[] buffer = toBuffer();
+    return (buffer == null) ? null : new String(buffer, StandardCharsets.UTF_8);
   }
 
   /**

@@ -1,10 +1,26 @@
+/*
+ * Copyright (c) 2020 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.dataservices.IOEndpoint;
-import com.marklogic.client.dataservices.OutputEndpoint;
+import com.marklogic.client.dataservices.OutputCaller;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
@@ -15,7 +31,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -32,8 +48,8 @@ public class ErrorListenerOutputEndpointTest {
     static JSONDocumentManager docMgr;
     static Set<String> expected = new HashSet<>();
 
-    private static String collectionName_1 = "bulkOutputTest_1";
-    private static String collectionName_2 = "bulkOutputTest_2";
+    private static final String collectionName_1 = "bulkOutputTest_1";
+    private static final String collectionName_2 = "bulkOutputTest_2";
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -50,24 +66,24 @@ public class ErrorListenerOutputEndpointTest {
     }
 
     @Test
-    public void bulkOutputCallerTestWithRetry() throws Exception {
+    public void bulkOutputCallerTestWithRetry() {
 
         String endpointState1 = "{\"next\":"+1+"}";
         String workUnit1      = "{\"max\":11,\"limit\":2,\"collection\":\"bulkOutputTest_1\"}";
 
         String endpointState2 = "{\"next\":"+1+"}";
         String workUnit2      =  "{\"max\":11,\"limit\":2,\"collection\":\"bulkOutputTest_2\"}";
-        OutputEndpoint endpoint = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        OutputCaller<InputStream> endpoint = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState2.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit2.getBytes())), endpoint.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState1.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit1.getBytes()))};
-        OutputEndpoint.BulkOutputCaller bulkCaller = endpoint.bulkCaller(callContextArray);
+                .withEndpointStateAs(endpointState2)
+                .withWorkUnitAs(workUnit2), endpoint.newCallContext()
+                .withEndpointStateAs(endpointState1)
+                .withWorkUnitAs(workUnit1)};
+        OutputCaller.BulkOutputCaller<InputStream> bulkCaller = endpoint.bulkCaller(callContextArray);
         Set<String> actual = new ConcurrentSkipListSet<>();
         final AtomicBoolean duplicated = new AtomicBoolean(false);
         final AtomicBoolean exceptional = new AtomicBoolean(false);
-        OutputEndpoint.BulkOutputCaller.ErrorListener errorListener =
+        OutputCaller.BulkOutputCaller.ErrorListener errorListener =
                 (retryCount, throwable, callContext)
                         -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.RETRY;
         bulkCaller.setErrorListener(errorListener);
@@ -100,17 +116,17 @@ public class ErrorListenerOutputEndpointTest {
 
         String endpointState2 = "{\"next\":"+1+"}";
         String workUnit2      =  "{\"max\":11,\"limit\":2,\"collection\":\"bulkOutputTest_2\"}";
-        OutputEndpoint endpoint = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        OutputCaller<InputStream> endpoint = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState2.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit2.getBytes())), endpoint.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState1.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit1.getBytes()))};
-        OutputEndpoint.BulkOutputCaller bulkCaller = endpoint.bulkCaller(callContextArray);
+                .withEndpointStateAs(endpointState2)
+                .withWorkUnitAs(workUnit2), endpoint.newCallContext()
+                .withEndpointStateAs(endpointState1)
+                .withWorkUnitAs(workUnit1)};
+        OutputCaller.BulkOutputCaller<InputStream> bulkCaller = endpoint.bulkCaller(callContextArray);
         Set<String> actual = new ConcurrentSkipListSet<>();
         final AtomicBoolean duplicated = new AtomicBoolean(false);
         final AtomicBoolean exceptional = new AtomicBoolean(false);
-        OutputEndpoint.BulkOutputCaller.ErrorListener errorListener =
+        OutputCaller.BulkOutputCaller.ErrorListener errorListener =
                 (retryCount, throwable, callContext)
                         -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.SKIP_CALL;
         bulkCaller.setErrorListener(errorListener);
@@ -135,24 +151,24 @@ public class ErrorListenerOutputEndpointTest {
     }
 
     @Test
-    public void bulkOutputCallerTestWithStop() throws Exception {
+    public void bulkOutputCallerTestWithStop() {
 
         String endpointState1 = "{\"next\":"+1+"}";
         String workUnit1      = "{\"max\":11,\"limit\":2,\"collection\":\"bulkOutputTest_1\"}";
 
         String endpointState2 = "{\"next\":"+1+"}";
         String workUnit2      =  "{\"max\":11,\"limit\":2,\"collection\":\"bulkOutputTest_2\"}";
-        OutputEndpoint endpoint = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        OutputCaller<InputStream> endpoint = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState2.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit2.getBytes())), endpoint.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState1.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit1.getBytes()))};
-        OutputEndpoint.BulkOutputCaller bulkCaller = endpoint.bulkCaller(callContextArray);
+                .withEndpointStateAs(endpointState2)
+                .withWorkUnitAs(workUnit2), endpoint.newCallContext()
+                .withEndpointStateAs(endpointState1)
+                .withWorkUnitAs(workUnit1)};
+        OutputCaller.BulkOutputCaller<InputStream> bulkCaller = endpoint.bulkCaller(callContextArray);
         Set<String> actual = new ConcurrentSkipListSet<>();
         final AtomicBoolean duplicated = new AtomicBoolean(false);
         final AtomicBoolean exceptional = new AtomicBoolean(false);
-        OutputEndpoint.BulkOutputCaller.ErrorListener errorListener =
+        OutputCaller.BulkOutputCaller.ErrorListener errorListener =
                 (retryCount, throwable, callContext)
                         -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.STOP_ALL_CALLS;
         bulkCaller.setErrorListener(errorListener);

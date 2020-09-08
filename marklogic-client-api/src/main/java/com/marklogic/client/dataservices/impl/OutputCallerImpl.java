@@ -15,16 +15,15 @@
  */
 package com.marklogic.client.dataservices.impl;
 
-import com.marklogic.client.SessionState;
-import java.io.InputStream;
 import java.util.stream.Stream;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.io.marker.BufferableContentHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
-final public class OutputCallerImpl extends IOCallerImpl {
-    public OutputCallerImpl(JSONWriteHandle apiDeclaration) {
-        super(apiDeclaration);
+final public class OutputCallerImpl<I,O> extends IOCallerImpl<I,O> {
+    public OutputCallerImpl(JSONWriteHandle apiDeclaration, BufferableContentHandle<O,?> outputHandle) {
+        super(apiDeclaration, null, outputHandle);
 
         if (getInputParamdef() != null) {
             throw new IllegalArgumentException("input parameter not supported in endpoint: "+ getEndpointPath());
@@ -38,14 +37,10 @@ final public class OutputCallerImpl extends IOCallerImpl {
         }
     }
 
-    public InputStream[] arrayCall(
-            DatabaseClient db, InputStream endpointState, SessionState session, InputStream workUnit
-    ) {
-        return responseMultipleAsArray(makeRequest(db, endpointState, session, workUnit));
+    public O[] arrayCall(DatabaseClient db, CallContextImpl<I,O> callCtxt) {
+        return responseMultipleAsArray(makeRequest(db, callCtxt), callCtxt);
     }
-    public Stream<InputStream> streamCall(
-            DatabaseClient db, InputStream endpointState, SessionState session, InputStream workUnit
-    ) {
-        return responseMultipleAsStream(makeRequest(db, endpointState, session, workUnit));
+    public Stream<O> streamCall(DatabaseClient db, CallContextImpl<I,O> callCtxt) {
+        return responseMultipleAsStream(makeRequest(db, callCtxt), callCtxt);
     }
 }

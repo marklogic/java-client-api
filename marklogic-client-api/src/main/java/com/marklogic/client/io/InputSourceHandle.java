@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
@@ -35,20 +36,13 @@ import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.validation.Schema;
 
+import com.marklogic.client.io.marker.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.*;
 
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
-import com.marklogic.client.io.marker.CtsQueryWriteHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * <p>An Input Source Handle represents XML content as an input source for reading or writing.
@@ -182,6 +176,11 @@ public class InputSourceHandle
   public InputSourceHandle newHandle() {
     return new InputSourceHandle().withMimetype(getMimetype());
   }
+  @Override
+  public InputSource[] newArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new InputSource[length];
+  }
 
   /**
    * Reads the input source, sending SAX events to the supplied content handler.
@@ -255,12 +254,8 @@ public class InputSourceHandle
    */
   @Override
   public String toString() {
-    try {
-      byte[] buffer = toBuffer();
-      return (buffer == null) ? null : new String(buffer,"UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new MarkLogicIOException(e);
-    }
+    byte[] buffer = toBuffer();
+    return (buffer == null) ? null : new String(buffer, StandardCharsets.UTF_8);
   }
 
   /**
@@ -386,18 +381,13 @@ public class InputSourceHandle
   }
   @Override
   protected void receiveContent(InputStream content) {
-    try {
-      if (content == null) {
-        this.content = null;
-        return;
-      }
-
-      this.underlyingStream = content;
-      this.content = new InputSource(new InputStreamReader(content, "UTF-8"));
-    } catch (UnsupportedEncodingException e) {
-      logger.error("Failed to read input stream as input source",e);
-      throw new MarkLogicIOException(e);
+    if (content == null) {
+      this.content = null;
+      return;
     }
+
+    this.underlyingStream = content;
+    this.content = new InputSource(new InputStreamReader(content, StandardCharsets.UTF_8));
   }
   @Override
   protected OutputStreamSender sendContent() {
@@ -412,7 +402,7 @@ public class InputSourceHandle
     try {
       makeTransformer().newTransformer().transform(
         new SAXSource(makeReader(true), content),
-        new StreamResult(new OutputStreamWriter(out, "UTF-8"))
+        new StreamResult(new OutputStreamWriter(out, StandardCharsets.UTF_8))
       );
     } catch (TransformerException e) {
       logger.error("Failed to transform input source into result",e);

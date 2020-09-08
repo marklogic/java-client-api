@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,15 @@
  */
 package com.marklogic.client.dataservices.impl;
 
-import com.marklogic.client.SessionState;
-import java.io.InputStream;
 import java.util.stream.Stream;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.io.marker.BufferableContentHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
-final public class InputCallerImpl extends IOCallerImpl {
-    public InputCallerImpl(JSONWriteHandle apiDeclaration) {
-        super(apiDeclaration);
+final public class InputCallerImpl<I,O> extends IOCallerImpl<I,O> {
+    public InputCallerImpl(JSONWriteHandle apiDeclaration, BufferableContentHandle<I,?> inputHandle) {
+        super(apiDeclaration, inputHandle, null);
 
         if (getInputParamdef() == null) {
             throw new IllegalArgumentException("input parameter missing in endpoint: "+ getEndpointPath());
@@ -42,14 +41,10 @@ final public class InputCallerImpl extends IOCallerImpl {
         }
     }
 
-    public InputStream streamCall(
-            DatabaseClient db, InputStream endpointState, SessionState session, InputStream workUnit, Stream<InputStream> input
-    ) {
-        return responseSingle(makeRequest(db, endpointState, session, workUnit, input));
+    public void streamCall(DatabaseClient db, CallContextImpl<I,O> callCtxt, Stream<I> input) {
+        responseWithState(makeRequest(db, callCtxt, input), callCtxt);
     }
-    public InputStream arrayCall(
-            DatabaseClient db, InputStream endpointState, SessionState session, InputStream workUnit, InputStream[] input
-    ) {
-        return responseSingle(makeRequest(db, endpointState, session, workUnit, input));
+    public void arrayCall(DatabaseClient db, CallContextImpl<I,O> callCtxt, I[] input) {
+        responseWithState(makeRequest(db, callCtxt, input), callCtxt);
     }
 }

@@ -20,27 +20,40 @@ import java.io.InputStream;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.impl.InputEndpointImpl;
+import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
 /**
  * Provides an interface for calling an endpoint that takes input data structures.
  */
-public interface InputEndpoint extends IOEndpoint {
+@Deprecated
+public interface InputEndpoint extends InputCaller<InputStream> {
 	/**
      * Constructs an instance of the InputEndpoint interface.
      * @param client  the database client to use for making calls
      * @param apiDecl  the JSON api declaration specifying how to call the endpoint
      * @return  the InputEndpoint instance for calling the endpoint.
      */
+	@Deprecated
 	static InputEndpoint on(DatabaseClient client, JSONWriteHandle apiDecl) {
-		return new InputEndpointImpl(client, apiDecl);
+		final class EndpointLocal<O> extends InputEndpointImpl<InputStream,O>
+				implements InputEndpoint {
+			private EndpointLocal(DatabaseClient client, JSONWriteHandle apiDecl) {
+				super(client, apiDecl, new InputStreamHandle());
+			}
+			public InputEndpoint.BulkInputCaller bulkCaller() {
+				return new BulkLocal(this);
+			}
+			class BulkLocal extends InputEndpointImpl.BulkInputCallerImpl<InputStream,O>
+					implements InputEndpoint.BulkInputCaller {
+				private BulkLocal(EndpointLocal<O> endpoint) {
+					super(endpoint);
+				}
+			}
+		}
+		return new EndpointLocal(client, apiDecl);
 	}
 
-	/**
-	 * Makes one call to an endpoint that doesn't take an endpoint state, session, or work unit.
-	 * @param input  the request data sent to the endpoint
-	 */
-	void call(InputStream[] input);
 	/**
 	 * Makes one call to the endpoint for the instance
 	 * @param endpointState  the current mutable state of the endpoint (which must be null if not accepted by the endpoint)
@@ -51,67 +64,20 @@ public interface InputEndpoint extends IOEndpoint {
 	 */
 	@Deprecated
 	InputStream call(InputStream endpointState, SessionState session, InputStream workUnit, InputStream[] input);
+
 	/**
-     * Constructs an instance of a bulk caller, which completes
-     * a unit of work by repeated calls to the endpoint.
-     * @return  the bulk caller for the input endpoint
-     */
+	 * Constructs an instance of a bulk caller, which completes
+	 * a unit of work by repeated calls to the endpoint.
+	 * @return  the bulk caller for the input endpoint
+	 */
+	@Override
 	@Deprecated
 	BulkInputCaller bulkCaller();
-	/**
-	 * Makes one call to the endpoint for the instance and sets the endpoint state in the Call Context.
-	 * @param callContext  the collection of endpointState, sessionState and workUnit
-	 * @param input  the request data sent to the endpoint
-	 */
-	void call(CallContext callContext, InputStream[] input);
-	/**
-	 * Constructs an instance of a bulk caller, which completes
-	 * a unit of work by repeated calls to the endpoint. The calls occur in the current thread.
-	 * @param  callContext the collection of endpointState, sessionState and workUnit
-	 * @return  the bulk caller for the input endpoint
-	 */
-	BulkInputCaller bulkCaller(CallContext callContext);
-	/**
-	 * Constructs an instance of a bulk caller, which completes
-	 * a unit of work by repeated calls to the endpoint. The calls occur in worker threads.
-	 * @param  callContexts the collection of callContexts
-	 * @return  the bulk caller for the input endpoint
-	 */
-	BulkInputCaller bulkCaller(CallContext[] callContexts);
-	/**
-	 * Constructs an instance of a bulk caller, which completes
-	 * a unit of work by repeated calls to the endpoint. The calls occur in worker threads.
-	 * @param  callContexts the collection of callContexts
-	 * @param threadCount the number of threads
-	 * @return  the bulk caller for the input endpoint
-	 */
-	BulkInputCaller bulkCaller(CallContext[] callContexts, int threadCount);
-
 
 	/**
      * Provides an interface for completing a unit of work
      * by repeated calls to the input endpoint.
      */
-	interface BulkInputCaller extends IOEndpoint.BulkIOEndpointCaller {
-		/**
-		 * Accepts an input item for the endpoint.  Items are queued
-		 * and submitted to the endpoint in batches.
-		 * @param input  one input item
-		 */
-		void accept(InputStream input);
-		/**
-		 * Accepts multiple input items for the endpoint.  Items are queued
-		 * and submitted to the endpoint in batches.
-		 * @param input  multiple input items.
-		 */
-		void acceptAll(InputStream[] input);
-
-		void setErrorListener(ErrorListener errorListener);
-
-		interface ErrorListener {
-			IOEndpoint.BulkIOEndpointCaller.ErrorDisposition processError(
-					int retryCount, Throwable throwable, CallContext callContext, InputStream[] input
-			);
-		}
+	interface BulkInputCaller extends InputCaller.BulkInputCaller<InputStream> {
 	}
 }

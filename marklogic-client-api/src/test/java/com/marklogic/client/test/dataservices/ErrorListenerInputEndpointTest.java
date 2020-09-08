@@ -1,15 +1,30 @@
+/*
+ * Copyright (c) 2020 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.dataservices.IOEndpoint;
-import com.marklogic.client.dataservices.InputEndpoint;
+import com.marklogic.client.dataservices.InputCaller;
 import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.stream.Stream;
 
@@ -42,15 +57,15 @@ public class ErrorListenerInputEndpointTest {
         String endpointState1 = "{\"next\":" + 1 + "}";
         String workUnit1      = "{\"max\":10,\"collection\":\"bulkInputTest_2\"}";
 
-        InputEndpoint loadEndpt = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputCaller<InputStream> loadEndpt = InputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
         IOEndpoint.CallContext[] callContextArray = {loadEndpt.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes())), loadEndpt.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState1.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit1.getBytes()))};
-        InputEndpoint.BulkInputCaller loader = loadEndpt.bulkCaller(callContextArray);
+                .withEndpointStateAs(endpointState)
+                .withWorkUnitAs(workUnit), loadEndpt.newCallContext()
+                .withEndpointStateAs(endpointState1)
+                .withWorkUnitAs(workUnit1)};
+        InputCaller.BulkInputCaller<InputStream> loader = loadEndpt.bulkCaller(callContextArray);
 
-        InputEndpoint.BulkInputCaller.ErrorListener errorListener =
+        InputCaller.BulkInputCaller.ErrorListener<InputStream> errorListener =
                 (retryCount, throwable, callContext, input)
                         -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.RETRY;
         loader.setErrorListener(errorListener);
@@ -90,15 +105,15 @@ public class ErrorListenerInputEndpointTest {
         String endpointState1 = "{\"next\":" + 1 + "}";
         String workUnit1      = "{\"max\":10,\"collection\":\"bulkInputTest_2\"}";
 
-        InputEndpoint loadEndpt = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputCaller<InputStream> loadEndpt = InputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
         IOEndpoint.CallContext[] callContextArray = {loadEndpt.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes())), loadEndpt.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState1.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit1.getBytes()))};
-        InputEndpoint.BulkInputCaller loader = loadEndpt.bulkCaller(callContextArray);
+                .withEndpointStateAs(endpointState)
+                .withWorkUnitAs(workUnit), loadEndpt.newCallContext()
+                .withEndpointStateAs(endpointState1)
+                .withWorkUnitAs(workUnit1)};
+        InputCaller.BulkInputCaller<InputStream> loader = loadEndpt.bulkCaller(callContextArray);
 
-        InputEndpoint.BulkInputCaller.ErrorListener errorListener =
+        InputCaller.BulkInputCaller.ErrorListener<InputStream> errorListener =
                 (retryCount, throwable, callContext, input)
                         -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.SKIP_CALL;
         loader.setErrorListener(errorListener);
@@ -138,15 +153,15 @@ public class ErrorListenerInputEndpointTest {
         String endpointState1 = "{\"next\":" + 1 + "}";
         String workUnit1      = "{\"max\":10,\"collection\":\"bulkInputTest_2\"}";
 
-        InputEndpoint loadEndpt = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputCaller<InputStream> loadEndpt = InputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
         IOEndpoint.CallContext[] callContextArray = {loadEndpt.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes())), loadEndpt.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState1.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit1.getBytes()))};
-        InputEndpoint.BulkInputCaller loader = loadEndpt.bulkCaller(callContextArray);
+                .withEndpointStateAs(endpointState)
+                .withWorkUnitAs(workUnit), loadEndpt.newCallContext()
+                .withEndpointStateAs(endpointState1)
+                .withWorkUnitAs(workUnit1)};
+        InputCaller.BulkInputCaller<InputStream> loader = loadEndpt.bulkCaller(callContextArray);
 
-        InputEndpoint.BulkInputCaller.ErrorListener errorListener =
+        InputCaller.BulkInputCaller.ErrorListener<InputStream> errorListener =
                 (retryCount, throwable, callContext, input)
                         -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.STOP_ALL_CALLS;
         loader.setErrorListener(errorListener);

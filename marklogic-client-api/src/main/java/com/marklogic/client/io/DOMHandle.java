@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
@@ -54,7 +54,7 @@ import com.marklogic.client.MarkLogicInternalException;
  */
 public class DOMHandle
   extends BaseHandle<InputStream, OutputStreamSender>
-  implements OutputStreamSender, ResendableHandle<Document>,
+  implements ResendableContentHandle<Document, InputStream>, OutputStreamSender,
     XMLReadHandle, XMLWriteHandle,
     StructureReadHandle, StructureWriteHandle, CtsQueryWriteHandle
 {
@@ -94,8 +94,8 @@ public class DOMHandle
    */
   public DOMHandle() {
     super();
-    super.setFormat(Format.XML);
     setResendable(true);
+    super.setFormat(Format.XML);
   }
   /**
    * Initializes the handle with a DOM document for the content.
@@ -156,6 +156,11 @@ public class DOMHandle
   public DOMHandle newHandle() {
     return new DOMHandle().withMimetype(getMimetype());
   }
+  @Override
+  public Document[] newArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new Document[length];
+  }
 
   /**
    * Restricts the format to XML.
@@ -178,36 +183,20 @@ public class DOMHandle
 
   @Override
   public void fromBuffer(byte[] buffer) {
-    if (buffer == null || buffer.length == 0)
-      content = null;
-    else
-      receiveContent(new ByteArrayInputStream(buffer));
+    set(bytesToContent(buffer));
   }
   @Override
   public byte[] toBuffer() {
-    try {
-      if (content == null)
-        return null;
-
-      ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-      write(buffer);
-
-      return buffer.toByteArray();
-    } catch (IOException e) {
-      throw new MarkLogicIOException(e);
-    }
+    return contentToBytes(get());
   }
+
   /**
    * Returns the DOM document as an XML string.
    */
   @Override
   public String toString() {
-    try {
-      byte[] buffer = toBuffer();
-      return (buffer == null) ? null : new String(buffer,"UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new MarkLogicIOException(e);
-    }
+    byte[] buffer = toBuffer();
+    return (buffer == null) ? null : new String(buffer, StandardCharsets.UTF_8);
   }
 
   /**
@@ -391,15 +380,26 @@ public class DOMHandle
   }
 
   @Override
-  protected Class<InputStream> receiveAs() {
-    return InputStream.class;
+  public Document bytesToContent(byte[] buffer) {
+    if (buffer == null || buffer.length == 0) return null;
+    return toContent(new ByteArrayInputStream(buffer));
   }
   @Override
-  protected void receiveContent(InputStream content) {
-    if (content == null) {
-      this.content = null;
-      return;
+  public byte[] contentToBytes(Document content) {
+    try {
+      if (content == null)
+        return null;
+
+      ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+      sendContent(content).write(buffer);
+      return buffer.toByteArray();
+    } catch (IOException e) {
+      throw new MarkLogicIOException(e);
     }
+  }
+  @Override
+  public Document toContent(InputStream serialization) {
+    if (serialization == null) return null;
 
     try {
       if (logger.isDebugEnabled())
@@ -419,54 +419,81 @@ public class DOMHandle
 
       LSInput domInput = domImpl.createLSInput();
       domInput.setEncoding("UTF-8");
-      domInput.setByteStream(content);
+      domInput.setByteStream(serialization);
 
-      this.content = parser.parse(domInput);
+      return parser.parse(domInput);
     } catch (ParserConfigurationException e) {
       logger.error("Failed to parse DOM document from input stream",e);
       throw new MarkLogicInternalException(e);
     } finally {
       try {
-        content.close();
+        serialization.close();
       } catch (IOException e) {
         //ignore
       }
 
     }
   }
+
+  @Override
+  protected Class<InputStream> receiveAs() {
+    return InputStream.class;
+  }
+  @Override
+  protected void receiveContent(InputStream content) {
+    set(toContent(content));
+  }
   @Override
   protected OutputStreamSender sendContent() {
-    if (content == null) {
-      throw new IllegalStateException("No document to write");
+    return sendContent(get());
+  }
+  private OutputStreamSender sendContent(Document content) {
+    try {
+      return new OutputStreamSenderImpl(getFactory(), content);
+    } catch (ParserConfigurationException e) {
+      logger.error("Failed to create output stream sender",e);
+      throw new MarkLogicInternalException(e);
     }
-
-    return this;
   }
   @Override
   public void write(OutputStream out) throws IOException {
-    try {
-      if (logger.isDebugEnabled())
-        logger.debug("Serializing DOM document to output stream");
+    sendContent().write(out);
+  }
 
-      DocumentBuilderFactory factory = getFactory();
+  static private class OutputStreamSenderImpl implements OutputStreamSender {
+    private final DocumentBuilderFactory factory;
+    private final Document content;
+    private OutputStreamSenderImpl(DocumentBuilderFactory factory, Document content) {
       if (factory == null) {
         throw new MarkLogicInternalException("Failed to make DOM document builder factory");
       }
+      if (content == null) {
+        throw new IllegalStateException("No document to write");
+      }
+      this.factory = factory;
+      this.content = content;
+    }
+    @Override
+    public void write(OutputStream out) throws IOException {
+      try {
+        if (logger.isDebugEnabled())
+          logger.debug("Serializing DOM document to output stream");
 
-      DOMImplementationLS domImpl = (DOMImplementationLS) factory.newDocumentBuilder().getDOMImplementation();
-      LSOutput domOutput = domImpl.createLSOutput();
-      domOutput.setEncoding("UTF-8");
-      domOutput.setByteStream(out);
-      domImpl.createLSSerializer().write(content, domOutput);
-    } catch (DOMException e) {
-      logger.error("Failed to serialize DOM document to output stream",e);
-      throw new MarkLogicInternalException(e);
-    } catch (LSException e) {
-      logger.error("Failed to serialize DOM document to output stream",e);
-      throw new MarkLogicInternalException(e);
-    } catch (ParserConfigurationException e) {
-      logger.error("Failed to serialize DOM document to output stream",e);
-      throw new MarkLogicInternalException(e);
+        DOMImplementationLS domImpl = (DOMImplementationLS) factory.newDocumentBuilder().getDOMImplementation();
+        LSOutput domOutput = domImpl.createLSOutput();
+        domOutput.setEncoding("UTF-8");
+        domOutput.setByteStream(out);
+        domImpl.createLSSerializer().write(content, domOutput);
+      } catch (DOMException e) {
+        logger.error("Failed to serialize DOM document to output stream",e);
+        throw new MarkLogicInternalException(e);
+      } catch (LSException e) {
+        logger.error("Failed to serialize DOM document to output stream",e);
+        throw new MarkLogicInternalException(e);
+      } catch (ParserConfigurationException e) {
+        logger.error("Failed to serialize DOM document to output stream",e);
+        throw new MarkLogicInternalException(e);
+      }
     }
   }
 }

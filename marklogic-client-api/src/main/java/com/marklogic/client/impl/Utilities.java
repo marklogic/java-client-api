@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import java.io.Writer;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,15 +67,13 @@ public final class Utilities {
   private static DatatypeFactory datatypeFactory;
   static private int BUFFER_SIZE = 8192;
 
-  private static DocumentBuilderFactory getFactory()
-    throws ParserConfigurationException {
+  private static DocumentBuilderFactory getFactory() {
     if (factory == null)
       factory = makeDocumentBuilderFactory();
     return factory;
   }
 
-  private static DocumentBuilderFactory makeDocumentBuilderFactory()
-    throws ParserConfigurationException {
+  private static DocumentBuilderFactory makeDocumentBuilderFactory() {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     factory.setNamespaceAware(true);
     factory.setValidating(false);
@@ -336,7 +335,7 @@ public final class Utilities {
       return null;
     }
 
-    return new String(bytes, Charset.forName("UTF-8"));
+    return new String(bytes, StandardCharsets.UTF_8);
   }
   public static boolean writeEvents(List<XMLEvent> events, OutputStream out) {
     if (events == null || events.size() == 0) {
@@ -756,7 +755,7 @@ public final class Utilities {
     return (value == null || value.length() == 0) ? defaultValue : Integer.parseInt(value);
   }
   public static long parseLong(String value) {
-    return parseLong(value, -1l);
+    return parseLong(value, -1L);
   }
   public static long parseLong(String value, long defaultValue) {
     return (value == null || value.length() == 0) ? defaultValue : Long.parseLong(value);

@@ -33,6 +33,8 @@ import com.marklogic.client.impl.ValuesListBuilder;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.ValuesListReadHandle;
 import com.marklogic.client.query.ValuesListResults;
+
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 /**
@@ -121,11 +123,8 @@ public class ValuesListHandle
   protected void receiveContent(InputStream content) {
     try {
       valuesHolder = (ValuesListBuilder.ValuesList) unmarshaller.unmarshal(
-        new InputStreamReader(content, "UTF-8")
+        new InputStreamReader(content, StandardCharsets.UTF_8)
       );
-    } catch (UnsupportedEncodingException e) {
-      logger.error("Failed to unmarshall values list",e);
-      throw new MarkLogicIOException(e);
     } catch (JAXBException e) {
       logger.error("Failed to unmarshall values list",e);
       throw new MarkLogicIOException(e);

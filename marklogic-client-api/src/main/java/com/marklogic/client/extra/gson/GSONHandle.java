@@ -19,8 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
@@ -29,6 +28,7 @@ import com.google.gson.JsonSyntaxException;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.marker.ResendableContentHandle;
 import com.marklogic.client.io.marker.*;
 
 /**
@@ -37,7 +37,7 @@ import com.marklogic.client.io.marker.*;
  */
 public class GSONHandle
   extends BaseHandle<InputStream, String>
-  implements ResendableHandle<JsonElement>,
+  implements ResendableContentHandle<JsonElement, InputStream>,
     JSONReadHandle, JSONWriteHandle,
     StructureReadHandle, StructureWriteHandle
 {
@@ -73,8 +73,8 @@ public class GSONHandle
    */
   public GSONHandle() {
     super();
-    super.setFormat(Format.JSON);
     setResendable(true);
+    super.setFormat(Format.JSON);
   }
   /**
    * Provides a handle on JSON content as a tree.
@@ -92,6 +92,7 @@ public class GSONHandle
 
   /**
    * Returns the parser used to construct element objects from JSON.
+   * @deprecated
    * @return	the JSON parser.
    */
   public JsonParser getParser() {
@@ -138,18 +139,21 @@ public class GSONHandle
 
   @Override
   public void fromBuffer(byte[] buffer) {
-    if (buffer == null || buffer.length == 0)
-      content = null;
-    else
-      receiveContent(new ByteArrayInputStream(buffer));
+    set(bytesToContent(buffer));
   }
   @Override
   public byte[] toBuffer() {
-    if (content == null) {
-      return null;
-    }
-
-    return content.toString().getBytes(Charset.forName("UTF-8"));
+    return contentToBytes(get());
+  }
+  @Override
+  public JsonElement bytesToContent(byte[] buffer) {
+    return (buffer == null || buffer.length == 0) ?
+            null : toContent(new ByteArrayInputStream(buffer));
+  }
+  @Override
+  public byte[] contentToBytes(JsonElement content) {
+    return (content == null) ?
+            null : content.toString().getBytes(StandardCharsets.UTF_8);
   }
 
   /**
@@ -164,36 +168,39 @@ public class GSONHandle
   }
 
   @Override
-  protected Class<InputStream> receiveAs() {
-    return InputStream.class;
-  }
-  @Override
-  protected void receiveContent(InputStream content) {
-    if (content == null)
-      return;
+  public JsonElement toContent(InputStream serialization) {
+    if (serialization == null) return null;
 
     try {
-      this.content = getParser().parse(
-        new InputStreamReader(content, "UTF-8")
+      return JsonParser.parseReader(
+              new InputStreamReader(serialization, StandardCharsets.UTF_8)
       );
     } catch (JsonIOException e) {
       throw new MarkLogicIOException(e);
     } catch (JsonSyntaxException e) {
       throw new MarkLogicIOException(e);
-    } catch (UnsupportedEncodingException e) {
-      throw new MarkLogicIOException(e);
     } finally {
       try {
-        content.close();
+        serialization.close();
       } catch (IOException e) {
         // ignore.
       }
     }
+  }
 
-
+  @Override
+  protected Class<InputStream> receiveAs() {
+    return InputStream.class;
+  }
+  @Override
+  protected void receiveContent(InputStream serialization) {
+    set(toContent(serialization));
   }
   @Override
   protected String sendContent() {
+    return sendContent(get());
+  }
+  private String sendContent(JsonElement content) {
     if (content == null) {
       throw new IllegalStateException("No document to write");
     }

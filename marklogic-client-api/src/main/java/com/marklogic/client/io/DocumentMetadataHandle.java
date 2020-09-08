@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -523,12 +524,8 @@ public class DocumentMetadataHandle
    */
   @Override
   public String toString() {
-    try {
-      byte[] buffer = toBuffer();
-      return (buffer == null) ? null : new String(buffer,"UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new MarkLogicIOException(e);
-    }
+    byte[] buffer = toBuffer();
+    return (buffer == null) ? null : new String(buffer, StandardCharsets.UTF_8);
   }
 
   @Override
@@ -547,7 +544,7 @@ public class DocumentMetadataHandle
         factory.setNamespaceAware(true);
         factory.setValidating(false);
         DocumentBuilder builder = factory.newDocumentBuilder();
-        document = builder.parse(new InputSource(new InputStreamReader(content, "UTF-8")));
+        document = builder.parse(new InputSource(new InputStreamReader(content, StandardCharsets.UTF_8)));
         content.close();
       }
 

@@ -16,6 +16,7 @@
 package com.marklogic.client.dataservices;
 
 import com.marklogic.client.SessionState;
+import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.marker.BufferableHandle;
 
 import java.io.InputStream;
@@ -142,49 +143,38 @@ public interface IOEndpoint {
          * Gets the current snapshot of the mutable endpoint state.
          * @return  the data structure with the endpoint state
          */
-        InputStream getEndpointState();
-        /**
-         * Initializes the endpoint state.
-         * @param endpointState the data structure for the endpoint state as a byte[] array
-         * @return the CallContext
-         */
-        CallContext withEndpointState(byte[] endpointState);
-        /**
-         * Initializes the endpoint state.
-         * @param endpointState the data structure for the endpoint state as an InputStream
-         * @return the callContext
-         */
-        CallContext withEndpointState(InputStream endpointState);
+        BytesHandle getEndpointState();
         /**
          * Initializes the endpoint state.
          * @param endpointState the data structure for the endpoint state as a bufferable handle
          * @return the callContext
          */
         CallContext withEndpointState(BufferableHandle endpointState);
+        /**
+         * Initializes the endpoint state.
+         * @param endpointState the data structure for the endpoint state as an InputStream
+         * @return the callContext
+         */
+        CallContext withEndpointStateAs(Object endpointState);
 
         /**
          * Gets the definition for the unit of  work to be done by the endpoint.
          * @return  the data structure for the unit of work
          */
-        InputStream getWorkUnit();
-        /**
-         * Initializes the defintion of the work unit.
-         * @param workUnit the data structure for the work unit as a byte[] array
-         * @return the callContext
-         */
-        CallContext withWorkUnit(byte[] workUnit);
-        /**
-         * Initializes the defintion of the work unit.
-         * @param workUnit the data structure for the work unit as an InputStream
-         * @return  the callContext
-         */
-        CallContext withWorkUnit(InputStream workUnit);
+        BytesHandle getWorkUnit();
         /**
          * Initializes the defintion of the work unit.
          * @param workUnit the data structure for the work unit as a bufferable handle
          * @return the callContext
          */
         CallContext withWorkUnit(BufferableHandle workUnit);
+        /**
+         * Initializes the defintion of the work unit.
+         * @param workUnit the data structure for the work unit as an InputStream
+         * @return  the callContext
+         */
+        CallContext withWorkUnitAs(Object workUnit);
+
         /**
          * Returns an identifier for an endpoint to use when accessing a session cache on the server.
          * @return the endpoint identifier
@@ -194,6 +184,6 @@ public interface IOEndpoint {
          * Sets an identifier for an endpoint to use when accessing a session cache on the server.
          * @return the callContext
          */
-        CallContext  withSessionState(SessionState sessionState);
+        CallContext withSessionState(SessionState sessionState);
     }
 }

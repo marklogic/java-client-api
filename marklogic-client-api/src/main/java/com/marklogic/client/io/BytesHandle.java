@@ -16,9 +16,8 @@
 package com.marklogic.client.io;
 
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
-import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.impl.NodeConverter;
 import com.marklogic.client.io.marker.*;
 
@@ -32,7 +31,7 @@ import com.marklogic.client.io.marker.*;
  */
 public class BytesHandle
   extends BaseHandle<byte[], byte[]>
-  implements ResendableHandle<byte[]>,
+  implements ResendableContentHandle<byte[], byte[]>,
     BinaryReadHandle, BinaryWriteHandle,
     GenericReadHandle, GenericWriteHandle,
     JSONReadHandle, JSONWriteHandle,
@@ -151,6 +150,11 @@ public class BytesHandle
   public BytesHandle newHandle() {
     return new BytesHandle().withFormat(getFormat()).withMimetype(getMimetype());
   }
+  @Override
+  public byte[][] newArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new byte[length][];
+  }
 
   /**
    * Specifies the format of the content and returns the handle
@@ -181,6 +185,19 @@ public class BytesHandle
   public byte[] toBuffer() {
     return content;
   }
+  @Override
+  public byte[] toContent(byte[] serialization) {
+    return serialization;
+  }
+  @Override
+  public byte[] bytesToContent(byte[] buffer) {
+    return buffer;
+  }
+  @Override
+  public byte[] contentToBytes(byte[] content) {
+    return content;
+  }
+
   /**
    * Returns a byte array as a string with the assumption
    * that the bytes are encoded in UTF-8. If the bytes
@@ -189,11 +206,7 @@ public class BytesHandle
    */
   @Override
   public String toString() {
-    try {
-      return (content == null) ? null : new String(content,"UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new MarkLogicIOException(e);
-    }
+    return (content == null) ? null : new String(content, StandardCharsets.UTF_8);
   }
 
   @Override
@@ -202,15 +215,15 @@ public class BytesHandle
   }
   @Override
   protected void receiveContent(byte[] content) {
-    this.content = content;
-  }
-
-  @Override
-  protected byte[] sendContent() {
     if (content == null || content.length == 0) {
       throw new IllegalStateException("No bytes to write");
     }
 
-    return content;
+    set(content);
+  }
+
+  @Override
+  protected byte[] sendContent() {
+    return get();
   }
 }

@@ -18,6 +18,8 @@ package com.marklogic.client.io.marker;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.io.BaseHandle;
 
+import java.lang.reflect.Array;
+
 /**
  * A Content Handle provides get / set access to a representation
  * of content such a byte[] array, input stream, file, reader, string,
@@ -56,15 +58,28 @@ public interface ContentHandle<C>
    * @return  the new handle
    */
   default ContentHandle<C> newHandle() {
-    Class<C> contentClass = getContentClass();
-    if (contentClass == null) {
-      throw new IllegalArgumentException("For default newHandle(), ContentHandle cannot have a null content class");
-    } else if (!DatabaseClientFactory.getHandleRegistry().isRegistered(contentClass)) {
-      throw new IllegalArgumentException(
-              "For default newHandle(), ContentHandle must be registered with DatabaseClientFactory.HandleFactoryRegistry"
+    ContentHandle<C> newHandle = null;
+
+    try {
+      Class<C> contentClass = getContentClass();
+      if (contentClass != null && DatabaseClientFactory.getHandleRegistry().isRegistered(contentClass)) {
+        newHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(contentClass);
+      }
+
+      if (newHandle == null) {
+        newHandle = getClass().newInstance();
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(
+          "Error constructing ContentHandle with DatabaseClientFactory.HandleFactoryRegistry or zero-argument constructor",
+          e
       );
     }
-    ContentHandle<C> newHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(contentClass);
+    if (newHandle == null) {
+      throw new RuntimeException(
+          "Could not construct ContentHandle with DatabaseClientFactory.HandleFactoryRegistry or zero-argument constructor"
+      );
+    }
 
     if (!(this instanceof BaseHandle)) {
       throw new IllegalArgumentException("ContentHandle must also be BaseHandle");
@@ -75,5 +90,28 @@ public interface ContentHandle<C>
     newBaseHandle.setMimetype(thisBaseHandle.getMimetype());
 
     return newHandle;
+  }
+
+  /**
+   * Constructs a new handle for the same content representation,
+   * initializing the new handle with the same format and mime type
+   * and new content.
+   * @param content  the new content to initialize the new handle
+   * @return  the new handle
+   */
+  default ContentHandle<C> newHandle(C content) {
+    ContentHandle<C> handle = newHandle();
+    handle.set(content);
+    return handle;
+  }
+
+  /**
+   * Constructs an array for the handled content representation
+   * @param length the size of the array (zero or more)
+   * @return the constructed array
+   */
+  default C[] newArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return (C[]) Array.newInstance(getContentClass(), length);
   }
 }

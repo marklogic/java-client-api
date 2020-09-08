@@ -15,10 +15,7 @@
  */
 package com.marklogic.client.io;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,10 +34,6 @@ import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.io.marker.TextReadHandle;
-import com.marklogic.client.io.marker.TextWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * <p>An adapter for using the streaming capabilities of the Jackson Open Source library.
@@ -60,8 +53,8 @@ public class JacksonParserHandle
 {
   static final private Logger logger = LoggerFactory.getLogger(JacksonParserHandle.class);
 
-  private JsonParser parser = null;
-  private InputStream content = null;
+  private JsonParser parser;
+  private InputStream content;
   private boolean closed = false;
 
   final static private int BUFFER_SIZE = 8192;
@@ -126,13 +119,7 @@ public class JacksonParserHandle
       if ( content == null ) {
         throw new IllegalStateException("Handle is not yet populated with content");
       }
-      try {
-        parser = getMapper().getFactory().createParser(content);
-      } catch (JsonParseException e) {
-        throw new MarkLogicIOException(e);
-      } catch (IOException e) {
-        throw new MarkLogicIOException(e);
-      }
+      parser = toContent(content);
     }
     return parser;
   }
@@ -167,6 +154,11 @@ public class JacksonParserHandle
   public JacksonParserHandle newHandle() {
     return new JacksonParserHandle().withMimetype(getMimetype());
   }
+  @Override
+  public JsonParser[] newArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new JsonParser[length];
+  }
 
   /**
    * Provides access to the ObjectMapper used internally so you can configure
@@ -194,6 +186,16 @@ public class JacksonParserHandle
   public void setMapper(ObjectMapper mapper) { super.setMapper(mapper); }
 
   @Override
+  protected OutputStreamSender sendContent() {
+    return this;
+  }
+  @Override
+  protected OutputStreamSender sendContent(JsonParser parser) {
+    if (parser == null) return null;
+    return new OutputStreamSenderImpl(getMapper(), parser);
+  }
+
+  @Override
   protected void receiveContent(InputStream content) {
     this.content = content;
     if (content == null) parser = null;
@@ -205,7 +207,7 @@ public class JacksonParserHandle
   @Override
   public void write(OutputStream out) throws IOException {
     try {
-      if ( parser != null && parser.nextToken() != null ) {
+      if (parser != null && parser.nextToken() != null) {
         JsonGenerator generator = getMapper().getFactory().createGenerator(out);
         generator.copyCurrentStructure(parser);
         generator.close();
@@ -222,18 +224,44 @@ public class JacksonParserHandle
       throw new MarkLogicIOException(e);
     }
   }
+  @Override
+  public JsonParser toContent(InputStream serialization) {
+    if (serialization == null) return null;
+    try {
+      return getMapper().getFactory().createParser(serialization);
+    } catch (JsonParseException e) {
+      throw new MarkLogicIOException(e);
+    } catch (IOException e) {
+      throw new MarkLogicIOException(e);
+    }
+  }
 
   /** Always call close() when finished with this handle -- it closes the underlying InputStream.
    */
   @Override
   public void close() {
-    if ( content != null && closed != true ) {
+    if (content != null && !closed) {
       try {
         content.close();
       } catch (IOException e) {
         logger.error("Failed to close underlying InputStream",e);
         throw new MarkLogicIOException(e);
       }
+    }
+  }
+
+  private static class OutputStreamSenderImpl implements OutputStreamSender {
+    private final ObjectMapper mapper;
+    private final JsonParser parser;
+    private OutputStreamSenderImpl(ObjectMapper mapper, JsonParser parser) {
+      this.mapper = mapper;
+      this.parser = parser;
+    }
+    @Override
+    public void write(OutputStream out) throws IOException {
+      JsonGenerator generator = mapper.getFactory().createGenerator(out);
+      generator.copyCurrentStructure(parser);
+      generator.close();
     }
   }
 }

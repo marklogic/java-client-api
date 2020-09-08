@@ -18,16 +18,18 @@ package com.marklogic.client.test.dataservices;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.dataservices.ExecEndpoint;
+import com.marklogic.client.dataservices.ExecCaller;
 import com.marklogic.client.dataservices.IOEndpoint;
-import com.marklogic.client.dataservices.InputOutputEndpoint;
+import com.marklogic.client.dataservices.InputOutputCaller;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.impl.NodeConverter;
+import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,11 +56,11 @@ public class BulkIOEndpointTest {
         String     apiPath    = IOTestUtil.getApiPath(scriptPath);
         IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
 
-        ExecEndpoint endpoint = ExecEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        ExecCaller endpoint = ExecCaller.on(IOTestUtil.db, new JacksonHandle(apiObj));
 
-        ExecEndpoint.BulkExecCaller bulkCaller = endpoint.bulkCaller(endpoint.newCallContext()
-                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes()))
-                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes())));
+        ExecCaller.BulkExecCaller bulkCaller = endpoint.bulkCaller(endpoint.newCallContext()
+                .withWorkUnitAs(workUnit)
+                .withEndpointStateAs(endpointState));
         bulkCaller.awaitCompletion();
 
         JSONDocumentManager docMgr = IOTestUtil.db.newJSONDocumentManager();
@@ -111,14 +113,24 @@ public class BulkIOEndpointTest {
         );
         Set<String> output = new HashSet<>();
 
-        InputOutputEndpoint endpoint = InputOutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputOutputCaller<InputStream, InputStream> endpoint =
+                InputOutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle(), new InputStreamHandle()
+                );
 
-        InputOutputEndpoint.BulkInputOutputCaller bulkCaller = endpoint.bulkCaller(endpoint.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes())));
-        bulkCaller.setOutputListener(value -> output.add(NodeConverter.InputStreamToString(value)));
+        InputOutputCaller.BulkInputOutputCaller<InputStream, InputStream> bulkCaller =
+                endpoint.bulkCaller(endpoint.newCallContext()
+                        .withEndpointStateAs(endpointState)
+                        .withWorkUnitAs(workUnit));
+        bulkCaller.setOutputListener(value -> {
+            String v = NodeConverter.InputStreamToString(value);
+            // System.out.println("received: "+v);
+            output.add(v);
+        });
 
-        input.stream().forEach(value -> bulkCaller.accept(IOTestUtil.asInputStream(value)));
+        input.stream().forEach(value -> {
+            // System.out.println("adding "+value);
+            bulkCaller.accept(IOTestUtil.asInputStream(value));
+        });
         bulkCaller.awaitCompletion();
 
         ObjectNode finalState = mapper.readValue(bulkCaller.getEndpointState(), ObjectNode.class);
@@ -174,20 +186,27 @@ public class BulkIOEndpointTest {
         );
         Set<String> output = new ConcurrentHashMap<String, Long>().keySet(1L);
 
-        InputOutputEndpoint endpoint = InputOutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputOutputCaller<InputStream,InputStream> endpoint = InputOutputCaller.on(
+                IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle(), new InputStreamHandle()
+        );
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes())),
+                .withEndpointStateAs(endpointState)
+                .withWorkUnitAs(workUnit),
                 endpoint.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState1.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit1.getBytes()))};
+                .withEndpointStateAs(endpointState1)
+                .withWorkUnitAs(workUnit1)};
 
-        InputOutputEndpoint.BulkInputOutputCaller bulkCaller = endpoint.bulkCaller(callContextArray);
-        bulkCaller.setOutputListener(value -> {output.add(NodeConverter.InputStreamToString(value));
-        System.out.println("value is "+value);
+        InputOutputCaller.BulkInputOutputCaller<InputStream,InputStream> bulkCaller = endpoint.bulkCaller(callContextArray);
+        bulkCaller.setOutputListener(value -> {
+            String v = NodeConverter.InputStreamToString(value);
+            // System.out.println("received: "+v);
+            output.add(v);
+            });
+
+        input.stream().forEach(value -> {
+            // System.out.println("adding: "+value);
+            bulkCaller.accept(IOTestUtil.asInputStream(value));
         });
-
-        input.stream().forEach(value -> bulkCaller.accept(IOTestUtil.asInputStream(value)));
         bulkCaller.awaitCompletion();
 
         assertEquals("mismatch between input and output size"+input+":"+output, input.size(), output.size());
@@ -216,15 +235,15 @@ public class BulkIOEndpointTest {
         String     apiPath    = IOTestUtil.getApiPath(scriptPath);
         IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
 
-        ExecEndpoint endpoint = ExecEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        ExecCaller endpoint = ExecCaller.on(IOTestUtil.db, new JacksonHandle(apiObj));
 
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
-                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes()))
-                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes())),
+                .withWorkUnitAs(workUnit)
+                .withEndpointStateAs(endpointState),
                 endpoint.newCallContext()
-                        .withWorkUnit(new ByteArrayInputStream(workUnit1.getBytes()))
-                        .withEndpointState(new ByteArrayInputStream(endpointState1.getBytes()))};
-        ExecEndpoint.BulkExecCaller bulkCaller = endpoint.bulkCaller(callContextArray);
+                        .withWorkUnitAs(workUnit1)
+                        .withEndpointStateAs(endpointState1)};
+        ExecCaller.BulkExecCaller bulkCaller = endpoint.bulkCaller(callContextArray);
         bulkCaller.awaitCompletion();
 
         JSONDocumentManager docMgr = IOTestUtil.db.newJSONDocumentManager();

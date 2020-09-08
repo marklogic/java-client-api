@@ -16,8 +16,9 @@
 package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.dataservices.OutputEndpoint;
+import com.marklogic.client.dataservices.OutputCaller;
 import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import org.hamcrest.core.StringContains;
 import org.junit.AfterClass;
@@ -27,12 +28,10 @@ import org.junit.Test;
 import org.junit.internal.matchers.ThrowableMessageMatcher;
 import org.junit.rules.ExpectedException;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 
@@ -46,7 +45,7 @@ public class BulkOutputCallerTest {
     static JSONDocumentManager docMgr;
     static int count = 5;
 
-    private static String collectionName = "bulkOutputTest";
+    private static final String collectionName = "bulkOutputTest";
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -62,8 +61,8 @@ public class BulkOutputCallerTest {
     }
     @Test
     public void bulkOutputCallerWithNullConsumer() {
-        OutputEndpoint loadEndpt = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
-        OutputEndpoint.BulkOutputCaller loader = loadEndpt.bulkCaller(loadEndpt.newCallContext());
+        OutputCaller<InputStream> loadEndpt = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
+        OutputCaller.BulkOutputCaller<InputStream> loader = loadEndpt.bulkCaller(loadEndpt.newCallContext());
 
         expectedException.expect(IllegalStateException.class);
         expectedException.expect(new ThrowableMessageMatcher(new StringContains("Output consumer is null")));
@@ -75,12 +74,12 @@ public class BulkOutputCallerTest {
         String endpointState = "{\"next\":"+1+"}";
         String workUnit      = "{\"max\":"+6+"}";
 
-        OutputEndpoint caller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        OutputCaller<InputStream> caller = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
 
         InputStream[] resultArray = caller.call(caller.newCallContext()
-                        .withEndpointState(IOTestUtil.asInputStream(endpointState))
+                        .withEndpointStateAs(endpointState)
                 .withSessionState(caller.newSessionState())
-                .withWorkUnit(IOTestUtil.asInputStream(workUnit)));
+                .withWorkUnitAs(workUnit));
 
         assertNotNull(resultArray);
         assertTrue(resultArray.length-1 == count-1);
@@ -90,10 +89,10 @@ public class BulkOutputCallerTest {
             list.add(IOTestUtil.mapper.readValue(resultArray[i], ObjectNode.class).toString());
         }
         String workUnit2      = "{\"max\":"+3+"}";
-        OutputEndpoint endpoint = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
-        OutputEndpoint.BulkOutputCaller bulkCaller = endpoint.bulkCaller(endpoint.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit2.getBytes())));
+        OutputCaller<InputStream> endpoint = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
+        OutputCaller.BulkOutputCaller<InputStream> bulkCaller = endpoint.bulkCaller(endpoint.newCallContext()
+                .withEndpointStateAs(endpointState)
+                .withWorkUnitAs(workUnit2));
         class Output {
             int counter =0;
         }

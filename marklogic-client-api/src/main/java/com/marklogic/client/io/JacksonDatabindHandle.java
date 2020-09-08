@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,8 @@
  */
 package com.marklogic.client.io;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -38,13 +35,13 @@ import com.marklogic.client.impl.JacksonBaseHandle;
  */
 public class JacksonDatabindHandle<T>
   extends JacksonBaseHandle<T>
-  implements OutputStreamSender, ResendableHandle<T>,
+  implements ResendableContentHandle<T, InputStream>,
     JSONReadHandle, JSONWriteHandle,
     TextReadHandle, TextWriteHandle,
     XMLReadHandle, XMLWriteHandle,
     StructureReadHandle, StructureWriteHandle, CtsQueryWriteHandle
 {
-  private Class<T> contentClass;
+  private final Class<T> contentClass;
   private T content;
 
   /**
@@ -172,13 +169,12 @@ public class JacksonDatabindHandle<T>
   public void setMapper(ObjectMapper mapper) { super.setMapper(mapper); }
 
   @Override
-  protected void receiveContent(InputStream content) {
-    if (content == null)
-      return;
+  public T toContent(InputStream serialization) {
+    if (serialization == null) return null;
 
     try {
-      this.content = (T) getMapper().readValue(
-        new InputStreamReader(content, "UTF-8"), contentClass);
+      return getMapper()
+              .readValue(new InputStreamReader(serialization, StandardCharsets.UTF_8), contentClass);
     } catch (JsonParseException e) {
       throw new MarkLogicIOException(e);
     } catch (JsonMappingException e) {
@@ -187,7 +183,7 @@ public class JacksonDatabindHandle<T>
       throw new MarkLogicIOException(e);
     } finally {
       try {
-        content.close();
+        serialization.close();
       } catch (IOException e) {
         // ignore.
       }
@@ -197,15 +193,45 @@ public class JacksonDatabindHandle<T>
   protected boolean hasContent() {
     return content != null;
   }
+
+  @Override
+  protected OutputStreamSender sendContent() {
+    return sendContent(get());
+  }
+  @Override
+  protected OutputStreamSender sendContent(T content) {
+    return new OutputStreamSenderImpl<>(getMapper(), content);
+  }
+  @Override
+  protected void receiveContent(InputStream content) {
+    set(toContent(content));
+  }
+
   @Override
   public void write(OutputStream out) throws IOException {
-    getMapper().writeValue(new OutputStreamWriter(out, "UTF-8"), get());
+    sendContent().write(out);
+  }
+
+  static private class OutputStreamSenderImpl<T> implements OutputStreamSender {
+    private final ObjectMapper mapper;
+    private T content;
+    private OutputStreamSenderImpl(ObjectMapper mapper, T content) {
+      if (content == null) {
+        throw new IllegalStateException("No document to write");
+      }
+      this.mapper = mapper;
+      this.content = content;
+    }
+    @Override
+    public void write(OutputStream out) throws IOException {
+      mapper.writeValue(new OutputStreamWriter(out, StandardCharsets.UTF_8), content);
+    }
   }
 
   static private class JacksonDatabindHandleFactory implements ContentHandleFactory {
-    private Class<?>[] contentClasses;
-    private ObjectMapper mapper = null;
-    private Set<Class<?>> classSet;
+    private final Class<?>[] contentClasses;
+    private final ObjectMapper mapper;
+    private final Set<Class<?>> classSet;
 
     private JacksonDatabindHandleFactory(Class<?>... contentClasses) {
       this(null, contentClasses);

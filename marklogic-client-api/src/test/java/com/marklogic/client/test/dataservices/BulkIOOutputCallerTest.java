@@ -2,9 +2,10 @@ package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.dataservices.IOEndpoint;
-import com.marklogic.client.dataservices.OutputEndpoint;
+import com.marklogic.client.dataservices.OutputCaller;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
@@ -15,7 +16,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -32,8 +33,8 @@ public class BulkIOOutputCallerTest {
     static JSONDocumentManager docMgr;
     static Set<String> expected = new HashSet<>();
 
-    private static String collectionName_1 = "bulkOutputTest_1";
-    private static String collectionName_2 = "bulkOutputTest_2";
+    private static final String collectionName_1 = "bulkOutputTest_1";
+    private static final String collectionName_2 = "bulkOutputTest_2";
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -50,20 +51,20 @@ public class BulkIOOutputCallerTest {
     }
 
     @Test
-    public void bulkOutputCallerTestWithMultipleCallContexts() throws Exception {
+    public void bulkOutputCallerTestWithMultipleCallContexts() {
 
         String endpointState1 = "{\"next\":"+1+"}";
         String workUnit1      = "{\"max\":6,\"limit\":5,\"collection\":\"bulkOutputTest_1\"}";
 
         String endpointState2 = "{\"next\":"+1+"}";
         String workUnit2      =  "{\"max\":6,\"limit\":5,\"collection\":\"bulkOutputTest_2\"}";
-        OutputEndpoint endpoint = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        OutputCaller<InputStream> endpoint = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState2.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit2.getBytes())), endpoint.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState1.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit1.getBytes()))};
-        OutputEndpoint.BulkOutputCaller bulkCaller = endpoint.bulkCaller(callContextArray);
+                .withEndpointStateAs(endpointState2)
+                .withWorkUnitAs(workUnit2), endpoint.newCallContext()
+                .withEndpointStateAs(endpointState1)
+                .withWorkUnitAs(workUnit1)};
+        OutputCaller.BulkOutputCaller<InputStream> bulkCaller = endpoint.bulkCaller(callContextArray);
         Set<String> actual = new ConcurrentSkipListSet<>();
         final AtomicBoolean duplicated = new AtomicBoolean(false);
         final AtomicBoolean exceptional = new AtomicBoolean(false);

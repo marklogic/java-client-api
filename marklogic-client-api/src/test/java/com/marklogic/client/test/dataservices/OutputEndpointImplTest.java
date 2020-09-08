@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.dataservices.OutputEndpoint;
+import com.marklogic.client.dataservices.OutputCaller;
+import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -46,10 +47,10 @@ public class OutputEndpointImplTest {
         String endpointState = "{\"endpoint\":1}";
         String workUnit = "{\"workUnit\":\"/workUnit1\"}";
 
-        OutputEndpoint caller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
-        InputStream[] resultArray = caller.call(caller.newCallContext().withEndpointState(IOTestUtil.asInputStream(endpointState))
+        OutputCaller<InputStream> caller = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
+        InputStream[] resultArray = caller.call(caller.newCallContext().withEndpointStateAs(endpointState)
                 .withSessionState(caller.newSessionState())
-                .withWorkUnit(IOTestUtil.asInputStream(workUnit)));
+                .withWorkUnitAs(workUnit));
         assertNotNull(resultArray);
 
         ObjectNode resultObj = IOTestUtil.mapper.readValue(resultArray[0], ObjectNode.class);
@@ -60,10 +61,10 @@ public class OutputEndpointImplTest {
     public void testOutputCallerImplWithNullCallcontextEndpointState() throws IOException {
         String workUnit = "{\"collection\":\"/dataset1\"}";
 
-        OutputEndpoint caller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        OutputCaller<InputStream> caller = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
         InputStream[] resultArray = caller.call(caller.newCallContext()
                 .withSessionState(caller.newSessionState())
-                .withWorkUnit(IOTestUtil.asInputStream(workUnit)));
+                .withWorkUnitAs(workUnit));
         assertNotNull(resultArray);
 
         ObjectNode resultObj = IOTestUtil.mapper.readValue(resultArray[0], ObjectNode.class);
@@ -73,9 +74,9 @@ public class OutputEndpointImplTest {
     @Test
     public void testOutputCallerImplWithNullCallcontextSession() throws IOException {
         String workUnit = "{\"workUnit\":\"/1\"}";
-        OutputEndpoint caller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
-        InputStream[] resultArray = caller.call(caller.newCallContext().withEndpointState(IOTestUtil.asInputStream("{\"endpoint\":1}"))
-                .withWorkUnit(IOTestUtil.asInputStream(workUnit)));
+        OutputCaller<InputStream> caller = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
+        InputStream[] resultArray = caller.call(caller.newCallContext().withEndpointStateAs("{\"endpoint\":1}")
+                .withWorkUnitAs(workUnit));
         assertNotNull(resultArray);
         ObjectNode resultObj = IOTestUtil.mapper.readValue(resultArray[0], ObjectNode.class);
         assertNull(resultObj.get("session"));
@@ -83,7 +84,7 @@ public class OutputEndpointImplTest {
 
     @Test
     public void testOutputCallerImplWithEmptyCallcontext() throws IOException {
-        OutputEndpoint caller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        OutputCaller<InputStream> caller = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
         InputStream[] resultArray = caller.call( caller.newCallContext());
         assertNotNull(resultArray);
         ObjectNode resultObj = IOTestUtil.mapper.readValue(resultArray[0], ObjectNode.class);

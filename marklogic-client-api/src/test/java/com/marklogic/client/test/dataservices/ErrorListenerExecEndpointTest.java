@@ -1,8 +1,23 @@
+/*
+ * Copyright (c) 2020 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.dataservices.ExecEndpoint;
+import com.marklogic.client.dataservices.ExecCaller;
 import com.marklogic.client.dataservices.IOEndpoint;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.JacksonHandle;
@@ -10,7 +25,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import static org.junit.Assert.*;
@@ -42,17 +56,17 @@ public class ErrorListenerExecEndpointTest {
         String endpointState1 = "{\"next\":16}";
         String workUnit1      = "{\"max\":26,\"collection\":\"bulkExecTest_2\"}";
 
-        ExecEndpoint endpoint = ExecEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        ExecCaller endpoint = ExecCaller.on(IOTestUtil.db, new JacksonHandle(apiObj));
 
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
-                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes()))
-                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes())),
+                .withWorkUnitAs(workUnit)
+                .withEndpointStateAs(endpointState),
                 endpoint.newCallContext()
-                        .withWorkUnit(new ByteArrayInputStream(workUnit1.getBytes()))
-                        .withEndpointState(new ByteArrayInputStream(endpointState1.getBytes()))};
-        ExecEndpoint.BulkExecCaller bulkCaller = endpoint.bulkCaller(callContextArray);
+                        .withWorkUnitAs(workUnit1)
+                        .withEndpointStateAs(endpointState1)};
+        ExecCaller.BulkExecCaller bulkCaller = endpoint.bulkCaller(callContextArray);
 
-        ExecEndpoint.BulkExecCaller.ErrorListener errorListener =
+        ExecCaller.BulkExecCaller.ErrorListener errorListener =
                 (retryCount, throwable, callContext)
                         -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.RETRY;
         bulkCaller.setErrorListener(errorListener);
@@ -80,17 +94,17 @@ public class ErrorListenerExecEndpointTest {
         String endpointState1 = "{\"next\":16}";
         String workUnit1      = "{\"max\":26,\"collection\":\"bulkExecTest_2\"}";
 
-        ExecEndpoint endpoint = ExecEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        ExecCaller endpoint = ExecCaller.on(IOTestUtil.db, new JacksonHandle(apiObj));
 
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
-                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes()))
-                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes())),
+                .withWorkUnitAs(workUnit)
+                .withEndpointStateAs(endpointState),
                 endpoint.newCallContext()
-                        .withWorkUnit(new ByteArrayInputStream(workUnit1.getBytes()))
-                        .withEndpointState(new ByteArrayInputStream(endpointState1.getBytes()))};
-        ExecEndpoint.BulkExecCaller bulkCaller = endpoint.bulkCaller(callContextArray);
+                        .withWorkUnitAs(workUnit1)
+                        .withEndpointStateAs(endpointState1)};
+        ExecCaller.BulkExecCaller bulkCaller = endpoint.bulkCaller(callContextArray);
 
-        ExecEndpoint.BulkExecCaller.ErrorListener errorListener =
+        ExecCaller.BulkExecCaller.ErrorListener errorListener =
                 (retryCount, throwable, callContext)
                         -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.SKIP_CALL;
         bulkCaller.setErrorListener(errorListener);
@@ -118,17 +132,17 @@ public class ErrorListenerExecEndpointTest {
         String endpointState1 = "{\"next\":16}";
         String workUnit1      = "{\"max\":26,\"collection\":\"bulkExecTest_2\"}";
 
-        ExecEndpoint endpoint = ExecEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        ExecCaller endpoint = ExecCaller.on(IOTestUtil.db, new JacksonHandle(apiObj));
 
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
-                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes()))
-                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes())),
+                .withWorkUnitAs(workUnit)
+                .withEndpointStateAs(endpointState),
                 endpoint.newCallContext()
-                        .withWorkUnit(new ByteArrayInputStream(workUnit1.getBytes()))
-                        .withEndpointState(new ByteArrayInputStream(endpointState1.getBytes()))};
-        ExecEndpoint.BulkExecCaller bulkCaller = endpoint.bulkCaller(callContextArray);
+                        .withWorkUnitAs(workUnit1)
+                        .withEndpointStateAs(endpointState1)};
+        ExecCaller.BulkExecCaller bulkCaller = endpoint.bulkCaller(callContextArray);
 
-        ExecEndpoint.BulkExecCaller.ErrorListener errorListener =
+        ExecCaller.BulkExecCaller.ErrorListener errorListener =
                 (retryCount, throwable, callContext)
                         -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.STOP_ALL_CALLS;
         bulkCaller.setErrorListener(errorListener);

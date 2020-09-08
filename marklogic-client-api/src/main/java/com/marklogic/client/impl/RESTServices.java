@@ -43,17 +43,11 @@ import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.DatabaseClient.ConnectionResult;
+import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.ReaderHandle;
-import com.marklogic.client.io.marker.AbstractReadHandle;
-import com.marklogic.client.io.marker.AbstractWriteHandle;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
-import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
-import com.marklogic.client.io.marker.DocumentPatchHandle;
-import com.marklogic.client.io.marker.SearchReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
+import com.marklogic.client.io.marker.*;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
@@ -605,21 +599,25 @@ public interface RESTServices {
 
   interface SingleCallResponse extends CallResponse {
     byte[]            asBytes();
-    InputStream asInputStream();
+    <C,R> C           asContent(BufferableContentHandle<C,R> outputHandle);
+    InputStream       asInputStream();
     InputStreamHandle asInputStreamHandle();
-    Reader asReader();
-    ReaderHandle asReaderHandle();
+    Reader            asReader();
+    ReaderHandle      asReaderHandle();
     String            asString();
+    boolean           asEndpointState(BytesHandle endpointStateHandle);
   }
 
   interface MultipleCallResponse extends CallResponse {
     Stream<byte[]>            asStreamOfBytes();
+    <C,R> Stream<C>           asStreamOfContent(BytesHandle endpointStateHandle, BufferableContentHandle<C,R> outputHandle);
     Stream<InputStream>       asStreamOfInputStream();
     Stream<InputStreamHandle> asStreamOfInputStreamHandle();
     Stream<Reader>            asStreamOfReader();
     Stream<ReaderHandle>      asStreamOfReaderHandle();
     Stream<String>            asStreamOfString();
     byte[][]            asArrayOfBytes();
+    <C,R> C[]           asArrayOfContent(BytesHandle endpointStateHandle, BufferableContentHandle<C,R> outputHandle);
     InputStream[]       asArrayOfInputStream();
     InputStreamHandle[] asArrayOfInputStreamHandle();
     Reader[]            asArrayOfReader();

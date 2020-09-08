@@ -15,16 +15,17 @@
  */
 package com.marklogic.client.dataservices.impl;
 
-import com.marklogic.client.SessionState;
-import java.io.InputStream;
 import java.util.stream.Stream;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.io.marker.BufferableContentHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
-final public class InputOutputCallerImpl extends IOCallerImpl {
-    public InputOutputCallerImpl(JSONWriteHandle apiDeclaration) {
-        super(apiDeclaration);
+final public class InputOutputCallerImpl<I,O> extends IOCallerImpl<I,O> {
+    public InputOutputCallerImpl(
+            JSONWriteHandle apiDeclaration, BufferableContentHandle<I,?> inputHandle, BufferableContentHandle<O,?> outputHandle
+    ) {
+        super(apiDeclaration, inputHandle, outputHandle);
 
         if (getInputParamdef() == null) {
             throw new IllegalArgumentException("input parameter missing in endpoint: "+ getEndpointPath());
@@ -38,14 +39,10 @@ final public class InputOutputCallerImpl extends IOCallerImpl {
         }
     }
 
-    public Stream<InputStream> streamCall(
-            DatabaseClient db, InputStream endpointState, SessionState session, InputStream workUnit, Stream<InputStream> input
-    ) {
-        return responseMultipleAsStream(makeRequest(db, endpointState, session, workUnit, input));
+    public O[] arrayCall(DatabaseClient db, CallContextImpl<I,O> callCtxt, I[] input) {
+        return responseMultipleAsArray(makeRequest(db, callCtxt, input), callCtxt);
     }
-    public InputStream[] arrayCall(
-            DatabaseClient db, InputStream endpointState, SessionState session, InputStream workUnit, InputStream[] input
-    ) {
-        return responseMultipleAsArray(makeRequest(db, endpointState, session, workUnit, input));
+    public Stream<O> streamCall(DatabaseClient db, CallContextImpl<I,O> callCtxt, Stream<I> input) {
+        return responseMultipleAsStream(makeRequest(db, callCtxt, input), callCtxt);
     }
 }

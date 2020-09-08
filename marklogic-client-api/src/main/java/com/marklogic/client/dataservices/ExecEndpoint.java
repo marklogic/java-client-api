@@ -26,7 +26,8 @@ import java.io.InputStream;
  * Provides an interface for calling an endpoint that doesn't take
  * input data structures or return output data structures.
  */
-public interface ExecEndpoint extends IOEndpoint {
+@Deprecated
+public interface ExecEndpoint extends ExecCaller {
     /**
      * Constructs an instance of the ExecEndpoint interface
      * for calling the specified endpoint.
@@ -34,14 +35,25 @@ public interface ExecEndpoint extends IOEndpoint {
      * @param apiDecl  the JSON api declaration specifying how to call the endpoint
      * @return  the ExecEndpoint instance for calling the endpoint
      */
+    @Deprecated
     static ExecEndpoint on(DatabaseClient client, JSONWriteHandle apiDecl) {
-        return new ExecEndpointImpl(client, apiDecl);
+        final class EndpointLocal<I,O> extends ExecEndpointImpl<I,O> implements ExecEndpoint {
+            private EndpointLocal(DatabaseClient client, JSONWriteHandle apiDecl) {
+                super(client, apiDecl);
+            }
+            public ExecEndpoint.BulkExecCaller bulkCaller() {
+                return new BulkLocal(this);
+            }
+            class BulkLocal extends ExecEndpointImpl.BulkExecCallerImpl<I,O>
+                    implements ExecEndpoint.BulkExecCaller {
+                private BulkLocal(EndpointLocal<I,O> endpoint) {
+                    super(endpoint);
+                }
+            }
+        }
+        return new EndpointLocal(client, apiDecl);
     }
 
-    /**
-     * Makes one call to an endpoint that doesn't take an endpoint state, session, or work unit.
-     */
-    void call();
     /**
      * Makes one call to the endpoint for the instance.
      * @param endpointState  the current mutable state of the endpoint (which must be null if not accepted by the endpoint)
@@ -52,41 +64,9 @@ public interface ExecEndpoint extends IOEndpoint {
     @Deprecated
     InputStream call(InputStream endpointState, SessionState session, InputStream workUnit);
 
-    /**
-     * Constructs an instance of a bulk caller, which completes
-     * a unit of work by repeated calls to the endpoint.
-     * @return  the bulk caller for the endpoint
-     */
+    @Override
     @Deprecated
     BulkExecCaller bulkCaller();
-
-    /**
-     * Makes one call to the endpoint for the instance and sets the endpoint state in the Call Context.
-     * @param callContext the collection of endpointState, sessionState and workUnit
-     */
-    void call(CallContext callContext);
-    /**
-     * Constructs an instance of a bulk caller, which completes
-     * a unit of work by repeated calls to the endpoint. The calls occur in the current thread.
-     * @param callContext the collection of endpointState, sessionState and workUnit
-     * @return  the bulk caller for the endpoint
-     */
-    BulkExecCaller bulkCaller(CallContext callContext);
-    /**
-     * Constructs an instance of a bulk caller, which completes
-     * a unit of work by repeated calls to the endpoint. The calls occur in worker threads.
-     * @param callContexts array of callContexts
-     * @return  the bulk caller for the endpoint
-     */
-    BulkExecCaller bulkCaller(CallContext[] callContexts);
-    /**
-     * Constructs an instance of a bulk caller, which completes
-     * a unit of work by repeated calls to the endpoint. The calls occur in worker threads.
-     * @param callContexts array of callContexts
-     * @param threadCount the number of threads
-     * @return  the bulk caller for the endpoint
-     */
-    BulkExecCaller bulkCaller(CallContext[] callContexts, int threadCount);
 
     /**
      * Provides an interface for completing a unit of work
@@ -97,12 +77,7 @@ public interface ExecEndpoint extends IOEndpoint {
      * and / or work unit if accepted by the endpoint.
      * Then, call awaitCompletion() to start making calls.
      */
-    interface BulkExecCaller extends IOEndpoint.BulkIOEndpointCaller {
-        void setErrorListener(ErrorListener errorListener);
-
-        interface ErrorListener {
-            IOEndpoint.BulkIOEndpointCaller.ErrorDisposition processError(
-                    int retryCount, Throwable throwable, CallContext callContext);
-        }
+    @Deprecated
+    interface BulkExecCaller extends ExecCaller.BulkExecCaller {
     }
 }

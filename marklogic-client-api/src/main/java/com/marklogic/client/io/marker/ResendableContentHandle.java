@@ -16,10 +16,15 @@
 package com.marklogic.client.io.marker;
 
 /**
- * A Resendable Handle is a marker interface for a Content Handle
- * for a content representation that is a Bufferable Handle and
- * can be read multiple times for purposes such as resending input
- * when retrying after a failed request.
+ * A Resendable Content Handle provides an adapter for a content
+ * representation that can be read multiple times for purposes
+ * such as resending input when retrying after a failed request.
+ * @param <C> the handled content representation
+ * @param <R> the serialization when reading the content
  */
-public interface ResendableHandle<C> extends BufferableHandle, ContentHandle<C> {
+public interface ResendableContentHandle<C, R> extends BufferableContentHandle<C, R> {
+    @Override
+    default BufferableHandle resendableHandleFor(C content) {
+        return (BufferableHandle) newHandle(content);
+    }
 }

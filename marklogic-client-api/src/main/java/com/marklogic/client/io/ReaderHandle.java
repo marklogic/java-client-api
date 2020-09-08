@@ -23,12 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CoderResult;
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -152,6 +147,11 @@ public class ReaderHandle
   public ReaderHandle newHandle() {
     return new ReaderHandle().withFormat(getFormat()).withMimetype(getMimetype());
   }
+  @Override
+  public Reader[] newArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new Reader[length];
+  }
 
   /**
    * Specifies the format of the content and returns the handle
@@ -203,12 +203,8 @@ public class ReaderHandle
    */
   @Override
   public String toString() {
-    try {
-      byte[] buffer = toBuffer();
-      return (buffer == null) ? null : new String(buffer,"UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new MarkLogicIOException(e);
-    }
+    byte[] buffer = toBuffer();
+    return (buffer == null) ? null : new String(buffer, StandardCharsets.UTF_8);
   }
 
   @Override
@@ -217,13 +213,9 @@ public class ReaderHandle
   }
   @Override
   protected void receiveContent(InputStream content) {
-    try {
-      // avoid NullPointerException by using an empty InputStream
-      if ( content == null ) content = new ByteArrayInputStream(new byte[0]);
-      this.content = new InputStreamReader(content, "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new MarkLogicIOException(e);
-    }
+    // avoid NullPointerException by using an empty InputStream
+    if ( content == null ) content = new ByteArrayInputStream(new byte[0]);
+    this.content = new InputStreamReader(content, StandardCharsets.UTF_8);
   }
   @Override
   protected ReaderHandle sendContent() {

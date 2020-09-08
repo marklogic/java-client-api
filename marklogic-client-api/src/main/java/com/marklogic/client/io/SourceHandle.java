@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import javax.xml.XMLConstants;
 import javax.xml.transform.*;
@@ -163,6 +164,11 @@ public class SourceHandle
   public SourceHandle newHandle() {
     return new SourceHandle().withMimetype(getMimetype());
   }
+  @Override
+  public Source[] newArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new Source[length];
+  }
 
   /**
    * Transforms the source for the content output to the result.  If
@@ -258,12 +264,8 @@ public class SourceHandle
    */
   @Override
   public String toString() {
-    try {
-      byte[] buffer = toBuffer();
-      return (buffer == null) ? null : new String(buffer,"UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new MarkLogicIOException(e);
-    }
+    byte[] buffer = toBuffer();
+    return (buffer == null) ? null : new String(buffer, StandardCharsets.UTF_8);
   }
 
   @Override
@@ -272,17 +274,13 @@ public class SourceHandle
   }
   @Override
   protected void receiveContent(InputStream content) {
-    try {
-      if (content == null) {
-        this.content = null;
-        return;
-      }
-
-      this.underlyingStream = content;
-      this.content = new StreamSource(new InputStreamReader(content, "UTF-8"));
-    } catch (UnsupportedEncodingException e) {
-      throw new MarkLogicIOException(e);
+    if (content == null) {
+      this.content = null;
+      return;
     }
+
+    this.underlyingStream = content;
+    this.content = new StreamSource(new InputStreamReader(content, StandardCharsets.UTF_8));
   }
   @Override
   protected OutputStreamSender sendContent() {
@@ -294,7 +292,7 @@ public class SourceHandle
   }
   @Override
   public void write(OutputStream out) throws IOException {
-    transform(new StreamResult(new OutputStreamWriter(out, "UTF-8")));
+    transform(new StreamResult(new OutputStreamWriter(out, StandardCharsets.UTF_8)));
   }
 
   /** Always call close() when finished with this handle -- it closes the underlying InputStream.

@@ -18,7 +18,7 @@ package com.marklogic.client.dataservices.impl;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.SessionState;
-import com.marklogic.client.dataservices.ExecEndpoint;
+import com.marklogic.client.dataservices.ExecCaller;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,19 +27,19 @@ import java.io.InputStream;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
-final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoint {
-    private static Logger logger = LoggerFactory.getLogger(ExecEndpointImpl.class);
-    private ExecCallerImpl caller;
+public class ExecEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements ExecCaller {
+    private static final Logger logger = LoggerFactory.getLogger(ExecEndpointImpl.class);
+    private final ExecCallerImpl<I,O> caller;
 
     public ExecEndpointImpl(DatabaseClient client, JSONWriteHandle apiDecl) {
-        this(client, new ExecCallerImpl(apiDecl));
+        this(client, new ExecCallerImpl<>(apiDecl));
     }
-    private ExecEndpointImpl(DatabaseClient client, ExecCallerImpl caller) {
+    private ExecEndpointImpl(DatabaseClient client, ExecCallerImpl<I,O> caller) {
         super(client, caller);
         this.caller = caller;
     }
 
-    private ExecCallerImpl getCaller() {
+    private ExecCallerImpl<I,O> getCaller() {
         return this.caller;
     }
 
@@ -48,39 +48,34 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
         call(newCallContext());
     }
     @Override
+    public void call(CallContext callContext) {
+        getCaller().call(getClient(), checkAllowedArgs(callContext));
+    }
+
     @Deprecated
     public InputStream call(InputStream endpointState, SessionState session, InputStream workUnit) {
-        CallContext callContext = newCallContext().withEndpointState(endpointState).withSessionState(session)
-                .withWorkUnit(workUnit);
+        CallContextImpl<I,O> callContext = newCallContext(true)
+                .withEndpointStateAs(endpointState)
+                .withSessionState(session)
+                .withWorkUnitAs(workUnit);
         call(callContext);
-        return callContext.getEndpointState();
+        return callContext.getEndpointStateAsInputStream();
     }
 
     @Override
-    @Deprecated
-    public ExecEndpoint.BulkExecCaller bulkCaller() {
-        return bulkCaller(newCallContext());
+    public BulkExecCaller bulkCaller() {
+        return new BulkExecCallerImpl<>(this);
     }
-
-    @Override
-    public void call(CallContext callContext) {
-        checkAllowedArgs(callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit());
-        callContext.withEndpointState(getCaller().call(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
-                callContext.getWorkUnit()));
-    }
-
     @Override
     public BulkExecCaller bulkCaller(CallContext callContext) {
-        return new BulkExecCallerImpl(this, callContext);
+        return new BulkExecCallerImpl<>(this, checkAllowedArgs(callContext));
     }
-
     @Override
     public BulkExecCaller bulkCaller(CallContext[] callContexts) {
         if(callContexts == null || callContexts.length == 0)
             throw new IllegalArgumentException("CallContext cannot be null or empty.");
         return bulkCaller(callContexts, callContexts.length);
     }
-
     @Override
     public BulkExecCaller bulkCaller(CallContext[] callContexts, int threadCount) {
         if(callContexts == null)
@@ -90,31 +85,34 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
 
         switch(callContexts.length) {
             case 0: throw new IllegalArgumentException("CallContext cannot be empty");
-            case 1: return new BulkExecCallerImpl(this, callContexts[0]);
-            default: return new BulkExecCallerImpl(this, callContexts, threadCount);
+            case 1: return new BulkExecCallerImpl<>(this, checkAllowedArgs(callContexts[0]));
+            default: return new BulkExecCallerImpl<>(this, checkAllowedArgs(callContexts), threadCount);
         }
     }
 
-    final static class BulkExecCallerImpl
-            extends IOEndpointImpl.BulkIOEndpointCallerImpl
-            implements ExecEndpoint.BulkExecCaller
+    public static class BulkExecCallerImpl<I,O>
+            extends IOEndpointImpl.BulkIOEndpointCallerImpl<I,O>
+            implements ExecCaller.BulkExecCaller
     {
-        private ExecEndpointImpl endpoint;
+        private final ExecEndpointImpl<I,O> endpoint;
         private ErrorListener errorListener;
         private AtomicInteger aliveCallContextCount;
 
-        private BulkExecCallerImpl(ExecEndpointImpl endpoint, CallContext callContext) {
-            super(callContext);
+        public BulkExecCallerImpl(ExecEndpointImpl<I,O> endpoint) {
+            this(endpoint, endpoint.checkAllowedArgs(endpoint.newCallContext()));
+        }
+        private BulkExecCallerImpl(ExecEndpointImpl<I,O> endpoint, CallContextImpl<I,O> callContext) {
+            super(endpoint, callContext);
             checkEndpoint(endpoint, "ExecEndpointImpl");
             this.endpoint = endpoint;
         }
-        private BulkExecCallerImpl(ExecEndpointImpl endpoint, CallContext[] callContexts, int threadCount) {
-            super(callContexts, threadCount, threadCount);
+        private BulkExecCallerImpl(ExecEndpointImpl<I,O> endpoint, CallContextImpl<I,O>[] callContexts, int threadCount) {
+            super(endpoint, callContexts, threadCount, threadCount);
             this.endpoint = endpoint;
             this.aliveCallContextCount = new AtomicInteger(threadCount);
         }
 
-        private ExecEndpointImpl getEndpoint() {
+        private ExecEndpointImpl<I,O> getEndpoint() {
             return this.endpoint;
         }
 
@@ -148,29 +146,22 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
             this.errorListener = errorListener;
         }
 
-        private ExecEndpoint.BulkExecCaller.ErrorListener getErrorListener() {
+        private ErrorListener getErrorListener() {
             return this.errorListener;
         }
 
-        private InputStream processExec(CallContextImpl callContext) {
+        private boolean processExec(CallContextImpl<I,O> callContext) {
             ErrorDisposition error = ErrorDisposition.RETRY;
-            InputStream output = null;
 
+            retry:
             for (int retryCount = 0; retryCount < DEFAULT_MAX_RETRIES && error == ErrorDisposition.RETRY; retryCount++) {
                 Throwable throwable = null;
                 try {
                     logger.trace("exec calling endpoint={} count={} state={}",
                             callContext.getEndpoint().getEndpointPath(), getCallCount(), callContext.getEndpointState());
-                    // TODO: use byte[] for IO internally (and InputStream externally)
-                    output = getEndpoint().getCaller().call(
-                            callContext.getClient(), callContext.getEndpointState(), callContext.getSessionState(),
-                            callContext.getWorkUnit()
-                    );
-                    if (callContext.getEndpoint().allowsEndpointState()) {
-                        callContext.withEndpointState(output);
-                    }
+                    boolean hasState = getEndpoint().getCaller().call(callContext.getClient(), callContext);
                     incrementCallCount();
-                    return output;
+                    return hasState;
                 } catch(Throwable catchedThrowable) {
                     // TODO: logging
                     throwable = catchedThrowable;
@@ -194,32 +185,31 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
 
                         switch (error) {
                             case RETRY:
-                                continue;
-
+                                continue retry;
                             case SKIP_CALL:
                                 if(callContext.getEndpoint().allowsEndpointState()) {
-                                    callContext.withEndpointState((InputStream) null);
+                                    callContext.withEndpointState(null);
                                 }
-                                return output;
-
+                                break retry;
                             case STOP_ALL_CALLS:
                                 getCallerThreadPoolExecutor().shutdown();
+                                break retry;
                         }
                     }
                 }
             }
-            return output;
+            return false;
         }
 
         private void processOutput() {
-            CallContextImpl callContext = getCallContext();
+            CallContextImpl<I,O> callContext = getCallContext();
             if(callContext != null) {
                 while (processOutput(callContext));
             }
         }
 
-        private boolean processOutput(CallContextImpl callContext){
-            InputStream output = processExec(callContext);
+        private boolean processOutput(CallContextImpl<I,O> callContext){
+            boolean continueCalling = processExec(callContext);
 
             switch(getPhase()) {
                 case INTERRUPTING:
@@ -228,7 +218,7 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
                             callContext.getEndpoint().getEndpointPath(), getCallCount(), callContext.getWorkUnit());
                     return false;
                 case RUNNING:
-                    if (output == null ) {
+                    if (!continueCalling) {
                         if(getCallerThreadPoolExecutor() == null || aliveCallContextCount.get() == 0)
                             setPhase(WorkPhase.COMPLETED);
                         logger.info("exec completed endpoint={} count={} work={}",
@@ -243,19 +233,19 @@ final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoi
             }
         }
 
+// TODO: static private class BulkCallableImpl<I,O>
         private class BulkCallableImpl implements Callable<Boolean> {
-            private BulkExecCallerImpl bulkExecCallerImpl;
-            private Boolean continueCalling = true;
+            private final BulkExecCallerImpl<I,O> bulkExecCallerImpl;
 
-            BulkCallableImpl(BulkExecCallerImpl bulkExecCallerImpl) {
+            BulkCallableImpl(BulkExecCallerImpl<I,O> bulkExecCallerImpl) {
                 this.bulkExecCallerImpl = bulkExecCallerImpl;
             }
 
             @Override
             public Boolean call() throws InterruptedException{
-                CallContext callContext = bulkExecCallerImpl.getCallContextQueue().poll();
+                CallContextImpl<I,O> callContext = bulkExecCallerImpl.getCallContextQueue().poll();
 
-                continueCalling = (callContext == null)? false:bulkExecCallerImpl.processOutput((CallContextImpl) callContext);
+                boolean continueCalling = (callContext == null) ? false : bulkExecCallerImpl.processOutput(callContext);
 
                 if(continueCalling) {
                     bulkExecCallerImpl.getCallContextQueue().put(callContext);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,83 +18,66 @@ package com.marklogic.client.dataservices.impl;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.SessionState;
-import com.marklogic.client.dataservices.OutputEndpoint;
-import com.marklogic.client.impl.Utilities;
+import com.marklogic.client.dataservices.OutputCaller;
+import com.marklogic.client.io.marker.BufferableContentHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint {
-    private static Logger logger = LoggerFactory.getLogger(OutputEndpointImpl.class);
-    private OutputCallerImpl caller;
+public class OutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements OutputCaller<O> {
+    private static final Logger logger = LoggerFactory.getLogger(OutputEndpointImpl.class);
+    private final OutputCallerImpl<I,O> caller;
 
-    public OutputEndpointImpl(DatabaseClient client, JSONWriteHandle apiDecl) {
-        this(client, new OutputCallerImpl(apiDecl));
+    public OutputEndpointImpl(DatabaseClient client, JSONWriteHandle apiDecl, BufferableContentHandle<O,?> outputHandle) {
+        this(client, new OutputCallerImpl<>(apiDecl, outputHandle));
     }
-    private OutputEndpointImpl(DatabaseClient client, OutputCallerImpl caller) {
+    private OutputEndpointImpl(DatabaseClient client, OutputCallerImpl<I,O> caller) {
         super(client, caller);
         this.caller = caller;
     }
-    private OutputCallerImpl getCaller() {
+    private OutputCallerImpl<I,O> getCaller() {
         return this.caller;
     }
 
-
     @Override
-    public InputStream[] call() {
-        return call(newCallContext());
+    public O[] call() {
+        return getResponseData(newCallContext());
+    }
+    @Override
+    public O[] call(CallContext callContext) {
+        return getResponseData(callContext);
     }
 
-    @Override
     @Deprecated
-    public InputStream[] call(InputStream endpointState, SessionState session, InputStream workUnit) {
-        CallContext callContext = newCallContext().withEndpointState(endpointState).withSessionState(session)
-                .withWorkUnit(workUnit);
-        try {
-            return getResponseData(callContext, true);
-        } catch(Exception ex) {
-            throw new InternalError("Exception occurred while fetching data");
-        }
+    public O[] call(InputStream endpointState, SessionState session, InputStream workUnit) {
+        CallContextImpl<I,O> callContext = newCallContext(true)
+                .withEndpointStateAs(endpointState)
+                .withSessionState(session)
+                .withWorkUnitAs(workUnit);
+        return getResponseData(callContext);
     }
 
     @Override
-    @Deprecated
-    public OutputEndpoint.BulkOutputCaller bulkCaller() {
-        return bulkCaller(newCallContext());
+    public BulkOutputCaller<O> bulkCaller() {
+        return new BulkOutputCallerImpl<>(this);
     }
-
     @Override
-    public InputStream[] call(CallContext callContext) {
-        try {
-            return getResponseData(callContext, false);
-        } catch(Exception ex) {
-            throw new InternalError("Exception occurred while fetching data");
-        }
+    public BulkOutputCaller<O> bulkCaller(CallContext callContext) {
+        return new BulkOutputCallerImpl<>(this, checkAllowedArgs(callContext));
     }
-
     @Override
-    public BulkOutputCaller bulkCaller(CallContext callContext) {
-        return new BulkOutputCallerImpl(this, callContext);
-    }
-
-    @Override
-    public BulkOutputCaller bulkCaller(CallContext[] callContexts) {
+    public BulkOutputCaller<O> bulkCaller(CallContext[] callContexts) {
         if(callContexts == null || callContexts.length == 0)
             throw new IllegalArgumentException("CallContext cannot be null or empty");
         return bulkCaller(callContexts, callContexts.length);
     }
-
     @Override
-    public BulkOutputCaller bulkCaller(CallContext[] callContexts, int threadCount) {
+    public BulkOutputCaller<O> bulkCaller(CallContext[] callContexts, int threadCount) {
         if(callContexts == null)
             throw new IllegalArgumentException("CallContext cannot be null");
         if(threadCount > callContexts.length)
@@ -102,64 +85,51 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
 
         switch(callContexts.length) {
             case 0: throw new IllegalArgumentException("CallContext cannot be empty");
-            case 1: return new BulkOutputCallerImpl(this, callContexts[0]);
-            default: return new BulkOutputCallerImpl(this, callContexts, threadCount);
+            case 1: return new BulkOutputCallerImpl<>(this, checkAllowedArgs(callContexts[0]));
+            default: return new BulkOutputCallerImpl<>(this, checkAllowedArgs(callContexts), threadCount);
         }
     }
 
-    private InputStream[] getResponseData(CallContext callContext, boolean withEndpointState) throws IOException {
-
-        checkAllowedArgs(callContext.getEndpointState(), callContext.getSessionState(), callContext.getWorkUnit());
-        InputStream[] values = getCaller().arrayCall(getClient(), callContext.getEndpointState(), callContext.getSessionState(),
-                callContext.getWorkUnit());
-        ByteArrayOutputStream endpointState = new ByteArrayOutputStream();
-        // values[0].transferTo(endpointState);
-        Utilities.write(values[0], endpointState);
-        callContext.withEndpointState(values[0]);
-
-        if(withEndpointState) {
-            values[0] = new ByteArrayInputStream(endpointState.toByteArray());
-            return values;
-        }
-        InputStream[] outputValues = Arrays.copyOfRange(values, 1, values.length);
-        return outputValues;
+    private O[] getResponseData(CallContext callContext) {
+        return getCaller().arrayCall(getClient(), checkAllowedArgs(callContext));
     }
 
-    final static class BulkOutputCallerImpl extends IOEndpointImpl.BulkIOEndpointCallerImpl
-            implements OutputEndpoint.BulkOutputCaller {
+    static public class BulkOutputCallerImpl<I,O> extends IOEndpointImpl.BulkIOEndpointCallerImpl<I,O>
+            implements OutputCaller.BulkOutputCaller<O> {
 
-        private OutputEndpointImpl endpoint;
-        private Consumer<InputStream> outputListener;
-        private CallContext callContext;
+        private final OutputEndpointImpl<I,O> endpoint;
+        private Consumer<O> outputListener;
         private ErrorListener errorListener;
         private AtomicInteger aliveCallContextCount;
 
-        private BulkOutputCallerImpl(OutputEndpointImpl endpoint, CallContext callContext) {
-            super(callContext);
+        public BulkOutputCallerImpl(OutputEndpointImpl<I,O> endpoint) {
+            this(endpoint, endpoint.checkAllowedArgs(endpoint.newCallContext()));
+        }
+        private BulkOutputCallerImpl(OutputEndpointImpl<I,O> endpoint, CallContextImpl<I,O> callContext) {
+            super(endpoint, callContext);
             checkEndpoint(endpoint, "OutputEndpointImpl");
             this.endpoint = endpoint;
-            this.callContext = callContext;
         }
-        private BulkOutputCallerImpl(OutputEndpointImpl endpoint, CallContext[] callContexts, int threadCount) {
-            super(callContexts, threadCount, threadCount);
+        private BulkOutputCallerImpl(OutputEndpointImpl<I,O> endpoint, CallContextImpl<I,O>[] callContexts, int threadCount) {
+            super(endpoint, callContexts, threadCount, threadCount);
             this.endpoint = endpoint;
             this.aliveCallContextCount = new AtomicInteger(threadCount);
         }
 
-        private OutputEndpointImpl getEndpoint() {
+        private OutputEndpointImpl<I,O> getEndpoint() {
             return endpoint;
         }
-        private Consumer<InputStream> getOutputListener() {
+        private Consumer<O> getOutputListener() {
             return outputListener;
         }
 
         @Override
-        public void setOutputListener(Consumer<InputStream> listener) {
+        public void setOutputListener(Consumer<O> listener) {
             this.outputListener = listener;
         }
 
         @Override
-        public InputStream[] next() {
+        public O[] next() {
             if(getCallContext() == null)
                 throw new UnsupportedOperationException("Callcontext cannot be null.");
             if (getOutputListener() != null)
@@ -207,30 +177,16 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
             }
         }
 
-        private InputStream[] getOutputStream(CallContextImpl callContext) {
+        private O[] getOutputStream(CallContextImpl<I,O> callContext) {
             ErrorDisposition error = ErrorDisposition.RETRY;
-            InputStream[] output = null;
+            O[] output = null;
 
             for (int retryCount = 0; retryCount < DEFAULT_MAX_RETRIES && error == ErrorDisposition.RETRY; retryCount++) {
                 Throwable throwable = null;
                 try {
-                    output = getEndpoint().getCaller().arrayCall(
-                            (callContext).getClient(), callContext.getEndpointState(), callContext.getSessionState(),
-                            callContext.getWorkUnit()
-                    );
-
-                    if(callContext.getEndpoint().allowsEndpointState()) {
-                        if (output != null && output.length > 0) {
-                            callContext.withEndpointState(output[0]);
-                            output = (output.length >1)?Arrays.copyOfRange(output,1, output.length):new InputStream[0];
-                        } else {
-                            callContext.withEndpointState((InputStream) null);
-                        }
-                    }
-
+                    output = getEndpoint().getCaller().arrayCall(callContext.getClient(), callContext);
                     incrementCallCount();
                     return output;
-
                 } catch(Throwable catchedThrowable) {
                     throwable = catchedThrowable;
                 }
@@ -259,9 +215,9 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
 
                             case SKIP_CALL:
                                 if(callContext.getEndpoint().allowsEndpointState()) {
-                                    callContext.withEndpointState((InputStream) null);
+                                    callContext.withEndpointState(null);
                                 }
-                                return new InputStream[0];
+                                return getEndpoint().getCaller().getOutputHandle().newArray(0);
 
                             case STOP_ALL_CALLS:
                                 getCallerThreadPoolExecutor().shutdown();
@@ -270,21 +226,21 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
                 }
             }
 
-            return (output == null) ? new InputStream[0] : output;
+            return (output == null) ? getEndpoint().getCaller().getOutputHandle().newArray(0) : output;
         }
 
         private void processOutput() {
-            CallContext callContext = getCallContext();
+            CallContextImpl<I,O> callContext = getCallContext();
             if(callContext != null) {
-                while (processOutput((CallContextImpl) callContext));
+                while (processOutput(callContext));
             }
         }
 
-        private boolean processOutput(CallContextImpl callContext){
+        private boolean processOutput(CallContextImpl<I,O> callContext){
                 logger.trace("output endpoint={} count={} state={}",
                         (callContext).getEndpoint().getEndpointPath(), getCallCount(), callContext.getEndpointState());
 
-                InputStream[] output = getOutputStream( callContext);
+                O[] output = getOutputStream(callContext);
 
                 processOutputBatch(output, getOutputListener());
 
@@ -315,19 +271,19 @@ public class OutputEndpointImpl extends IOEndpointImpl implements OutputEndpoint
 
         }
 
+// TODO: make static private class BulkCallableImpl<I,O>
         private class BulkCallableImpl implements Callable<Boolean> {
-            private BulkOutputCallerImpl bulkOutputCallerImpl;
-            private Boolean continueCalling = true;
+            private final BulkOutputCallerImpl<I,O> bulkOutputCallerImpl;
 
-            BulkCallableImpl(BulkOutputCallerImpl bulkOutputCallerImpl) {
+            BulkCallableImpl(BulkOutputCallerImpl<I,O> bulkOutputCallerImpl) {
                 this.bulkOutputCallerImpl = bulkOutputCallerImpl;
             }
             @Override
-            public Boolean call() throws InterruptedException {
+            public Boolean call() {
                 try {
-                    CallContext callContext = bulkOutputCallerImpl.getCallContextQueue().poll();
+                    CallContextImpl<I,O> callContext = bulkOutputCallerImpl.getCallContextQueue().poll();
 
-                    continueCalling = (callContext == null) ? false : bulkOutputCallerImpl.processOutput((CallContextImpl) callContext);
+                    boolean continueCalling = (callContext == null) ? false : bulkOutputCallerImpl.processOutput(callContext);
                     if (continueCalling) {
                         bulkOutputCallerImpl.getCallContextQueue().put(callContext);
                         submitTask(this);

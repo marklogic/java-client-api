@@ -16,8 +16,9 @@
 package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.dataservices.OutputEndpoint;
+import com.marklogic.client.dataservices.OutputCaller;
 import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
@@ -27,7 +28,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,7 @@ public class BulkOutputCallerNext {
     static String apiPath;
     static JSONDocumentManager docMgr;
 
-    private static String collectionName = "bulkOutputCallerNext";
+    private static final String collectionName = "bulkOutputCallerNext";
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -62,10 +62,10 @@ public class BulkOutputCallerNext {
 
         IOTestUtil.writeDocuments(10,collectionName);
 
-        OutputEndpoint endpoint = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
-        OutputEndpoint.BulkOutputCaller bulkCaller = endpoint.bulkCaller(endpoint.newCallContext()
-                .withEndpointState(new ByteArrayInputStream(endpointState.getBytes()))
-                .withWorkUnit(new ByteArrayInputStream(workUnit.getBytes())));
+        OutputCaller<InputStream> endpoint = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
+        OutputCaller.BulkOutputCaller<InputStream> bulkCaller = endpoint.bulkCaller(endpoint.newCallContext()
+                .withEndpointStateAs(endpointState)
+                .withWorkUnitAs(workUnit));
         InputStream[] outputArray = bulkCaller.next();
         assertNotNull(outputArray);
         assertTrue(outputArray.length == 5);
