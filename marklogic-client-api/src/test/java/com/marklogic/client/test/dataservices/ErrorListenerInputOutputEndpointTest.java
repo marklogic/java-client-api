@@ -31,7 +31,6 @@ import java.io.InputStream;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ErrorListenerInputOutputEndpointTest {
@@ -90,8 +89,8 @@ public class ErrorListenerInputOutputEndpointTest {
         InputOutputCaller.BulkInputOutputCaller<InputStream,InputStream> bulkCaller = endpoint.bulkCaller(callContextArray);
 
 
-        InputOutputCaller.BulkInputOutputCaller.ErrorListener<InputStream> errorListener =
-                (retryCount, throwable, callContext, inputStreams)
+        InputOutputCaller.BulkInputOutputCaller.ErrorListener errorListener =
+                (retryCount, throwable, callContext, inputHandles)
                         -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.RETRY;
         bulkCaller.setErrorListener(errorListener);
 
@@ -109,7 +108,7 @@ public class ErrorListenerInputOutputEndpointTest {
     }
 
     @Test
-    public void testInputOutputCallerWithSkip() throws IOException {
+    public void testInputOutputCallerWithSkip() {
 
 
         String              endpointState = "{\"next\":1}";
@@ -147,8 +146,8 @@ public class ErrorListenerInputOutputEndpointTest {
         InputOutputCaller.BulkInputOutputCaller<InputStream,InputStream> bulkCaller = endpoint.bulkCaller(callContextArray);
 
 
-        InputOutputCaller.BulkInputOutputCaller.ErrorListener<InputStream> errorListener =
-                (retryCount, throwable, callContext, inputStreams)
+        InputOutputCaller.BulkInputOutputCaller.ErrorListener errorListener =
+                (retryCount, throwable, callContext, inputHandles)
                         -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.SKIP_CALL;
         bulkCaller.setErrorListener(errorListener);
 
@@ -201,8 +200,8 @@ public class ErrorListenerInputOutputEndpointTest {
         InputOutputCaller.BulkInputOutputCaller<InputStream,InputStream> bulkCaller = endpoint.bulkCaller(callContextArray);
 
 
-        InputOutputCaller.BulkInputOutputCaller.ErrorListener<InputStream> errorListener =
-                (retryCount, throwable, callContext, inputStreams)
+        InputOutputCaller.BulkInputOutputCaller.ErrorListener errorListener =
+                (retryCount, throwable, callContext, inputHandles)
                         -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.STOP_ALL_CALLS;
         bulkCaller.setErrorListener(errorListener);
 

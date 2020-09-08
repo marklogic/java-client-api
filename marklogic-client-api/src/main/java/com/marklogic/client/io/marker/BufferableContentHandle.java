@@ -15,8 +15,6 @@
  */
 package com.marklogic.client.io.marker;
 
-import com.marklogic.client.io.BytesHandle;
-
 /**
  * A Bufferable Content Handle provides an adapter for a content
  * representation that can be read multiple times for purposes

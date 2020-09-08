@@ -65,8 +65,8 @@ public class ErrorListenerInputEndpointTest {
                 .withEndpointConstantsAs(endpointConstants1)};
         InputCaller.BulkInputCaller<InputStream> loader = loadEndpt.bulkCaller(callContextArray);
 
-        InputCaller.BulkInputCaller.ErrorListener<InputStream> errorListener =
-                (retryCount, throwable, callContext, input)
+        InputCaller.BulkInputCaller.ErrorListener errorListener =
+                (retryCount, throwable, callContext, inputHandles)
                         -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.RETRY;
         loader.setErrorListener(errorListener);
 
@@ -113,8 +113,8 @@ public class ErrorListenerInputEndpointTest {
                 .withEndpointConstantsAs(endpointConstants1)};
         InputCaller.BulkInputCaller<InputStream> loader = loadEndpt.bulkCaller(callContextArray);
 
-        InputCaller.BulkInputCaller.ErrorListener<InputStream> errorListener =
-                (retryCount, throwable, callContext, input)
+        InputCaller.BulkInputCaller.ErrorListener errorListener =
+                (retryCount, throwable, callContext, inputHandles)
                         -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.SKIP_CALL;
         loader.setErrorListener(errorListener);
 
@@ -161,8 +161,8 @@ public class ErrorListenerInputEndpointTest {
                 .withEndpointConstantsAs(endpointConstants1)};
         InputCaller.BulkInputCaller<InputStream> loader = loadEndpt.bulkCaller(callContextArray);
 
-        InputCaller.BulkInputCaller.ErrorListener<InputStream> errorListener =
-                (retryCount, throwable, callContext, input)
+        InputCaller.BulkInputCaller.ErrorListener errorListener =
+                (retryCount, throwable, callContext, inputHandles)
                         -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.STOP_ALL_CALLS;
         loader.setErrorListener(errorListener);
 

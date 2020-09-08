@@ -18,6 +18,7 @@ package com.marklogic.client.dataservices;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.dataservices.impl.InputEndpointImpl;
 import com.marklogic.client.io.marker.BufferableContentHandle;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
 /**
@@ -95,11 +96,35 @@ public interface InputCaller<I> extends IOEndpoint {
 		 */
 		void acceptAll(I[] input);
 
-		void setErrorListener(ErrorListener<I> errorListener);
+		/**
+		 * Provides a callback that specifies the disposition of a failed call.
+		 * @param errorListener the lambda or other implementation of the error listener
+		 */
+		void setErrorListener(ErrorListener errorListener);
 
-		interface ErrorListener<I> {
+		/**
+		 * A function implementation that specifies the disposition of a failed call.
+		 */
+		interface ErrorListener {
+			/**
+			 * The signature for the lambda or other implementation of the callback that specifies
+			 * the disposition of a failed call.
+			 *
+			 * The input is typed with the BufferableHandle marker interface.  The actual class
+			 * of the handle is
+			 * <ul>
+			 * <li>the same as the input handle provided when constructing the InputOutputCaller
+			 * if the content representation is resendable for retry (as with String)</li>
+			 * <li>a BytesHandle if the content must be buffered for retry (as with InputStream)</li>
+			 * </ul>
+			 * @param retryCount  the number of times the call with this input has been retried
+			 * @param throwable  the error received
+			 * @param callContext  the context for the call
+			 * @param input  the input for the call
+			 * @return  whether to retry the call, skip the call, or stop the job
+			 */
 			ErrorDisposition processError(
-					int retryCount, Throwable throwable, CallContext callContext, I[] input
+					int retryCount, Throwable throwable, CallContext callContext, BufferableHandle[] input
 			);
 		}
 	}

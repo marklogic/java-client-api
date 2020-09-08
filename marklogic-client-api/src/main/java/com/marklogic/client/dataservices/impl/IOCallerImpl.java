@@ -24,6 +24,7 @@ import com.marklogic.client.impl.RESTServices;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.marker.BufferableContentHandle;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
 import java.util.stream.Stream;
@@ -188,35 +189,13 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
         return makeRequest(db, callCtxt, (RESTServices.CallField) null);
     }
     BaseProxy.DBFunctionRequest makeRequest(
-            DatabaseClient db, CallContextImpl<I,O> callCtxt, Stream<I> input
+            DatabaseClient db, CallContextImpl<I,O> callCtxt, BufferableHandle[] input
     ) {
         RESTServices.CallField inputField = null;
 
         ParamdefImpl paramdef = getInputParamdef();
         if (paramdef != null) {
-            inputField = BaseProxy.documentParam(
-                    "input",
-                    paramdef.isNullable(),
-                    NodeConverter.streamWithFormat(input.map(inputHandle::resendableHandleFor), paramdef.getFormat())
-                    );
-        } else if (input != null) {
-            throw new IllegalArgumentException("input parameter not supported by endpoint: "+getEndpointPath());
-        }
-
-        return makeRequest(db, callCtxt, inputField);
-    }
-    BaseProxy.DBFunctionRequest makeRequest(
-            DatabaseClient db, CallContextImpl<I,O> callCtxt, I[] input
-    ) {
-        RESTServices.CallField inputField = null;
-
-        ParamdefImpl paramdef = getInputParamdef();
-        if (paramdef != null) {
-            inputField = BaseProxy.documentParam(
-                    "input",
-                    paramdef.isNullable(),
-                    NodeConverter.arrayWithFormat(inputHandle.resendableHandleFor(input), paramdef.getFormat())
-            );
+            inputField = BaseProxy.documentParam("input", paramdef.isNullable(), input);
         } else if (input != null && input.length > 0) {
             throw new IllegalArgumentException("input parameter not supported by endpoint: "+getEndpointPath());
         }
@@ -308,9 +287,6 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
         }
 
         return request.responseSingle(getReturndef().isNullable(), getReturndef().getFormat()).asContent(outputHandle);
-    }
-    Stream<O> responseMultipleAsStream(BaseProxy.DBFunctionRequest request, CallContextImpl<I,O> callCtxt) {
-        return responseMultiple(request).asStreamOfContent(callCtxt.isLegacyContext() ? null : callCtxt.getEndpointState(), outputHandle);
     }
     O[] responseMultipleAsArray(BaseProxy.DBFunctionRequest request, CallContextImpl<I,O> callCtxt) {
         return responseMultiple(request).asArrayOfContent(callCtxt.isLegacyContext() ? null : callCtxt.getEndpointState(), outputHandle);

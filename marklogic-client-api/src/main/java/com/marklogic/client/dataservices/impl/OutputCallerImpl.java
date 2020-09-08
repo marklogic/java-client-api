@@ -40,7 +40,4 @@ final public class OutputCallerImpl<I,O> extends IOCallerImpl<I,O> {
     public O[] arrayCall(DatabaseClient db, CallContextImpl<I,O> callCtxt) {
         return responseMultipleAsArray(makeRequest(db, callCtxt), callCtxt);
     }
-    public Stream<O> streamCall(DatabaseClient db, CallContextImpl<I,O> callCtxt) {
-        return responseMultipleAsStream(makeRequest(db, callCtxt), callCtxt);
-    }
 }

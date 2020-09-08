@@ -153,9 +153,9 @@ public class ErrorListenerExecEndpointTest {
         JsonNode finalState1 = docMgr.read(finalStateUri1, new JacksonHandle()).get();
         JsonNode finalState2 = docMgr.read(finalStateUri2, new JacksonHandle()).get();
         assertTrue("finalState1 is wrong, should be less than 15, but " + finalState1.get("state").get("next").asText(),
-                Integer.valueOf(finalState1.get("state").get("next").asText()) < 15);
+                finalState1.get("state").get("next").asInt() < 15);
         assertTrue("finalState2 is wrong, should be less than 26, but " + finalState2.get("state").get("next").asText(),
-                Integer.valueOf(finalState2.get("state").get("next").asText()) <= 26);
+                finalState2.get("state").get("next").asInt() <= 26);
         assertNotNull("null final state", finalState1);
         assertTrue("final state not object", finalState1.isObject());
         assertNotNull("null final state", finalState2);

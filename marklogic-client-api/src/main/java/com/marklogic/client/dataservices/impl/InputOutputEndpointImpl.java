@@ -19,6 +19,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.InputOutputCaller;
 import com.marklogic.client.io.marker.BufferableContentHandle;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,7 +101,10 @@ public class InputOutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements
     }
 
     private O[] getResponseData(CallContext callContext, I[] input) {
-        return getCaller().arrayCall(getClient(), checkAllowedArgs(callContext), input);
+        InputOutputCallerImpl<I,O> callerImpl = getCaller();
+        return callerImpl.arrayCall(
+                getClient(), checkAllowedArgs(callContext), callerImpl.getInputHandle().resendableHandleFor(input)
+        );
     }
 
     static public class BulkInputOutputCallerImpl<I,O> extends IOEndpointImpl.BulkIOEndpointCallerImpl<I,O>
@@ -110,7 +114,7 @@ public class InputOutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements
         private final int batchSize;
         private final LinkedBlockingQueue<I> inputQueue;
         private Consumer<O> outputListener;
-        private ErrorListener<I> errorListener;
+        private ErrorListener errorListener;
 
         public BulkInputOutputCallerImpl(InputOutputEndpointImpl<I,O> endpoint) {
             this(endpoint, endpoint.getBatchSize(), endpoint.checkAllowedArgs(endpoint.newCallContext()));
@@ -168,11 +172,11 @@ public class InputOutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements
         }
 
         @Override
-        public void setErrorListener(ErrorListener<I> errorListener) {
+        public void setErrorListener(ErrorListener errorListener) {
             this.errorListener = errorListener;
         }
 
-        private ErrorListener<I> getErrorListener() {
+        private ErrorListener getErrorListener() {
             return this.errorListener;
         }
 
@@ -193,13 +197,16 @@ public class InputOutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements
         private void processInput(CallContextImpl<I,O> callContext, I[] inputBatch) {
             logger.trace("input endpoint running endpoint={} count={} state={}", (callContext).getEndpoint().getEndpointPath(), getCallCount(),
                     callContext.getEndpointState());
+            InputOutputCallerImpl<I,O> callerImpl = getEndpoint().getCaller();
+
             ErrorDisposition error = ErrorDisposition.RETRY;
 
+            BufferableHandle[] inputHandles = callerImpl.getInputHandle().resendableHandleFor(inputBatch);
             for (int retryCount = 0; retryCount < DEFAULT_MAX_RETRIES && error == ErrorDisposition.RETRY; retryCount++) {
                 Throwable throwable = null;
                 O[] output = null;
                 try {
-                    output = getEndpoint().getCaller().arrayCall(callContext.getClient(), callContext, inputBatch);
+                    output = callerImpl.arrayCall(callContext.getClient(), callContext, inputHandles);
 
                     incrementCallCount();
                     processOutputBatch(output, getOutputListener());
@@ -212,7 +219,7 @@ public class InputOutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements
                     if (getErrorListener() != null) {
                         try {
                             if (retryCount < DEFAULT_MAX_RETRIES - 1) {
-                                error = getErrorListener().processError(retryCount, throwable, callContext, inputBatch);
+                                error = getErrorListener().processError(retryCount, throwable, callContext, inputHandles);
                             } else {
                                 error = ErrorDisposition.SKIP_CALL;
                             }

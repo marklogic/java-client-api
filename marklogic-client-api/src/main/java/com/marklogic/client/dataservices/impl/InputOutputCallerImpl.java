@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.marker.BufferableContentHandle;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
 final public class InputOutputCallerImpl<I,O> extends IOCallerImpl<I,O> {
@@ -39,10 +40,7 @@ final public class InputOutputCallerImpl<I,O> extends IOCallerImpl<I,O> {
         }
     }
 
-    public O[] arrayCall(DatabaseClient db, CallContextImpl<I,O> callCtxt, I[] input) {
+    public O[] arrayCall(DatabaseClient db, CallContextImpl<I,O> callCtxt, BufferableHandle[] input) {
         return responseMultipleAsArray(makeRequest(db, callCtxt, input), callCtxt);
-    }
-    public Stream<O> streamCall(DatabaseClient db, CallContextImpl<I,O> callCtxt, Stream<I> input) {
-        return responseMultipleAsStream(makeRequest(db, callCtxt, input), callCtxt);
     }
 }

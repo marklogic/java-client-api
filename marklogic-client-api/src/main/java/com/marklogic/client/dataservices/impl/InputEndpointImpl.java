@@ -21,6 +21,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import com.marklogic.client.dataservices.InputCaller;
 import com.marklogic.client.io.marker.BufferableContentHandle;
+import com.marklogic.client.io.marker.BufferableHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +57,8 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 	}
 	@Override
 	public void call(CallContext callContext, I[] input) {
-		getCaller().arrayCall(getClient(), checkAllowedArgs(callContext), input);
+		InputCallerImpl<I,O> callerImpl = getCaller();
+		callerImpl.arrayCall(getClient(), checkAllowedArgs(callContext), callerImpl.getInputHandle().resendableHandleFor(input));
 	}
 
 	@Deprecated
@@ -103,7 +105,7 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 		private final InputEndpointImpl<I,O> endpoint;
 		private final int batchSize;
 		private final LinkedBlockingQueue<I> inputQueue;
-		private ErrorListener<I> errorListener;
+		private ErrorListener errorListener;
 
 		public BulkInputCallerImpl(InputEndpointImpl<I,O> endpoint) {
 			this(endpoint, endpoint.getBatchSize(), endpoint.checkAllowedArgs(endpoint.newCallContext()));
@@ -134,10 +136,6 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 			return inputQueue;
 		}
 
-		private ErrorListener<I> getErrorListener() {
-			return this.errorListener;
-		}
-
 		@Override
 		public void accept(I input) {
 			boolean hasBatch = queueInput(input, getInputQueue(), getBatchSize());
@@ -151,8 +149,12 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 				processInput();
 		}
 
+		private ErrorListener getErrorListener() {
+			return this.errorListener;
+		}
+
 		@Override
-		public void setErrorListener(ErrorListener<I> errorListener) {
+		public void setErrorListener(ErrorListener errorListener) {
 			this.errorListener = errorListener;
 		}
 
@@ -190,12 +192,15 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 		private void processInput(CallContextImpl<I,O> callContext, I[] inputBatch) {
 			logger.trace("input endpoint running endpoint={} count={} state={}", (callContext).getEndpoint().getEndpointPath(), getCallCount(),
 					callContext.getEndpointState());
+			InputCallerImpl<I,O> callerImpl = getEndpoint().getCaller();
+
 			ErrorDisposition error = ErrorDisposition.RETRY;
 
+			BufferableHandle[] inputHandles = callerImpl.getInputHandle().resendableHandleFor(inputBatch);
 			for (int retryCount = 0; retryCount < DEFAULT_MAX_RETRIES && error == ErrorDisposition.RETRY; retryCount++) {
 				Throwable throwable = null;
 				try {
-					getEndpoint().getCaller().arrayCall(callContext.getClient(), callContext, inputBatch);
+					getEndpoint().getCaller().arrayCall(callContext.getClient(), callContext, inputHandles);
 					incrementCallCount();
 					return;
 				} catch (Throwable catchedThrowable) {
@@ -210,7 +215,7 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 
 						try {
 							if (retryCount < DEFAULT_MAX_RETRIES - 1) {
-								error = getErrorListener().processError(retryCount, throwable, callContext, inputBatch);
+								error = getErrorListener().processError(retryCount, throwable, callContext, inputHandles);
 							} else {
 								error = ErrorDisposition.SKIP_CALL;
 							}
