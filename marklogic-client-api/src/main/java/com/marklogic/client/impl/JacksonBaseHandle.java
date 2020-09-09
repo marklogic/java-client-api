@@ -67,7 +67,10 @@ public abstract class JacksonBaseHandle<T>
       receiveContent(new ByteArrayInputStream(buffer));
   }
   public byte[] toBuffer() {
-    return contentToBytes(get());
+    byte[] b = contentToBytes(get());
+    if (!isResendable())
+      fromBuffer(b);
+    return b;
   }
   public T bytesToContent(byte[] buffer) {
     return toContent(new ByteArrayInputStream(buffer));

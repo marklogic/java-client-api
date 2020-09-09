@@ -183,8 +183,12 @@ public class JacksonParserHandle
   }
   @Override
   protected OutputStreamSender sendContent(JsonParser parser) {
-    if (parser == null) return null;
-    return new OutputStreamSenderImpl(getMapper(), parser);
+    try {
+      if (parser == null || parser.nextToken() == null) return null;
+      return new OutputStreamSenderImpl(getMapper(), parser);
+    } catch (IOException e) {
+      throw new MarkLogicIOException("Failed to parse content", e);
+    }
   }
 
   @Override
