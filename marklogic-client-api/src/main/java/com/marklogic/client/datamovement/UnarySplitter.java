@@ -127,6 +127,12 @@ public class UnarySplitter implements Splitter<InputStreamHandle> {
      * UriMaker which generates URI for each split file
      */
     public interface UriMaker extends Splitter.UriMaker {
+        /**
+         *
+         * @param handle the handle which contains the content of each split. It could be utilized to make a meaningful
+         *               document URI.
+         * @return the generated URI of current split
+         */
         String makeUri(InputStreamHandle handle);
     }
 
