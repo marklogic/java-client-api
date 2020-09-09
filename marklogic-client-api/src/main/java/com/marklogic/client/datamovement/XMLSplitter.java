@@ -97,8 +97,8 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
      * Takes an input stream of an XML file and split it into a steam of handles.
      * @param input is the incoming input stream of an XML file
      * @return a stream of handles to write to database
-     * @throws IOException
-     * @throws XMLStreamException
+     * @throws IOException if the input cannot be split
+     * @throws XMLStreamException if there is an error processing the underlying XML source
      */
     @Override
     public Stream<T> split(InputStream input) throws IOException, XMLStreamException {
@@ -114,7 +114,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
      * Takes an input stream of an XML file and split it into a steam of DocumentWriteOperation.
      * @param input is the incoming input stream.
      * @return a stream of DocumentWriteOperation to write to database
-     * @throws Exception
+     * @throws Exception if the input cannot be split
      */
     @Override
     public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input) throws Exception {
@@ -127,7 +127,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
      * @param inputName is the name of input file, including name and extension. It is used to generate URLs for split
      *                  files.The inputName could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation to write to database
-     * @throws Exception
+     * @throws Exception if the input cannot be split
      */
     @Override
     public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input, String inputName) throws Exception {
@@ -148,7 +148,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
      * Take an input of XMLStreamReader of the XML file and split it into a stream of handles to write to database.
      * @param input an XMLStreamReader of the XML file
      * @return a stream of handles to write to database
-     * @throws IOException
+     * @throws IOException if the input cannot be split
      */
     public Stream<T> split(XMLStreamReader input) throws IOException {
 
@@ -242,6 +242,8 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
 
         /**
          * Construct buffered DocumentWriteOperations from XMLStreamReader
+         * @param uriMaker the UriMake to construct the URI for each document
+         * @param count the count of each split
          * @param handle the handle contains target elements as content
          * @return DocumentWriteOperations to write to database
          */

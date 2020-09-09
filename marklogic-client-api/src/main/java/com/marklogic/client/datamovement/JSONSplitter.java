@@ -96,7 +96,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
      * Takes an InputStream of a JSON file and split it into a steam of handles.
      * @param input is the incoming InputStream of a JSON file.
      * @return a stream of handles to write to database
-     * @throws IOException
+     * @throws IOException if the input cannot be split
      */
     @Override
     public Stream<T> split(InputStream input) throws IOException {
@@ -112,7 +112,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
      * Takes an InputStream of a JSON file and split it into a steam of DocumentWriteOperation to write to database.
      * @param input is the incoming input stream of a JSON file
      * @return a stream of DocumentWriteOperation to write to database
-     * @throws Exception
+     * @throws Exception if the input cannot be split
      */
     @Override
     public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input) throws Exception {
@@ -126,7 +126,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
      * @param inputName is the name of input file, including name and extension. It is used to generate URLs for split
      *                  files.The inputName could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation to write to database
-     * @throws Exception
+     * @throws Exception if the input cannot be split
      */
     @Override
     public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input, String inputName) throws Exception {
@@ -142,7 +142,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
      * Take an input of JsonParser created from the JSON file and split it into a stream of handles to write to database.
      * @param input JsonParser created from the JSON file
      * @return a stream of handles to write to database
-     * @throws IOException
+     * @throws IOException if the input cannot be split
      */
     public Stream<T> split(JsonParser input) throws IOException {
         if (input == null) {
@@ -229,6 +229,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
         /**
          * Construct buffered DocumentWriteOperations from the handle which contains target content
          * @param uriMaker the UriMake to construct the URI for each document
+         * @param count the count of each split
          * @param handle the handle contains target object or array
          * @return DocumentWriteOperations to write to database
          */

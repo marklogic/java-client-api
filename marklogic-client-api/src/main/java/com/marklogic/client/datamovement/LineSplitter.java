@@ -69,7 +69,7 @@ public class LineSplitter implements Splitter<StringHandle> {
      * Provide GZIPInputStream to the splitter when splitting gzip files.
      * @param input is the incoming input stream.
      * @return a stream of StringHandle.
-     * @throws IOException
+     * @throws IOException if the input cannot be split
      */
     @Override
     public Stream<StringHandle> split(InputStream input) throws IOException {
@@ -82,7 +82,7 @@ public class LineSplitter implements Splitter<StringHandle> {
      * Provide GZIPInputStream to the splitter when splitting gzip files.
      * @param input is the incoming input stream.
      * @return a stream of DocumentWriteOperation.
-     * @throws Exception
+     * @throws Exception if the input cannot be split
      */
     @Override
     public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input) throws Exception {
@@ -97,7 +97,7 @@ public class LineSplitter implements Splitter<StringHandle> {
      * @param splitFilename is the name of the input file, including name and extension. It is used to generate URLs for
      *                  split files. The inputName could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation.
-     * @throws Exception
+     * @throws Exception if the input cannot be split
      */
     @Override
     public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input, String splitFilename) throws Exception {
@@ -143,7 +143,7 @@ public class LineSplitter implements Splitter<StringHandle> {
      * @param input is the incoming input stream.
      * @param charset is the encoding scheme the document uses.
      * @return a stream of StringHandle.
-     * @throws IOException
+     * @throws IOException if the input cannot be split
      */
     public Stream<StringHandle> split(InputStream input, Charset charset) throws IOException {
         if (input == null) {
@@ -160,7 +160,7 @@ public class LineSplitter implements Splitter<StringHandle> {
      * line-delimited JSON file, line-delimited XML file or gzip-compressed line-delimited JSON file.
      * @param input is the incoming Reader.
      * @return a stream of StringHandle.
-     * @throws IOException
+     * @throws IOException if the input cannot be split
      */
     public Stream<StringHandle> split(Reader input) throws IOException {
         if (input == null) {
