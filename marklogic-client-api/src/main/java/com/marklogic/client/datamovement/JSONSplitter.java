@@ -648,7 +648,8 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
         /**
          * Generates URI for each split
          * @param num the count of each split
-         * @param handle the handle which contains the content of each split
+         * @param handle the handle which contains the content of each split. It could be utilized to make a meaningful
+         *               document URI.
          * @return the generated URI of current split
          */
         String makeUri(long num, JSONWriteHandle handle);
