@@ -42,7 +42,7 @@ import static org.junit.Assert.assertTrue;
 
 public class ErrorListenerOutputEndpointTest {
     static ObjectNode apiObj;
-    static String apiName = "errorListenerbulkIOOutputCaller.api";
+    static String apiName = "errorListenerBulkIOOutputCaller.api";
     static String scriptPath;
     static String apiPath;
     static JSONDocumentManager docMgr;
