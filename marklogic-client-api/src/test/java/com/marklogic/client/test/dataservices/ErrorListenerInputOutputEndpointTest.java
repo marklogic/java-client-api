@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ErrorListenerInputOutputEndpointTest {
@@ -102,9 +103,9 @@ public class ErrorListenerInputOutputEndpointTest {
         input.stream().forEach(value -> bulkCaller.accept(IOTestUtil.asInputStream(value)));
         bulkCaller.awaitCompletion();
 
-        //assertEquals("mismatch between input and output size"+input+":"+output, input.size(), output.size());
-        //assertEquals("mismatch between input and output elements", input, output);
-        assertTrue("wrong output size", output.size() <= 16 && output.size() >= 8);
+        assertEquals("mismatch between input and output size"+input+":"+output, input.size(), output.size());
+        assertEquals("mismatch between input and output elements", input, output);
+        assertTrue("wrong output size", output.size() == 16);
     }
 
     @Test

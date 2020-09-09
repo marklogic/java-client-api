@@ -92,7 +92,7 @@ public class ErrorListenerInputEndpointTest {
         loader.awaitCompletion();
         checkDocuments("bulkInputTest_1");
         checkDocuments("bulkInputTest_2");
-        assertTrue("Number of documents written not as expected." + counter, counter >= 7);
+        assertTrue("Number of documents written not as expected." + counter, counter == 8);
     }
 
     @Test
