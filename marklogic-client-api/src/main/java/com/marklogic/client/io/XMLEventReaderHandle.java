@@ -21,7 +21,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 import javax.xml.stream.FactoryConfigurationError;
@@ -32,19 +31,12 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
 
+import com.marklogic.client.io.marker.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
-import com.marklogic.client.io.marker.CtsQueryWriteHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * <p>An XML Event Reader Handle represents XML content as an XML event reader
@@ -55,7 +47,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class XMLEventReaderHandle
   extends BaseHandle<InputStream, OutputStreamSender>
-  implements OutputStreamSender, BufferableHandle, ContentHandle<XMLEventReader>,
+  implements OutputStreamSender, StreamingContentHandle<XMLEventReader, InputStream>,
     XMLReadHandle, XMLWriteHandle,
     StructureReadHandle, StructureWriteHandle, CtsQueryWriteHandle,
     Closeable
@@ -214,6 +206,39 @@ public class XMLEventReaderHandle
       throw new MarkLogicIOException(e);
     }
   }
+  @Override
+  public XMLEventReader toContent(InputStream serialization) {
+    if (serialization == null) return null;
+    try {
+      XMLInputFactory factory = getFactory();
+      if (factory == null) {
+        throw new MarkLogicInternalException("Failed to make StAX input factory");
+      }
+
+      if (resolver != null)
+        factory.setXMLResolver(resolver);
+
+      return factory.createXMLEventReader(serialization, "UTF-8");
+    } catch (XMLStreamException e) {
+      logger.error("Failed to parse StAX events from input stream",e);
+      throw new MarkLogicInternalException(e);
+    } catch (FactoryConfigurationError e) {
+      logger.error("Failed to parse StAX events from input stream",e);
+      throw new MarkLogicInternalException(e);
+    }
+  }
+  @Override
+  public XMLEventReader bytesToContent(byte[] buffer) {
+    return (buffer == null || buffer.length == 0) ? null :
+            toContent(new ByteArrayInputStream(buffer));
+  }
+  @Override
+  public byte[] contentToBytes(XMLEventReader content) {
+    if (content == null) return null;
+    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    write(content, buffer);
+    return buffer.toByteArray();
+  }
   /**
    * Buffers the StAX event source and returns the buffer
    * as an XML string.
@@ -275,26 +300,10 @@ public class XMLEventReaderHandle
     }
 
     this.underlyingStream = content;
-    try {
-      if (logger.isInfoEnabled())
-        logger.info("Parsing StAX events from input stream");
 
-      XMLInputFactory factory = getFactory();
-      if (factory == null) {
-        throw new MarkLogicInternalException("Failed to make StAX input factory");
-      }
-
-      if (resolver != null)
-        factory.setXMLResolver(resolver);
-
-      this.content = factory.createXMLEventReader(content, "UTF-8");
-    } catch (XMLStreamException e) {
-      logger.error("Failed to parse StAX events from input stream",e);
-      throw new MarkLogicInternalException(e);
-    } catch (FactoryConfigurationError e) {
-      logger.error("Failed to parse StAX events from input stream",e);
-      throw new MarkLogicInternalException(e);
-    }
+    if (logger.isInfoEnabled())
+      logger.info("Parsing StAX events from input stream");
+    this.content = toContent(content);
   }
   @Override
   protected OutputStreamSender sendContent() {
@@ -306,6 +315,9 @@ public class XMLEventReaderHandle
   }
   @Override
   public void write(OutputStream out) throws IOException {
+    write(this.content, out);
+  }
+  private void write(XMLEventReader content, OutputStream out) {
     try {
       XMLOutputFactory factory = XMLOutputFactory.newFactory();
       XMLEventWriter   writer  = factory.createXMLEventWriter(out, "UTF-8");

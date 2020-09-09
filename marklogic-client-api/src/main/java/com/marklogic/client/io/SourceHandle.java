@@ -31,18 +31,11 @@ import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import com.marklogic.client.io.marker.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
-import com.marklogic.client.io.marker.CtsQueryWriteHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * <p>A Source Handle represents XML content as a transform source for reading
@@ -52,7 +45,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class SourceHandle
   extends BaseHandle<InputStream, OutputStreamSender>
-  implements OutputStreamSender, BufferableHandle, ContentHandle<Source>,
+  implements OutputStreamSender, StreamingContentHandle<Source, InputStream>,
     XMLReadHandle, XMLWriteHandle,
     StructureReadHandle, StructureWriteHandle, CtsQueryWriteHandle,
     Closeable
@@ -259,6 +252,29 @@ public class SourceHandle
       throw new MarkLogicIOException(e);
     }
   }
+  @Override
+  public Source toContent(InputStream serialization) {
+    return (serialization == null) ? null :
+            new StreamSource(new InputStreamReader(serialization, StandardCharsets.UTF_8));
+  }
+  @Override
+  public Source bytesToContent(byte[] buffer) {
+    return (buffer == null || buffer.length == 0) ? null :
+            toContent(new ByteArrayInputStream(buffer));
+  }
+  @Override
+  public byte[] contentToBytes(Source content) {
+    if (content == null) return null;
+    try {
+      ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+      makeTransformer().newTransformer().transform(content,
+              new StreamResult(new OutputStreamWriter(buffer, StandardCharsets.UTF_8)));
+      return buffer.toByteArray();
+    } catch (TransformerException e) {
+      throw new MarkLogicIOException("Could not convert Source to byte[] array", e);
+    }
+  }
+
   /**
    * Buffers the transform source and returns the buffer as a string.
    */

@@ -17,6 +17,7 @@ package com.marklogic.client.io;
 
 import java.io.*;
 
+import com.marklogic.client.io.marker.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,14 +27,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.impl.JacksonBaseHandle;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
-import com.marklogic.client.io.marker.CtsQueryWriteHandle;
-import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
 
 /**
  * <p>An adapter for using the streaming capabilities of the Jackson Open Source library.
@@ -45,8 +38,7 @@ import com.marklogic.client.io.marker.StructureWriteHandle;
  */
 public class JacksonParserHandle
   extends JacksonBaseHandle<JsonParser>
-  implements ContentHandle<JsonParser>,
-    OutputStreamSender, BufferableHandle,
+  implements OutputStreamSender, StreamingContentHandle<JsonParser, InputStream>,
     JSONReadHandle, JSONWriteHandle,
     StructureReadHandle, StructureWriteHandle, CtsQueryWriteHandle,
     Closeable
