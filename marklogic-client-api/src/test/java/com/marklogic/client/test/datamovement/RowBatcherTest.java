@@ -440,8 +440,9 @@ public class RowBatcherTest {
                                         return;
                                     }
                                     break;
-                                // TODO: remove rowid
                                 case "rowid":
+                                    System.out.println("has rowid column");
+                                    failed.set(true);
                                     break;
                                 default:
                                     System.out.println("unknown cell "+cellName+" in row "+i+" of batch="+event.getJobBatchNumber()+
@@ -501,9 +502,10 @@ public class RowBatcherTest {
                             ((event.getJobBatchNumber() == 1) ? "\n"+event.getRowsDoc() : "")); */
                     try {
                         BufferedReader reader = new BufferedReader(new StringReader(event.getRowsDoc()));
-                        String[] columns = commaSplitter.split(reader.readLine());
-                        // TODO: CHANGE TO 5 AFTER REMOVING rowid COLUMN
-                        if (columns.length != 6) {
+                        String firstLine = reader.readLine();
+                        // System.out.println(firstLine);
+                        String[] columns = commaSplitter.split(firstLine);
+                        if (columns.length != 5) {
                             System.out.println("unexpected number of columns "+columns.length+
                                     " for batch="+event.getJobBatchNumber()+
                                     " from "+event.getLowerBound()+" through "+event.getUpperBound());
@@ -519,8 +521,10 @@ public class RowBatcherTest {
                             case "field2":
                             case "field3":
                             case "field4":
-                            // TODO: remove rowid
+                                break;
                             case "rowid":
+                                System.out.println("has rowid column");
+                                failed.set(true);
                                 break;
                             default:
                                 System.out.println("unknown column "+colName+" of batch="+event.getJobBatchNumber()+
