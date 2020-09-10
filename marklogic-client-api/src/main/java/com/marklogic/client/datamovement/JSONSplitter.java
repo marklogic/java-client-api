@@ -58,7 +58,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
 
     private JSONSplitter.Visitor<T> visitor;
     private ThreadLocal<Long> count = new ThreadLocal<>();
-    private String inputName;
+    private String splitFilename;
 
     /**
      * Construct a JSONSplitter which splits the JSON file according to the visitor.
@@ -123,19 +123,19 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
      * Takes an InputStream of a JSON file and file name and split it into a steam of DocumentWriteOperation
      * to write to database.
      * @param input is the incoming input stream of a JSON file
-     * @param inputName is the name of input file, including name and extension. It is used to generate URLs for split
-     *                  files.The inputName could either be provided here or in user-defined UriMaker.
+     * @param splitFilename is the name of input file, including name and extension. It is used to generate URLs for split
+     *                  files.The splitFilename could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation to write to database
      * @throws Exception if the input cannot be split
      */
     @Override
-    public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input, String inputName) throws Exception {
+    public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input, String splitFilename) throws Exception {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
 
         JsonParser jsonParser = new JsonFactory().createParser(input);
-        return splitWriteOperations(jsonParser, inputName);
+        return splitWriteOperations(jsonParser, splitFilename);
     }
 
     /**
@@ -159,7 +159,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
      * to write to database.
      * @param input JsonParser created from the JSON file
      * @param splitFilename is the name of input file, including name and extension. It is used to generate URLs for split
-     *                  files.The inputName could either be provided here or in user-defined UriMaker.
+     *                  files.The splitFilename could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation to write to database
      */
     public Stream<DocumentWriteOperation> splitWriteOperations(JsonParser input, String splitFilename) {
@@ -168,7 +168,7 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
         }
         count.set(0L);
 
-        this.inputName = splitFilename;
+        this.splitFilename = splitFilename;
         JSONSplitter.DocumentWriteOperationSpliterator spliterator =
                 new JSONSplitter.DocumentWriteOperationSpliterator<>(this, input);
         return StreamSupport.stream(spliterator, true);
@@ -502,12 +502,12 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
             JSONSplitter splitter = getSplitter();
             if (splitter.getUriMaker() == null) {
                 JSONSplitter.UriMakerImpl uriMaker = new JSONSplitter.UriMakerImpl();
-                uriMaker.setInputName(splitter.inputName);
+                uriMaker.setSplitFilename(splitter.splitFilename);
                 uriMaker.setExtension("json");
                 splitter.setUriMaker(uriMaker);
             } else {
-                if (splitter.inputName != null) {
-                    splitter.getUriMaker().setInputName(splitter.inputName);
+                if (splitter.splitFilename != null) {
+                    splitter.getUriMaker().setSplitFilename(splitter.splitFilename);
                 }
             }
 

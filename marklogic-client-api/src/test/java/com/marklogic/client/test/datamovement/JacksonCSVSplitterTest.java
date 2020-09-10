@@ -156,7 +156,7 @@ public class JacksonCSVSplitterTest {
         JacksonCSVSplitter splitter = new JacksonCSVSplitter();
         JacksonCSVSplitter.UriMaker uriMaker = new TestUriMaker();
         uriMaker.setInputAfter("/Directory/");
-        uriMaker.setInputName("NewCsv");
+        uriMaker.setSplitFilename("NewCsv");
         splitter.setUriMaker(uriMaker);
         Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(new FileInputStream(csvFile));
         assertNotNull(contentStream);
@@ -199,8 +199,8 @@ public class JacksonCSVSplitterTest {
                 uri.append(getInputAfter());
             }
 
-            if (getInputName() != null && getInputName().length() != 0) {
-                uri.append(getInputName());
+            if (getSplitFilename() != null && getSplitFilename().length() != 0) {
+                uri.append(getSplitFilename());
             }
 
             uri.append(num).append("_").append(randomUUIDForTest).append(".json");
@@ -218,12 +218,12 @@ public class JacksonCSVSplitterTest {
         }
 
         @Override
-        public String getInputName() {
+        public String getSplitFilename() {
             return this.inputName;
         }
 
         @Override
-        public void setInputName(String name) {
+        public void setSplitFilename(String name) {
             this.inputName = name;
         }
     }

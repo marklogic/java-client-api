@@ -83,7 +83,7 @@ public class UnarySplitterTest {
         FileInputStream fileInputStream = new FileInputStream(new File(jsonObjectFile));
         UnarySplitter.UriMaker uriMaker = new UriMakerTest();
         uriMaker.setInputAfter("/FilePath/");
-        uriMaker.setInputName("NewTestJson.json");
+        uriMaker.setSplitFilename("NewTestJson.json");
         splitter.setUriMaker(uriMaker);
         Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream);
         assertNotNull(contentStream);
@@ -141,12 +141,12 @@ public class UnarySplitterTest {
         }
 
         @Override
-        public String getInputName() {
+        public String getSplitFilename() {
             return this.inputName;
         }
 
         @Override
-        public void setInputName(String name) {
+        public void setSplitFilename(String name) {
             this.inputName = name;
         }
     }

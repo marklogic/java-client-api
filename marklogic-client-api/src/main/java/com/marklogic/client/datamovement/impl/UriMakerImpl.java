@@ -39,11 +39,11 @@ public class UriMakerImpl<T extends AbstractWriteHandle>  implements Splitter.Ur
         inputAfter = base; // can be null, ""
     }
 
-    public String getInputName() {
+    public String getSplitFilename() {
         return inputName;
     }
 
-    public void setInputName(String name) {
+    public void setSplitFilename(String name) {
         inputName = name; //can be null, ""
         setExtensionAndName();
     }
@@ -61,15 +61,15 @@ public class UriMakerImpl<T extends AbstractWriteHandle>  implements Splitter.Ur
     }
 
     public void setExtensionAndName() {
-        if (getInputName() == null || getInputName().length() == 0) {
+        if (getSplitFilename() == null || getSplitFilename().length() == 0) {
             return;
         }
 
         Pattern extensionRegex = Pattern.compile("^(.*)\\.([^.]*)$");
-        Matcher matcher = extensionRegex.matcher(getInputName());
+        Matcher matcher = extensionRegex.matcher(getSplitFilename());
         boolean found = matcher.find();
         if (!found) {
-            this.name = getInputName();
+            this.name = getSplitFilename();
             this.extension = null;
         } else {
             this.name = matcher.group(1);
@@ -85,7 +85,7 @@ public class UriMakerImpl<T extends AbstractWriteHandle>  implements Splitter.Ur
             uri.append(getInputAfter());
         }
 
-        if (getInputName() != null && getInputName().length() != 0) {
+        if (getSplitFilename() != null && getSplitFilename().length() != 0) {
             uri.append(getName());
         }
 

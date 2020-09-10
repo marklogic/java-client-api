@@ -69,16 +69,16 @@ public interface Splitter<T extends AbstractWriteHandle> {
         void setInputAfter(String base);
 
         /**
-         * Get inputName of the UriMaker, which should include name and extension.
-         * @return inputName of the UriMaker
+         * Get splitFilename of the UriMaker, which should include name and extension.
+         * @return splitFilename of the UriMaker
          */
-        String getInputName();
+        String getSplitFilename();
 
         /**
-         * Set inputName to the UriMaker
-         * @param name inputName of UriMaker, which should include both name and extension.
+         * Set splitFilename to the UriMaker
+         * @param name splitFilename of UriMaker, which should include both name and extension.
          */
-        void setInputName(String name);
+        void setSplitFilename(String name);
     }
 
     /**
