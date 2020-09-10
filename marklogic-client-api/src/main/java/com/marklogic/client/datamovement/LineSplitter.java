@@ -31,7 +31,7 @@ import java.util.stream.Stream;
  */
 public class LineSplitter implements Splitter<StringHandle> {
     private Format format = Format.JSON;
-    private static ThreadLocal<Long> count = new ThreadLocal<>();
+    private long count = 0;
 
     /**
      * Returns the document format set to splitter.
@@ -60,7 +60,7 @@ public class LineSplitter implements Splitter<StringHandle> {
      */
     @Override
     public long getCount() {
-        return count.get();
+        return count;
     }
 
     /**
@@ -105,7 +105,7 @@ public class LineSplitter implements Splitter<StringHandle> {
             throw new IllegalArgumentException("InputStream cannot be null.");
         }
 
-        count.set(0L);
+        count = 0;
         String extension = getFormat().getDefaultExtension();
         if (getUriMaker() == null) {
             LineSplitter.UriMakerImpl uriMaker = new LineSplitter.UriMakerImpl();
@@ -125,9 +125,9 @@ public class LineSplitter implements Splitter<StringHandle> {
                 .lines()
                 .filter(line -> line.length() != 0)
                 .map(line -> {
-                    count.set(count.get() + 1);
+                    count = count + 1;
                     StringHandle handle = new StringHandle(line);
-                    String uri = getUriMaker().makeUri(count.get(), handle);
+                    String uri = getUriMaker().makeUri(count, handle);
                     return new DocumentWriteOperationImpl(
                             DocumentWriteOperation.OperationType.DOCUMENT_WRITE,
                             uri,
@@ -167,12 +167,12 @@ public class LineSplitter implements Splitter<StringHandle> {
             throw new IllegalArgumentException("Reader cannot be null.");
         }
 
-        count.set(0L);
+        count = 0;
         return new BufferedReader(input)
                 .lines()
                 .filter(line -> line.length() != 0)
                 .map(line -> {
-                    count.set(count.get() + 1);
+                    count = count + 1;
                     return new StringHandle(line).withFormat(getFormat());
                 });
     }

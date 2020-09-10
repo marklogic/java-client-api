@@ -44,7 +44,7 @@ public class ZipSplitter implements Splitter<BytesHandle> {
     private Predicate<ZipEntry> entryFilter;
     private Function<String, String> uriTransformer;
     private String splitFilename;
-    private static ThreadLocal<Long> count = new ThreadLocal<>();
+    private long count = 0;
     private static Pattern extensionRegex = Pattern.compile("^(.+)\\.([^.]+)$");
 
     /**
@@ -108,7 +108,7 @@ public class ZipSplitter implements Splitter<BytesHandle> {
 
     @Override
     public long getCount() {
-        return this.count.get();
+        return this.count;
     }
 
     /**
@@ -143,7 +143,7 @@ public class ZipSplitter implements Splitter<BytesHandle> {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
-        count.set(0L);
+        count = 0;
 
         BytesHandleSpliterator bytesHandleSpliterator = new BytesHandleSpliterator(this);
         bytesHandleSpliterator.setZipStream(input);
@@ -214,7 +214,7 @@ public class ZipSplitter implements Splitter<BytesHandle> {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
-        count.set(0L);
+        count = 0;
 
         DocumentWriteOperationSpliterator documentWriteOperationSpliterator =
                 new DocumentWriteOperationSpliterator(this);
@@ -364,7 +364,7 @@ public class ZipSplitter implements Splitter<BytesHandle> {
                     return false;
                 }
 
-                splitter.count.set(splitter.getCount() + 1);
+                splitter.count = splitter.getCount() + 1;
                 BytesHandle nextBytesHandle = readEntry(nextEntry);
                 action.accept(nextBytesHandle);
 
@@ -394,7 +394,7 @@ public class ZipSplitter implements Splitter<BytesHandle> {
                     return false;
                 }
 
-                splitter.count.set(splitter.getCount() + 1);
+                splitter.count = splitter.getCount() + 1;
                 BytesHandle nextBytesHandle = readEntry(nextEntry);
                 String name = nextEntry.getZipEntry().getName();
                 String uri = name;
@@ -409,7 +409,7 @@ public class ZipSplitter implements Splitter<BytesHandle> {
                     if (splitter.splitFilename != null) {
                         splitter.getUriMaker().setSplitFilename(splitter.splitFilename);
                     }
-                    uri = splitter.getUriMaker().makeUri(splitter.count.get(), name, nextBytesHandle);
+                    uri = splitter.getUriMaker().makeUri(splitter.getCount(), name, nextBytesHandle);
                 } else {
                     uri = splitter.uriTransformer.apply(name);
                 }
