@@ -95,7 +95,7 @@ public class LineSplitter implements Splitter<StringHandle> {
      * Provide GZIPInputStream to the splitter when splitting gzip files.
      * @param input is the incoming input stream.
      * @param splitFilename is the name of the input file, including name and extension. It is used to generate URLs for
-     *                  split files. The inputName could either be provided here or in user-defined UriMaker.
+     *                  split files. The splitFilename could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation.
      * @throws Exception if the input cannot be split
      */
@@ -109,12 +109,12 @@ public class LineSplitter implements Splitter<StringHandle> {
         String extension = getFormat().getDefaultExtension();
         if (getUriMaker() == null) {
             LineSplitter.UriMakerImpl uriMaker = new LineSplitter.UriMakerImpl();
-            uriMaker.setInputName(splitFilename);
+            uriMaker.setSplitFilename(splitFilename);
             uriMaker.setExtension(extension);
             setUriMaker(uriMaker);
         } else {
             if (splitFilename != null) {
-                getUriMaker().setInputName(splitFilename);
+                getUriMaker().setSplitFilename(splitFilename);
             }
             if (getUriMaker() instanceof LineSplitter.UriMakerImpl) {
                 ((LineSplitter.UriMakerImpl)getUriMaker()).setExtension(extension);

@@ -98,7 +98,7 @@ public class XMLSplitterTest {
         XMLSplitter splitter = new XMLSplitter(visitor);
         XMLSplitter.UriMaker uriMaker = new UriMakerTest();
         uriMaker.setInputAfter("/SystemPath/");
-        uriMaker.setInputName("NewPeople");
+        uriMaker.setSplitFilename("NewPeople");
         splitter.setUriMaker(uriMaker);
         Stream<DocumentWriteOperation> contentStream = splitter.splitWriteOperations(fileInputStream);
         assertNotNull(contentStream);
@@ -132,8 +132,8 @@ public class XMLSplitterTest {
                 uri.append(getInputAfter());
             }
 
-            if (getInputName() != null && getInputName().length() != 0) {
-                uri.append(getInputName());
+            if (getSplitFilename() != null && getSplitFilename().length() != 0) {
+                uri.append(getSplitFilename());
             }
 
             uri.append(num).append("_").append(randomUUIDForTest).append(".xml");
@@ -151,12 +151,12 @@ public class XMLSplitterTest {
         }
 
         @Override
-        public String getInputName() {
+        public String getSplitFilename() {
             return this.inputName;
         }
 
         @Override
-        public void setInputName(String name) {
+        public void setSplitFilename(String name) {
             this.inputName = name;
         }
     }

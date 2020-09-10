@@ -64,7 +64,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
 
     private XMLSplitter.Visitor<T> visitor;
     private ThreadLocal<Long> count = new ThreadLocal<>();
-    private String inputName;
+    private String splitFilename;
 
     /**
      * Construct an XMLSplitter which split the XML file according to the visitor.
@@ -124,19 +124,19 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
     /**
      * Takes an input stream of an XML file and input file name, split it into a steam of DocumentWriteOperation.
      * @param input is the incoming input stream.
-     * @param inputName is the name of input file, including name and extension. It is used to generate URLs for split
-     *                  files.The inputName could either be provided here or in user-defined UriMaker.
+     * @param splitFilename is the name of input file, including name and extension. It is used to generate URLs for split
+     *                  files.The splitFilename could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation to write to database
      * @throws Exception if the input cannot be split
      */
     @Override
-    public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input, String inputName) throws Exception {
+    public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input, String splitFilename) throws Exception {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
         }
 
         XMLStreamReader reader = XMLInputFactory.newFactory().createXMLStreamReader(input);
-        return splitWriteOperations(reader, inputName);
+        return splitWriteOperations(reader, splitFilename);
     }
 
     @Override
@@ -167,7 +167,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
      * to write to database.
      * @param input an XMLStreamReader of the XML file
      * @param splitFilename is the name of the input file, including name and extension. It is used to generate URLs for
-     *                  split files.The inputName could either be provided here or in user-defined UriMaker.
+     *                  split files.The splitFilename could either be provided here or in user-defined UriMaker.
      * @return a stream of DocumentWriteOperation to write to database
      */
     public Stream<DocumentWriteOperation> splitWriteOperations(XMLStreamReader input, String splitFilename) {
@@ -177,7 +177,7 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
         }
         count.set(0L);
 
-        this.inputName = splitFilename;
+        this.splitFilename = splitFilename;
         XMLSplitter.DocumentWriteOperationSpliterator<T> documentWriteOperationSpliterator =
                 new XMLSplitter.DocumentWriteOperationSpliterator<>(this, input);
 
@@ -501,12 +501,12 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
             XMLSplitter splitter = getSplitter();
             if (splitter.getUriMaker() == null) {
                 XMLSplitter.UriMakerImpl uriMaker = new XMLSplitter.UriMakerImpl();
-                uriMaker.setInputName(splitter.inputName);
+                uriMaker.setSplitFilename(splitter.splitFilename);
                 uriMaker.setExtension("xml");
                 splitter.setUriMaker(uriMaker);
             } else {
-                if (splitter.inputName != null) {
-                    splitter.getUriMaker().setInputName(splitter.inputName);
+                if (splitter.splitFilename != null) {
+                    splitter.getUriMaker().setSplitFilename(splitter.splitFilename);
                 }
             }
 

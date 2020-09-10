@@ -75,7 +75,7 @@ public class ZipSplitterTest {
         ZipSplitter splitter = new ZipSplitter();
         ZipSplitter.UriMaker uriMaker = new UriMakerTest();
         uriMaker.setInputAfter("/sytemPath/");
-        uriMaker.setInputName("NewZipFile");
+        uriMaker.setSplitFilename("NewZipFile");
         splitter.setUriMaker(uriMaker);
         Stream<DocumentWriteOperation> contentStream =
                 splitter.splitWriteOperations(new ZipInputStream(new FileInputStream(zipFile)));
@@ -114,12 +114,12 @@ public class ZipSplitterTest {
         }
 
         @Override
-        public String getInputName() {
+        public String getSplitFilename() {
             return this.inputName;
         }
 
         @Override
-        public void setInputName(String name) {
+        public void setSplitFilename(String name) {
             this.inputName = name;
         }
 
@@ -137,8 +137,8 @@ public class ZipSplitterTest {
                 uri.append(getInputAfter());
             }
 
-            if (getInputName() != null && getInputName().length() != 0) {
-                uri.append(getInputName());
+            if (getSplitFilename() != null && getSplitFilename().length() != 0) {
+                uri.append(getSplitFilename());
             }
 
             uri.append("/").append(name);
