@@ -23,7 +23,7 @@ import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 
 /**
- * Splitter splits an input stream into a Java stream of write handles.
+ * Splitter splits an input stream into a Java stream of write handles. It is not thread-safe.
  */
 public interface Splitter<T extends AbstractWriteHandle> {
     /**
