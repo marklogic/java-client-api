@@ -213,6 +213,7 @@ public interface IOEndpoint {
         SessionState getSessionState();
         /**
          * Sets an identifier for an endpoint to use when accessing a session cache on the server.
+         * @param sessionState the identifier for the server cache of the endpoint
          * @return the callContext
          */
         CallContext withSessionState(SessionState sessionState);

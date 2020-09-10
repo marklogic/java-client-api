@@ -33,9 +33,9 @@ public interface InputOutputCaller<I,O> extends IOEndpoint {
      * @param client  the database client to use for making calls
      * @param apiDecl  the JSON api declaration specifying how to call the endpoint
      * @param inputHandle  the handle for the representation of the input content (such as StringHandle)
-     * @param outputHandle
+     * @param outputHandle  the handle for the representation of the output content (such as BytesHandle)
      * @param <I>  the content representation (such as String)
-     * @param <O>
+     * @param <O>  the output content representation (such as byte[])
      * @return  the InputOutputCaller instance for calling the endpoint.
      */
     static <I,O> InputOutputCaller<I,O> on(
