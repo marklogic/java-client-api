@@ -78,6 +78,7 @@ public interface InputEndpoint extends InputCaller<InputStream> {
      * Provides an interface for completing a unit of work
      * by repeated calls to the input endpoint.
      */
+	@Deprecated
 	interface BulkInputCaller extends InputCaller.BulkInputCaller<InputStream> {
 	}
 }

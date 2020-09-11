@@ -26,6 +26,10 @@ import java.util.function.Consumer;
 /**
  * Provides an interface for calling an endpoint that takes input data structures and
  * returns output data structures.
+ *
+ * @param <I>  The representation for document input
+ * @param <O> The representation for document output
+ * @see <a href="https://github.com/marklogic/java-client-api/wiki/Data-Services-for-IO#input-output-endpoints">Input-output endpoints</a>
  */
 public interface InputOutputCaller<I,O> extends IOEndpoint {
     /**
@@ -92,6 +96,10 @@ public interface InputOutputCaller<I,O> extends IOEndpoint {
     /**
      * Provides an interface for completing a unit of work
      * by repeated calls to the input-output endpoint.
+     *
+     * @param <I>  The representation for document input
+     * @param <O> The representation for document output
+     * @see <a href="https://github.com/marklogic/java-client-api/wiki/Bulk-Data-Services">Bulk Data Services</a>
      */
     interface BulkInputOutputCaller<I,O> extends BulkIOEndpointCaller {
         /**

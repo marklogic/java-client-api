@@ -22,6 +22,8 @@ import com.marklogic.client.io.marker.JSONWriteHandle;
 /**
  * Provides an interface for calling an endpoint that doesn't take
  * input data structures or return output data structures.
+ *
+ * @see <a href="https://github.com/marklogic/java-client-api/wiki/Data-Services-for-IO#exec-endpoints">Exec endpoints</a>
  */
 public interface ExecCaller extends IOEndpoint {
     /**
@@ -80,6 +82,8 @@ public interface ExecCaller extends IOEndpoint {
      * data structure or return output data structures.
      *
      * Call awaitCompletion() to start making calls.
+     *
+     * @see <a href="https://github.com/marklogic/java-client-api/wiki/Bulk-Data-Services">Bulk Data Services</a>
      */
     interface BulkExecCaller extends BulkIOEndpointCaller {
         void setErrorListener(ErrorListener errorListener);

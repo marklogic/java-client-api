@@ -96,6 +96,7 @@ import java.util.concurrent.TimeUnit;
  * <p>Specify a failure listener to handle any errors during retrieval.</p>
  *
  * @param <T> the Java class that stores a batch of retrieved roles
+ * @see <a href="https://github.com/marklogic/java-client-api/wiki/Row-Batcher">Exporting a TDE View</a>
  */
 public interface RowBatcher<T> extends Batcher {
     /**

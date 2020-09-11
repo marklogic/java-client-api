@@ -23,6 +23,9 @@ import com.marklogic.client.io.marker.JSONWriteHandle;
 
 /**
  * Provides an interface for calling an endpoint that takes input data structures.
+ *
+ * @param <I>  The representation for document input
+ * @see <a href="https://github.com/marklogic/java-client-api/wiki/Data-Services-for-IO#input-endpoints">Input endpoints</a>
  */
 public interface InputCaller<I> extends IOEndpoint {
 	/**
@@ -79,9 +82,12 @@ public interface InputCaller<I> extends IOEndpoint {
 	BulkInputCaller<I> bulkCaller(CallContext[] callContexts, int threadCount);
 
 	/**
-     * Provides an interface for completing a unit of work
-     * by repeated calls to the input endpoint.
-     */
+	 * Provides an interface for completing a unit of work
+	 * by repeated calls to the input endpoint.
+	 *
+	 * @param <I>  The representation for document input
+	 * @see <a href="https://github.com/marklogic/java-client-api/wiki/Bulk-Data-Services">Bulk Data Services</a>
+	 */
 	interface BulkInputCaller<I> extends BulkIOEndpointCaller {
 		/**
 		 * Accepts an input item for the endpoint.  Items are queued
