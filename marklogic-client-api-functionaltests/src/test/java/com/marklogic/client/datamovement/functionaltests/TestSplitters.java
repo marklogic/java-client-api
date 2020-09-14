@@ -797,7 +797,7 @@ public class TestSplitters  extends BasicJavaClientREST {
         JacksonCSVSplitter splitter = new JacksonCSVSplitter();
         JacksonCSVSplitter.UriMaker uriMaker = new QADocUriFromHandle();
         uriMaker.setInputAfter("/QAFolder/");
-        uriMaker.setInputName("SacMetroHomeSale");
+        uriMaker.setSplitFilename("SacMetroHomeSale");
         splitter.setUriMaker(uriMaker);
         Stream<DocumentWriteOperation> contentStream1 = splitter.splitWriteOperations(fileInputStream);
 
@@ -844,8 +844,8 @@ class QADocUriFromHandle implements JacksonCSVSplitter.UriMaker {
 
         if (this.getInputAfter() != null &&  this.getInputAfter().length() > 0)
             docUri.append(this.getInputAfter());
-        if (this.getInputName() != null &&  this.getInputName().length() > 0)
-            docUri.append(this.getInputName());
+        if (this.getSplitFilename() != null &&  this.getSplitFilename().length() > 0)
+            docUri.append(this.getSplitFilename());
 
         // Append latitude and longitude with uriDirectory and uriBaseName
         //System.out.println("Handle is " + handle.toString());
@@ -871,12 +871,12 @@ class QADocUriFromHandle implements JacksonCSVSplitter.UriMaker {
     }
 
     @Override
-    public String getInputName() {
+    public String getSplitFilename() {
         return uriBaseName;
     }
 
     @Override
-    public void setInputName(String name) {
+    public void setSplitFilename(String name) {
         uriBaseName = name;
     }
 }
