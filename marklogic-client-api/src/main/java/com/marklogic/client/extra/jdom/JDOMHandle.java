@@ -180,6 +180,11 @@ public class JDOMHandle
     return this;
   }
 
+  @Override
+  public Class<Document> getContentClass() {
+    return Document.class;
+  }
+
   /**
    * Restricts the format to XML.
    */

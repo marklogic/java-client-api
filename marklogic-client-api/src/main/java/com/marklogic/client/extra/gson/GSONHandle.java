@@ -127,6 +127,11 @@ public class GSONHandle
     return this;
   }
 
+  @Override
+  public Class<JsonElement> getContentClass() {
+    return JsonElement.class;
+  }
+
   /**
    * Restricts the format to JSON.
    */
