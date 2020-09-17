@@ -419,8 +419,8 @@ public class RowBatcherFuncTest extends BasicJavaClientREST {
             if (resDoc == null)
                 failedBuf.append("No rows returned in batch from " + e.getLowerBound() + "to" + e.getUpperBound());
             else {
-                /*System.out.println("resDoc.get(0) : " + resDoc.get(0).get("myCity.city").asText());
-                System.out.println("resDoc.get(1) : " + resDoc.get(1).get("myCity.city").asText());*/
+                System.out.println("resDoc.get(0) : " + resDoc.get(0).get("myCity.city").asText());
+                System.out.println("resDoc.get(1) : " + resDoc.get(1).get("myCity.city").asText());
                 System.out.println("Thread id : " + Thread.currentThread().getId() + " is named as " + Thread.currentThread().getName());
                 resultCity.add(resDoc.get(0).get("myCity.city").asText());
                 resultCity.add(resDoc.get(1).get("myCity.city").asText());
