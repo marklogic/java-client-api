@@ -16,8 +16,11 @@
 package com.marklogic.client.datamovement;
 
 import com.marklogic.client.expression.PlanBuilder;
+import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.row.RowManager;
+import com.marklogic.client.type.PlanCondition;
+import com.marklogic.client.type.PlanExprColSeq;
 
 import java.util.concurrent.TimeUnit;
 
@@ -56,20 +59,25 @@ import java.util.concurrent.TimeUnit;
  * {@link RowManager#newPlanBuilder() newPlanBuilder()}
  * method provides a factory for constructing a {@link PlanBuilder}.</p>
  *
- * <p>Use the RowManager's {@link PlanBuilder} to build a plan for retrieving the rows.
- * Pass the built plan to the
- * {@link RowBatcher#withBatchView(PlanBuilder.ModifyPlan) withBatchView()}
- * method to initialize the RowBatcher with the plan. The plan must start with a view
- * and should get all rows from the initial view without filtering, limiting, grouping,
- * or sorting the rows of the view. The plan may filter, limit,  group over, or sort
- * other views prior to joining another view with the initial view. The plan may join
- * documents with the initial view. The plan may also project columns from the initial
- * view or create expression columns with a select() operation. </p>
+ * <p>Use the RowManager's {@link PlanBuilder} to build a plan for retrieving the rows from a view.
+ *The plan must have the following characteristics:</p>
+ * <ul>
+ * <li>Must start with a {@link PlanBuilder#fromView(String, String) fromView()} operation that
+ * specifies the view with the rows to be exported.</li>
+ * <li>May filter the exported rows with a
+ * {@link ModifyPlan#where(PlanCondition) where()} operation
+ * prior to any joins.</li>
+ * <li>May project columns from the exported rows with a
+ * {@link ModifyPlan#select(PlanExprColSeq) select()} operation
+ * prior to any joins.</li>
+ * <li>Must not limit, group, or sort over the exported view (either before or after any joins).</li>
+ * <li>May join other views with the exported view, applying any operation to a joined view prior to the join.</li>
+ * <li>May join documents or uris with the exported view.</li>
+ * <li>Must not specify parameter placeholders.</li>
+ * </ul>
  *
- * <p>To export different sets of rows for different purposes, construct a view for each
- * export in the TDE. The export can get the data from the documents instead of from the
- * index by joining documents in the plan. When joining documents, the view must have one
- * row per document but may have a single column.</p>
+ * <p>Pass the built plan to the {@link RowBatcher#withBatchView(PlanBuilder.ModifyPlan) withBatchView()}
+ * method to initialize the RowBatcher with the plan.</p>
  *
  * <p>Specify the number of threads for retrieving rows with the
  * {@link RowBatcher#withThreadCount(int) withThreadCount()}
