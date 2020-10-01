@@ -109,6 +109,9 @@ public class InputStreamHandle
    */
   @Override
   public InputStream get() {
+    if (contentBytes != null) {
+      return new ByteArrayInputStream(contentBytes);
+    }
     return content;
   }
   /**
@@ -177,6 +180,7 @@ public class InputStreamHandle
   public byte[] toBuffer() {
     if (contentBytes == null && content != null) {
       contentBytes = contentToBytes(get());
+      content = null;
     }
     return contentBytes;
   }
@@ -231,17 +235,21 @@ public class InputStreamHandle
   }
   @Override
   protected InputStream sendContent() {
-    if (content == null) {
+    InputStream sendableContent = get();
+    if (sendableContent == null) {
       throw new IllegalStateException("No stream to write");
     }
 
-    return content;
+    return sendableContent;
   }
 
   /** Either call close() or get().close() when finished with this handle to close the underlying InputStream.
    */
   @Override
   public void close() {
+    if (contentBytes != null) {
+      contentBytes = null;
+    }
     if (content != null) {
       try {
         content.close();
@@ -249,7 +257,7 @@ public class InputStreamHandle
         logger.error("Failed to close underlying InputStream", e);
         throw new MarkLogicIOException(e);
       } finally {
-        set(null, null);
+        content = null;
       }
     }
   }
