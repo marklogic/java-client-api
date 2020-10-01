@@ -55,10 +55,10 @@ public class ErrorListenerInputOutputEndpointTest {
 
 
         String              endpointState = "{\"next\":1}";
-        String              endpointConstants      = "{\"max\":4,\"collection\":\"bulkInputOutputTest_1\"}";
+        String              endpointConstants      = "{\"errorOnMax\":false, \"max\":4,\"collection\":\"bulkInputOutputTest_1\"}";
 
         String              endpointState1 = "{\"next\":1}";
-        String              endpointConstants1      = "{\"max\":4,\"collection\":\"bulkInputOutputTest_2\"}";
+        String              endpointConstants1      = "{\"errorOnMax\":false, \"max\":4,\"collection\":\"bulkInputOutputTest_2\"}";
         Set<String>         input          = IOTestUtil.setOf(
                 "{\"docNum\":1, \"docName\":\"doc1\"}",
                 "{\"docNum\":2, \"docName\":\"doc2\"}",
@@ -113,10 +113,10 @@ public class ErrorListenerInputOutputEndpointTest {
 
 
         String              endpointState = "{\"next\":1}";
-        String              endpointConstants      = "{\"max\":4,\"collection\":\"bulkInputOutputTest_1\"}";
+        String              endpointConstants      = "{\"errorOnMax\":false, \"max\":4,\"collection\":\"bulkInputOutputTest_1\"}";
 
         String              endpointState1 = "{\"next\":1}";
-        String              endpointConstants1      = "{\"max\":4,\"collection\":\"bulkInputOutputTest_2\"}";
+        String              endpointConstants1      = "{\"errorOnMax\":false, \"max\":4,\"collection\":\"bulkInputOutputTest_2\"}";
         Set<String>         input          = IOTestUtil.setOf(
                 "{\"docNum\":1, \"docName\":\"doc1\"}",
                 "{\"docNum\":2, \"docName\":\"doc2\"}",
@@ -167,10 +167,10 @@ public class ErrorListenerInputOutputEndpointTest {
 
 
         String              endpointState = "{\"next\":1}";
-        String              endpointConstants      = "{\"max\":4,\"collection\":\"bulkInputOutputTest_1\"}";
+        String              endpointConstants      = "{\"errorOnMax\":true, \"max\":4,\"collection\":\"bulkInputOutputTest_1\"}";
 
         String              endpointState1 = "{\"next\":1}";
-        String              endpointConstants1      = "{\"max\":4,\"collection\":\"bulkInputOutputTest_2\"}";
+        String              endpointConstants1      = "{\"errorOnMax\":true, \"max\":4,\"collection\":\"bulkInputOutputTest_2\"}";
         Set<String>         input          = IOTestUtil.setOf(
                 "{\"docNum\":1, \"docName\":\"doc1\"}",
                 "{\"docNum\":2, \"docName\":\"doc2\"}",

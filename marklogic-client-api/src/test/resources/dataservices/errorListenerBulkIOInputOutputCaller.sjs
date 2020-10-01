@@ -18,8 +18,8 @@ const inputs =
                                   [ {UNKNOWN: input} ];
 
 //console.log(work.collection + ": state.next = " + state.next);
-var ranInt = Math.floor(Math.random() * Math.floor(2));
-if (ranInt == 1 && work.collection == "bulkInputOutputTest_1") {
+var ranInt =  Math.floor(Math.random() * Math.floor(2));
+if ((ranInt == 1 && work.collection == "bulkInputOutputTest_1") || (work.errorOnMax === true && state.next > work.max)) {
     //console.log(work.collection + ': ' + "state.next = " + state.next + ", ranInt = " + ranInt);
     fn.error(xs.QName("ERROR"), "Exception");
 }
