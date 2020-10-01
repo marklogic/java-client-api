@@ -311,8 +311,8 @@ abstract class IOEndpointImpl<I,O> implements IOEndpoint {
                 case INTERRUPTED:
                 case COMPLETED:
                     throw new IllegalStateException(
-                            "cannot accept more input as current phase is  " + getPhase().name()
-                    );
+                        "can only accept input when initializing or running and not when input is "+
+                        getPhase().name().toLowerCase());
                 default:
                     throw new MarkLogicInternalException(
                             "unexpected state for " + callContext.getEndpoint().getEndpointPath() + " during loop: " + getPhase().name());

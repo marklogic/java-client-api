@@ -151,9 +151,10 @@ public class OutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Outp
             if (getOutputListener() == null)
                 throw new IllegalStateException("Output consumer is null");
 
-            if(getPhase() != WorkPhase.INITIALIZING) {
+            if (getPhase() != WorkPhase.INITIALIZING) {
                 throw new IllegalStateException(
-                        "Cannot process output since current phase is  " + getPhase().name());
+                        "Can only await completion when starting output and not while output is "+
+                        getPhase().name().toLowerCase());
             }
 
             setPhase(WorkPhase.RUNNING);

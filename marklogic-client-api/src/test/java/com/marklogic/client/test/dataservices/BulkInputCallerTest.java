@@ -125,7 +125,9 @@ public class BulkInputCallerTest {
         loader.interrupt();
 
         expectedException.expect(IllegalStateException.class);
-        expectedException.expect(new ThrowableMessageMatcher(new StringContains("cannot accept more input as current phase is  INTERRUPTING")));
+        expectedException.expect(new ThrowableMessageMatcher(new StringContains(
+                "can only accept input when initializing or running and not when input is interrupting"
+        )));
         input2.forEach(loader::accept);
     }
 
