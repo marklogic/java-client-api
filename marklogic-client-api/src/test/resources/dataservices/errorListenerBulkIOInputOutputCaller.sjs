@@ -6,11 +6,13 @@ var input;         // jsonDocument*
 const inputCount = fn.count(input);
 
 const work = fn.head(xdmp.fromJSON(endpointConstants));
-
 const state = fn.head(xdmp.fromJSON(endpointState));
-state.next = state.next + inputCount;
 
-state.workMax = work.max;
+const errorMin = work.errorMin;
+const errorMax = work.errorMax;
+const inErrorRange = (0 < errorMin && 0 < errorMax && errorMin <= state.next && state.next < errorMax);
+
+state.next = state.next + inputCount;
 
 const inputs =
     (input instanceof Sequence) ? input.toArray().map(item => fn.head(xdmp.fromJSON(item))) :
@@ -18,8 +20,8 @@ const inputs =
                                   [ {UNKNOWN: input} ];
 
 //console.log(work.collection + ": state.next = " + state.next);
-var ranInt =  Math.floor(Math.random() * Math.floor(2));
-if ((ranInt == 1 && work.collection == "bulkInputOutputTest_1") || (work.errorOnMax === true && state.next > work.max)) {
+var ranInt = inErrorRange ? 1 : Math.floor(Math.random() * Math.floor(2));
+if (ranInt == 1 && work.collection == "bulkInputOutputTest_1") {
     //console.log(work.collection + ': ' + "state.next = " + state.next + ", ranInt = " + ranInt);
     fn.error(xs.QName("ERROR"), "Exception");
 }
