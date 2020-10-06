@@ -32,12 +32,19 @@ implemented by an endpoint on the server.
 
 ### What's New in Java Client API 5
 
-*  Upgrade to OkHttp 4.4.0 release.
-*  Splitters for CSV records, for entries in a ZipInputStream, and for line-delimited JSON or XML
-for streaming to WriteBatcher.
-*  Support for Bulk IO Data Services to make it easy to implement connectors for dataflow
+As of 5.3, the Java API was compiled with Java 8 and tested on Java 8 through 11.
+
+Features:
+
+*  Splitters for CSV records, for entries in a ZipInputStream, for line-delimited JSON or XML
+records, and for large JSON or XML files for streaming to WriteBatcher.
+*  Support for RowBatcher to make it easy to export rows and documents for a view as modified 
+by a plan - see https://github.com/marklogic/java-client-api/wiki/Row-Batcher for more 
+detail.
+*  Support for Concurrent Bulk IO Data Services to make it easy to implement connectors for dataflow
 frameworks - see https://github.com/marklogic/java-client-api/wiki/Bulk-Data-Services for more 
 detail.
+*  Upgrade of dependencies including OkHttp 4.7.2
 
 ### What's New in Java Client API 4
 
@@ -83,10 +90,10 @@ And add this repository to your pom.xml repositories section:
 For gradle projects, include the following:
 
     dependencies {
-        compile group: 'com.marklogic', name: 'marklogic-client-api', version: '5.2.0'
+        compile group: 'com.marklogic', name: 'marklogic-client-api', version: '5.3.0'
     }
 
-Use gradle 1.7+ and add this to your build.gradle repositories section:
+Use gradle 4.x+ and add this to your build.gradle repositories section:
 
     jcenter()
 
@@ -112,14 +119,14 @@ https://developer.marklogic.com/free-developer
 
 To obtain verified downloads signed with MarkLogic's PGP key, use maven tools or directly download
 the .jar and .asc files from
-[maven central](http://repo1.maven.org/maven2/com/marklogic/marklogic-client-api/5.2.0/).  MarkLogic's
+[maven central](https://repo1.maven.org/maven2/com/marklogic/marklogic-client-api/5.3.0/).  MarkLogic's
 pgp key ID is 48D4B86E and it is available from pgp.mit.edu by installing gnupg and running the command:
 
     $ gpg --keyserver pgp.mit.edu --recv-key 48D4B86E
 
 Files can be verified with the command:
 
-    $ gpg marklogic-client-api-5.2.0.jar.asc
+    $ gpg marklogic-client-api-5.3.0.jar.asc
 
 
 ### Building and Contributing
