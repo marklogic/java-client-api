@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## 5.3.0
+#### New Functionality
+- RowBatcher - bulk export of all rows or documents from a view (internal Jira issue)
+- Refactored and Concurrent Bulk IO - concurrent calls to Data Services (internal Jira issue)
+- #1197, #1223 - Added PathSplitter, JSONSplitter complementing existing splitters
+- [#1239](https://github.com/marklogic/java-client-api/issues/1239) - Full outer join in Optic
+- [#1248](https://github.com/marklogic/java-client-api/issues/1248) - Multi-valued equality expressions in Optic builder
+
+#### Improvements and Bug Fixes
+- [#981](https://github.com/marklogic/java-client-api/issues/981) - DOMWriter doesn't serialize namespaced XML properly
+- [#1238](https://github.com/marklogic/java-client-api/issues/1238) - MetadataExtraction with DocumentWriteSet not extracting properties
+- [#1242](https://github.com/marklogic/java-client-api/issues/1242) - RawCombinedQueryDefinition in QueryBatcher throws NPE
+- [#1244](https://github.com/marklogic/java-client-api/issues/1244) - sevice property name typo in ServiceCompareTask
+
 ## 5.2.0
 #### New Functionality
 - [#1185](https://github.com/marklogic/java-client-api/issues/1185) - Splitter for large XML file
