@@ -106,6 +106,10 @@ public class ZipSplitter implements Splitter<BytesHandle> {
         extensionFormats.put("xml", Format.XML);
     }
 
+    /**
+     * Returns the number of splits.
+     * @return the number of splits
+     */
     @Override
     public long getCount() {
         return this.count;
