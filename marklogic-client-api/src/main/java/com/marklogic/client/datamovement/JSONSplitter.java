@@ -87,6 +87,10 @@ public class JSONSplitter<T extends JSONWriteHandle> implements Splitter<T> {
         this.visitor = visitor;
     }
 
+    /**
+     * Returns the number of splits.
+     * @return the number of splits
+     */
     @Override
     public long getCount() {
         return count;

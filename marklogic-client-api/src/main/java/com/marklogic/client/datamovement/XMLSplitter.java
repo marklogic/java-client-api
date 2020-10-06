@@ -139,6 +139,10 @@ public class XMLSplitter<T extends XMLWriteHandle> implements Splitter<T> {
         return splitWriteOperations(reader, splitFilename);
     }
 
+    /**
+     * Returns the number of splits.
+     * @return the number of splits
+     */
     @Override
     public long getCount() {
         return count;
