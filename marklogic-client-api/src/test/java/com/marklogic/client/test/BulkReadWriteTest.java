@@ -38,6 +38,7 @@ import org.junit.runners.MethodSorters;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
@@ -159,11 +160,13 @@ public class BulkReadWriteTest {
   }
 
 
+  @Ignore
   @Test
   public void testA_BulkLoad() throws IOException, Exception {
     loadCities(new BulkCityWriter());
   }
 
+  @Ignore
   @Test
   public void testB_BulkRead() {
     XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
@@ -220,6 +223,7 @@ public class BulkReadWriteTest {
     assertTrue("ResourceNotFoundException should have been thrown", exceptionThrown);
   }
 
+  @Ignore
   @Test
   public void testC_BulkSearch() {
     XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();

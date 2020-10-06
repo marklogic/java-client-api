@@ -22,6 +22,7 @@ import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -36,17 +37,17 @@ public class ErrorListenerInputEndpointTest {
     static String apiName = "errorListenerBulkIOInputCaller.api";
     static String scriptPath;
     static String apiPath;
-    static JSONDocumentManager docMgr;
     int counter = 0;
+    JSONDocumentManager docMgr = IOTestUtil.db.newJSONDocumentManager();
 
     @BeforeClass
     public static void setup() throws Exception {
-        docMgr = IOTestUtil.db.newJSONDocumentManager();
         apiObj = IOTestUtil.readApi(apiName);
         scriptPath = IOTestUtil.getScriptPath(apiObj);
         apiPath = IOTestUtil.getApiPath(scriptPath);
         IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
     }
+
     @Test
     public void bulkInputEndpointTestWithRetry() {
 
@@ -191,10 +192,10 @@ public class ErrorListenerInputEndpointTest {
         assertTrue("Number of documents written not as expected." + counter, counter >= 1);
     }
 
-    @AfterClass
-    public static void cleanup(){
-        IOTestUtil.modMgr.delete(scriptPath, apiPath);
-        for(int i=2; i<9; i++) {
+    @After
+    public void cleanup(){
+
+        for(int i=2; i<=9; i++) {
             String uri = "/marklogic/ds/test/bulkInputCaller/bulkInputTest_1/" +i+".json";
             docMgr.delete(uri);
             uri = "/marklogic/ds/test/bulkInputCaller/bulkInputTest_2/" +i+".json";
@@ -204,12 +205,17 @@ public class ErrorListenerInputEndpointTest {
 
     private void checkDocuments(String collection) {
 
-        for(int i=2; i<9; i++) {
+        for(int i=2; i<=9; i++) {
             String uri = "/marklogic/ds/test/bulkInputCaller/"+collection+"/"+i+".json";
             if(docMgr.exists(uri)!=null) {
                 counter++;
             }
         }
+    }
+
+    @AfterClass
+    public static void cleanupAfterClass() {
+        IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
 }
 
