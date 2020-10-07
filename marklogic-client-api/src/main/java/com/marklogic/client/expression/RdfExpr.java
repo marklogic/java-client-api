@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import com.marklogic.client.type.ServerExpression;
  */
 public interface RdfExpr extends RdfValue {
     /**
-  * Returns an rdf:langString value with the given value and language tag. The rdf:langString type extends xs:string, and represents a language tagged string in RDF. 
+  * Returns an rdf:langString value with the given value and language tag. The rdf:langString type extends xs:string, and represents a language tagged string in RDF.  This function is a built-in.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/rdf:langString" target="mlserverdoc">rdf:langString</a> server function.
   * @param string  The lexical value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -36,7 +36,7 @@ public interface RdfExpr extends RdfValue {
   */
   public ServerExpression langString(ServerExpression string, String lang);
 /**
-  * Returns an rdf:langString value with the given value and language tag. The rdf:langString type extends xs:string, and represents a language tagged string in RDF. 
+  * Returns an rdf:langString value with the given value and language tag. The rdf:langString type extends xs:string, and represents a language tagged string in RDF.  This function is a built-in.
   *
   * <a name="ml-server-type-langString"></a>
   
@@ -48,7 +48,7 @@ public interface RdfExpr extends RdfValue {
   */
   public ServerExpression langString(ServerExpression string, ServerExpression lang);
 /**
-  * Returns the language of an rdf:langString value. 
+  * Returns the language of an rdf:langString value. This function is a built-in.
   *
   * <a name="ml-server-type-langString-language"></a>
   

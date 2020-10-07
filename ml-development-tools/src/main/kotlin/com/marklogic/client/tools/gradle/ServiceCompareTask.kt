@@ -20,30 +20,30 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
 open class ServiceCompareTask : DefaultTask() {
-    val generator = Generator()
+  private val generator = Generator()
 
-    var customSeviceDeclarationFile:  String = ""
-  var baseSeviceDeclarationFile:   String = ""
+  var customServiceDeclarationFile:  String = ""
+  var baseServiceDeclarationFile:   String = ""
 
-    @TaskAction
+  @TaskAction
   fun compareCustomServiceToBase() {
-        if (customSeviceDeclarationFile == "") {
-            if (project.hasProperty("customSeviceDeclarationFile")) {
-                customSeviceDeclarationFile = project.property("customSeviceDeclarationFile") as String
+        if (customServiceDeclarationFile == "") {
+            if (project.hasProperty("customServiceDeclarationFile")) {
+                customServiceDeclarationFile = project.property("customServiceDeclarationFile") as String
             } else {
-                throw IllegalArgumentException("customSeviceDeclarationFile not specified")
+                throw IllegalArgumentException("customServiceDeclarationFile not specified")
             }
         }
-        if (baseSeviceDeclarationFile == "") {
-            if (project.hasProperty("baseSeviceDeclarationFile")) {
-                baseSeviceDeclarationFile = project.property("baseSeviceDeclarationFile") as String
+        if (baseServiceDeclarationFile == "") {
+            if (project.hasProperty("baseServiceDeclarationFile")) {
+                baseServiceDeclarationFile = project.property("baseServiceDeclarationFile") as String
             }
         }
 
-        if (baseSeviceDeclarationFile == "") {
-            generator.compareServices(customSeviceDeclarationFile)
+        if (baseServiceDeclarationFile == "") {
+            generator.compareServices(customServiceDeclarationFile)
         } else {
-            generator.compareServices(customSeviceDeclarationFile, baseSeviceDeclarationFile)
+            generator.compareServices(customServiceDeclarationFile, baseServiceDeclarationFile)
         }
     }
 }

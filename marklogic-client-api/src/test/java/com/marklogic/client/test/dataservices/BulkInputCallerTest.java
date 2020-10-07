@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,9 @@ package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.dataservices.InputEndpoint;
+import com.marklogic.client.dataservices.InputCaller;
 import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import org.hamcrest.core.StringContains;
 import org.junit.AfterClass;
@@ -56,16 +57,15 @@ public class BulkInputCallerTest {
 
     @Test
     public void bulkInputEndpointTest() {
-        String apiName = "bulkInputCallerImpl.api";
 
         String endpointState = "{\"next\":"+startValue+"}";
-        String workUnit      = "{\"max\":"+workMax+"}";
+        String endpointConstants      = "{\"max\":"+workMax+"}";
 
-        InputEndpoint loadEndpt = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputCaller<InputStream> loadEndpt = InputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
 
-        InputEndpoint.BulkInputCaller loader = loadEndpt.bulkCaller();
-        loader.setEndpointState(new ByteArrayInputStream(endpointState.getBytes()));
-        loader.setWorkUnit(new ByteArrayInputStream(workUnit.getBytes()));
+        InputCaller.BulkInputCaller<InputStream> loader = loadEndpt.bulkCaller(loadEndpt.newCallContext()
+                .withEndpointStateAs(endpointState)
+                .withEndpointConstantsAs(endpointConstants.getBytes()));
 
         Stream<InputStream> input         = Stream.of(
                 IOTestUtil.asInputStream("{\"docNum\":1, \"docName\":\"doc1\"}"),
@@ -99,16 +99,16 @@ public class BulkInputCallerTest {
         String apiName = "bulkInputCallerImpl.api";
 
         String endpointState = "{\"next\":"+startValue+"}";
-        String workUnit      = "{\"max\":"+workMax+"}";
+        String endpointConstants      = "{\"max\":"+workMax+"}";
         ObjectNode apiObj     = IOTestUtil.readApi(apiName);
         String     scriptPath = IOTestUtil.getScriptPath(apiObj);
         String     apiPath    = IOTestUtil.getApiPath(scriptPath);
         IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
-        InputEndpoint loadEndpt = InputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        InputCaller<InputStream> loadEndpt = InputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
 
-        InputEndpoint.BulkInputCaller loader = loadEndpt.bulkCaller();
-        loader.setEndpointState(new ByteArrayInputStream(endpointState.getBytes()));
-        loader.setWorkUnit(new ByteArrayInputStream(workUnit.getBytes()));
+        InputCaller.BulkInputCaller<InputStream> loader = loadEndpt.bulkCaller(loadEndpt.newCallContext()
+                .withEndpointConstantsAs(endpointConstants)
+                .withEndpointStateAs(endpointState));
 
         Stream<InputStream> input         = Stream.of(
                 IOTestUtil.asInputStream("{\"docNum\":1, \"docName\":\"doc1\"}"),
@@ -125,7 +125,9 @@ public class BulkInputCallerTest {
         loader.interrupt();
 
         expectedException.expect(IllegalStateException.class);
-        expectedException.expect(new ThrowableMessageMatcher(new StringContains("cannot accept more input as current phase is  INTERRUPTING")));
+        expectedException.expect(new ThrowableMessageMatcher(new StringContains(
+                "can only accept input when initializing or running and not when input is interrupting"
+        )));
         input2.forEach(loader::accept);
     }
 

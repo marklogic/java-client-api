@@ -74,6 +74,27 @@ public enum Format {
   }
 
   /**
+   * Returns the default extension for the format.
+   * @return the default extension
+   */
+  public String getDefaultExtension() {
+    switch(this) {
+      case UNKNOWN:
+        return null;
+      case BINARY:
+        return "bin";
+      case JSON:
+        return "json";
+      case TEXT:
+        return "txt";
+      case XML:
+        return "xml";
+      default:
+        throw new MarkLogicInternalException("Unknown format "+this.toString());
+    }
+  }
+
+  /**
    * Returns the format implied by the mime type
    * @param mimeType  the mime type
    * @return  the format

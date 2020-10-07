@@ -17,31 +17,36 @@ package com.marklogic.client.dataservices.impl;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
-import com.marklogic.client.dataservices.InputOutputEndpoint;
+import com.marklogic.client.dataservices.InputOutputCaller;
+import com.marklogic.client.io.marker.BufferableContentHandle;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 
-public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutputEndpoint {
-    private static Logger logger = LoggerFactory.getLogger(InputOutputEndpointImpl.class);
+public class InputOutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements InputOutputCaller<I,O> {
+    private static final Logger logger = LoggerFactory.getLogger(InputOutputEndpointImpl.class);
+    private final InputOutputCallerImpl<I,O> caller;
+    private final int batchSize;
 
-    private InputOutputCallerImpl caller;
-    private int batchSize;
-
-    public InputOutputEndpointImpl(DatabaseClient client, JSONWriteHandle apiDecl) {
-        this(client, new InputOutputCallerImpl(apiDecl));
+    public InputOutputEndpointImpl(
+            DatabaseClient client, JSONWriteHandle apiDecl,
+            BufferableContentHandle<I,?> inputHandle, BufferableContentHandle<O,?> outputHandle
+    ) {
+        this(client, new InputOutputCallerImpl<>(apiDecl, inputHandle, outputHandle));
     }
-    private InputOutputEndpointImpl(DatabaseClient client, InputOutputCallerImpl caller) {
+    private InputOutputEndpointImpl(DatabaseClient client, InputOutputCallerImpl<I,O> caller) {
         super(client, caller);
         this.caller = caller;
         this.batchSize = initBatchSize(caller);
     }
 
-    private InputOutputCallerImpl getCaller() {
+    private InputOutputCallerImpl<I,O> getCaller() {
         return this.caller;
     }
 
@@ -50,96 +55,238 @@ public class InputOutputEndpointImpl extends IOEndpointImpl implements InputOutp
     }
 
     @Override
-    public InputStream[] call(InputStream[] input) {
-        return call(null, null, null, input);
+    public O[] call(I[] input) {
+        return getResponseData(newCallContext(true), input);
     }
     @Override
-    public InputStream[] call(InputStream endpointState, SessionState session, InputStream workUnit, InputStream[] input) {
-        checkAllowedArgs(endpointState, session, workUnit);
-        return getCaller().arrayCall(getClient(), endpointState, session, workUnit, input);
+    public O[] call(CallContext callContext, I[] input) {
+        return getResponseData(callContext, input);
+    }
+
+    @Deprecated
+    public O[] call(InputStream endpointState, SessionState session, InputStream endpointConstants, I[] input) {
+        CallContextImpl<I,O> callContext = newCallContext(true)
+                .withEndpointStateAs(endpointState)
+                .withSessionState(session)
+                .withEndpointConstantsAs(endpointConstants);
+        return getResponseData(callContext, input);
     }
 
     @Override
-    public InputOutputEndpoint.BulkInputOutputCaller bulkCaller() {
-        return new BulkInputOutputCallerImpl(this, getBatchSize());
+    public BulkInputOutputCaller<I,O> bulkCaller() {
+        return new BulkInputOutputCallerImpl<>(this);
+    }
+    @Override
+    public BulkInputOutputCaller<I,O> bulkCaller(CallContext callContext) {
+        return new BulkInputOutputCallerImpl<>(this, getBatchSize(), checkAllowedArgs(callContext));
+    }
+    @Override
+    public BulkInputOutputCaller<I,O> bulkCaller(CallContext[] callContexts) {
+        if(callContexts == null || callContexts.length == 0)
+            throw new IllegalArgumentException("CallContext cannot be null or empty");
+        return bulkCaller(callContexts, callContexts.length);
+    }
+    @Override
+    public BulkInputOutputCaller<I,O> bulkCaller(CallContext[] callContexts, int threadCount) {
+        if(callContexts == null)
+            throw new IllegalArgumentException("CallContext cannot be null");
+        if(threadCount > callContexts.length)
+            throw new IllegalArgumentException("Thread count cannot be more than the callContext count.");
+
+        switch(callContexts.length) {
+            case 0: throw new IllegalArgumentException("CallContext cannot be empty");
+            case 1: return new BulkInputOutputCallerImpl<>(this, getBatchSize(), checkAllowedArgs(callContexts[0]));
+            default: return new BulkInputOutputCallerImpl<>(this, getBatchSize(), checkAllowedArgs(callContexts), threadCount);
+        }
     }
 
-    final static class BulkInputOutputCallerImpl extends IOEndpointImpl.BulkIOEndpointCallerImpl
-            implements InputOutputEndpoint.BulkInputOutputCaller {
+    private O[] getResponseData(CallContext callContext, I[] input) {
+        InputOutputCallerImpl<I,O> callerImpl = getCaller();
+        return callerImpl.arrayCall(
+                getClient(), checkAllowedArgs(callContext), callerImpl.getInputHandle().resendableHandleFor(input)
+        );
+    }
 
-        private InputOutputEndpointImpl endpoint;
-        private int batchSize;
-        private LinkedBlockingQueue<InputStream> queue;
-        private Consumer<InputStream> outputListener;
+    static public class BulkInputOutputCallerImpl<I,O> extends IOEndpointImpl.BulkIOEndpointCallerImpl<I,O>
+            implements InputOutputCaller.BulkInputOutputCaller<I,O> {
 
-        BulkInputOutputCallerImpl(InputOutputEndpointImpl endpoint, int batchSize) {
-            super(endpoint);
+        private final InputOutputEndpointImpl<I,O> endpoint;
+        private final int batchSize;
+        private final LinkedBlockingQueue<I> inputQueue;
+        private Consumer<O> outputListener;
+        private ErrorListener errorListener;
+
+        public BulkInputOutputCallerImpl(InputOutputEndpointImpl<I,O> endpoint) {
+            this(endpoint, endpoint.getBatchSize(), endpoint.checkAllowedArgs(endpoint.newCallContext()));
+        }
+        private BulkInputOutputCallerImpl(InputOutputEndpointImpl<I,O> endpoint, int batchSize, CallContextImpl<I,O> callContext) {
+            super(endpoint, callContext);
+            checkEndpoint(endpoint, "InputOutputEndpointImpl");
             this.endpoint = endpoint;
             this.batchSize = batchSize;
-            this.queue = new LinkedBlockingQueue<InputStream>();
+            this.inputQueue = new LinkedBlockingQueue<>();
+        }
+        private BulkInputOutputCallerImpl(InputOutputEndpointImpl<I,O> endpoint, int batchSize, CallContextImpl<I,O>[] callContexts,
+                                          int threadCount) {
+            super(endpoint, callContexts, threadCount, (2*callContexts.length));
+            this.endpoint = endpoint;
+            this.batchSize = batchSize;
+            this.inputQueue = new LinkedBlockingQueue<>();
         }
 
-        private InputOutputEndpointImpl getEndpoint() {
+        private InputOutputEndpointImpl<I,O> getEndpoint() {
             return endpoint;
         }
         private int getBatchSize() {
             return batchSize;
         }
-        private LinkedBlockingQueue<InputStream> getQueue() {
-            return queue;
+        private LinkedBlockingQueue<I> getInputQueue() {
+            return inputQueue;
         }
-        private Consumer<InputStream> getOutputListener() {
+        private Consumer<O> getOutputListener() {
             return outputListener;
         }
 
         @Override
-        public void setOutputListener(Consumer<InputStream> listener) {
+        public void setOutputListener(Consumer<O> listener) {
             this.outputListener = listener;
         }
 
         @Override
-        public void accept(InputStream input) {
+        public void accept(I input) {
             if (getOutputListener() == null)
                 throw new IllegalStateException("Must configure output consumer before providing input");
 
-            boolean hasBatch = queueInput(input, getQueue(), getBatchSize());
+            boolean hasBatch = queueInput(input, getInputQueue(), getBatchSize());
             if (hasBatch)
                 processInput();
         }
         @Override
-        public void acceptAll(InputStream[] input) {
+        public void acceptAll(I[] input) {
             if (getOutputListener() == null)
                 throw new IllegalStateException("Must configure output consumer before providing input");
 
-            boolean hasBatch = queueAllInput(input, getQueue(), getBatchSize());
+            boolean hasBatch = queueAllInput(input, getInputQueue(), getBatchSize());
             if (hasBatch)
                 processInput();
         }
+
+        @Override
+        public void setErrorListener(ErrorListener errorListener) {
+            this.errorListener = errorListener;
+        }
+
+        private ErrorListener getErrorListener() {
+            return this.errorListener;
+        }
+
         private void processInput() {
-            logger.trace("input endpoint running endpoint={} count={} state={}", getEndpointPath(), getCallCount(),
-                    getEndpointState());
-
-            InputStream[] output = null;
-            try {
-                output = getEndpoint().getCaller().arrayCall(
-                        getClient(), getEndpointState(), getSession(), getWorkUnit(), getInputBatch(getQueue(), getBatchSize())
-                );
-            } catch(Throwable throwable) {
-                throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
+            I[] inputBatch = getInputBatch(getInputQueue(), getBatchSize());
+            if(getCallContext()!=null) {
+                processInput(getCallContext(), inputBatch);
+                // TODO : optimize the case of a single thread with a callContextQueue.
+            } else if(getCallContextQueue() != null ){
+                    BulkCallableImpl<I,O> bulkCallableImpl = new BulkCallableImpl<>(this, inputBatch);
+                    submitTask(bulkCallableImpl);
             }
+            else {
+                throw new IllegalArgumentException("Cannot process input without Callcontext.");
+            }
+        }
 
-            incrementCallCount();
+        private void processInput(CallContextImpl<I,O> callContext, I[] inputBatch) {
+            logger.trace("input endpoint running endpoint={} count={} state={}", (callContext).getEndpoint().getEndpointPath(), getCallCount(),
+                    callContext.getEndpointState());
+            InputOutputCallerImpl<I,O> callerImpl = getEndpoint().getCaller();
 
-            processOutputBatch(output, getOutputListener());
+            ErrorDisposition error = ErrorDisposition.RETRY;
+
+            BufferableHandle[] inputHandles = callerImpl.getInputHandle().resendableHandleFor(inputBatch);
+            for (int retryCount = 0; retryCount < DEFAULT_MAX_RETRIES && error == ErrorDisposition.RETRY; retryCount++) {
+                Throwable throwable = null;
+                O[] output = null;
+                try {
+                    output = callerImpl.arrayCall(callContext.getClient(), callContext, inputHandles);
+
+                    incrementCallCount();
+                    processOutputBatch(output, getOutputListener());
+                    return;
+                } catch(Throwable catchedThrowable) {
+                    throwable = catchedThrowable;
+                }
+
+                if (throwable != null) {
+                    if (getErrorListener() != null) {
+                        try {
+                            if (retryCount < DEFAULT_MAX_RETRIES - 1) {
+                                error = getErrorListener().processError(retryCount, throwable, callContext, inputHandles);
+                            } else {
+                                error = ErrorDisposition.SKIP_CALL;
+                            }
+                        } catch (Throwable throwable1) {
+                            logger.error("Error Listener failed with " , throwable1);
+                            error = ErrorDisposition.STOP_ALL_CALLS;
+                        }
+
+                        switch (error) {
+                            case RETRY:
+                                continue;
+
+                            case SKIP_CALL:
+                                return;
+
+                            case STOP_ALL_CALLS:
+                                getCallerThreadPoolExecutor().shutdown();
+                        }
+                    // executing in the application thread
+                    } else if (getCallContext() != null) {
+                        throw new RuntimeException("Failed to produce output from input", throwable);
+                    // executing in a concurrent worker thread
+                    } else {
+                        logger.error("No error listener set. Stop all calls. " + getEndpoint().getEndpointPath(), throwable);
+                        error = ErrorDisposition.STOP_ALL_CALLS;
+                    }
+                }
+            }
         }
 
         @Override
         public void awaitCompletion() {
-            if (getQueue() == null)
-                return;
+            try {
+                if (getInputQueue() != null) {
+                    while (!getInputQueue().isEmpty()) {
+                        processInput();
+                    }
+                }
 
-            while (!getQueue().isEmpty()) {
-                processInput();
+                // calling in concurrent threads
+                if(getCallerThreadPoolExecutor() != null) {
+                    getCallerThreadPoolExecutor().shutdown();
+                    getCallerThreadPoolExecutor().awaitTermination();
+                }
+            } catch (Throwable throwable) {
+                throw new RuntimeException("Error occurred while awaiting termination "+throwable.getMessage());
+            }
+        }
+
+        static private class BulkCallableImpl<I,O> implements Callable<Boolean> {
+            private final BulkInputOutputCallerImpl<I,O> bulkInputOutputCallerImpl;
+            private final I[] inputBatch;
+            BulkCallableImpl(BulkInputOutputCallerImpl<I,O> BulkInputOutputCallerImpl, I[] inputBatch) {
+                this.bulkInputOutputCallerImpl = BulkInputOutputCallerImpl;
+                this.inputBatch = inputBatch;
+            }
+            @Override
+            public Boolean call() {
+                try {
+                    CallContextImpl<I,O> callContext = bulkInputOutputCallerImpl.getCallContextQueue().take();
+
+                    bulkInputOutputCallerImpl.processInput(callContext, inputBatch);
+                    bulkInputOutputCallerImpl.getCallContextQueue().put(callContext);
+                } catch(Exception ex) {
+                    throw new InternalError("Error occurred while processing CallContext - "+ex.getMessage());
+                }
+                return true;
             }
         }
     }

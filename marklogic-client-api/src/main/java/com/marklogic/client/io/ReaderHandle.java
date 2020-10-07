@@ -23,33 +23,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CoderResult;
+import java.nio.charset.StandardCharsets;
 
+import com.marklogic.client.io.marker.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.impl.Utilities;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
-import com.marklogic.client.io.marker.CtsQueryWriteHandle;
-import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.QuadsWriteHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.io.marker.TextReadHandle;
-import com.marklogic.client.io.marker.TextWriteHandle;
-import com.marklogic.client.io.marker.TriplesReadHandle;
-import com.marklogic.client.io.marker.TriplesWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * <p>A Reader Handle represents a character content as a reader
@@ -60,7 +41,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class ReaderHandle
   extends BaseHandle<InputStream, OutputStreamSender>
-  implements OutputStreamSender, BufferableHandle, ContentHandle<Reader>,
+  implements OutputStreamSender, StreamingContentHandle<Reader, InputStream>,
     JSONReadHandle, JSONWriteHandle,
     TextReadHandle, TextWriteHandle,
     XMLReadHandle, XMLWriteHandle,
@@ -144,6 +125,20 @@ public class ReaderHandle
     return this;
   }
 
+  @Override
+  public Class<Reader> getContentClass() {
+    return Reader.class;
+  }
+  @Override
+  public ReaderHandle newHandle() {
+    return new ReaderHandle().withFormat(getFormat()).withMimetype(getMimetype());
+  }
+  @Override
+  public Reader[] newArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new Reader[length];
+  }
+
   /**
    * Specifies the format of the content and returns the handle
    * as a fluent convenience.
@@ -189,17 +184,35 @@ public class ReaderHandle
       throw new MarkLogicIOException(e);
     }
   }
+  @Override
+  public Reader toContent(InputStream serialization) {
+    return (serialization == null) ? null :
+            new InputStreamReader(serialization, StandardCharsets.UTF_8);
+  }
+  @Override
+  public Reader bytesToContent(byte[] buffer) {
+    return (buffer == null || buffer.length == 0) ? null :
+            toContent(new ByteArrayInputStream(buffer));
+  }
+  @Override
+  public byte[] contentToBytes(Reader content) {
+    if (content == null) return null;
+    try {
+      ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+      Utilities.write(content, buffer);
+      return buffer.toByteArray();
+    } catch (IOException e) {
+      throw new MarkLogicIOException("Could not convert Reader to byte[] array", e);
+    }
+  }
+
   /**
    * Buffers the character stream and returns the buffer as a string.
    */
   @Override
   public String toString() {
-    try {
-      byte[] buffer = toBuffer();
-      return (buffer == null) ? null : new String(buffer,"UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new MarkLogicIOException(e);
-    }
+    byte[] buffer = toBuffer();
+    return (buffer == null) ? null : new String(buffer, StandardCharsets.UTF_8);
   }
 
   @Override
@@ -208,13 +221,9 @@ public class ReaderHandle
   }
   @Override
   protected void receiveContent(InputStream content) {
-    try {
-      // avoid NullPointerException by using an empty InputStream
-      if ( content == null ) content = new ByteArrayInputStream(new byte[0]);
-      this.content = new InputStreamReader(content, "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new MarkLogicIOException(e);
-    }
+    // avoid NullPointerException by using an empty InputStream
+    if ( content == null ) content = new ByteArrayInputStream(new byte[0]);
+    this.content = new InputStreamReader(content, StandardCharsets.UTF_8);
   }
   @Override
   protected ReaderHandle sendContent() {

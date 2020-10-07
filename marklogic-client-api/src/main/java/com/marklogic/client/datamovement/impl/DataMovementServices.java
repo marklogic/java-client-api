@@ -19,21 +19,24 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.datamovement.*;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.datamovement.Batcher;
-import com.marklogic.client.datamovement.DataMovementException;
-import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.JobTicket.JobType;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.datamovement.JobReport;
+import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.util.RequestParameters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class DataMovementServices {
+  private static Logger logger = LoggerFactory.getLogger(DataMovementServices.class);
+
   private DatabaseClient client;
 
   public DatabaseClient getClient() {
@@ -45,12 +48,49 @@ public class DataMovementServices {
     return this;
   }
 
-  public ForestConfigurationImpl readForestConfig() {
-    List<ForestImpl> forests = new ArrayList<>();
-    JsonNode results = ((DatabaseClientImpl) client).getServices()
+  QueryConfig initConfig(String method, QueryDefinition qdef) {
+    logger.debug("initializing forest configuration with query");
+    if (qdef == null) throw new IllegalArgumentException("null query definition");
+
+    JsonNode result = ((DatabaseClientImpl) this.client).getServices()
+      .forestInfo(null, method, new RequestParameters(), qdef, new JacksonHandle())
+      .get();
+    // System.out.println(result.toPrettyString());
+
+    QueryConfig queryConfig = new QueryConfig();
+
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode queryResult = result.get("query");
+      if (queryResult != null && queryResult.isObject() && queryResult.has("ctsquery")) {
+        queryConfig.serializedCtsQuery = mapper.writeValueAsString(queryResult);
+        logger.debug("initialized query to: {}", queryConfig.serializedCtsQuery);
+      }
+      JsonNode filteredResult = result.get("filtered");
+      if (filteredResult != null && filteredResult.isBoolean()) {
+        queryConfig.filtered = filteredResult.asBoolean();
+        logger.debug("initialized filtering to: {}", queryConfig.filtered.toString());
+      }
+    } catch (JsonProcessingException e) {
+      logger.error("failed to initialize query", e);
+    }
+
+    queryConfig.forestConfig = makeForestConfig(result.has("forests") ? result.get("forests") : result);
+
+    return queryConfig;
+  }
+
+  ForestConfigurationImpl readForestConfig() {
+    logger.debug("initializing forest configuration");
+
+    JsonNode forestNodes = ((DatabaseClientImpl) this.client).getServices()
       .getResource(null, "internal/forestinfo", null, null, new JacksonHandle())
       .get();
-    for ( JsonNode forestNode : results ) {
+    return makeForestConfig(forestNodes);
+  }
+  private ForestConfigurationImpl makeForestConfig(JsonNode forestNodes) {
+    List<ForestImpl> forests = new ArrayList<>();
+    for (JsonNode forestNode : forestNodes) {
       String id = forestNode.get("id").asText();
       String name = forestNode.get("name").asText();
       String database = forestNode.get("database").asText();
@@ -83,6 +123,10 @@ public class DataMovementServices {
   public JobTicket startJob(QueryBatcher batcher, ConcurrentHashMap<String, JobTicket> activeJobs) {
     return startJobImpl((QueryBatcherImpl) batcher, JobType.QUERY_BATCHER, activeJobs)
         .withQueryBatcher((QueryBatcherImpl) batcher);
+  }
+  public JobTicket startJob(RowBatcher<?> batcher, ConcurrentHashMap<String, JobTicket> activeJobs) {
+    return startJobImpl((RowBatcherImpl<?>) batcher, JobType.ROW_BATCHER, activeJobs)
+            .withRowBatcher((RowBatcherImpl<?>) batcher);
   }
 
   private JobTicketImpl startJobImpl(
@@ -127,5 +171,11 @@ public class DataMovementServices {
 
   private String generateJobId() {
     return UUID.randomUUID().toString();
+  }
+
+  static class QueryConfig {
+    String serializedCtsQuery;
+    ForestConfiguration forestConfig;
+    Boolean filtered;
   }
 }

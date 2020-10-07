@@ -84,8 +84,8 @@ public class ServiceCompareTaskTest {
                 .append("  id 'com.marklogic.ml-development-tools'\n")
                 .append("}\n")
                 .append("task serviceCompareTest(type: com.marklogic.client.tools.gradle.ServiceCompareTask) {\n")
-                .append("  customSeviceDeclarationFile  = '"+testEnv.customServiceDir.getPath()+"/service.json'\n")
-                .append("  baseSeviceDeclarationFile   = '"+testEnv.baseServiceDir.getPath()+"/service.json'\n")
+                .append("  customServiceDeclarationFile  = '"+testEnv.customServiceDir.getPath()+"/service.json'\n")
+                .append("  baseServiceDeclarationFile   = '"+testEnv.baseServiceDir.getPath()+"/service.json'\n")
                 .append("}\n");
         writeBuildFile(buildText);
 
@@ -110,7 +110,7 @@ public class ServiceCompareTaskTest {
                 .append("  id 'com.marklogic.ml-development-tools'\n")
                 .append("}\n")
                 .append("task serviceCompareTest(type: com.marklogic.client.tools.gradle.ServiceCompareTask) {\n")
-                .append("  customSeviceDeclarationFile = '"+testEnv.customServiceDir.getPath()+"/service.json'\n")
+                .append("  customServiceDeclarationFile = '"+testEnv.customServiceDir.getPath()+"/service.json'\n")
                 .append("}\n");
         writeBuildFile(buildText);
 
@@ -141,8 +141,8 @@ public class ServiceCompareTaskTest {
                 .withProjectDir(testDir.getRoot())
                 .withPluginClasspath()
                 .withArguments(
-                        "-PcustomSeviceDeclarationFile="+testEnv.customServiceDir.getPath()+"/service.json",
-                    "-PbaseSeviceDeclarationFile="+testEnv.baseServiceDir.getPath()+"/service.json",
+                        "-PcustomServiceDeclarationFile="+testEnv.customServiceDir.getPath()+"/service.json",
+                    "-PbaseServiceDeclarationFile="+testEnv.baseServiceDir.getPath()+"/service.json",
                         "checkCustomService"
                 )
                 .withDebug(true)
@@ -167,7 +167,7 @@ public class ServiceCompareTaskTest {
                 .withProjectDir(testDir.getRoot())
                 .withPluginClasspath()
                 .withArguments(
-                        "-PcustomSeviceDeclarationFile="+testEnv.customServiceDir.getPath()+"/service.json",
+                        "-PcustomServiceDeclarationFile="+testEnv.customServiceDir.getPath()+"/service.json",
                         "checkCustomService"
                 )
                 .withDebug(true)
@@ -188,8 +188,8 @@ public class ServiceCompareTaskTest {
                 .append("  id 'com.marklogic.ml-development-tools'\n")
                 .append("}\n")
                 .append("task serviceCompareTest(type: com.marklogic.client.tools.gradle.ServiceCompareTask) {\n")
-                .append("  customSeviceDeclarationFile  = '"+testEnv.customServiceDir.getPath()+"/service.json'\n")
-                .append("  baseSeviceDeclarationFile   = '/a/non-existent/service.json'\n")
+                .append("  customServiceDeclarationFile  = '"+testEnv.customServiceDir.getPath()+"/service.json'\n")
+                .append("  baseServiceDeclarationFile   = '/a/non-existent/service.json'\n")
                 .append("}\n");
         writeBuildFile(buildText);
 
@@ -228,8 +228,8 @@ public class ServiceCompareTaskTest {
                     .withProjectDir(testDir.getRoot())
                     .withPluginClasspath()
                     .withArguments(
-                            "-PcustomSeviceDeclarationFile="+testEnv.customServiceDir.getPath()+"/service.json",
-                        "-PbaseSeviceDeclarationFile=/a/non-existent/service.json",
+                            "-PcustomServiceDeclarationFile="+testEnv.customServiceDir.getPath()+"/service.json",
+                        "-PbaseServiceDeclarationFile=/a/non-existent/service.json",
                             "checkCustomService"
                     )
                     .withDebug(true)
@@ -254,8 +254,8 @@ public class ServiceCompareTaskTest {
                 .append("  id 'com.marklogic.ml-development-tools'\n")
                 .append("}\n")
                 .append("task serviceCompareTest(type: com.marklogic.client.tools.gradle.ServiceCompareTask) {\n")
-                .append("  customSeviceDeclarationFile  = '"+testEnv.customServiceDir.getPath()+"/service.json'\n")
-                .append("  baseSeviceDeclarationFile   = '"+testEnv.otherServiceDir.getPath()+"/service.json'\n")
+                .append("  customServiceDeclarationFile  = '"+testEnv.customServiceDir.getPath()+"/service.json'\n")
+                .append("  baseServiceDeclarationFile   = '"+testEnv.otherServiceDir.getPath()+"/service.json'\n")
                 .append("}\n");
         writeBuildFile(buildText);
 
@@ -296,8 +296,8 @@ public class ServiceCompareTaskTest {
                     .withProjectDir(testDir.getRoot())
                     .withPluginClasspath()
                     .withArguments(
-                            "-PcustomSeviceDeclarationFile="+testEnv.customServiceDir.getPath()+"/service.json",
-                        "-PbaseSeviceDeclarationFile="+testEnv.otherServiceDir.getPath()+"/service.json",
+                            "-PcustomServiceDeclarationFile="+testEnv.customServiceDir.getPath()+"/service.json",
+                        "-PbaseServiceDeclarationFile="+testEnv.otherServiceDir.getPath()+"/service.json",
                             "checkCustomService"
                     )
                     .withDebug(true)

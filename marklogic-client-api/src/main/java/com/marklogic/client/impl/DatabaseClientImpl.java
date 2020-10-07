@@ -17,8 +17,8 @@ package com.marklogic.client.impl;
 
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.util.Set;
 
+import com.marklogic.client.io.StringHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,13 +49,16 @@ import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
 public class DatabaseClientImpl implements DatabaseClient {
   static final private Logger logger = LoggerFactory.getLogger(DatabaseClientImpl.class);
 
-  private RESTServices          services;
-  private String                host;
-  private int                   port;
-  private String                database;
+  static private long serverVersion = Long.parseUnsignedLong("9000000");
+
+  private final RESTServices          services;
+  private final String                host;
+  private final int                   port;
+  private final String                database;
+  private final SecurityContext       securityContext;
+  private final ConnectionType        connectionType;
+
   private HandleFactoryRegistry handleRegistry;
-  private SecurityContext       securityContext;
-  private ConnectionType        connectionType;
 
   public DatabaseClientImpl(RESTServices services, String host, int port, String database,
                             SecurityContext securityContext, ConnectionType connectionType) {
@@ -69,6 +72,28 @@ public class DatabaseClientImpl implements DatabaseClient {
     this.connectionType  = connectionType;
 
     services.setDatabaseClient(this);
+  }
+
+  public long getServerVersion() {
+    // no locking because duplicate concurrent setting would end up with the same value
+    if (serverVersion == Long.parseUnsignedLong("9000000")) {
+      try {
+        String versionStr = getServices()
+                .getResource(null, "internal/effective-version", null, null, new StringHandle())
+                .get();
+        if (versionStr != null && versionStr.length() > 0) {
+          long version = Long.parseUnsignedLong(versionStr);
+          if (serverVersion != version) {
+            serverVersion = version;
+          }
+        }
+      } catch(Throwable e) {
+        if (serverVersion == Long.parseUnsignedLong("9000000")) {
+          serverVersion = Long.parseUnsignedLong("9000001");
+        }
+      }
+    }
+    return serverVersion;
   }
 
   @Override
@@ -143,8 +168,7 @@ public class DatabaseClientImpl implements DatabaseClient {
   }
   @Override
   public DataMovementManager newDataMovementManager() {
-    DataMovementManagerImpl moveMgr = new DataMovementManagerImpl(this);
-    return moveMgr;
+    return new DataMovementManagerImpl(this);
   }
   @Override
   public RowManager newRowManager() {

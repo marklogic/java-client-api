@@ -21,7 +21,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLEventReader;
@@ -32,19 +32,12 @@ import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import com.marklogic.client.io.marker.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
-import com.marklogic.client.io.marker.CtsQueryWriteHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * <p>An XML Stream Reader Handle represents XML content as an XML stream reader
@@ -55,7 +48,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class XMLStreamReaderHandle
   extends BaseHandle<InputStream, OutputStreamSender>
-  implements OutputStreamSender, BufferableHandle, ContentHandle<XMLStreamReader>,
+  implements OutputStreamSender, StreamingContentHandle<XMLStreamReader, InputStream>,
     XMLReadHandle, XMLWriteHandle,
     StructureReadHandle, StructureWriteHandle, CtsQueryWriteHandle,
     Closeable
@@ -157,6 +150,20 @@ public class XMLStreamReaderHandle
     return this;
   }
 
+  @Override
+  public Class<XMLStreamReader> getContentClass() {
+    return XMLStreamReader.class;
+  }
+  @Override
+  public XMLStreamReaderHandle newHandle() {
+    return new XMLStreamReaderHandle().withMimetype(getMimetype());
+  }
+  @Override
+  public XMLStreamReader[] newArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new XMLStreamReader[length];
+  }
+
   /**
    * Restricts the format to XML.
    */
@@ -200,6 +207,40 @@ public class XMLStreamReaderHandle
       throw new MarkLogicIOException(e);
     }
   }
+  @Override
+  public XMLStreamReader toContent(InputStream serialization) {
+    if (serialization == null) return null;
+    try {
+      XMLInputFactory factory = getFactory();
+      if (factory == null) {
+        throw new MarkLogicInternalException("Failed to make StAX input factory");
+      }
+
+      if (resolver != null)
+        factory.setXMLResolver(resolver);
+
+      return factory.createXMLStreamReader(serialization, "UTF-8");
+    } catch (XMLStreamException e) {
+      logger.error("Failed to parse StAX stream from input stream",e);
+      throw new MarkLogicInternalException(e);
+    } catch (FactoryConfigurationError e) {
+      logger.error("Failed to parse StAX stream from input stream",e);
+      throw new MarkLogicInternalException(e);
+    }
+  }
+  @Override
+  public XMLStreamReader bytesToContent(byte[] buffer) {
+    return (buffer == null || buffer.length == 0) ? null :
+            toContent(new ByteArrayInputStream(buffer));
+  }
+  @Override
+  public byte[] contentToBytes(XMLStreamReader content) {
+    if (content == null) return null;
+    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    write(this.content, buffer);
+    return buffer.toByteArray();
+  }
+
   /**
    * Closes the XMLStreamReader and the InputStream, if any, used to populate
    * the XMLStreamReader.  This method or get().close() should always be called when finished
@@ -230,12 +271,8 @@ public class XMLStreamReaderHandle
    */
   @Override
   public String toString() {
-    try {
-      byte[] buffer = toBuffer();
-      return (buffer == null) ? null : new String(buffer,"UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new MarkLogicIOException(e);
-    }
+    byte[] buffer = toBuffer();
+    return (buffer == null) ? null : new String(buffer, StandardCharsets.UTF_8);
   }
 
   /**
@@ -288,27 +325,10 @@ public class XMLStreamReaderHandle
       return;
     }
 
-    try {
-      if (logger.isInfoEnabled())
-        logger.info("Parsing StAX stream from input stream");
-
-      XMLInputFactory factory = getFactory();
-      if (factory == null) {
-        throw new MarkLogicInternalException("Failed to make StAX input factory");
-      }
-
-      if (resolver != null)
-        factory.setXMLResolver(resolver);
-
-      this.content = factory.createXMLStreamReader(content, "UTF-8");
-      this.contentSource = content;
-    } catch (XMLStreamException e) {
-      logger.error("Failed to parse StAX stream from input stream",e);
-      throw new MarkLogicInternalException(e);
-    } catch (FactoryConfigurationError e) {
-      logger.error("Failed to parse StAX stream from input stream",e);
-      throw new MarkLogicInternalException(e);
-    }
+    if (logger.isInfoEnabled())
+      logger.info("Parsing StAX stream from input stream");
+    this.content = toContent(content);
+    this.contentSource = content;
   }
   @Override
   protected OutputStreamSender sendContent() {
@@ -320,6 +340,9 @@ public class XMLStreamReaderHandle
   }
   @Override
   public void write(OutputStream out) throws IOException {
+    write(this.content, out);
+  }
+  private void write(XMLStreamReader content, OutputStream out) {
     try {
       XMLInputFactory inputFactory = getFactory();
       if (inputFactory == null) {
@@ -331,7 +354,7 @@ public class XMLStreamReaderHandle
 
       XMLOutputFactory outputFactory = XMLOutputFactory.newFactory();
       XMLEventWriter   writer        =
-        outputFactory.createXMLEventWriter(out, "UTF-8");
+              outputFactory.createXMLEventWriter(out, "UTF-8");
 
       writer.add(reader);
       writer.flush();

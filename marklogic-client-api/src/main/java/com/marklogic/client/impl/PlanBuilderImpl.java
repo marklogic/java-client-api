@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@ import com.marklogic.client.type.PlanTriplePositionSeq;
 
 import com.marklogic.client.expression.CtsExpr; 
 import com.marklogic.client.expression.FnExpr; 
+import com.marklogic.client.expression.GeoExpr; 
 import com.marklogic.client.expression.JsonExpr; 
 import com.marklogic.client.expression.MapExpr; 
 import com.marklogic.client.expression.MathExpr; 
@@ -267,14 +268,11 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public ServerExpression eq(ServerExpression left, ServerExpression right) {
+  public ServerExpression eq(ServerExpression... left) {
     if (left == null) {
       throw new IllegalArgumentException("left parameter for eq() cannot be null");
     }
-    if (right == null) {
-      throw new IllegalArgumentException("right parameter for eq() cannot be null");
-    }
-    return new XsExprImpl.BooleanCallImpl("op", "eq", new Object[]{ left, right });
+    return new XsExprImpl.BooleanCallImpl("op", "eq", left);
   }
 
   
@@ -1520,6 +1518,45 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
       throw new IllegalArgumentException("fragmentIdCol parameter for joinDocUri() cannot be null");
     }
     return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "join-doc-uri", new Object[]{ uriCol, fragmentIdCol });
+  }
+
+    
+  @Override
+  public ModifyPlan joinFullOuter(ModifyPlan right) {
+    if (right == null) {
+      throw new IllegalArgumentException("right parameter for joinFullOuter() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "join-full-outer", new Object[]{ right });
+  }
+
+    
+  @Override
+  public ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKey... keys) {
+    return joinFullOuter(right, new JoinKeySeqListImpl(keys));
+  }
+
+    
+  @Override
+  public ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKeySeq keys) {
+    if (right == null) {
+      throw new IllegalArgumentException("right parameter for joinFullOuter() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "join-full-outer", new Object[]{ right, keys });
+  }
+
+    
+  @Override
+  public ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKeySeq keys, boolean condition) {
+    return joinFullOuter(right, keys, xs.booleanVal(condition));
+  }
+
+    
+  @Override
+  public ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition) {
+    if (right == null) {
+      throw new IllegalArgumentException("right parameter for joinFullOuter() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "join-full-outer", new Object[]{ right, keys, condition });
   }
 
     

@@ -175,8 +175,9 @@ public class QueryManagerImpl
     return services.search(requestLogger, searchHandle, querydef, start, pageLen, view, transaction, forestName);
   }
 
-  public <T extends UrisReadHandle> T uris(QueryDefinition querydef, T urisHandle, long start, String afterUri, Transaction transaction, String forestName) {
-    return services.uris(requestLogger, transaction, querydef, start, afterUri, pageLen, forestName, urisHandle);
+  public <T extends UrisReadHandle> T uris(String method, QueryDefinition querydef, Boolean filtered, T urisHandle,
+        long start, String afterUri, String forestName) {
+    return services.uris(requestLogger, method, querydef, filtered, start, afterUri, pageLen, forestName, urisHandle);
   }
 
   @Override
@@ -389,16 +390,21 @@ public class QueryManagerImpl
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends StructureReadHandle> T convertOrValidate(RawQueryByExampleDefinition query, T convertedHandle, String view) {
+  private <T extends StructureReadHandle> T convertOrValidate(RawQueryByExampleDefinition query, T convertedHandle, String view) {
+    if (convertedHandle == null)
+      throw new IllegalArgumentException("null handle for query");
+
     RequestParameters params = new RequestParameters();
     params.add("view", view);
     @SuppressWarnings("rawtypes")
     HandleImplementation convertedBase = HandleAccessor.checkHandle(convertedHandle, "convert");
 
+    StructureWriteHandle queryHandle = query.getHandle();
+
     Format convertedFormat = convertedBase.getFormat();
-    if(convertedFormat == Format.UNKNOWN ) {
+    if(convertedFormat == Format.UNKNOWN && queryHandle != null) {
       @SuppressWarnings("rawtypes")
-      HandleImplementation queryBase = HandleAccessor.checkHandle(query.getHandle(), "validate");
+      HandleImplementation queryBase = HandleAccessor.checkHandle(queryHandle, "validate");
       if (queryBase.getFormat() == Format.UNKNOWN) {
         convertedBase.setFormat(Format.XML);
       }
@@ -408,7 +414,7 @@ public class QueryManagerImpl
       params.add("options", optionsName);
     }
 
-    services.postResource(requestLogger, "qbe", null, params, query.getHandle(), convertedHandle);
+    services.postResource(requestLogger, "qbe", null, params, queryHandle, convertedHandle);
 
     return convertedHandle;
   }

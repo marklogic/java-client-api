@@ -1147,11 +1147,12 @@ public class SearchHandle
       throws XMLStreamException
     {
       tempSnippetType  = getAttribute(element, "snippet-format");
-      if ( getAttribute(element, "total") != null ) {
-        tempTotalResults = Long.parseLong(getAttribute(element, "total"));
+      tempTotalResults = Utilities.parseLong(getAttribute(element, "total"));
+      tempPageLength   = Utilities.parseInt(getAttribute(element, "page-length"));
+      if (tempPageLength < 0) {
+        tempPageLength = 0;
       }
-      tempPageLength   = Integer.parseInt(getAttribute(element, "page-length"));
-      tempStart        = Long.parseLong(getAttribute(element, "start"));
+      tempStart        = Utilities.parseLong(getAttribute(element, "start"));
       tempExtractSelected = getAttribute(element, "selected");
 
       collectTop(reader, element);
@@ -1189,10 +1190,10 @@ public class SearchHandle
         format = Format.valueOf(formatString.toUpperCase());
       }
 
-      int score = Integer.parseInt(getAttribute(element, "score"));
+      int score = Utilities.parseInt(getAttribute(element, "score"));
 
-      double confidence = Double.parseDouble(getAttribute(element, "confidence"));
-      double fitness = Double.parseDouble(getAttribute(element, "fitness"));
+      double confidence = Utilities.parseDouble(getAttribute(element, "confidence"));
+      double fitness = Utilities.parseDouble(getAttribute(element, "fitness"));
 
       currSummary = new MatchDocumentSummaryImpl(
         ruri, score, confidence, fitness, path, mimeType, format, tempExtractSelected);
@@ -1438,7 +1439,7 @@ public class SearchHandle
       throws XMLStreamException
     {
       String name = getAttribute(element, "name");
-      long count = Long.parseLong(getAttribute(element, "count"));
+      long count = Utilities.parseLong(getAttribute(element, "count"));
       FacetValueImpl facetValue = new FacetValueImpl(name, count);
       facetValue.setLabel(reader.getElementText());
       return facetValue;
@@ -1485,11 +1486,11 @@ public class SearchHandle
     }
     private FacetValue handleGeoFacetValue(XMLEventReader reader, StartElement element) {
       String name = getAttribute(element, "name");
-      long count = Long.parseLong(getAttribute(element, "count"));
-      double s = Double.parseDouble(getAttribute(element, "s"));
-      double w = Double.parseDouble(getAttribute(element, "w"));
-      double n = Double.parseDouble(getAttribute(element, "n"));
-      double e = Double.parseDouble(getAttribute(element, "e"));
+      long count = Utilities.parseLong(getAttribute(element, "count"));
+      double s = Utilities.parseDouble(getAttribute(element, "s"));
+      double w = Utilities.parseDouble(getAttribute(element, "w"));
+      double n = Utilities.parseDouble(getAttribute(element, "n"));
+      double e = Utilities.parseDouble(getAttribute(element, "e"));
       return new FacetHeatmapValueImpl(name, count, s, w, n, e);
     }
     private void handleQText(XMLEventReader reader, StartElement element)

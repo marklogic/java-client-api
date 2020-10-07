@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,10 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,15 +67,13 @@ public final class Utilities {
   private static DatatypeFactory datatypeFactory;
   static private int BUFFER_SIZE = 8192;
 
-  private static DocumentBuilderFactory getFactory()
-    throws ParserConfigurationException {
+  private static DocumentBuilderFactory getFactory() {
     if (factory == null)
       factory = makeDocumentBuilderFactory();
     return factory;
   }
 
-  private static DocumentBuilderFactory makeDocumentBuilderFactory()
-    throws ParserConfigurationException {
+  private static DocumentBuilderFactory makeDocumentBuilderFactory() {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     factory.setNamespaceAware(true);
     factory.setValidating(false);
@@ -334,7 +335,7 @@ public final class Utilities {
       return null;
     }
 
-    return new String(bytes, Charset.forName("UTF-8"));
+    return new String(bytes, StandardCharsets.UTF_8);
   }
   public static boolean writeEvents(List<XMLEvent> events, OutputStream out) {
     if (events == null || events.size() == 0) {
@@ -521,6 +522,7 @@ public final class Utilities {
 
     return new XMLEventListReader(events);
   }
+
   static class XMLEventListReader implements XMLEventReader {
     private List<XMLEvent> events;
     private int curr = -1;
@@ -721,5 +723,41 @@ public final class Utilities {
    */
   static public void write(Reader in, OutputStream out) throws IOException {
       write(in, new OutputStreamWriter(out));
+  }
+
+  static String escapeMultipartParamAssignment(CharsetEncoder asciiEncoder, String value) {
+    if (value == null) return null;
+    String assignment = null;
+    if (asciiEncoder.canEncode(value)) {
+      // escape any quotes or back-slashes
+      assignment = "=\"" + value.replace("\"", "\\\"").replace("\\", "\\\\") + "\"";
+    } else {
+      try {
+        assignment = "*=UTF-8''" + URLEncoder.encode(value, "UTF-8");
+      } catch (Throwable ex) {
+        throw new IllegalArgumentException("Uri cannot be encoded as UFT-8: "+value, ex);
+      }
+    }
+    asciiEncoder.reset();
+    return assignment;
+  }
+
+  public static double parseDouble(String value) {
+    return parseDouble(value, -1);
+  }
+  public static double parseDouble(String value, double defaultValue) {
+    return (value == null || value.length() == 0) ? defaultValue : Double.parseDouble(value);
+  }
+  public static int parseInt(String value) {
+    return parseInt(value, -1);
+  }
+  public static int parseInt(String value, int defaultValue) {
+    return (value == null || value.length() == 0) ? defaultValue : Integer.parseInt(value);
+  }
+  public static long parseLong(String value) {
+    return parseLong(value, -1L);
+  }
+  public static long parseLong(String value, long defaultValue) {
+    return (value == null || value.length() == 0) ? defaultValue : Long.parseLong(value);
   }
 }

@@ -15,35 +15,18 @@
  */
 package com.marklogic.client.io;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 
-import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
-import com.marklogic.client.io.marker.CtsQueryWriteHandle;
-import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.QuadsWriteHandle;
-import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.io.marker.TextReadHandle;
-import com.marklogic.client.io.marker.TextWriteHandle;
-import com.marklogic.client.io.marker.TriplesReadHandle;
-import com.marklogic.client.io.marker.TriplesWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
+import com.marklogic.client.impl.NodeConverter;
+import com.marklogic.client.io.marker.*;
 
 /**
  * A String Handle represents document content as a string for reading or writing.
  */
 public class StringHandle
   extends BaseHandle<byte[], OutputStreamSender>
-  implements OutputStreamSender, BufferableHandle, ContentHandle<String>,
+  implements ResendableContentHandle<String, byte[]>, OutputStreamSender,
     JSONReadHandle, JSONWriteHandle,
     TextReadHandle, TextWriteHandle,
     XMLReadHandle, XMLWriteHandle,
@@ -93,6 +76,15 @@ public class StringHandle
     this();
     set(content);
   }
+  /**
+   * Initializes the handle by constructing a string from
+   * the content of a reader.
+   * @param content	the reader with the content
+   */
+  public StringHandle(Reader content) {
+    this();
+    from(content);
+  }
 
   /**
    * Returns the string for the content.
@@ -120,6 +112,30 @@ public class StringHandle
     set(content);
     return this;
   }
+  /**
+   * Assigns a string constructed from the content of a reader
+   * and returns the handle as a fluent convenience.
+   * @param content	the reader with the content
+   * @return	this handle
+   */
+  public StringHandle from(Reader content) {
+    set(NodeConverter.ReaderToString(content));
+    return this;
+  }
+
+  @Override
+  public Class<String> getContentClass() {
+    return String.class;
+  }
+  @Override
+  public StringHandle newHandle() {
+    return new StringHandle().withFormat(getFormat()).withMimetype(getMimetype());
+  }
+  @Override
+  public String[] newArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new String[length];
+  }
 
   /**
    * Specifies the format of the content and returns the handle
@@ -144,18 +160,23 @@ public class StringHandle
 
   @Override
   public void fromBuffer(byte[] buffer) {
-    if (buffer == null || buffer.length == 0)
-      content = null;
-    else
-      content = new String(buffer, Charset.forName("UTF-8"));
+    set(bytesToContent(buffer));
   }
   @Override
   public byte[] toBuffer() {
-    if (content == null)
-      return null;
-
-    return content.getBytes(Charset.forName("UTF-8"));
+    return contentToBytes(get());
   }
+  @Override
+  public String bytesToContent(byte[] buffer) {
+    return (buffer == null || buffer.length == 0) ?
+            null : new String(buffer, StandardCharsets.UTF_8);
+  }
+  @Override
+  public byte[] contentToBytes(String content) {
+    if (content == null) return null;
+    return content.getBytes(StandardCharsets.UTF_8);
+  }
+
   /**
    * Returns the content.
    */
@@ -165,32 +186,44 @@ public class StringHandle
   }
 
   @Override
+  public String toContent(byte[] serialization) {
+    if (serialization == null) return null;
+
+    return new String(serialization, StandardCharsets.UTF_8);
+  }
+
+  @Override
   protected Class<byte[]> receiveAs() {
     return byte[].class;
   }
   @Override
   protected void receiveContent(byte[] content) {
-    try {
-      if (content == null) {
-        this.content = null;
-        return;
-      }
-
-      this.content = new String(content, "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new MarkLogicIOException(e);
-    }
+    set(toContent(content));
   }
   @Override
   protected OutputStreamSender sendContent() {
-    if (content == null) {
-      throw new IllegalStateException("No string to write");
-    }
-
-    return this;
+    return new OutputStreamSenderImpl(get());
   }
+
   @Override
   public void write(OutputStream out) throws IOException {
-    out.write(toBuffer());
+    sendContent().write(out);
+  }
+
+  static private class OutputStreamSenderImpl implements OutputStreamSender {
+    private final String content;
+    private OutputStreamSenderImpl(String content) {
+      if (content == null) {
+        throw new IllegalStateException("No string to send");
+      }
+
+      this.content = content;
+    }
+    @Override
+    public void write(OutputStream out) throws IOException {
+      BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
+      writer.write(this.content);
+      writer.flush();
+    }
   }
 }

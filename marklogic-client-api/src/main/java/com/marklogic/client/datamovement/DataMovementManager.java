@@ -16,6 +16,7 @@
 package com.marklogic.client.datamovement;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
@@ -26,7 +27,7 @@ import java.util.Iterator;
 
 /**
  * <p>DataMovementManager is the starting point for getting new instances of
- * QueryBatcher and WriteBatcher, configured with a DatabaseClient and
+ * QueryBatcher, WriteBatcher and RowBatcher, configured with a DatabaseClient and
  * ForestConfiguration.  On instantiation, it will immediately call
  * readForestConfig to obtain the ForestConfiguration from which it can create
  * host-specific DatabaseClient instances for each applicable host.  Applicable
@@ -70,6 +71,13 @@ public interface DataMovementManager {
    * @return a JobTicket which can be used to track the job
    */
   public JobTicket startJob(QueryBatcher batcher);
+
+  /**
+   * Starts the RowBatcher job.
+   * @param batcher the RowBatcher instance to start
+   * @return a JobTicket which can be used to track the job
+   */
+  JobTicket startJob(RowBatcher<?>  batcher);
 
   /**
    * Get a snapshot report of the state of the job when the call is made.
@@ -186,6 +194,23 @@ public interface DataMovementManager {
    * @return the new QueryBatcher instance
    */
   public QueryBatcher newQueryBatcher(Iterator<String> iterator);
+
+  /**
+   * Create a new RowBatcher instance to export all of the rows
+   * from a view in batches.
+   *
+   * <p>You pass a sample handle (that is, an adapter for the Java class that
+   * should store a batch of retrieved rows). The handle must implement the
+   * {@link ContentHandle ContentHandle}
+   * and
+   * {@link com.marklogic.client.io.marker.StructureReadHandle StructuredReadHandle}
+   * interfaces.</p>
+   *
+   * @param rowsHandle a sample handle for storing a batch of rows
+   * @param <T> the Java class that stores a batch of retrieved roles
+   * @return the new RowBatcher instance
+   */
+  <T> RowBatcher<T> newRowBatcher(ContentHandle<T> rowsHandle);
 
   /**
    * Update the ForestConfiguration with the latest from the server.

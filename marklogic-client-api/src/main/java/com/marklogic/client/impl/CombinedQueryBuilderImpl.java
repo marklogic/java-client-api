@@ -299,7 +299,9 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
       String structure = "";
       if ( structuredQuery != null ) structure = structuredQuery.serialize();
       if ( rawQuery != null ) structure = HandleAccessor.contentAsString(rawQuery.getHandle());
-      out.write(structure.getBytes("UTF-8"));
+      if ( structure != null && structure.length() > 0 ) {
+        out.write(structure.getBytes("UTF-8"));
+      }
       out.flush();
       if ( options != null ) {
         HandleImplementation handleBase = HandleAccessor.as(options);

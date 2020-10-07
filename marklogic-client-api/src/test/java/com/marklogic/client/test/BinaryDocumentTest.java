@@ -16,9 +16,7 @@
 package com.marklogic.client.test;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,37 +62,60 @@ public class BinaryDocumentTest {
     String docId = "/test/binary-sample.png";
     String mimetype = "image/png";
 
-    BinaryDocumentManager docMgr = Common.client.newBinaryDocumentManager();
-    docMgr.setMetadataExtraction(MetadataExtraction.PROPERTIES);
-    docMgr.write(docId, new BytesHandle().with(BYTES_BINARY).withMimetype(mimetype));
+    for (int i: new int[]{0, 1}) {
+        BinaryDocumentManager docMgr = Common.client.newBinaryDocumentManager();
+        docMgr.setMetadataExtraction(MetadataExtraction.PROPERTIES);
 
-    DocumentDescriptor desc = docMgr.exists(docId);
-    assertTrue("Binary exists did not get number of bytes",
-      desc.getByteLength() != DocumentDescriptor.UNKNOWN_LENGTH);
-    assertEquals("Binary exists got wrong number of bytes", BYTES_BINARY.length, desc.getByteLength());
+        BytesHandle handle = new BytesHandle().with(BYTES_BINARY).withMimetype(mimetype);
+        switch (i) {
+            case 0:
+                docMgr.write(docId, handle);
+                break;
+            case 1:
+                docMgr.write(docMgr.newWriteSet().add(docId, handle));
+                break;
+            default:
+                fail("unknown case: "+i);
+        }
 
-    byte[] buf = docMgr.read(docId, new BytesHandle()).get();
-    assertEquals("Binary document read wrong number of bytes", BYTES_BINARY.length, buf.length);
+        DocumentDescriptor desc = docMgr.exists(docId);
+        assertTrue("Binary exists did not get number of bytes",
+                desc.getByteLength() != DocumentDescriptor.UNKNOWN_LENGTH);
+        assertEquals("Binary exists got wrong number of bytes", BYTES_BINARY.length, desc.getByteLength());
 
-    buf = Common.streamToBytes(docMgr.read(docId, new InputStreamHandle()).get());
-    assertTrue("Binary document read binary empty input stream",buf.length > 0);
+        byte[] buf = docMgr.read(docId, new BytesHandle()).get();
+        assertEquals("Binary document read wrong number of bytes", BYTES_BINARY.length, buf.length);
 
-    BytesHandle handle = new BytesHandle();
-    buf = docMgr.read(docId, handle, 9, 10).get();
-    assertEquals("Binary range read wrong number of bytes", 10, buf.length);
-    assertEquals("Binary range did not set length in handle", 10, handle.getByteLength());
+        buf = Common.streamToBytes(docMgr.read(docId, new InputStreamHandle()).get());
+        assertTrue("Binary document read binary empty input stream",buf.length > 0);
 
-    docMgr.setMetadataCategories(Metadata.PROPERTIES);
-    Document metadataDocument = docMgr.readMetadata(docId, new DOMHandle()).get();
-    assertXpathEvaluatesTo("image/png","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='content-type'])", metadataDocument);
-    assertXpathEvaluatesTo("text HD-HTML","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='filter-capabilities'])", metadataDocument);
-    assertXpathEvaluatesTo("815","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='size'])", metadataDocument);
+        switch (i) {
+            case 0:
+                handle = new BytesHandle();
+                buf = docMgr.read(docId, handle, 9, 10).get();
+                assertEquals("Binary range read wrong number of bytes", 10, buf.length);
+                assertEquals("Binary range did not set length in handle", 10, handle.getByteLength());
+                break;
+            case 1:
+                break;
+            default:
+                fail("unknown case: "+i);
+        }
+
+        docMgr.setMetadataCategories(Metadata.PROPERTIES);
+        Document metadataDocument = docMgr.readMetadata(docId, new DOMHandle()).get();
+        assertXpathEvaluatesTo("image/png","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='content-type'])", metadataDocument);
+        assertXpathEvaluatesTo("text HD-HTML","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='filter-capabilities'])", metadataDocument);
+        assertXpathEvaluatesTo("815","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='size'])", metadataDocument);
+
+        docMgr.delete(docId);
+    }
   }
 
   @Test
   public void test_issue_758() throws Exception {
    BinaryDocumentManager docMgr = Common.client.newBinaryDocumentManager();
-   DocumentWriteSet writeset =docMgr.newWriteSet();
+   DocumentWriteSet writeset = docMgr.newWriteSet();
    FileHandle h1 = new FileHandle(new File(
      "../marklogic-client-api-functionaltests/src/test/java/com/marklogic" +
        "/client" +

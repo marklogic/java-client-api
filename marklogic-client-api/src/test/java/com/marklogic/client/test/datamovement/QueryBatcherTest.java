@@ -42,6 +42,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.Set;
 import java.util.UUID;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.query.RawCtsQueryDefinition;
 
@@ -438,12 +440,26 @@ public class QueryBatcherTest {
 
   @Test
   public void testBadQueryAndThrowException() {
+    String invalidRawStructuredQuery = "<this is not a valid structured query>";
     RawStructuredQueryDefinition query = client.newQueryManager().newRawStructuredQueryDefinition(
-      new StringHandle("<this is not a valid structured query>").withFormat(JSON));
-    // we'll see one failure per forest
-    List<String> urisIterator = testQueryExceptions(query, 0, moveMgr.readForestConfig().listForests().length);
-    // without any matching uris, there will be no success or failure batches
-    testIteratorExceptions(urisIterator, 0, 0);
+        new StringHandle(invalidRawStructuredQuery).withFormat(JSON));
+    long serverVersion = ((DataMovementManagerImpl) moveMgr).getServerVersion();
+    if (Long.compareUnsigned(serverVersion, Long.parseUnsignedLong("10000500")) >= 0) {
+      try {
+        newQueryBatcher(query);
+        fail("Query construction succeeded");
+      } catch(FailedRequestException e) {
+        assertEquals("unexpected failure", "XDMP-JSONDOC", e.getServerMessageCode());
+      } catch(Throwable e) {
+        fail("unexpected exception "+e.toString());
+      }
+    // legacy test
+    } else {
+      // we'll see one failure per forest
+      List<String> urisIterator = testQueryExceptions(query, 0, moveMgr.readForestConfig().listForests().length);
+      // without any matching uris, there will be no success or failure batches
+      testIteratorExceptions(urisIterator, 0, 0);
+    }
   }
 
   @Test

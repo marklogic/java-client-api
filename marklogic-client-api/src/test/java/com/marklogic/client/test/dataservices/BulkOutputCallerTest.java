@@ -16,8 +16,9 @@
 package com.marklogic.client.test.dataservices;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.dataservices.OutputEndpoint;
+import com.marklogic.client.dataservices.OutputCaller;
 import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import org.hamcrest.core.StringContains;
 import org.junit.AfterClass;
@@ -27,12 +28,10 @@ import org.junit.Test;
 import org.junit.internal.matchers.ThrowableMessageMatcher;
 import org.junit.rules.ExpectedException;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 
@@ -46,7 +45,7 @@ public class BulkOutputCallerTest {
     static JSONDocumentManager docMgr;
     static int count = 5;
 
-    private static String collectionName = "bulkOutputTest";
+    private static final String collectionName = "bulkOutputTest";
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -62,8 +61,8 @@ public class BulkOutputCallerTest {
     }
     @Test
     public void bulkOutputCallerWithNullConsumer() {
-        OutputEndpoint loadEndpt = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
-        OutputEndpoint.BulkOutputCaller loader = loadEndpt.bulkCaller();
+        OutputCaller<InputStream> loadEndpt = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
+        OutputCaller.BulkOutputCaller<InputStream> loader = loadEndpt.bulkCaller(loadEndpt.newCallContext());
 
         expectedException.expect(IllegalStateException.class);
         expectedException.expect(new ThrowableMessageMatcher(new StringContains("Output consumer is null")));
@@ -73,24 +72,27 @@ public class BulkOutputCallerTest {
     @Test
     public void bulkOutputCallerTest() throws Exception {
         String endpointState = "{\"next\":"+1+"}";
-        String workUnit      = "{\"max\":"+6+"}";
+        String endpointConstants      = "{\"max\":"+6+"}";
 
-        OutputEndpoint caller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj));
+        OutputCaller<InputStream> caller = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
 
-        InputStream[] resultArray = caller.call(IOTestUtil.asInputStream(endpointState), caller.newSessionState(),
-                IOTestUtil.asInputStream(workUnit));
+        InputStream[] resultArray = caller.call(caller.newCallContext()
+                        .withEndpointStateAs(endpointState)
+                .withSessionState(caller.newSessionState())
+                .withEndpointConstantsAs(endpointConstants));
 
         assertNotNull(resultArray);
-        assertTrue(resultArray.length-1 == count);
+        assertTrue(resultArray.length-1 == count-1);
         List<String> list = new ArrayList<>();
-        for(int i=1;i<resultArray.length;i++) {
+        for(int i=0;i<resultArray.length;i++) {
             assertNotNull(resultArray[i]);
             list.add(IOTestUtil.mapper.readValue(resultArray[i], ObjectNode.class).toString());
         }
-        String workUnit2      = "{\"max\":"+3+"}";
-        OutputEndpoint.BulkOutputCaller bulkCaller = OutputEndpoint.on(IOTestUtil.db, new JacksonHandle(apiObj)).bulkCaller();
-        bulkCaller.setEndpointState(new ByteArrayInputStream(endpointState.getBytes()));
-        bulkCaller.setWorkUnit(new ByteArrayInputStream(workUnit2.getBytes()));
+        String endpointConstants2      = "{\"max\":"+3+"}";
+        OutputCaller<InputStream> endpoint = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
+        OutputCaller.BulkOutputCaller<InputStream> bulkCaller = endpoint.bulkCaller(endpoint.newCallContext()
+                .withEndpointStateAs(endpointState)
+                .withEndpointConstantsAs(endpointConstants2));
         class Output {
             int counter =0;
         }

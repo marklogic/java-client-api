@@ -199,7 +199,7 @@ public class TestCRUDModulesDb extends BasicJavaClientREST {
 
     // read it back
     String xqueryModuleAsString = libsMgr.read(Path, new StringHandle()).get();
-    assertTrue("module read and read back", xqueryModuleAsString.startsWith("Copyright (c) 2019 MarkLogic Corporation"));
+    assertTrue("module read and read back", xqueryModuleAsString.startsWith("Copyright 2017 MarkLogic Corporation"));
 
     // get the list of descriptors
     ExtensionLibraryDescriptor[] descriptors = libsMgr.list();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -579,20 +579,20 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
-  public ServerExpression nodeMetadataValue(ServerExpression uri, String keyName) {
-    return nodeMetadataValue(uri, (keyName == null) ? (ServerExpression) null : xs.string(keyName));
+  public ServerExpression nodeMetadataValue(ServerExpression node, String keyName) {
+    return nodeMetadataValue(node, (keyName == null) ? (ServerExpression) null : xs.string(keyName));
   }
 
   
   @Override
-  public ServerExpression nodeMetadataValue(ServerExpression uri, ServerExpression keyName) {
-    if (uri == null) {
-      throw new IllegalArgumentException("uri parameter for nodeMetadataValue() cannot be null");
+  public ServerExpression nodeMetadataValue(ServerExpression node, ServerExpression keyName) {
+    if (node == null) {
+      throw new IllegalArgumentException("node parameter for nodeMetadataValue() cannot be null");
     }
     if (keyName == null) {
       throw new IllegalArgumentException("keyName parameter for nodeMetadataValue() cannot be null");
     }
-    return new XsExprImpl.StringCallImpl("xdmp", "node-metadata-value", new Object[]{ uri, keyName });
+    return new XsExprImpl.StringCallImpl("xdmp", "node-metadata-value", new Object[]{ node, keyName });
   }
 
   

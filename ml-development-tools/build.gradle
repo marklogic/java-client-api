@@ -1,39 +1,48 @@
-buildscript {
-    repositories {
-        jcenter()
-        mavenCentral()
-        maven { url 'http://developer.marklogic.com/maven2' }
-    }
-
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.61"
-    }
+plugins {
+    id "groovy"
+    id 'maven-publish'
+    id 'com.gradle.plugin-publish' version '0.12.0'
+    id 'java-gradle-plugin'
+    id 'org.jetbrains.kotlin.jvm'  version '1.3.71'
 }
 
-plugins {
-    id 'java'
-    id 'java-gradle-plugin'
-    id 'maven-publish'
-    id 'com.gradle.plugin-publish' version '0.10.0'
-    id 'org.jetbrains.kotlin.jvm'  version '1.3.61'
+repositories {
+    mavenLocal()
+    jcenter()
+    mavenCentral()
+    maven { url 'http://developer.marklogic.com/maven2' }
 }
 
 dependencies {
     compileOnly gradleApi()
     compile project (':marklogic-client-api')
-    compile ('org.jetbrains.kotlin:kotlin-stdlib')
-    compile ('com.fasterxml.jackson.module:jackson-module-kotlin:2.10.3')
+    compile ('org.jetbrains.kotlin:kotlin-stdlib:1.3.71')
+    compile ('com.fasterxml.jackson.module:jackson-module-kotlin:2.11.1')
+    compile ('com.networknt:json-schema-validator:1.0.42')
     testCompileOnly gradleTestKit()
 }
 
-task mlDevelopmentToolsPlugin(type: Jar) {
+task mlDevelopmentToolsJar(type: Jar, dependsOn: classes) {
+    archivesBaseName = 'ml-development-tools'
     baseName = 'ml-development-tools'
+}
+
+gradlePlugin {
+    plugins {
+        mlDevelopmentToolsPlugin {
+            id = 'com.marklogic.ml-development-tools'
+            implementationClass = 'com.marklogic.client.tools.gradle.ToolsPlugin'
+            displayName = 'ml-development-tools MarkLogic Data Service Tools'
+            description = 'ml-development-tools plugin for developing data services on MarkLogic'
+            version = project.version
+        }
+    }
 }
 
 publishing {
     publications {
         main(MavenPublication) {
-            artifact mlDevelopmentToolsPlugin
+            from components.java
         }
     }
 }
@@ -47,15 +56,16 @@ pluginBundle {
             displayName = 'ml-development-tools MarkLogic Data Service Tools'
             description = 'ml-development-tools plugin for developing data services on MarkLogic'
             tags = ['marklogic', 'development tools', 'data services']
+            version = project.version
         }
     }
 }
 
 compileKotlin {
-    kotlinOptions.jvmTarget = '9'
+    kotlinOptions.jvmTarget = '1.8'
 }
 compileTestKotlin {
-    kotlinOptions.jvmTarget = '9'
+    kotlinOptions.jvmTarget = '1.8'
 }
 
 task setupTestServer(type: JavaExec) {

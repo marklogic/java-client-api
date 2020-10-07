@@ -19,9 +19,8 @@ import com.marklogic.client.tools.proxy.Generator
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
-// TODO: declare outputs
 open class EndpointProxiesGenTask : DefaultTask() {
-  val generator = Generator()
+  private val generator = Generator()
 
   var serviceDeclarationFile: String = ""
   var javaBaseDirectory:      String = ""
@@ -30,21 +29,17 @@ open class EndpointProxiesGenTask : DefaultTask() {
   fun serviceBundleToJava() {
     val proxiesConfig = project.property("endpointProxiesConfig") as EndpointProxiesConfig
     if (serviceDeclarationFile == "") {
-      if (proxiesConfig.serviceDeclarationFile != "") {
-        serviceDeclarationFile = proxiesConfig.serviceDeclarationFile
-      } else if (project.hasProperty("serviceDeclarationFile")) {
-        serviceDeclarationFile = project.property("serviceDeclarationFile") as String
-      } else {
-        throw IllegalArgumentException("serviceDeclarationFile not specified")
+      serviceDeclarationFile = when {
+        proxiesConfig.serviceDeclarationFile != ""    -> proxiesConfig.serviceDeclarationFile
+        project.hasProperty("serviceDeclarationFile") -> project.property("serviceDeclarationFile") as String
+        else -> throw IllegalArgumentException("serviceDeclarationFile not specified")
       }
     }
     if (javaBaseDirectory == "") {
-      if (proxiesConfig.javaBaseDirectory != "") {
-        javaBaseDirectory = proxiesConfig.javaBaseDirectory
-      } else if (project.hasProperty("javaBaseDirectory")) {
-        javaBaseDirectory = project.property("javaBaseDirectory") as String
-      } else {
-        javaBaseDirectory = project.projectDir.resolve("src/main/java").path
+      javaBaseDirectory = when {
+        proxiesConfig.javaBaseDirectory != "" -> proxiesConfig.javaBaseDirectory
+        project.hasProperty("javaBaseDirectory") -> project.property("javaBaseDirectory") as String
+        else -> project.projectDir.resolve("src/main/java").path
       }
     }
 

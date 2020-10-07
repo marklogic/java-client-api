@@ -18,104 +18,247 @@ package com.marklogic.client.dataservices.impl;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.SessionState;
-import com.marklogic.client.dataservices.ExecEndpoint;
+import com.marklogic.client.dataservices.ExecCaller;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 
-final public class ExecEndpointImpl extends IOEndpointImpl implements ExecEndpoint {
-    private static Logger logger = LoggerFactory.getLogger(ExecEndpointImpl.class);
-    private ExecCallerImpl caller;
+public class ExecEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements ExecCaller {
+    private static final Logger logger = LoggerFactory.getLogger(ExecEndpointImpl.class);
+    private final ExecCallerImpl<I,O> caller;
 
     public ExecEndpointImpl(DatabaseClient client, JSONWriteHandle apiDecl) {
-        this(client, new ExecCallerImpl(apiDecl));
+        this(client, new ExecCallerImpl<>(apiDecl));
     }
-    private ExecEndpointImpl(DatabaseClient client, ExecCallerImpl caller) {
+    private ExecEndpointImpl(DatabaseClient client, ExecCallerImpl<I,O> caller) {
         super(client, caller);
         this.caller = caller;
     }
 
-    private ExecCallerImpl getCaller() {
+    private ExecCallerImpl<I,O> getCaller() {
         return this.caller;
     }
 
     @Override
     public void call() {
-        call(null, null, null);
+        call(newCallContext());
     }
     @Override
-    public InputStream call(InputStream endpointState, SessionState session, InputStream workUnit) {
-        checkAllowedArgs(endpointState, session, workUnit);
-        return getCaller().call(getClient(), endpointState, session, workUnit);
+    public void call(CallContext callContext) {
+        getCaller().call(getClient(), checkAllowedArgs(callContext));
+    }
+
+    @Deprecated
+    public InputStream call(InputStream endpointState, SessionState session, InputStream endpointConstants) {
+        CallContextImpl<I,O> callContext = newCallContext(true)
+                .withEndpointStateAs(endpointState)
+                .withSessionState(session)
+                .withEndpointConstantsAs(endpointConstants);
+        call(callContext);
+        return callContext.getEndpointStateAsInputStream();
     }
 
     @Override
-    public ExecEndpoint.BulkExecCaller bulkCaller() {
-        return new BulkExecCallerImpl(this);
+    public BulkExecCaller bulkCaller() {
+        return new BulkExecCallerImpl<>(this);
+    }
+    @Override
+    public BulkExecCaller bulkCaller(CallContext callContext) {
+        return new BulkExecCallerImpl<>(this, checkAllowedArgs(callContext));
+    }
+    @Override
+    public BulkExecCaller bulkCaller(CallContext[] callContexts) {
+        if(callContexts == null || callContexts.length == 0)
+            throw new IllegalArgumentException("CallContext cannot be null or empty.");
+        return bulkCaller(callContexts, callContexts.length);
+    }
+    @Override
+    public BulkExecCaller bulkCaller(CallContext[] callContexts, int threadCount) {
+        if(callContexts == null)
+            throw new IllegalArgumentException("CallContext cannot be null.");
+        if(threadCount > callContexts.length)
+            throw new IllegalArgumentException("Thread count cannot be more than the callContext count.");
+
+        switch(callContexts.length) {
+            case 0: throw new IllegalArgumentException("CallContext cannot be empty");
+            case 1: return new BulkExecCallerImpl<>(this, checkAllowedArgs(callContexts[0]));
+            default: return new BulkExecCallerImpl<>(this, checkAllowedArgs(callContexts), threadCount);
+        }
     }
 
-    final static class BulkExecCallerImpl
-            extends IOEndpointImpl.BulkIOEndpointCallerImpl
-            implements ExecEndpoint.BulkExecCaller
+    public static class BulkExecCallerImpl<I,O>
+            extends IOEndpointImpl.BulkIOEndpointCallerImpl<I,O>
+            implements ExecCaller.BulkExecCaller
     {
-        private ExecEndpointImpl endpoint;
+        private final ExecEndpointImpl<I,O> endpoint;
+        private ErrorListener errorListener;
+        private AtomicInteger aliveCallContextCount;
 
-        private BulkExecCallerImpl(ExecEndpointImpl endpoint) {
-            super(endpoint);
+        public BulkExecCallerImpl(ExecEndpointImpl<I,O> endpoint) {
+            this(endpoint, endpoint.checkAllowedArgs(endpoint.newCallContext()));
+        }
+        private BulkExecCallerImpl(ExecEndpointImpl<I,O> endpoint, CallContextImpl<I,O> callContext) {
+            super(endpoint, callContext);
+            checkEndpoint(endpoint, "ExecEndpointImpl");
             this.endpoint = endpoint;
         }
+        private BulkExecCallerImpl(ExecEndpointImpl<I,O> endpoint, CallContextImpl<I,O>[] callContexts, int threadCount) {
+            super(endpoint, callContexts, threadCount, threadCount);
+            this.endpoint = endpoint;
+            this.aliveCallContextCount = new AtomicInteger(threadCount);
+        }
 
-        private ExecEndpointImpl getEndpoint() {
+        private ExecEndpointImpl<I,O> getEndpoint() {
             return this.endpoint;
         }
 
         @Override
         public void awaitCompletion() {
             setPhase(WorkPhase.RUNNING);
-            logger.trace("exec running endpoint={} work={}", getEndpointPath(), getWorkUnit());
-            calling: while (true) {
-                InputStream output = null;
+
+            if(getCallContext() != null)
+                processOutput();
+                // TODO : optimize the case of a single thread with a callContextQueue.
+
+            else if(getCallContextQueue() != null && !getCallContextQueue().isEmpty()){
                 try {
-                    logger.trace("exec calling endpoint={} count={} state={}",
-                            getEndpointPath(), getCallCount(), getEndpointState());
-// TODO: use byte[] for IO internally (and InputStream externally)
-                    output = getEndpoint().getCaller().call(
-                            getClient(), getEndpointState(), getSession(), getWorkUnit()
-                    );
-                    incrementCallCount();
-                } catch(Throwable throwable) {
-                    // TODO: logging
-                    throw new RuntimeException("error while calling "+getEndpoint().getEndpointPath(), throwable);
+                    for (int i = 0; i < getThreadCount(); i++) {
+                        BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this);
+                        submitTask(bulkCallableImpl);
+                    }
+                    if(getCallerThreadPoolExecutor() != null)
+                        getCallerThreadPoolExecutor().awaitTermination();
                 }
-// TODO -- retry with new session if times out
-
-                if (allowsEndpointState()) {
-                    setEndpointState(output);
+                catch(Throwable throwable) {
+                    throw new RuntimeException("Error occurred while awaiting termination ", throwable);
                 }
-
-                switch(getPhase()) {
-                    case INTERRUPTING:
-                        setPhase(WorkPhase.INTERRUPTED);
-                        logger.info("exec interrupted endpoint={} count={} work={}",
-                                getEndpointPath(), getCallCount(), getWorkUnit());
-                        break calling;
-                    case RUNNING:
-                        if (output == null) {
-                            setPhase(WorkPhase.COMPLETED);
-                            logger.info("exec completed endpoint={} count={} work={}",
-                                    getEndpointPath(), getCallCount(), getWorkUnit());
-                            break calling;
-                        }
-                        break;
-                    default:
-                        throw new MarkLogicInternalException(
-                                "unexpected state for "+getEndpointPath()+" during loop: "+getPhase().name()
-                        );
-                }
+            } else {
+                throw new IllegalArgumentException("Cannot process output without Callcontext.");
             }
         }
 
+        @Override
+        public void setErrorListener(ErrorListener errorListener) {
+            this.errorListener = errorListener;
+        }
+
+        private ErrorListener getErrorListener() {
+            return this.errorListener;
+        }
+
+        private boolean processExec(CallContextImpl<I,O> callContext) {
+            ErrorDisposition error = ErrorDisposition.RETRY;
+
+            retry:
+            for (int retryCount = 0; retryCount < DEFAULT_MAX_RETRIES && error == ErrorDisposition.RETRY; retryCount++) {
+                Throwable throwable = null;
+                try {
+                    logger.trace("exec calling endpoint={} count={} state={}",
+                            callContext.getEndpoint().getEndpointPath(), getCallCount(), callContext.getEndpointState());
+                    boolean hasState = getEndpoint().getCaller().call(callContext.getClient(), callContext);
+                    incrementCallCount();
+                    return hasState;
+                } catch(Throwable catchedThrowable) {
+                    // TODO: logging
+                    throwable = catchedThrowable;
+                }
+
+                if (throwable != null) {
+                    if (getErrorListener() == null) {
+                        logger.error("No error listener set. Stop all calls. " + getEndpoint().getEndpointPath(), throwable);
+                        error = ErrorDisposition.STOP_ALL_CALLS;
+                    } else {
+                        try {
+                            if (retryCount < DEFAULT_MAX_RETRIES - 1) {
+                                error = getErrorListener().processError(retryCount, throwable, callContext);
+                            } else {
+                                error = ErrorDisposition.SKIP_CALL; //used to be STOP_ALL_CALLS
+                            }
+                        } catch (Throwable throwable1) {
+                            logger.error("Error Listener failed with " , throwable1);
+                            error = ErrorDisposition.STOP_ALL_CALLS;
+                        }
+
+                        switch (error) {
+                            case RETRY:
+                                continue retry;
+                            case SKIP_CALL:
+                                if(callContext.getEndpoint().allowsEndpointState()) {
+                                    callContext.withEndpointState(null);
+                                }
+                                break retry;
+                            case STOP_ALL_CALLS:
+                                getCallerThreadPoolExecutor().shutdown();
+                                break retry;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        private void processOutput() {
+            CallContextImpl<I,O> callContext = getCallContext();
+            if(callContext != null) {
+                while (processOutput(callContext));
+            }
+        }
+
+        private boolean processOutput(CallContextImpl<I,O> callContext){
+            boolean continueCalling = processExec(callContext);
+
+            switch(getPhase()) {
+                case INTERRUPTING:
+                    setPhase(WorkPhase.INTERRUPTED);
+                    logger.info("exec interrupted endpoint={} count={} work={}",
+                            callContext.getEndpoint().getEndpointPath(), getCallCount(), callContext.getEndpointConstants());
+                    return false;
+                case RUNNING:
+                    if (!continueCalling) {
+                        if(getCallerThreadPoolExecutor() == null || aliveCallContextCount.get() == 0)
+                            setPhase(WorkPhase.COMPLETED);
+                        logger.info("exec completed endpoint={} count={} work={}",
+                                callContext.getEndpoint().getEndpointPath(), getCallCount(), callContext.getEndpointConstants());
+                        return false;
+                    }
+                    return true;
+                default:
+                    throw new MarkLogicInternalException(
+                            "unexpected state for "+callContext.getEndpoint().getEndpointPath()+" during loop: "+getPhase().name()
+                    );
+            }
+        }
+
+// TODO: static private class BulkCallableImpl<I,O>
+        private class BulkCallableImpl implements Callable<Boolean> {
+            private final BulkExecCallerImpl<I,O> bulkExecCallerImpl;
+
+            BulkCallableImpl(BulkExecCallerImpl<I,O> bulkExecCallerImpl) {
+                this.bulkExecCallerImpl = bulkExecCallerImpl;
+            }
+
+            @Override
+            public Boolean call() throws InterruptedException{
+                CallContextImpl<I,O> callContext = bulkExecCallerImpl.getCallContextQueue().poll();
+
+                boolean continueCalling = (callContext == null) ? false : bulkExecCallerImpl.processOutput(callContext);
+
+                if(continueCalling) {
+                    bulkExecCallerImpl.getCallContextQueue().put(callContext);
+                    submitTask(this);
+                }
+                else {
+                    if (aliveCallContextCount.decrementAndGet() == 0) {
+                        getCallerThreadPoolExecutor().shutdown();
+                    }
+                }
+
+                return true;
+            }
+        }
     }
 }

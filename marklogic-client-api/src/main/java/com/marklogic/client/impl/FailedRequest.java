@@ -75,11 +75,8 @@ public class FailedRequest {
         if ( statusCodes != null && statusCodes.getLength() > 0 ) {
           statusCode = statusCodes.item(0).getTextContent();
         }
-        if ( statusCode != null ) {
-          failure.setStatusCode(Integer.parseInt(statusCode));
-        } else {
-          failure.setStatusCode(httpStatus);
-        }
+        int parsedStatusCode = Utilities.parseInt(statusCode);
+        failure.setStatusCode((parsedStatusCode > 0) ? parsedStatusCode : httpStatus);
         NodeList statuses = doc.getElementsByTagNameNS(ERROR_NS, "status");
         if ( statuses != null && statuses.getLength() > 0 ) {
           failure.setStatusString( statuses.item(0).getTextContent() );

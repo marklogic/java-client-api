@@ -17,24 +17,15 @@ package com.marklogic.client.datamovement.impl;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.datamovement.*;
 import com.marklogic.client.impl.DatabaseClientImpl;
-import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.ForestConfiguration;
-import com.marklogic.client.datamovement.Forest;
-import com.marklogic.client.datamovement.HostAvailabilityListener;
-import com.marklogic.client.datamovement.Batcher;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.NoResponseListener;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.datamovement.JobReport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,26 +36,16 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DataMovementManagerImpl implements DataMovementManager {
-  private static Logger logger = LoggerFactory.getLogger(DataMovementManager.class);
+  private static final Logger logger = LoggerFactory.getLogger(DataMovementManager.class);
   private DataMovementServices service = new DataMovementServices();
-  private static ConcurrentHashMap<String, JobTicket> activeJobs = new ConcurrentHashMap<>();
+  private static final ConcurrentHashMap<String, JobTicket> activeJobs = new ConcurrentHashMap<>();
   private ForestConfiguration forestConfig;
   private DatabaseClient primaryClient;
   // clientMap key is the hostname_database
-  private Map<String,DatabaseClient> clientMap = new HashMap<>();
-
-  private long serverVersion = Long.parseUnsignedLong("9000000");
+  private final Map<String,DatabaseClient> clientMap = new HashMap<>();
 
   public DataMovementManagerImpl(DatabaseClient client) {
     setPrimaryClient(client);
-
-    try {
-      String version = ((DatabaseClientImpl) client).getServices()
-              .getResource(null, "internal/effective-version", null, null, new StringHandle())
-              .get();
-      serverVersion = Long.parseUnsignedLong(version);
-    } catch(Throwable e) {
-    }
 
     clientMap.put(primaryClient.getHost(), primaryClient);
   }
@@ -147,7 +128,18 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   private QueryBatcher newQueryBatcherImpl(QueryDefinition query) {
     if ( query == null ) throw new IllegalArgumentException("query must not be null");
-    return newQueryBatcher(new QueryBatcherImpl(query, this, getForestConfig()));
+
+    QueryBatcherImpl queryBatcher = null;
+    // preprocess the query if the effective version is at least 10.0-5
+    if (Long.compareUnsigned(getServerVersion(), Long.parseUnsignedLong("10000500")) >= 0) {
+      DataMovementServices.QueryConfig queryConfig = service.initConfig("POST", query);
+      queryBatcher = new QueryBatcherImpl(query, this, queryConfig.forestConfig,
+              queryConfig.serializedCtsQuery, queryConfig.filtered);
+    } else {
+      queryBatcher = new QueryBatcherImpl(query, this, getForestConfig());
+    }
+
+    return newQueryBatcher(queryBatcher);
   }
 
   @Override
@@ -166,7 +158,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
     return batcher;
   }
 
-  private ForestConfiguration getForestConfig() {
+  ForestConfiguration getForestConfig() {
     if ( forestConfig != null ) return forestConfig;
     return readForestConfig();
   }
@@ -210,16 +202,24 @@ public class DataMovementManagerImpl implements DataMovementManager {
   @Override
   public JobTicket getActiveJob(String jobId) {
     if (jobId == null)  throw new IllegalArgumentException("Job id must not be null");
-    if (activeJobs.containsKey(jobId)) {
-      return activeJobs.get(jobId);
-    } else {
-      return null;
-    }
+    return activeJobs.getOrDefault(jobId, null);
   }
 
   @Override
   public DatabaseClient.ConnectionType getConnectionType() {
     return primaryClient.getConnectionType();
+  }
+
+  @Override
+  public <T> RowBatcher<T> newRowBatcher(ContentHandle<T> rowsHandle) {
+    return new RowBatcherImpl<>(this, rowsHandle);
+  }
+
+  @Override
+  public JobTicket startJob(RowBatcher<?> batcher) {
+    if (batcher == null)
+      throw new IllegalArgumentException("batcher must not be null");
+    return service.startJob(batcher, activeJobs);
   }
 
   public DataMovementServices getDataMovementServices() {
@@ -240,6 +240,6 @@ public class DataMovementManagerImpl implements DataMovementManager {
   }
 
   public long getServerVersion() {
-    return serverVersion;
+    return ((DatabaseClientImpl) getPrimaryClient()).getServerVersion();
   }
 }

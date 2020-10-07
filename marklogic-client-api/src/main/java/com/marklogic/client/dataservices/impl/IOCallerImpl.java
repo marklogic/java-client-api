@@ -21,24 +21,36 @@ import com.marklogic.client.SessionState;
 import com.marklogic.client.impl.BaseProxy;
 import com.marklogic.client.impl.NodeConverter;
 import com.marklogic.client.impl.RESTServices;
+import com.marklogic.client.io.BaseHandle;
+import com.marklogic.client.io.BytesHandle;
+import com.marklogic.client.io.marker.BufferableContentHandle;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
-import java.io.InputStream;
 import java.util.stream.Stream;
 
-abstract class IOCallerImpl extends BaseCallerImpl {
-    private JsonNode      apiDeclaration;
-    private String        endpointPath;
+abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
+    private final JsonNode                    apiDeclaration;
+    private final String                      endpointPath;
+    private final BaseProxy.DBFunctionRequest requester;
+
+    private BufferableContentHandle<I,?> inputHandle;
+    private BufferableContentHandle<O,?> outputHandle;
+
     private ParamdefImpl  endpointStateParamdef;
     private ParamdefImpl  sessionParamdef;
-    private ParamdefImpl  workUnitParamdef;
+    private ParamdefImpl  endpointConstantsParamdef;
     private ParamdefImpl  inputParamdef;
     private ReturndefImpl returndef;
 
-    private BaseProxy.DBFunctionRequest requester;
-
-    IOCallerImpl(JSONWriteHandle apiDeclaration) {
+    IOCallerImpl(
+            JSONWriteHandle apiDeclaration, BufferableContentHandle<I,?> inputHandle, BufferableContentHandle<O,?> outputHandle
+    ) {
         super();
+
+        if (apiDeclaration== null) {
+            throw new IllegalArgumentException("null endpoint declaration");
+        }
 
         this.apiDeclaration = NodeConverter.handleToJsonNode(apiDeclaration);
         if (!this.apiDeclaration.isObject()) {
@@ -92,6 +104,11 @@ abstract class IOCallerImpl extends BaseCallerImpl {
                                 throw new IllegalArgumentException("input parameter must be nullable");
                             }
                             this.inputParamdef = paramdef;
+                            if (inputHandle == null) {
+                                throw new IllegalArgumentException("no input handle provided for input parameter");
+                            }
+                            ((BaseHandle) inputHandle).setFormat(paramdef.getFormat());
+                            this.inputHandle  = inputHandle;
                             nodeArgCount += 2;
                             break;
                         case "session":
@@ -102,11 +119,15 @@ abstract class IOCallerImpl extends BaseCallerImpl {
                             }
                             this.sessionParamdef = paramdef;
                             break;
+                        case "endpointConstants":
                         case "workUnit":
-                            if (paramdef.isMultiple()) {
-                                throw new IllegalArgumentException("workUnit parameter cannot be multiple");
+                            if (this.endpointConstantsParamdef != null) {
+                                throw new IllegalArgumentException("can only declare one of "+paramName+" and "+
+                                        this.endpointConstantsParamdef.getParamName());
+                            } else if (paramdef.isMultiple()) {
+                                throw new IllegalArgumentException(paramName+" parameter cannot be multiple");
                             }
-                            this.workUnitParamdef = paramdef;
+                            this.endpointConstantsParamdef  = paramdef;
                             nodeArgCount++;
                             break;
                         default:
@@ -114,6 +135,9 @@ abstract class IOCallerImpl extends BaseCallerImpl {
                     }
                 }
             }
+        }
+        if (this.inputParamdef == null && inputHandle != null) {
+            throw new IllegalArgumentException("no input parameter declared but input handle provided");
         }
 
         JsonNode functionReturn = this.apiDeclaration.get("return");
@@ -127,6 +151,14 @@ abstract class IOCallerImpl extends BaseCallerImpl {
             if (!this.returndef.isNullable()) {
                 throw new IllegalArgumentException("return must be nullable");
             }
+            if (outputHandle != null) {
+                ((BaseHandle) outputHandle).setFormat(this.returndef.getFormat());
+                this.outputHandle = outputHandle;
+            } else if (this.endpointStateParamdef == null) {
+                throw new IllegalArgumentException("no output handle provided for return values");
+            }
+        } else if (outputHandle != null) {
+            throw new IllegalArgumentException("no return values declared but output handle provided");
         }
 
         if (this.endpointStateParamdef != null) {
@@ -141,57 +173,41 @@ abstract class IOCallerImpl extends BaseCallerImpl {
             }
         }
 
-        this.requester = getBaseProxy().moduleRequest(
+        this.requester = BaseProxy.moduleRequest(
                 getEndpointPath(), BaseProxy.ParameterValuesKind.forNodeCount(nodeArgCount)
         );
     }
 
-    BaseProxy.DBFunctionRequest makeRequest(
-            DatabaseClient db, InputStream endpointState, SessionState session, InputStream workUnit
-    ) {
-        return makeRequest(db, endpointState, session, workUnit, (RESTServices.CallField) null);
+    BufferableContentHandle<I, ?> getInputHandle() {
+        return inputHandle;
+    }
+    BufferableContentHandle<O, ?> getOutputHandle() {
+        return outputHandle;
+    }
+
+    BaseProxy.DBFunctionRequest makeRequest(DatabaseClient db, CallContextImpl<I,O> callCtxt) {
+        return makeRequest(db, callCtxt, (RESTServices.CallField) null);
     }
     BaseProxy.DBFunctionRequest makeRequest(
-            DatabaseClient db, InputStream endpointState, SessionState session, InputStream workUnit, Stream<InputStream> input
+            DatabaseClient db, CallContextImpl<I,O> callCtxt, BufferableHandle[] input
     ) {
         RESTServices.CallField inputField = null;
 
         ParamdefImpl paramdef = getInputParamdef();
         if (paramdef != null) {
-            inputField = BaseProxy.documentParam(
-                    "input",
-                    paramdef.isNullable(),
-                    NodeConverter.streamWithFormat(NodeConverter.InputStreamToHandle(input), paramdef.getFormat())
-                    );
-        } else if (input != null) {
-            throw new IllegalArgumentException("input parameter not supported by endpoint: "+getEndpointPath());
-        }
-
-        return makeRequest(db, endpointState, session, workUnit, inputField);
-    }
-    BaseProxy.DBFunctionRequest makeRequest(
-            DatabaseClient db, InputStream endpointState, SessionState session, InputStream workUnit, InputStream[] input
-    ) {
-        RESTServices.CallField inputField = null;
-
-        ParamdefImpl paramdef = getInputParamdef();
-        if (paramdef != null) {
-            inputField = BaseProxy.documentParam(
-                    "input",
-                    paramdef.isNullable(),
-                    NodeConverter.arrayWithFormat(NodeConverter.InputStreamToHandle(input), paramdef.getFormat())
-            );
+            inputField = BaseProxy.documentParam("input", paramdef.isNullable(), input);
         } else if (input != null && input.length > 0) {
             throw new IllegalArgumentException("input parameter not supported by endpoint: "+getEndpointPath());
         }
 
-        return makeRequest(db, endpointState, session, workUnit, inputField);
+        return makeRequest(db, callCtxt, inputField);
     }
-    BaseProxy.DBFunctionRequest makeRequest(
-            DatabaseClient db, InputStream endpointState, SessionState session, InputStream workUnit, RESTServices.CallField inputField
+    private BaseProxy.DBFunctionRequest makeRequest(
+            DatabaseClient db, CallContextImpl<I,O> callCtxt, RESTServices.CallField inputField
     ) {
         BaseProxy.DBFunctionRequest request = getRequester().on(db);
 
+        SessionState session = callCtxt.getSessionState();
         if (getSessionParamdef() != null) {
             request = request.withSession(
                     getSessionParamdef().getParamName(), session, getSessionParamdef().isNullable()
@@ -203,31 +219,32 @@ abstract class IOCallerImpl extends BaseCallerImpl {
         int fieldNum = 0;
 
         RESTServices.CallField endpointStateField = null;
+        BytesHandle endpointState = callCtxt.getEndpointState();
         if (getEndpointStateParamdef() != null) {
             endpointStateField = BaseProxy.documentParam(
                     "endpointState",
                     getEndpointStateParamdef().isNullable(),
-                    NodeConverter.withFormat(
-                            NodeConverter.InputStreamToHandle(endpointState), getEndpointStateParamdef().getFormat()
-                    ));
+                    NodeConverter.withFormat(endpointState, getEndpointStateParamdef().getFormat())
+                    );
             if (endpointState != null)
                 fieldNum++;
         } else if (endpointState != null) {
             throw new IllegalArgumentException("endpointState parameter not supported by endpoint: "+getEndpointPath());
         }
 
-        RESTServices.CallField workUnitField = null;
-        if (getWorkUnitParamdef() != null) {
-            workUnitField = BaseProxy.documentParam(
-                    "workUnit",
-                    getWorkUnitParamdef().isNullable(),
-                    NodeConverter.withFormat(
-                            NodeConverter.InputStreamToHandle(workUnit), getWorkUnitParamdef().getFormat()
-                    ));
-            if (workUnit != null)
+        RESTServices.CallField endpointConstantsField = null;
+        BytesHandle endpointConstants = callCtxt.getEndpointConstants();
+        if (getEndpointConstantsParamdef() != null) {
+            endpointConstantsField = BaseProxy.documentParam(
+                    getEndpointConstantsParamdef().getParamName(),
+                    getEndpointConstantsParamdef().isNullable(),
+                    NodeConverter.withFormat(endpointConstants, getEndpointConstantsParamdef().getFormat())
+                    );
+            if (endpointConstants != null)
                 fieldNum++;
-        } else if (workUnit != null) {
-            throw new IllegalArgumentException("workUnit parameter not supported by endpoint: "+getEndpointPath());
+        } else if (endpointConstants != null) {
+            throw new IllegalArgumentException(callCtxt.getEndpointConstantsParamName()+
+                    " parameter not supported by endpoint: "+getEndpointPath());
         }
 
         if (inputField != null)
@@ -239,8 +256,8 @@ abstract class IOCallerImpl extends BaseCallerImpl {
             if (endpointStateField != null) {
                 fields[fieldNum++] = endpointStateField;
             }
-            if (workUnitField != null) {
-                fields[fieldNum++] = workUnitField;
+            if (endpointConstantsField != null) {
+                fields[fieldNum++] = endpointConstantsField;
             }
             if (inputField != null) {
                 fields[fieldNum++] = inputField;
@@ -251,32 +268,28 @@ abstract class IOCallerImpl extends BaseCallerImpl {
 
         return request;
     }
-    InputStream responseMaybe(BaseProxy.DBFunctionRequest request) {
+    boolean responseWithState(BaseProxy.DBFunctionRequest request, CallContextImpl<I,O> callCtxt) {
         if (getReturndef() == null) {
             request.responseNone();
-            return null;
+            return false;
         } else if (getReturndef().isMultiple()) {
             throw new UnsupportedOperationException("multiple return from endpoint: "+getEndpointPath());
         }
 
         return request.responseSingle(getReturndef().isNullable(), getReturndef().getFormat())
-                      .asInputStream();
+               .asEndpointState(callCtxt.getEndpointState());
     }
-    InputStream responseSingle(BaseProxy.DBFunctionRequest request) {
+    O responseSingle(BaseProxy.DBFunctionRequest request) {
         if (getReturndef() == null) {
             throw new UnsupportedOperationException("no return from endpoint: "+getEndpointPath());
         } else if (getReturndef().isMultiple()) {
             throw new UnsupportedOperationException("multiple return from endpoint: "+getEndpointPath());
         }
 
-        return request.responseSingle(getReturndef().isNullable(), getReturndef().getFormat())
-                      .asInputStream();
+        return request.responseSingle(getReturndef().isNullable(), getReturndef().getFormat()).asContent(outputHandle);
     }
-    Stream<InputStream> responseMultipleAsStream(BaseProxy.DBFunctionRequest request) {
-        return responseMultiple(request).asStreamOfInputStream();
-    }
-    InputStream[] responseMultipleAsArray(BaseProxy.DBFunctionRequest request) {
-        return responseMultiple(request).asArrayOfInputStream();
+    O[] responseMultipleAsArray(BaseProxy.DBFunctionRequest request, CallContextImpl<I,O> callCtxt) {
+        return responseMultiple(request).asArrayOfContent(callCtxt.isLegacyContext() ? null : callCtxt.getEndpointState(), outputHandle);
     }
     private RESTServices.MultipleCallResponse responseMultiple(BaseProxy.DBFunctionRequest request) {
         if (getReturndef() == null) {
@@ -302,8 +315,8 @@ abstract class IOCallerImpl extends BaseCallerImpl {
     ParamdefImpl getSessionParamdef() {
         return this.sessionParamdef;
     }
-    ParamdefImpl getWorkUnitParamdef() {
-        return this.workUnitParamdef;
+    ParamdefImpl getEndpointConstantsParamdef() {
+        return this.endpointConstantsParamdef;
     }
     ParamdefImpl getInputParamdef() {
         return this.inputParamdef;

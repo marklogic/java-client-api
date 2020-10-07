@@ -16,8 +16,7 @@
 package com.marklogic.client.test;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -192,7 +191,22 @@ public class XMLDocumentTest {
 
     String truncatedDoc ="<root><poorlyFormed></root>";
     docMgr.setDocumentRepair(DocumentRepair.FULL);
-    docMgr.write(docId, new StringHandle().with(truncatedDoc));
+    for (int i: new int[]{0, 1}) {
+      StringHandle handle = new StringHandle(truncatedDoc);
+      switch (i) {
+        case 0:
+          docMgr.write(docId, handle);
+          break;
+        case 1:
+          docMgr.write(docMgr.newWriteSet().add(docId, handle));
+          break;
+        default:
+          fail("unknown case: "+i);
+      }
+      docText = docMgr.read(docId, new StringHandle()).get();
+      assertNotNull("Read null document for repaired result",docText);
+      assertXMLEqual("Repaired result","<root><poorlyFormed/></root>",docText);
+    }
 
     docMgr.setDocumentRepair(DocumentRepair.NONE);
     boolean threwException = false;

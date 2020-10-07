@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,32 +20,29 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.IOEndpoint;
-import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.impl.NodeConverter;
-import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.marker.BufferableHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
-abstract class IOEndpointImpl implements IOEndpoint {
-    private static Logger logger = LoggerFactory.getLogger(IOEndpointImpl.class);
+abstract class IOEndpointImpl<I,O> implements IOEndpoint {
+    private static final Logger logger = LoggerFactory.getLogger(IOEndpointImpl.class);
 
-    final static int DEFAULT_BATCH_SIZE = 100;
+    final static int DEFAULT_MAX_RETRIES  = 100;
+    final static int DEFAULT_BATCH_SIZE   = 100;
 
-    private DatabaseClient client;
-    private IOCallerImpl   caller;
+    private final DatabaseClient    client;
+    private final IOCallerImpl<I,O> caller;
 
-    public IOEndpointImpl(DatabaseClient client, IOCallerImpl caller) {
+    public IOEndpointImpl(DatabaseClient client, IOCallerImpl<I,O> caller) {
         if (client == null)
             throw new IllegalArgumentException("null client");
         if (caller == null)
@@ -54,7 +51,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
         this.caller = caller;
     }
 
-    int initBatchSize(IOCallerImpl caller) {
+    int initBatchSize(IOCallerImpl<I,O> caller) {
         JsonNode apiDeclaration = caller.getApiDeclaration();
         if (apiDeclaration.has("$bulk") && apiDeclaration.get("$bulk").isObject()
                 && apiDeclaration.get("$bulk").has("inputBatchSize")
@@ -67,7 +64,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
     DatabaseClient getClient() {
         return this.client;
     }
-    private IOCallerImpl getCaller() {
+    private IOCallerImpl<I,O> getCaller() {
         return this.caller;
     }
 
@@ -77,19 +74,36 @@ abstract class IOEndpointImpl implements IOEndpoint {
     }
     @Override
     public boolean allowsEndpointState() {
-        return (getCaller().getEndpointStateParamdef() != null);
+        return (getEndpointStateParamdef() != null);
+    }
+    BaseCallerImpl.ParamdefImpl getEndpointStateParamdef() {
+        return getCaller().getEndpointStateParamdef();
     }
     @Override
+    @Deprecated
     public boolean allowsWorkUnit() {
-        return (getCaller().getWorkUnitParamdef() != null);
+        return (getEndpointConstantsParamdef() != null);
+    }
+    @Override
+    public boolean allowsEndpointConstants() {
+        return (getEndpointConstantsParamdef() != null);
+    }
+    BaseCallerImpl.ParamdefImpl getEndpointConstantsParamdef() {
+        return getCaller().getEndpointConstantsParamdef();
     }
     @Override
     public boolean allowsInput() {
-        return (getCaller().getInputParamdef() != null);
+        return (getInputParamdef() != null);
+    }
+    BaseCallerImpl.ParamdefImpl getInputParamdef() {
+        return getCaller().getInputParamdef();
     }
     @Override
     public boolean allowsSession() {
-        return (getCaller().getSessionParamdef() != null);
+        return (getSessionParamdef() != null);
+    }
+    BaseCallerImpl.ParamdefImpl getSessionParamdef() {
+        return getCaller().getSessionParamdef();
     }
 
     @Override
@@ -98,118 +112,172 @@ abstract class IOEndpointImpl implements IOEndpoint {
             throw new IllegalStateException("endpoint does not support session state");
         return getCaller().newSessionState();
     }
-
-    public void checkAllowedArgs(InputStream endpointState, SessionState session, InputStream workUnit) {
-        if (endpointState != null && !allowsEndpointState())
-            throw new IllegalArgumentException("endpoint does not accept endpoint state");
-        if (session != null && !allowsSession())
-            throw new IllegalArgumentException("endpoint does not accept session");
-        if (workUnit != null && !allowsWorkUnit())
-            throw new IllegalArgumentException("endpoint does not accept work unit");
+    @Override
+    public CallContextImpl<I,O> newCallContext(){
+        return newCallContext(false);
+    }
+    CallContextImpl<I,O> newCallContext(boolean legacyContext){
+        return new CallContextImpl<>(this, legacyContext);
     }
 
-    static abstract class BulkIOEndpointCallerImpl implements IOEndpoint.BulkIOEndpointCaller {
+    CallContextImpl<I,O>[] checkAllowedArgs(IOEndpoint.CallContext[] callCtxts) {
+        if (callCtxts == null || callCtxts.length ==0)
+            throw new IllegalArgumentException("null or empty contexts for call");
+        CallContextImpl<I,O>[] contexts = new CallContextImpl[callCtxts.length];
+        for (int i=0; i < callCtxts.length; i++) {
+            contexts[i] = checkAllowedArgs(callCtxts[i]);
+        }
+        return contexts;
+    }
+    CallContextImpl<I,O> checkAllowedArgs(CallContext callCtxt) {
+        if (!(callCtxt instanceof CallContextImpl)) {
+            throw new IllegalArgumentException("Unknown implementation of call context");
+        }
+        CallContextImpl<I,O> context = (CallContextImpl<I,O>) callCtxt;
+        if (context.getEndpointState() != null && !allowsEndpointState())
+            throw new IllegalArgumentException("endpoint does not accept endpointState parameter");
+        if (context.getSessionState() != null && !allowsSession())
+            throw new IllegalArgumentException("endpoint does not accept session parameter");
+        if (context.getEndpointConstants() != null && !allowsEndpointConstants())
+            throw new IllegalArgumentException(
+                    "endpoint does not accept "+context.getEndpointConstantsParamName()+" parameter");
+        return context;
+    }
+
+    static abstract class BulkIOEndpointCallerImpl<I,O> implements IOEndpoint.BulkIOEndpointCaller {
         enum WorkPhase {
-            INITIALIZING, RUNNING, INTERRUPTING, INTERRUPTED, COMPLETED;
+            INITIALIZING, RUNNING, INTERRUPTING, INTERRUPTED, COMPLETED
         }
 
+        private final IOEndpointImpl<I,O> endpoint;
         private WorkPhase phase = WorkPhase.INITIALIZING;
 
-        private IOEndpointImpl endpoint;
-        private byte[]         endpointState;
-        private byte[]         workUnit;
-        private SessionState   session;
+        private CallContextImpl<I,O> callContext;
 
-        private long           callCount = 0;
+        private CallerThreadPoolExecutor<I,O> callerThreadPoolExecutor;
+        private LinkedBlockingQueue<CallContextImpl<I,O>> callContextQueue;
+        private int threadCount;
 
-        BulkIOEndpointCallerImpl(IOEndpointImpl endpoint) {
-            if (endpoint == null)
-                throw new IllegalArgumentException("null endpoint definition");
+        private long callCount = 0;
+
+        // constructor for calling in the application thread
+        BulkIOEndpointCallerImpl(IOEndpointImpl<I,O> endpoint, CallContextImpl<I,O> callContext) {
             this.endpoint = endpoint;
+            this.callContext = callContext;
+// TODO: should only create a session ID if needed
+            getSession();
+        }
+        // constructor for concurrent calling in multiple worker threads
+        BulkIOEndpointCallerImpl(IOEndpointImpl<I,O> endpoint, CallContextImpl<I,O>[] callContexts, int threadCount, int queueSize) {
+            this.endpoint = endpoint;
+            this.callerThreadPoolExecutor = new CallerThreadPoolExecutor<>(threadCount, queueSize, this);
+            this.callContextQueue = new LinkedBlockingQueue<>(Arrays.asList(callContexts));
+            this.threadCount = threadCount;
+        }
+        private void init(IOEndpointImpl<I,O> endpoint, int threadCount, int queueSize) {
         }
 
-        private IOEndpointImpl getEndpoint() {
-            return this.endpoint;
-        }
-
-        String getEndpointPath() {
-            return getEndpoint().getEndpointPath();
-        }
         long getCallCount() {
             return callCount;
         }
         void incrementCallCount() {
             callCount++;
         }
+        CallContextImpl<I,O> getCallContext() {
+            return this.callContext;
+        }
+        CallerThreadPoolExecutor<I,O> getCallerThreadPoolExecutor() {
+            return this.callerThreadPoolExecutor;
+        }
+        LinkedBlockingQueue<CallContextImpl<I,O>> getCallContextQueue() {
+            return this.callContextQueue;
+        }
+        int getThreadCount(){
+            return this.threadCount;
+        }
 
         boolean allowsEndpointState() {
-            return getEndpoint().allowsEndpointState();
+            return callContext.getEndpoint().allowsEndpointState();
         }
         @Override
+        @Deprecated
         public InputStream getEndpointState() {
-            return (this.endpointState == null) ? null : new ByteArrayInputStream(this.endpointState);
+            checkCallContext();
+            return new ByteArrayInputStream(callContext.getEndpointState().get());
         }
         @Override
+        @Deprecated
         public void setEndpointState(byte[] endpointState) {
+            checkCallContext();
             if (allowsEndpointState())
-                this.endpointState = endpointState;
+                callContext.withEndpointStateAs(endpointState);
             else if (endpointState != null)
-                throw new IllegalArgumentException("endpoint state not accepted by endpoint: "+ getEndpointPath());
+                throw new IllegalArgumentException("endpoint state not accepted by endpoint: "+
+                        callContext.getEndpoint().getEndpointPath());
         }
         @Override
+        @Deprecated
         public void setEndpointState(InputStream endpointState) {
             setEndpointState(NodeConverter.InputStreamToBytes(endpointState));
         }
         @Override
+        @Deprecated
         public void setEndpointState(BufferableHandle endpointState) {
             setEndpointState((endpointState == null) ? null : endpointState.toBuffer());
         }
 
-        boolean allowsWorkUnit() {
-            return getEndpoint().allowsWorkUnit();
+        boolean allowsEndpointConstants() {
+            checkCallContext();
+            return callContext.getEndpoint().allowsEndpointConstants();
         }
+
         @Override
+        @Deprecated
         public InputStream getWorkUnit() {
-            return (this.workUnit == null) ? null : new ByteArrayInputStream(this.workUnit);
+            checkCallContext();
+            return new ByteArrayInputStream(callContext.getEndpointConstants().get());
         }
         @Override
+        @Deprecated
         public void setWorkUnit(byte[] workUnit) {
-            if (allowsWorkUnit())
-                this.workUnit = workUnit;
+            checkCallContext();
+            if (allowsEndpointConstants())
+                callContext.withEndpointConstantsAs(workUnit);
             else if (workUnit != null)
-                throw new IllegalArgumentException("work unit not accepted by endpoint: "+ getEndpointPath());
+                throw new IllegalArgumentException(callContext.getEndpointConstantsParamName()+
+                        " parameter not accepted by endpoint: "+callContext.getEndpoint().getEndpointPath());
         }
         @Override
+        @Deprecated
         public void setWorkUnit(InputStream workUnit) {
             setWorkUnit(NodeConverter.InputStreamToBytes(workUnit));
         }
         @Override
+        @Deprecated
         public void setWorkUnit(BufferableHandle workUnit) {
             setWorkUnit((workUnit == null) ? null : workUnit.toBuffer());
         }
 
-        DatabaseClient getClient() {
-            return getEndpoint().getClient();
-        }
+
         boolean allowsSession() {
-            return getEndpoint().allowsSession();
+            return callContext.getEndpoint().allowsSession();
         }
         SessionState getSession() {
             if (!allowsSession())
                 return null;
-
-            if (session == null) {
+            checkCallContext();
+            if (callContext.getSessionState() == null) {
                 // no need to refresh the session id preemptively before timeout
                 // because a timed-out session id is merely a new session id
-                session = getEndpoint().getCaller().newSessionState();
+                callContext.withSessionState(callContext.getEndpoint().getCaller().newSessionState());
             }
-            return session;
+            return callContext.getSessionState();
         }
         boolean allowsInput() {
-            return getEndpoint().allowsInput();
+            return callContext.getEndpoint().allowsInput();
         }
 
-        boolean queueInput(InputStream input, BlockingQueue<InputStream> queue, int batchSize) {
+        boolean queueInput(I input, BlockingQueue<I> queue, int batchSize) {
             if (input == null) return false;
             try {
                 queue.put(input);
@@ -218,10 +286,10 @@ abstract class IOEndpointImpl implements IOEndpoint {
             }
             return checkQueue(queue, batchSize);
         }
-        boolean queueAllInput(InputStream[] input, BlockingQueue<InputStream> queue, int batchSize) {
+        boolean queueAllInput(I[] input, BlockingQueue<I> queue, int batchSize) {
             if (input == null || input.length == 0) return false;
             try {
-                for (InputStream item: input) {
+                for (I item: input) {
                     queue.put(item);
                 }
             } catch (InterruptedException e) {
@@ -229,7 +297,7 @@ abstract class IOEndpointImpl implements IOEndpoint {
             }
             return checkQueue(queue, batchSize);
         }
-        boolean checkQueue(BlockingQueue<InputStream> queue, int batchSize) {
+        boolean checkQueue(BlockingQueue<I> queue, int batchSize) {
             if ((queue.size() % batchSize) > 0)
                 return false;
 
@@ -243,27 +311,25 @@ abstract class IOEndpointImpl implements IOEndpoint {
                 case INTERRUPTED:
                 case COMPLETED:
                     throw new IllegalStateException(
-                            "cannot accept more input as current phase is  " + getPhase().name()
-                    );
+                        "can only accept input when initializing or running and not when input is "+
+                        getPhase().name().toLowerCase());
                 default:
                     throw new MarkLogicInternalException(
-                            "unexpected state for " + getEndpointPath() + " during loop: " + getPhase().name());
+                            "unexpected state for " + callContext.getEndpoint().getEndpointPath() + " during loop: " + getPhase().name());
             }
 
             return true;
         }
-        InputStream[] getInputBatch(BlockingQueue<InputStream> queue, int batchSize) {
-            List<InputStream> inputStreamList = new ArrayList<InputStream>();
+        I[] getInputBatch(BlockingQueue<I> queue, int batchSize) {
+            List<I> inputStreamList = new ArrayList<>();
             queue.drainTo(inputStreamList, batchSize);
-            return inputStreamList.toArray(new InputStream[inputStreamList.size()]);
+            return inputStreamList.toArray(endpoint.getCaller().getInputHandle().newArray(inputStreamList.size()));
         }
-        void processOutputBatch(InputStream[] output, Consumer<InputStream> outputListener) {
+        void processOutputBatch(O[] output, Consumer<O> outputListener) {
             if (output == null || output.length == 0) return;
 
-            assignEndpointState(output);
-
-            for (int i=allowsEndpointState()?1:0; i < output.length; i++) {
-                outputListener.accept(output[i]);
+            for (O value: output) {
+                outputListener.accept(value);
             }
         }
 
@@ -280,18 +346,44 @@ abstract class IOEndpointImpl implements IOEndpoint {
                 setPhase(WorkPhase.INTERRUPTING);
         }
 
-        void assignEndpointState(InputStream[] output) {
-            if (allowsEndpointState() && output.length > 0) {
-                setEndpointState(output[0]);
-            }
+        private void checkCallContext() {
+            if(this.callContext == null)
+                throw new InternalError("Can only call set and get methods for call state when using a single CallContext.");
         }
 
-        InputStream[] getOutput(InputStream[] output) {
-            assignEndpointState(output);
-            if(allowsEndpointState() && output.length>0) {
-                 return Arrays.copyOfRange(output, 1, output.length);
+        void submitTask(Callable<Boolean> callable) throws RejectedExecutionException{
+            FutureTask<Boolean> futureTask = new FutureTask<>(callable);
+            getCallerThreadPoolExecutor().execute(futureTask);
+        }
+
+        void checkEndpoint(IOEndpointImpl<I,O> endpoint, String endpointType) {
+            if(getCallContext().getEndpoint() != endpoint)
+                throw new IllegalArgumentException("Endpoint must be "+endpointType);
+        }
+
+        static class CallerThreadPoolExecutor<I,O> extends ThreadPoolExecutor {
+
+            private Boolean awaitingTermination;
+            private final BulkIOEndpointCallerImpl<I,O> bulkIOEndpointCaller;
+            CallerThreadPoolExecutor(int threadCount, int queueSize, BulkIOEndpointCallerImpl<I,O> bulkIOEndpointCaller) {
+
+                super(threadCount, threadCount, 0, TimeUnit.MILLISECONDS,
+                        new LinkedBlockingQueue<>(queueSize), new CallerRunsPolicy());
+                this.bulkIOEndpointCaller = bulkIOEndpointCaller;
             }
-            return output;
+
+            Boolean isAwaitingTermination() {
+                return this.awaitingTermination;
+            }
+            synchronized void awaitTermination() throws InterruptedException {
+                if (bulkIOEndpointCaller.getCallContextQueue().isEmpty() && getActiveCount()<=1) {
+                    shutdown();
+                }
+                else {
+                    awaitingTermination = true;
+                    awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+                }
+            }
         }
     }
 }

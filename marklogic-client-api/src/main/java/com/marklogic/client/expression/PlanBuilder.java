@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,7 @@ import com.marklogic.client.type.PlanTriplePositionSeq;
 
 import com.marklogic.client.expression.CtsExpr; 
 import com.marklogic.client.expression.FnExpr; 
+import com.marklogic.client.expression.GeoExpr; 
 import com.marklogic.client.expression.JsonExpr; 
 import com.marklogic.client.expression.MapExpr; 
 import com.marklogic.client.expression.MathExpr; 
@@ -84,10 +85,11 @@ import com.marklogic.client.expression.PlanBuilderBase;
  */
 public abstract class PlanBuilder implements PlanBuilderBase {
   protected PlanBuilder(
-    CtsExpr cts, FnExpr fn, JsonExpr json, MapExpr map, MathExpr math, RdfExpr rdf, SemExpr sem, SpellExpr spell, SqlExpr sql, XdmpExpr xdmp, XsExpr xs
+    CtsExpr cts, FnExpr fn, GeoExpr geo, JsonExpr json, MapExpr map, MathExpr math, RdfExpr rdf, SemExpr sem, SpellExpr spell, SqlExpr sql, XdmpExpr xdmp, XsExpr xs
     ) {
     this.cts = cts;
      this.fn = fn;
+     this.geo = geo;
      this.json = json;
      this.map = map;
      this.math = math;
@@ -107,6 +109,10 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * Builds expressions with fn server functions.
   */
   public final FnExpr fn;
+ /**
+  * Builds expressions with geo server functions.
+  */
+  public final GeoExpr geo;
  /**
   * Builds expressions with json server functions.
   */
@@ -152,7 +158,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ServerExpression add(ServerExpression... left);
   /**
-  * This function returns true if the specified expressions all return true. Otherwise, it returns false. You can either compair 
+  * This function returns true if the specified expressions all return true. Otherwise, it returns false. 
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:and" target="mlserverdoc">op:and</a> server function.
   * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
@@ -173,10 +179,9 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:eq" target="mlserverdoc">op:eq</a> server function.
   * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
-  * @param right  The right value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract ServerExpression eq(ServerExpression left, ServerExpression right);
+  public abstract ServerExpression eq(ServerExpression... left);
   /**
   * This function returns true if the value of the left expression is greater than or equal to the value of the right expression. Otherwise, it returns false.
   * <p>
@@ -222,7 +227,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ServerExpression lt(ServerExpression left, ServerExpression right);
   /**
-  * This function multipies the left numericExpression by the right numericExpression and returns the value. 
+  * This function multiplies the left numericExpression by the right numericExpression and returns the value. 
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:multiply" target="mlserverdoc">op:multiply</a> server function.
   * @param left  The left numeric expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
@@ -268,7 +273,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:param" target="mlserverdoc">op:param</a> server function.
   * @param name  The name of the parameter.
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/plan_param.html">plan:param</a> server data type
+  * @return  a <a href="http://docs.marklogic.com/op:param" target="mlserverdoc">op:param()</a> server expression
   */
   public abstract PlanParamExpr param(String name);
   /**
@@ -276,7 +281,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:param" target="mlserverdoc">op:param</a> server function.
   * @param name  The name of the parameter.
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/plan_param.html">plan:param</a> server data type
+  * @return  a <a href="http://docs.marklogic.com/op:param" target="mlserverdoc">op:param()</a> server expression
   */
   public abstract PlanParamExpr param(XsStringVal name);
   /**
@@ -539,28 +544,28 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract AccessPlan fromLexicons(Map<String,CtsReferenceExpr> indexes, XsStringVal qualifierName, PlanSystemColumn sysCols);
   /**
-  * This function dynamically constructs a row set based on an SPARQL SELECT query from triples.
+  * This function dynamically constructs a row set based on a SPARQL SELECT query from triples.
   * @param select  A SPARQL SELECT query expressed as a string.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan fromSparql(String select);
   /**
-  * This function dynamically constructs a row set based on an SPARQL SELECT query from triples.
+  * This function dynamically constructs a row set based on a SPARQL SELECT query from triples.
   * @param select  A SPARQL SELECT query expressed as a string.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan fromSparql(XsStringVal select);
   /**
-  * This function dynamically constructs a row set based on an SPARQL SELECT query from triples.
+  * This function dynamically constructs a row set based on a SPARQL SELECT query from triples.
   * @param select  A SPARQL SELECT query expressed as a string.
-  * @param qualifierName  Specifies a name for qualifying the column names. Placeholder parameters in the SPARQL string may be bound in the result() call
+  * @param qualifierName  Specifies a name for qualifying the column names. An "@" in front of the name specifies a parameter placeholder. A parameter placeholder in the SPARQL string must be bound to a parameter value in the result() call.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan fromSparql(String select, String qualifierName);
   /**
-  * This function dynamically constructs a row set based on an SPARQL SELECT query from triples.
+  * This function dynamically constructs a row set based on a SPARQL SELECT query from triples.
   * @param select  A SPARQL SELECT query expressed as a string.
-  * @param qualifierName  Specifies a name for qualifying the column names. Placeholder parameters in the SPARQL string may be bound in the result() call
+  * @param qualifierName  Specifies a name for qualifying the column names. An "@" in front of the name specifies a parameter placeholder. A parameter placeholder in the SPARQL string must be bound to a parameter value in the result() call.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan fromSparql(XsStringVal select, XsStringVal qualifierName);
@@ -603,14 +608,14 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanCondition sqlCondition(XsStringVal expression);
   /**
-  * Specifies an equijoin using one columndef each from the left and right rows. The result is used by the op:join-inner and op:join-left-outer functions. 
+  * Specifies an equijoin using one columndef each from the left and right rows. The result is used by the op:join-inner, op:join-left-outer, and op:join-full-outer, and functions. 
   * @param left  The rows from the left view.
   * @param right  The row set from the right view.
   * @return  a PlanJoinKey object
   */
   public abstract PlanJoinKey on(String left, String right);
   /**
-  * Specifies an equijoin using one columndef each from the left and right rows. The result is used by the op:join-inner and op:join-left-outer functions. 
+  * Specifies an equijoin using one columndef each from the left and right rows. The result is used by the op:join-inner, op:join-left-outer, and op:join-full-outer, and functions. 
   * @param left  The rows from the left view.
   * @param right  The row set from the right view.
   * @return  a PlanJoinKey object
@@ -707,7 +712,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function counts the rows where the specified input column has a value. If the input column is omitted, all rows in the group or row set are counted. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the column values.
   * @param column  The columns to be counted.
-  * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
+  * @param option  The options can take a values key with a 'distinct' value to average the distinct values of the column.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol count(String name, String column, PlanValueOption option);
@@ -715,7 +720,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function counts the rows where the specified input column has a value. If the input column is omitted, all rows in the group or row set are counted. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the column values.
   * @param column  The columns to be counted.
-  * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
+  * @param option  The options can take a values key with a 'distinct' value to average the distinct values of the column.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol count(PlanColumn name, PlanExprCol column, PlanValueOption option);
@@ -1321,27 +1326,27 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
 /**
-  * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
   * @param right  The row set from the right view.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right);
 /**
-  * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKey... keys);
 /**
-  * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys);
 /**
-  * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function.
   * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
@@ -1349,13 +1354,49 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
 /**
-  * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function.
   * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
+/**
+  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets. 
+  * @param right  The row set from the right view.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan joinFullOuter(ModifyPlan right);
+/**
+  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets. 
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKey... keys);
+/**
+  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets. 
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKeySeq keys);
+/**
+  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets. 
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
+/**
+  * This method yields one output row set with the rows from an inner join as well as the other rows from both the left and right row sets. 
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
 /**
   * This method sorts the row set by the specified order definition.
   * @param keys  The specified column or sortdef output from the op:asc or op:desc function.
@@ -1430,26 +1471,26 @@ public abstract Plan bindParam(PlanParamExpr param, PlanParamBindingVal literal)
   public interface PreparePlan extends ExportablePlan, PlanBuilderBase.PreparePlanBase {
 /**
   * This method applies the specified function to each row returned by the plan to produce a different result row.
-  * @param func  The function to be appied.
+  * @param func  The function to be applied.
   * @return  a ExportablePlan object
   */
   public abstract ExportablePlan map(PlanFunction func);
 /**
   * This method applies a function or the builtin reducer to each row returned by the plan to produce a single result as with the reduce() method of JavaScript Array. 
-  * @param func  The function to be appied.
+  * @param func  The function to be applied.
   * @return  a ExportablePlan object
   */
   public abstract ExportablePlan reduce(PlanFunction func);
 /**
   * This method applies a function or the builtin reducer to each row returned by the plan to produce a single result as with the reduce() method of JavaScript Array. 
-  * @param func  The function to be appied.
+  * @param func  The function to be applied.
   * @param seed  The value returned by the previous request.
   * @return  a ExportablePlan object
   */
   public abstract ExportablePlan reduce(PlanFunction func, String seed);
 /**
   * This method applies a function or the builtin reducer to each row returned by the plan to produce a single result as with the reduce() method of JavaScript Array. 
-  * @param func  The function to be appied.
+  * @param func  The function to be applied.
   * @param seed  The value returned by the previous request.
   * @return  a ExportablePlan object
   */

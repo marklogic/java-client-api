@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,29 +15,15 @@
  */
 package com.marklogic.client.io;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
-import com.marklogic.client.io.marker.CtsQueryWriteHandle;
-import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.io.marker.TextReadHandle;
-import com.marklogic.client.io.marker.TextWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
+import com.marklogic.client.io.marker.*;
 import com.marklogic.client.impl.JacksonBaseHandle;
 
 /**
@@ -47,11 +33,8 @@ import com.marklogic.client.impl.JacksonBaseHandle;
  */
 public class JacksonHandle
   extends JacksonBaseHandle<JsonNode>
-  implements ContentHandle<JsonNode>,
-    OutputStreamSender, BufferableHandle,
+  implements ResendableContentHandle<JsonNode, InputStream>, OutputStreamSender,
     JSONReadHandle, JSONWriteHandle,
-    TextReadHandle, TextWriteHandle,
-    XMLReadHandle, XMLWriteHandle,
     StructureReadHandle, StructureWriteHandle, CtsQueryWriteHandle,
     SPARQLResultsReadHandle
 {
@@ -107,6 +90,16 @@ public class JacksonHandle
     setFormat(format);
     return this;
   }
+  /**
+   * Specifies the mime type of the content and returns the handle
+   * as a fluent convenience.
+   * @param mimetype	the mime type of the content
+   * @return	this handle
+   */
+  public JacksonHandle withMimetype(String mimetype) {
+    setMimetype(mimetype);
+    return this;
+  }
 
   /**
    * Returns the root node of the JSON tree.
@@ -135,14 +128,27 @@ public class JacksonHandle
   }
 
   @Override
-  protected void receiveContent(InputStream content) {
-    if (content == null)
-      return;
+  public Class<JsonNode> getContentClass() {
+    return JsonNode.class;
+  }
+  @Override
+  public JacksonHandle newHandle() {
+    return new JacksonHandle().withMimetype(getMimetype());
+  }
+  @Override
+  public JsonNode[] newArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new JsonNode[length];
+  }
+
+  @Override
+  public JsonNode toContent(InputStream serialization) {
+    if (serialization == null) return null;
 
     try {
-      set( getMapper().readValue(
-        new InputStreamReader(content, "UTF-8"), JsonNode.class
-      ));
+      return getMapper().readValue(
+        new InputStreamReader(serialization, StandardCharsets.UTF_8), JsonNode.class
+      );
     } catch (JsonParseException e) {
       throw new MarkLogicIOException(e);
     } catch (JsonMappingException e) {
@@ -151,12 +157,27 @@ public class JacksonHandle
       throw new MarkLogicIOException(e);
     } finally {
       try {
-        content.close();
+        serialization.close();
       } catch (IOException e) {
         // ignore.
       }
     }
+  }
+  @Override
+  protected OutputStreamSender sendContent(JsonNode content) {
+    if (content == null) {
+      throw new IllegalStateException("No document to write");
+    }
 
+    return new OutputStreamSenderImpl(getMapper(), content);
+  }
+  @Override
+  protected OutputStreamSender sendContent() {
+    return sendContent(get());
+  }
+  @Override
+  protected void receiveContent(InputStream content) {
+    set(toContent(content));
   }
   @Override
   protected boolean hasContent() {
@@ -164,6 +185,19 @@ public class JacksonHandle
   }
   @Override
   public void write(OutputStream out) throws IOException {
-    getMapper().writeValue(new OutputStreamWriter(out, "UTF-8"), get());
+    sendContent().write(out);
+  }
+
+  static private class OutputStreamSenderImpl implements OutputStreamSender {
+    private final ObjectMapper mapper;
+    private final JsonNode content;
+    private OutputStreamSenderImpl(ObjectMapper mapper, JsonNode content) {
+      this.mapper = mapper;
+      this.content = content;
+    }
+    @Override
+    public void write(OutputStream out) throws IOException {
+      mapper.writeValue(new OutputStreamWriter(out, StandardCharsets.UTF_8), content);
+    }
   }
 }

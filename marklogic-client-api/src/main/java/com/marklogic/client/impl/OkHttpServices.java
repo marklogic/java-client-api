@@ -17,7 +17,6 @@ package com.marklogic.client.impl;
 
 import com.marklogic.client.*;
 import com.marklogic.client.DatabaseClient.ConnectionResult;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.BasicAuthContext;
 import com.marklogic.client.DatabaseClientFactory.CertificateAuthContext;
 import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
@@ -39,24 +38,8 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResultIterator;
 
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.JacksonParserHandle;
-import com.marklogic.client.io.OutputStreamSender;
-import com.marklogic.client.io.ReaderHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.marker.AbstractReadHandle;
-import com.marklogic.client.io.marker.AbstractWriteHandle;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.CtsQueryWriteHandle;
-import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
-import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
-import com.marklogic.client.io.marker.DocumentPatchHandle;
-import com.marklogic.client.io.marker.SearchReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
+import com.marklogic.client.io.*;
+import com.marklogic.client.io.marker.*;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
@@ -166,16 +149,15 @@ public class OkHttpServices implements RESTServices {
   private HttpUrl baseUri;
   private OkHttpClient client;
   private boolean released = false;
-  private Authentication type = null;
 
-  private Random randRetry    = new Random();
+  private final Random randRetry = new Random();
 
   private int maxDelay = DEFAULT_MAX_DELAY;
   private int minRetry = DEFAULT_MIN_RETRY;
 
   private boolean checkFirstRequest = true;
 
-  private Set<Integer> retryStatus = new HashSet<>();
+  private final Set<Integer> retryStatus = new HashSet<>();
 
   static protected class ThreadState {
     boolean isFirstRequest;
@@ -184,12 +166,8 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  private final ThreadLocal<ThreadState> threadState = new ThreadLocal<ThreadState>() {
-    @Override
-    protected ThreadState initialValue() {
-      return new ThreadState(checkFirstRequest);
-    }
-  };
+  private final ThreadLocal<ThreadState> threadState =
+          ThreadLocal.withInitial(() -> new ThreadState(checkFirstRequest));
 
   public OkHttpServices() {
     retryStatus.add(STATUS_BAD_GATEWAY);
@@ -221,14 +199,12 @@ public class OkHttpServices implements RESTServices {
         return failure;
       }
       String responseBody = getEntity(response.body(), String.class);
-      InputStream is = new ByteArrayInputStream(responseBody.getBytes("UTF-8"));
+      InputStream is = new ByteArrayInputStream(responseBody.getBytes(StandardCharsets.UTF_8));
       FailedRequest handler = FailedRequest.getFailedRequest(response.code(), response.header(HEADER_CONTENT_TYPE), is);
       if (handler.getMessage() == null) {
         handler.setMessageString(responseBody);
       }
       return handler;
-    } catch (UnsupportedEncodingException e) {
-      throw new IllegalStateException("UTF-8 is unsupported", e);
     } finally {
       closeResponse(response);
     }
@@ -284,7 +260,6 @@ public class OkHttpServices implements RESTServices {
 	    clientBldr = configureAuthentication(kerberosContext, host,clientBldr); 
 	} else if (securityContext instanceof CertificateAuthContext) {
 		CertificateAuthContext certificateContext = (CertificateAuthContext) securityContext;
-		type = Authentication.CERTIFICATE;
 		sslContext = certificateContext.getSSLContext();
 		if (certificateContext.getTrustManager() != null)
 			trustManager = certificateContext.getTrustManager();
@@ -334,32 +309,26 @@ public class OkHttpServices implements RESTServices {
 
     if (sslContext != null) {
       if (trustManager == null) {
-        String javaVersion = System.getProperty("java.version");
-        int javaMajorVersion = Integer.parseInt(javaVersion.substring(0, javaVersion.indexOf(".")));
-        // OKHttp starts requiring the trust manager in Java 9
-        if (javaMajorVersion < 9) {
-          clientBldr.sslSocketFactory(sslContext.getSocketFactory());
-        } else {
-          // transitional workaround -- at next backward incompatibility boundary, replace try with thrown exception
-          try {
-            TrustManagerFactory trustMgrFactory =
-                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            trustMgrFactory.init((KeyStore) null);
-            TrustManager[] trustMgrs = trustMgrFactory.getTrustManagers();
-            if (trustMgrs == null || trustMgrs.length == 0)
-              throw new IllegalArgumentException("no trust manager and could not get default trust manager");
-            if (!(trustMgrs[0] instanceof X509TrustManager))
-              throw new IllegalArgumentException("no trust manager and default is not an X509TrustManager");
-            trustManager = (X509TrustManager) trustMgrs[0];
-            sslContext.init(null, trustMgrs, null);
-            clientBldr.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
-          } catch (KeyStoreException e) {
-            throw new IllegalArgumentException("no trust manager and cannot initialize factory for default", e);
-          } catch (NoSuchAlgorithmException e) {
-            throw new IllegalArgumentException("no trust manager and no algorithm for default manager", e);
-          } catch (KeyManagementException e) {
-            throw new IllegalArgumentException("no trust manager and cannot initialize context with default", e);
-          }
+        // OkHttp requires the trust manager on Java 9 and on Java 8 after 8u251
+        // transitional workaround -- at next backward incompatibility boundary, replace try with thrown exception
+        try {
+          TrustManagerFactory trustMgrFactory =
+              TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+          trustMgrFactory.init((KeyStore) null);
+          TrustManager[] trustMgrs = trustMgrFactory.getTrustManagers();
+          if (trustMgrs == null || trustMgrs.length == 0)
+            throw new IllegalArgumentException("no trust manager and could not get default trust manager");
+          if (!(trustMgrs[0] instanceof X509TrustManager))
+            throw new IllegalArgumentException("no trust manager and default is not an X509TrustManager");
+          trustManager = (X509TrustManager) trustMgrs[0];
+          sslContext.init(null, trustMgrs, null);
+          clientBldr.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+        } catch (KeyStoreException e) {
+          throw new IllegalArgumentException("no trust manager and cannot initialize factory for default", e);
+        } catch (NoSuchAlgorithmException e) {
+          throw new IllegalArgumentException("no trust manager and no algorithm for default manager", e);
+        } catch (KeyManagementException e) {
+          throw new IllegalArgumentException("no trust manager and cannot initialize context with default", e);
         }
       } else {
         clientBldr.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
@@ -401,21 +370,15 @@ public class OkHttpServices implements RESTServices {
     }
 
     if (props.containsKey(MAX_DELAY_PROP)) {
-      String maxDelayStr = props.getProperty(MAX_DELAY_PROP);
-      if (maxDelayStr != null && maxDelayStr.length() > 0) {
-        int max = Integer.parseInt(maxDelayStr);
-        if (max > 0) {
-          maxDelay = max * 1000;
-        }
+      int max = Utilities.parseInt(props.getProperty(MAX_DELAY_PROP));
+      if (max > 0) {
+        maxDelay = max * 1000;
       }
     }
     if (props.containsKey(MIN_RETRY_PROP)) {
-      String minRetryStr = props.getProperty(MIN_RETRY_PROP);
-      if (minRetryStr != null && minRetryStr.length() > 0) {
-        int min = Integer.parseInt(minRetryStr);
-        if (min > 0) {
-          minRetry = min;
-        }
+      int min = Utilities.parseInt(props.getProperty(MIN_RETRY_PROP));
+      if (min > 0) {
+        minRetry = min;
       }
     }
 
@@ -431,8 +394,7 @@ public class OkHttpServices implements RESTServices {
   public OkHttpClient.Builder configureAuthentication(BasicAuthContext basicAuthContext, OkHttpClient.Builder clientBuilder) {
       String user = basicAuthContext.getUser();
       String password = basicAuthContext.getPassword();
-      type = Authentication.BASIC;
-      if (user == null) 
+      if (user == null)
           throw new IllegalArgumentException("No user provided");
       if (password == null) 
           throw new IllegalArgumentException("No password provided");
@@ -450,8 +412,7 @@ public class OkHttpServices implements RESTServices {
 	  	OkHttpClient.Builder builder = clientBuilder;
         String user = digestAuthContext.getUser();
         String password = digestAuthContext.getPassword();
-        type = Authentication.DIGEST;
-        if (user == null) 
+        if (user == null)
             throw new IllegalArgumentException("No user provided");
         if (password == null) 
             throw new IllegalArgumentException("No password provided");
@@ -471,7 +432,6 @@ public class OkHttpServices implements RESTServices {
   }
   
   public OkHttpClient.Builder configureAuthentication(KerberosAuthContext keberosAuthContext, String host, OkHttpClient.Builder clientBuilder) {
-	  type = Authentication.KERBEROS;
 	  Map<String, String> kerberosOptions = keberosAuthContext.getKrbOptions();
 	  Interceptor interceptor = new HTTPKerberosAuthInterceptor(host, kerberosOptions);
       checkFirstRequest = false;
@@ -482,7 +442,6 @@ public class OkHttpServices implements RESTServices {
   }
   
   public OkHttpClient.Builder configureAuthentication(SAMLAuthContext samlAuthContext, OkHttpClient.Builder clientBuilder) {
-      type = Authentication.SAML;
       Interceptor interceptor = null;
       String authorizationTokenValue = samlAuthContext.getToken();
       
@@ -566,7 +525,7 @@ public class OkHttpServices implements RESTServices {
     String retryAfterRaw = response.header("Retry-After");
     closeResponse(response);
 
-    int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+    int retryAfter = Utilities.parseInt(retryAfterRaw);
     return Math.max(retryAfter, calculateDelay(randRetry, retry));
   }
 
@@ -741,8 +700,7 @@ public class OkHttpServices implements RESTServices {
   }
 
   private int getRetryAfterTime(Response response) {
-    String retryAfterRaw = response.header("Retry-After");
-    return (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+    return Utilities.parseInt(response.header("Retry-After")) ;
   }
 
   private Response sendRequestOnce(Request.Builder requestBldr) {
@@ -954,9 +912,9 @@ public class OkHttpServices implements RESTServices {
   }
 
   private class OkHttpDocumentPage extends BasicPage<DocumentRecord> implements DocumentPage, Iterator<DocumentRecord> {
-    private OkHttpResultIterator iterator;
-    private boolean hasMetadata;
-    private boolean hasContent;
+    private final OkHttpResultIterator iterator;
+    private final boolean hasMetadata;
+    private final boolean hasContent;
 
     OkHttpDocumentPage(OkHttpResultIterator iterator, boolean hasContent, boolean hasMetadata) {
       super(
@@ -1507,7 +1465,7 @@ public class OkHttpServices implements RESTServices {
             ((uri != null) ? uri : "new document"));
       }
 
-      int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+      int retryAfter = Utilities.parseInt(retryAfterRaw);
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
     if (retryStatus.contains(status)) {
@@ -1652,7 +1610,7 @@ public class OkHttpServices implements RESTServices {
             ((uri != null) ? uri : "new document"));
       }
 
-      int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+      int retryAfter = Utilities.parseInt(retryAfterRaw);
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
     if (retryStatus.contains(status)) {
@@ -1759,7 +1717,7 @@ public class OkHttpServices implements RESTServices {
 
     Function<Request.Builder, Response> doPostFunction = new Function<Request.Builder, Response>() {
       public Response apply(Request.Builder funcBuilder) {
-        return sendRequestOnce(funcBuilder.post(RequestBody.create(null, "")));
+        return sendRequestOnce(funcBuilder.post(RequestBody.create("", null)));
       }
     };
     Response response = sendRequestWithRetry(requestBldr, doPostFunction, null);
@@ -1822,7 +1780,7 @@ public class OkHttpServices implements RESTServices {
 
     Function<Request.Builder, Response> doPostFunction = new Function<Request.Builder, Response>() {
       public Response apply(Request.Builder funcBuilder) {
-        return sendRequestOnce(funcBuilder.post(RequestBody.create(null, "")).build());
+        return sendRequestOnce(funcBuilder.post(RequestBody.create("", null)).build());
       }
     };
     Response response = sendRequestWithRetry(requestBldr, false, doPostFunction, null);
@@ -2037,11 +1995,7 @@ public class OkHttpServices implements RESTServices {
   }
 
   static private long getHeaderServerTimestamp(Headers headers) {
-    String timestamp = headers.get(HEADER_ML_EFFECTIVE_TIMESTAMP);
-    if (timestamp != null && timestamp.length() > 0) {
-      return Long.parseLong(timestamp);
-    }
-    return -1;
+    return Utilities.parseLong(headers.get(HEADER_ML_EFFECTIVE_TIMESTAMP));
   }
 
   static private void updateServerTimestamp(ContentDescriptor descriptor, long timestamp) {
@@ -2053,10 +2007,7 @@ public class OkHttpServices implements RESTServices {
   }
 
   static private long getHeaderLength(String length) {
-    if (length != null) {
-      return Long.parseLong(length);
-    }
-    return ContentDescriptor.UNKNOWN_LENGTH;
+    return Utilities.parseLong(length, ContentDescriptor.UNKNOWN_LENGTH);
   }
 
   static private String getHeaderUri(BodyPart part) {
@@ -2352,7 +2303,7 @@ public class OkHttpServices implements RESTServices {
         }
 
         String retryAfterRaw = response.header("Retry-After");
-        int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+        int retryAfter = Utilities.parseInt(retryAfterRaw);
 
         closeResponse(response);
 
@@ -2594,7 +2545,9 @@ public class OkHttpServices implements RESTServices {
       } :
       new Function<Request.Builder, Response>() {
         public Response apply(Request.Builder funcBuilder) {
-          return doPost(null, funcBuilder.header(HEADER_CONTENT_TYPE, tempBaseHandle.getMimetype()),
+          String contentType = tempBaseHandle.getMimetype();
+          return doPost(null,
+            (contentType == null) ? funcBuilder : funcBuilder.header(HEADER_CONTENT_TYPE, contentType),
             tempBaseHandle.sendContent());
         }
       };
@@ -2928,7 +2881,7 @@ public class OkHttpServices implements RESTServices {
         }
 
         response = (sentValue == null) ?
-                   sendRequestOnce(requestBldr.post(RequestBody.create(null, "")).build()) :
+                   sendRequestOnce(requestBldr.post(RequestBody.create("", null)).build()) :
                    sendRequestOnce(requestBldr.post(sentValue).build());
       } else {
         throw new MarkLogicInternalException("unknown method type "
@@ -2951,7 +2904,7 @@ public class OkHttpServices implements RESTServices {
           "Cannot retry request for " + connectPath);
       }
 
-      int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+      int retryAfter = Utilities.parseInt(retryAfterRaw);
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
     if (retryStatus.contains(status)) {
@@ -3049,15 +3002,35 @@ public class OkHttpServices implements RESTServices {
   }
 
   @Override
-  public <R extends UrisReadHandle> R uris(RequestLogger reqlog, Transaction transaction,
-        QueryDefinition qdef, long start, String afterUri, long pageLength, String forestName, R output)
+  public <R extends AbstractReadHandle> R getSystemSchema(RequestLogger reqlog, String schemaName, R output)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     RequestParameters params = new RequestParameters();
-    if ( forestName != null )        params.add("forest-name", forestName);
-    if (start > 1)                   params.add("start",       Long.toString(start));
-    if (afterUri != null )           params.add("after",       afterUri);
-    if (pageLength >= 1)             params.add("pageLength",  Long.toString(pageLength));
+    params.add("system", schemaName);
+    return getResource(reqlog, "internal/schemas", null, params, output);
+  }
+  @Override
+  public <R extends UrisReadHandle> R uris(RequestLogger reqlog, String method, QueryDefinition qdef,
+        Boolean filtered, long start, String afterUri, long pageLength, String forestName, R output
+  ) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+      logger.debug("Querying for uris");
+      RequestParameters params = new RequestParameters();
+      if (filtered != null) params.add("filtered", filtered.toString());
+      if (forestName != null) params.add("forest-name", forestName);
+      if (start > 1) params.add("start", Long.toString(start));
+      if (afterUri != null) params.add("after", afterUri);
+      if (pageLength >= 1) params.add("pageLength", Long.toString(pageLength));
+      return processQuery(reqlog, "internal/uris", method, params, qdef, output);
+  }
+  @Override
+  public <R extends AbstractReadHandle> R forestInfo(RequestLogger reqlog,
+        String method, RequestParameters params, QueryDefinition qdef, R output
+  ) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+      return processQuery(reqlog, "internal/forestinfo", method, params, qdef, output);
+  }
+  private <R extends AbstractReadHandle> R processQuery(RequestLogger reqlog, String path,
+        String method, RequestParameters params, QueryDefinition qdef, R output
+  ) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
     if (qdef.getDirectory() != null) params.add("directory",   qdef.getDirectory());
     if (qdef.getCollections() != null ) {
       for ( String collection : qdef.getCollections() ) {
@@ -3069,62 +3042,97 @@ public class OkHttpServices implements RESTServices {
     }
 
     if (qdef instanceof RawQueryByExampleDefinition) {
-      throw new UnsupportedOperationException("Cannot search with RawQueryByExampleDefinition");
+      throw new UnsupportedOperationException(path+" cannot process RawQueryByExampleDefinition");
     }
+
+    boolean sendQueryAsPayload = "POST".equals(method);
 
     String text = null;
-    if (qdef instanceof StringQueryDefinition) {
-      text = ((StringQueryDefinition) qdef).getCriteria();
-    } else if (qdef instanceof StructuredQueryDefinition) {
-      text = ((StructuredQueryDefinition) qdef).getCriteria();
-    } else if (qdef instanceof RawStructuredQueryDefinition) {
-      text = ((RawStructuredQueryDefinition) qdef).getCriteria();
-    } else if (qdef instanceof RawCtsQueryDefinition) {
-      text = ((RawCtsQueryDefinition) qdef).getCriteria();
-    }
-
-    String qtextMessage = "";
-    if (text != null) {
-      params.add("q", text);
-      qtextMessage = " and string query \"" + text + "\"";
-    }
-
+    String structure = null;
+    StructureWriteHandle input = null;
     if (qdef instanceof RawCtsQueryDefinition) {
-      String structure = qdef instanceof RawQueryDefinitionImpl.CtsQuery ?
-              ((RawQueryDefinitionImpl.CtsQuery) qdef).serialize() : "";
-      logger.debug("Query uris with raw cts query {}{}", structure, qtextMessage);
-      CtsQueryWriteHandle input = ((RawCtsQueryDefinition) qdef).getHandle();
-      return postResource(reqlog, "internal/uris", transaction, params, input, output);
-    } else if (qdef instanceof StructuredQueryDefinition) {
-      String structure = ((StructuredQueryDefinition) qdef).serialize();
-      logger.debug("Query uris with structured query {}{}", structure, qtextMessage);
+      if (!(qdef instanceof RawQueryDefinitionImpl.CtsQuery)) {
+        throw new IllegalArgumentException(
+                "unknown implementation of RawCtsQueryDefinition: "+qdef.getClass().getName());
+      }
+      RawQueryDefinitionImpl.CtsQuery ctsQuery = (RawQueryDefinitionImpl.CtsQuery) qdef;
+      text = ctsQuery.getCriteria();
+      structure = ctsQuery.serialize();
+      logger.debug("{} processing raw cts query {} and string query \"{}\"", path, structure, text);
       if (structure != null) {
-        params.add("structuredQuery", structure);
+        input = checkStructure(structure, ctsQuery.getHandle());
+      }
+    } else if (qdef instanceof StructuredQueryDefinition) {
+      StructuredQueryDefinition builtStructuredQuery = (StructuredQueryDefinition) qdef;
+      text = builtStructuredQuery.getCriteria();
+      structure = builtStructuredQuery.serialize();
+      logger.debug("{} processing structured query {} and string query \"{}\"", path, structure, text);
+      if (sendQueryAsPayload && structure != null) {
+        input = new StringHandle(structure).withFormat(Format.XML);
       }
     } else if (qdef instanceof RawStructuredQueryDefinition) {
-      String structure = ((RawStructuredQueryDefinition) qdef).serialize();
-      logger.debug("Query uris with raw structured query {}{}", structure, qtextMessage);
-      if (structure != null) {
-        params.add("structuredQuery", structure);
+      RawStructuredQueryDefinition rawStructuredQuery = (RawStructuredQueryDefinition) qdef;
+      text = rawStructuredQuery.getCriteria();
+      structure = rawStructuredQuery.serialize();
+      logger.debug("{} processing raw structured query {} and string query \"{}\"", path, structure, text);
+      if (sendQueryAsPayload && structure != null) {
+        input = checkStructure(structure, rawStructuredQuery.getHandle());
       }
     } else if (qdef instanceof CombinedQueryDefinition) {
-      String structure = ((CombinedQueryDefinition) qdef).serialize();
-      logger.debug("Query uris with combined query {}", structure);
-      if (structure != null) {
-        params.add("structuredQuery", structure);
+      CombinedQueryDefinition combinedQuery = (CombinedQueryDefinition) qdef;
+      structure = combinedQuery.serialize();
+      logger.debug("{} processing combined query {}", path, structure);
+      if (sendQueryAsPayload && structure != null) {
+        input = checkStructure(structure, combinedQuery.getFormat());
       }
     } else if (qdef instanceof StringQueryDefinition) {
-      logger.debug("Query uris with string query \"{}\"", text);
+      StringQueryDefinition stringQuery = (StringQueryDefinition) qdef;
+      text = stringQuery.getCriteria();
+      logger.debug("{} processing string query \"{}\"", path, text);
+    } else if (qdef instanceof RawQueryDefinitionImpl) {
+      RawQueryDefinitionImpl<StructureWriteHandle> rawQueryImpl = (RawQueryDefinitionImpl<StructureWriteHandle>) qdef;
+      structure = rawQueryImpl.serialize();
+      logger.debug("{} processing raw query implementation {}", path, structure);
+      input = checkStructure(structure, rawQueryImpl.getHandle());
     } else if (qdef instanceof RawQueryDefinition) {
-      logger.debug("Raw uris query");
-      StructureWriteHandle input = ((RawQueryDefinition) qdef).getHandle();
-      return postResource(reqlog, "internal/uris", transaction, params, input, output);
+      RawQueryDefinition rawQuery = (RawQueryDefinition) qdef;
+      logger.debug("{} processing raw query", path);
+      input = checkFormat(rawQuery.getHandle());
     } else {
-      throw new UnsupportedOperationException("Cannot query uris with " + qdef.getClass().getName());
+      throw new UnsupportedOperationException(path+" cannot process query of "+qdef.getClass().getName());
     }
-    return getResource(reqlog, "internal/uris", transaction, params, output);
-  }
 
+    if (text != null) {
+      params.add("q", text);
+    }
+
+    if (input != null) {
+      return postResource(reqlog, path, null, params, input, output);
+    } else if (structure != null) {
+      params.add("structuredQuery", structure);
+    }
+    return getResource(reqlog, path, null, params, output);
+  }
+  private StructureWriteHandle checkStructure(String structure, StructureWriteHandle handle) {
+    return checkStructure(structure,
+            (handle == null || !(handle instanceof HandleImplementation)) ? Format.UNKNOWN :
+            ((HandleImplementation) handle).getFormat());
+  }
+  private StructureWriteHandle checkStructure(String structure, Format format) {
+      return new StringHandle(structure).withFormat(
+              (format == null || format == Format.UNKNOWN) ? Format.TEXT : format);
+  }
+  private StructureWriteHandle checkFormat(StructureWriteHandle handle) {
+    if (handle != null && handle instanceof HandleImplementation) {
+      HandleImplementation handleImpl = (HandleImplementation) handle;
+      Format format = handleImpl.getFormat();
+      if (format == null || format == Format.UNKNOWN) {
+        handleImpl.setFormat(Format.TEXT);
+        handleImpl.setMimetype(Format.TEXT.getDefaultMimetype());
+      }
+    }
+    return handle;
+  }
 
   @Override
   public <R extends AbstractReadHandle> R getResource(RequestLogger reqlog,
@@ -3311,7 +3319,7 @@ public class OkHttpServices implements RESTServices {
           "Cannot retry request for " + path);
       }
 
-      int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+      int retryAfter = Utilities.parseInt(retryAfterRaw);
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
     if (retryStatus.contains(status)) {
@@ -3369,6 +3377,8 @@ public class OkHttpServices implements RESTServices {
     HandleImplementation outputBase = HandleAccessor.checkHandle(output,
       "read");
 
+    addPointInTimeQueryParam(params, outputBase);
+
     String inputMimetype = null;
     if(inputBase != null) {
       inputMimetype = inputBase.getMimetype();
@@ -3408,9 +3418,13 @@ public class OkHttpServices implements RESTServices {
     checkStatus(response, status, operation, "resource", path,
       ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
+    Headers headers = response.headers();
     if ( responseHeaders != null ) {
       // add all the headers from the OkHttp Headers object to the caller-provided map
-      responseHeaders.putAll( response.headers().toMultimap() );
+      responseHeaders.putAll(headers.toMultimap());
+    } else if (outputBase != null){
+        updateLength(outputBase, headers);
+        updateServerTimestamp(outputBase, headers);
     }
 
     if (as != null) {
@@ -3484,7 +3498,7 @@ public class OkHttpServices implements RESTServices {
           "Cannot retry request for " + path);
       }
 
-      int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+      int retryAfter = Utilities.parseInt(retryAfterRaw);
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
     if (retryStatus.contains(status)) {
@@ -3510,53 +3524,47 @@ public class OkHttpServices implements RESTServices {
   }
 
   @Override
-  public void postBulkDocuments(
-    RequestLogger reqlog, DocumentWriteSet writeSet,
-    ServerTransform transform, Transaction transaction, Format defaultFormat)
-    throws ForbiddenUserException,  FailedRequestException
-  {
-    postBulkDocuments(reqlog, writeSet, transform, transaction, defaultFormat, null, null);
-  }
-
-  @Override
   public <R extends AbstractReadHandle> R postBulkDocuments(
     RequestLogger reqlog, DocumentWriteSet writeSet,
     ServerTransform transform, Transaction transaction, Format defaultFormat, R output,
-    String temporalCollection)
+    String temporalCollection, String extraContentDispositionParams)
     throws ForbiddenUserException,  FailedRequestException
   {
+    CharsetEncoder asciiEncoder = java.nio.charset.StandardCharsets.US_ASCII.newEncoder();
+
     List<AbstractWriteHandle> writeHandles = new ArrayList<AbstractWriteHandle>();
     List<RequestParameters> headerList = new ArrayList<RequestParameters>();
     for ( DocumentWriteOperation write : writeSet ) {
-      String temporalDocumentURI = write.getTemporalDocumentURI();
       HandleImplementation metadata = HandleAccessor.checkHandle(write.getMetadata(), "write");
       HandleImplementation content = HandleAccessor.checkHandle(write.getContent(), "write");
-      String contentDispositionTemporal = "";
-      if (temporalDocumentURI != null) {
-        // escape any quotes or back-slashes in the uri
-        temporalDocumentURI = escapeContentDispositionFilename(temporalDocumentURI);
-        contentDispositionTemporal = "; temporal-document="+temporalDocumentURI;
-      }
+
+      String dispositionFilename = (write.getUri() == null) ? "" :
+              ("; " + DISPOSITION_PARAM_FILENAME + Utilities.escapeMultipartParamAssignment(asciiEncoder, write.getUri()));
+      String dispositionTemporalDoc = (write.getTemporalDocumentURI() == null) ? "" :
+              ("; " + DISPOSITION_PARAM_TEMPORALDOC + Utilities.escapeMultipartParamAssignment(asciiEncoder, write.getTemporalDocumentURI()));
+
       if ( write.getOperationType() == DocumentWriteOperation.OperationType.DISABLE_METADATA_DEFAULT ) {
         RequestParameters headers = new RequestParameters();
         headers.add(HEADER_CONTENT_TYPE, metadata.getMimetype());
-        headers.add(HEADER_CONTENT_DISPOSITION, DISPOSITION_TYPE_INLINE + "; category=metadata" + contentDispositionTemporal);
+        headers.add(HEADER_CONTENT_DISPOSITION,
+                DISPOSITION_TYPE_INLINE + "; "+DISPOSITION_PARAM_CATEGORY+"=metadata");
         headerList.add(headers);
         writeHandles.add(write.getMetadata());
       } else if ( metadata != null ) {
         RequestParameters headers = new RequestParameters();
         headers.add(HEADER_CONTENT_TYPE, metadata.getMimetype());
         if ( write.getOperationType() == DocumentWriteOperation.OperationType.METADATA_DEFAULT ) {
-          headers.add(HEADER_CONTENT_DISPOSITION, DISPOSITION_TYPE_INLINE + "; category=metadata" + contentDispositionTemporal);
+          headers.add(HEADER_CONTENT_DISPOSITION,
+                  DISPOSITION_TYPE_INLINE + "; "+DISPOSITION_PARAM_CATEGORY+"=metadata");
         } else {
-          String disposition = DISPOSITION_TYPE_ATTACHMENT  + "; " +
-            DISPOSITION_PARAM_FILENAME + "=" + escapeContentDispositionFilename(write.getUri()) +
-            "; category=metadata" + contentDispositionTemporal;
-          headers.add(HEADER_CONTENT_DISPOSITION, disposition);
+          headers.add(HEADER_CONTENT_DISPOSITION,
+                  DISPOSITION_TYPE_ATTACHMENT + dispositionFilename + dispositionTemporalDoc +
+                  "; " + DISPOSITION_PARAM_CATEGORY + "=metadata");
         }
         headerList.add(headers);
         writeHandles.add(write.getMetadata());
       }
+
       if ( content != null ) {
         RequestParameters headers = new RequestParameters();
         String mimeType = content.getMimetype();
@@ -3564,22 +3572,9 @@ public class OkHttpServices implements RESTServices {
           mimeType = defaultFormat.getDefaultMimetype();
         }
         headers.add(HEADER_CONTENT_TYPE, mimeType);
-        String disposition = null;
-        CharsetEncoder asciiEncoder = java.nio.charset.StandardCharsets.US_ASCII.newEncoder();
-        if(asciiEncoder.canEncode(write.getUri())) {
-            disposition = DISPOSITION_TYPE_ATTACHMENT + "; " +
-                      DISPOSITION_PARAM_FILENAME + "=" + escapeContentDispositionFilename(write.getUri()) + contentDispositionTemporal;
-        }
-        else {
-            try {
-                disposition = DISPOSITION_TYPE_ATTACHMENT + "; " +
-                          DISPOSITION_PARAM_FILENAME + "*=UTF-8''" + URLEncoder.encode(write.getUri(), "UTF-8") + contentDispositionTemporal;
-              } catch (Exception ex) {
-                  throw new IllegalArgumentException("Uri cannot be encoded as UFT-8");
-              }
-        }
-        asciiEncoder.reset();
-        headers.add(HEADER_CONTENT_DISPOSITION, disposition);
+        headers.add(HEADER_CONTENT_DISPOSITION,
+                DISPOSITION_TYPE_ATTACHMENT + dispositionFilename + dispositionTemporalDoc +
+                        extraContentDispositionParams);
         headerList.add(headers);
         writeHandles.add(write.getContent());
       }
@@ -3595,14 +3590,7 @@ public class OkHttpServices implements RESTServices {
       output);
   }
 
-  // TODO: See what other escaping we need to do for filenames
-  private String escapeContentDispositionFilename(String str) {
-    if ( str == null ) return null;
-    // escape any quotes or back-slashes
-    return "\"" + str.replace("\"", "\\\"").replace("\\", "\\\\") + "\"";
-  }
-
-  public class OkHttpEvalResultIterator implements EvalResultIterator {
+    public class OkHttpEvalResultIterator implements EvalResultIterator {
     private OkHttpResultIterator iterator;
 
     OkHttpEvalResultIterator(OkHttpResultIterator iterator) {
@@ -3761,19 +3749,21 @@ public class OkHttpServices implements RESTServices {
 
     @Override
     public Number getNumber() {
-      if      ( getType() == EvalResult.Type.DECIMAL ) return new BigDecimal(getString());
-      else if ( getType() == EvalResult.Type.DOUBLE )  return Double.valueOf(getString());
-      else if ( getType() == EvalResult.Type.FLOAT )   return Float.valueOf(getString());
-        // MarkLogic integers can be much larger than Java integers, so we'll use Long instead
-      else if ( getType() == EvalResult.Type.INTEGER ) return Long.valueOf(getString());
-      else return new BigDecimal(getString());
+      String value = getString();
+      if      ( value == null )                        return null;
+      if      ( getType() == EvalResult.Type.DECIMAL ) return new BigDecimal(value);
+      else if ( getType() == EvalResult.Type.DOUBLE )  return new Double(value);
+      else if ( getType() == EvalResult.Type.FLOAT )   return new Float(value);
+      // MarkLogic integers can be much larger than Java integers, so we'll use Long instead
+      else if ( getType() == EvalResult.Type.INTEGER ) return new Long(value);
+      else                                             return new BigDecimal(value);
     }
 
     @Override
     public Boolean getBoolean() {
+      // converts null to false
       return Boolean.valueOf(getString());
     }
-
   }
 
   @Override
@@ -3930,8 +3920,7 @@ public class OkHttpServices implements RESTServices {
   {
     if ( params == null ) params = new RequestParameters();
     if ( transaction != null ) params.add("txid", transaction.getTransactionId());
-    HandleImplementation inputBase = HandleAccessor.checkHandle(input,
-      "write");
+    HandleImplementation inputBase = HandleAccessor.checkHandle(input, "write");
 
     String inputMimetype = inputBase.getMimetype();
     boolean isResendable = inputBase.isResendable();
@@ -4023,7 +4012,7 @@ public class OkHttpServices implements RESTServices {
           "Cannot retry request for " + path);
       }
 
-      int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+      int retryAfter = Utilities.parseInt(retryAfterRaw);
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
     if (retryStatus.contains(status)) {
@@ -4204,12 +4193,11 @@ public class OkHttpServices implements RESTServices {
     return response;
   }
 
-
   private void addPointInTimeQueryParam(RequestParameters params, Object outputHandle) {
-    HandleImplementation handleBase = HandleAccessor.as(outputHandle);
-    if ( params != null && handleBase != null &&
-      handleBase.getPointInTimeQueryTimestamp() != -1 )
-    {
+    addPointInTimeQueryParam(params, HandleAccessor.as(outputHandle));
+  }
+  private void addPointInTimeQueryParam(RequestParameters params, HandleImplementation handleBase) {
+    if (params != null && handleBase != null && handleBase.getPointInTimeQueryTimestamp() != -1) {
       logger.trace("param timestamp=[" + handleBase.getPointInTimeQueryTimestamp() + "]");
       params.add("timestamp", Long.toString(handleBase.getPointInTimeQueryTimestamp()));
     }
@@ -4384,7 +4372,6 @@ public class OkHttpServices implements RESTServices {
 
   private Request.Builder setupRequest(Request.Builder requestBldr,
                                        Object inputMimetype, Object outputMimetype) {
-
     if (inputMimetype == null) {
     } else if (inputMimetype instanceof String) {
       requestBldr = requestBldr.header(HEADER_CONTENT_TYPE, (String) inputMimetype);
@@ -4484,14 +4471,17 @@ public class OkHttpServices implements RESTServices {
     try {
       OkHttpResultIterator result = constructor.construct(reqlog, partList, closeable);
       Headers headers = response.headers();
-      if (headers.get(HEADER_VND_MARKLOGIC_START) != null) {
-        result.setStart(Long.parseLong(headers.get(HEADER_VND_MARKLOGIC_START)));
+      long pageStart = Utilities.parseLong(headers.get(HEADER_VND_MARKLOGIC_START));
+      if (pageStart > -1l) {
+        result.setStart(pageStart);
       }
-      if (headers.get(HEADER_VND_MARKLOGIC_PAGELENGTH) != null) {
-        result.setPageSize(Long.parseLong(headers.get(HEADER_VND_MARKLOGIC_PAGELENGTH)));
+      long pageLength = Utilities.parseLong(headers.get(HEADER_VND_MARKLOGIC_PAGELENGTH));
+      if (pageLength > -1l) {
+        result.setPageSize(pageLength);
       }
-      if (headers.get(HEADER_VND_MARKLOGIC_RESULT_ESTIMATE) != null) {
-        result.setTotalSize(Long.parseLong(headers.get(HEADER_VND_MARKLOGIC_RESULT_ESTIMATE)));
+      long totalSize = Utilities.parseLong(headers.get(HEADER_VND_MARKLOGIC_RESULT_ESTIMATE));
+      if (totalSize > -1l) {
+        result.setTotalSize(totalSize);
       }
       return (U) result;
     } catch (Throwable t) {
@@ -5073,7 +5063,7 @@ public class OkHttpServices implements RESTServices {
       }
 
       String retryAfterRaw = response.header("Retry-After");
-      int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
+      int retryAfter = Utilities.parseInt(retryAfterRaw);
 
       closeResponse(response);
 
@@ -5544,7 +5534,7 @@ public class OkHttpServices implements RESTServices {
       } else if ( obj instanceof byte[] ) {
         sink.write((byte[]) obj);
       } else if ( obj instanceof String) {
-        sink.write(((String) obj).getBytes("UTF-8"));
+        sink.write(((String) obj).getBytes(StandardCharsets.UTF_8));
       } else if ( obj == null ) {
       } else {
         throw new IllegalStateException("Cannot write object of type: " + obj.getClass());
@@ -5759,7 +5749,7 @@ public class OkHttpServices implements RESTServices {
           .map(param -> encodeParamValue(param))
           .filter(param -> param != null)
           .collect(Collectors.joining("&"));
-      requestBody = RequestBody.create(URLENCODED_MIME_TYPE, (atomics == null) ? "" : atomics);
+      requestBody = RequestBody.create((atomics == null) ? "" : atomics, URLENCODED_MIME_TYPE);
       return this;
     }
 
@@ -6044,6 +6034,14 @@ public class OkHttpServices implements RESTServices {
       }
     }
     @Override
+    public <C,R> C asContent(BufferableContentHandle<C,R> outputHandle) {
+      if (responseBody == null) return null;
+      HandleImplementation handleImpl = (HandleImplementation) outputHandle;
+      Class<R> receiveClass = handleImpl.receiveAs();
+      C content= outputHandle.toContent(getEntity(responseBody, receiveClass));
+      return content;
+    }
+    @Override
     public InputStream asInputStream() {
       return (responseBody == null) ? null : responseBody.byteStream();
     }
@@ -6068,6 +6066,19 @@ public class OkHttpServices implements RESTServices {
         String value = responseBody.string();
         closeImpl();
         return value;
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+    @Override
+    public boolean asEndpointState(BytesHandle endpointStateHandle) {
+      try {
+        if (endpointStateHandle == null || responseBody == null)
+            return false;
+        byte[] value = responseBody.bytes();
+        closeImpl();
+        endpointStateHandle.set(value);
+        return true;
       } catch (IOException e) {
         throw new MarkLogicIOException(e);
       }
@@ -6140,6 +6151,38 @@ public class OkHttpServices implements RESTServices {
         throw new RuntimeException(e);
       } catch (IOException e) {
         throw new RuntimeException(e);
+      }
+    }
+    @Override
+    public <C,R> Stream<C> asStreamOfContent(
+            BytesHandle endpointStateHandle, BufferableContentHandle<C,R> outputHandle) {
+      try {
+        if (multipart == null) {
+          return Stream.empty();
+        }
+
+        boolean hasEndpointState = (endpointStateHandle != null);
+
+        HandleImplementation handleImpl = (HandleImplementation) outputHandle;
+        Class<R> receiveClass = handleImpl.receiveAs();
+
+        int partCount = multipart.getCount();
+        Stream.Builder<C> builder = Stream.builder();
+
+        for (int i=0; i < partCount; i++) {
+          C value = responsePartToContent(outputHandle, multipart.getBodyPart(i), receiveClass);
+          if (hasEndpointState && i == 0) {
+            endpointStateHandle.set(outputHandle.contentToBytes(value));
+          } else {
+            builder.accept(value);
+          }
+        }
+
+        return builder.build();
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } finally {
+        outputHandle.set(null);
       }
     }
     @Override
@@ -6261,6 +6304,41 @@ public class OkHttpServices implements RESTServices {
       } catch (IOException e) {
         throw new MarkLogicIOException(e);
       }
+    }
+    @Override
+    public <C,R> C[] asArrayOfContent(
+            BytesHandle endpointStateHandle, BufferableContentHandle<C,R> outputHandle
+    ) {
+      try {
+        if (multipart == null) {
+          return outputHandle.newArray(0);
+        }
+
+        boolean hasEndpointState = (endpointStateHandle != null);
+
+        HandleImplementation handleImpl = (HandleImplementation) outputHandle;
+        Class<R> receiveClass = handleImpl.receiveAs();
+
+        int partCount = multipart.getCount();
+        C[] result = outputHandle.newArray(hasEndpointState ? (partCount - 1) : partCount);
+        for (int i=0; i < partCount; i++) {
+          C value = responsePartToContent(outputHandle, multipart.getBodyPart(i), receiveClass);
+          if (hasEndpointState && i == 0) {
+              endpointStateHandle.set(outputHandle.contentToBytes(value));
+          } else {
+              result[hasEndpointState ? (i - 1) : i] = value;
+          }
+        }
+
+        return result;
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } finally {
+        outputHandle.set(null);
+      }
+    }
+    private <C,R> C responsePartToContent(BufferableContentHandle<C,R> handle, BodyPart bodyPart, Class<R> as) {
+      return handle.toContent(getEntity(bodyPart, as));
     }
     @Override
     public InputStream[] asArrayOfInputStream() {
@@ -6420,7 +6498,8 @@ public class OkHttpServices implements RESTServices {
   }
 
   Request.Builder forDocumentResponse(Request.Builder requestBldr, Format format) {
-    return requestBldr.addHeader(HEADER_ACCEPT, (format == Format.BINARY) ? "application/x-unknown-content-type" : format.getDefaultMimetype());
+    return requestBldr.addHeader(HEADER_ACCEPT, (format == null || format == Format.BINARY) ?
+            "application/x-unknown-content-type" : format.getDefaultMimetype());
   }
 
   Request.Builder forMultipartMixedResponse(Request.Builder requestBldr) {

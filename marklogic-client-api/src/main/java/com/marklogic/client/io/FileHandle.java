@@ -21,25 +21,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 import com.marklogic.client.impl.NodeConverter;
-import com.marklogic.client.io.marker.BinaryReadHandle;
-import com.marklogic.client.io.marker.BinaryWriteHandle;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
-import com.marklogic.client.io.marker.CtsQueryWriteHandle;
-import com.marklogic.client.io.marker.GenericReadHandle;
-import com.marklogic.client.io.marker.GenericWriteHandle;
-import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.QuadsWriteHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.io.marker.TextReadHandle;
-import com.marklogic.client.io.marker.TextWriteHandle;
-import com.marklogic.client.io.marker.TriplesReadHandle;
-import com.marklogic.client.io.marker.TriplesWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
+import com.marklogic.client.io.marker.*;
 
 /**
  * A File Handle represents document content as a file for reading or writing.
@@ -54,7 +36,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class FileHandle
   extends BaseHandle<File, File>
-  implements ContentHandle<File>,
+  implements ResendableContentHandle<File, File>,
     BinaryReadHandle, BinaryWriteHandle,
     GenericReadHandle, GenericWriteHandle,
     JSONReadHandle, JSONWriteHandle,
@@ -62,7 +44,7 @@ public class FileHandle
     XMLReadHandle, XMLWriteHandle,
     StructureReadHandle, StructureWriteHandle, CtsQueryWriteHandle,
     QuadsWriteHandle,
-    TriplesReadHandle, TriplesWriteHandle, BufferableHandle
+    TriplesReadHandle, TriplesWriteHandle
 {
   private File content;
 
@@ -133,6 +115,20 @@ public class FileHandle
     return this;
   }
 
+  @Override
+  public Class<File> getContentClass() {
+    return File.class;
+  }
+  @Override
+  public FileHandle newHandle() {
+    return new FileHandle().withFormat(getFormat()).withMimetype(getMimetype());
+  }
+  @Override
+  public File[] newArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new File[length];
+  }
+
   /**
    * Specifies the format of the content and returns the handle
    * as a fluent convenience.
@@ -155,37 +151,50 @@ public class FileHandle
   }
 
   @Override
+  public File toContent(File serialization) {
+    return serialization;
+  }
+
+  @Override
   protected Class<File> receiveAs() {
     return File.class;
   }
   @Override
   protected void receiveContent(File content) {
-    this.content = content;
+    set(toContent(content));
   }
   @Override
   protected File sendContent() {
-    if (content == null) {
+    if (get() == null) {
       throw new IllegalStateException("No file to write");
     }
 
-    return content;
+    return get();
   }
 
-@Override
-public void fromBuffer(byte[] buffer) {
+  @Override
+  public void fromBuffer(byte[] buffer) {
+    set(bytesToContent(buffer));
+  }
+  @Override
+  public byte[] toBuffer() {
+    return contentToBytes(get());
+  }
+  @Override
+  public File bytesToContent(byte[] buffer) {
+    if (buffer == null || buffer.length == 0) return null;
     ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(buffer);
-    NodeConverter.InputStreamToFile(byteArrayInputStream);
-    
-}
-
-@Override
-public byte[] toBuffer() {
+    return NodeConverter.InputStreamToFile(byteArrayInputStream);
+  }
+  @Override
+  public byte[] contentToBytes(File content) {
+    if (content == null) return null;
     try(InputStreamHandle inputStreamHandle = new InputStreamHandle(new FileInputStream(content))) {
-        return inputStreamHandle.toBuffer();
-        
+      return inputStreamHandle.toBuffer();
+
     } catch (FileNotFoundException e) {
-        e.printStackTrace();
+      e.printStackTrace();
     }
     return null;
-}
+  }
 }

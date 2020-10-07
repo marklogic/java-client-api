@@ -47,14 +47,7 @@ import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.ReaderHandle;
-import com.marklogic.client.io.marker.AbstractReadHandle;
-import com.marklogic.client.io.marker.AbstractWriteHandle;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
-import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
-import com.marklogic.client.io.marker.DocumentPatchHandle;
-import com.marklogic.client.io.marker.SearchReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
+import com.marklogic.client.io.marker.*;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
@@ -92,6 +85,7 @@ public interface RESTServices {
   String DISPOSITION_TYPE_ATTACHMENT = "attachment";
   String DISPOSITION_TYPE_INLINE = "inline";
   String DISPOSITION_PARAM_FILENAME = "filename";
+  String DISPOSITION_PARAM_TEMPORALDOC = "temporal-document";
   String DISPOSITION_PARAM_CATEGORY = "category";
 
   String MIMETYPE_WILDCARD = "*/*";
@@ -123,172 +117,176 @@ public interface RESTServices {
   int getMaxDelay();
   void setMaxDelay(int maxDelay);
 
-  public void connect(String host, int port, String database, SecurityContext securityContext);
-  public DatabaseClient getDatabaseClient();
-  public void setDatabaseClient(DatabaseClient client);
-  public void release();
+  void connect(String host, int port, String database, SecurityContext securityContext);
+  DatabaseClient getDatabaseClient();
+  void setDatabaseClient(DatabaseClient client);
+  void release();
 
-  public TemporalDescriptor deleteDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,
+  TemporalDescriptor deleteDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,
                                            Set<Metadata> categories, RequestParameters extraParams)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-  public boolean getDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,
+  boolean getDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,
                              Set<Metadata> categories, RequestParameters extraParams,
                              DocumentMetadataReadHandle metadataHandle, AbstractReadHandle contentHandle)
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
-  public DocumentDescriptor head(RequestLogger logger, String uri, Transaction transaction)
+  DocumentDescriptor head(RequestLogger logger, String uri, Transaction transaction)
     throws ForbiddenUserException, FailedRequestException;
 
-  public DocumentPage getBulkDocuments(RequestLogger logger, long serverTimestamp, Transaction transaction,
+  DocumentPage getBulkDocuments(RequestLogger logger, long serverTimestamp, Transaction transaction,
                                        Set<Metadata> categories, Format format, RequestParameters extraParams,
                                        boolean withContent, String... uris)
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-  public DocumentPage getBulkDocuments(RequestLogger logger, long serverTimestamp, QueryDefinition querydef,
+  DocumentPage getBulkDocuments(RequestLogger logger, long serverTimestamp, QueryDefinition querydef,
                                        long start, long pageLength, Transaction transaction, SearchReadHandle searchHandle,
                                        QueryView view, Set<Metadata> categories, Format format, ServerTransform responseTransform,
                                        RequestParameters extraParams, String forestName)
-    throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+          throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
-  public void postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
-                                ServerTransform transform, Transaction transaction, Format defaultFormat)
-    throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-  public <T extends AbstractReadHandle> T postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
+  <T extends AbstractReadHandle> T postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
                                                             ServerTransform transform, Transaction transaction, Format defaultFormat, T output,
-                                                            String temporalCollection)
+                                                            String temporalCollection, String extraContentDispositionParams)
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
-  public TemporalDescriptor putDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,
+  TemporalDescriptor putDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,
                                         Set<Metadata> categories, RequestParameters extraParams,
                                         DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle)
     throws ResourceNotFoundException, ResourceNotResendableException,
     ForbiddenUserException, FailedRequestException;
 
-  public DocumentDescriptorImpl postDocument(RequestLogger logger, DocumentUriTemplate template,
+  DocumentDescriptorImpl postDocument(RequestLogger logger, DocumentUriTemplate template,
                                              Transaction transaction, Set<Metadata> categories, RequestParameters extraParams,
                                              DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle)
     throws ResourceNotFoundException, ForbiddenUserException,
     FailedRequestException;
 
-  public void patchDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,
+  void patchDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,
                             Set<Metadata> categories, boolean isOnContent, DocumentPatchHandle patchHandle)
     throws ResourceNotFoundException, ResourceNotResendableException,
     ForbiddenUserException, FailedRequestException;
 
-  public <T extends SearchReadHandle> T search(RequestLogger logger, T searchHandle, QueryDefinition queryDef,
+  <T extends SearchReadHandle> T search(RequestLogger logger, T searchHandle, QueryDefinition queryDef,
                                                long start, long len, QueryView view, Transaction transaction, String forestName)
     throws ForbiddenUserException, FailedRequestException;
 
-  public void deleteSearch(RequestLogger logger, DeleteQueryDefinition queryDef, Transaction transaction)
+  void deleteSearch(RequestLogger logger, DeleteQueryDefinition queryDef, Transaction transaction)
     throws ForbiddenUserException, FailedRequestException;
-  public void delete(RequestLogger logger, Transaction transaction, String... uris)
+  void delete(RequestLogger logger, Transaction transaction, String... uris)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-  public Transaction openTransaction(String name, int timeLimit)
+  Transaction openTransaction(String name, int timeLimit)
     throws ForbiddenUserException, FailedRequestException;
-  public void commitTransaction(Transaction transaction)
+  void commitTransaction(Transaction transaction)
     throws ForbiddenUserException, FailedRequestException;
-  public void rollbackTransaction(Transaction transaction)
-    throws ForbiddenUserException, FailedRequestException;
-
-  public <T> T values(Class <T> as, ValuesDefinition valdef, String mimetype, long start, long pageLength, Transaction transaction)
+  void rollbackTransaction(Transaction transaction)
     throws ForbiddenUserException, FailedRequestException;
 
-  public <T> T valuesList(Class <T> as, ValuesListDefinition valdef, String mimetype, Transaction transaction)
+  <T> T values(Class <T> as, ValuesDefinition valdef, String mimetype, long start, long pageLength, Transaction transaction)
     throws ForbiddenUserException, FailedRequestException;
 
-  public <T> T optionsList(Class <T> as, String mimetype, Transaction transaction)
+  <T> T valuesList(Class <T> as, ValuesListDefinition valdef, String mimetype, Transaction transaction)
+    throws ForbiddenUserException, FailedRequestException;
+
+  <T> T optionsList(Class <T> as, String mimetype, Transaction transaction)
     throws ForbiddenUserException, FailedRequestException;
 
   // namespaces, etc.
-  public <T> T getValue(RequestLogger logger, String type, String key,
+  <T> T getValue(RequestLogger logger, String type, String key,
                         boolean isNullable, String mimetype, Class<T> as)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-  public <T> T getValue(RequestLogger logger, String type, String key, Transaction transaction,
+  <T> T getValue(RequestLogger logger, String type, String key, Transaction transaction,
                         boolean isNullable, String mimetype, Class<T> as)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-  public <T> T getValues(RequestLogger logger, String type, String mimetype, Class<T> as)
+  <T> T getValues(RequestLogger logger, String type, String mimetype, Class<T> as)
     throws ForbiddenUserException, FailedRequestException;
-  public <T> T getValues(RequestLogger reqlog, String type, RequestParameters extraParams,
+  <T> T getValues(RequestLogger reqlog, String type, RequestParameters extraParams,
                          String mimetype, Class<T> as)
     throws ForbiddenUserException, FailedRequestException;
-  public void postValue(RequestLogger logger, String type, String key, String mimetype, Object value)
+  void postValue(RequestLogger logger, String type, String key, String mimetype, Object value)
     throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
-  public void postValue(RequestLogger reqlog, String type, String key, RequestParameters extraParams)
+  void postValue(RequestLogger reqlog, String type, String key, RequestParameters extraParams)
     throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
-  public void putValue(RequestLogger logger, String type, String key,
+  void putValue(RequestLogger logger, String type, String key,
                        String mimetype, Object value)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
     FailedRequestException;
-  public void putValue(RequestLogger logger, String type, String key, RequestParameters extraParams,
+  void putValue(RequestLogger logger, String type, String key, RequestParameters extraParams,
                        String mimetype, Object value)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
     FailedRequestException;
-  public void deleteValue(RequestLogger logger, String type, String key)
+  void deleteValue(RequestLogger logger, String type, String key)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-  public void deleteValues(RequestLogger logger, String type)
+  void deleteValues(RequestLogger logger, String type)
     throws ForbiddenUserException, FailedRequestException;
 
-  public <R extends UrisReadHandle> R uris(RequestLogger reqlog, Transaction transaction,
-                                           QueryDefinition qdef, long start, String afterUri, long pageLength, String forestName, R output)
+  <R extends AbstractReadHandle> R getSystemSchema(RequestLogger reqlog, String schemaName, R output)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-  public <R extends AbstractReadHandle> R getResource(RequestLogger reqlog, String path,
-                                                      Transaction transaction, RequestParameters params, R output)
+
+  <R extends UrisReadHandle> R uris(RequestLogger reqlog, String method, QueryDefinition qdef,
+                       Boolean filtered, long start, String afterUri, long pageLength, String forestName, R output)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-  public RESTServiceResultIterator getIteratedResource(
+  <R extends AbstractReadHandle> R forestInfo(RequestLogger reqlog,
+                       String method, RequestParameters params, QueryDefinition qdef, R output
+    ) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+
+  <R extends AbstractReadHandle> R getResource(RequestLogger reqlog, String path,
+                                                        Transaction transaction, RequestParameters params, R output)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  RESTServiceResultIterator getIteratedResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params, String... mimetypes)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-  public <R extends AbstractReadHandle> R putResource(
+  <R extends AbstractReadHandle> R putResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
     AbstractWriteHandle input, R output)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
     FailedRequestException;
-  public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R putResource(
+  <R extends AbstractReadHandle, W extends AbstractWriteHandle> R putResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
     W[] input, R output)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
     FailedRequestException;
 
-  public <R extends AbstractReadHandle> R postResource(
+  <R extends AbstractReadHandle> R postResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
     AbstractWriteHandle input, R output)
     throws ResourceNotFoundException, ResourceNotResendableException,
-    ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
-  public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R postResource(
+    ForbiddenUserException, FailedRequestException;
+  <R extends AbstractReadHandle, W extends AbstractWriteHandle> R postResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
     W[] input, R output)
     throws ResourceNotFoundException, ResourceNotResendableException,
-    ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
-  public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R postResource(
+    ForbiddenUserException, FailedRequestException;
+  <R extends AbstractReadHandle, W extends AbstractWriteHandle> R postResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
     W[] input, Map<String, List<String>>[] headers, R output)
     throws ResourceNotFoundException, ResourceNotResendableException,
-    ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
-  public RESTServiceResultIterator postIteratedResource(
+    ForbiddenUserException, FailedRequestException;
+  RESTServiceResultIterator postIteratedResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
     AbstractWriteHandle input, String... outputMimetypes)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
     FailedRequestException;
-  public <W extends AbstractWriteHandle> RESTServiceResultIterator postIteratedResource(
+  <W extends AbstractWriteHandle> RESTServiceResultIterator postIteratedResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
     W[] input, String... outputMimetypes)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
     FailedRequestException;
-  public EvalResultIterator postEvalInvoke(RequestLogger reqlog, String code, String modulePath,
+  EvalResultIterator postEvalInvoke(RequestLogger reqlog, String code, String modulePath,
                                            ServerEvaluationCallImpl.Context evalContext, Map<String, Object> variables,
                                            EditableNamespaceContext namespaces, Transaction transaction)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
     FailedRequestException;
-  public <R extends AbstractReadHandle> R deleteResource(
+  <R extends AbstractReadHandle> R deleteResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params, R output)
     throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-  public ConnectionResult checkConnection();
+  ConnectionResult checkConnection();
   
   // backdoor
-  public Object getClientImplementation();
+  Object getClientImplementation();
 
-  public enum ResponseStatus {
+  enum ResponseStatus {
     OK() {
       @Override
       public boolean isExpected(int status) {
@@ -340,28 +338,28 @@ public interface RESTServices {
     }
   }
 
-  public <T> T suggest(Class<T> as, SuggestDefinition suggestionDef);
+  <T> T suggest(Class<T> as, SuggestDefinition suggestionDef);
 
-  public InputStream match(StructureWriteHandle document, String[] candidateRules, String mimeType, ServerTransform transform);
-  public InputStream match(String[] docIds, String[] candidateRules, ServerTransform transform);
-  public InputStream match(QueryDefinition queryDef, long start, long pageLength, String[] candidateRules, ServerTransform transform);
+  InputStream match(StructureWriteHandle document, String[] candidateRules, String mimeType, ServerTransform transform);
+  InputStream match(String[] docIds, String[] candidateRules, ServerTransform transform);
+  InputStream match(QueryDefinition queryDef, long start, long pageLength, String[] candidateRules, ServerTransform transform);
 
-  public <R extends AbstractReadHandle> R getGraphUris(RequestLogger reqlog, R output)
+  <R extends AbstractReadHandle> R getGraphUris(RequestLogger reqlog, R output)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-  public <R extends AbstractReadHandle> R readGraph(RequestLogger reqlog, String uri, R output,
+  <R extends AbstractReadHandle> R readGraph(RequestLogger reqlog, String uri, R output,
                                                     Transaction transaction)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-  public void writeGraph(RequestLogger reqlog, String uri,
+  void writeGraph(RequestLogger reqlog, String uri,
                          AbstractWriteHandle input, GraphPermissions permissions, Transaction transaction)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-  public void writeGraphs(RequestLogger reqlog, AbstractWriteHandle input, Transaction transaction)
+  void writeGraphs(RequestLogger reqlog, AbstractWriteHandle input, Transaction transaction)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-  public Object deleteGraph(RequestLogger requestLogger, String uri,
+  Object deleteGraph(RequestLogger requestLogger, String uri,
                             Transaction transaction)
     throws ForbiddenUserException, FailedRequestException;
-  public void deleteGraphs(RequestLogger requestLogger, Transaction transaction)
+  void deleteGraphs(RequestLogger requestLogger, Transaction transaction)
     throws ForbiddenUserException, FailedRequestException;
-  public <R extends AbstractReadHandle> R executeSparql(RequestLogger reqlog,
+  <R extends AbstractReadHandle> R executeSparql(RequestLogger reqlog,
                                                         SPARQLQueryDefinition qdef, R output, long start, long pageLength,
                                                         Transaction transaction, boolean isUpdate);
 
@@ -370,54 +368,54 @@ public interface RESTServices {
    * @param uri URL to which to make a HEAD request
    * @return true if the status response is 200, false if 404;
    */
-  public boolean exists(String uri);
+  boolean exists(String uri);
 
-  public void mergeGraph(RequestLogger reqlog, String uri, AbstractWriteHandle input,
+  void mergeGraph(RequestLogger reqlog, String uri, AbstractWriteHandle input,
                          GraphPermissions permissions, Transaction transaction)
     throws ResourceNotFoundException, ForbiddenUserException,
     FailedRequestException;
 
-  public void mergeGraphs(RequestLogger reqlog, AbstractWriteHandle input, Transaction transaction)
+  void mergeGraphs(RequestLogger reqlog, AbstractWriteHandle input, Transaction transaction)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-  public <R extends AbstractReadHandle> R getPermissions(RequestLogger reqlog, String uri,
+  <R extends AbstractReadHandle> R getPermissions(RequestLogger reqlog, String uri,
                                                          R output, Transaction transaction)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-  public void deletePermissions(RequestLogger reqlog, String uri, Transaction transaction)
+  void deletePermissions(RequestLogger reqlog, String uri, Transaction transaction)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-  public void writePermissions(RequestLogger reqlog, String uri,
+  void writePermissions(RequestLogger reqlog, String uri,
                                AbstractWriteHandle permissions, Transaction transaction)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-  public void mergePermissions(RequestLogger reqlog, String uri,
+  void mergePermissions(RequestLogger reqlog, String uri,
                                AbstractWriteHandle permissions, Transaction transaction)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-  public <R extends AbstractReadHandle> R getThings(RequestLogger reqlog, String[] iris, R output)
+  <R extends AbstractReadHandle> R getThings(RequestLogger reqlog, String[] iris, R output)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-  public interface RESTServiceResultIterator extends ServiceResultIterator {
+  interface RESTServiceResultIterator extends ServiceResultIterator {
     @Override
-    public RESTServiceResult next();
+    RESTServiceResult next();
   }
-  public interface RESTServiceResult extends ServiceResult {
-    public Map<String,List<String>> getHeaders();
+  interface RESTServiceResult extends ServiceResult {
+    Map<String,List<String>> getHeaders();
   }
 
-  public String advanceLsqt(RequestLogger reqlog, String temporalCollection, long lag);
+  String advanceLsqt(RequestLogger reqlog, String temporalCollection, long lag);
 
-  public void wipeDocument(RequestLogger requestLogger, String temporalDocumentURI, Transaction transaction,
+  void wipeDocument(RequestLogger requestLogger, String temporalDocumentURI, Transaction transaction,
                            RequestParameters extraParams);
 
-  public void protectDocument(RequestLogger requestLogger, String temporalDocumentURI, Transaction transaction,
+  void protectDocument(RequestLogger requestLogger, String temporalDocumentURI, Transaction transaction,
                               RequestParameters extraParams, ProtectionLevel level, String duration, Calendar expiryTime, String archivePath);
-  public <R extends AbstractReadHandle> R postResource(
+  <R extends AbstractReadHandle> R postResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
     AbstractWriteHandle input, R output, String operation)
     throws ResourceNotFoundException, ResourceNotResendableException,
-    ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
-  public <R extends AbstractReadHandle> R postResource(
+    ForbiddenUserException, FailedRequestException;
+  <R extends AbstractReadHandle> R postResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
     AbstractWriteHandle input, R output, String operation, Map<String,List<String>> responseHeaders)
     throws ResourceNotFoundException, ResourceNotResendableException,
-    ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+    ForbiddenUserException, FailedRequestException;
   void patchDocument(RequestLogger reqlog, DocumentDescriptor desc, Transaction transaction, Set<Metadata> categories, boolean isOnContent,
                      RequestParameters extraParams, String sourceDocumentURI, DocumentPatchHandle patchHandle)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
@@ -433,7 +431,7 @@ public interface RESTServices {
   enum HttpMethod {POST}
 
   abstract class CallField {
-    private String paramName;
+    final private String paramName;
     CallField(String paramName) {
       this.paramName = paramName;
     }
@@ -451,11 +449,10 @@ public interface RESTServices {
     
     @Override
     public boolean equals(Object arg0) {
-        CallField callField = (CallField)arg0;
-        if(this.getParamName()!=null && callField.getParamName()!=null &&
-                this.getParamName().equals(callField.getParamName()))
-            return true;
-        return false;
+      if (!(arg0 instanceof CallField)) return false;
+      CallField callField = (CallField)arg0;
+      return this.getParamName() != null && callField.getParamName() != null &&
+              this.getParamName().equals(callField.getParamName());
     }
   }
   abstract class MultipleAtomicCallField extends CallField {
@@ -491,7 +488,7 @@ public interface RESTServices {
   }
   }
   class SingleAtomicCallField extends CallField {
-    private String paramValue;
+    private final String paramValue;
     public SingleAtomicCallField(String paramName, String paramValue) {
       super(paramName);
       this.paramValue = paramValue;
@@ -505,7 +502,7 @@ public interface RESTServices {
     }
   }
   class UnbufferedMultipleAtomicCallField extends MultipleAtomicCallField {
-    private Stream<String> paramValues;
+    private final Stream<String> paramValues;
     public UnbufferedMultipleAtomicCallField(String paramName, Stream<String> paramValues) {
       super(paramName);
       this.paramValues = paramValues;
@@ -522,7 +519,7 @@ public interface RESTServices {
 	}
   }
   class UnbufferedMultipleNodeCallField extends MultipleNodeCallField {
-    private Stream<? extends BufferableHandle> paramValues;
+    private final Stream<? extends BufferableHandle> paramValues;
 
     public UnbufferedMultipleNodeCallField(String paramName, Stream<? extends BufferableHandle> paramValues) {
       super(paramName);
@@ -541,9 +538,9 @@ public interface RESTServices {
     
   }
   class BufferedMultipleAtomicCallField extends MultipleAtomicCallField {
-	private String[] paramValues;
+	private final String[] paramValues;
 	public BufferedMultipleAtomicCallField(String paramName, Stream<String> paramValues) {
-        this(paramName, paramValues.toArray(size -> new String[size]));
+        this(paramName, paramValues.toArray(String[]::new));
     }
 	
 	public BufferedMultipleAtomicCallField(String paramName, String[] paramValues) {
@@ -560,7 +557,7 @@ public interface RESTServices {
 	  private BufferableHandle[] paramValues;
 
 	  public BufferedMultipleNodeCallField(String paramName, Stream<? extends BufferableHandle> paramValues) {
-	        this(paramName, paramValues.toArray(size -> new BufferableHandle[size]));
+	        this(paramName, paramValues.toArray(BufferableHandle[]::new));
 	  }
 	  public BufferedMultipleNodeCallField(String paramName, BufferableHandle[] paramValues) {
 	      super(paramName);
@@ -602,21 +599,25 @@ public interface RESTServices {
 
   interface SingleCallResponse extends CallResponse {
     byte[]            asBytes();
-    InputStream asInputStream();
+    <C,R> C           asContent(BufferableContentHandle<C,R> outputHandle);
+    InputStream       asInputStream();
     InputStreamHandle asInputStreamHandle();
-    Reader asReader();
-    ReaderHandle asReaderHandle();
+    Reader            asReader();
+    ReaderHandle      asReaderHandle();
     String            asString();
+    boolean           asEndpointState(BytesHandle endpointStateHandle);
   }
 
   interface MultipleCallResponse extends CallResponse {
     Stream<byte[]>            asStreamOfBytes();
+    <C,R> Stream<C>           asStreamOfContent(BytesHandle endpointStateHandle, BufferableContentHandle<C,R> outputHandle);
     Stream<InputStream>       asStreamOfInputStream();
     Stream<InputStreamHandle> asStreamOfInputStreamHandle();
     Stream<Reader>            asStreamOfReader();
     Stream<ReaderHandle>      asStreamOfReaderHandle();
     Stream<String>            asStreamOfString();
     byte[][]            asArrayOfBytes();
+    <C,R> C[]           asArrayOfContent(BytesHandle endpointStateHandle, BufferableContentHandle<C,R> outputHandle);
     InputStream[]       asArrayOfInputStream();
     InputStreamHandle[] asArrayOfInputStreamHandle();
     Reader[]            asArrayOfReader();

@@ -75,10 +75,6 @@ import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 
-/**
- * @author gvaidees
- *
- */
 public abstract class ConnectedRESTQA {
 	private String serverName = "";
 	private static String restServerName = null;

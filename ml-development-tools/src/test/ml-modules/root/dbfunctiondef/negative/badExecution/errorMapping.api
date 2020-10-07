@@ -1,0 +1,28 @@
+{
+  "functionName": "errorMapping",
+  "params": [ {
+      "name":     "errCode",
+      "datatype": "string"
+    }, {
+      "name":     "errMsg",
+      "datatype": "string",
+      "nullable": true
+    } ],
+  "return": {
+    "datatype": "jsonDocument",
+    "nullable": true
+    },
+  "errorConditions":[ {
+      "httpStatusCode": 406,
+      "errorCode":      "Unacceptable1",
+      "errorMessage":   "Unacceptable in every way"
+    }, {
+      "httpStatusCode": 406,
+      "errorCode":      "Unacceptable2",
+      "errorMessage":   "Unacceptable, that's how you'll stay"
+    }, {
+      "httpStatusCode": 410,
+      "errorCode":      "Absent1",
+      "errorMessage":   "You may search this wide world over"
+    } ]
+}

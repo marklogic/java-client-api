@@ -22,6 +22,7 @@ import java.io.Reader;
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -33,6 +34,8 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.document.DocumentWriteOperation;
+import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.io.JacksonHandle;
 
 /**
@@ -122,7 +125,93 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
         if(input == null) {
             throw new IllegalArgumentException("Input cannot be null.");
         }
-        return configureInput(configureObjReader().readValues(input));
+        Iterator<JsonNode> nodeItr = configureObjReader().readValues(input);
+        return configureInput(nodeItr);
+    }
+
+
+    /**
+     * Takes the input stream and converts it into a stream of DocumentWriteOperation by setting the schema
+     * and wrapping the JsonNode into DocumentWriteOperation.
+     * @param input is the incoming input stream.
+     * @return a stream of DocumentWriteOperation.
+     * @throws Exception if the input cannot be split
+     */
+    @Override
+    public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input) throws Exception {
+        return splitWriteOperations(input, null);
+    }
+
+    /**
+     * Takes the input stream and the input name, then converts the input into a stream of DocumentWriteOperation
+     * by setting the schema and wrapping the JsonNode into DocumentWriteOperation.
+     * @param input is the incoming input stream.
+     * @param splitFilename the name of the input stream, including name and extension. It is used to generate URLs for
+     *                  split files.The splitFilename could either be provided here or in user-defined UriMaker.
+     * @return a stream of DocumentWriteOperation.
+     * @throws Exception if the input cannot be split
+     */
+    @Override
+    public Stream<DocumentWriteOperation> splitWriteOperations(InputStream input, String splitFilename) throws Exception {
+        if (input == null) {
+            throw new IllegalArgumentException("Input cannot be null");
+        }
+
+        if (getUriMaker() == null) {
+            JacksonCSVSplitter.UriMakerImpl uriMaker = new UriMakerImpl();
+            setUriMaker(uriMaker);
+        }
+
+        if (splitFilename != null) {
+            getUriMaker().setSplitFilename(splitFilename);
+        }
+
+        Iterator<JsonNode> nodeItr = configureObjReader().readValues(input);
+        return configureInputDocumentWriteOperation(nodeItr);
+    }
+
+    /**
+     * Takes the input Reader and converts it into a stream of DocumentWriteOperation by setting the schema
+     * and wrapping the JsonNode into DocumentWriteOperation.
+     * @param input is the incoming input Reader.
+     * @return a stream of DocumentWriteOperation.
+     * @throws Exception if the input cannot be split
+     */
+    public Stream<DocumentWriteOperation> splitWriteOperations(Reader input) throws Exception {
+        return splitWriteOperations(input, null);
+    }
+
+    /**
+     * Takes the input Reader and the input name, then converts the input Reader into a stream of DocumentWriteOperation
+     * by setting the schema and wrapping the JsonNode into DocumentWriteOperation.
+     * @param input is the incoming input Reader.
+     * @param splitFilename the name of the input Reader, including name and extension. It is used to generate URLs for
+     *                  split files.The splitFilename could either be provided here or in user-defined UriMaker.
+     * @return a stream of DocumentWriteOperation.
+     * @throws Exception if the input cannot be split
+     */
+    public Stream<DocumentWriteOperation> splitWriteOperations(Reader input, String splitFilename) throws Exception {
+        if (input == null) {
+            throw new IllegalArgumentException("Input cannot be null");
+        }
+
+        if (getUriMaker() == null) {
+            JacksonCSVSplitter.UriMakerImpl uriMaker = new UriMakerImpl();
+            setUriMaker(uriMaker);
+        }
+
+        if (splitFilename != null) {
+            getUriMaker().setSplitFilename(splitFilename);
+        }
+
+        //for case file.csv, to generate uris with extension "json"
+        //for default UriMaker only, not custom UriMaker
+        if (getUriMaker() instanceof JacksonCSVSplitter.UriMakerImpl) {
+            ((UriMakerImpl) getUriMaker()).setExtension("json");
+        }
+
+        Iterator<JsonNode> nodeItr = configureObjReader().readValues(input);
+        return configureInputDocumentWriteOperation(nodeItr);
     }
 
     /**
@@ -159,7 +248,19 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
         incrementCount();
         return new JacksonHandle(content);
     }
-    
+
+    private DocumentWriteOperation wrapDocumentWriteOperation(JsonNode content) {
+        JacksonHandle handle = wrapJacksonHandle(content);
+        String uri = uriMaker.makeUri(count, handle);
+
+        return new DocumentWriteOperationImpl(
+                DocumentWriteOperation.OperationType.DOCUMENT_WRITE,
+                uri,
+                null,
+                handle
+        );
+    }
+
     private PeekingIterator<JsonNode> configureSplitObj(Iterator<JsonNode> nodeItr){
         if (nodeItr == null || !nodeItr.hasNext()) {
             throw new MarkLogicIOException("No header found.");
@@ -182,5 +283,67 @@ public class JacksonCSVSplitter implements Splitter<JacksonHandle> {
             return StreamSupport.stream(Spliterators.spliteratorUnknownSize(peekingIterator, Spliterator.ORDERED), false).map(this::wrapJacksonHandle);
         }
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(nodeItr, Spliterator.ORDERED), false).map(this::wrapJacksonHandle);
+    }
+
+    private Stream<DocumentWriteOperation> configureInputDocumentWriteOperation(Iterator<JsonNode> nodeItr) {
+        if(getCsvSchema() == null) {
+            PeekingIterator<JsonNode> peekingIterator = configureSplitObj(nodeItr);
+            return StreamSupport.stream(Spliterators.spliteratorUnknownSize(peekingIterator, Spliterator.ORDERED), false).map(this::wrapDocumentWriteOperation);
+        }
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(nodeItr, Spliterator.ORDERED), false).map(this::wrapDocumentWriteOperation);
+    }
+
+    private JacksonCSVSplitter.UriMaker uriMaker;
+
+    /**
+     * Get the UriMaker of the splitter
+     * @return the UriMaker of the splitter
+     */
+    public JacksonCSVSplitter.UriMaker getUriMaker() {
+        return this.uriMaker;
+    }
+
+    /**
+     * Set the UriMaker to the splitter
+     * @param uriMaker the uriMaker to generate URI of each split file.
+     */
+    public void setUriMaker(JacksonCSVSplitter.UriMaker uriMaker) {
+        this.uriMaker = uriMaker;
+    }
+
+    /**
+     * UriMaker which generates URI for each split file
+     */
+    public interface UriMaker extends Splitter.UriMaker {
+        /**
+         * Generates URI for each split
+         * @param num the count of each split
+         * @param handle the handle which contains the content of each split. It could be utilized to make a meaningful
+         *               document URI.
+         * @return the generated URI of current split
+         */
+        String makeUri(long num, JacksonHandle handle);
+    }
+
+    private static class UriMakerImpl extends com.marklogic.client.datamovement.impl.UriMakerImpl<JacksonHandle> implements UriMaker {
+        @Override
+        public String makeUri(long num, JacksonHandle handle) {
+            StringBuilder uri = new StringBuilder();
+
+            if (getInputAfter() != null && getInputAfter().length() != 0) {
+                uri.append(getInputAfter());
+            }
+
+            if (getSplitFilename() != null && getSplitFilename().length() != 0) {
+                uri.append(getName());
+            }
+
+            if (uri.length() == 0) {
+                uri.append("/");
+            }
+
+            uri.append(num).append("_").append(UUID.randomUUID()).append(".json");
+            return uri.toString();
+        }
     }
 }

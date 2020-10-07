@@ -15,28 +15,11 @@
  */
 package com.marklogic.client.io;
 
-import java.io.UnsupportedEncodingException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
-import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.io.marker.BinaryReadHandle;
-import com.marklogic.client.io.marker.BinaryWriteHandle;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
-import com.marklogic.client.io.marker.CtsQueryWriteHandle;
-import com.marklogic.client.io.marker.GenericReadHandle;
-import com.marklogic.client.io.marker.GenericWriteHandle;
-import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.QuadsWriteHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.io.marker.TextReadHandle;
-import com.marklogic.client.io.marker.TextWriteHandle;
-import com.marklogic.client.io.marker.TriplesReadHandle;
-import com.marklogic.client.io.marker.TriplesWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
+import com.marklogic.client.impl.NodeConverter;
+import com.marklogic.client.io.marker.*;
 
 /**
  * A Bytes Handle represents document content as a byte array for reading or writing.
@@ -48,7 +31,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class BytesHandle
   extends BaseHandle<byte[], byte[]>
-  implements BufferableHandle, ContentHandle<byte[]>,
+  implements ResendableContentHandle<byte[], byte[]>,
     BinaryReadHandle, BinaryWriteHandle,
     GenericReadHandle, GenericWriteHandle,
     JSONReadHandle, JSONWriteHandle,
@@ -100,6 +83,14 @@ public class BytesHandle
     set(content);
   }
   /**
+   * Initializes the handle by reading a byte array from an input stream.
+   * @param content	the input stream with the content
+   */
+  public BytesHandle(InputStream content) {
+    this();
+    from(content);
+  }
+  /**
    * Initializes the handle from the byte content of another handle
    * @param content	the other handle
    */
@@ -131,6 +122,16 @@ public class BytesHandle
     this.content = content;
   }
   /**
+   * Assigns a byte array by reading all bytes from an input stream
+   * and returns the handle as a fluent convenience.
+   * @param content	the input stream with the content
+   * @return	this handle
+   */
+  public BytesHandle from(InputStream content) {
+    set(NodeConverter.InputStreamToBytes(content));
+    return this;
+  }
+  /**
    * Assigns a byte array as the content and returns the handle
    * as a fluent convenience.
    * @param content	the byte array
@@ -139,6 +140,20 @@ public class BytesHandle
   public BytesHandle with(byte[] content) {
     set(content);
     return this;
+  }
+
+  @Override
+  public Class<byte[]> getContentClass() {
+    return byte[].class;
+  }
+  @Override
+  public BytesHandle newHandle() {
+    return new BytesHandle().withFormat(getFormat()).withMimetype(getMimetype());
+  }
+  @Override
+  public byte[][] newArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new byte[length][];
   }
 
   /**
@@ -170,6 +185,19 @@ public class BytesHandle
   public byte[] toBuffer() {
     return content;
   }
+  @Override
+  public byte[] toContent(byte[] serialization) {
+    return serialization;
+  }
+  @Override
+  public byte[] bytesToContent(byte[] buffer) {
+    return buffer;
+  }
+  @Override
+  public byte[] contentToBytes(byte[] content) {
+    return content;
+  }
+
   /**
    * Returns a byte array as a string with the assumption
    * that the bytes are encoded in UTF-8. If the bytes
@@ -178,11 +206,7 @@ public class BytesHandle
    */
   @Override
   public String toString() {
-    try {
-      return (content == null) ? null : new String(content,"UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new MarkLogicIOException(e);
-    }
+    return (content == null) ? null : new String(content, StandardCharsets.UTF_8);
   }
 
   @Override
@@ -191,15 +215,15 @@ public class BytesHandle
   }
   @Override
   protected void receiveContent(byte[] content) {
-    this.content = content;
-  }
-
-  @Override
-  protected byte[] sendContent() {
     if (content == null || content.length == 0) {
       throw new IllegalStateException("No bytes to write");
     }
 
-    return content;
+    set(content);
+  }
+
+  @Override
+  protected byte[] sendContent() {
+    return get();
   }
 }

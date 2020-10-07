@@ -15,15 +15,12 @@
  */
 package com.marklogic.client.dataservices.impl;
 
-import com.marklogic.client.SessionState;
-import java.io.InputStream;
-
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
-final public class ExecCallerImpl extends IOCallerImpl {
+final public class ExecCallerImpl<I,O> extends IOCallerImpl<I,O> {
     public ExecCallerImpl(JSONWriteHandle apiDeclaration) {
-        super(apiDeclaration);
+        super(apiDeclaration, null, null);
 
         if (getInputParamdef() != null) {
             throw new IllegalArgumentException("input parameter not supported in endpoint: "+ getEndpointPath());
@@ -41,9 +38,7 @@ final public class ExecCallerImpl extends IOCallerImpl {
         }
     }
 
-    public InputStream call(
-            DatabaseClient db, InputStream endpointState, SessionState session, InputStream workUnit
-    ) {
-        return responseMaybe(makeRequest(db, endpointState, session, workUnit));
+    public boolean call(DatabaseClient db,  CallContextImpl<I,O> callCtxt) {
+        return responseWithState(makeRequest(db, callCtxt), callCtxt);
     }
 }

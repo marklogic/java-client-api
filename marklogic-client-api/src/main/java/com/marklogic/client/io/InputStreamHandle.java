@@ -20,32 +20,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
+import com.marklogic.client.io.marker.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.io.marker.BinaryReadHandle;
-import com.marklogic.client.io.marker.BinaryWriteHandle;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
-import com.marklogic.client.io.marker.CtsQueryWriteHandle;
-import com.marklogic.client.io.marker.GenericReadHandle;
-import com.marklogic.client.io.marker.GenericWriteHandle;
-import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.QuadsWriteHandle;
-import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.io.marker.TextReadHandle;
-import com.marklogic.client.io.marker.TextWriteHandle;
-import com.marklogic.client.io.marker.TriplesReadHandle;
-import com.marklogic.client.io.marker.TriplesWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * <p>An InputStreamHandle represents a resource as an InputStream for reading or writing.</p>
@@ -60,7 +41,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class InputStreamHandle
   extends BaseHandle<InputStream, InputStream>
-  implements BufferableHandle, ContentHandle<InputStream>,
+  implements StreamingContentHandle<InputStream, InputStream>,
     BinaryReadHandle, BinaryWriteHandle,
     GenericReadHandle, GenericWriteHandle,
     JSONReadHandle, JSONWriteHandle,
@@ -73,6 +54,7 @@ public class InputStreamHandle
 {
   static final private Logger logger = LoggerFactory.getLogger(InputStreamHandle.class);
 
+  private byte[] contentBytes;
   private InputStream content;
 
   final static private int BUFFER_SIZE = 8192;
@@ -127,6 +109,9 @@ public class InputStreamHandle
    */
   @Override
   public InputStream get() {
+    if (contentBytes != null) {
+      return new ByteArrayInputStream(contentBytes);
+    }
     return content;
   }
   /**
@@ -135,7 +120,11 @@ public class InputStreamHandle
    */
   @Override
   public void set(InputStream content) {
-    this.content = content;
+    set(content, null);
+  }
+  private void set(InputStream content, byte[] contentBytes) {
+    this.content      = content;
+    this.contentBytes = contentBytes;
   }
   /**
    * Assigns an input stream as the content and returns the handle
@@ -146,6 +135,20 @@ public class InputStreamHandle
   public InputStreamHandle with(InputStream content) {
     set(content);
     return this;
+  }
+
+  @Override
+  public Class<InputStream> getContentClass() {
+    return InputStream.class;
+  }
+  @Override
+  public InputStreamHandle newHandle() {
+    return new InputStreamHandle().withFormat(getFormat()).withMimetype(getMimetype());
+  }
+  @Override
+  public InputStream[] newArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new InputStream[length];
   }
 
   /**
@@ -171,16 +174,25 @@ public class InputStreamHandle
 
   @Override
   public void fromBuffer(byte[] buffer) {
-    if (buffer == null || buffer.length == 0)
-      content = null;
-    else
-      receiveContent(new ByteArrayInputStream(buffer));
+    set(bytesToContent(buffer), buffer);
   }
   @Override
   public byte[] toBuffer() {
+    if (contentBytes == null && content != null) {
+      contentBytes = contentToBytes(get());
+      content = null;
+    }
+    return contentBytes;
+  }
+  @Override
+  public InputStream bytesToContent(byte[] buffer) {
+    return (buffer == null || buffer.length == 0) ?
+            null : new ByteArrayInputStream(buffer);
+  }
+  @Override
+  public byte[] contentToBytes(InputStream content) {
     try {
-      if (content == null)
-        return null;
+      if (content == null) return null;
 
       ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
@@ -191,14 +203,16 @@ public class InputStreamHandle
       }
       content.close();
 
-      b = buffer.toByteArray();
-      fromBuffer(b);
-
-      return b;
+      return buffer.toByteArray();
     } catch (IOException e) {
       throw new MarkLogicIOException(e);
     }
   }
+  @Override
+  public InputStream toContent(InputStream serialization) {
+    return serialization;
+  }
+
   /**
    * Buffers the input stream and returns the buffer as a string
    * with the assumption that the stream is encoded in UTF-8. If
@@ -207,12 +221,8 @@ public class InputStreamHandle
    */
   @Override
   public String toString() {
-    try {
-      byte[] buffer = toBuffer();
-      return (buffer == null) ? null : new String(buffer,"UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new MarkLogicIOException(e);
-    }
+    byte[] buffer = toBuffer();
+    return (buffer == null) ? null : new String(buffer, StandardCharsets.UTF_8);
   }
 
   @Override
@@ -221,27 +231,33 @@ public class InputStreamHandle
   }
   @Override
   protected void receiveContent(InputStream content) {
-    this.content = content;
+    set(content, null);
   }
   @Override
   protected InputStream sendContent() {
-    if (content == null) {
+    InputStream sendableContent = get();
+    if (sendableContent == null) {
       throw new IllegalStateException("No stream to write");
     }
 
-    return content;
+    return sendableContent;
   }
 
   /** Either call close() or get().close() when finished with this handle to close the underlying InputStream.
    */
   @Override
   public void close() {
-    if ( content != null ) {
+    if (contentBytes != null) {
+      contentBytes = null;
+    }
+    if (content != null) {
       try {
         content.close();
       } catch (IOException e) {
-        logger.error("Failed to close underlying InputStream",e);
+        logger.error("Failed to close underlying InputStream", e);
         throw new MarkLogicIOException(e);
+      } finally {
+        content = null;
       }
     }
   }

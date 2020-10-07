@@ -41,9 +41,8 @@ public class URIHandleExample {
     String filename = "flipper.xml";
 
     // create the database client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      props.host, props.port, props.writerUser, props.writerPassword,
-      props.authType);
+    DatabaseClient client = DatabaseClientFactory.newClient(props.host, props.port,
+            new DatabaseClientFactory.DigestAuthContext(props.writerUser, props.writerPassword));
 
     // create a manager for XML documents
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -56,12 +55,7 @@ public class URIHandleExample {
     // create the URI handle for a web service
     // for convenience, the example uses the database REST server as a web service
     URIHandle handle = new URIHandle(
-      props.host, props.port, props.writerUser, props.writerPassword,
-      props.authType);
-
-    // identify the base URI for all content at the web service
-    // for convenience, the example uses the base URI for the database REST server
-    handle.setBaseUri("http://"+props.host+":"+props.port+"/v1/");
+            props.host, props.port, "/v1/", props.writerUser, props.writerPassword);
 
     // for digest authentication, either configure the HTTP client to buffer or
     // make an initial request that is repeatable; here the repeatable request

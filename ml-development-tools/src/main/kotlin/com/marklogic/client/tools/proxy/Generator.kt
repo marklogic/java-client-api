@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,36 @@
 package com.marklogic.client.tools.proxy
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.File
+import com.networknt.schema.*
 
 class Generator {
   enum class ValueCardinality { NONE, SINGLE, MULTIPLE }
+
+  companion object {
+    val mapper = jacksonObjectMapper()
+    val schema: JsonSchema = JsonSchemaFactory.Builder()
+            .addMetaSchema(
+                    JsonMetaSchema.builder(JsonMetaSchema.getV7().uri, JsonMetaSchema.getV7())
+                            .addKeyword(NonValidationKeyword("\$comment"))
+                            // TODO: implement AbstractKeyword / JsonValidator for propertyNames
+                            .addKeyword(NonValidationKeyword("propertyNames"))
+                            .build())
+            .defaultMetaSchemaURI(JsonMetaSchema.getV7().uri)
+            .objectMapper(mapper)
+            .build()
+            .getSchema(
+                    Generator::class.java.classLoader.getResourceAsStream("proxy/endpointDeclarationSchema.json"),
+                    {
+                      val config = SchemaValidatorsConfig()
+                      config.setHandleNullableField(true)
+                      config
+                    }())
+  }
 
   fun getJavaConverterName(): Map<String,String> {
     return mapOf(
@@ -225,15 +246,13 @@ class Generator {
 
   // entry point for EndpointProxiesGenTask
   fun serviceBundleToJava(servDeclFilename: String, javaBaseDir: String) {
-    val mapper   = jacksonObjectMapper()
-
     val servDeclFile = File(servDeclFilename)
     val servdef      = mapper.readValue<ObjectNode>(servDeclFile)
 
     val endpointDirectory = getEndpointDirectory(servDeclFilename, servdef)
 
     val moduleFiles   = mutableMapOf<String, File>()
-    val funcdefs    = getFuncdefs(mapper, endpointDirectory, servDeclFile, servdef, moduleFiles)
+    val funcdefs    = getFuncdefs(endpointDirectory, servDeclFile, servdef, moduleFiles)
 
     val fullClassName = getFullClassName(servDeclFilename, servdef)
     val packageName = fullClassName.substringBeforeLast(".")
@@ -266,8 +285,8 @@ class Generator {
 
     writeClass(fullClassName, classSrc, javaBaseDir)
   }
-  fun getFuncdefs(
-          mapper: ObjectMapper, endpointDirectory: String, servDeclFile: File,
+  private fun getFuncdefs(
+          endpointDirectory: String, servDeclFile: File,
           servdef: ObjectNode, moduleFiles: MutableMap<String, File>
   ): Map<String, ObjectNode> {
     var servExtsn = servdef.get("endpointExtension")?.asText()
@@ -303,9 +322,7 @@ class Generator {
         warnings.add("function declaration without endpoint main module: "+entry.value.absolutePath)
         false
       }
-    }.mapValues{entry ->
-      mapper.readValue<ObjectNode>(entry.value)
-    }
+    }.mapValues{entry -> validateFunction(entry.key, entry.value.readText())}
 
     if (warnings.size > 0) {
       System.err.println(warnings.joinToString("""
@@ -319,6 +336,15 @@ class Generator {
     }
 
     return funcdefs
+  }
+  fun validateFunction(name: String, declaration: String): ObjectNode {
+    val funcdef = mapper.readValue<ObjectNode>(declaration)
+    val validations = schema.validate(funcdef)
+    if (validations.isNotEmpty()) {
+      throw JsonSchemaException("""invalid function definition ${name}.json:
+${validations.joinToString("\n"){validation -> validation.message}}""")
+    }
+    return funcdef
   }
   fun getEndpointDirectory(servDeclFilename: String, servdef: ObjectNode): String {
     var endpointDirectory = servdef.get("endpointDirectory")?.asText()
@@ -473,7 +499,7 @@ ${funcDecls}
         if ((funcParams?.size() ?: 0) == 0) null
         else funcParams.map{funcParam ->
            val paramName = funcParam.get("name").asText()
-           """${paramName}"""
+          paramName
            }.joinToString(", ")
 
     val payloadParams = mutableListOf<ObjectNode>()
@@ -788,7 +814,7 @@ ${funcDecls}
     val format =
         if (documentType == "array" || documentType == "object") "Format.JSON"
         else "Format."+documentType.substringBefore("Document").toUpperCase()
-    return format;
+    return format
   }
   fun paramKindCardinality(currCardinality: ValueCardinality, param: ObjectNode): ValueCardinality {
     val nextCardinality =
@@ -819,8 +845,6 @@ ${funcDecls}
     if (moduleFile.exists()) {
       throw IllegalArgumentException("module file already exists: "+moduleFile.absolutePath)
     }
-
-    val mapper         = jacksonObjectMapper()
 
     val atomicTypes    = getAtomicDataTypes()
     val documentTypes  = getDocumentDataTypes()
@@ -887,7 +911,7 @@ declare option xdmp:mapping "false";
                         else
                           "declare variable $${paramName} as ${typeName}${cardinality} external;"
               paramdef
-            }.filterNotNull().joinToString("""
+            }.joinToString("""
 """)
     return paramsSource
   }
@@ -937,14 +961,12 @@ declare option xdmp:mapping "false";
 
   // entry point for ServiceCompareTask
   fun compareServices(customServDeclFilename: String, baseServDeclFilenameParam: String? = null) {
-    val mapper = jacksonObjectMapper()
-
     val customServDeclFile = File(customServDeclFilename)
     val customServdef = mapper.readValue<ObjectNode>(customServDeclFile)
 
     val customEndpointDirectory = getEndpointDirectory(customServDeclFilename, customServdef)
 
-    var baseServDeclFilename =
+    val baseServDeclFilename =
         if (baseServDeclFilenameParam != null)
           baseServDeclFilenameParam
         else resolveBaseEndpointDirectory(
@@ -956,14 +978,14 @@ declare option xdmp:mapping "false";
 
     val customModuleFiles = mutableMapOf<String, File>()
     val customFuncdefs    = getFuncdefs(
-        mapper, customEndpointDirectory, customServDeclFile, customServdef, customModuleFiles
+        customEndpointDirectory, customServDeclFile, customServdef, customModuleFiles
     )
 
     val baseEndpointDirectory = getEndpointDirectory(baseServDeclFilename, baseServdef)
 
     val baseModuleFiles = mutableMapOf<String, File>()
     val baseFuncdefs    = getFuncdefs(
-        mapper, baseEndpointDirectory, baseServDeclFile, baseServdef, baseModuleFiles
+        baseEndpointDirectory, baseServDeclFile, baseServdef, baseModuleFiles
     )
 
     val errors = mutableListOf<String>()
@@ -1034,7 +1056,7 @@ ${errorReport}"""
     // the leading database directories (if any) that the custom and base declaration files have in common
     val commonPrefix = customEndpointDirectory
                 .commonPrefixWith(baseEndpointDirectory)
-                .replaceFirst(Regex("""([/\\])[^\/\\]+$"""), "$1")
+                .replaceFirst(Regex("""([/\\])[^/\\]+$"""), "$1")
 
     // the trailing database path that's unique to the custom declaration file
     var trimSuffix   =
@@ -1075,7 +1097,7 @@ ${errorReport}"""
         checkValuesEqual(errors, key, customVal, baseObj.get(key))
       }
     }
-    baseObj.fields().forEach{(key, value) ->
+    baseObj.fields().forEach{(key, _) ->
       if (!customObj.has(key)) {
         errors.add("${key} property of ${parentKey} exists in base service but not custom service")
       }

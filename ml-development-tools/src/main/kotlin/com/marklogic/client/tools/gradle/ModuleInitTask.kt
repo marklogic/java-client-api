@@ -20,7 +20,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
 open class ModuleInitTask : DefaultTask() {
-  val generator = Generator()
+  private val generator = Generator()
 
   var endpointDeclarationFile: String = ""
   var moduleExtension:         String = ""

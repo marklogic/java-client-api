@@ -26,7 +26,8 @@ import java.io.InputStream;
  * Provides an interface for calling an endpoint that doesn't take
  * input data structures or return output data structures.
  */
-public interface ExecEndpoint extends IOEndpoint {
+@Deprecated
+public interface ExecEndpoint extends ExecCaller {
     /**
      * Constructs an instance of the ExecEndpoint interface
      * for calling the specified endpoint.
@@ -34,14 +35,25 @@ public interface ExecEndpoint extends IOEndpoint {
      * @param apiDecl  the JSON api declaration specifying how to call the endpoint
      * @return  the ExecEndpoint instance for calling the endpoint
      */
+    @Deprecated
     static ExecEndpoint on(DatabaseClient client, JSONWriteHandle apiDecl) {
-        return new ExecEndpointImpl(client, apiDecl);
+        final class EndpointLocal<I,O> extends ExecEndpointImpl<I,O> implements ExecEndpoint {
+            private EndpointLocal(DatabaseClient client, JSONWriteHandle apiDecl) {
+                super(client, apiDecl);
+            }
+            public ExecEndpoint.BulkExecCaller bulkCaller() {
+                return new BulkLocal(this);
+            }
+            class BulkLocal extends ExecEndpointImpl.BulkExecCallerImpl<I,O>
+                    implements ExecEndpoint.BulkExecCaller {
+                private BulkLocal(EndpointLocal<I,O> endpoint) {
+                    super(endpoint);
+                }
+            }
+        }
+        return new EndpointLocal(client, apiDecl);
     }
 
-    /**
-     * Makes one call to an endpoint that doesn't take an endpoint state, session, or work unit.
-     */
-    void call();
     /**
      * Makes one call to the endpoint for the instance.
      * @param endpointState  the current mutable state of the endpoint (which must be null if not accepted by the endpoint)
@@ -49,13 +61,11 @@ public interface ExecEndpoint extends IOEndpoint {
      * @param workUnit  the definition of a unit of work (which must be null if not accepted by the endpoint)
      * @return the endpoint state for the next call, if returned by the endpoint, or null
      */
+    @Deprecated
     InputStream call(InputStream endpointState, SessionState session, InputStream workUnit);
 
-    /**
-     * Constructs an instance of a bulk caller, which completes
-     * a unit of work by repeated calls to the endpoint.
-     * @return  the bulk caller for the endpoint
-     */
+    @Override
+    @Deprecated
     BulkExecCaller bulkCaller();
 
     /**
@@ -63,10 +73,9 @@ public interface ExecEndpoint extends IOEndpoint {
      * by repeated calls to an endpoint that doesn't take input
      * data structure or return output data structures.
      *
-     * Use the inherited methods to set the endpoint state
-     * and / or work unit if accepted by the endpoint.
-     * Then, call awaitCompletion() to start making calls.
+     * Call awaitCompletion() to start making calls.
      */
-    interface BulkExecCaller extends IOEndpoint.BulkIOEndpointCaller {
+    @Deprecated
+    interface BulkExecCaller extends ExecCaller.BulkExecCaller {
     }
 }

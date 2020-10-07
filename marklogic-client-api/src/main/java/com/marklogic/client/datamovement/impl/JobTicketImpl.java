@@ -22,6 +22,7 @@ public class JobTicketImpl implements JobTicket {
   private JobType jobType;
   private QueryBatcherImpl queryBatcher;
   private WriteBatcherImpl writeBatcher;
+  private RowBatcherImpl<?> rowBatcher;
 
   public JobTicketImpl(String jobId, JobType jobType) {
     this.jobId = jobId;
@@ -46,6 +47,7 @@ public class JobTicketImpl implements JobTicket {
     switch(jobType) {
       case QUERY_BATCHER: return getQueryBatcher();
       case WRITE_BATCHER: return getWriteBatcher();
+      case ROW_BATCHER:   return getRowBatcher();
       default:
         throw new InternalError("unknown job type: "+jobType.name());
     }
@@ -58,6 +60,9 @@ public class JobTicketImpl implements JobTicket {
   public WriteBatcherImpl getWriteBatcher() {
     return writeBatcher;
   }
+  public RowBatcherImpl<?> getRowBatcher() {
+    return rowBatcher;
+  }
 
   public JobTicketImpl withQueryBatcher(QueryBatcherImpl queryBatcher) {
     this.queryBatcher = queryBatcher;
@@ -65,6 +70,10 @@ public class JobTicketImpl implements JobTicket {
   }
   public JobTicketImpl withWriteBatcher(WriteBatcherImpl writeBatcher) {
     this.writeBatcher = writeBatcher;
+    return this;
+  }
+  public JobTicketImpl withRowBatcher(RowBatcherImpl rowBatcher) {
+    this.rowBatcher = rowBatcher;
     return this;
   }
 }

@@ -170,7 +170,15 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
    *            A combined raw query definition serialized as XML.
    */
   public void importQueryDefinition(XMLWriteHandle queryDef) {
+    if (queryDef == null) {
+      throw new IllegalArgumentException("Query definition is null");
+    }
+
     List<XMLEvent> importedList = Utilities.importFromHandle(queryDef);
+    if (importedList == null || importedList.size() == 0) {
+      throw new IllegalArgumentException("Query definition is empty");
+    }
+
     // modify XMLEvent list if the imported XML was a structured query.
     XMLEvent firstEvent = importedList.get(0);
     if (firstEvent.getEventType() ==  XMLStreamConstants.START_ELEMENT) {
@@ -303,9 +311,11 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 
   @Override
   protected void receiveContent(InputStream content) {
+    if (content == null) return;
     DOMHandle handle = new DOMHandle();
     HandleAccessor.receiveContent(handle, content);
     Element ruleElement = handle.get().getDocumentElement();
+    if (ruleElement == null) return;
     receiveElement(ruleElement);
   }
 

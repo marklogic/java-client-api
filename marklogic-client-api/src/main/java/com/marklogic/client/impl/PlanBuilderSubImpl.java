@@ -406,18 +406,20 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
 
     PlanGroupConcatOptionSeqImpl optiondef = (PlanGroupConcatOptionSeqImpl) options;
-    PlanValueOption option    = optiondef.getOption();
-    String          separator = optiondef.getSeparator();
-    if (option != null) {
-      Map<String,String> mapdef = makeMap(option);
-      if (separator != null) {
+    PlanValueOption option = optiondef.getOption();
+
+    Map<String,String> mapdef = (option == null) ? null : makeMap(option);
+
+    String separator = optiondef.getSeparator();
+    if (separator != null) {
+      if (mapdef != null) {
         mapdef.put("separator", separator);
+      } else {
+        mapdef = makeMap("separator", separator);
       }
-      return mapdef;
-    } else if (separator != null) {
-      return makeMap("separator", separator);
     }
-    return null;
+
+    return mapdef;
   }
   static Map<String,String> makeMap(String key, String value) {
     Map<String, String> map = new HashMap<String, String>();

@@ -1,0 +1,130 @@
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>cts:point Server Expression Type</title>
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" title="Style"/>
+    <script type="text/javascript" src="../../script.js"></script>
+  </head>
+  <body><div class="topNav"><ul class="navList" title="Navigation">
+	<li><a href="../../overview-summary.html">Overview</a></li>
+	<li><a href="../../com/marklogic/client/expression/package-summary.html">Package</a></li>
+	<li><a href="../../deprecated-list.html">Deprecated</a></li>
+	<li><a href="../../index-all.html">Index</a></li>
+	<li><a href="../../help-doc.html">Help</a></li>
+      </ul></div><div class="header"><h2>cts:point Server Expression</h2></div><div class="contentContainer"><p>A server expression that returns a value of (or implicitly castable to) the cts:point server type.
+For all server types, see the <a href="ml-server-type-tree.html">Server Expression Type Hierarchy</a>.</p><br/><div class="summary"><h3>Cast With</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr>
+	    <th class="colFirst" scope="col">Server Return Type</th>
+	    <th class="colLast" scope="col">Server Function</th>
+	    <th class="colLast" scope="col">Java Doc</th>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">cts:point</td>
+	    <td class="colLast"><span class="memberNameLink">cts:point</span>(<span><a href="xs_double.html">xs:double</a> <i>latitude</i></span>, <span><a href="xs_double.html">xs:double</a> <i>longitude</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-point">java</a></td>
+	  </tr>
+</table></div><br/><div class="summary"><h3>Supertypes</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr class="altColor">
+	    <td><a href="item.html">item</a></td>
+	  </tr>
+</table></div><br/><div class="summary"><h3>Parameter Of</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr>
+	    <th class="colFirst" scope="col">Server Return Type</th>
+	    <th class="colLast" scope="col">Server Function</th>
+	    <th class="colLast" scope="col">Java Doc</th>
+	    <th class="colLast" scope="col">Server Doc</th>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="cts_circle.html">cts:circle</a></td>
+	    <td class="colLast"><span class="memberNameLink">cts:circle</span>(<span><a href="xs_double.html">xs:double</a> <i>radius</i></span>, <span>cts:point <i>center</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-circle">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:circle" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="xs_numeric.html">xs:numeric</a></td>
+	    <td class="colLast"><span class="memberNameLink">cts:point-latitude</span>(<span>cts:point <i>point</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-point-latitude">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:point-latitude" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="xs_numeric.html">xs:numeric</a></td>
+	    <td class="colLast"><span class="memberNameLink">cts:point-longitude</span>(<span>cts:point <i>point</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-point-longitude">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:point-longitude" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">cts:point</td>
+	    <td class="colLast"><span class="memberNameLink">geo:arc-intersection</span>(<span>cts:point <i>p1</i></span>, <span>cts:point <i>p2</i></span>, <span>cts:point <i>q1</i></span>, <span>cts:point <i>q2</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-arc-intersection">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:arc-intersection" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="xs_double.html">xs:double</a></td>
+	    <td class="colLast"><span class="memberNameLink">geo:bearing</span>(<span>cts:point <i>p1</i></span>, <span>cts:point <i>p2</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-bearing">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:bearing" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">cts:point</td>
+	    <td class="colLast"><span class="memberNameLink">geo:destination</span>(<span>cts:point <i>p</i></span>, <span><a href="xs_double.html">xs:double</a> <i>bearing</i></span>, <span><a href="xs_double.html">xs:double</a> <i>distance</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-destination">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:destination" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="xs_double.html">xs:double</a></td>
+	    <td class="colLast"><span class="memberNameLink">geo:distance</span>(<span>cts:point <i>p1</i></span>, <span>cts:point <i>p2</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-distance">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:distance" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="cts_polygon.html">cts:polygon</a></td>
+	    <td class="colLast"><span class="memberNameLink">geo:ellipse-polygon</span>(<span>cts:point <i>center</i>*</span>, <span><a href="xs_double.html">xs:double</a> <i>semi-major-axis</i></span>, <span><a href="xs_double.html">xs:double</a> <i>semi-minor-axis</i></span>, <span><a href="xs_double.html">xs:double</a> <i>azimuth</i></span>, <span><a href="xs_double.html">xs:double</a> <i>arc-tolerance</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-ellipse-polygon">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:ellipse-polygon" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="xs_double.html">xs:double</a></td>
+	    <td class="colLast"><span class="memberNameLink">geo:shortest-distance</span>(<span>cts:point <i>p1</i></span>, <span><a href="cts_region.html">cts:region</a> <i>region</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-shortest-distance">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:shortest-distance" target="mlserverdoc">server</a></td>
+	  </tr>
+</table></div><br/><div class="summary"><h3>Return Value Of</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr>
+	    <th class="colFirst" scope="col">Server Return Type</th>
+	    <th class="colLast" scope="col">Server Function</th>
+	    <th class="colLast" scope="col">Java Doc</th>
+	    <th class="colLast" scope="col">Server Doc</th>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">cts:point</td>
+	    <td class="colLast"><span class="memberNameLink">cts:circle-center</span>(<span><a href="cts_circle.html">cts:circle</a> <i>circle</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-circle-center">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:circle-center" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">cts:point</td>
+	    <td class="colLast"><span class="memberNameLink">geo:approx-center</span>(<span><a href="cts_region.html">cts:region</a> <i>region</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-approx-center">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:approx-center" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">cts:point</td>
+	    <td class="colLast"><span class="memberNameLink">geo:arc-intersection</span>(<span>cts:point <i>p1</i></span>, <span>cts:point <i>p2</i></span>, <span>cts:point <i>q1</i></span>, <span>cts:point <i>q2</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-arc-intersection">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:arc-intersection" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">cts:point</td>
+	    <td class="colLast"><span class="memberNameLink">geo:destination</span>(<span>cts:point <i>p</i></span>, <span><a href="xs_double.html">xs:double</a> <i>bearing</i></span>, <span><a href="xs_double.html">xs:double</a> <i>distance</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-destination">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:destination" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">cts:point</td>
+	    <td class="colLast"><span class="memberNameLink">geo:geohash-decode-point</span>(<span><a href="xs_string.html">xs:string</a> <i>hash</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-geohash-decode-point">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:geohash-decode-point" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">cts:point?</td>
+	    <td class="colLast"><span class="memberNameLink">geo:interior-point</span>(<span><a href="cts_region.html">cts:region</a> <i>region</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-interior-point">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:interior-point" target="mlserverdoc">server</a></td>
+	  </tr>
+</table></div></div></body>
+</html>

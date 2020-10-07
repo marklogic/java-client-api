@@ -37,7 +37,6 @@ public abstract class BaseHandle<R,W>
 {
   private Format format = Format.UNKNOWN;
   private String mimetype;
-  private long serverTimestamp = -1;
   private long length = UNKNOWN_LENGTH;
 
   /**

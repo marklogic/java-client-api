@@ -18,30 +18,42 @@ package com.marklogic.client.dataservices;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.impl.OutputEndpointImpl;
+import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
 import java.io.InputStream;
-import java.util.function.Consumer;
 
 /**
  * Provides an interface for calling an endpoint that returns output data structures.
  */
-public interface OutputEndpoint extends IOEndpoint {
+@Deprecated
+public interface OutputEndpoint extends OutputCaller<InputStream> {
     /**
      * Constructs an instance of the OutputEndpoint interface.
      * @param client  the database client to use for making calls
      * @param apiDecl  the JSON api declaration specifying how to call the endpoint
      * @return  the OutputEndpoint instance for calling the endpoint.
      */
+    @Deprecated
     static OutputEndpoint on(DatabaseClient client, JSONWriteHandle apiDecl) {
-        return new OutputEndpointImpl(client, apiDecl);
+        final class EndpointLocal<I> extends OutputEndpointImpl<I,InputStream>
+                implements OutputEndpoint {
+            private EndpointLocal(DatabaseClient client, JSONWriteHandle apiDecl) {
+                super(client, apiDecl, new InputStreamHandle());
+            }
+            public OutputEndpoint.BulkOutputCaller bulkCaller() {
+                return new BulkLocal(this);
+            }
+            class BulkLocal extends OutputEndpointImpl.BulkOutputCallerImpl<I,InputStream>
+                    implements OutputEndpoint.BulkOutputCaller {
+                private BulkLocal(EndpointLocal<I> endpoint) {
+                    super(endpoint);
+                }
+            }
+        }
+        return new EndpointLocal(client, apiDecl);
     }
 
-    /**
-     * Makes one call to an endpoint that doesn't take an endpoint state, session, or work unit.
-     * @return  the response data from the endpoint
-     */
-    InputStream[] call();
     /**
      * Makes one call to the endpoint for the instance
      * @param endpointState  the current mutable state of the endpoint (which must be null if not accepted by the endpoint)
@@ -49,29 +61,18 @@ public interface OutputEndpoint extends IOEndpoint {
      * @param workUnit  the definition of a unit of work (which must be null if not accepted by the endpoint)
      * @return  the endpoint state if produced by the endpoint followed by the response data from the endpoint
      */
+    @Deprecated
     InputStream[] call(InputStream endpointState, SessionState session, InputStream workUnit);
 
-    /**
-     * Constructs an instance of a bulk caller, which completes
-     * a unit of work by repeated calls to the endpoint.
-     * @return  the bulk caller for the output endpoint
-     */
+    @Override
+    @Deprecated
     BulkOutputCaller bulkCaller();
 
     /**
      * Provides an interface for completing a unit of work
      * by repeated calls to the output endpoint.
      */
-    interface BulkOutputCaller extends IOEndpoint.BulkIOEndpointCaller {
-        /**
-         * Specifies the function to call on receiving output from the endpoint.
-         * @param listener a function for processing the endpoint output
-         */
-        void setOutputListener(Consumer<InputStream> listener);
-        /**
-         * Provides synchronous access to output.
-         * @return the response from the endpoint.
-         */
-        InputStream[] next();
+    @Deprecated
+    interface BulkOutputCaller extends OutputCaller.BulkOutputCaller<InputStream> {
     }
 }

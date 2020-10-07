@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.expression;
 
+import com.marklogic.client.type.XsAnyAtomicTypeVal;
+import com.marklogic.client.type.XsBooleanVal;
 import com.marklogic.client.type.XsDecimalVal;
 import com.marklogic.client.type.XsIntegerVal;
 import com.marklogic.client.type.XsIntVal;
@@ -134,6 +136,27 @@ public interface SqlExpr {
   */
   public ServerExpression dayname(ServerExpression arg);
 /**
+  * Returns true if the specified input glob the specified pattern, otherwise returns false.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/sql:glob" target="mlserverdoc">sql:glob</a> server function.
+  * @param input  The input from which to match.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param pattern  The expression to match. '?' matches one character and '*' matches any number of characters.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
+  */
+  public ServerExpression glob(ServerExpression input, String pattern);
+/**
+  * Returns true if the specified input glob the specified pattern, otherwise returns false.
+  *
+  * <a name="ml-server-type-glob"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/sql:glob" target="mlserverdoc">sql:glob</a> server function.
+  * @param input  The input from which to match.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param pattern  The expression to match. '?' matches one character and '*' matches any number of characters.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
+  */
+  public ServerExpression glob(ServerExpression input, ServerExpression pattern);
+/**
   * Returns an xs:integer between 0 and 23, both inclusive, representing the value of the hours component in the localized value of arg. 
   *
   * <a name="ml-server-type-hours"></a>
@@ -144,6 +167,18 @@ public interface SqlExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
   public ServerExpression hours(ServerExpression arg);
+/**
+  * If the first expression is NULL, then the value of the second expression is returned. If not null, the first expression is returned.
+  *
+  * <a name="ml-server-type-ifnull"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/sql:ifnull" target="mlserverdoc">sql:ifnull</a> server function.
+  * @param expr1  First expression to be evaluated.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param expr2  Second expression to be evaluated.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
+  */
+  public ServerExpression ifnull(ServerExpression expr1, ServerExpression expr2);
 /**
   * Returns a string that that is the first argument with length characters removed starting at start and the second string has been inserted beginning at start.
   * <p>
@@ -212,6 +247,47 @@ public interface SqlExpr {
   */
   public ServerExpression left(ServerExpression str, ServerExpression n);
 /**
+  * Returns true if the specified input like the specified pattern, otherwise returns false.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/sql:like" target="mlserverdoc">sql:like</a> server function.
+  * @param input  The input from which to match.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param pattern  The expression to match. '_' matches one character and '%' matches any number of characters.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
+  */
+  public ServerExpression like(ServerExpression input, String pattern);
+/**
+  * Returns true if the specified input like the specified pattern, otherwise returns false.
+  *
+  * <a name="ml-server-type-like"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/sql:like" target="mlserverdoc">sql:like</a> server function.
+  * @param input  The input from which to match.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param pattern  The expression to match. '_' matches one character and '%' matches any number of characters.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
+  */
+  public ServerExpression like(ServerExpression input, ServerExpression pattern);
+/**
+  * Returns true if the specified input like the specified pattern, otherwise returns false.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/sql:like" target="mlserverdoc">sql:like</a> server function.
+  * @param input  The input from which to match.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param pattern  The expression to match. '_' matches one character and '%' matches any number of characters.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param escape  If a '_' ann '%' are preceeded by an escape character then it will be match as the char '-'/'%' themselves.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
+  */
+  public ServerExpression like(ServerExpression input, String pattern, String escape);
+/**
+  * Returns true if the specified input like the specified pattern, otherwise returns false.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/sql:like" target="mlserverdoc">sql:like</a> server function.
+  * @param input  The input from which to match.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param pattern  The expression to match. '_' matches one character and '%' matches any number of characters.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param escape  If a '_' ann '%' are preceeded by an escape character then it will be match as the char '-'/'%' themselves.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
+  */
+  public ServerExpression like(ServerExpression input, ServerExpression pattern, ServerExpression escape);
+/**
   * Return a string that removes leading empty spaces in the input string.
   *
   * <a name="ml-server-type-ltrim"></a>
@@ -255,6 +331,18 @@ public interface SqlExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
   public ServerExpression monthname(ServerExpression arg);
+/**
+  * Returns a NULL value if the two specified values are equal. Returns the first value if they are not equal
+  *
+  * <a name="ml-server-type-nullif"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/sql:nullif" target="mlserverdoc">sql:nullif</a> server function.
+  * @param expr1  First expression to be evaluated.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param expr2  Second expression to be evaluated.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
+  */
+  public ServerExpression nullif(ServerExpression expr1, ServerExpression expr2);
 /**
   * Returns the length of the string "str" in bits.
   *
@@ -331,6 +419,14 @@ public interface SqlExpr {
   */
   public ServerExpression right(ServerExpression str, ServerExpression n);
 /**
+  * Constructs a row identifier from the string form of the temporary identifier assigned to a row during processing.
+  *
+  * <a name="ml-server-type-rowID"></a>
+  * @param arg1  the arg1  value.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sql_rowID.html">sql:rowID</a> server data type
+  */
+  public ServerExpression rowID(ServerExpression arg1);
+/**
   * Return a string that removes trailing empty spaces in the input string.
   *
   * <a name="ml-server-type-rtrim"></a>
@@ -364,6 +460,17 @@ public interface SqlExpr {
   */
   public ServerExpression sign(ServerExpression x);
 /**
+  * Returns a four-character (SOUNDEX) code to evaluate the similarity of two strings. 
+  *
+  * <a name="ml-server-type-soundex"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/sql:soundex" target="mlserverdoc">sql:soundex</a> server function.
+  * @param arg  The string whose soundex will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
+  */
+  public ServerExpression soundex(ServerExpression arg);
+/**
   * Returns a string that is the given number of spaces.
   *
   * <a name="ml-server-type-space"></a>
@@ -374,6 +481,47 @@ public interface SqlExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
   public ServerExpression space(ServerExpression n);
+/**
+  * Returns an integer value representing the starting position of a string within the search string. Note, the string starting position is 1. If the first parameter is empty, the result is the empty sequence.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/sql:strpos" target="mlserverdoc">sql:strpos</a> server function.
+  * @param target  The string from which to test.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param test  The string to test for existence in the second parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
+  */
+  public ServerExpression strpos(ServerExpression target, String test);
+/**
+  * Returns an integer value representing the starting position of a string within the search string. Note, the string starting position is 1. If the first parameter is empty, the result is the empty sequence.
+  *
+  * <a name="ml-server-type-strpos"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/sql:strpos" target="mlserverdoc">sql:strpos</a> server function.
+  * @param target  The string from which to test.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param test  The string to test for existence in the second parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
+  */
+  public ServerExpression strpos(ServerExpression target, ServerExpression test);
+/**
+  * Returns an integer value representing the starting position of a string within the search string. Note, the string starting position is 1. If the first parameter is empty, the result is the empty sequence.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/sql:strpos" target="mlserverdoc">sql:strpos</a> server function.
+  * @param target  The string from which to test.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param test  The string to test for existence in the second parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
+  */
+  public ServerExpression strpos(ServerExpression target, String test, String collation);
+/**
+  * Returns an integer value representing the starting position of a string within the search string. Note, the string starting position is 1. If the first parameter is empty, the result is the empty sequence.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/sql:strpos" target="mlserverdoc">sql:strpos</a> server function.
+  * @param target  The string from which to test.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param test  The string to test for existence in the second parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
+  */
+  public ServerExpression strpos(ServerExpression target, ServerExpression test, ServerExpression collation);
 /**
   * Returns a xs:string? timestamp created by adding a number to the given dateTimeType field of a given timestamp.
   * <p>
@@ -411,7 +559,7 @@ public interface SqlExpr {
   */
   public ServerExpression timestampdiff(ServerExpression dateTimeType, ServerExpression timestamp1, ServerExpression timestamp2);
 /**
-  * Return a string that removes leading empty spaces in the input string.
+  * Return a string that removes leading and trailing empty spaces in the input string.
   *
   * <a name="ml-server-type-trim"></a>
   
@@ -432,7 +580,14 @@ public interface SqlExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
   public ServerExpression week(ServerExpression arg);
-public ServerExpression weekday(ServerExpression arg1);
+/**
+  * Returns the day of the week.
+  *
+  * <a name="ml-server-type-weekday"></a>
+  * @param arg1  the arg1  value.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
+  */
+  public ServerExpression weekday(ServerExpression arg1);
 /**
   * Returns an xs:integer representing the year component in the localized value of arg. The result may be negative. 
   *

@@ -79,6 +79,18 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td><a href="http://docs.marklogic.com/fn:round-half-to-even" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="altColor">
+	    <td class="colFirst"><a href="xs_string.html">xs:string</a>*</td>
+	    <td class="colLast"><span class="memberNameLink">geo:geohash-encode</span>(<span><a href="cts_region.html">cts:region</a> <i>region</i></span>, <span>xs:integer <i>geohash-precision</i>?</span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-geohash-encode">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:geohash-encode" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="xs_double.html">xs:double</a>*</td>
+	    <td class="colLast"><span class="memberNameLink">geo:geohash-precision-dimensions</span>(<span>xs:integer <i>precision</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-geohash-precision-dimensions">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:geohash-precision-dimensions" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
 	    <td class="colFirst"><a href="xs_double.html">xs:double</a></td>
 	    <td class="colLast"><span class="memberNameLink">math:ldexp</span>(<span><a href="xs_double.html">xs:double</a> <i>y</i></span>, <span>xs:integer <i>i</i></span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/MathExpr.html#ml-server-type-ldexp">java</a></td>
@@ -235,6 +247,18 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td><a href="http://docs.marklogic.com/fn:years-from-duration" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="altColor">
+	    <td class="colFirst">xs:integer</td>
+	    <td class="colLast"><span class="memberNameLink">geo:count-distinct-vertices</span>(<span><a href="cts_region.html">cts:region</a> <i>region</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-count-distinct-vertices">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:count-distinct-vertices" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">xs:integer</td>
+	    <td class="colLast"><span class="memberNameLink">geo:count-vertices</span>(<span><a href="cts_region.html">cts:region</a> <i>region</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-count-vertices">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:count-vertices" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
 	    <td class="colFirst">xs:integer?</td>
 	    <td class="colLast"><span class="memberNameLink">math:rank</span>(<span><a href="xs_anyAtomicType.html">xs:anyAtomicType</a> <i>arg1</i>*</span>, <span><a href="xs_anyAtomicType.html">xs:anyAtomicType</a> <i>arg2</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/MathExpr.html#ml-server-type-rank">java</a></td>
@@ -302,53 +326,58 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	  </tr>
 <tr class="rowColor">
 	    <td class="colFirst">xs:integer?</td>
+	    <td class="colLast"><span class="memberNameLink">sql:strpos</span>(<span><a href="xs_string.html">xs:string</a> <i>target</i>?</span>, <span><a href="xs_string.html">xs:string</a> <i>test</i>?</span>, <span><a href="xs_string.html">xs:string</a> <i>collation</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/SqlExpr.html#ml-server-type-strpos">java</a></td>
+	    <td><a href="http://docs.marklogic.com/sql:strpos" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">xs:integer?</td>
 	    <td class="colLast"><span class="memberNameLink">sql:timestampdiff</span>(<span><a href="xs_string.html">xs:string</a> <i>dateTimeType</i></span>, <span><a href="item.html">item</a> <i>timestamp1</i></span>, <span><a href="item.html">item</a> <i>timestamp2</i></span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/SqlExpr.html#ml-server-type-timestampdiff">java</a></td>
 	    <td><a href="http://docs.marklogic.com/sql:timestampdiff" target="mlserverdoc">server</a></td>
 	  </tr>
-<tr class="altColor">
+<tr class="rowColor">
 	    <td class="colFirst">xs:integer?</td>
 	    <td class="colLast"><span class="memberNameLink">sql:week</span>(<span><a href="item.html">item</a> <i>arg</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/SqlExpr.html#ml-server-type-week">java</a></td>
 	    <td><a href="http://docs.marklogic.com/sql:week" target="mlserverdoc">server</a></td>
 	  </tr>
-<tr class="rowColor">
+<tr class="altColor">
 	    <td class="colFirst">xs:integer?</td>
 	    <td class="colLast"><span class="memberNameLink">sql:weekday</span>(<span><a href="item.html">item</a> <i>arg1</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/SqlExpr.html#ml-server-type-weekday">java</a></td>
-	    <td><a href="http://docs.marklogic.com/sql:weekday" target="mlserverdoc">server</a></td>
 	  </tr>
-<tr class="altColor">
+<tr class="rowColor">
 	    <td class="colFirst">xs:integer?</td>
 	    <td class="colLast"><span class="memberNameLink">sql:year</span>(<span><a href="item.html">item</a> <i>arg</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/SqlExpr.html#ml-server-type-year">java</a></td>
 	    <td><a href="http://docs.marklogic.com/sql:year" target="mlserverdoc">server</a></td>
 	  </tr>
-<tr class="rowColor">
+<tr class="altColor">
 	    <td class="colFirst">xs:integer?</td>
 	    <td class="colLast"><span class="memberNameLink">sql:yearday</span>(<span><a href="item.html">item</a> <i>arg</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/SqlExpr.html#ml-server-type-yearday">java</a></td>
 	    <td><a href="http://docs.marklogic.com/sql:yearday" target="mlserverdoc">server</a></td>
 	  </tr>
-<tr class="altColor">
+<tr class="rowColor">
 	    <td class="colFirst">xs:integer</td>
 	    <td class="colLast"><span class="memberNameLink">xdmp:hex-to-integer</span>(<span><a href="xs_string.html">xs:string</a> <i>hex</i></span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-hex-to-integer">java</a></td>
 	    <td><a href="http://docs.marklogic.com/xdmp:hex-to-integer" target="mlserverdoc">server</a></td>
 	  </tr>
-<tr class="rowColor">
+<tr class="altColor">
 	    <td class="colFirst">xs:integer</td>
 	    <td class="colLast"><span class="memberNameLink">xdmp:octal-to-integer</span>(<span><a href="xs_string.html">xs:string</a> <i>octal</i></span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-octal-to-integer">java</a></td>
 	    <td><a href="http://docs.marklogic.com/xdmp:octal-to-integer" target="mlserverdoc">server</a></td>
 	  </tr>
-<tr class="altColor">
+<tr class="rowColor">
 	    <td class="colFirst">xs:integer?</td>
 	    <td class="colLast"><span class="memberNameLink">xdmp:position</span>(<span><a href="xs_string.html">xs:string</a> <i>test</i>?</span>, <span><a href="xs_string.html">xs:string</a> <i>target</i>?</span>, <span><a href="xs_string.html">xs:string</a> <i>collation</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-position">java</a></td>
 	    <td><a href="http://docs.marklogic.com/xdmp:position" target="mlserverdoc">server</a></td>
 	  </tr>
-<tr class="rowColor">
+<tr class="altColor">
 	    <td class="colFirst">xs:integer?</td>
 	    <td class="colLast"><span class="memberNameLink">xdmp:quarter-from-date</span>(<span><a href="xs_date.html">xs:date</a> <i>arg</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-quarter-from-date">java</a></td>
@@ -356,17 +385,17 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	  </tr>
 <tr class="rowColor">
 	    <td class="colFirst">xs:integer?</td>
-	    <td class="colLast"><span class="memberNameLink">xdmp:week-from-date</span>(<span><a href="xs_date.html">xs:date</a> <i>arg</i>?</span>)</td>
-	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-week-from-date">java</a></td>
-	    <td><a href="http://docs.marklogic.com/xdmp:week-from-date" target="mlserverdoc">server</a></td>
-	  </tr>
-<tr class="altColor">
-	    <td class="colFirst">xs:integer?</td>
 	    <td class="colLast"><span class="memberNameLink">xdmp:weekday-from-date</span>(<span><a href="xs_date.html">xs:date</a> <i>arg</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-weekday-from-date">java</a></td>
 	    <td><a href="http://docs.marklogic.com/xdmp:weekday-from-date" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="altColor">
+	    <td class="colFirst">xs:integer?</td>
+	    <td class="colLast"><span class="memberNameLink">xdmp:week-from-date</span>(<span><a href="xs_date.html">xs:date</a> <i>arg</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-week-from-date">java</a></td>
+	    <td><a href="http://docs.marklogic.com/xdmp:week-from-date" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
 	    <td class="colFirst">xs:integer?</td>
 	    <td class="colLast"><span class="memberNameLink">xdmp:yearday-from-date</span>(<span><a href="xs_date.html">xs:date</a> <i>arg</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-yearday-from-date">java</a></td>

@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,6 +43,7 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
+import com.marklogic.client.impl.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -53,10 +55,6 @@ import org.xml.sax.SAXException;
 
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.impl.ClientPropertiesImpl;
-import com.marklogic.client.impl.DOMWriter;
-import com.marklogic.client.impl.ValueConverter;
-import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
@@ -526,12 +524,8 @@ public class DocumentMetadataHandle
    */
   @Override
   public String toString() {
-    try {
-      byte[] buffer = toBuffer();
-      return (buffer == null) ? null : new String(buffer,"UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new MarkLogicIOException(e);
-    }
+    byte[] buffer = toBuffer();
+    return (buffer == null) ? null : new String(buffer, StandardCharsets.UTF_8);
   }
 
   @Override
@@ -550,7 +544,7 @@ public class DocumentMetadataHandle
         factory.setNamespaceAware(true);
         factory.setValidating(false);
         DocumentBuilder builder = factory.newDocumentBuilder();
-        document = builder.parse(new InputSource(new InputStreamReader(content, "UTF-8")));
+        document = builder.parse(new InputSource(new InputStreamReader(content, StandardCharsets.UTF_8)));
         content.close();
       }
 
@@ -750,15 +744,13 @@ public class DocumentMetadataHandle
     }
 
     String qualityText = quality.getTextContent();
-    if (qualityText == null) {
-      setQuality(0);
-      return;
-    }
 
     int qualityNum = 0;
     try {
-      qualityNum = Integer.parseInt(qualityText);
-
+      qualityNum = Utilities.parseInt(qualityText);
+      if (qualityNum < 0) {
+        qualityNum = 0;
+      }
     } catch(NumberFormatException ex) {
       if (logger.isWarnEnabled())
         logger.warn("Could not parse quality integer from", qualityText);

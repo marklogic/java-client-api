@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,7 +131,14 @@ public interface SemExpr extends SemValue {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_iri.html">sem:iri</a> server data type
   */
   public ServerExpression iri(ServerExpression stringIri);
-public ServerExpression iriToQName(ServerExpression arg1);
+/**
+  * Converts an IRI value to a QName value.
+  *
+  * <a name="ml-server-type-iri-to-QName"></a>
+  * @param arg1  the arg1  value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a> server data type
+  */
+  public ServerExpression iriToQName(ServerExpression arg1);
 /**
   * Returns true if the argument is an RDF blank node - that is, derived from type sem:blank. This XQuery function backs up the SPARQL isBlank() function. 
   *
@@ -208,7 +215,14 @@ public ServerExpression iriToQName(ServerExpression arg1);
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
   public ServerExpression langMatches(ServerExpression langTag, ServerExpression langRange);
-public ServerExpression QNameToIri(ServerExpression arg1);
+/**
+  * Converts a QName value to an IRI value.
+  *
+  * <a name="ml-server-type-QName-to-iri"></a>
+  * @param arg1  the arg1  value.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_iri.html">sem:iri</a> server data type
+  */
+  public ServerExpression QNameToIri(ServerExpression arg1);
 /**
   * Returns a random double between 0 and 1. This XQuery function backs up the SPARQL RAND() function. 
   *

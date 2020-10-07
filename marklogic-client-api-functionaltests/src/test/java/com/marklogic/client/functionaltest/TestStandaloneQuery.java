@@ -56,6 +56,8 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
     setDatabaseProperties(dbName, "stemmed-searches", "basic");
     setupAppServicesConstraint(dbName);
     addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
+    addFieldExcludeRoot(dbName, "pop");
+    includeElementFieldWithWeight(dbName, "pop", "", "popularity", 2, "", "", "");
   }
 
   @Test
@@ -391,6 +393,51 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
     String[] options = { "uncached", "min-occurs=2" };
 
     StructuredQueryDefinition t = qb.range(qb.element("popularity"), "xs:integer", collation, FragmentScope.DOCUMENTS, options, Operator.NE, 4);
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(t, resultsHandle);
+
+    // get the result
+    Document resultDoc = resultsHandle.get();
+    System.out.println(convertXMLDocumentToString(resultDoc));
+
+    assertXpathEvaluatesTo("4", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+
+    // release client
+    client.release();
+  }
+
+  // Making sure that weights do not blow up range query
+  @Test
+  public void testStandaloneRangeQueryWithWeight() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+          TransformerException
+  {
+    System.out.println("Running testStandaloneRangeQueryWithWeight");
+
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
+
+    // set query option validation to true
+    ServerConfigurationManager srvMgr = client.newServerConfigManager();
+    srvMgr.readConfiguration();
+    srvMgr.setQueryOptionValidation(true);
+    srvMgr.writeConfiguration();
+
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/standalone-query/", "XML");
+    }
+
+    QueryManager queryMgr = client.newQueryManager();
+
+    // create query def
+    StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
+    String collation = "http://marklogic.com/collation/en";
+    String[] options = { "uncached", "min-occurs=2", "score-function=linear" };
+
+    StructuredQueryDefinition t = qb.range(qb.element("popularity"), "xs:integer", collation, FragmentScope.DOCUMENTS, options, 10, Operator.NE, 4);
     // create handle
     DOMHandle resultsHandle = new DOMHandle();
     queryMgr.search(t, resultsHandle);

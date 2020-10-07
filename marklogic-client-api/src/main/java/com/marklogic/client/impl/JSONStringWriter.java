@@ -19,6 +19,7 @@ import java.io.CharArrayWriter;
 
 import com.marklogic.client.document.DocumentPatchBuilder.PathLanguage;
 
+// TODO: refactor by replacing uses with JacksonGenerator and deleting JSONStringWriter
 public class JSONStringWriter {
   private StringBuilder builder;
   private boolean       isFirst = false;
