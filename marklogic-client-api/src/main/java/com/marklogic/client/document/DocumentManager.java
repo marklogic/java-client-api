@@ -19,6 +19,7 @@ import java.util.Set;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.query.SearchQueryDefinition;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
@@ -582,7 +583,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
   DocumentPage readMetadata(Transaction transaction, String... uris);
 
   /**
-   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long) QueryManager.search}
+   * Just like {@link QueryManager#search(SearchQueryDefinition, SearchReadHandle, long) QueryManager.search}
    * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
    * documents in each DocumentPage. If setMetadataCategories has
    * been called, populates metadata for each result in the format specified by
@@ -591,10 +592,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @param start	the offset of the first document in the page (where 1 is the first result)
    * @return the DocumentPage of matching documents and metadata
    */
-  DocumentPage search(QueryDefinition querydef, long start);
+  DocumentPage search(SearchQueryDefinition querydef, long start);
 
   /**
-   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, String) QueryManager.search}
+   * Just like {@link QueryManager#search(SearchQueryDefinition, SearchReadHandle, long, String) QueryManager.search}
    * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
    * documents in each DocumentPage. If setMetadataCategories has
    * been called, populates metadata for each result in the format specified by
@@ -604,10 +605,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @param forestName a forest to limit this search
    * @return the DocumentPage of matching documents and metadata
    */
-  DocumentPage search(QueryDefinition querydef, long start, String forestName);
+  DocumentPage search(SearchQueryDefinition querydef, long start, String forestName);
 
   /**
-   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long) QueryManager.search}
+   * Just like {@link QueryManager#search(SearchQueryDefinition, SearchReadHandle, long) QueryManager.search}
    * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
    * documents in each DocumentPage. If setMetadataCategories has
    * been called, populates metadata for each result in the format specified by
@@ -620,11 +621,11 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @return the DocumentPage of matching documents and metadata
    */
   /* Hide the following for now because the API isn't yet fully fleshed-out
-    DocumentPage search(QueryDefinition querydef, long start, long serverTimestamp);
+    DocumentPage search(SearchQueryDefinition querydef, long start, long serverTimestamp);
    */
 
   /**
-   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction) QueryManager.search}
+   * Just like {@link QueryManager#search(SearchQueryDefinition, SearchReadHandle, long, Transaction) QueryManager.search}
    * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
    * documents in each DocumentPage. If setMetadataCategories has
    * been called, populates metadata for each result in the format specified by
@@ -634,10 +635,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @param transaction	an open transaction for matching documents
    * @return the DocumentPage of matching documents and metadata
    */
-  DocumentPage search(QueryDefinition querydef, long start, Transaction transaction);
+  DocumentPage search(SearchQueryDefinition querydef, long start, Transaction transaction);
 
   /**
-   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction, String) QueryManager.search}
+   * Just like {@link QueryManager#search(SearchQueryDefinition, SearchReadHandle, long, Transaction, String) QueryManager.search}
    * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
    * documents in each DocumentPage. If setMetadataCategories has
    * been called, populates metadata for each result in the format specified by
@@ -648,10 +649,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @param forestName a forest to limit this search
    * @return the DocumentPage of matching documents and metadata
    */
-  DocumentPage search(QueryDefinition querydef, long start, Transaction transaction, String forestName);
+  DocumentPage search(SearchQueryDefinition querydef, long start, Transaction transaction, String forestName);
 
   /**
-   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction) QueryManager.search}
+   * Just like {@link QueryManager#search(SearchQueryDefinition, SearchReadHandle, long, Transaction) QueryManager.search}
    * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
    * documents in each DocumentPage. If setMetadataCategories has
    * been called, populates metadata for each result in the format specified by
@@ -665,11 +666,11 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @return the DocumentPage of matching documents and metadata
    */
   /* Hide the following for now because the API isn't yet fully fleshed-out
-    DocumentPage search(QueryDefinition querydef, long start, long serverTimestamp, Transaction transaction);
+    DocumentPage search(SearchQueryDefinition querydef, long start, long serverTimestamp, Transaction transaction);
    */
 
   /**
-   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long) QueryManager.search}
+   * Just like {@link QueryManager#search(SearchQueryDefinition, SearchReadHandle, long) QueryManager.search}
    * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
    * documents in each DocumentPage.  If searchHandle is not null,
    * requests a search response and populates searchHandle with it. If setMetadataCategories has
@@ -682,10 +683,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    *     {@link #setNonDocumentFormat setNonDocumentFormat}
    * @return the DocumentPage of matching documents and metadata
    */
-  DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle);
+  DocumentPage search(SearchQueryDefinition querydef, long start, SearchReadHandle searchHandle);
 
   /**
-   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, String) QueryManager.search}
+   * Just like {@link QueryManager#search(SearchQueryDefinition, SearchReadHandle, long, String) QueryManager.search}
    * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
    * documents in each DocumentPage.  If searchHandle is not null,
    * requests a search response and populates searchHandle with it. If setMetadataCategories has
@@ -699,10 +700,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @param forestName a forest to limit this search
    * @return the DocumentPage of matching documents and metadata
    */
-  DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle, String forestName);
+  DocumentPage search(SearchQueryDefinition querydef, long start, SearchReadHandle searchHandle, String forestName);
 
   /**
-   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction)}
+   * Just like {@link QueryManager#search(SearchQueryDefinition, SearchReadHandle, long, Transaction)}
    * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
    * documents in each DocumentPage.  If searchHandle is not null,
    * requests a search response and populates searchHandle with it. If setMetadataCategories has
@@ -716,10 +717,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @param transaction	an open transaction for matching documents
    * @return the DocumentPage of matching documents and metadata
    */
-  DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle, Transaction transaction);
+  DocumentPage search(SearchQueryDefinition querydef, long start, SearchReadHandle searchHandle, Transaction transaction);
 
   /**
-   * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction, String)}
+   * Just like {@link QueryManager#search(SearchQueryDefinition, SearchReadHandle, long, Transaction, String)}
    * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
    * documents in each DocumentPage.  If searchHandle is not null,
    * requests a search response and populates searchHandle with it. If setMetadataCategories has
@@ -734,7 +735,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
    * @param forestName a forest to limit this search
    * @return the DocumentPage of matching documents and metadata
    */
-  DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle, Transaction transaction, String forestName);
+  DocumentPage search(SearchQueryDefinition querydef, long start, SearchReadHandle searchHandle, Transaction transaction, String forestName);
 
   /** Get the maximum number of records to return in a page from calls to {@link #search search}
    *  @return the maximum number of records to return in a page from calls to
@@ -751,7 +752,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 
   /**
    * Returns the format (if set) for the search response from
-   * {@link #search(QueryDefinition, long, SearchReadHandle) search} and
+   * {@link #search(SearchQueryDefinition, long, SearchReadHandle) search} and
    * metadata available from {@link DocumentRecord#getMetadata(DocumentMetadataReadHandle)
    * DocumentPage.next().getMetadata(handle)} (assuming
    * {@link #setMetadataCategories setMetadataCategories} has been called
@@ -763,7 +764,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 
   /**
    * Specifies the format for the search response from
-   * {@link #search(QueryDefinition, long, SearchReadHandle) search} and
+   * {@link #search(SearchQueryDefinition, long, SearchReadHandle) search} and
    * metadata available from {@link DocumentRecord#getMetadata(DocumentMetadataReadHandle)
    * DocumentPage.next().getMetadata(handle)} (assuming
    * {@link #setMetadataCategories setMetadataCategories} has been called
@@ -775,17 +776,17 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 
   /**
    * Returns the view types included in a SearchReadHandle populated by calls to
-   * {@link #search(QueryDefinition, long, SearchReadHandle) search}
+   * {@link #search(SearchQueryDefinition, long, SearchReadHandle) search}
    * @return	the view types included in a SearchReadHandle populated by calls to
-   *     {@link #search(QueryDefinition, long, SearchReadHandle) search}
+   *     {@link #search(SearchQueryDefinition, long, SearchReadHandle) search}
    */
   QueryView getSearchView();
 
   /**
    * Specifies the view types included in a SearchReadHandle populated by calls to
-   * {@link #search(QueryDefinition, long, SearchReadHandle) search}
+   * {@link #search(SearchQueryDefinition, long, SearchReadHandle) search}
    * @param view	the view types included in a SearchReadHandle populated by calls to
-   *     {@link #search(QueryDefinition, long, SearchReadHandle) search}
+   *     {@link #search(SearchQueryDefinition, long, SearchReadHandle) search}
    */
   void setSearchView(QueryView view);
 

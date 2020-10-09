@@ -17,24 +17,12 @@ package com.marklogic.client.impl;
 
 import java.util.HashSet;
 
-import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.query.QueryDefinition;
 import java.util.Set;
 
-public abstract class AbstractQueryDefinition implements QueryDefinition {
-  protected String optionsUri = null;
+public abstract class AbstractQueryDefinition extends AbstractSearchQueryDefinition implements QueryDefinition {
   private Set<String> collections = new HashSet<>();
   private String          directory   = null;
-  private ServerTransform transform   = null;
-
-  @Override
-  public String getOptionsName() {
-    return optionsUri;
-  }
-  @Override
-  public void setOptionsName(String uri) {
-    optionsUri = uri;
-  }
 
   @Override
   public String[] getCollections() {
@@ -58,12 +46,4 @@ public abstract class AbstractQueryDefinition implements QueryDefinition {
     this.directory = directory;
   }
 
-  @Override
-  public ServerTransform getResponseTransform() {
-    return transform;
-  }
-  @Override
-  public void setResponseTransform(ServerTransform transform) {
-    this.transform = transform;
-  }
 }

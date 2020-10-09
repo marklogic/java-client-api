@@ -760,4 +760,25 @@ public final class Utilities {
   public static long parseLong(String value, long defaultValue) {
     return (value == null || value.length() == 0) ? defaultValue : Long.parseLong(value);
   }
+
+  public static void setHandleToString(AbstractReadHandle handle, String content) {
+    if (!(handle instanceof BaseHandle)) {
+      throw new IllegalArgumentException("cannot export with handle that doesn't extend base");
+    }
+    @SuppressWarnings("rawtypes")
+    BaseHandle baseHandle = (BaseHandle) handle;
+    @SuppressWarnings("rawtypes")
+    Class as = baseHandle.receiveAs();
+    if (InputStream.class.isAssignableFrom(as)) {
+      baseHandle.receiveContent(new ByteArrayInputStream(content.getBytes()));
+    } else if (Reader.class.isAssignableFrom(as)) {
+      baseHandle.receiveContent(new StringReader(content));
+    } else if (byte[].class.isAssignableFrom(as)) {
+      baseHandle.receiveContent(content.getBytes());
+    } else if (String.class.isAssignableFrom(as)) {
+      baseHandle.receiveContent(content);
+    } else {
+      throw new IllegalArgumentException("cannot export with handle that doesn't accept content as byte[], input stream, reader, or string");
+    }
+  }
 }

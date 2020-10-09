@@ -21,6 +21,7 @@ import java.util.*;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.datatype.Duration;
 
+import com.marklogic.client.query.SearchQueryDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -480,61 +481,61 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   }
 
   @Override
-  public DocumentPage search(QueryDefinition querydef, long start) {
+  public DocumentPage search(SearchQueryDefinition querydef, long start) {
     return search(querydef, start, -1, null, null, null);
   }
 
   @Override
-  public DocumentPage search(QueryDefinition querydef, long start, String forestName) {
+  public DocumentPage search(SearchQueryDefinition querydef, long start, String forestName) {
     return search(querydef, start, -1, null, null, forestName);
   }
 
-  public DocumentPage search(QueryDefinition querydef, long start, long serverTimestamp) {
+  public DocumentPage search(SearchQueryDefinition querydef, long start, long serverTimestamp) {
     return search(querydef, start, serverTimestamp, null, null, null);
   }
 
   @Override
-  public DocumentPage search(QueryDefinition querydef, long start,
+  public DocumentPage search(SearchQueryDefinition querydef, long start,
                              SearchReadHandle searchHandle) {
     return search(querydef, start, -1, searchHandle, null, null);
   }
 
   @Override
-  public DocumentPage search(QueryDefinition querydef, long start,
+  public DocumentPage search(SearchQueryDefinition querydef, long start,
                              SearchReadHandle searchHandle, String forestName) {
     return search(querydef, start, -1, searchHandle, null, forestName);
   }
 
   @Override
-  public DocumentPage search(QueryDefinition querydef, long start,
+  public DocumentPage search(SearchQueryDefinition querydef, long start,
                              Transaction transaction) {
     return search(querydef, start, -1, null, transaction, null);
   }
 
   @Override
-  public DocumentPage search(QueryDefinition querydef, long start,
+  public DocumentPage search(SearchQueryDefinition querydef, long start,
                              Transaction transaction, String forestName) {
     return search(querydef, start, -1, null, transaction, forestName);
   }
 
-  public DocumentPage search(QueryDefinition querydef, long start,
+  public DocumentPage search(SearchQueryDefinition querydef, long start,
                              long serverTimestamp, Transaction transaction) {
     return search(querydef, start, serverTimestamp, null, transaction, null);
   }
 
   @Override
-  public DocumentPage search(QueryDefinition querydef, long start,
+  public DocumentPage search(SearchQueryDefinition querydef, long start,
                              SearchReadHandle searchHandle, Transaction transaction) {
     return search(querydef, start, -1, searchHandle, transaction, null);
   }
 
   @Override
-  public DocumentPage search(QueryDefinition querydef, long start,
+  public DocumentPage search(SearchQueryDefinition querydef, long start,
                              SearchReadHandle searchHandle, Transaction transaction, String forestName) {
     return search(querydef, start, -1, searchHandle, transaction, forestName);
   }
 
-  private DocumentPage search(QueryDefinition querydef, long start,
+  private DocumentPage search(SearchQueryDefinition querydef, long start,
                               long serverTimestamp, SearchReadHandle searchHandle, Transaction transaction, String forestName) {
 
     if (searchHandle != null) {
