@@ -18,6 +18,7 @@ package com.marklogic.client.query;
 import javax.xml.namespace.QName;
 
 import com.marklogic.client.Transaction;
+import com.marklogic.client.expression.*;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.CtsQueryWriteHandle;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
@@ -200,7 +201,7 @@ public interface QueryManager {
    * @param <T> the type of SearchReadHandle to return
    * @return	the handle populated with the results from the search
    */
-  <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle);
+  <T extends SearchReadHandle> T search(SearchQueryDefinition querydef, T searchHandle);
   /**
    * Searches documents based on query criteria and, potentially, previously
    * saved query options.
@@ -210,7 +211,7 @@ public interface QueryManager {
    * @param forestName a forest to limit this search
    * @return	the handle populated with the results from the search
    */
-  <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, String forestName);
+  <T extends SearchReadHandle> T search(SearchQueryDefinition querydef, T searchHandle, String forestName);
   /**
    * Searches documents based on query criteria and, potentially, previously
    * saved query options starting with the specified page listing
@@ -221,7 +222,7 @@ public interface QueryManager {
    * @param <T> the type of SearchReadHandle to return
    * @return	the handle populated with the results from the search
    */
-  <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start);
+  <T extends SearchReadHandle> T search(SearchQueryDefinition querydef, T searchHandle, long start);
   /**
    * Searches documents based on query criteria and, potentially, previously
    * saved query options starting with the specified page listing
@@ -233,7 +234,7 @@ public interface QueryManager {
    * @param forestName a forest to limit this search
    * @return	the handle populated with the results from the search
    */
-  <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, String forestName);
+  <T extends SearchReadHandle> T search(SearchQueryDefinition querydef, T searchHandle, long start, String forestName);
   /**
    * Searches documents based on query criteria and, potentially, previously
    * saved query options.  The search includes documents modified by the
@@ -244,7 +245,7 @@ public interface QueryManager {
    * @param <T> the type of SearchReadHandle to return
    * @return	the handle populated with the results from the search
    */
-  <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction);
+  <T extends SearchReadHandle> T search(SearchQueryDefinition querydef, T searchHandle, Transaction transaction);
   /**
    * Searches documents based on query criteria and, potentially, previously
    * saved query options.  The search includes documents modified by the
@@ -256,7 +257,7 @@ public interface QueryManager {
    * @param forestName a forest to limit this search
    * @return	the handle populated with the results from the search
    */
-  <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction, String forestName);
+  <T extends SearchReadHandle> T search(SearchQueryDefinition querydef, T searchHandle, Transaction transaction, String forestName);
   /**
    * Searches documents based on query criteria and, potentially, previously
    * saved query options starting with the specified page listing
@@ -269,7 +270,7 @@ public interface QueryManager {
    * @param <T> the type of SearchReadHandle to return
    * @return	the handle populated with the results from the search
    */
-  <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction);
+  <T extends SearchReadHandle> T search(SearchQueryDefinition querydef, T searchHandle, long start, Transaction transaction);
   /**
    * Searches documents based on query criteria and, potentially, previously
    * saved query options starting with the specified page listing
@@ -283,7 +284,7 @@ public interface QueryManager {
    * @param forestName a forest to limit this search
    * @return	the handle populated with the results from the search
    */
-  <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction, String forestName);
+  <T extends SearchReadHandle> T search(SearchQueryDefinition querydef, T searchHandle, long start, Transaction transaction, String forestName);
 
   /**
    * Queries the REST server for suggested string completions based on
@@ -498,6 +499,12 @@ public interface QueryManager {
    *  Stops debugging client requests.
    */
   void stopLogging();
+
+  /**
+   * Returns a new CtsSearchBuilder.
+   * @return a CtsQueryBuilder
+   */
+  CtsQueryBuilder newCtsSearchBuilder();
 
   /**
    * Defines a combined query from a JSON or XML representation provided as an object of an IO class.

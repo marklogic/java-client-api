@@ -563,26 +563,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     @SuppressWarnings("unchecked")
     @Override
     public <T extends JSONReadHandle> T export(T handle) {
-      if (!(handle instanceof BaseHandle)) {
-        throw new IllegalArgumentException("cannot export with handle that doesn't extend base");
-      }
-      String planAst = getAst();
-// TODO: move to a method of BaseHandle?
-      @SuppressWarnings("rawtypes")
-      BaseHandle baseHandle = (BaseHandle) handle;
-      @SuppressWarnings("rawtypes")
-      Class as = baseHandle.receiveAs();
-      if (InputStream.class.isAssignableFrom(as)) {
-        baseHandle.receiveContent(new ByteArrayInputStream(planAst.getBytes()));
-      } else if (Reader.class.isAssignableFrom(as)) {
-        baseHandle.receiveContent(new StringReader(planAst));
-      } else if (byte[].class.isAssignableFrom(as)) {
-        baseHandle.receiveContent(planAst.getBytes());
-      } else if (String.class.isAssignableFrom(as)) {
-        baseHandle.receiveContent(planAst);
-      } else {
-        throw new IllegalArgumentException("cannot export with handle that doesn't accept content as byte[], input stream, reader, or string");
-      }
+      Utilities.setHandleToString(handle, getAst());
       return handle;
     }
     @Override

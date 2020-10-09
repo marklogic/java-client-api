@@ -22,6 +22,7 @@ import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.pojo.annotation.Id;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.SearchQueryDefinition;
 
 import java.io.Serializable;
 
@@ -409,7 +410,7 @@ public interface PojoRepository<T, ID extends Serializable> {
    * @param start the offset of the first document in the page (where 1 is the first result)
    * @param searchHandle the handle to populate with a search results payload equivalent to
    *      one returned by
-   *      {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction)
+   *      {@link QueryManager#search(SearchQueryDefinition, SearchReadHandle, long, Transaction)
    *      QueryManager.search}
    * @param transaction the transaction in which this search is participating
    *      (Will open a read lock on each document matched. The read lock is released when the

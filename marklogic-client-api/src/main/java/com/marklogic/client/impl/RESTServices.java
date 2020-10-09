@@ -48,12 +48,8 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.marker.*;
-import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.*;
 import com.marklogic.client.query.QueryManager.QueryView;
-import com.marklogic.client.query.SuggestDefinition;
-import com.marklogic.client.query.ValuesDefinition;
-import com.marklogic.client.query.ValuesListDefinition;
 import com.marklogic.client.semantics.GraphPermissions;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.util.EditableNamespaceContext;
@@ -138,7 +134,7 @@ public interface RESTServices {
                                        Set<Metadata> categories, Format format, RequestParameters extraParams,
                                        boolean withContent, String... uris)
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-  DocumentPage getBulkDocuments(RequestLogger logger, long serverTimestamp, QueryDefinition querydef,
+  DocumentPage getBulkDocuments(RequestLogger logger, long serverTimestamp, SearchQueryDefinition querydef,
                                        long start, long pageLength, Transaction transaction, SearchReadHandle searchHandle,
                                        QueryView view, Set<Metadata> categories, Format format, ServerTransform responseTransform,
                                        RequestParameters extraParams, String forestName)
@@ -166,7 +162,7 @@ public interface RESTServices {
     throws ResourceNotFoundException, ResourceNotResendableException,
     ForbiddenUserException, FailedRequestException;
 
-  <T extends SearchReadHandle> T search(RequestLogger logger, T searchHandle, QueryDefinition queryDef,
+  <T extends SearchReadHandle> T search(RequestLogger logger, T searchHandle, SearchQueryDefinition queryDef,
                                                long start, long len, QueryView view, Transaction transaction, String forestName)
     throws ForbiddenUserException, FailedRequestException;
 
