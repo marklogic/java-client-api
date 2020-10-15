@@ -219,11 +219,11 @@ public interface RESTServices {
   <R extends AbstractReadHandle> R getSystemSchema(RequestLogger reqlog, String schemaName, R output)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-  <R extends UrisReadHandle> R uris(RequestLogger reqlog, String method, QueryDefinition qdef,
+  <R extends UrisReadHandle> R uris(RequestLogger reqlog, String method, SearchQueryDefinition qdef,
                        Boolean filtered, long start, String afterUri, long pageLength, String forestName, R output)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
   <R extends AbstractReadHandle> R forestInfo(RequestLogger reqlog,
-                       String method, RequestParameters params, QueryDefinition qdef, R output
+                       String method, RequestParameters params, SearchQueryDefinition qdef, R output
     ) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
   <R extends AbstractReadHandle> R getResource(RequestLogger reqlog, String path,

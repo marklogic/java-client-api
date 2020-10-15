@@ -27,7 +27,7 @@ import com.marklogic.client.datamovement.*;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.datamovement.JobTicket.JobType;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.SearchQueryDefinition;
 import com.marklogic.client.util.RequestParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,7 @@ public class DataMovementServices {
     return this;
   }
 
-  QueryConfig initConfig(String method, QueryDefinition qdef) {
+  QueryConfig initConfig(String method, SearchQueryDefinition qdef) {
     logger.debug("initializing forest configuration with query");
     if (qdef == null) throw new IllegalArgumentException("null query definition");
 

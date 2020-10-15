@@ -44,9 +44,11 @@ import java.util.UUID;
 
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
+import com.marklogic.client.expression.CtsQueryBuilder;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.query.RawCtsQueryDefinition;
+import com.marklogic.client.query.*;
 
+import com.marklogic.client.type.CtsQueryExpr;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
@@ -72,14 +74,7 @@ import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import static com.marklogic.client.io.Format.JSON;
 import static com.marklogic.client.io.Format.XML;
-import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
-import com.marklogic.client.query.RawStructuredQueryDefinition;
-import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StructuredQueryBuilder;
+
 import com.marklogic.client.datamovement.ApplyTransformListener;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.DeleteListener;
@@ -253,6 +248,19 @@ public class QueryBatcherTest {
   }
 
   @Test
+  public void testCtsQuery() throws Exception {
+    CtsQueryBuilder ctsQueryBuilder = client.newQueryManager().newCtsSearchBuilder();
+    CtsQueryExpr ctsQueryExpr = ctsQueryBuilder.cts.wordQuery("Doe");
+    CtsQueryDefinition query = ctsQueryBuilder.newCtsQueryDefinition(ctsQueryExpr);
+    query.setOptionsName("employees");
+    Map<String, String[]> matchesByForest = new HashMap<>();
+    matchesByForest.put("java-unittest-1", new String[] {uri1});
+    matchesByForest.put("java-unittest-2", new String[] {});
+    matchesByForest.put("java-unittest-3", new String[] {uri2});
+    runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, 99, 17);
+  }
+
+  @Test
   public void testIterator() throws Exception {
     Map<String, String[]> matchesByForest = new HashMap<>();
     matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
@@ -291,7 +299,7 @@ public class QueryBatcherTest {
     runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, 30, 20);
   }
 
-  public void runQueryBatcher(QueryBatcher queryBatcher, QueryDefinition query, Map<String,String[]> matchesByForest,
+  public void runQueryBatcher(QueryBatcher queryBatcher, SearchQueryDefinition query, Map<String,String[]> matchesByForest,
         int batchSize, int threadCount, boolean queryBatcherChecks) throws Exception {
     String queryBatcherJobId = "QueryBatcherJobId";
     String queryBatcherJobName = "QueryBatcherJobName";
@@ -419,7 +427,7 @@ public class QueryBatcherTest {
     }
   }
 
-  public void runQueryBatcher(QueryBatcher queryBatcher, QueryDefinition query, Map<String,String[]> matchesByForest,
+  public void runQueryBatcher(QueryBatcher queryBatcher, SearchQueryDefinition query, Map<String,String[]> matchesByForest,
       int batchSize, int threadCount) throws Exception {
     runQueryBatcher(queryBatcher, query, matchesByForest, batchSize, threadCount, true);
   }
