@@ -33,12 +33,12 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.RawQueryDefinition;
+import com.marklogic.client.query.SearchQueryDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.impl.QueryManagerImpl;
 import com.marklogic.client.impl.UrisHandle;
 
@@ -59,8 +59,8 @@ import java.util.stream.Collectors;
 public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private static Logger logger = LoggerFactory.getLogger(QueryBatcherImpl.class);
   private String queryMethod;
-  private QueryDefinition query;
-  private QueryDefinition originalQuery;
+  private SearchQueryDefinition query;
+  private SearchQueryDefinition originalQuery;
   private Boolean filtered;
   private Iterator<String> iterator;
   private boolean threadCountSet = false;
@@ -84,7 +84,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private long maxBatches = Long.MAX_VALUE;
 
   QueryBatcherImpl(
-          QueryDefinition originalQuery, DataMovementManager moveMgr, ForestConfiguration forestConfig,
+          SearchQueryDefinition originalQuery, DataMovementManager moveMgr, ForestConfiguration forestConfig,
           String serializedCtsQuery, Boolean filtered
   ) {
     this(moveMgr, forestConfig);
@@ -100,7 +100,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       initQuery(originalQuery);
     }
   }
-  public QueryBatcherImpl(QueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
+  public QueryBatcherImpl(SearchQueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     this(moveMgr, forestConfig);
     initQuery(query);
   }
@@ -113,7 +113,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     withForestConfig(forestConfig);
     withBatchSize(1000);
   }
-  private void initQuery(QueryDefinition query) {
+  private void initQuery(SearchQueryDefinition query) {
     if (query == null) {
       throw new IllegalArgumentException("Cannot create QueryBatcher with null query");
     }
@@ -589,7 +589,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     private QueryBatcherImpl batcher;
     private Forest forest;
     private String queryMethod;
-    private QueryDefinition query;
+    private SearchQueryDefinition query;
     private Boolean filtered;
     private long forestBatchNum;
     private long start;
@@ -599,17 +599,17 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     private String nextAfterUri;
 
     QueryTask(DataMovementManager moveMgr, QueryBatcherImpl batcher, Forest forest,
-        String queryMethod, QueryDefinition query, Boolean filtered, long forestBatchNum, long start
+        String queryMethod, SearchQueryDefinition query, Boolean filtered, long forestBatchNum, long start
     ) {
       this(moveMgr, batcher, forest, queryMethod, query, filtered, forestBatchNum, start, null, -1, true);
     }
     QueryTask(DataMovementManager moveMgr, QueryBatcherImpl batcher, Forest forest,
-        String queryMethod, QueryDefinition query, Boolean filtered, long forestBatchNum, long start, String afterUri
+        String queryMethod, SearchQueryDefinition query, Boolean filtered, long forestBatchNum, long start, String afterUri
     ) {
       this(moveMgr, batcher, forest, queryMethod, query, filtered, forestBatchNum, start, afterUri, -1, true);
     }
     QueryTask(DataMovementManager moveMgr, QueryBatcherImpl batcher, Forest forest,
-        String queryMethod, QueryDefinition query, Boolean filtered, long forestBatchNum, long start, String afterUri,
+        String queryMethod, SearchQueryDefinition query, Boolean filtered, long forestBatchNum, long start, String afterUri,
         long retryBatchNumber, boolean callFailListeners
     ) {
       this.moveMgr = moveMgr;

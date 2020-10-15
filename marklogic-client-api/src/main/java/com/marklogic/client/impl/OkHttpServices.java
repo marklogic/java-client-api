@@ -3010,7 +3010,7 @@ public class OkHttpServices implements RESTServices {
     return getResource(reqlog, "internal/schemas", null, params, output);
   }
   @Override
-  public <R extends UrisReadHandle> R uris(RequestLogger reqlog, String method, QueryDefinition qdef,
+  public <R extends UrisReadHandle> R uris(RequestLogger reqlog, String method, SearchQueryDefinition qdef,
         Boolean filtered, long start, String afterUri, long pageLength, String forestName, R output
   ) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
       logger.debug("Querying for uris");
@@ -3024,19 +3024,25 @@ public class OkHttpServices implements RESTServices {
   }
   @Override
   public <R extends AbstractReadHandle> R forestInfo(RequestLogger reqlog,
-        String method, RequestParameters params, QueryDefinition qdef, R output
+        String method, RequestParameters params, SearchQueryDefinition qdef, R output
   ) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
       return processQuery(reqlog, "internal/forestinfo", method, params, qdef, output);
   }
   private <R extends AbstractReadHandle> R processQuery(RequestLogger reqlog, String path,
-        String method, RequestParameters params, QueryDefinition qdef, R output
+        String method, RequestParameters params, SearchQueryDefinition qdef, R output
   ) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-    if (qdef.getDirectory() != null) params.add("directory",   qdef.getDirectory());
-    if (qdef.getCollections() != null ) {
-      for ( String collection : qdef.getCollections() ) {
-        params.add("collection", collection);
+      if (qdef instanceof QueryDefinition) {
+          if (((QueryDefinition)qdef).getDirectory() != null) {
+              params.add("directory",   ((QueryDefinition)qdef).getDirectory());
+          }
+
+          if (((QueryDefinition)qdef).getCollections() != null ) {
+              for ( String collection : ((QueryDefinition)qdef).getCollections() ) {
+                  params.add("collection", collection);
+              }
+          }
       }
-    }
+
     if (qdef.getOptionsName()!= null && qdef.getOptionsName().length() > 0) {
       params.add("options", qdef.getOptionsName());
     }
@@ -3098,7 +3104,14 @@ public class OkHttpServices implements RESTServices {
       RawQueryDefinition rawQuery = (RawQueryDefinition) qdef;
       logger.debug("{} processing raw query", path);
       input = checkFormat(rawQuery.getHandle());
-    } else {
+    } else if (qdef instanceof CtsQueryDefinition) {
+        CtsQueryDefinition builtCtsQuery = (CtsQueryDefinition) qdef;
+        structure = builtCtsQuery.serialize();
+        logger.debug("{} processing cts query {}", path, structure);
+        if (sendQueryAsPayload && structure != null) {
+            input = new StringHandle(structure).withFormat(Format.TEXT);
+        }
+    }else {
       throw new UnsupportedOperationException(path+" cannot process query of "+qdef.getClass().getName());
     }
 
