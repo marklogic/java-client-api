@@ -3109,7 +3109,7 @@ public class OkHttpServices implements RESTServices {
         structure = builtCtsQuery.serialize();
         logger.debug("{} processing cts query {}", path, structure);
         if (sendQueryAsPayload && structure != null) {
-            input = new StringHandle(structure).withFormat(Format.TEXT);
+            input = new StringHandle(structure).withFormat(Format.JSON);
         }
     }else {
       throw new UnsupportedOperationException(path+" cannot process query of "+qdef.getClass().getName());
