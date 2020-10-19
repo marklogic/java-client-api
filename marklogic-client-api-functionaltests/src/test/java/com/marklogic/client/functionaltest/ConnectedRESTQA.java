@@ -2300,9 +2300,6 @@ public abstract class ConnectedRESTQA {
 	/**
 	 * Clear the database contents based on port for SSL or non SSL enabled REST
 	 * Server.
-	 * 
-	 * @param dbName
-	 * @param fNames
 	 * @throws Exception
 	 */
 	public static void clearDB() throws Exception {
@@ -3034,4 +3031,32 @@ public abstract class ConnectedRESTQA {
 		  }
 		  client.getConnectionManager().shutdown();
 	  }
+
+	public static void associateRESTServerWithModuleDB(String restServerName, String modulesDbName) throws Exception {
+		DefaultHttpClient client = null;
+		try {
+			client = new DefaultHttpClient();
+
+			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
+					new UsernamePasswordCredentials("admin", "admin"));
+			String body = "{\"modules-database\": \"" + modulesDbName + "\",\"group-name\": \"Default\"}";
+
+			HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
+					+ "/properties?server-type=http");
+			put.addHeader("Content-type", "application/json");
+			put.setEntity(new StringEntity(body));
+
+			HttpResponse response2 = client.execute(put);
+			HttpEntity respEntity = response2.getEntity();
+			if (respEntity != null) {
+				String content = EntityUtils.toString(respEntity);
+				System.out.println(content);
+			}
+		} catch (Exception e) {
+			// writing error to Log
+			e.printStackTrace();
+		} finally {
+			client.getConnectionManager().shutdown();
+		}
+	}
 }
