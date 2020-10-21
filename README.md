@@ -84,7 +84,7 @@ And add this repository to your pom.xml repositories section:
 
     <repository>
         <id>jcenter</id>
-        <url>http://jcenter.bintray.com</url>
+        <url>https://jcenter.bintray.com</url>
     </repository>
 
 For gradle projects, include the following:
