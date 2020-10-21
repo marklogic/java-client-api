@@ -24,53 +24,8 @@ import com.marklogic.client.type.ServerExpression;
 public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
-    public void testCtsBox4Exec() {
-        executeTester("testCtsBox4", p.cts.box(p.col("1"), p.col("2"), p.col("3"), p.col("4")), false, "cts:box", null, null, "[1, 2, 3, 4]", new ServerExpression[]{ p.xs.doubleVal(1), p.xs.doubleVal(2), p.xs.doubleVal(3), p.xs.doubleVal(4) });
-    }
-
-    @Test
-    public void testCtsBoxEast1Exec() {
-        executeTester("testCtsBoxEast1", p.cts.boxEast(p.col("1")), false, null, null, null, "4", new ServerExpression[]{ p.cts.box(1, 2, 3, 4) });
-    }
-
-    @Test
-    public void testCtsBoxNorth1Exec() {
-        executeTester("testCtsBoxNorth1", p.cts.boxNorth(p.col("1")), false, null, null, null, "3", new ServerExpression[]{ p.cts.box(1, 2, 3, 4) });
-    }
-
-    @Test
-    public void testCtsBoxSouth1Exec() {
-        executeTester("testCtsBoxSouth1", p.cts.boxSouth(p.col("1")), false, null, null, null, "1", new ServerExpression[]{ p.cts.box(1, 2, 3, 4) });
-    }
-
-    @Test
-    public void testCtsBoxWest1Exec() {
-        executeTester("testCtsBoxWest1", p.cts.boxWest(p.col("1")), false, null, null, null, "2", new ServerExpression[]{ p.cts.box(1, 2, 3, 4) });
-    }
-
-    @Test
-    public void testCtsCircle2Exec() {
-        executeTester("testCtsCircle2", p.cts.circle(p.col("1"), p.col("2")), false, "cts:circle", null, null, "@1.2 1,2", new ServerExpression[]{ p.xs.doubleVal(1.2), p.cts.point(1, 2) });
-    }
-
-    @Test
     public void testCtsPartOfSpeech1Exec() {
         executeTester("testCtsPartOfSpeech1", p.cts.partOfSpeech(p.col("1")), false, null, null, null, "", new ServerExpression[]{ p.xs.string("abc") });
-    }
-
-    @Test
-    public void testCtsPoint2Exec() {
-        executeTester("testCtsPoint2", p.cts.point(p.col("1"), p.col("2")), false, "cts:point", null, null, "1,2", new ServerExpression[]{ p.xs.doubleVal(1), p.xs.doubleVal(2) });
-    }
-
-    @Test
-    public void testCtsPointLatitude1Exec() {
-        executeTester("testCtsPointLatitude1", p.cts.pointLatitude(p.col("1")), false, null, null, null, "1", new ServerExpression[]{ p.cts.point(1, 2) });
-    }
-
-    @Test
-    public void testCtsPointLongitude1Exec() {
-        executeTester("testCtsPointLongitude1", p.cts.pointLongitude(p.col("1")), false, null, null, null, "2", new ServerExpression[]{ p.cts.point(1, 2) });
     }
 
     @Test
