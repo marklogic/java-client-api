@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 5.3.1
+#### Improvements and Bug Fixes
+- [#1206](https://github.com/marklogic/java-client-api/issues/1206) - README update to JCenter url
+- [#1263](https://github.com/marklogic/java-client-api/issues/1263) - Switch jackson-dataformat-xml dependency to testCompile
+
 ## 5.3.0
 #### New Functionality
 - RowBatcher - bulk export of all rows or documents from a view (internal Jira issue)
