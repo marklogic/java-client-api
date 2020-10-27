@@ -164,8 +164,6 @@ public interface CtsExpr {
   /**
    * Returns a geospatial circle value.
    *
-   * <a name="ml-server-type-circle"></a>
-
    * <p>
    * Provides a client interface to the <a href="http://docs.marklogic.com/cts:circle" target="mlserverdoc">cts:circle</a> server function.
    * @param radius  The radius of the circle. The units for the radius is determined at runtime by the query options (miles is currently the only option).  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
