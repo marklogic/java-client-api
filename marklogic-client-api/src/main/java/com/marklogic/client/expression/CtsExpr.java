@@ -15,25 +15,7 @@
  */
 package com.marklogic.client.expression;
 
-import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
-import com.marklogic.client.type.XsAnyAtomicTypeVal;
-import com.marklogic.client.type.XsDateTimeVal;
-import com.marklogic.client.type.XsDoubleVal;
-import com.marklogic.client.type.XsQNameSeqVal;
-import com.marklogic.client.type.XsQNameVal;
-import com.marklogic.client.type.XsStringSeqVal;
-import com.marklogic.client.type.XsStringVal;
-import com.marklogic.client.type.XsUnsignedLongVal;
-
-import com.marklogic.client.type.ServerExpression;
-import com.marklogic.client.type.CtsPeriodExpr;
-import com.marklogic.client.type.CtsPeriodSeqExpr;
-import com.marklogic.client.type.CtsQueryExpr;
-import com.marklogic.client.type.CtsQuerySeqExpr;
-import com.marklogic.client.type.CtsReferenceExpr;
-import com.marklogic.client.type.CtsReferenceSeqExpr;
-import com.marklogic.client.type.CtsRegionExpr;
-import com.marklogic.client.type.CtsRegionSeqExpr;
+import com.marklogic.client.type.*;
 
 // IMPORTANT: Do not edit. This file is generated. 
 
@@ -120,7 +102,7 @@ public interface CtsExpr {
   * @param east  The eastern boundary of the box.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a> server data type
   */
-  public ServerExpression box(double south, double west, double north, double east);
+  public CtsBoxExpr box(double south, double west, double north, double east);
 /**
   * Returns a geospatial box value.
   *
@@ -134,7 +116,7 @@ public interface CtsExpr {
   * @param east  The eastern boundary of the box.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a> server data type
   */
-  public ServerExpression box(ServerExpression south, ServerExpression west, ServerExpression north, ServerExpression east);
+  public CtsBoxExpr box(XsDoubleVal south, XsDoubleVal west, XsDoubleVal north, XsDoubleVal east);
 /**
   * Returns a box's eastern boundary.
   *
@@ -145,7 +127,7 @@ public interface CtsExpr {
   * @param box  The box.  (of <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public ServerExpression boxEast(ServerExpression box);
+  public ServerExpression boxEast(CtsBoxExpr box);
 /**
   * Returns a box's northern boundary.
   *
@@ -156,7 +138,7 @@ public interface CtsExpr {
   * @param box  The box.  (of <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public ServerExpression boxNorth(ServerExpression box);
+  public ServerExpression boxNorth(CtsBoxExpr box);
 /**
   * Returns a box's southern boundary.
   *
@@ -167,7 +149,7 @@ public interface CtsExpr {
   * @param box  The box.  (of <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public ServerExpression boxSouth(ServerExpression box);
+  public ServerExpression boxSouth(CtsBoxExpr box);
 /**
   * Returns a box's western boundary.
   *
@@ -178,7 +160,17 @@ public interface CtsExpr {
   * @param box  The box.  (of <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public ServerExpression boxWest(ServerExpression box);
+  public ServerExpression boxWest(CtsBoxExpr box);
+  /**
+   * Returns a geospatial circle value.
+   *
+   * <p>
+   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:circle" target="mlserverdoc">cts:circle</a> server function.
+   * @param radius  The radius of the circle. The units for the radius is determined at runtime by the query options (miles is currently the only option).  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+   * @param center  A point representing the center of the circle.  (of <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a>)
+   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_circle.html">cts:circle</a> server data type
+   */
+  public CtsCircleExpr circle(double radius, double center);
 /**
   * Returns a geospatial circle value.
   *
@@ -190,7 +182,7 @@ public interface CtsExpr {
   * @param center  A point representing the center of the circle.  (of <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_circle.html">cts:circle</a> server data type
   */
-  public ServerExpression circle(ServerExpression radius, ServerExpression center);
+  public CtsCircleExpr circle(XsDoubleVal radius, XsDoubleVal center);
 /**
   * Returns a circle's center point.
   *
@@ -201,7 +193,7 @@ public interface CtsExpr {
   * @param circle  The circle.  (of <a href="{@docRoot}/doc-files/types/cts_circle.html">cts:circle</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a> server data type
   */
-  public ServerExpression circleCenter(ServerExpression circle);
+  public ServerExpression circleCenter(CtsCircleExpr circle);
 /**
   * Returns a circle's radius.
   *
@@ -212,7 +204,7 @@ public interface CtsExpr {
   * @param circle  The circle.  (of <a href="{@docRoot}/doc-files/types/cts_circle.html">cts:circle</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public ServerExpression circleRadius(ServerExpression circle);
+  public ServerExpression circleRadius(CtsCircleExpr circle);
 /**
   * Match documents in at least one of the specified collections. It will match both documents and properties documents in the collections with the given URIs.
   * <p>
@@ -263,7 +255,7 @@ public interface CtsExpr {
   * @param inner  The innner (hole) polygons.  (of <a href="{@docRoot}/doc-files/types/cts_polygon.html">cts:polygon</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_complex-polygon.html">cts:complex-polygon</a> server data type
   */
-  public ServerExpression complexPolygon(ServerExpression outer, ServerExpression inner);
+  public CtsPolygonExpr complexPolygon(CtsPolygonExpr outer, CtsPolygonExpr inner);
 /**
   * Returns a query matching documents in the directories with the given URIs.
   * <p>
@@ -2474,7 +2466,7 @@ public interface CtsExpr {
   * @param longitude  The longitude of the point.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a> server data type
   */
-  public ServerExpression point(double latitude, double longitude);
+  public CtsPointExpr point(double latitude, double longitude);
 /**
   * Returns a point value.
   *
@@ -2486,7 +2478,7 @@ public interface CtsExpr {
   * @param longitude  The longitude of the point.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a> server data type
   */
-  public ServerExpression point(ServerExpression latitude, ServerExpression longitude);
+  public CtsPointExpr point(XsDoubleVal latitude, XsDoubleVal longitude);
 /**
   * Returns a point's latitude value.
   *
@@ -2497,7 +2489,7 @@ public interface CtsExpr {
   * @param point  The point.  (of <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public ServerExpression pointLatitude(ServerExpression point);
+  public ServerExpression pointLatitude(CtsPointExpr point);
 /**
   * Returns a point's longitude value.
   *
@@ -2508,7 +2500,7 @@ public interface CtsExpr {
   * @param point  The point.  (of <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public ServerExpression pointLongitude(ServerExpression point);
+  public ServerExpression pointLongitude(CtsPointExpr point);
 /**
   * Returns a geospatial polygon value.
   *
@@ -2519,7 +2511,7 @@ public interface CtsExpr {
   * @param vertices  The vertices of the polygon, given in order. No edge may cover more than 180 degrees of either latitude or longitude. The polygon as a whole may not encompass both poles. These constraints are necessary to ensure an unambiguous interpretation of the polygon. There must be at least three vertices. The first vertex should be identical to the last vertex to close the polygon. vertexes.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_polygon.html">cts:polygon</a> server data type
   */
-  public ServerExpression polygon(ServerExpression vertices);
+  public CtsPolygonExpr polygon(XsAnyAtomicTypeSeqVal vertices);
 /**
   * Returns a query that matches all documents where query matches document-properties. When searching documents or document-locks, this query type provides a convenient way to additionally constrain the search against document-properties fragments.
   * <p>
@@ -2853,12 +2845,40 @@ public interface CtsExpr {
   */
   public CtsQueryExpr wordQuery(XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight);
 /**
+  * Constructs a sequence of CtsBoxExpr items.
+  * @param items  the CtsBoxExpr items collected by the sequence
+  * @return  a CtsBoxSeqExpr sequence
+  */
+  public CtsBoxSeqExpr boxSeq(CtsBoxExpr... items);
+
+/**
+  * Constructs a sequence of CtsCircleExpr items.
+  * @param items  the CtsCircleExpr items collected by the sequence
+  * @return  a CtsCircleSeqExpr sequence
+  */
+  public CtsCircleSeqExpr circleSeq(CtsCircleExpr... items);
+
+/**
   * Constructs a sequence of CtsPeriodExpr items.
   * @param items  the CtsPeriodExpr items collected by the sequence
   * @return  a CtsPeriodSeqExpr sequence
   */
   public CtsPeriodSeqExpr periodSeq(CtsPeriodExpr... items);
  
+/**
+  * Constructs a sequence of CtsPointExpr items.
+  * @param items  the CtsPointExpr items collected by the sequence
+  * @return  a CtsPointSeqExpr sequence
+  */
+  public CtsPointSeqExpr pointSeq(CtsPointExpr... items);
+
+/**
+  * Constructs a sequence of CtsPolygonExpr items.
+  * @param items  the CtsPolygonExpr items collected by the sequence
+  * @return  a CtsPolygonSeqExpr sequence
+  */
+  public CtsPolygonSeqExpr polygonSeq(CtsPolygonExpr... items);
+
 /**
   * Constructs a sequence of CtsQueryExpr items.
   * @param items  the CtsQueryExpr items collected by the sequence

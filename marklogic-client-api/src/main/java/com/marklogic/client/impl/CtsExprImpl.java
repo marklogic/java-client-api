@@ -15,25 +15,7 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
-import com.marklogic.client.type.XsAnyAtomicTypeVal;
-import com.marklogic.client.type.XsDateTimeVal;
-import com.marklogic.client.type.XsDoubleVal;
-import com.marklogic.client.type.XsQNameSeqVal;
-import com.marklogic.client.type.XsQNameVal;
-import com.marklogic.client.type.XsStringSeqVal;
-import com.marklogic.client.type.XsStringVal;
-import com.marklogic.client.type.XsUnsignedLongVal;
-
-import com.marklogic.client.type.ServerExpression;
-import com.marklogic.client.type.CtsPeriodExpr;
-import com.marklogic.client.type.CtsPeriodSeqExpr;
-import com.marklogic.client.type.CtsQueryExpr;
-import com.marklogic.client.type.CtsQuerySeqExpr;
-import com.marklogic.client.type.CtsReferenceExpr;
-import com.marklogic.client.type.CtsReferenceSeqExpr;
-import com.marklogic.client.type.CtsRegionExpr;
-import com.marklogic.client.type.CtsRegionSeqExpr;
+import com.marklogic.client.type.*;
 
 import com.marklogic.client.expression.CtsExpr;
 import com.marklogic.client.impl.BaseTypeImpl;
@@ -116,13 +98,13 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression box(double south, double west, double north, double east) {
+  public CtsBoxExpr box(double south, double west, double north, double east) {
     return box(xs.doubleVal(south), xs.doubleVal(west), xs.doubleVal(north), xs.doubleVal(east));
   }
 
   
   @Override
-  public ServerExpression box(ServerExpression south, ServerExpression west, ServerExpression north, ServerExpression east) {
+  public CtsBoxExpr box(XsDoubleVal south, XsDoubleVal west, XsDoubleVal north, XsDoubleVal east) {
     if (south == null) {
       throw new IllegalArgumentException("south parameter for box() cannot be null");
     }
@@ -140,7 +122,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression boxEast(ServerExpression box) {
+  public ServerExpression boxEast(CtsBoxExpr box) {
     if (box == null) {
       throw new IllegalArgumentException("box parameter for boxEast() cannot be null");
     }
@@ -149,7 +131,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression boxNorth(ServerExpression box) {
+  public ServerExpression boxNorth(CtsBoxExpr box) {
     if (box == null) {
       throw new IllegalArgumentException("box parameter for boxNorth() cannot be null");
     }
@@ -158,7 +140,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression boxSouth(ServerExpression box) {
+  public ServerExpression boxSouth(CtsBoxExpr box) {
     if (box == null) {
       throw new IllegalArgumentException("box parameter for boxSouth() cannot be null");
     }
@@ -167,16 +149,20 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression boxWest(ServerExpression box) {
+  public ServerExpression boxWest(CtsBoxExpr box) {
     if (box == null) {
       throw new IllegalArgumentException("box parameter for boxWest() cannot be null");
     }
     return new XsExprImpl.NumericCallImpl("cts", "box-west", new Object[]{ box });
   }
 
-  
   @Override
-  public ServerExpression circle(ServerExpression radius, ServerExpression center) {
+  public CtsCircleExpr circle(double radius, double center) {
+    return circle(xs.doubleVal(radius), xs.doubleVal(center));
+  }
+
+  @Override
+  public CtsCircleExpr circle(XsDoubleVal radius, XsDoubleVal center) {
     if (radius == null) {
       throw new IllegalArgumentException("radius parameter for circle() cannot be null");
     }
@@ -188,7 +174,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression circleCenter(ServerExpression circle) {
+  public ServerExpression circleCenter(CtsCircleExpr circle) {
     if (circle == null) {
       throw new IllegalArgumentException("circle parameter for circleCenter() cannot be null");
     }
@@ -197,7 +183,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression circleRadius(ServerExpression circle) {
+  public ServerExpression circleRadius(CtsCircleExpr circle) {
     if (circle == null) {
       throw new IllegalArgumentException("circle parameter for circleRadius() cannot be null");
     }
@@ -236,7 +222,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression complexPolygon(ServerExpression outer, ServerExpression inner) {
+  public CtsPolygonExpr complexPolygon(CtsPolygonExpr outer, CtsPolygonExpr inner) {
     if (outer == null) {
       throw new IllegalArgumentException("outer parameter for complexPolygon() cannot be null");
     }
@@ -1733,13 +1719,13 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression point(double latitude, double longitude) {
+  public CtsPointExpr point(double latitude, double longitude) {
     return point(xs.doubleVal(latitude), xs.doubleVal(longitude));
   }
 
   
   @Override
-  public ServerExpression point(ServerExpression latitude, ServerExpression longitude) {
+  public CtsPointExpr point(XsDoubleVal latitude, XsDoubleVal longitude) {
     if (latitude == null) {
       throw new IllegalArgumentException("latitude parameter for point() cannot be null");
     }
@@ -1751,7 +1737,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression pointLatitude(ServerExpression point) {
+  public ServerExpression pointLatitude(CtsPointExpr point) {
     if (point == null) {
       throw new IllegalArgumentException("point parameter for pointLatitude() cannot be null");
     }
@@ -1760,7 +1746,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression pointLongitude(ServerExpression point) {
+  public ServerExpression pointLongitude(CtsPointExpr point) {
     if (point == null) {
       throw new IllegalArgumentException("point parameter for pointLongitude() cannot be null");
     }
@@ -1769,7 +1755,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression polygon(ServerExpression vertices) {
+  public CtsPolygonExpr polygon(XsAnyAtomicTypeSeqVal vertices) {
     return new PolygonCallImpl("cts", "polygon", new Object[]{ vertices });
   }
 
@@ -2001,34 +1987,52 @@ class CtsExprImpl implements CtsExpr {
     return new QueryCallImpl("cts", "word-query", new Object[]{ text, options, weight });
   }
 
-  static class BoxSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
+  @Override
+  public CtsBoxSeqExpr boxSeq(CtsBoxExpr... items) {
+    return new BoxSeqListImpl(items);
+  }
+  static class BoxSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements CtsBoxSeqExpr {
+    BoxSeqListImpl(Object[] items) {
+      super(items);
+    }
+  }
+  static class BoxSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsBoxSeqExpr {
     BoxSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class BoxCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
+  static class BoxCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsBoxExpr {
     BoxCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
  
-  static class CircleSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
+  @Override
+  public CtsCircleSeqExpr circleSeq(CtsCircleExpr... items) {
+    return new CircleSeqListImpl(items);
+  }
+  static class CircleSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements CtsCircleSeqExpr {
+    CircleSeqListImpl(Object[] items) {
+      super(items);
+    }
+  }
+  static class CircleSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsCircleSeqExpr {
     CircleSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class CircleCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
+  static class CircleCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsCircleExpr {
     CircleCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
  
-  static class ComplexPolygonSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
+  static class ComplexPolygonSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsPolygonSeqExpr {
     ComplexPolygonSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class ComplexPolygonCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
+  static class ComplexPolygonCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsPolygonExpr {
     ComplexPolygonCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
@@ -2065,23 +2069,41 @@ class CtsExprImpl implements CtsExpr {
     }
   }
  
-  static class PointSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
+  @Override
+  public CtsPointSeqExpr pointSeq(CtsPointExpr... items) {
+    return new PointSeqListImpl(items);
+  }
+  static class PointSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements CtsPointSeqExpr {
+    PointSeqListImpl(Object[] items) {
+      super(items);
+    }
+  }
+  static class PointSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsPointSeqExpr {
     PointSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class PointCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
+  static class PointCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsPointExpr {
     PointCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
  
-  static class PolygonSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
+  @Override
+  public CtsPolygonSeqExpr polygonSeq(CtsPolygonExpr... items) {
+    return new PolygonSeqListImpl(items);
+  }
+  static class PolygonSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements CtsPolygonSeqExpr {
+    PolygonSeqListImpl(Object[] items) {
+      super(items);
+    }
+  }
+  static class PolygonSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsPolygonSeqExpr {
     PolygonSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class PolygonCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
+  static class PolygonCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsPolygonExpr {
     PolygonCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
