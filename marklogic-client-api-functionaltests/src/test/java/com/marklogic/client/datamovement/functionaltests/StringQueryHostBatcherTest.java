@@ -37,6 +37,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 
+import com.marklogic.client.expression.CtsQueryBuilder;
+import com.marklogic.client.query.*;
+import com.marklogic.client.type.CtsQueryExpr;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -71,13 +74,7 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
-import com.marklogic.client.query.RawCtsQueryDefinition;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
-import com.marklogic.client.query.StructuredQueryDefinition;
 
 /**
  * @author ageorge Purpose : Test String Queries - On multiple documents using
@@ -171,7 +168,6 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       }
 
       setQueryOption(client, queryOptionName);
-
       QueryManager queryMgr = client.newQueryManager();
 
       // create query def
@@ -586,93 +582,141 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   }
   
   @Test
-  public void testRawCtsQuery() throws IOException, InterruptedException
-  {
+  public void testRawCtsQuery() throws IOException, InterruptedException {
     System.out.println("Running testRawCtsQuery");
 
     Document readDoc = null;
-	try {
-		String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
-		WriteBatcher batcher = dmManager.newWriteBatcher();
+    try {
+      String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+      WriteBatcher batcher = dmManager.newWriteBatcher();
 
-		batcher.withBatchSize(2);
-		// Move to individual data sub folders.
-		String dataFileDir = dataConfigDirPath + "/data/";
+      batcher.withBatchSize(2);
+      // Move to individual data sub folders.
+      String dataFileDir = dataConfigDirPath + "/data/";
 
-		InputStreamHandle contentHandle1 = new InputStreamHandle();
-		contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
-		InputStreamHandle contentHandle2 = new InputStreamHandle();
-		contentHandle2.set(new FileInputStream(dataFileDir + filenames[1]));
-		InputStreamHandle contentHandle3 = new InputStreamHandle();
-		contentHandle3.set(new FileInputStream(dataFileDir + filenames[2]));
-		InputStreamHandle contentHandle4 = new InputStreamHandle();
-		contentHandle4.set(new FileInputStream(dataFileDir + filenames[3]));
-		InputStreamHandle contentHandle5 = new InputStreamHandle();
-		contentHandle5.set(new FileInputStream(dataFileDir + filenames[4]));
+      InputStreamHandle contentHandle1 = new InputStreamHandle();
+      contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
+      InputStreamHandle contentHandle2 = new InputStreamHandle();
+      contentHandle2.set(new FileInputStream(dataFileDir + filenames[1]));
+      InputStreamHandle contentHandle3 = new InputStreamHandle();
+      contentHandle3.set(new FileInputStream(dataFileDir + filenames[2]));
+      InputStreamHandle contentHandle4 = new InputStreamHandle();
+      contentHandle4.set(new FileInputStream(dataFileDir + filenames[3]));
+      InputStreamHandle contentHandle5 = new InputStreamHandle();
+      contentHandle5.set(new FileInputStream(dataFileDir + filenames[4]));
 
-		batcher.add("cts-constraint1.xml", contentHandle1);
-		batcher.add("cts-constraint2.xml", contentHandle2);
-		batcher.add("cts-constraint3.xml", contentHandle3);
-		batcher.add("cts-constraint4.xml", contentHandle4);
-		batcher.add("cts-constraint5.xml", contentHandle5);
+      batcher.add("cts-constraint1.xml", contentHandle1);
+      batcher.add("cts-constraint2.xml", contentHandle2);
+      batcher.add("cts-constraint3.xml", contentHandle3);
+      batcher.add("cts-constraint4.xml", contentHandle4);
+      batcher.add("cts-constraint5.xml", contentHandle5);
 
-		// Flush
-		batcher.flushAndWait();
-		StringBuilder batchResults = new StringBuilder();
-		
-		// create a search definition
-		QueryManager queryMgr = client.newQueryManager();
-		
-		String wordQuery = "<cts:word-query xmlns:cts=\"http://marklogic.com/cts\">" +
-		                   "<cts:text>unfortunately</cts:text></cts:word-query>";
-		StringHandle handle = new StringHandle().with(wordQuery);
-		RawCtsQueryDefinition querydef = queryMgr.newRawCtsQueryDefinition(handle);
+      // Flush
+      batcher.flushAndWait();
+      StringBuilder batchResults = new StringBuilder();
 
-		// Run a QueryBatcher.
-		QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
-		queryBatcher1.onUrisReady(batch -> {
+      // create a search definition
+      QueryManager queryMgr = client.newQueryManager();
 
-		  for (String str : batch.getItems()) {
-		    batchResults.append(str).append('|');
-		  }
+      String wordQuery = "<cts:word-query xmlns:cts=\"http://marklogic.com/cts\">" +
+              "<cts:text>unfortunately</cts:text></cts:word-query>";
+      StringHandle handle = new StringHandle().with(wordQuery);
+      RawCtsQueryDefinition querydef = queryMgr.newRawCtsQueryDefinition(handle);
 
-		  batchResults.append(batch.getJobResultsSoFar())
-		      .append('|')
-		      .append(batch.getForest().getForestName())
-		      .append('|')
-		      .append(batch.getJobBatchNumber())
-		      .append('|');
+      // Run a QueryBatcher.
+      QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
+      queryBatcher1.onUrisReady(batch -> {
 
-		})
-		.onQueryFailure(throwable -> {
-		    System.out.println("Exceptions thrown from callback onQueryFailure" + throwable.getMessage());
-		});
-		
-		dmManager.startJob(queryBatcher1);
-		queryBatcher1.awaitCompletion(1, TimeUnit.MINUTES);
-		
-		System.out.println("Batch Results are : " + batchResults.toString());
-		System.out.println("File name is : " + filenames[4]);
-		assertTrue("URI returned not correct", batchResults.toString().contains("cts-" +filenames[4]));
+        for (String str : batch.getItems()) {
+          batchResults.append(str).append('|');
+        }
 
-		// Read the document and assert on the value
-		DOMHandle contentHandle = new DOMHandle();
-		contentHandle = readDocumentUsingDOMHandle(client, "cts-"+filenames[4], "XML");
-		readDoc = contentHandle.get();
-		try {
-			System.out.println(convertXMLDocumentToString(readDoc));
-		} catch (TransformerException e) {
-			e.printStackTrace();
-		}
+        batchResults.append(batch.getJobResultsSoFar())
+                .append('|')
+                .append(batch.getForest().getForestName())
+                .append('|')
+                .append(batch.getJobBatchNumber())
+                .append('|');
 
-		assertTrue("Document content returned not correct", readDoc.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
-		assertTrue("Document content returned not correct", readDoc.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
-	
-    assertTrue("Document content returned not correct", readDoc.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));
-	} catch (DOMException e) {
-		e.printStackTrace();
-		fail("testRawCtsQuery method failed");
-	}
+      })
+              .onQueryFailure(throwable -> {
+                System.out.println("Exceptions thrown from callback onQueryFailure" + throwable.getMessage());
+              });
+
+      dmManager.startJob(queryBatcher1);
+      queryBatcher1.awaitCompletion(1, TimeUnit.MINUTES);
+
+      System.out.println("Batch Results are : " + batchResults.toString());
+      System.out.println("File name is : " + filenames[4]);
+      assertTrue("URI returned not correct", batchResults.toString().contains("cts-" + filenames[4]));
+
+      // Read the document and assert on the value
+      DOMHandle contentHandle = new DOMHandle();
+      contentHandle = readDocumentUsingDOMHandle(client, "cts-" + filenames[4], "XML");
+      readDoc = contentHandle.get();
+      try {
+        System.out.println(convertXMLDocumentToString(readDoc));
+      } catch (TransformerException e) {
+        e.printStackTrace();
+      }
+
+      assertTrue("Document content returned not correct", readDoc.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
+      assertTrue("Document content returned not correct", readDoc.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
+
+      assertTrue("Document content returned not correct", readDoc.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));
+
+      // Run a QueryBatcher with CtsQueryBuilder.
+      CtsQueryBuilder ctsQueryBuilder = queryMgr.newCtsSearchBuilder();
+      StringBuilder batchResults2 = new StringBuilder();
+
+      CtsQueryExpr ctsQueryExpr = ctsQueryBuilder.cts.andQuery(ctsQueryBuilder.cts.wordQuery("unfortunately"));
+      CtsQueryDefinition qd = ctsQueryBuilder.newCtsQueryDefinition(ctsQueryExpr);
+      QueryBatcher queryBatcher2 = dmManager.newQueryBatcher(qd);
+
+      queryBatcher2.onUrisReady(batch -> {
+
+        for (String str : batch.getItems()) {
+          batchResults2.append(str).append('|');
+        }
+
+        batchResults2.append(batch.getJobResultsSoFar())
+                .append('|')
+                .append(batch.getForest().getForestName())
+                .append('|')
+                .append(batch.getJobBatchNumber())
+                .append('|');
+
+      })
+              .onQueryFailure(throwable -> {
+                System.out.println("Exceptions thrown from callback onQueryFailure" + throwable.getMessage());
+              });
+
+      dmManager.startJob(queryBatcher2);
+      queryBatcher2.awaitCompletion(1, TimeUnit.MINUTES);
+
+      System.out.println("Batch Results are : " + batchResults2.toString());
+      System.out.println("File name is : " + filenames[4]);
+      assertTrue("URI returned not correct", batchResults2.toString().contains("cts-" + filenames[4]));
+
+      // Read the document and assert on the value
+      Document readDoc2 = null;
+      DOMHandle contentHandleCts = new DOMHandle();
+      contentHandleCts = readDocumentUsingDOMHandle(client, "cts-" + filenames[4], "XML");
+      readDoc2 = contentHandleCts.get();
+      try {
+        System.out.println(convertXMLDocumentToString(readDoc2));
+      } catch (TransformerException e) {
+        e.printStackTrace();
+      }
+
+      assertTrue("Document content returned not correct", readDoc2.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
+      assertTrue("Document content returned not correct", readDoc2.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
+
+      assertTrue("Document content returned not correct", readDoc2.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));
+    } catch (DOMException e) {
+      e.printStackTrace();
+      fail("testRawCtsQuery method failed");
+    }
 	finally {
 		try {
 			clearDB();
