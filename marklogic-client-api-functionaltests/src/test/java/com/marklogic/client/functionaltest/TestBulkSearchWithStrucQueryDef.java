@@ -31,9 +31,15 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import com.marklogic.client.expression.CtsQueryBuilder;
+import com.marklogic.client.query.*;
+import com.marklogic.client.type.CtsQueryExpr;
+import com.marklogic.client.type.CtsQuerySeqExpr;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -41,6 +47,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -65,17 +72,7 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.ExtractedItem;
-import com.marklogic.client.query.ExtractedResult;
-import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
-import com.marklogic.client.query.RawStructuredQueryDefinition;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
 
@@ -84,7 +81,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
     private static String dbName = "TestBulkSearchStrucQDDB";
     private static String[] fNames = { "TestBulkSearchStrucQDDB-1" };
 
-    private DatabaseClient client;
+    private static DatabaseClient client;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -106,6 +103,9 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
         addRangeElementIndex(dbName, rangeElements);
         createRESTUserWithPermissions("usr1", "password", getPermissionNode("flexrep-eval", Capability.READ), getCollectionNode("http://permission-collections/"), "rest-writer",
                 "rest-reader");
+        client = getDatabaseClient("usr1", "password", getConnType());
+        loadJSONDocuments();
+        loadXMLDocuments();
     }
 
     @AfterClass
@@ -113,22 +113,10 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
         System.out.println("In tear down");
         cleanupRESTServer(dbName, fNames);
         deleteRESTUser("usr1");
-    }
-
-    @Before
-    public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-        // create new connection for each test below
-        client = getDatabaseClient("usr1", "password", getConnType());
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        System.out.println("Running clear script");
-        // release client
         client.release();
     }
 
-    public void loadJSONDocuments() throws KeyManagementException, NoSuchAlgorithmException, JsonProcessingException, IOException {
+    public static void loadJSONDocuments() throws KeyManagementException, NoSuchAlgorithmException, JsonProcessingException, IOException {
         int count = 1;
         JSONDocumentManager docMgr = client.newJSONDocumentManager();
         DocumentWriteSet writeset = docMgr.newWriteSet();
@@ -146,7 +134,6 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
                 writeset = docMgr.newWriteSet();
             }
             count++;
-            // System.out.println(jn.toString());
         }
         if (count % BATCH_SIZE > 0) {
             docMgr.write(writeset);
@@ -154,20 +141,32 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
     }
 
     public void validateRecord(DocumentRecord record, Format type) {
-
         assertNotNull("DocumentRecord should never be null", record);
         assertNotNull("Document uri should never be null", record.getUri());
         assertTrue("Document uri should start with " + DIRECTORY, record.getUri().startsWith(DIRECTORY));
         assertEquals("All records are expected to be in same format", type, record.getFormat());
     }
 
-    public void loadXMLDocuments() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, TransformerException {
+    public static Document getDocContent(String xmltype) throws IOException, ParserConfigurationException, SAXException
+    {
+        DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = dbfac.newDocumentBuilder();
+        Document content = docBuilder.newDocument();
+        Element rootElement = content.createElement("foo");
+        rootElement.appendChild(content.createTextNode(xmltype));
+        content.appendChild(rootElement);
+
+        // content.createTextNode(xmltype);
+        return content;
+    }
+
+    public static void loadXMLDocuments() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, TransformerException {
         int count = 1;
         XMLDocumentManager docMgr = client.newXMLDocumentManager();
         DocumentWriteSet writeset = docMgr.newWriteSet();
         for (int i = 0; i < 102; i++) {
 
-            writeset.add(DIRECTORY + "foo" + i + ".xml", new DOMHandle(getDocumentContent("This is so foo with a bar " + i)));
+            writeset.add(DIRECTORY + "foo" + i + ".xml", new DOMHandle(getDocContent("This is so foo with a bar " + i)));
 
             if (count % BATCH_SIZE == 0) {
                 docMgr.write(writeset);
@@ -183,8 +182,8 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
     @Test
     public void testBulkSearchSQDwithDifferentPageSizes() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException,
     TransformerException {
+
         int count;
-        loadXMLDocuments();
         // Creating a txt document manager for bulk search
         TextDocumentManager docMgr = client.newTextDocumentManager();
         // using QueryManger for query definition and set the search criteria
@@ -240,7 +239,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
             // assertEquals("Page Number #",pageNo,page.getPageNumber());
             pageNo = pageNo + page.getPageSize();
         } while (!page.isLastPage());
-        // assertTrue("page count is 101 ",pageNo > page.getTotalPages());
+
         assertTrue("Page has previous page ?", page.hasPreviousPage());
         assertEquals("page size", 1, page.getPageSize());
         assertEquals("document count", 102, page.getTotalSize());
@@ -252,7 +251,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
     // JSON, expectint it to work, logged an issue 82
     @Test
     public void testBulkSearchSQDwithResponseFormatandStringHandle() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-        loadJSONDocuments();
+
         JSONDocumentManager docMgr = client.newJSONDocumentManager();
 
         QueryManager queryMgr = client.newQueryManager();
@@ -281,7 +280,6 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
     @Test
     public void testBulkSearchSQDwithJSONResponseFormat() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
-        loadJSONDocuments();
         JSONDocumentManager docMgr = client.newJSONDocumentManager();
 
         QueryManager queryMgr = client.newQueryManager();
@@ -293,7 +291,6 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
         JacksonHandle jh = new JacksonHandle();
         docMgr.search(qd, 1, jh);
 
-        // System.out.println(jh.get().toString());
         assertTrue("Searh response has entry for facets", jh.get().has("facets"));
         assertFalse("Searh response has entry for facets", jh.get().has("results"));// Issue 84 is tracking this
         assertFalse("Searh response has entry for facets", jh.get().has("metrics"));
@@ -322,13 +319,13 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
         queryMgr.setView(QueryView.FACETS);
         queryMgr.search(qd, jh);
         System.out.println(jh.get().toString());
-
     }
 
     // This test is to verify the transactions, verifies the search works with
     // transaction before commit, after rollback and after commit
     @Test
     public void testBulkSearchSQDwithTransactionsandDOMHandle() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+
         XMLDocumentManager docMgr = client.newXMLDocumentManager();
         DOMHandle results = new DOMHandle();
         StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -370,7 +367,6 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
         } finally {
             t.rollback();
         }
-
         docMgr.search(qd, 1, results);
         System.out.println(convertXMLDocumentToString(results.get()));
         assertEquals("Total search results after rollback are ", results.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total").getNodeValue(),
@@ -382,8 +378,6 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
     public void testBulkSearchRawXMLStrucQD() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
         setMaintainLastModified(dbName, true);
-        this.loadJSONDocuments();
-        this.loadXMLDocuments();
         GenericDocumentManager docMgr = client.newDocumentManager();
         QueryManager queryMgr = client.newQueryManager();
         String rawXMLQuery =
@@ -432,8 +426,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
     // selected option query
     @Test
     public void testExtractDocumentData() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-        this.loadJSONDocuments();
-        this.loadXMLDocuments();
+
         String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
         String tail = "</search:search>";
         String qtext4 = "<search:qtext>71 OR dog14</search:qtext>";
@@ -483,8 +476,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
     // selected=exclude option query
     @Test
     public void testExtractDocumentData2() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-        this.loadJSONDocuments();
-        this.loadXMLDocuments();
+
         String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
         String tail = "</search:search>";
         String qtext4 = "<search:qtext>71 OR dog14</search:qtext>";
@@ -537,6 +529,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
     // selected=include-with-ancestors option query
     @Test
     public void testExtractDocumentData3() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+
         String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
         String tail = "</search:search>";
         String qtext4 = "<search:qtext>71 OR dog14</search:qtext>";
@@ -586,6 +579,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
     // selected=include option query
     @Test
     public void testExtractDocumentData4() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+
         String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
         String tail = "</search:search>";
         String qtext4 = "<search:qtext>71 OR dog14</search:qtext>";
@@ -635,6 +629,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
     // selected=all option query
     @Test
     public void testExtractDocumentData5() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+
         String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
         String tail = "</search:search>";
         String qtext4 = "<search:qtext>71 OR dog14</search:qtext>";
@@ -683,10 +678,8 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
     // This test is to verify RAW JSON structured query
     @Test
     public void testBulkSearchRawJSONStrucQD() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-        // setAutomaticDirectoryCreation(dbName,"automatic");
+
         setMaintainLastModified(dbName, true);
-        this.loadJSONDocuments();
-        this.loadXMLDocuments();
         GenericDocumentManager docMgr = client.newDocumentManager();
         QueryManager queryMgr = client.newQueryManager();
         JacksonHandle jh = new JacksonHandle();
@@ -765,7 +758,6 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
         DocumentWriteSet writeset = docMgr.newWriteSet();
 
         // Put meta-data
-
         DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
         metadataHandle.getCollections().addAll("my-collection1", "my-collection2");
         metadataHandle.getPermissions().add("app-user", Capability.UPDATE, Capability.READ);
@@ -873,7 +865,6 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
      */
     @Test
     public void testPageLenOptionsWithBulkSearch() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-        this.loadJSONDocuments();
 
         DatabaseClient clientTmp = getDatabaseClient("rest-admin", "x", getConnType());
         String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
@@ -974,7 +965,6 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
      */
     @Test
     public void testDirectionOptionsWithBulkSearch() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-        this.loadJSONDocuments();
 
         DatabaseClient clientTmp = getDatabaseClient("rest-admin", "x", getConnType());
         String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
@@ -1144,17 +1134,15 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
                 fail("unexpected search result:");
             }
         }
-
         // 4 - Verify server options is used - ascending
         assertTrue("Should have summaries returned in ascending order.", NoOptsAscHashMap.equals(exptdAscHashMap));
     }
    
     @Test
     public void testStartPageOnQueryManager() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+
         Transaction t = null;
         try {
-            this.loadJSONDocuments();
-
             DatabaseClient clientTmp = getDatabaseClient("rest-admin", "x", getConnType());
             String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
             String tail = "</search:search>";
@@ -1214,7 +1202,6 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
                 else
                     fail("unexpected search result:" + summary.getUri());
             }
-
             assertTrue("Should have summaries returned in descending order.", descHashMap.equals(exptdHashMap));
 
             t = clientTmp.openTransaction("QM");;
@@ -1266,4 +1253,89 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST {
             }
         }
     }
+
+    /*This test is testing SearchView options and search handle. Similar to testBulkSearchSQDwithJSONResponseFormat
+    Use CtsQueryBuilder and SearchQueryDefinition
+     */
+    @Test
+    public void testBulkSearchWithCtsQueryBuilder() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+
+        JSONDocumentManager docMgr = client.newJSONDocumentManager();
+
+        QueryManager queryMgr = client.newQueryManager();
+
+        CtsQueryBuilder ctsQueryBuilder = queryMgr.newCtsSearchBuilder();
+        CtsQueryExpr ctsQueryExpr = ctsQueryBuilder.cts.andQuery(ctsQueryBuilder.cts.wordQuery("woof"));
+        CtsQueryDefinition qd = ctsQueryBuilder.newCtsQueryDefinition(ctsQueryExpr);
+
+        docMgr.setNonDocumentFormat(Format.JSON);
+
+        docMgr.setSearchView(QueryView.FACETS);
+        JacksonHandle jh = new JacksonHandle();
+        docMgr.search(qd, 1, jh);
+
+        // System.out.println(jh.get().toString());
+        assertTrue("Searh response has entry for facets", jh.get().has("facets"));
+        assertFalse("Searh response has entry for facets", jh.get().has("results"));// Issue 84 is tracking this
+        assertFalse("Searh response has entry for facets", jh.get().has("metrics"));
+
+        docMgr.setSearchView(QueryView.RESULTS);
+        docMgr.search(qd, 1, jh);
+
+        assertFalse("Searh response has entry for facets", jh.get().has("facets"));
+        assertTrue("Searh response has entry for facets", jh.get().has("results"));
+        assertFalse("Searh response has entry for facets", jh.get().has("metrics"));// Issue 84 is tracking this
+
+        docMgr.setSearchView(QueryView.METADATA);
+        docMgr.search(qd, 1, jh);
+
+        assertFalse("Searh response has entry for facets", jh.get().has("facets"));
+        assertFalse("Searh response has entry for facets", jh.get().has("results"));
+        assertTrue("Searh response has entry for facets", jh.get().has("metrics"));
+
+        docMgr.setSearchView(QueryView.ALL);
+        docMgr.search(qd, 1, jh);
+
+        assertTrue("Searh response has entry for facets", jh.get().has("facets"));
+        assertTrue("Searh response has entry for facets", jh.get().has("results"));
+        assertTrue("Searh response has entry for facets", jh.get().has("metrics"));
+
+        queryMgr.setView(QueryView.FACETS);
+        queryMgr.search(qd, jh);
+        System.out.println(jh.get().toString());
+    }
+
+    /* This test is to verify extract-document-data & extract-path with Default
+       selected option query with CtsQueryBuilder and QueryManager.search
+       Similar to test method testExtractDocumentData()
+    */
+    @Test
+    public void testExtractDocumentDataWithCtsQueryBuilder() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+
+        QueryManager queryMgr = client.newQueryManager();
+        String options =
+                "<search:options>" +
+                        "<search:extract-document-data>" +
+                        "<search:extract-path>//foo</search:extract-path>" +
+                        "<search:extract-path>//says</search:extract-path>" +
+                        "</search:extract-document-data>" +
+                        "</search:options>";
+        // test XML response with extracted JSON matches
+        CtsQueryBuilder ctsQueryBuilder = queryMgr.newCtsSearchBuilder();
+
+        CtsQueryExpr orQuery1 = ctsQueryBuilder.cts.wordQuery("YYY71");
+        CtsQueryExpr orQuery2 = ctsQueryBuilder.cts.wordQuery("dog14");
+        CtsQueryExpr orQuery = ctsQueryBuilder.cts.orQuery(orQuery1, orQuery2);
+
+        CtsQueryDefinition qd = ctsQueryBuilder.newCtsQueryDefinition(orQuery);
+
+        SearchHandle results = queryMgr.search(qd, new SearchHandle());
+        MatchDocumentSummary[] summaries = results.getMatchResults();
+        assertNotNull(summaries);
+        assertEquals(1, summaries.length);
+        assertEquals("/bulkSearch/dog14.json", summaries[0].getUri());
+        String text = summaries[0].getFirstSnippet(new StringHandle()).toString();
+        assertTrue(text.contains("dog14"));
+    }
+
 }
