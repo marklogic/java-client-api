@@ -59,7 +59,9 @@ public class TestSplitters  extends BasicJavaClientREST {
 
     @AfterClass
     public static void testCleanUp() throws Exception {
-        clearDB();
+        associateRESTServerWithDB(getRestServerName(), "Documents");
+        deleteDB(dbName);
+        deleteForest(fNames[0]);
         System.out.println("Running clear script");
     }
 
@@ -111,6 +113,11 @@ public class TestSplitters  extends BasicJavaClientREST {
         } catch (Exception ex) {
             System.out.println("Exceptions thrown from testBasicLineSplitInJson " + ex.getMessage());
         } finally {
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             jsonfs.close();
         }
     }
@@ -197,6 +204,11 @@ public class TestSplitters  extends BasicJavaClientREST {
             if (jsonfs2 != null)
                 jsonfs2.close();
             tempJsonFile.deleteOnExit();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -239,6 +251,11 @@ public class TestSplitters  extends BasicJavaClientREST {
             System.out.println("Exceptions thrown from testCharSetWithJson " + ex.getMessage());
         } finally {
             jsonfs.close();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -341,6 +358,11 @@ public class TestSplitters  extends BasicJavaClientREST {
                 tempJsonFile1.deleteOnExit();
             if (tempJsonFile2 != null)
                 tempJsonFile2.deleteOnExit();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -383,6 +405,11 @@ public class TestSplitters  extends BasicJavaClientREST {
             System.out.println("Exceptions thrown from testCharSetWithXml " + ex.getMessage());
         } finally {
             jsonfs.close();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -416,6 +443,11 @@ public class TestSplitters  extends BasicJavaClientREST {
             System.out.println("Exceptions thrown from testIncorrectCharSetWithJson " + msg);
             assertTrue(msg.contains("XDMP-JSONDOC: Document is not JSON"));
             jsonfs.close();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -534,6 +566,11 @@ public class TestSplitters  extends BasicJavaClientREST {
                 tempJsonFile1.deleteOnExit();
             if (tempJsonFile2 != null)
                 tempJsonFile2.deleteOnExit();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -609,6 +646,11 @@ public class TestSplitters  extends BasicJavaClientREST {
     } finally {
             if(fileInputStream1 != null)
              fileInputStream1.close();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -661,6 +703,11 @@ public class TestSplitters  extends BasicJavaClientREST {
         finally {
             if(fileInputStream2 != null)
                 fileInputStream2.close();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -689,6 +736,11 @@ public class TestSplitters  extends BasicJavaClientREST {
         finally {
             if(fileInputStream1 != null)
                 fileInputStream1.close();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -755,34 +807,46 @@ public class TestSplitters  extends BasicJavaClientREST {
             if (fileInputStream != null) fileInputStream.close();
             if (fileInputStream1 != null) fileInputStream1.close();
             if (fileInputStream2 != null) fileInputStream2.close();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Test
     public void testXMLSplitterAttr() throws Exception {
         System.out.println("Running testXMLSplitterAttr");
-        String fileName1 = "xml-splitter-2.xml";
+        try {
+            String fileName1 = "xml-splitter-2.xml";
 
-        FileInputStream fileInputStream = new FileInputStream(new File(datasource + fileName1));
-        OrderedDateAttrVisitor visitor = new OrderedDateAttrVisitor("http://www.mlqa.com/",
-                "Item",
-                "PartNumber",
-                "SY-650-ANI");
+            FileInputStream fileInputStream = new FileInputStream(new File(datasource + fileName1));
+            OrderedDateAttrVisitor visitor = new OrderedDateAttrVisitor("http://www.mlqa.com/",
+                    "Item",
+                    "PartNumber",
+                    "SY-650-ANI");
 
-        XMLSplitter splitter = new XMLSplitter(visitor);
+            XMLSplitter splitter = new XMLSplitter(visitor);
 
-        Stream<StringHandle> contentStream = splitter.split(fileInputStream);
-        assertNotNull(contentStream);
+            Stream<StringHandle> contentStream = splitter.split(fileInputStream);
+            assertNotNull(contentStream);
 
-        StringHandle[] result = contentStream.toArray(size -> new StringHandle[size]);
-        assertEquals(1, splitter.getCount());
-        assertNotNull(result);
+            StringHandle[] result = contentStream.toArray(size -> new StringHandle[size]);
+            assertEquals(1, splitter.getCount());
+            assertNotNull(result);
 
-        for (int i = 0; i < result.length; i++) {
-            String row = result[i].get();
-            //System.out.println("result element is " + row);
-            assertTrue(row.contains("<ml:ProductName>Sony BLU-RAY</ml:ProductName>"));
-            assertTrue(row.contains("<ml:USPrice>523.45</ml:USPrice>"));
+            for (int i = 0; i < result.length; i++) {
+                String row = result[i].get();
+                //System.out.println("result element is " + row);
+                assertTrue(row.contains("<ml:ProductName>Sony BLU-RAY</ml:ProductName>"));
+                assertTrue(row.contains("<ml:USPrice>523.45</ml:USPrice>"));
+            }
+        } catch (Exception ex) {
+            System.out.println("Exception thrown from testXMLSplitterAttr" + ex.toString());
+        }
+        finally {
+            clearDB();
         }
     }
 
@@ -790,45 +854,52 @@ public class TestSplitters  extends BasicJavaClientREST {
     @Test
     public void testCSVSplitterWriteOperationAndUriMaker() throws Exception {
         System.out.println("Running testCSVSplitterWriteOperationAndUriMaker");
-        String fileName1 = "comma-sep-1.csv";
-        String collectionName = "csvSplitter";
+        try {
+            String fileName1 = "comma-sep-1.csv";
+            String collectionName = "csvSplitter";
 
-        FileInputStream fileInputStream = new FileInputStream(new File(datasource + fileName1));
-        JacksonCSVSplitter splitter = new JacksonCSVSplitter();
-        JacksonCSVSplitter.UriMaker uriMaker = new QADocUriFromHandle();
-        uriMaker.setInputAfter("/QAFolder/");
-        uriMaker.setSplitFilename("SacMetroHomeSale");
-        splitter.setUriMaker(uriMaker);
-        Stream<DocumentWriteOperation> contentStream1 = splitter.splitWriteOperations(fileInputStream);
+            FileInputStream fileInputStream = new FileInputStream(new File(datasource + fileName1));
+            JacksonCSVSplitter splitter = new JacksonCSVSplitter();
+            JacksonCSVSplitter.UriMaker uriMaker = new QADocUriFromHandle();
+            uriMaker.setInputAfter("/QAFolder/");
+            uriMaker.setSplitFilename("SacMetroHomeSale");
+            splitter.setUriMaker(uriMaker);
+            Stream<DocumentWriteOperation> contentStream1 = splitter.splitWriteOperations(fileInputStream);
 
-        DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle().withCollections(collectionName).withProperty("Author-ratings", "10.0");
+            DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle().withCollections(collectionName).withProperty("Author-ratings", "10.0");
 
-        WriteBatcher batcher = dmManager.newWriteBatcher();
-        batcher.withBatchSize(5).withDefaultMetadata(metadataHandle1);
+            WriteBatcher batcher = dmManager.newWriteBatcher();
+            batcher.withBatchSize(5).withDefaultMetadata(metadataHandle1);
 
-        batcher.addAll(contentStream1);
-        dmManager.startJob(batcher);
-        batcher.flushAndWait();
+            batcher.addAll(contentStream1);
+            dmManager.startJob(batcher);
+            batcher.flushAndWait();
 
-        // create a search definition for assert
-        QueryManager queryMgr = client.newQueryManager();
-        JSONDocumentManager jsonDocMgr = client.newJSONDocumentManager();
+            // create a search definition for assert
+            QueryManager queryMgr = client.newQueryManager();
+            JSONDocumentManager jsonDocMgr = client.newJSONDocumentManager();
 
-        String wordQuery = "<cts:word-query xmlns:cts=\"http://marklogic.com/cts\">" +
-                "<cts:text>TRINITY</cts:text></cts:word-query>";
-        StringHandle handle = new StringHandle().with(wordQuery);
-        RawCtsQueryDefinition querydef = queryMgr.newRawCtsQueryDefinition(handle);
+            String wordQuery = "<cts:word-query xmlns:cts=\"http://marklogic.com/cts\">" +
+                    "<cts:text>TRINITY</cts:text></cts:word-query>";
+            StringHandle handle = new StringHandle().with(wordQuery);
+            RawCtsQueryDefinition querydef = queryMgr.newRawCtsQueryDefinition(handle);
 
-        JacksonHandle resultsHandle = new JacksonHandle();
-        queryMgr.search(querydef, resultsHandle);
+            JacksonHandle resultsHandle = new JacksonHandle();
+            queryMgr.search(querydef, resultsHandle);
 
-        JsonNode result = resultsHandle.get();
-        String uri1 = result.path("results").get(0).path("uri").asText();
-        assertTrue(uri1.contains("38.621188-121.270555"));
+            JsonNode result = resultsHandle.get();
+            String uri1 = result.path("results").get(0).path("uri").asText();
+            assertTrue(uri1.contains("38.621188-121.270555"));
 
-        String text = jsonDocMgr.read(uri1, new StringHandle()).get();
-        assertTrue(text.contains("11150 TRINITY RIVER DR Unit 114"));
-        //System.out.println("text is " + text);
+            String text = jsonDocMgr.read(uri1, new StringHandle()).get();
+            assertTrue(text.contains("11150 TRINITY RIVER DR Unit 114"));
+            //System.out.println("text is " + text);
+        } catch (Exception ex) {
+            System.out.println("Execeptions thrown from testCSVSplitterWriteOperationAndUriMaker" + ex.toString());
+        }
+        finally {
+            clearDB();
+        }
     }
 }
 
