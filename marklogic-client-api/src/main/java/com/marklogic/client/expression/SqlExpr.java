@@ -456,7 +456,7 @@ public interface SqlExpr {
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:sign" target="mlserverdoc">sql:sign</a> server function.
   * @param x  The number to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
   public ServerExpression sign(ServerExpression x);
 /**

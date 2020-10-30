@@ -1,0 +1,93 @@
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>cts:reference Server Expression Type</title>
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" title="Style"/>
+    <script type="text/javascript" src="../../script.js"></script>
+  </head>
+  <body><div class="topNav"><ul class="navList" title="Navigation">
+	<li><a href="../../overview-summary.html">Overview</a></li>
+	<li><a href="../../com/marklogic/client/expression/package-summary.html">Package</a></li>
+	<li><a href="../../deprecated-list.html">Deprecated</a></li>
+	<li><a href="../../index-all.html">Index</a></li>
+	<li><a href="../../help-doc.html">Help</a></li>
+      </ul></div><div class="header"><h2>cts:reference Server Expression</h2></div><div class="contentContainer"><p>A server expression that returns a value of (or implicitly castable to) the cts:reference server type.
+For all server types, see the <a href="ml-server-type-tree.html">Server Expression Type Hierarchy</a>.</p><br/><div class="summary"><h3>Parameter Of</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr>
+	    <th class="colFirst" scope="col">Server Return Type</th>
+	    <th class="colLast" scope="col">Server Function</th>
+	    <th class="colLast" scope="col">Java Doc</th>
+	    <th class="colLast" scope="col">Server Doc</th>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="cts_query.html">cts:query</a></td>
+	    <td class="colLast"><span class="memberNameLink">cts:geospatial-region-query</span>(<span>cts:reference <i>reference</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>operation</i></span>, <span><a href="cts_region.html">cts:region</a> <i>region</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>, <span><a href="xs_double.html">xs:double</a> <i>weight</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-geospatial-region-query">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:geospatial-region-query" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="cts_query.html">cts:query</a></td>
+	    <td class="colLast"><span class="memberNameLink">cts:range-query</span>(<span>cts:reference <i>index</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>operator</i></span>, <span><a href="xs_anyAtomicType.html">xs:anyAtomicType</a> <i>value</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>, <span><a href="xs_double.html">xs:double</a> <i>weight</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-range-query">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:range-query" target="mlserverdoc">server</a></td>
+	  </tr>
+</table></div><br/><div class="summary"><h3>Return Value Of</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr>
+	    <th class="colFirst" scope="col">Server Return Type</th>
+	    <th class="colLast" scope="col">Server Function</th>
+	    <th class="colLast" scope="col">Java Doc</th>
+	    <th class="colLast" scope="col">Server Doc</th>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">cts:reference</td>
+	    <td class="colLast"><span class="memberNameLink">cts:collection-reference</span>(<span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-collection-reference">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:collection-reference" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">cts:reference</td>
+	    <td class="colLast"><span class="memberNameLink">cts:element-attribute-reference</span>(<span><a href="xs_QName.html">xs:QName</a> <i>element</i></span>, <span><a href="xs_QName.html">xs:QName</a> <i>attribute</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-element-attribute-reference">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:element-attribute-reference" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">cts:reference</td>
+	    <td class="colLast"><span class="memberNameLink">cts:element-reference</span>(<span><a href="xs_QName.html">xs:QName</a> <i>element</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-element-reference">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:element-reference" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">cts:reference</td>
+	    <td class="colLast"><span class="memberNameLink">cts:field-reference</span>(<span><a href="xs_string.html">xs:string</a> <i>field</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-field-reference">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:field-reference" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">cts:reference</td>
+	    <td class="colLast"><span class="memberNameLink">cts:json-property-reference</span>(<span><a href="xs_string.html">xs:string</a> <i>property</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-json-property-reference">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:json-property-reference" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">cts:reference</td>
+	    <td class="colLast"><span class="memberNameLink">cts:geospatial-path-reference</span>(<span><a href="xs_string.html">xs:string</a> <i>path-expression</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>, <span><a href="map_map.html">map:map</a> <i>map</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-geospatial-path-reference">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:geospatial-path-reference" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">cts:reference</td>
+	    <td class="colLast"><span class="memberNameLink">cts:geospatial-region-path-reference</span>(<span><a href="xs_string.html">xs:string</a> <i>path-expression</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>, <span><a href="map_map.html">map:map</a> <i>namespaces</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-geospatial-region-path-reference">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:geospatial-region-path-reference" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">cts:reference</td>
+	    <td class="colLast"><span class="memberNameLink">cts:path-reference</span>(<span><a href="xs_string.html">xs:string</a> <i>path-expression</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>, <span><a href="map_map.html">map:map</a> <i>map</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-path-reference">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:path-reference" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">cts:reference</td>
+	    <td class="colLast"><span class="memberNameLink">cts:uri-reference</span>()</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-uri-reference">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:uri-reference" target="mlserverdoc">server</a></td>
+	  </tr>
+</table></div></div></body>
+</html>

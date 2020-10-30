@@ -21,5 +21,5 @@ package com.marklogic.client.type;
  * An instance of a column expression returned by a col() call
  * in a row pipeline.
  */
-public interface PlanColumn extends PlanExprCol, ServerExpression, PlanTriplePosition, PlanColumnSeq {
+public interface PlanColumn extends PlanExprCol, PlanTriplePosition, PlanColumnSeq {
 }

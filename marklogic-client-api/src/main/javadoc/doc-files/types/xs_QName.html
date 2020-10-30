@@ -21,16 +21,89 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td class="colLast"><span class="memberNameLink">xs:QName</span>(<span><a href="xs_anyAtomicType.html">item</a> <i>arg1</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/XsExpr.html#ml-server-type-QName">java</a></td>
 	  </tr>
-</table></div><br/><div class="summary"><h3>Supertypes</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr class="altColor">
-	    <td><a href="item.html">item</a></td>
-	    <td><a href="xs_anyAtomicType.html">xs:anyAtomicType</a></td>
-	    <td><a href="xs_anySimpleType.html">xs:anySimpleType</a></td>
-	  </tr>
 </table></div><br/><div class="summary"><h3>Parameter Of</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr>
 	    <th class="colFirst" scope="col">Server Return Type</th>
 	    <th class="colLast" scope="col">Server Function</th>
 	    <th class="colLast" scope="col">Java Doc</th>
 	    <th class="colLast" scope="col">Server Doc</th>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="cts_query.html">cts:query</a></td>
+	    <td class="colLast"><span class="memberNameLink">cts:element-attribute-pair-geospatial-query</span>(<span>xs:QName <i>element-name</i>*</span>, <span>xs:QName <i>latitude-name</i>*</span>, <span>xs:QName <i>longitude-name</i>*</span>, <span><a href="cts_region.html">cts:region</a> <i>region</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>, <span><a href="xs_double.html">xs:double</a> <i>weight</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-element-attribute-pair-geospatial-query">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:element-attribute-pair-geospatial-query" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="cts_query.html">cts:query</a></td>
+	    <td class="colLast"><span class="memberNameLink">cts:element-attribute-range-query</span>(<span>xs:QName <i>element-name</i>*</span>, <span>xs:QName <i>attribute-name</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>operator</i></span>, <span><a href="xs_anyAtomicType.html">xs:anyAtomicType</a> <i>value</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>, <span><a href="xs_double.html">xs:double</a> <i>weight</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-element-attribute-range-query">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:element-attribute-range-query" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="cts_query.html">cts:query</a></td>
+	    <td class="colLast"><span class="memberNameLink">cts:element-attribute-value-query</span>(<span>xs:QName <i>element-name</i>*</span>, <span>xs:QName <i>attribute-name</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>text</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>, <span><a href="xs_double.html">xs:double</a> <i>weight</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-element-attribute-value-query">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:element-attribute-value-query" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="cts_query.html">cts:query</a></td>
+	    <td class="colLast"><span class="memberNameLink">cts:element-attribute-word-query</span>(<span>xs:QName <i>element-name</i>*</span>, <span>xs:QName <i>attribute-name</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>text</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>, <span><a href="xs_double.html">xs:double</a> <i>weight</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-element-attribute-word-query">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:element-attribute-word-query" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="cts_query.html">cts:query</a></td>
+	    <td class="colLast"><span class="memberNameLink">cts:element-child-geospatial-query</span>(<span>xs:QName <i>element-name</i>*</span>, <span>xs:QName <i>child-name</i>*</span>, <span><a href="cts_region.html">cts:region</a> <i>region</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>, <span><a href="xs_double.html">xs:double</a> <i>weight</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-element-child-geospatial-query">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:element-child-geospatial-query" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="cts_query.html">cts:query</a></td>
+	    <td class="colLast"><span class="memberNameLink">cts:element-geospatial-query</span>(<span>xs:QName <i>element-name</i>*</span>, <span><a href="cts_region.html">cts:region</a> <i>region</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>, <span><a href="xs_double.html">xs:double</a> <i>weight</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-element-geospatial-query">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:element-geospatial-query" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="cts_query.html">cts:query</a></td>
+	    <td class="colLast"><span class="memberNameLink">cts:element-pair-geospatial-query</span>(<span>xs:QName <i>element-name</i>*</span>, <span>xs:QName <i>latitude-name</i>*</span>, <span>xs:QName <i>longitude-name</i>*</span>, <span><a href="cts_region.html">cts:region</a> <i>region</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>, <span><a href="xs_double.html">xs:double</a> <i>weight</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-element-pair-geospatial-query">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:element-pair-geospatial-query" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="cts_query.html">cts:query</a></td>
+	    <td class="colLast"><span class="memberNameLink">cts:element-query</span>(<span>xs:QName <i>element-name</i>*</span>, <span><a href="cts_query.html">cts:query</a> <i>query</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-element-query">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:element-query" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="cts_query.html">cts:query</a></td>
+	    <td class="colLast"><span class="memberNameLink">cts:element-range-query</span>(<span>xs:QName <i>element-name</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>operator</i></span>, <span><a href="xs_anyAtomicType.html">xs:anyAtomicType</a> <i>value</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>, <span><a href="xs_double.html">xs:double</a> <i>weight</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-element-range-query">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:element-range-query" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="cts_query.html">cts:query</a></td>
+	    <td class="colLast"><span class="memberNameLink">cts:element-value-query</span>(<span>xs:QName <i>element-name</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>text</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>, <span><a href="xs_double.html">xs:double</a> <i>weight</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-element-value-query">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:element-value-query" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="cts_query.html">cts:query</a></td>
+	    <td class="colLast"><span class="memberNameLink">cts:element-word-query</span>(<span>xs:QName <i>element-name</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>text</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>, <span><a href="xs_double.html">xs:double</a> <i>weight</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-element-word-query">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:element-word-query" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="cts_reference.html">cts:reference</a></td>
+	    <td class="colLast"><span class="memberNameLink">cts:element-attribute-reference</span>(<span>xs:QName <i>element</i></span>, <span>xs:QName <i>attribute</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-element-attribute-reference">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:element-attribute-reference" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="cts_reference.html">cts:reference</a></td>
+	    <td class="colLast"><span class="memberNameLink">cts:element-reference</span>(<span>xs:QName <i>element</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-element-reference">java</a></td>
+	    <td><a href="http://docs.marklogic.com/cts:element-reference" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="rowColor">
 	    <td class="colFirst"><a href="xs_NCName.html">xs:NCName</a>?</td>

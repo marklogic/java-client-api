@@ -21,5 +21,5 @@ package com.marklogic.client.type;
  * A sequence of column expressions returned by col() calls
  * for a row pipeline.
  */
-public interface PlanColumnSeq extends PlanExprColSeq  {
+public interface PlanColumnSeq extends PlanExprColSeq, ServerExpression  {
 }

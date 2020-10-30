@@ -21,33 +21,6 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td class="colLast"><span class="memberNameLink">xs:integer</span>(<span><a href="xs_anyAtomicType.html">item</a> <i>arg1</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/XsExpr.html#ml-server-type-integer">java</a></td>
 	  </tr>
-</table></div><br/><div class="summary"><h3>Supertypes</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr class="altColor">
-	    <td><a href="item.html">item</a></td>
-	    <td><a href="xs_anyAtomicType.html">xs:anyAtomicType</a></td>
-	    <td><a href="xs_anySimpleType.html">xs:anySimpleType</a></td>
-	    <td><a href="xs_decimal.html">xs:decimal</a></td>
-	    <td><a href="xs_numeric.html">xs:numeric</a></td>
-	  </tr>
-</table></div><br/><div class="summary"><h3>Subtypes</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr class="altColor">
-	    <td><a href="xs_byte.html">xs:byte</a></td>
-	    <td><a href="xs_int.html">xs:int</a></td>
-	    <td><a href="xs_long.html">xs:long</a></td>
-	    <td><a href="xs_negativeInteger.html">xs:negativeInteger</a></td>
-	    <td><a href="xs_nonNegativeInteger.html">xs:nonNegativeInteger</a></td>
-	    <td><a href="xs_nonPositiveInteger.html">xs:nonPositiveInteger</a></td>
-	  </tr>
-<tr class="altColor">
-	    <td><a href="xs_nonPositiveInteger.html">xs:nonPositiveInteger</a></td>
-	    <td><a href="xs_positiveInteger.html">xs:positiveInteger</a></td>
-	    <td><a href="xs_short.html">xs:short</a></td>
-	    <td><a href="xs_unsignedByte.html">xs:unsignedByte</a></td>
-	    <td><a href="xs_unsignedInt.html">xs:unsignedInt</a></td>
-	    <td><a href="xs_unsignedLong.html">xs:unsignedLong</a></td>
-	  </tr>
-<tr class="altColor">
-	    <td><a href="xs_unsignedLong.html">xs:unsignedLong</a></td>
-	    <td><a href="xs_unsignedShort.html">xs:unsignedShort</a></td>
-	  </tr>
 </table></div><br/><div class="summary"><h3>Parameter Of</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr>
 	    <th class="colFirst" scope="col">Server Return Type</th>
 	    <th class="colLast" scope="col">Server Function</th>
@@ -278,7 +251,7 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	  </tr>
 <tr class="rowColor">
 	    <td class="colFirst">xs:integer?</td>
-	    <td class="colLast"><span class="memberNameLink">sql:datediff</span>(<span><a href="xs_string.html">xs:string</a> <i>datepart</i></span>, <span><a href="item.html">item</a> <i>startdate</i></span>, <span><a href="item.html">item</a> <i>enddate</i></span>)</td>
+	    <td class="colLast"><span class="memberNameLink">sql:datediff</span>(<span><a href="xs_string.html">xs:string</a> <i>datepart</i>?</span>, <span><a href="item.html">item</a> <i>startdate</i>?</span>, <span><a href="item.html">item</a> <i>enddate</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/SqlExpr.html#ml-server-type-datediff">java</a></td>
 	    <td><a href="http://docs.marklogic.com/sql:datediff" target="mlserverdoc">server</a></td>
 	  </tr>
@@ -332,7 +305,7 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	  </tr>
 <tr class="altColor">
 	    <td class="colFirst">xs:integer?</td>
-	    <td class="colLast"><span class="memberNameLink">sql:timestampdiff</span>(<span><a href="xs_string.html">xs:string</a> <i>dateTimeType</i></span>, <span><a href="item.html">item</a> <i>timestamp1</i></span>, <span><a href="item.html">item</a> <i>timestamp2</i></span>)</td>
+	    <td class="colLast"><span class="memberNameLink">sql:timestampdiff</span>(<span><a href="xs_string.html">xs:string</a> <i>dateTimeType</i>?</span>, <span><a href="item.html">item</a> <i>timestamp1</i>?</span>, <span><a href="item.html">item</a> <i>timestamp2</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/SqlExpr.html#ml-server-type-timestampdiff">java</a></td>
 	    <td><a href="http://docs.marklogic.com/sql:timestampdiff" target="mlserverdoc">server</a></td>
 	  </tr>

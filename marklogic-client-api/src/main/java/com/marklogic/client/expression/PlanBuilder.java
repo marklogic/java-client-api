@@ -175,13 +175,13 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ServerExpression divide(ServerExpression left, ServerExpression right);
   /**
-  * This function returns true if the left and right expressions return the same value. Otherwise, it returns false. In expressions, the call should pass the result from an op:col function to identify a column.
+  * This function takes two or more expressions and returns true if all of the expressions return the same value. Otherwise, it returns false. The expressions can include calls to the op:col function to get the value of a column.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:eq" target="mlserverdoc">op:eq</a> server function.
-  * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param operand  Two or more expressions.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract ServerExpression eq(ServerExpression... left);
+  public abstract ServerExpression eq(ServerExpression... operand);
   /**
   * This function returns true if the value of the left expression is greater than or equal to the value of the right expression. Otherwise, it returns false.
   * <p>
@@ -981,14 +981,14 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ServerExpression jsonDocument(ServerExpression root);
   /**
-  * This function specifies the key expression and value content for a JSON property of a JSON object contructed by the op:json-object function.
+  * This function specifies the key expression and value content for a JSON property of a JSON object constructed by the op:json-object function.
   * @param key  The key expression. This must evaluate to a string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param value  The value content. This must be exactly one JSON node expression.  (of <a href="{@docRoot}/doc-files/types/json-content-node.html">json-content-node</a>)
   * @return  a PlanJsonProperty object
   */
   public abstract PlanJsonProperty prop(String key, ServerExpression value);
   /**
-  * This function specifies the key expression and value content for a JSON property of a JSON object contructed by the op:json-object function.
+  * This function specifies the key expression and value content for a JSON property of a JSON object constructed by the op:json-object function.
   * @param key  The key expression. This must evaluate to a string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param value  The value content. This must be exactly one JSON node expression.  (of <a href="{@docRoot}/doc-files/types/json-content-node.html">json-content-node</a>)
   * @return  a PlanJsonProperty object

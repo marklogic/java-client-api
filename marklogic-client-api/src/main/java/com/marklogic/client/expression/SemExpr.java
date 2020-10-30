@@ -237,56 +237,59 @@ public interface SemExpr extends SemValue {
   * The sem:ruleset-store function returns a set of triples derived by applying the ruleset to the triples in the sem:store constructor provided in store ("the triples that can be inferred from these rules"). 
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sem:ruleset-store" target="mlserverdoc">sem:ruleset-store</a> server function.
-  * @param locations  The locations of the rulesets.
-  * @return  a SemStoreExpr server expression
+  * @param locations  The locations of the rulesets.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_store.html">sem:store</a> server data type
   */
   public SemStoreExpr rulesetStore(String locations);
 /**
   * The sem:ruleset-store function returns a set of triples derived by applying the ruleset to the triples in the sem:store constructor provided in store ("the triples that can be inferred from these rules"). 
+  *
+  * <a name="ml-server-type-ruleset-store"></a>
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sem:ruleset-store" target="mlserverdoc">sem:ruleset-store</a> server function.
-  * @param locations  The locations of the rulesets.
-  * @return  a SemStoreExpr server expression
+  * @param locations  The locations of the rulesets.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_store.html">sem:store</a> server data type
   */
-  public SemStoreExpr rulesetStore(XsStringSeqVal locations);
+  public SemStoreExpr rulesetStore(ServerExpression locations);
 /**
   * The sem:ruleset-store function returns a set of triples derived by applying the ruleset to the triples in the sem:store constructor provided in store ("the triples that can be inferred from these rules"). 
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sem:ruleset-store" target="mlserverdoc">sem:ruleset-store</a> server function.
-  * @param locations  The locations of the rulesets.
-  * @param store  The base store(s) over which to apply the ruleset to get inferred triples. The default for sem:store is an empty sequence, which means accessing the current database's triple index using the default rulesets configured for that database.
-  * @return  a SemStoreExpr server expression
+  * @param locations  The locations of the rulesets.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param store  The base store(s) over which to apply the ruleset to get inferred triples. The default for sem:store is an empty sequence, which means accessing the current database's triple index using the default rulesets configured for that database.  (of <a href="{@docRoot}/doc-files/types/sem_store.html">sem:store</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_store.html">sem:store</a> server data type
   */
   public SemStoreExpr rulesetStore(String locations, SemStoreExpr... store);
 /**
   * The sem:ruleset-store function returns a set of triples derived by applying the ruleset to the triples in the sem:store constructor provided in store ("the triples that can be inferred from these rules"). 
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sem:ruleset-store" target="mlserverdoc">sem:ruleset-store</a> server function.
-  * @param locations  The locations of the rulesets.
-  * @param store  The base store(s) over which to apply the ruleset to get inferred triples. The default for sem:store is an empty sequence, which means accessing the current database's triple index using the default rulesets configured for that database.
-  * @return  a SemStoreExpr server expression
+  * @param locations  The locations of the rulesets.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param store  The base store(s) over which to apply the ruleset to get inferred triples. The default for sem:store is an empty sequence, which means accessing the current database's triple index using the default rulesets configured for that database.  (of <a href="{@docRoot}/doc-files/types/sem_store.html">sem:store</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_store.html">sem:store</a> server data type
   */
-  public SemStoreExpr rulesetStore(XsStringSeqVal locations, SemStoreSeqExpr store);
+  public SemStoreExpr rulesetStore(ServerExpression locations, ServerExpression store);
 /**
   * The sem:ruleset-store function returns a set of triples derived by applying the ruleset to the triples in the sem:store constructor provided in store ("the triples that can be inferred from these rules"). 
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sem:ruleset-store" target="mlserverdoc">sem:ruleset-store</a> server function.
-  * @param locations  The locations of the rulesets.
-  * @param store  The base store(s) over which to apply the ruleset to get inferred triples. The default for sem:store is an empty sequence, which means accessing the current database's triple index using the default rulesets configured for that database.
-  * @param options  Options as a sequence of string values. Available options are:  "size=number of MB" The maximum size of the memory used to cache inferred triples. This defaults to the default inference size set for the app-server. If the value provided is bigger than the maximum inference size set for the App Server, an error is raised [XDMP-INFSIZE]. 
-  * @return  a SemStoreExpr server expression
+  * @param locations  The locations of the rulesets.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param store  The base store(s) over which to apply the ruleset to get inferred triples. The default for sem:store is an empty sequence, which means accessing the current database's triple index using the default rulesets configured for that database.  (of <a href="{@docRoot}/doc-files/types/sem_store.html">sem:store</a>)
+  * @param options  Options as a sequence of string values. Available options are:  "size=number of MB" The maximum size of the memory used to cache inferred triples. This defaults to the default inference size set for the app-server. If the value provided is bigger than the maximum inference size set for the App Server, an error is raised [XDMP-INFSIZE].   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_store.html">sem:store</a> server data type
   */
-  public SemStoreExpr rulesetStore(String locations, SemStoreSeqExpr store, String options);
+  public SemStoreExpr rulesetStore(String locations, ServerExpression store, String options);
 /**
   * The sem:ruleset-store function returns a set of triples derived by applying the ruleset to the triples in the sem:store constructor provided in store ("the triples that can be inferred from these rules"). 
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sem:ruleset-store" target="mlserverdoc">sem:ruleset-store</a> server function.
-  * @param locations  The locations of the rulesets.
-  * @param store  The base store(s) over which to apply the ruleset to get inferred triples. The default for sem:store is an empty sequence, which means accessing the current database's triple index using the default rulesets configured for that database.
-  * @param options  Options as a sequence of string values. Available options are:  "size=number of MB" The maximum size of the memory used to cache inferred triples. This defaults to the default inference size set for the app-server. If the value provided is bigger than the maximum inference size set for the App Server, an error is raised [XDMP-INFSIZE]. 
-  * @return  a SemStoreExpr server expression
+  * @param locations  The locations of the rulesets.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param store  The base store(s) over which to apply the ruleset to get inferred triples. The default for sem:store is an empty sequence, which means accessing the current database's triple index using the default rulesets configured for that database.  (of <a href="{@docRoot}/doc-files/types/sem_store.html">sem:store</a>)
+  * @param options  Options as a sequence of string values. Available options are:  "size=number of MB" The maximum size of the memory used to cache inferred triples. This defaults to the default inference size set for the app-server. If the value provided is bigger than the maximum inference size set for the App Server, an error is raised [XDMP-INFSIZE].   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_store.html">sem:store</a> server data type
   */
-  public SemStoreExpr rulesetStore(XsStringSeqVal locations, SemStoreSeqExpr store, XsStringSeqVal options);
+  public SemStoreExpr rulesetStore(ServerExpression locations, ServerExpression store, ServerExpression options);
 /**
   * Returns true if the arguments are the same RDF term as defined by the RDF concepts specification. This XQuery function backs up the SPARQL sameTerm() function. 
   * <p>
@@ -310,45 +313,48 @@ public interface SemExpr extends SemValue {
   public ServerExpression sameTerm(ServerExpression a, ServerExpression b);
 /**
   * The sem:store function defines a set of criteria, that when evaluated, selects a set of triples to be passed in to sem:sparql(), sem:sparql-update(), or sem:sparql-values() as part of the options argument. The sem:store constructor queries from the current database's triple index, restricted by the options and the cts:query argument (for instance, "triples in documents matching this query"). 
+  *
+  * <a name="ml-server-type-store"></a>
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sem:store" target="mlserverdoc">sem:store</a> server function.
-  * @return  a SemStoreExpr server expression
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_store.html">sem:store</a> server data type
   */
   public SemStoreExpr store();
 /**
   * The sem:store function defines a set of criteria, that when evaluated, selects a set of triples to be passed in to sem:sparql(), sem:sparql-update(), or sem:sparql-values() as part of the options argument. The sem:store constructor queries from the current database's triple index, restricted by the options and the cts:query argument (for instance, "triples in documents matching this query"). 
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sem:store" target="mlserverdoc">sem:store</a> server function.
-  * @param options  Options as a sequence of string values. Available options are:  "any" Values from any fragment should be included. "document" Values from document fragments should be included. "properties" Values from properties fragments should be included. "locks" Values from locks fragments should be included. "checked" Word positions should be checked when resolving the query. "unchecked" Word positions should not be checked when resolving the query. "size=number of MB" The maximum size of the memory used to cache inferred triples. This defaults to the default inference size set for the app-server. If the value provided is bigger than the maximum inference size set for the App Server, an error is raised [XDMP-INFSIZE]. "no-default-rulesets" Don't apply the database's default rulesets to the sem:store. "locking=read-write/write" read-write: Read-lock documents containing triples being accessed, write-lock documents being updated; write: Only write-lock documents being updated. Default is locking=read-write. Locking is ignored in query transaction.  
-  * @return  a SemStoreExpr server expression
+  * @param options  Options as a sequence of string values. Available options are:  "any" Values from any fragment should be included. "document" Values from document fragments should be included. "properties" Values from properties fragments should be included. "locks" Values from locks fragments should be included. "checked" Word positions should be checked when resolving the query. "unchecked" Word positions should not be checked when resolving the query. "size=number of MB" The maximum size of the memory used to cache inferred triples. This defaults to the default inference size set for the app-server. If the value provided is bigger than the maximum inference size set for the App Server, an error is raised [XDMP-INFSIZE]. "no-default-rulesets" Don't apply the database's default rulesets to the sem:store. "locking=read-write/write" read-write: Read-lock documents containing triples being accessed, write-lock documents being updated; write: Only write-lock documents being updated. Default is locking=read-write. Locking is ignored in query transaction.    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_store.html">sem:store</a> server data type
   */
   public SemStoreExpr store(String options);
 /**
   * The sem:store function defines a set of criteria, that when evaluated, selects a set of triples to be passed in to sem:sparql(), sem:sparql-update(), or sem:sparql-values() as part of the options argument. The sem:store constructor queries from the current database's triple index, restricted by the options and the cts:query argument (for instance, "triples in documents matching this query"). 
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sem:store" target="mlserverdoc">sem:store</a> server function.
-  * @param options  Options as a sequence of string values. Available options are:  "any" Values from any fragment should be included. "document" Values from document fragments should be included. "properties" Values from properties fragments should be included. "locks" Values from locks fragments should be included. "checked" Word positions should be checked when resolving the query. "unchecked" Word positions should not be checked when resolving the query. "size=number of MB" The maximum size of the memory used to cache inferred triples. This defaults to the default inference size set for the app-server. If the value provided is bigger than the maximum inference size set for the App Server, an error is raised [XDMP-INFSIZE]. "no-default-rulesets" Don't apply the database's default rulesets to the sem:store. "locking=read-write/write" read-write: Read-lock documents containing triples being accessed, write-lock documents being updated; write: Only write-lock documents being updated. Default is locking=read-write. Locking is ignored in query transaction.  
-  * @return  a SemStoreExpr server expression
+  * @param options  Options as a sequence of string values. Available options are:  "any" Values from any fragment should be included. "document" Values from document fragments should be included. "properties" Values from properties fragments should be included. "locks" Values from locks fragments should be included. "checked" Word positions should be checked when resolving the query. "unchecked" Word positions should not be checked when resolving the query. "size=number of MB" The maximum size of the memory used to cache inferred triples. This defaults to the default inference size set for the app-server. If the value provided is bigger than the maximum inference size set for the App Server, an error is raised [XDMP-INFSIZE]. "no-default-rulesets" Don't apply the database's default rulesets to the sem:store. "locking=read-write/write" read-write: Read-lock documents containing triples being accessed, write-lock documents being updated; write: Only write-lock documents being updated. Default is locking=read-write. Locking is ignored in query transaction.    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_store.html">sem:store</a> server data type
   */
-  public SemStoreExpr store(XsStringSeqVal options);
+  public SemStoreExpr store(ServerExpression options);
 /**
   * The sem:store function defines a set of criteria, that when evaluated, selects a set of triples to be passed in to sem:sparql(), sem:sparql-update(), or sem:sparql-values() as part of the options argument. The sem:store constructor queries from the current database's triple index, restricted by the options and the cts:query argument (for instance, "triples in documents matching this query"). 
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sem:store" target="mlserverdoc">sem:store</a> server function.
-  * @param options  Options as a sequence of string values. Available options are:  "any" Values from any fragment should be included. "document" Values from document fragments should be included. "properties" Values from properties fragments should be included. "locks" Values from locks fragments should be included. "checked" Word positions should be checked when resolving the query. "unchecked" Word positions should not be checked when resolving the query. "size=number of MB" The maximum size of the memory used to cache inferred triples. This defaults to the default inference size set for the app-server. If the value provided is bigger than the maximum inference size set for the App Server, an error is raised [XDMP-INFSIZE]. "no-default-rulesets" Don't apply the database's default rulesets to the sem:store. "locking=read-write/write" read-write: Read-lock documents containing triples being accessed, write-lock documents being updated; write: Only write-lock documents being updated. Default is locking=read-write. Locking is ignored in query transaction.  
-  * @param query  Only include triples in fragments selected by the cts:query. The triples do not need to match the query, but they must occur in fragments selected by the query. The fragments are not filtered to ensure they match the query, but instead selected in the same manner as  "unfiltered" cts:search operations. If a string is entered, the string is treated as a cts:word-query of the specified string.
-  * @return  a SemStoreExpr server expression
+  * @param options  Options as a sequence of string values. Available options are:  "any" Values from any fragment should be included. "document" Values from document fragments should be included. "properties" Values from properties fragments should be included. "locks" Values from locks fragments should be included. "checked" Word positions should be checked when resolving the query. "unchecked" Word positions should not be checked when resolving the query. "size=number of MB" The maximum size of the memory used to cache inferred triples. This defaults to the default inference size set for the app-server. If the value provided is bigger than the maximum inference size set for the App Server, an error is raised [XDMP-INFSIZE]. "no-default-rulesets" Don't apply the database's default rulesets to the sem:store. "locking=read-write/write" read-write: Read-lock documents containing triples being accessed, write-lock documents being updated; write: Only write-lock documents being updated. Default is locking=read-write. Locking is ignored in query transaction.    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param query  Only include triples in fragments selected by the cts:query. The triples do not need to match the query, but they must occur in fragments selected by the query. The fragments are not filtered to ensure they match the query, but instead selected in the same manner as  "unfiltered" cts:search operations. If a string is entered, the string is treated as a cts:word-query of the specified string.  (of <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_store.html">sem:store</a> server data type
   */
-  public SemStoreExpr store(String options, CtsQueryExpr query);
+  public SemStoreExpr store(String options, ServerExpression query);
 /**
   * The sem:store function defines a set of criteria, that when evaluated, selects a set of triples to be passed in to sem:sparql(), sem:sparql-update(), or sem:sparql-values() as part of the options argument. The sem:store constructor queries from the current database's triple index, restricted by the options and the cts:query argument (for instance, "triples in documents matching this query"). 
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sem:store" target="mlserverdoc">sem:store</a> server function.
-  * @param options  Options as a sequence of string values. Available options are:  "any" Values from any fragment should be included. "document" Values from document fragments should be included. "properties" Values from properties fragments should be included. "locks" Values from locks fragments should be included. "checked" Word positions should be checked when resolving the query. "unchecked" Word positions should not be checked when resolving the query. "size=number of MB" The maximum size of the memory used to cache inferred triples. This defaults to the default inference size set for the app-server. If the value provided is bigger than the maximum inference size set for the App Server, an error is raised [XDMP-INFSIZE]. "no-default-rulesets" Don't apply the database's default rulesets to the sem:store. "locking=read-write/write" read-write: Read-lock documents containing triples being accessed, write-lock documents being updated; write: Only write-lock documents being updated. Default is locking=read-write. Locking is ignored in query transaction.  
-  * @param query  Only include triples in fragments selected by the cts:query. The triples do not need to match the query, but they must occur in fragments selected by the query. The fragments are not filtered to ensure they match the query, but instead selected in the same manner as  "unfiltered" cts:search operations. If a string is entered, the string is treated as a cts:word-query of the specified string.
-  * @return  a SemStoreExpr server expression
+  * @param options  Options as a sequence of string values. Available options are:  "any" Values from any fragment should be included. "document" Values from document fragments should be included. "properties" Values from properties fragments should be included. "locks" Values from locks fragments should be included. "checked" Word positions should be checked when resolving the query. "unchecked" Word positions should not be checked when resolving the query. "size=number of MB" The maximum size of the memory used to cache inferred triples. This defaults to the default inference size set for the app-server. If the value provided is bigger than the maximum inference size set for the App Server, an error is raised [XDMP-INFSIZE]. "no-default-rulesets" Don't apply the database's default rulesets to the sem:store. "locking=read-write/write" read-write: Read-lock documents containing triples being accessed, write-lock documents being updated; write: Only write-lock documents being updated. Default is locking=read-write. Locking is ignored in query transaction.    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param query  Only include triples in fragments selected by the cts:query. The triples do not need to match the query, but they must occur in fragments selected by the query. The fragments are not filtered to ensure they match the query, but instead selected in the same manner as  "unfiltered" cts:search operations. If a string is entered, the string is treated as a cts:word-query of the specified string.  (of <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_store.html">sem:store</a> server data type
   */
-  public SemStoreExpr store(XsStringSeqVal options, CtsQueryExpr query);
+  public SemStoreExpr store(ServerExpression options, ServerExpression query);
 /**
   * Returns the timezone of an xs:dateTime value as a string. This XQuery function backs up the SPARQL TZ() function. 
   *

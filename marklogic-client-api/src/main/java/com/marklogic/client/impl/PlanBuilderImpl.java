@@ -268,11 +268,11 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public ServerExpression eq(ServerExpression... left) {
-    if (left == null) {
-      throw new IllegalArgumentException("left parameter for eq() cannot be null");
+  public ServerExpression eq(ServerExpression... operand) {
+    if (operand == null) {
+      throw new IllegalArgumentException("operand parameter for eq() cannot be null");
     }
-    return new XsExprImpl.BooleanCallImpl("op", "eq", left);
+    return new XsExprImpl.BooleanCallImpl("op", "eq", operand);
   }
 
   
