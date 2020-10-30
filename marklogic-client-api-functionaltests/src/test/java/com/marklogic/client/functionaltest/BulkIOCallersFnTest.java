@@ -296,8 +296,8 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
     public static void tearDownAfterClass() throws Exception {
         System.out.println("In tear down");
 
-        //deleteUserRole("apiRole");
-        //deleteRESTUser("apiUser");
+        deleteUserRole("apiRole");
+        deleteRESTUser("apiUser");
         deleteRESTUser("secondApiUser");
         deleteUserRole("ForbiddenRole");
         deleteRESTUser("ForbiddenUser");
