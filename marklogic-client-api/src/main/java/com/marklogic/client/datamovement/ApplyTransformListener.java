@@ -78,7 +78,7 @@ import java.util.stream.Collectors;
  *
  * <p>As with all the provided listeners, this listener will not meet the needs
  * of all applications but the
- * <a target="_blank" href="https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/datamovement/ApplyTransformListener.java">source code</a>
+ * <a target="_blank" href="https://github.com/marklogic/java-client-api/blob/master/marklogic-client-api/src/main/java/com/marklogic/client/datamovement/ApplyTransformListener.java">source code</a>
  * for it should serve as helpful sample code so you can write your own custom
  * listeners.</p>
  *

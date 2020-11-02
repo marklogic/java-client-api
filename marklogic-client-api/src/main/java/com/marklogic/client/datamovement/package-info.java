@@ -138,8 +138,12 @@
  * various listeners that can be registered for it to call.  See javadocs, the
  * <a href="http://docs.marklogic.com/guide/java">Java Application Developer's Guide</a>,
  * <a href="https://github.com/marklogic/java-client-api">source code for provided listeners</a>,
- * <a href="https://github.com/marklogic/java-client-api/tree/develop/src/main/java/com/marklogic/client/example/cookbook/datamovement">cookbook examples</a>, and
- * <a href="https://github.com/marklogic/java-client-api/tree/develop/src/test/java/com/marklogic/client/test/datamovement">unit tests</a>
+ * <a
+ * href="https://github.com/marklogic/java-client-api/tree/master/marklogic-client-api/src/main/java/com/marklogic/client/example/cookbook/datamovement"
+ * >cookbook examples</a>, and
+ * <a
+ * href="https://github.com/marklogic/java-client-api/tree/master/marklogic-client-api/src/test/java/com/marklogic/client/test/datamovement"
+ * >unit tests</a>
  * for more examples of listener implementation ideas.</p>
  *
  *

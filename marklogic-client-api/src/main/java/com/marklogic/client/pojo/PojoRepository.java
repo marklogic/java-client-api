@@ -71,7 +71,7 @@ import java.io.Serializable;
  * working, you can troubleshoot by directly accessing the objectMapper used by the Pojo
  * Facade using an unsupported internal method attached to the current implementation:
  * <a
- * href="https://github.com/marklogic/java-client-api/blob/master/src/main/java/com/marklogic/client/impl/PojoRepositoryImpl.java"
+ * href="https://github.com/marklogic/java-client-api/blob/master/marklogic-client-api/src/main/java/com/marklogic/client/impl/PojoRepositoryImpl.java"
  * >com.marklogic.client.impl.PojoRepositoryImpl</a>.</p>
  *
  * <pre>    ObjectMapper objectMapper = ((PojoRepositoryImpl) myClassRepo).getObjectMapper();</pre>
