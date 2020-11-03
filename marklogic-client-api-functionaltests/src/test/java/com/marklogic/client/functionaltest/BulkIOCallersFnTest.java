@@ -56,7 +56,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
 
     private static int modulesPort = 8000;
     private static int restTestport = 8093;
-    private static String restServerName = "TestRESTServerOnAPI";
+    private static String restServerName = "TestDynamicIngest";
 
     private static SecurityContext secContext = null;
     private static DatabaseClient dbclient = null;
