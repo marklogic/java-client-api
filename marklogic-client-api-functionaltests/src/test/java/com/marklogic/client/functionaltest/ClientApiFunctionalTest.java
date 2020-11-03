@@ -79,6 +79,14 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 	// Atomic params in and param out with "$javaClass"
 	private static String endPointURI_11 = endPointURI_5;
 	// For testing Open API end
+
+	/* Note : In case there is a need to re-run the tests, please
+	delete these App Servers manually. The db and forest for these are deleted in aftercalss().
+	These server are left behind and in case of re-runs DB and forest creations will not happen,
+	hence delete app servers and re-run tests.
+	- TestClientQAServer
+	- TestRESTServerOnAPI
+	 */
 	@BeforeClass
 	public static void setUp() throws Exception {
 		System.out.println("In setup");
@@ -210,7 +218,6 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		file = null;
 		handle = null;
 		// For Open API tests end
-
 	}
 
 	@AfterClass
@@ -223,9 +230,23 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		deleteUserRole("ForbiddenRole");
 		deleteRESTUser("ForbiddenUser");
 
-		associateRESTServerWithDB(modServerName, "Documents");
 		// release client
 		dbclient.release();
+		associateRESTServerWithDB(modServerName, "Documents");
+		associateRESTServerWithDB(serverName, "Documents");
+		associateRESTServerWithModuleDB(modServerName, "Modules");
+		associateRESTServerWithModuleDB(serverName, "Modules");
+
+		associateRESTServerWithDB("TestRESTServerOnAPI", "Documents");
+		associateRESTServerWithModuleDB("TestRESTServerOnAPI", "Modules");
+		deleteDB(dbName);
+		deleteForest(fNames[0]);
+
+		deleteDB(dbNameMod);
+		deleteForest(fNamesMod[0]);
+
+		deleteDB("TestRESTServerOnAPI-modules");
+		deleteForest("TestRESTServerOnAPI-modules-1");
 	}
 
 	public static void createAppServer(String appServerName, int restPort) {
