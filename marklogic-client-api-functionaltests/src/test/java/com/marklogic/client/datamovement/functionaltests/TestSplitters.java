@@ -15,10 +15,7 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -44,10 +41,12 @@ public class TestSplitters  extends BasicJavaClientREST {
     private static String host = null;
     private static String user = "admin";
     private static String password = "admin";
+    private static String delim;
 
     @BeforeClass
     public static void setUp() throws Exception {
         System.out.println("In setup");
+        delim = System.lineSeparator();
         configureRESTServer(dbName, fNames);
         setupAppServicesConstraint(dbName);
         createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
@@ -131,7 +130,7 @@ public class TestSplitters  extends BasicJavaClientREST {
         FileInputStream jsonfs2 = null;
         String docIdPrefix = "/LS-DocMgrLarge-";
         String collectionName = "LS-LARGE";
-        int nDocs = 8192;
+        int nDocs = 4096;
 
         AtomicInteger id = new AtomicInteger(0);
         AtomicInteger cnt1 = new AtomicInteger(0);
@@ -142,11 +141,13 @@ public class TestSplitters  extends BasicJavaClientREST {
             DocumentManager docMgr = client.newJSONDocumentManager();
             DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle().withCollections(collectionName).withProperty("docMeta-1", "true");
 
+            String beg = "{\"animal\":\"dog";
+            String end = "\", \"says\":\"woof\"}";
             for (int i = 0; i < nDocs; i++) {
-                String line = new String("{\"animal\":\"dog" + i + "\", \"says\":\"woof\"}");
+                String line = new String(beg + i + end);
                 //System.out.println("Line is " + line);
                 bw.write(line);
-                bw.write(System.lineSeparator());
+                bw.write(delim);
             }
             bw.close();
 
@@ -162,8 +163,8 @@ public class TestSplitters  extends BasicJavaClientREST {
             // Verify docs
             QueryBatcher queryBatcherdMgr = dmManager.newQueryBatcher(
                     new StructuredQueryBuilder().collection(collectionName))
-                    .withBatchSize(20)
-                    .withThreadCount(1)
+                    .withBatchSize(2000)
+                    .withThreadCount(2)
                     .onUrisReady((batch) -> {
                         cnt1.set(cnt1.get() + batch.getItems().length);
                     });
@@ -179,7 +180,7 @@ public class TestSplitters  extends BasicJavaClientREST {
             WriteBatcher batcher = dmManager.newWriteBatcher();
             String woCollectionStr = "From-WriteOps";
             DocumentMetadataHandle meta2 = new DocumentMetadataHandle().withCollections(woCollectionStr).withQuality(8);
-            batcher.withBatchSize(5).withDefaultMetadata(meta2);
+            batcher.withBatchSize(2000).withDefaultMetadata(meta2);
 
             dmManager.startJob(batcher);
             batcher.addAll(docsStream);
@@ -188,8 +189,8 @@ public class TestSplitters  extends BasicJavaClientREST {
             // Verify docs
             QueryBatcher queryBatcherdMgr1 = dmManager.newQueryBatcher(
                     new StructuredQueryBuilder().collection(woCollectionStr))
-                    .withBatchSize(20)
-                    .withThreadCount(1)
+                    .withBatchSize(2000)
+                    .withThreadCount(2)
                     .onUrisReady((batch) -> {
                         cnt2.set(cnt2.get() + batch.getItems().length);
                     });
@@ -275,7 +276,7 @@ public class TestSplitters  extends BasicJavaClientREST {
         FileInputStream jsonfs1;
         final FileInputStream jsonfs2;
 
-        final int nDocs = 8192;
+        final int nDocs = 4096;
         final AtomicInteger id1 = new AtomicInteger(0);
         final AtomicInteger id2 = new AtomicInteger(8193);
 
@@ -285,10 +286,12 @@ public class TestSplitters  extends BasicJavaClientREST {
             DocumentManager docMgrJson1 = client.newJSONDocumentManager();
             DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle().withCollections(collectionName).withProperty("docMeta-1", "true");
 
+            String beg = "{\"animal\":\"dog";
+            String end = "\", \"says\":\"woof\"}";
             for (int i = 0; i < nDocs; i++) {
-                String line = new String("{\"animal\":\"dog" + i + "\", \"says\":\"woof\"}");
+                String line = new String(beg + i + end);
                 bwJson1.write(line);
-                bwJson1.write(System.lineSeparator());
+                bwJson1.write(delim);
             }
             bwJson1.close();
 
@@ -298,7 +301,7 @@ public class TestSplitters  extends BasicJavaClientREST {
             for (int i = 0; i < nDocs; i++) {
                 String line = new String("{\"animal\":\"parrot" + i + "\", \"says\":\"Hello\"}");
                 bwJson2.write(line);
-                bwJson2.write(System.lineSeparator());
+                bwJson2.write(delim);
             }
             bwJson2.close();
 
@@ -334,12 +337,12 @@ public class TestSplitters  extends BasicJavaClientREST {
             t1.join();
             t2.join();
 
-            Thread.sleep(10000);
+            Thread.sleep(1000);
             // Verify docs
             QueryBatcher queryBatcherdMgr = dmManager.newQueryBatcher(
                     new StructuredQueryBuilder().collection(collectionName))
-                    .withBatchSize(20)
-                    .withThreadCount(1)
+                    .withBatchSize(2000)
+                    .withThreadCount(2)
                     .onUrisReady((batch) -> {
                         cnt1.set(cnt1.get() + batch.getItems().length);
                     });
@@ -466,7 +469,7 @@ public class TestSplitters  extends BasicJavaClientREST {
         FileInputStream jsonfs1;
         final FileInputStream jsonfs2;
 
-        final int nDocs = 8192;
+        final int nDocs = 4096;
         final AtomicInteger id1 = new AtomicInteger(0);
         final AtomicInteger id2 = new AtomicInteger(8193);
 
@@ -480,20 +483,24 @@ public class TestSplitters  extends BasicJavaClientREST {
             DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle().withCollections(collectionName).withProperty("docMeta-1", "true");
             wbatcher1.withDefaultMetadata(metadataHandle1);
 
+            String beg1 = "{\"animal\":\"camel";
+            String end1 = "\", \"says\":\"brey\"}";
             for (int i = 0; i < nDocs; i++) {
-                String line = new String("{\"animal\":\"camel" + i + "\", \"says\":\"brey\"}");
+                String line = new String(beg1+ i + end1);
                 bwJson1.write(line);
-                bwJson1.write(System.lineSeparator());
+                bwJson1.write(delim);
             }
             bwJson1.close();
 
             tempJsonFile2 = File.createTempFile("TestWriteOps2", ".json");
             BufferedWriter bwJson2 = new BufferedWriter(new FileWriter(tempJsonFile2));
 
+            String beg2 = "{\"animal\":\"sunbird";
+            String end2 = "\", \"says\":\"chirps\"}";
             for (int i = 0; i < nDocs; i++) {
-                String line = new String("{\"animal\":\"sunbird" + i + "\", \"says\":\"chirps\"}");
+                String line = new String(beg2 + i + end2);
                 bwJson2.write(line);
-                bwJson2.write(System.lineSeparator());
+                bwJson2.write(delim);
             }
             bwJson2.close();
 
@@ -523,7 +530,7 @@ public class TestSplitters  extends BasicJavaClientREST {
             t1.join();
             t2.join();
 
-            Thread.sleep(10000);
+            Thread.sleep(1000);
             // Verify docs count
             QueryBatcher queryBatcherdMgr = dmManager.newQueryBatcher(
                     new StructuredQueryBuilder().collection(collectionName))
