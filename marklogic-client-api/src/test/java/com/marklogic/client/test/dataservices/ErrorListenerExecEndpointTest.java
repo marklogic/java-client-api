@@ -21,6 +21,7 @@ import com.marklogic.client.dataservices.ExecCaller;
 import com.marklogic.client.dataservices.IOEndpoint;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.JacksonHandle;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -162,10 +163,14 @@ public class ErrorListenerExecEndpointTest {
         assertTrue("final state not object", finalState2.isObject());
     }
 
-    @AfterClass
-    public static void cleanup() {
+    @After
+    public void clean() {
         docMgr.delete(finalStateUri1);
         docMgr.delete(finalStateUri2);
+    }
+
+    @AfterClass
+    public static void cleanup() {
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
 }
