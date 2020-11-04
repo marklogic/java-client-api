@@ -192,7 +192,9 @@ public class ExecEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements ExecCa
                                 }
                                 break retry;
                             case STOP_ALL_CALLS:
-                                getCallerThreadPoolExecutor().shutdown();
+                                if (getCallerThreadPoolExecutor() != null) {
+                                    getCallerThreadPoolExecutor().shutdown();
+                                }
                                 break retry;
                         }
                     }

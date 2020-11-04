@@ -221,7 +221,9 @@ public class OutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Outp
                                 return getEndpoint().getCaller().getOutputHandle().newArray(0);
 
                             case STOP_ALL_CALLS:
-                                getCallerThreadPoolExecutor().shutdown();
+                                if (getCallerThreadPoolExecutor() != null) {
+                                    getCallerThreadPoolExecutor().shutdown();
+                                }
                         }
                     }
                 }
@@ -289,7 +291,7 @@ public class OutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Outp
                         bulkOutputCallerImpl.getCallContextQueue().put(callContext);
                         submitTask(this);
                     } else {
-                        if (aliveCallContextCount.decrementAndGet() == 0) {
+                        if (getCallerThreadPoolExecutor() != null && aliveCallContextCount.decrementAndGet() == 0) {
                             getCallerThreadPoolExecutor().shutdown();
                         }
                     }
