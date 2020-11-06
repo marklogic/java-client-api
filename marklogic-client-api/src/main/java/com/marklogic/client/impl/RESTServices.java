@@ -168,7 +168,7 @@ public interface RESTServices {
 
   void deleteSearch(RequestLogger logger, DeleteQueryDefinition queryDef, Transaction transaction)
     throws ForbiddenUserException, FailedRequestException;
-  void delete(RequestLogger logger, Transaction transaction, String... uris)
+  void delete(RequestLogger logger, Transaction transaction, Set<Metadata> categories, String... uris)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
   Transaction openTransaction(String name, int timeLimit)

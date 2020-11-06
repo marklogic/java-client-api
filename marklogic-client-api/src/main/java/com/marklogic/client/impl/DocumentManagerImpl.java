@@ -49,7 +49,6 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.util.RequestParameters;
 
@@ -981,7 +980,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   {
     if ( uris == null ) throw new IllegalArgumentException("uris must not be null");
     if ( uris.length == 0 ) throw new IllegalArgumentException("uris array must not be zero-length");
-    services.delete(requestLogger, null, uris);
+    services.delete(requestLogger, null, null, uris);
   }
 
   @Override
@@ -989,7 +988,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     throws ResourceNotFoundException, ForbiddenUserException,
     FailedRequestException
   {
-    services.delete(requestLogger, transaction, uris);
+    services.delete(requestLogger, transaction, null, uris);
   }
 
   @Override
@@ -1431,6 +1430,19 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     services.deleteDocument(requestLogger,
       new DocumentDescriptorImpl(uri, true), transaction, processedMetadata,
       getWriteParams());
+  }
+
+  @Override
+  public void writeDefaultMetadata(String... uris)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    writeDefaultMetadata((Transaction) null, uris);
+  }
+  @Override
+  public void writeDefaultMetadata(Transaction transaction, String... uris)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    services.delete(requestLogger, transaction, processedMetadata, uris);
   }
 
   @Override

@@ -1012,8 +1012,7 @@ public class OkHttpServices implements RESTServices {
     try {
       RequestParameters params = new RequestParameters();
       if ( extraParams != null ) params.putAll(extraParams);
-      boolean withContent = true;
-      addCategoryParams(categories, params, withContent);
+      addCategoryParams(categories, params, true);
       if ( searchHandle != null && view != null ) params.add("view", view.toString().toLowerCase());
       if ( start > 1 ) params.add("start", Long.toString(start));
       if ( pageLength >= 0 ) params.add("pageLength", Long.toString(pageLength));
@@ -1788,20 +1787,25 @@ public class OkHttpServices implements RESTServices {
     closeResponse(response);
   }
 
-  private void addCategoryParams(Set<Metadata> categories, RequestParameters params,
-                                 boolean withContent)
+  private void addCategoryParams(Set<Metadata> categories, RequestParameters params, boolean withContent)
   {
     if (withContent)
       params.add("category", "content");
     if (categories != null && categories.size() > 0) {
       if (categories.contains(Metadata.ALL)) {
-        params.add("category", "metadata");
+          addCategoryParam(params, "metadata");
       } else {
         for (Metadata category : categories) {
-          params.add("category", category.name().toLowerCase());
+            addCategoryParam(params, category);
         }
       }
     }
+  }
+  private void addCategoryParam(RequestParameters params, Metadata category) {
+      addCategoryParam(params, category.name().toLowerCase());
+  }
+  private void addCategoryParam(RequestParameters params, String category) {
+    params.add("category", category);
   }
 
   private RequestParameters makeDocumentParams(String uri,
@@ -2404,10 +2408,11 @@ public class OkHttpServices implements RESTServices {
   }
 
   @Override
-  public void delete(RequestLogger logger, Transaction transaction, String... uris)
+  public void delete(RequestLogger logger, Transaction transaction, Set<Metadata> categories, String... uris)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     RequestParameters params = new RequestParameters();
+    addCategoryParams(categories, params, false);
     for ( String uri : uris ) {
       params.add("uri", uri);
     }

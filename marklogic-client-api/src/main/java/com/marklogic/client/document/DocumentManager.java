@@ -1426,6 +1426,28 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
   /**
+   * Reverts the metadata in the database for the documents to the defaults
+   *
+   * To call writeDefaultMetadata(), an application must authenticate as rest-writer or rest-admin.
+   *
+   * @param uris	the identifiers for the documents to receive the default metadata
+   * @throws ResourceNotFoundException if a document is not found
+   */
+  void writeDefaultMetadata(String... uris)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /**
+   * Reverts the document metadata in an open database transaction to the defaults
+   *
+   * To call writeDefaultMetadata(), an application must authenticate as rest-writer or rest-admin.
+   *
+   * @param transaction	an open transaction
+   * @param uris	the identifiers for the documents to receive the default metadata
+   * @throws ResourceNotFoundException if a document is not found
+   */
+  void writeDefaultMetadata(Transaction transaction, String... uris)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+
+  /**
    * Gets the default format of the managed documents
    *
    * @return	the default format for documents supported by this document manager
