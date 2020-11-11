@@ -134,7 +134,8 @@ public class DataMovementManagerImpl implements DataMovementManager {
     if (Long.compareUnsigned(getServerVersion(), Long.parseUnsignedLong("10000500")) >= 0) {
       DataMovementServices.QueryConfig queryConfig = service.initConfig("POST", query);
       queryBatcher = new QueryBatcherImpl(query, this, queryConfig.forestConfig,
-              queryConfig.serializedCtsQuery, queryConfig.filtered);
+              queryConfig.serializedCtsQuery, queryConfig.filtered,
+              queryConfig.maxDocToUriBatchRatio, queryConfig.defaultDocBatchSize, queryConfig.maxUriBatchSize);
     } else {
       queryBatcher = new QueryBatcherImpl(query, this, getForestConfig());
     }

@@ -279,7 +279,26 @@ public interface QueryBatcher extends Batcher {
    * @return this instance for method chaining
    */
   @Override
-  public QueryBatcher withBatchSize(int batchSize);
+  // existing method with renamed parameter
+  public QueryBatcher withBatchSize(int docBatchSize);
+
+  // new setter methods
+  public QueryBatcher withBatchSize(int docBatchSize, int docToUriBatchRatio);
+
+  public QueryBatcher withBatchSize(int docBatchSize, int docToUriBatchRatio, int threadThrottleFactor);
+
+  // new getter methods
+  public int getDocToUriBatchRatio();
+
+  public int getThreadThrottleFactor();
+
+
+  // new constant methods
+  public int getDefaultDocBatchSize();
+
+  public int getMaxUriBatchSize();
+
+  public int getMaxDocToUriBatchRatio();
 
   /**
    * Sets the number of threads added to the internal thread pool for this
