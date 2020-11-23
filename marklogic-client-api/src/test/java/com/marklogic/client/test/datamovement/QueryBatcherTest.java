@@ -504,7 +504,7 @@ public class QueryBatcherTest {
     QueryBatcher queryBatcher = newQueryBatcher(query)
       .onUrisReady( batch -> { throw new InternalError(errorMessage); } )
       .onQueryFailure( queryThrowable -> { throw new InternalError(errorMessage); } );
-    testExceptions(queryBatcher, expectedSuccesses, expectedFailures);
+    testExceptions(queryBatcher, expectedSuccesses, expectedFailures, true);
 
     // collect the uris this time
     List<String> matchingUris = Collections.synchronizedList(new ArrayList<>());
@@ -512,7 +512,7 @@ public class QueryBatcherTest {
       .onUrisReady( batch -> matchingUris.addAll(Arrays.asList(batch.getItems())) )
       .onUrisReady( batch -> { throw new RuntimeException(errorMessage); } )
       .onQueryFailure( queryThrowable -> { throw new RuntimeException(errorMessage); } );
-    testExceptions(queryBatcher, expectedSuccesses, expectedFailures);
+    testExceptions(queryBatcher, expectedSuccesses, expectedFailures, true);
     return matchingUris;
   }
 
@@ -520,19 +520,23 @@ public class QueryBatcherTest {
     QueryBatcher uriListBatcher = moveMgr.newQueryBatcher(uris.iterator())
       .onUrisReady( batch -> { throw new InternalError(errorMessage); } )
       .onQueryFailure( queryThrowable -> { throw new InternalError(errorMessage); } );
-    testExceptions(uriListBatcher, expectedSuccesses, expectedFailures);
+    testExceptions(uriListBatcher, expectedSuccesses, expectedFailures, false);
 
     uriListBatcher = moveMgr.newQueryBatcher(uris.iterator())
       .onUrisReady( batch -> { throw new RuntimeException(errorMessage); } )
       .onQueryFailure( queryThrowable -> { throw new RuntimeException(errorMessage); } );
-    testExceptions(uriListBatcher, expectedSuccesses, expectedFailures);
+    testExceptions(uriListBatcher, expectedSuccesses, expectedFailures, false);
   }
 
-  public void testExceptions(QueryBatcher queryBatcher, int expectedSuccesses, int expectedFailures) {
+  public void testExceptions(QueryBatcher queryBatcher, int expectedSuccesses, int expectedFailures, boolean isQuery) {
     final AtomicInteger successfulBatchCount = new AtomicInteger();
     final AtomicInteger failureBatchCount = new AtomicInteger();
+    if (isQuery) {
+      queryBatcher.withBatchSize(1, 1);
+    } else {
+      queryBatcher.withBatchSize(1);
+    }
     queryBatcher
-      .withBatchSize(1)
       .onUrisReady( batch -> successfulBatchCount.incrementAndGet() )
       .onQueryFailure( queryThrowable -> failureBatchCount.incrementAndGet() );
     moveMgr.startJob(queryBatcher);
@@ -902,7 +906,7 @@ public class QueryBatcherTest {
       
       int forest_count = queryBatcher.getForestConfig().listForests().length;
       queryBatcher.setMaxBatches(1);
-      queryBatcher.withBatchSize(batchSize)
+      queryBatcher.withBatchSize(batchSize, 1)
               .onUrisReady(batch -> {
                   outputUris.addAll(Arrays.asList(batch.getItems()));
                   counter.incrementAndGet();
