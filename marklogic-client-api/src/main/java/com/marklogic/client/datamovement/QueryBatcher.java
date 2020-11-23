@@ -300,17 +300,34 @@ public interface QueryBatcher extends Batcher {
    */
   public QueryBatcher withBatchSize(int docBatchSize, int docToUriBatchRatio, int threadThrottleFactor);
 
-  // new getter methods
+  /**
+   * Returns docToUriBatchRatio set to the QueryBatcher
+   * @return docToUriBatchRatio
+   */
   public int getDocToUriBatchRatio();
 
+  /**
+   * Returns threadThrottleFactor set to the QueryBatcher
+   * @return threadThrottleFactor
+   */
   public int getThreadThrottleFactor();
 
-
-  // new constant methods
+  /**
+   * Returns defaultDocBatchSize, which is calculated according to server status
+   * @return defaultDocBatchSize
+   */
   public int getDefaultDocBatchSize();
 
+  /**
+   * Returns maxUriBatchSize, which is calculated according to server status
+   * @return maxUriBatchSize
+   */
   public int getMaxUriBatchSize();
 
+  /**
+   * Returns maxDocToUriBatchRatio, which is calculated according to server status
+   * @return maxDocToUriBatchRatio
+   */
   public int getMaxDocToUriBatchRatio();
 
   /**
