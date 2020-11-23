@@ -272,19 +272,32 @@ public interface QueryBatcher extends Batcher {
   QueryBatcher withJobId(String jobId);
 
   /**
-   * Sets the number of uris to retrieve per batch. Since uris are small
-   * relative to full documents, this number should be much higher than the
-   * batch size for WriteBatcher. The default batch size is 1000.
-   *
+   * Before release 5.3.2, this method sets the number of uris to retrieve per batch. Since uris are small relative to full
+   * documents, this number should be much higher than the batch size for WriteBatcher. The default batch size is 1000.
+   * After release 5.3.2, this method sets the number of uris to process per batch. If not set, the default docBatchSize
+   * is calculated and set according to server status.
    * @return this instance for method chaining
    */
   @Override
-  // existing method with renamed parameter
   public QueryBatcher withBatchSize(int docBatchSize);
 
-  // new setter methods
+  /**
+   * Sets the number of uris to process per batch and the ratio of uris-to-retrieve/uris-to-process. If not set,
+   * the default docBatchSize and docToUriBatchRatio are calculated and set according to server status. For example,
+   * if docBatchSize is 100 and docToUriBatchRatio is 5, there is one thread to retrieve 500 uris and process 100 uris
+   * and there are 4 threads to process the other 400 uris.
+   * @return this instance for method chaining
+   */
   public QueryBatcher withBatchSize(int docBatchSize, int docToUriBatchRatio);
 
+  /**
+   * Sets the number of uris to process per batch, the ratio of uris-to-retrieve/uris-to-process and threadThrottleFactor.
+   * If not set, the default docBatchSize and docToUriBatchRatio are calculated and set according to server status. The
+   * default threadThrottleFactor is 0, which means no throttle at all. For example, if docBatchSize is 100 and
+   * docToUriBatchRatio is 5, there is one thread to retrieve 500 uris and process 100 uris and there are 4 threads to
+   * process the other 400 uris.
+   * @return this instance for method chaining
+   */
   public QueryBatcher withBatchSize(int docBatchSize, int docToUriBatchRatio, int threadThrottleFactor);
 
   // new getter methods

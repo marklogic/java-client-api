@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.*;
+import com.marklogic.client.datamovement.impl.QueryBatcherImpl;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.*;
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertTrue;
@@ -50,28 +52,36 @@ public class ConcurrencyTest {
     public void ConcurrencyTest() {
         DataMovementManager dmManager = client.newDataMovementManager();
         List<String> outputUris = Collections.synchronizedList(new ArrayList<String>());
-        int batchSize = 10;
+        int batchSize = 20;
         int docToUriBatchRatio = 5;
         int totalCount = 1000;
+        int threadThrottleFactor = 4;
 
         DocumentMetadataHandle documentMetadata = new DocumentMetadataHandle().withCollections("ConcurrencyTest");
         WriteBatcher batcher = moveMgr.newWriteBatcher().withDefaultMetadata(documentMetadata);
         int forests = batcher.getForestConfig().listForests().length;
         moveMgr.startJob(batcher);
-        for(int i=0; i<1000; i++) {
+        for(int i=0; i<totalCount; i++) {
             batcher.addAs("test"+i+".txt", new StringHandle().with("Test"+i));
         }
         batcher.flushAndWait();
         moveMgr.stopJob(batcher);
 
-        AtomicInteger counter = new AtomicInteger(0);
         QueryBatcher  queryBatcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("ConcurrencyTest"));
-
         int forest_count = queryBatcher.getForestConfig().listForests().length;
+        AtomicInteger min = new AtomicInteger(Integer.MAX_VALUE);
+        AtomicInteger max = new AtomicInteger(0);
         queryBatcher.withBatchSize(batchSize, docToUriBatchRatio)
                 .onUrisReady(batch -> {
                     outputUris.addAll(Arrays.asList(batch.getItems()));
-                    counter.incrementAndGet();
+                    ThreadPoolExecutor threadPool = ((QueryBatcherImpl) queryBatcher).getThreadPool();
+                    int activeThreadCount = threadPool.getPoolSize();
+                    if (activeThreadCount > max.get()) {
+                        max.set(activeThreadCount);
+                    }
+                    if (activeThreadCount < min.get()) {
+                        min.set(activeThreadCount);
+                    }
                 })
                 .onQueryFailure((QueryBatchException failure) -> {
                     System.out.println(failure.getMessage());
@@ -80,10 +90,33 @@ public class ConcurrencyTest {
         dmManager.startJob(queryBatcher);
         queryBatcher.awaitCompletion();
         dmManager.stopJob(queryBatcher);
-        System.out.println("counter = " + counter.get());
-        System.out.println("outputUris size = " + outputUris.size());
 
         assertTrue("Output list does not contain all number of outputs", outputUris.size() == totalCount);
+
+        QueryBatcher queryBatcherAfter = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("ConcurrencyTest"));
+        AtomicInteger minAfter = new AtomicInteger(Integer.MAX_VALUE);
+        AtomicInteger maxAfter = new AtomicInteger(0);
+        queryBatcherAfter.withBatchSize(batchSize, docToUriBatchRatio, threadThrottleFactor)
+                .onUrisReady(batch -> {
+                    ThreadPoolExecutor threadPoolAfter = ((QueryBatcherImpl) queryBatcherAfter).getThreadPool();
+                    int activeThreadCount = threadPoolAfter.getPoolSize();
+                    if (activeThreadCount > maxAfter.get()) {
+                        maxAfter.set(activeThreadCount);
+                    }
+                    if (activeThreadCount < minAfter.get()) {
+                        minAfter.set(activeThreadCount);
+                    }
+                })
+                .onQueryFailure((QueryBatchException failure) -> {
+                    System.out.println(failure.getMessage());
+                });
+
+        dmManager.startJob(queryBatcherAfter);
+        queryBatcherAfter.awaitCompletion();
+        dmManager.stopJob(queryBatcherAfter);
+
+        assertTrue(max.get() <= forest_count * docToUriBatchRatio);
+        assertTrue(maxAfter.get() <= forest_count * (docToUriBatchRatio - threadThrottleFactor));
     }
 
     static void changeAssignmentPolicy(String value) throws IOException {
