@@ -139,7 +139,7 @@ public class WriteandReadPOJOs {
     // Create a QueryBatcher in order to retrieve bulk POJOs 
     // from the database matching the query definition
     QueryBatcher queryBatcher = moveMgr.newQueryBatcher(query)
-      .withBatchSize(batchSize)
+      .withBatchSize(batchSize, 1)
       .withThreadCount(threadCount)
       // You can configure to do some action whenever a batch
       // of uris are retrieved and ready to process
@@ -172,7 +172,7 @@ public class WriteandReadPOJOs {
     // all documents are exported at a consistent point-in-time using
     // withConsistentSnapshot.
     QueryBatcher exportBatcher = moveMgr.newQueryBatcher(query)
-      .withBatchSize(batchSize)
+      .withBatchSize(batchSize, 1)
       .withThreadCount(threadCount)
       .onUrisReady(
         new ExportListener()
