@@ -89,6 +89,7 @@ import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
+import javax.net.SocketFactory;
 import javax.net.ssl.*;
 import javax.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
@@ -322,7 +323,7 @@ public class OkHttpServices implements RESTServices {
             throw new IllegalArgumentException("no trust manager and default is not an X509TrustManager");
           trustManager = (X509TrustManager) trustMgrs[0];
           sslContext.init(null, trustMgrs, null);
-          clientBldr.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+          clientBldr.sslSocketFactory(new SSLSocketFactoryDelegator(sslContext.getSocketFactory()), trustManager);
         } catch (KeyStoreException e) {
           throw new IllegalArgumentException("no trust manager and cannot initialize factory for default", e);
         } catch (NoSuchAlgorithmException e) {
@@ -331,8 +332,10 @@ public class OkHttpServices implements RESTServices {
           throw new IllegalArgumentException("no trust manager and cannot initialize context with default", e);
         }
       } else {
-        clientBldr.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+        clientBldr.sslSocketFactory(new SSLSocketFactoryDelegator(sslContext.getSocketFactory()), trustManager);
       }
+    } else {
+        clientBldr.socketFactory(new SocketFactoryDelegator(SocketFactory.getDefault()));
     }
 
     if ( hostnameVerifier != null ) {
@@ -384,11 +387,10 @@ public class OkHttpServices implements RESTServices {
 
     this.client = clientBldr.build();
     // System.setProperty("javax.net.debug", "all"); // all or ssl
-    /*
-    // long-term alternative to isFirstRequest alive
-    // HttpProtocolParams.setUseExpectContinue(httpParams, false);
-    // httpParams.setIntParameter(CoreProtocolPNames.WAIT_FOR_CONTINUE, 1000);
-    */
+    /* TODO: long-term alternative to isFirstRequest alive
+             HttpProtocolParams.setUseExpectContinue(httpParams, false);
+             httpParams.setIntParameter(CoreProtocolPNames.WAIT_FOR_CONTINUE, 1000);
+     */
   }
   
   public OkHttpClient.Builder configureAuthentication(BasicAuthContext basicAuthContext, OkHttpClient.Builder clientBuilder) {
