@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 5.3.2
+#### Improvements and Bug Fixes
+- [#1274](https://github.com/marklogic/java-client-api/issues/1274) - Enable TCP keepalive level to maintain enode or loadbalancer connection
+
 ## 5.3.1
 #### Improvements and Bug Fixes
 - [#1206](https://github.com/marklogic/java-client-api/issues/1206) - README update to JCenter url
