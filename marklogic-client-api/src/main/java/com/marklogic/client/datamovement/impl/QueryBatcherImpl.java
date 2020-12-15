@@ -488,8 +488,10 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     if(getThreadCount() == 1) {
       isSingleThreaded = true;
     }
-    logger.info("Starting job docBatchSize={}, threadCount={}, onUrisReady listeners={}, failure listeners={}",
-      getBatchSize(), getThreadCount(), urisReadyListeners.size(), failureListeners.size());
+    logger.info("Starting job docBatchSize={}, docToUriBatchRatio={}, threadThrottleFactor= {}, threadCount={}, " +
+                    "onUrisReady listeners={}, failure listeners={}",
+      getBatchSize(), getDocToUriBatchRatio(), getThreadThrottleFactor(), getThreadCount(),
+            urisReadyListeners.size(), failureListeners.size());
     threadPool = new QueryThreadPoolExecutor(getThreadCount(), this);
   }
 
@@ -651,17 +653,17 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
    * failure scenarios and retry those batches.
    */
   private synchronized void startQuerying() {
-    boolean consistentSnapshotFirstQueryHasRun = false;
-    for ( Forest forest : getForestConfig().listForests() ) {
-
+    Forest[] forests = getForestConfig().listForests();
+    boolean runInApplicationThread = (consistentSnapshot && forests.length > 1);
+    for (Forest forest:  forests) {
       QueryTask runnable = new QueryTask(
-          getMoveMgr(), this, forest, queryMethod, query, filtered, 1, 1, null
+              getMoveMgr(), this, forest, queryMethod, query, filtered, 1, 1, null
       );
-      if ( consistentSnapshot == true && consistentSnapshotFirstQueryHasRun == false ) {
+      if ( runInApplicationThread) {
         // let's run this first time in-line so we'll have the serverTimestamp set
         // before we launch all the parallel threads
+        runInApplicationThread = false;
         runnable.run();
-        consistentSnapshotFirstQueryHasRun = true;
       } else {
         threadPool.execute(runnable);
       }
@@ -684,6 +686,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     boolean isQueryBatch;
     private QueryBatchImpl batch;
     private int totalProcessedCount = 0;
+    private boolean isLastBatch;
+    private int lastBatchNum;
 
     QueryTask(DataMovementManager moveMgr, QueryBatcherImpl batcher, Forest forest,
         String queryMethod, SearchQueryDefinition query, Boolean filtered, long forestBatchNum, long start, QueryBatchImpl batch
@@ -730,6 +734,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       Calendar queryStart = Calendar.getInstance();
       List<List<String>> uris = new ArrayList<>();
       AtomicBoolean isDone = forestIsDone.get(forest);
+      boolean hasLastBatch = false;
+      int lastBatchNum = 0;
 
       if (this.batch == null) { // if it's query batch
         this.batch = new QueryBatchImpl()
@@ -766,8 +772,19 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
           totalProcessedCount = 0;
           for (String uri : results) {
             int batchNum = totalProcessedCount / getBatchSize();
-              uris.get(batchNum).add(uri);
+            uris.get(batchNum).add(uri);
             totalProcessedCount++;
+          }
+
+          if (totalProcessedCount == 0) {
+            isDone.set(true);
+          } else if (totalProcessedCount != docToUriBatchRatio * getBatchSize()) {
+            hasLastBatch = true;
+            if (totalProcessedCount % getBatchSize() == 0) {
+              lastBatchNum = totalProcessedCount / getBatchSize() - 1;
+            } else {
+              lastBatchNum = totalProcessedCount / getBatchSize();
+            }
           }
         } catch (ResourceNotFoundException e) {
           // we're done if we get a 404 NOT FOUND which throws ResourceNotFoundException
@@ -784,7 +801,15 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
                 .withJobResultsSoFar(resultsSoFar.addAndGet(uris.get(0).size()))
                 .withForestResultsSoFar(forestResults.get(forest).addAndGet(uris.get(0).size()));
 
+        if(hasLastBatch && lastBatchNum == 0) {
+          batch.withIsLastBatch(true);
+        }
+
         for (int i = 1; i < getDocToUriBatchRatio(); i++) {
+          if (uris.get(i).size() == 0) {
+            continue;
+          }
+
           QueryBatchImpl docBatch = new QueryBatchImpl() //have to create a new batch, otherwise withItems cannot overwrite
                   .withBatcher(batcher)
                   .withClient(client)
@@ -797,6 +822,10 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
                   .withJobResultsSoFar(resultsSoFar.addAndGet(uris.get(i).size()))
                   .withForestResultsSoFar(forestResults.get(forest).addAndGet(uris.get(i).size()));
 
+          if (hasLastBatch && lastBatchNum == i) {
+            docBatch.withIsLastBatch(true);
+          }
+
           threadPool.execute(
                   new QueryTask(moveMgr, batcher, forest, QueryBatcherImpl.this.queryMethod, query, filtered,
                           forestBatchNum + i, start, docBatch, nextAfterUri
@@ -805,17 +834,21 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
         }
       } //end query batch if
 
-      processDocs(batch);
+      if (batch.getItems().length != 0) {
+        processDocs(batch);
+      }
 
       if (maxUris <= (resultsSoFar.longValue())) {
         isDone.set(true);
-      } else if (totalProcessedCount == getBatchSize() * getDocToUriBatchRatio()) {
+      }
+
+      if (totalProcessedCount == getBatchSize() * getDocToUriBatchRatio()) {
         //document processing batch won't step in
         nextAfterUri = uris.get(getDocToUriBatchRatio() - 1).get(getBatchSize() - 1);
         launchNextTask();
       }
 
-      if (isDone.get() || totalProcessedCount == 0) {
+      if (isDone.get()) {
         shutdownIfAllForestsAreDone();
       }
     }
@@ -842,6 +875,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
         }
         if (batch.getItems().length != getBatchSize()) {
           // we're done if we get a partial batch (always the last)
+          isDone.set(true);
+        }
+        if (batch.getIsLastBatch()) {
           isDone.set(true);
         }
       } catch (Throwable t) {

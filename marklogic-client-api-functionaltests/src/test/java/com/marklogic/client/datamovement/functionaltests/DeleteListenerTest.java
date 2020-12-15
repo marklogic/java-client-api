@@ -190,7 +190,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
 
     QueryBatcher queryBatcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("DeleteListener"))
         .withBatchSize(11)
-        .withThreadCount(1)
+        //.withThreadCount(1)
         .onUrisReady(batch -> {
           for (String s : batch.getItems()) {
             uriSet.add(s);
