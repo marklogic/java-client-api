@@ -32,6 +32,7 @@ public class QueryBatchImpl extends BatchImpl<String> implements QueryBatch {
   private long forestResultsSoFar;
   private Forest forest;
   private long serverTimestamp;
+  private boolean isLastBatch = false;
 
   public QueryBatchImpl() {
     super(String.class);
@@ -134,5 +135,14 @@ public class QueryBatchImpl extends BatchImpl<String> implements QueryBatch {
   public QueryBatchImpl withServerTimestamp(long serverTimestamp) {
     this.serverTimestamp = serverTimestamp;
     return this;
+  }
+
+  public QueryBatchImpl withIsLastBatch(boolean isLastBatch) {
+    this.isLastBatch = isLastBatch;
+    return this;
+  }
+
+  public boolean getIsLastBatch() {
+    return this.isLastBatch;
   }
 }
