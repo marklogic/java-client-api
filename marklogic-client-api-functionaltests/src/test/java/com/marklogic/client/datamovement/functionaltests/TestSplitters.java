@@ -535,7 +535,7 @@ public class TestSplitters  extends BasicJavaClientREST {
             QueryBatcher queryBatcherdMgr = dmManager.newQueryBatcher(
                     new StructuredQueryBuilder().collection(collectionName))
                     .withBatchSize(20)
-                    .withThreadCount(1)
+                    //.withThreadCount(1)
                     .onUrisReady((batch) -> {
                         cnt1.set(cnt1.get() + batch.getItems().length);
                     });
