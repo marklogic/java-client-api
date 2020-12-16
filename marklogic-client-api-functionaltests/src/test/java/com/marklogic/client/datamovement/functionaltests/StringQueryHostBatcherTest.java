@@ -2104,7 +2104,8 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
 		  // Read in smaller batches and monitor progress
 		  StringBuilder str60 = new StringBuilder();
-		  QueryBatcher batcher60 = dmManager.newQueryBatcher(querydef).withBatchSize(60).withThreadCount(1);
+		  QueryBatcher batcher60 = dmManager.newQueryBatcher(querydef).withBatchSize(60);
+                  //.withThreadCount(1);
 		  batcher60.onUrisReady(
 				  new ProgressListener()
 				  .onProgressUpdate(progressUpdate -> {
