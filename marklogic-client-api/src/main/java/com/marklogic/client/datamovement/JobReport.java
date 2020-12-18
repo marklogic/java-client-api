@@ -25,25 +25,25 @@ import java.util.Calendar;
 public interface JobReport {
   /**
    * {@link WriteBatcher} : gets the number of documents written to the database<br>
-   * {@link QueryBatcher} : gets the number of uris read from the database 
+   * {@link QueryBatcher} : gets the number of uris processed from the database
    * @return the number of events that succeeded
    */
   long getSuccessEventsCount();
   /**
    * {@link WriteBatcher} : gets the number of documents that were sent but failed to write<br>
-   * {@link QueryBatcher} : gets the number of query attempts that failed (same as getFailureBatchesCount)
+   * {@link QueryBatcher} : gets the number of batches that failed to process (same as getFailureBatchesCount)
    * @return the number of events that failed
    */
   long getFailureEventsCount();
   /**
    * {@link WriteBatcher} : gets the number of batches written to the database<br>
-   * {@link QueryBatcher} : gets the number of batches of URIs read from the database
+   * {@link QueryBatcher} : gets the number of batches processed from the database
    * @return the number of batches that succeeded
    */
   long getSuccessBatchesCount();
   /**
    * {@link WriteBatcher} : gets the number of batches that the job failed to write<br>
-   * {@link QueryBatcher} : gets the number of query attempts that failed (same as getFailureEventsCount)
+   * {@link QueryBatcher} : gets the number of batches that failed to process (same as getFailureEventsCount)
    * @return the number of batches that failed
    */
   long getFailureBatchesCount();

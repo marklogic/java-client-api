@@ -30,8 +30,7 @@ public interface QueryBatchListener extends BatchListener<QueryBatch> {
    *
    * <pre>{@code
    *     QueryBatcher qhb = dataMovementManager.newQueryBatcher(query)
-   *         .withBatchSize(1000)
-   *         .withThreadCount(20)
+   *         .withBatchSize(1000, 20)
    *         .onUrisReady(batch -> {
    *             for ( String uri : batch.getItems() ) {
    *                 if ( uri.endsWith(".txt") ) {
