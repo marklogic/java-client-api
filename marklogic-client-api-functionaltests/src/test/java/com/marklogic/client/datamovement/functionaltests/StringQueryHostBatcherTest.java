@@ -2096,12 +2096,11 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
 		  dmManager.startJob(batcher6000);
 		  batcher6000.awaitCompletion();
-		  System.out.println("Set to string - " + progressSet.toString());
           assertTrue("Progress Update incorrect", progressSet.toString().contains("Progress: 6000 results"));
 
 		  // Read in smaller batches and monitor progress
           Set<String> progressSet60 = Collections.synchronizedSet(new HashSet<>());
-		  QueryBatcher batcher60 = dmManager.newQueryBatcher(querydef).withBatchSize(60, 3);
+		  QueryBatcher batcher60 = dmManager.newQueryBatcher(querydef).withBatchSize(60, 1);
                   //.withThreadCount(1);
 		  batcher60.onUrisReady(
 				  new ProgressListener()
@@ -2129,7 +2128,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		  // Batches read are uneven and with multiple threads
 
           Set<String> progressSet33 = Collections.synchronizedSet(new HashSet<>());
-		  QueryBatcher batcher33 = dmManager.newQueryBatcher(querydef).withBatchSize(33).withThreadCount(3);
+		  QueryBatcher batcher33 = dmManager.newQueryBatcher(querydef).withBatchSize(33, 1).withThreadCount(3);
 		  batcher33.onUrisReady(
 				  new ProgressListener()
 				  .onProgressUpdate(progressUpdate -> {
