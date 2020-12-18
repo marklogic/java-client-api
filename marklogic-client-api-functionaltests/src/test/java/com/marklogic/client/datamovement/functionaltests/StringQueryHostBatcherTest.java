@@ -24,11 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -2079,14 +2075,15 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
 		  wbatcher.flushAndWait();
 		  // Read all 6000 docs in a batch and monitor progress.
-		  StringBuilder str6000 = new StringBuilder();
+          Set<String> progressSet = Collections.synchronizedSet(new HashSet<>());
 		  QueryBatcher batcher6000 = dmManager.newQueryBatcher(querydef).withBatchSize(6000).withThreadCount(1);
 		  batcher6000.onUrisReady(
 
 				  new ProgressListener()
 				  .onProgressUpdate(progressUpdate -> {
 					  System.out.println("From ProgressListener (Batch 6000): " + progressUpdate.getProgressAsString());
-					  str6000.append(progressUpdate.getProgressAsString());
+					  int index = progressUpdate.getProgressAsString().indexOf(";");
+                      progressSet.add(progressUpdate.getProgressAsString().substring(0, index));
 				  }));
 		  batcher6000.onQueryFailure((throwable) -> {
 			  System.out.println("queryFailures 6000: ");
@@ -2099,18 +2096,19 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
 		  dmManager.startJob(batcher6000);
 		  batcher6000.awaitCompletion();
-		  System.out.println("From buffer 6000: " + str6000.toString());
-		  assertTrue("Progress Update incorrect", str6000.toString().contains("Progress: 6000 results"));
+		  System.out.println("Set to string - " + progressSet.toString());
+          assertTrue("Progress Update incorrect", progressSet.toString().contains("Progress: 6000 results"));
 
 		  // Read in smaller batches and monitor progress
-		  StringBuilder str60 = new StringBuilder();
-		  QueryBatcher batcher60 = dmManager.newQueryBatcher(querydef).withBatchSize(60);
+          Set<String> progressSet60 = Collections.synchronizedSet(new HashSet<>());
+		  QueryBatcher batcher60 = dmManager.newQueryBatcher(querydef).withBatchSize(60, 3);
                   //.withThreadCount(1);
 		  batcher60.onUrisReady(
 				  new ProgressListener()
 				  .onProgressUpdate(progressUpdate -> {
 					  System.out.println("From ProgressListener (From Batch 60): " + progressUpdate.getProgressAsString());
-					  str60.append(progressUpdate.getProgressAsString());
+                      int index = progressUpdate.getProgressAsString().indexOf(";");
+                      progressSet60.add(progressUpdate.getProgressAsString().substring(0, index));
 				  }));
 		  batcher60.onQueryFailure((throwable) -> {
 			  System.out.println("queryFailures 60: ");
@@ -2124,19 +2122,20 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		  dmManager.startJob(batcher60);
 		  batcher60.awaitCompletion();
 
-		  System.out.println("From buffer 60: " + str60.toString());
 		  // Make sure all updates are available
-		  assertTrue("Progress Update Batch 1 incorrect", str60.toString().contains("Progress: 60 results"));
-		  assertTrue("Progress Update Batch 5940 incorrect", str60.toString().contains("Progress: 5940 results"));
-		  assertTrue("Progress Update incorrect", str60.toString().contains("Progress: 6000 results"));
+          assertTrue("Progress Update Batch 1 incorrect", progressSet60.toString().contains("Progress: 60 results"));
+		  assertTrue("Progress Update Batch 5940 incorrect", progressSet60.toString().contains("Progress: 5940 results"));
+		  assertTrue("Progress Update incorrect", progressSet60.toString().contains("Progress: 6000 results"));
 		  // Batches read are uneven and with multiple threads
-		  StringBuilder str33 = new StringBuilder();
+
+          Set<String> progressSet33 = Collections.synchronizedSet(new HashSet<>());
 		  QueryBatcher batcher33 = dmManager.newQueryBatcher(querydef).withBatchSize(33).withThreadCount(3);
 		  batcher33.onUrisReady(
 				  new ProgressListener()
 				  .onProgressUpdate(progressUpdate -> {
 					  System.out.println("From ProgressListener (From Batch 33): " + progressUpdate.getProgressAsString());
-					  str33.append(progressUpdate.getProgressAsString());
+                      int index = progressUpdate.getProgressAsString().indexOf(";");
+                      progressSet33.add(progressUpdate.getProgressAsString().substring(0, index));
 				  }));
 		  batcher33.onQueryFailure((throwable) -> {
 			  System.out.println("queryFailures 33: ");
@@ -2149,11 +2148,10 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		  dmManager.startJob(batcher33);
 		  batcher33.awaitCompletion();
 
-		  System.out.println("From buffer 33: " + str33.toString());
 		  // Make sure all updates are available
-		  assertTrue("Progress Update Batch 1 incorrect", str33.toString().contains("Progress: 33 results"));
-		  assertTrue("Progress Update Batch 5973 incorrect", str33.toString().contains("Progress: 5973 results"));
-		  assertTrue("Progress Update incorrect", str33.toString().contains("Progress: 6000 results"));
+		  assertTrue("Progress Update Batch 1 incorrect", progressSet33.toString().contains("Progress: 33 results"));
+		  assertTrue("Progress Update Batch 5973 incorrect", progressSet33.toString().contains("Progress: 5973 results"));
+		  assertTrue("Progress Update incorrect", progressSet33.toString().contains("Progress: 6000 results"));
 
 		  // Batches read errors
 		  StringBuilder strErr = new StringBuilder();	  

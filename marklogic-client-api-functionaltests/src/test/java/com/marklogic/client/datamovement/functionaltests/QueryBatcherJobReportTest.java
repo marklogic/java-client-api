@@ -195,10 +195,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 	@Test
 	public void jobReport() throws Exception {
 		System.out.println("In jobReport method");
-		AtomicInteger batchCount = new AtomicInteger(0);
-		AtomicInteger successCount = new AtomicInteger(0);
-		AtomicLong count1 = new AtomicLong(0);
-		AtomicLong count2 = new AtomicLong(0);
 		AtomicLong count3 = new AtomicLong(0);
 		String jobId = UUID.randomUUID().toString();
 
@@ -207,9 +203,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 
 		batcher.onUrisReady(batch -> {
 			System.out.println("Yes");
-			if (dmManager.getJobReport(queryTicket).getSuccessBatchesCount() == batchCount.incrementAndGet()) {
-				count1.incrementAndGet();
-			}
 		});
 		batcher.onQueryFailure(throwable -> throwable.printStackTrace());
 		queryTicket = dmManager.startJob(batcher);
@@ -217,21 +210,19 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		Assert.assertTrue("Job Name incorrect", batcher.getJobName().trim().equalsIgnoreCase("XmlTransform"));
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(queryTicket);
+		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), 4);
 
 		batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
 				.withBatchSize(500)
 				.withThreadCount(20);
 		batcher.onUrisReady(batch -> {
-			if (dmManager.getJobReport(queryTicket).getSuccessEventsCount() == successCount
-					.addAndGet(batch.getItems().length)) {
-				count2.incrementAndGet();
-			}
-
+			System.out.println("Yes");
 		});
 		batcher.onQueryFailure(throwable -> throwable.printStackTrace());
 		queryTicket = dmManager.startJob(batcher);
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(queryTicket);
+		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessEventsCount(), 2000);
 
 		batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
 				.withBatchSize(500)
@@ -250,10 +241,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		dmManager.stopJob(queryTicket);
 
 		Assert.assertEquals(0, dmManager.getJobReport(queryTicket).getFailureEventsCount());
-		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), batchCount.get());
-		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessEventsCount(), successCount.get());
-		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), count1.get());
-		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), count2.get());
 		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), count3.get());
 	}
 
@@ -482,16 +469,17 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		batcher = batcher.onUrisReady((batch) -> {
 			successCount.addAndGet(batch.getItems().length);
 			batchCount.incrementAndGet();
-			if (dmManager.getJobReport(queryTicket).getSuccessEventsCount() == successCount.get()) {
-				success.set(true);
-				count.incrementAndGet();
-			}
+			success.set(true);
 
 		}).onUrisReady(listener).onQueryFailure((throwable) -> throwable.printStackTrace());
 
 		queryTicket = dmManager.startJob(batcher);
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(queryTicket);
+		Assert.assertTrue(success.get());
+		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessEventsCount(), 2000);
+		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessEventsCount(), successCount.get());
+		Assert.assertEquals(batchCount.get(), dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
 
 		AtomicInteger doccount = new AtomicInteger(0);
 		QueryBatcher resultBatcher = dmManager
@@ -512,11 +500,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		resultBatcher.awaitCompletion();
 
 		assertEquals("document count", 2000, doccount.get());
-		Assert.assertTrue(success.get());
-		Assert.assertEquals(batchCount.get(), dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
-		Assert.assertEquals(batchCount.get(), count.get());
-		Assert.assertEquals(2000, dmManager.getJobReport(queryTicket).getSuccessEventsCount());
-
 	}
 
 	@Test

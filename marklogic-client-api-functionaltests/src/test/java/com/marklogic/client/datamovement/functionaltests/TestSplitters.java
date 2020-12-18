@@ -537,7 +537,7 @@ public class TestSplitters  extends BasicJavaClientREST {
                     .withBatchSize(20)
                     //.withThreadCount(1)
                     .onUrisReady((batch) -> {
-                        cnt1.set(cnt1.get() + batch.getItems().length);
+                        cnt1.addAndGet(batch.getItems().length);
                     });
             dmManager.startJob(queryBatcherdMgr);
             queryBatcherdMgr.awaitCompletion();
