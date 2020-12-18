@@ -19,10 +19,7 @@ package com.marklogic.client.datamovement.functionaltests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -139,8 +136,8 @@ public class ExportListenerTest extends BasicJavaClientREST {
     changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
     Thread.currentThread().sleep(10000L);
 
-    List<String> docExporterList = new ArrayList<String>();
-    List<String> batcherList2 = new ArrayList<String>();
+    List<String> docExporterList = Collections.synchronizedList(new ArrayList<String>());
+    List<String> batcherList2 = Collections.synchronizedList(new ArrayList<String>());
 
     QueryManager queryMgr = dbClient.newQueryManager();
     StringQueryDefinition querydef = queryMgr.newStringDefinition();
@@ -225,8 +222,8 @@ public class ExportListenerTest extends BasicJavaClientREST {
     changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
     Thread.currentThread().sleep(5000L);
 
-    List<String> docExporterList = new ArrayList<String>();
-    List<String> batcherList = new ArrayList<String>();
+    List<String> docExporterList = Collections.synchronizedList(new ArrayList<String>());
+    List<String> batcherList = Collections.synchronizedList(new ArrayList<String>());
 
     QueryManager queryMgr = dbClient.newQueryManager();
     StringQueryDefinition querydef = queryMgr.newStringDefinition();
@@ -332,7 +329,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
     changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
     Thread.currentThread().sleep(5000L);
 
-    List<String> docExporterList = new ArrayList<String>();
+    List<String> docExporterList = Collections.synchronizedList(new ArrayList<String>());
 
     QueryManager queryMgr = dbClient.newQueryManager();
     StringQueryDefinition querydef = queryMgr.newStringDefinition();
@@ -406,7 +403,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
 
       QueryBatcher exportBatcher = dmManager.newQueryBatcher(querydef)
           .withConsistentSnapshot()
-          .withBatchSize(10)
+          .withBatchSize(10, 1)
           .onUrisReady(exportListener)
           .onUrisReady(batch -> {
             for (String u : batch.getItems()) {
@@ -441,7 +438,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
 
       QueryBatcher deleteBatcher = dmManager.newQueryBatcher(querydef)
           .withConsistentSnapshot()
-          .withBatchSize(100)
+          .withBatchSize(100, 1)
           .onUrisReady(new DeleteListener());
 
       dmManager.startJob(deleteBatcher);
@@ -501,7 +498,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
           );
 
       QueryBatcher exportBatcher = dmManager.newQueryBatcher(querydef)
-          .withBatchSize(10)
+          .withBatchSize(10, 1)
           .onUrisReady(exportListener)
           .onUrisReady(batch -> {
             for (String u : batch.getItems()) {
@@ -525,7 +522,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
 
       QueryBatcher deleteBatcher = dmManager.newQueryBatcher(querydef)
           .withConsistentSnapshot()
-          .withBatchSize(100)
+          .withBatchSize(100, 1)
           .onUrisReady(new DeleteListener());
 
       dmManager.startJob(deleteBatcher);
@@ -582,7 +579,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
     }
     wbatcher.flushAndWait();
 
-    List<String> docExporterList = new ArrayList<String>();
+    List<String> docExporterList = Collections.synchronizedList(new ArrayList<String>());
 
     QueryManager queryMgr = dbClient.newQueryManager();
     StringQueryDefinition querydef = queryMgr.newStringDefinition();
