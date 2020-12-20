@@ -52,15 +52,8 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.XMLStreamReaderHandle;
-import com.marklogic.client.io.marker.AbstractReadHandle;
-import com.marklogic.client.io.marker.AbstractWriteHandle;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.row.RawPlanDefinition;
-import com.marklogic.client.row.RowManager;
-import com.marklogic.client.row.RowRecord;
-import com.marklogic.client.row.RowSet;
+import com.marklogic.client.io.marker.*;
+import com.marklogic.client.row.*;
 import com.marklogic.client.type.PlanExprCol;
 import com.marklogic.client.type.PlanParamBindingVal;
 import com.marklogic.client.type.PlanParamExpr;
@@ -123,6 +116,19 @@ public class RowManagerImpl
   @Override
   public RawPlanDefinition newRawPlanDefinition(JSONWriteHandle handle) {
     return new RawPlanDefinitionImpl(handle);
+  }
+
+  @Override
+  public RawQueryDSLPlan newQueryDSLPlan(TextWriteHandle handle) {
+    return new RawQueryDSLPlanImpl(handle);
+  }
+  @Override
+  public RawSQLPlanImpl newRawSQLPlan(TextWriteHandle handle) {
+    return new RawSQLPlanImpl(handle);
+  }
+  @Override
+  public RawSPARQLSelectPlanImpl newRawSPARQLSelectPlan(TextWriteHandle handle) {
+    return new RawSPARQLSelectPlanImpl(handle);
   }
 
   @Override
@@ -1466,17 +1472,38 @@ public class RowManagerImpl
       return ((PlanBuilderSubImpl.ColumnNamer) col).getColName();
     }
   }
-  static class RawPlanDefinitionImpl implements RawPlanDefinition, PlanBuilderBaseImpl.RequestPlan {
+
+  static abstract class RawPlanImpl<W extends AbstractWriteHandle> implements RawPlan, PlanBuilderBaseImpl.RequestPlan {
     private Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params = null;
-    private JSONWriteHandle handle = null;
-    RawPlanDefinitionImpl(JSONWriteHandle handle) {
+    private W handle;
+    private RawPlanImpl(W handle) {
       setHandle(handle);
     }
-    private RawPlanDefinitionImpl(
-      JSONWriteHandle handle,
-      Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params) {
+    private RawPlanImpl(
+            W handle,
+            Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params) {
       this(handle);
       this.params = params;
+    }
+
+    abstract RawPlanImpl<W> parameterize(W handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params);
+    abstract void configHandle(BaseHandle handle);
+
+    @Override
+    public W getHandle() {
+      return handle;
+    }
+    public void setHandle(W handle) {
+      if (handle == null) {
+        throw new IllegalArgumentException("Must specify handle for reading raw plan");
+      }
+      if (!(handle instanceof BaseHandle)) {
+        throw new IllegalArgumentException(
+                "Cannot provide raw plan with invalid handle having class "+handle.getClass().getName()
+        );
+      }
+      configHandle((BaseHandle) handle);
+      this.handle = handle;
     }
 
     @Override
@@ -1564,26 +1591,104 @@ public class RowManagerImpl
 
       nextParams.put((PlanBuilderBaseImpl.PlanParamBase) param, (XsValueImpl.AnyAtomicTypeValImpl) literal);
 
-      return new RawPlanDefinitionImpl(getHandle(), nextParams);
+      return parameterize(getHandle(), nextParams);
+    }
+  }
+  static class RawSQLPlanImpl extends RawPlanImpl<TextWriteHandle> implements RawSQLPlan {
+    RawSQLPlanImpl(TextWriteHandle handle) {
+      super(handle);
+    }
+    RawSQLPlanImpl(
+            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+    ) {
+      super(handle, params);
     }
 
-    @Override
-    public JSONWriteHandle getHandle() {
-      return handle;
+    RawSQLPlanImpl parameterize(
+            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+    ) {
+      return new RawSQLPlanImpl(handle, params);
     }
-    @Override
-    public void setHandle(JSONWriteHandle handle) {
-      if (handle == null) {
-        throw new IllegalArgumentException("Must specify handle for reading raw plan");
-      }
-      if (!(handle instanceof BaseHandle)) {
-        throw new IllegalArgumentException(
-              "Cannot provide raw plan definition with invalid handle having class "+handle.getClass().getName()
-        );
-      }
-      ((BaseHandle) handle).setFormat(Format.JSON);
-      this.handle = handle;
+    void configHandle(BaseHandle handle) {
+      handle.setFormat(Format.TEXT);
+      handle.setMimetype("application/sql");
     }
+
+    public RawSQLPlan withHandle(TextWriteHandle handle) {
+      setHandle(handle);
+      return this;
+    }
+  }
+  static class RawSPARQLSelectPlanImpl extends RawPlanImpl<TextWriteHandle> implements RawSPARQLSelectPlan {
+    RawSPARQLSelectPlanImpl(TextWriteHandle handle) {
+      super(handle);
+    }
+    RawSPARQLSelectPlanImpl(
+            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+    ) {
+      super(handle, params);
+    }
+
+    RawSPARQLSelectPlanImpl parameterize(
+            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+    ) {
+      return new RawSPARQLSelectPlanImpl(handle, params);
+    }
+    void configHandle(BaseHandle handle) {
+      handle.setFormat(Format.TEXT);
+      handle.setMimetype("application/sparql-query");
+    }
+
+    public RawSPARQLSelectPlan withHandle(TextWriteHandle handle) {
+      setHandle(handle);
+      return this;
+    }
+  }
+  static class RawQueryDSLPlanImpl extends RawPlanImpl<TextWriteHandle> implements RawQueryDSLPlan {
+    RawQueryDSLPlanImpl(TextWriteHandle handle) {
+      super(handle);
+    }
+    RawQueryDSLPlanImpl(
+            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+    ) {
+      super(handle, params);
+    }
+
+    RawQueryDSLPlanImpl parameterize(
+            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+    ) {
+      return new RawQueryDSLPlanImpl(handle, params);
+    }
+    void configHandle(BaseHandle handle) {
+      handle.setFormat(Format.TEXT);
+      handle.setMimetype("application/vnd.marklogic.querydsl+javascript");
+    }
+
+    public RawQueryDSLPlan withHandle(TextWriteHandle handle) {
+      setHandle(handle);
+      return this;
+    }
+  }
+  static class RawPlanDefinitionImpl extends RawPlanImpl<JSONWriteHandle> implements RawPlanDefinition {
+    RawPlanDefinitionImpl(JSONWriteHandle handle) {
+      super(handle);
+    }
+    private RawPlanDefinitionImpl(
+      JSONWriteHandle handle,
+      Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params) {
+      super(handle, params);
+    }
+
+    RawPlanDefinitionImpl parameterize(
+            JSONWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+    ) {
+      return new RawPlanDefinitionImpl(handle, params);
+    }
+    void configHandle(BaseHandle handle) {
+      handle.setFormat(Format.JSON);
+      handle.setMimetype("application/json");
+    }
+
     @Override
     public RawPlanDefinition withHandle(JSONWriteHandle handle) {
       setHandle(handle);

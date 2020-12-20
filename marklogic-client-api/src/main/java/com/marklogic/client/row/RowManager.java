@@ -20,6 +20,7 @@ import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
+import com.marklogic.client.io.marker.TextWriteHandle;
 
 /**
  * A Row Manager provides database operations on rows projected from documents.
@@ -83,6 +84,12 @@ public interface RowManager {
      * @return	a plan for constructing and retrieving database rows
      */
     RawPlanDefinition newRawPlanDefinition(JSONWriteHandle handle);
+
+// TODO: JavaDoc
+    RawQueryDSLPlan newQueryDSLPlan(TextWriteHandle handle);
+    RawSQLPlan newRawSQLPlan(TextWriteHandle handle);
+    RawSPARQLSelectPlan newRawSPARQLSelectPlan(TextWriteHandle handle);
+
 
     /**
      * Constructs and retrieves a set of database rows based on a plan using
@@ -177,7 +184,7 @@ public interface RowManager {
      * @return	the JSON or XML handle populated with the set of rows
      */
     <T extends StructureReadHandle> T resultDoc(Plan plan, T handle, Transaction transaction);
-    
+
     /**
      * Constructs and retrieves a set of database rows based on a plan
      * in the representation specified by the IO class.

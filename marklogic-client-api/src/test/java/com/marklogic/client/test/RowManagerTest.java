@@ -409,22 +409,25 @@ public class RowManagerTest {
     PlanBuilder p = rowMgr.newPlanBuilder();
 
     PlanBuilder.ExportablePlan builtPlan =
-      p.fromView("opticUnitTest", "musician")
-        .where(
-          p.cts.andQuery(
-            p.cts.jsonPropertyWordQuery("instrument", "trumpet"),
-            p.cts.jsonPropertyWordQuery(p.xs.string("lastName"),   p.xs.stringSeq("Armstrong", "Davis"))
-          )
-        )
-        .select(null, "")
-        .orderBy(p.col("lastName"));
+            p.fromView("opticUnitTest", "musician")
+                    .where(
+                            p.cts.andQuery(
+                                    p.cts.jsonPropertyWordQuery("instrument", "trumpet"),
+                                    p.cts.jsonPropertyWordQuery(p.xs.string("lastName"), p.xs.stringSeq("Armstrong", "Davis"))
+                            )
+                    )
+                    .select(null, "")
+                    .orderBy(p.col("lastName"));
 
+    testViewRows(rowMgr.resultRows(builtPlan));
+  }
+  private void testViewRows(RowSet<RowRecord> rows) {
     String[] lastName  = {"Armstrong",  "Davis"};
     String[] firstName = {"Louis",      "Miles"};
     String[] dob       = {"1901-08-04", "1926-05-26"};
 
     int rowNum = 0;
-    for (RowRecord row: rowMgr.resultRows(builtPlan)) {
+    for (RowRecord row: rows) {
       assertEquals("unexpected lastName value in row record "+rowNum,  lastName[rowNum],  row.getString("lastName"));
       assertEquals("unexpected firstName value in row record "+rowNum, firstName[rowNum], row.getString("firstName"));
       assertEquals("unexpected dob value in row record "+rowNum,       dob[rowNum],       row.getString("dob"));
@@ -842,6 +845,36 @@ public class RowManagerTest {
     handle.getXPathProcessor().setNamespaceContext(namespaces);
 
     return handle;
+  }
+// TODO: query and results
+  // @Test
+  public void testRawSQL() throws IOException {
+    String plan = "SELECT *\n" +
+            "FROM opticUnitTest.musician\n" +
+            "ORDER BY lastName;\n";
+  }
+// TODO: query and results
+  // @Test
+  public void testRawSPARQLSelect() throws IOException {
+    String plan = "PREFIX dc: <http://purl.org/dc/terms/>\n" +
+            "SELECT ?datastore ?title\n" +
+            "WHERE {?datastore dc:type <http://purl.org/dc/dcmitype/Dataset> ; dc:title ?title .}\n" +
+            "ORDER BY ?title\n";
+  }
+  @Test
+  public void testRawQueryDSL() throws IOException {
+    String plan =
+            "op.fromView('opticUnitTest', 'musician')\n" +
+            "  .where(cts.andQuery([\n"+
+            "       cts.jsonPropertyWordQuery('instrument', 'trumpet'),\n"+
+            "       cts.jsonPropertyWordQuery('lastName', ['Armstrong', 'Davis'])\n"+
+            "       ]))\n"+
+            "  .select(null, '')\n"+
+            "  .orderBy('lastName');\n";
+
+    RowManager rowMgr = Common.client.newRowManager();
+
+    testViewRows(rowMgr.resultRows(rowMgr.newQueryDSLPlan(new StringHandle(plan))));
   }
   private void checkSingleRow(NodeList row, RowSetPart datatypeStyle) {
     assertEquals("unexpected column count in XML", 2, row.getLength());
