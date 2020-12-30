@@ -80,16 +80,28 @@ public interface RowManager {
 
     /**
      * Defines a plan from a JSON serialization of the plan AST (Abstract Syntax Tree).
-     * @param	handle a handle for a JSON serialization of a PlanAST
+     * @param	handle a handle for a JSON serialization of a plan AST
      * @return	a plan for constructing and retrieving database rows
      */
     RawPlanDefinition newRawPlanDefinition(JSONWriteHandle handle);
-
-// TODO: JavaDoc
-    RawQueryDSLPlan newQueryDSLPlan(TextWriteHandle handle);
+    /**
+     * Defines a plan from a Query DSL in a JavaScript serialization.
+     * @param handle a textual handle for Query DSL in JavaScript format
+     * @return	a plan for constructing and retrieving database rows
+     */
+    RawQueryDSLPlan newRawQueryDSLPlan(TextWriteHandle handle);
+    /**
+     * Defines a plan from an SQL query.
+     * @param handle a textual handle for the SQL serialization
+     * @return	a plan for constructing and retrieving database rows
+     */
     RawSQLPlan newRawSQLPlan(TextWriteHandle handle);
+    /**
+     * Defines a plan from a SPARQL SELECT query.
+     * @param handle a textual handle for the SPARQL serialization
+     * @return	a plan for constructing and retrieving database rows
+     */
     RawSPARQLSelectPlan newRawSPARQLSelectPlan(TextWriteHandle handle);
-
 
     /**
      * Constructs and retrieves a set of database rows based on a plan using

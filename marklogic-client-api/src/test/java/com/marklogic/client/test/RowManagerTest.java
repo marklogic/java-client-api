@@ -846,20 +846,40 @@ public class RowManagerTest {
 
     return handle;
   }
-// TODO: query and results
-  // @Test
+  @Test
   public void testRawSQL() throws IOException {
     String plan = "SELECT *\n" +
-            "FROM opticUnitTest.musician\n" +
+            "FROM opticUnitTest.musician AS ''\n" +
+            "WHERE lastName IN ('Armstrong', 'Davis')" +
             "ORDER BY lastName;\n";
+
+    RowManager rowMgr = Common.client.newRowManager();
+
+    testViewRows(rowMgr.resultRows(rowMgr.newRawSQLPlan(new StringHandle(plan))));
   }
-// TODO: query and results
-  // @Test
+  @Test
   public void testRawSPARQLSelect() throws IOException {
-    String plan = "PREFIX dc: <http://purl.org/dc/terms/>\n" +
-            "SELECT ?datastore ?title\n" +
-            "WHERE {?datastore dc:type <http://purl.org/dc/dcmitype/Dataset> ; dc:title ?title .}\n" +
-            "ORDER BY ?title\n";
+    String plan = "PREFIX rg: <http://example.org/rowgraph/>\n" +
+            "SELECT ?graph ?object1 ?object2\n" +
+            "WHERE {?graph rg:p1 ?object1 ; rg:p2 ?object2}\n" +
+            "ORDER BY ?graph";
+
+    String[] graph   = {"http://example.org/rowgraph/s1", "http://example.org/rowgraph/s2"};
+    String[] object1 = {"http://example.org/rowgraph/o1", "http://example.org/rowgraph/o3"};
+    String[] object2 = {"http://example.org/rowgraph/o2", "http://example.org/rowgraph/o4"};
+
+    RowManager rowMgr = Common.client.newRowManager();
+
+    RowSet<RowRecord> rows = rowMgr.resultRows(rowMgr.newRawSPARQLSelectPlan(new StringHandle(plan)));
+
+    int rowNum = 0;
+    for (RowRecord row: rows) {
+      assertEquals("unexpected graph value in row record "+rowNum,   graph[rowNum],   row.getString("graph"));
+      assertEquals("unexpected object1 value in row record "+rowNum, object1[rowNum], row.getString("object1"));
+      assertEquals("unexpected object2 value in row record "+rowNum, object2[rowNum], row.getString("object2"));
+      rowNum++;
+    }
+    assertEquals("unexpected count of result records", 2, rowNum);
   }
   @Test
   public void testRawQueryDSL() throws IOException {
@@ -874,7 +894,7 @@ public class RowManagerTest {
 
     RowManager rowMgr = Common.client.newRowManager();
 
-    testViewRows(rowMgr.resultRows(rowMgr.newQueryDSLPlan(new StringHandle(plan))));
+    testViewRows(rowMgr.resultRows(rowMgr.newRawQueryDSLPlan(new StringHandle(plan))));
   }
   private void checkSingleRow(NodeList row, RowSetPart datatypeStyle) {
     assertEquals("unexpected column count in XML", 2, row.getLength());

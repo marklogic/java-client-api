@@ -119,7 +119,7 @@ public class RowManagerImpl
   }
 
   @Override
-  public RawQueryDSLPlan newQueryDSLPlan(TextWriteHandle handle) {
+  public RawQueryDSLPlan newRawQueryDSLPlan(TextWriteHandle handle) {
     return new RawQueryDSLPlanImpl(handle);
   }
   @Override
@@ -1604,16 +1604,19 @@ public class RowManagerImpl
       super(handle, params);
     }
 
+    @Override
     RawSQLPlanImpl parameterize(
             TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
     ) {
       return new RawSQLPlanImpl(handle, params);
     }
+    @Override
     void configHandle(BaseHandle handle) {
       handle.setFormat(Format.TEXT);
       handle.setMimetype("application/sql");
     }
 
+    @Override
     public RawSQLPlan withHandle(TextWriteHandle handle) {
       setHandle(handle);
       return this;
@@ -1629,16 +1632,19 @@ public class RowManagerImpl
       super(handle, params);
     }
 
+    @Override
     RawSPARQLSelectPlanImpl parameterize(
             TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
     ) {
       return new RawSPARQLSelectPlanImpl(handle, params);
     }
+    @Override
     void configHandle(BaseHandle handle) {
       handle.setFormat(Format.TEXT);
       handle.setMimetype("application/sparql-query");
     }
 
+    @Override
     public RawSPARQLSelectPlan withHandle(TextWriteHandle handle) {
       setHandle(handle);
       return this;
@@ -1654,16 +1660,19 @@ public class RowManagerImpl
       super(handle, params);
     }
 
+    @Override
     RawQueryDSLPlanImpl parameterize(
             TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
     ) {
       return new RawQueryDSLPlanImpl(handle, params);
     }
+    @Override
     void configHandle(BaseHandle handle) {
       handle.setFormat(Format.TEXT);
       handle.setMimetype("application/vnd.marklogic.querydsl+javascript");
     }
 
+    @Override
     public RawQueryDSLPlan withHandle(TextWriteHandle handle) {
       setHandle(handle);
       return this;
@@ -1679,11 +1688,13 @@ public class RowManagerImpl
       super(handle, params);
     }
 
+    @Override
     RawPlanDefinitionImpl parameterize(
             JSONWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
     ) {
       return new RawPlanDefinitionImpl(handle, params);
     }
+    @Override
     void configHandle(BaseHandle handle) {
       handle.setFormat(Format.JSON);
       handle.setMimetype("application/json");

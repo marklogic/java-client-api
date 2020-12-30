@@ -26,9 +26,12 @@ import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.row.RawPlanDefinition;
+import com.marklogic.client.row.RawQueryDSLPlan;
+import com.marklogic.client.row.RawSQLPlan;
 import com.marklogic.client.row.RowManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +59,6 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     private RowBatchFailureListener[] failureListeners;
     private RowBatchSuccessListener[] sucessListeners;
 
-    private PlanBuilder.ModifyPlan inputPlan;
     private String schemaName;
     private String viewName;
 
@@ -103,16 +105,27 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 
     @Override
     public RowBatcher<T> withBatchView(PlanBuilder.ModifyPlan inputPlan) {
-        requireNotStarted("Must specify batch view before starting job");
-        analyzePlan(inputPlan);
+        if (inputPlan == null)
+            throw new IllegalArgumentException("Plan cannot be null");
+        analyzePlan(inputPlan.export(new StringHandle().withFormat(Format.JSON)));
         return this;
     }
-    private void analyzePlan(PlanBuilder.ModifyPlan inputPlan) {
-        if (inputPlan == null)
-            throw new IllegalArgumentException("modify plan cannot be null");
-        this.inputPlan = inputPlan;
-
-        StringHandle initialPlan = inputPlan.export(new StringHandle().withFormat(Format.JSON));
+    @Override
+    public RowBatcher<T> withBatchView(RawPlanDefinition viewPlan) {
+        if (viewPlan == null)
+            throw new IllegalArgumentException("Raw plan definition cannot be null");
+        analyzePlan(viewPlan.getHandle());
+        return this;
+    }
+    @Override
+    public RowBatcher<T> withBatchView(RawQueryDSLPlan viewPlan) {
+        if (viewPlan == null)
+            throw new IllegalArgumentException("Raw query DSL plan cannot be null");
+        analyzePlan(viewPlan.getHandle());
+        return this;
+    }
+    private void analyzePlan(AbstractWriteHandle initialPlan) {
+        requireNotStarted("Must specify batch view before starting job");
 
         DatabaseClientImpl client = (DatabaseClientImpl) getPrimaryClient();
         JsonNode viewInfo = client.getServices().postResource(

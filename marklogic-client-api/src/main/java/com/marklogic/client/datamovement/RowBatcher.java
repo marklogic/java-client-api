@@ -18,6 +18,11 @@ package com.marklogic.client.datamovement;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
 import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.JSONWriteHandle;
+import com.marklogic.client.io.marker.TextWriteHandle;
+import com.marklogic.client.row.RawPlanDefinition;
+import com.marklogic.client.row.RawQueryDSLPlan;
+import com.marklogic.client.row.RawSQLPlan;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.type.PlanCondition;
 import com.marklogic.client.type.PlanExprColSeq;
@@ -114,11 +119,31 @@ public interface RowBatcher<T> extends Batcher {
     RowManager getRowManager();
 
     /**
-     * Specifies the plan for getting rows from a view.
-     * @param viewPlan the view providing the rows exported by the RowBatcher
+     * Specifies the plan for getting rows from a view
+     * with PlanBuilder.
+     * @see RowManager#newPlanBuilder()
+     * @see PlanBuilder#fromView(String, String) 
+     * @param viewPlan the PlanBuilder view providing the rows exported by the RowBatcher
      * @return the RowBatcher for chaining other initializations
      */
     RowBatcher<T> withBatchView(PlanBuilder.ModifyPlan viewPlan);
+    /**
+     * Specifies the plan for getting rows from a view
+     * from a serialized AST in JSON format.
+     * @see RowManager#newRawPlanDefinition(JSONWriteHandle) 
+     * @param viewPlan the raw AST for the rows exported by the RowBatcher
+     * @return the RowBatcher for chaining other initializations
+     */
+    RowBatcher<T> withBatchView(RawPlanDefinition viewPlan);
+    /**
+     * Specifies the plan for getting rows from a view
+     * from a serialized Query DSL in JavaScript format.
+     * @see RowManager#newRawQueryDSLPlan(TextWriteHandle) 
+     * @param viewPlan the raw Query DSL for the rows exported by the RowBatcher
+     * @return the RowBatcher for chaining other initializations
+     */
+    RowBatcher<T> withBatchView(RawQueryDSLPlan viewPlan);
+
     /**
      * Enables retrieval of rows that were  present in the view
      * at the time that the first batch was retrieved, ignoring
