@@ -15,17 +15,13 @@
  */
 package com.marklogic.client.impl;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.SemExpr;
-import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.type.*;
@@ -33,6 +29,37 @@ import com.marklogic.client.type.*;
 public class PlanBuilderSubImpl extends PlanBuilderImpl {
   public PlanBuilderSubImpl() {
     super();
+  }
+
+  @Override
+  public PlanBuilder.AccessPlan fromSearchDocs(CtsQueryExpr query) {
+    return fromSearchDocs(query, null);
+  }
+  @Override
+  public PlanBuilder.AccessPlan fromSearchDocs(CtsQueryExpr query, String qualifierName) {
+    return new AccessPlanSubImpl(
+            this, "op", "from-search-docs", new Object[]{query, (qualifierName == null) ? null : xs.string(qualifierName)}
+            );
+  }
+
+  @Override
+  public PlanBuilder.AccessPlan fromSearch(CtsQueryExpr query) {
+    return fromSearch(query, null, null, null);
+  }
+  @Override
+  public PlanBuilder.AccessPlan fromSearch(CtsQueryExpr query, PlanExprCol... columns) {
+    return fromSearch(query, new ExprColSeqListImpl(columns), null, null);
+  }
+  @Override
+  public PlanBuilder.AccessPlan fromSearch(CtsQueryExpr query, PlanExprColSeq columns, String qualifierName) {
+    return fromSearch(query, columns, (qualifierName == null) ? null : xs.string(qualifierName), null);
+  }
+  @Override
+  public PlanBuilder.AccessPlan fromSearch(
+          CtsQueryExpr query, PlanExprColSeq columns, XsStringVal qualifierName, PlanSearchOptions options
+  ) {
+    return new AccessPlanSubImpl(this, "op", "from-search",
+            new Object[]{query, columns, qualifierName, asArg(makeMap(options))});
   }
 
   @Override
@@ -240,6 +267,28 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   @Override
+  public PlanGroup group(String... keys) {
+    return group(colSeq(keys));
+  }
+  @Override
+  public PlanGroupSeq rollup(String... keys) {
+    return rollup(colSeq(keys));
+  }
+  @Override
+  public PlanGroupSeq cube(String... keys) {
+    return cube(colSeq(keys));
+  }
+  @Override
+  public PlanNamedGroup namedGroup(String name) {
+    return namedGroup(xs.string(name), null);
+  }
+  @Override
+  public PlanNamedGroup namedGroup(String name, PlanExprColSeq keys) {
+    return namedGroup(xs.string(name), keys);
+  }
+
+
+  @Override
   public ServerExpression caseExpr(PlanCase... cases) {
     int lastPos = cases.length - 1;
     if (lastPos < 1) {
@@ -338,6 +387,15 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   @Override
+  public PlanGroupSeq groupSeq(PlanGroup... groups) {
+    return new GroupSeqListImpl(groups);
+  }
+  @Override
+  public PlanNamedGroupSeq namedGroupSeq(PlanNamedGroup... namedGroups) {
+    return new NamedGroupSeqListImpl(namedGroups);
+  }
+
+  @Override
   public PlanFunction resolveFunction(XsQNameVal functionName, String modulePath) {
     return resolveFunction(functionName, xs.string(modulePath));
   }
@@ -382,6 +440,15 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
   }
 
+  static Map<String,String> makeMap(PlanSearchOptions options) {
+    if (options == null) {
+      return null;
+    }
+    if (!(options instanceof PlanSearchOptionsImpl)) {
+      throw new IllegalArgumentException("invalid implementation of PlanSearchOptions");
+    }
+    return ((PlanSearchOptionsImpl) options).makeMap();
+  }
   static Map<String,String> makeMap(PlanValueOption option) {
     if (option == null) {
       return null;
@@ -604,6 +671,23 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
 
     @Override
+    public PlanBuilder.ModifyPlan groupByUnion(PlanGroupSeq keys) {
+      return groupByUnion(keys, null);
+    }
+    @Override
+    public PlanBuilder.ModifyPlan groupByUnion(PlanGroupSeq keys, PlanAggregateColSeq aggregates) {
+      return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "group-by-union", new Object[]{ keys, aggregates });
+    }
+    @Override
+    public PlanBuilder.ModifyPlan groupToArrays(PlanNamedGroupSeq keys) {
+      return groupToArrays(keys, null);
+    }
+    @Override
+    public PlanBuilder.ModifyPlan groupToArrays(PlanNamedGroupSeq keys, PlanAggregateColSeq aggregates) {
+      return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "group-to-arrays", new Object[]{ keys, aggregates });
+    }
+
+    @Override
     public ModifyPlan limit(long length) {
       return limit(xs.longVal(length));
     }
@@ -696,6 +780,8 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
           break;
         case "from-lexicons":
         case "from-literals":
+        case "from-search":
+        case "from-search-docs":
         case "from-triples":
           if (fnArgs.length < 1) {
             throw new IllegalArgumentException("accessor constructor without parameters: "+fnArgs.length);

@@ -18,8 +18,8 @@ package com.marklogic.client.type;
 // IMPORTANT: Do not edit. This file is generated.
 
 /**
- * An instance of a column expression returned by an as() or col() call
+ * An instance of a group returned by a namedGroup() call
  * in a row pipeline.
  */
-public interface PlanExprCol extends PlanAggregateCol, PlanGroup, PlanSortKey, PlanExprColSeq {
+public interface PlanNamedGroup extends PlanNamedGroupSeq {
 }

@@ -18,8 +18,16 @@ package com.marklogic.client.type;
 // IMPORTANT: Do not edit. This file is generated.
 
 /**
- * An instance of a column expression returned by an as() or col() call
- * in a row pipeline.
+ * An option controlling the scoring and weighting of fromSearch()
+ * for a row pipeline.
  */
-public interface PlanExprCol extends PlanAggregateCol, PlanGroup, PlanSortKey, PlanExprColSeq {
+public interface PlanSearchOptions {
+    XsDoubleVal getQualityWeight();
+    ScoreMethod getScoreMethod();
+    PlanSearchOptions withQualityWeight(double qualityWeight);
+    PlanSearchOptions withQualityWeight(XsDoubleVal qualityWeight);
+    PlanSearchOptions withScoreMethod(ScoreMethod scoreMethod);
+    enum ScoreMethod {
+        LOGTFIDF, LOGTF, SIMPLE;
+    }
 }

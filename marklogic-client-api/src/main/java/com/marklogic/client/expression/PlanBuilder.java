@@ -16,20 +16,15 @@
 package com.marklogic.client.expression;
 
 import com.marklogic.client.type.CtsReferenceExpr;
-import com.marklogic.client.type.PlanGroupConcatOptionSeq;
 import com.marklogic.client.type.PlanParamBindingVal;
 import com.marklogic.client.type.PlanParamExpr;
 import com.marklogic.client.type.PlanPrefixer;
 import com.marklogic.client.type.PlanTripleOption;
 import com.marklogic.client.type.PlanValueOption;
 import java.util.Map;
-import java.util.Map;
 
-import com.marklogic.client.type.SemIriVal;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
-import com.marklogic.client.type.XsBooleanVal;
 import com.marklogic.client.type.XsIntVal;
-import com.marklogic.client.type.XsNumericVal;
 import com.marklogic.client.type.XsQNameVal;
 import com.marklogic.client.type.XsStringSeqVal;
 import com.marklogic.client.type.XsStringVal;
@@ -38,21 +33,17 @@ import com.marklogic.client.type.ServerExpression;
 import com.marklogic.client.type.PlanAggregateCol;
 import com.marklogic.client.type.PlanAggregateColSeq;
 import com.marklogic.client.type.PlanCase;
-import com.marklogic.client.type.PlanCaseSeq;
 import com.marklogic.client.type.PlanColumn;
-import com.marklogic.client.type.PlanColumnSeq;
 import com.marklogic.client.type.PlanCondition;
-import com.marklogic.client.type.PlanConditionSeq;
 import com.marklogic.client.type.PlanExprCol;
 import com.marklogic.client.type.PlanExprColSeq;
 import com.marklogic.client.type.PlanFunction;
-import com.marklogic.client.type.PlanFunctionSeq;
+import com.marklogic.client.type.PlanGroup;
+import com.marklogic.client.type.PlanGroupSeq;
 import com.marklogic.client.type.PlanJoinKey;
 import com.marklogic.client.type.PlanJoinKeySeq;
 import com.marklogic.client.type.PlanJsonProperty;
-import com.marklogic.client.type.PlanJsonPropertySeq;
-import com.marklogic.client.type.PlanParamBindingSeqVal;
-import com.marklogic.client.type.PlanParamBindingVal;
+import com.marklogic.client.type.PlanNamedGroup;
 import com.marklogic.client.type.PlanSortKey;
 import com.marklogic.client.type.PlanSortKeySeq;
 import com.marklogic.client.type.PlanSystemColumn;
@@ -61,22 +52,6 @@ import com.marklogic.client.type.PlanTriplePattern;
 import com.marklogic.client.type.PlanTriplePatternSeq;
 import com.marklogic.client.type.PlanTriplePosition;
 import com.marklogic.client.type.PlanTriplePositionSeq;
-
-
-import com.marklogic.client.expression.CtsExpr; 
-import com.marklogic.client.expression.FnExpr; 
-import com.marklogic.client.expression.GeoExpr; 
-import com.marklogic.client.expression.JsonExpr; 
-import com.marklogic.client.expression.MapExpr; 
-import com.marklogic.client.expression.MathExpr; 
-import com.marklogic.client.expression.RdfExpr; 
-import com.marklogic.client.expression.SemExpr; 
-import com.marklogic.client.expression.SpellExpr; 
-import com.marklogic.client.expression.SqlExpr; 
-import com.marklogic.client.expression.XdmpExpr; 
-import com.marklogic.client.expression.XsExpr;
-
-import com.marklogic.client.expression.PlanBuilderBase;
 
 // IMPORTANT: Do not edit. This file is generated. 
 
@@ -200,6 +175,15 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
   public abstract ServerExpression gt(ServerExpression left, ServerExpression right);
+  /**
+  * This function returns true if a test expression evaluates to the same value as any of a list of candidate expressions. Otherwise, it returns false. The expressions can include calls to the op:col function to get the value of a column.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:in" target="mlserverdoc">op:in</a> server function.
+  * @param value  The expression providing the value to test.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param anyOf  One or more expressions providing the candidate values.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
+  */
+  public abstract ServerExpression in(ServerExpression value, ServerExpression anyOf);
   /**
   * This function tests whether the value of an expression is null in the row where the expression might be as simple as a column identified by op:col.
   * <p>
@@ -623,6 +607,38 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public abstract PlanJoinKey on(PlanExprCol left, PlanExprCol right);
   public abstract PlanJoinKeySeq joinKeySeq(PlanJoinKey... key);
   /**
+  * This function specifies the grouping keys for a group as a list of zero or more columns. The result is used for building the first parameter for the op:group-by-union function.
+  * @param keys  The columns (if any) to use as grouping keys. The columns can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as.
+  * @return  a PlanGroup object
+  */
+  public abstract PlanGroup group(PlanExprColSeq keys);
+  /**
+  * This function specifies a list of grouping keys for a group and returns that group and larger groups (including all rows) formed by dropping columns from right to left. The result is used for building the first parameter for the op:group-by-union or op:group-to-arrays functions.
+  * @param keys  The columns to use as grouping keys. The columns can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as.
+  * @return  a PlanGroupSeq object sequence
+  */
+  public abstract PlanGroupSeq rollup(PlanExprColSeq keys);
+  /**
+  * This function specifies a list of grouping keys for a group and returns that group and every possible larger group (including all rows) formed from any subset of keys. The result is used for building the first parameter for the op:group-by-union or op:group-to-arrays functions.
+  * @param keys  The columns to use as grouping keys. The columns can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as.
+  * @return  a PlanGroupSeq object sequence
+  */
+  public abstract PlanGroupSeq cube(PlanExprColSeq keys);
+  /**
+  * This function specifies the grouping keys for a group as a named list of zero or more columns. The result is used for building the first parameter for the op:group-to-arrays function.
+  * @param name  The name for the list of grouping keys.
+  * @param keys  The columns (if any) to use as grouping keys. The columns can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as.
+  * @return  a PlanNamedGroup object
+  */
+  public abstract PlanNamedGroup namedGroup(String name, String keys);
+  /**
+  * This function specifies the grouping keys for a group as a named list of zero or more columns. The result is used for building the first parameter for the op:group-to-arrays function.
+  * @param name  The name for the list of grouping keys.
+  * @param keys  The columns (if any) to use as grouping keys. The columns can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as.
+  * @return  a PlanNamedGroup object
+  */
+  public abstract PlanNamedGroup namedGroup(XsStringVal name, PlanExprColSeq keys);
+  /**
   * This function averages the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the aggregated column.
   * @param column  The column to be aggregated.
@@ -724,6 +740,22 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol count(PlanColumn name, PlanExprCol column, PlanValueOption option);
+  public abstract PlanAggregateCol groupKey(String name, String column);
+  public abstract PlanAggregateCol groupKey(PlanColumn name, PlanExprCol column);
+  /**
+  * This aggregate function adds a flag to a grouped row specifying whether a column acted as a grouping key for the row. 
+  * @param name  The name to be used for the aggregated flag column.
+  * @param column  The column to flag as a grouping key. The column can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as.
+  * @return  a PlanAggregateCol object
+  */
+  public abstract PlanAggregateCol hasGroupKey(String name, String column);
+  /**
+  * This aggregate function adds a flag to a grouped row specifying whether a column acted as a grouping key for the row. 
+  * @param name  The name to be used for the aggregated flag column.
+  * @param column  The column to flag as a grouping key. The column can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as.
+  * @return  a PlanAggregateCol object
+  */
+  public abstract PlanAggregateCol hasGroupKey(PlanColumn name, PlanExprCol column);
   /**
   * This function gets the largest non-null value of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the largest value.
@@ -1217,11 +1249,45 @@ public abstract class PlanBuilder implements PlanBuilderBase {
  */
   public interface ModifyPlan extends PreparePlan, PlanBuilderBase.ModifyPlanBase {
 /**
+  * This function adds a column based on an expression without altering the existing columns in the row set.
+  * @param column  The name of the column to be defined.
+  * @param expression  The expression that specifies the value the column in the row.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan bindAs(String column, ServerExpression expression);
+/**
+  * This function adds a column based on an expression without altering the existing columns in the row set.
+  * @param column  The name of the column to be defined.
+  * @param expression  The expression that specifies the value the column in the row.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan bindAs(PlanColumn column, ServerExpression expression);
+/**
   * This method restricts the left row set to rows where a row with the same columns and values doesn't exist in the right row set.
   * @param right  The row set from the right view.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan except(ModifyPlan right);
+/**
+  * This method counts values for multiple grouping key columns. 
+  * @param keys  This parameter specifies the list of column keys for performing counts. For each column, the operation determines the unique values of that column and produces a separate count for the rows with that value.  A column can be named with a string or a column parameter function such as op:col or constructed from an expression with the op:as function. 
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan facetBy(PlanExprColSeq keys);
+/**
+  * This method counts values for multiple grouping key columns. 
+  * @param keys  This parameter specifies the list of column keys for performing counts. For each column, the operation determines the unique values of that column and produces a separate count for the rows with that value.  A column can be named with a string or a column parameter function such as op:col or constructed from an expression with the op:as function. 
+  * @param countCol  Specifies what to count over the rows for each unique value of each key column.  By default, the operation counts the rows. To count the values of a column instead, specify the column to count with this parameter. To count documents, specify a fragment id column with op:fragment-id-col. 
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan facetBy(PlanExprColSeq keys, String countCol);
+/**
+  * This method counts values for multiple grouping key columns. 
+  * @param keys  This parameter specifies the list of column keys for performing counts. For each column, the operation determines the unique values of that column and produces a separate count for the rows with that value.  A column can be named with a string or a column parameter function such as op:col or constructed from an expression with the op:as function. 
+  * @param countCol  Specifies what to count over the rows for each unique value of each key column.  By default, the operation counts the rows. To count the values of a column instead, specify the column to count with this parameter. To count documents, specify a fragment id column with op:fragment-id-col. 
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan facetBy(PlanExprColSeq keys, PlanExprCol countCol);
 /**
   * This method collapses a group of rows into a single row. 
   * @param keys  This parameter specifies the columns used to determine the groups. Rows with the same values in these columns are consolidated into a single group. The columns can be existing columns or new columns created by an expression specified with op:as. The rows produced by the group by operation include the key columns. Specify an empty sequence to create a single group for all of the rows in the row set.
@@ -1417,26 +1483,26 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public abstract PreparePlan prepare(XsIntVal optimize);
 /**
   * This call projects the specified columns from the current row set and / or applies a qualifier to the columns in the row set. Unlike SQL, a select call is not required in an Optic query.
-  * @param columns  The columns to select.
+  * @param columns  The columns to project from the input rows. The columns can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan select(PlanExprCol... columns);
 /**
   * This call projects the specified columns from the current row set and / or applies a qualifier to the columns in the row set. Unlike SQL, a select call is not required in an Optic query.
-  * @param columns  The columns to select.
+  * @param columns  The columns to project from the input rows. The columns can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan select(PlanExprColSeq columns);
 /**
   * This call projects the specified columns from the current row set and / or applies a qualifier to the columns in the row set. Unlike SQL, a select call is not required in an Optic query.
-  * @param columns  The columns to select.
+  * @param columns  The columns to project from the input rows. The columns can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as.
   * @param qualifierName  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan select(PlanExprColSeq columns, String qualifierName);
 /**
   * This call projects the specified columns from the current row set and / or applies a qualifier to the columns in the row set. Unlike SQL, a select call is not required in an Optic query.
-  * @param columns  The columns to select.
+  * @param columns  The columns to project from the input rows. The columns can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as.
   * @param qualifierName  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
   * @return  a ModifyPlan object
   */

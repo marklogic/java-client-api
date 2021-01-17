@@ -35,9 +35,11 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicIOException;
@@ -47,11 +49,7 @@ import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
 import com.marklogic.client.impl.RESTServices.RESTServiceResult;
 import com.marklogic.client.impl.RESTServices.RESTServiceResultIterator;
-import com.marklogic.client.io.BaseHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.XMLStreamReaderHandle;
+import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.*;
 import com.marklogic.client.row.*;
 import com.marklogic.client.type.PlanExprCol;
@@ -620,31 +618,26 @@ public class RowManagerImpl
       try {
         Map<String, String>               datatypes = null;
         Map<String, RowRecord.ColumnKind> kinds     = null;
-        Map<String, Object>               row       = null;
+        Map<String, Object>               row       = new HashMap<>();
 
-        InputStream  rowStream = currentRow.getContent(new InputStreamHandle()).get();
+        InputStream rowStream = currentRow.getContent(new InputStreamHandle()).get();
 
-        // TODO: replace Jackson mapper with binding-sensitive mapper?
         ObjectMapper rowMapper = new ObjectMapper();
+        JsonNode rowNode = rowMapper.readTree(rowStream);
 
         switch(rowStructureStyle) {
           case ARRAY:
-            row = new HashMap<String, Object>();
-
             int i=0;
 
             switch(datatypeStyle) {
               case HEADER:
                 datatypes = headerDatatypes;
 
-                @SuppressWarnings("unchecked")
-                List<Object> valueLister = rowMapper.readValue(rowStream, List.class);
-                int valueListSize = valueLister.size();
-
-                for (; i < valueListSize; i++) {
+                for (JsonNode columnNode: rowNode) {
                   String columnName = columnNames[i];
-                  Object value = valueLister.get(i);
+                  i++;
 
+                  Object value = getColumnValue(columnName, columnNode);
                   row.put(columnName, value);
                   if (value != null) {
                     continue;
@@ -671,13 +664,11 @@ public class RowManagerImpl
                 datatypes = new HashMap<>();
                 kinds     = new HashMap<>();
 
-                @SuppressWarnings("unchecked")
-                List<Map<String, Object>> rowLister = rowMapper.readValue(rowStream, List.class);
-                int rowListSize = rowLister.size();
-
-                for (; i < rowListSize; i++) {
+                for (JsonNode columnBinding: rowNode) {
                   String columnName = columnNames[i];
-                  row.put(columnName, getTypedRowValue(datatypes, kinds, columnName, rowLister.get(i)));
+                  Object value = getTypedRowValue(datatypes, kinds, columnName, columnBinding);
+                  row.put(columnName, value);
+                  i++;
                 }
                 break;
               default:
@@ -692,17 +683,24 @@ public class RowManagerImpl
 
             break;
           case OBJECT:
-            @SuppressWarnings("unchecked")
-            Map<String, Object> mapRow = rowMapper.readValue(rowStream, Map.class);
+            Iterator<Map.Entry<String,JsonNode>> fields = rowNode.fields();
 
             switch(datatypeStyle) {
               case HEADER:
                 datatypes = headerDatatypes;
 
+                while (fields.hasNext()) {
+                  Map.Entry<String,JsonNode> field = fields.next();
+                  String   columnName = field.getKey();
+                  JsonNode columnNode = field.getValue();
+                  Object value = getColumnValue(columnName, columnNode);
+                  row.put(columnName, value);
+                }
+
                 for (Map.Entry<String, RowRecord.ColumnKind> entry: headerKinds.entrySet()) {
                   String columnName = entry.getKey();
 
-                  Object value = mapRow.get(columnName);
+                  Object value = row.get(columnName);
                   if (value != null) {
                     continue;
                   }
@@ -725,23 +723,20 @@ public class RowManagerImpl
                 }
                 break;
               case ROWS:
-                Map<String, String>               rowDatatypes = new HashMap<>();
-                Map<String, RowRecord.ColumnKind> rowKinds     = new HashMap<>();
+                datatypes = new HashMap<>();
+                kinds     = new HashMap<>();
 
-                mapRow.replaceAll((key, rawBinding) -> {
-                  @SuppressWarnings("unchecked")
-                  Map<String,Object> binding = (Map<String,Object>) rawBinding;
-                  return getTypedRowValue(rowDatatypes, rowKinds, key, binding);
-                });
-
-                datatypes = rowDatatypes;
-                kinds     = rowKinds;
+                while (fields.hasNext()) {
+                  Map.Entry<String,JsonNode> field = fields.next();
+                  String   columnName    = field.getKey();
+                  JsonNode columnBinding = field.getValue();
+                  Object value = getTypedRowValue(datatypes, kinds, columnName, columnBinding);
+                  row.put(columnName, value);
+                }
                 break;
               default:
                 throw new MarkLogicInternalException("Row record set with unknown datatype style: "+datatypeStyle);
             }
-
-            row = mapRow;
             break;
           default:
             throw new MarkLogicInternalException(
@@ -802,22 +797,44 @@ public class RowManagerImpl
       }
     }
 
+    private Object getColumnValue(String columnName, JsonNode columnNode) {
+      JsonNodeType nodeType = columnNode.getNodeType();
+      switch(nodeType) {
+        case ARRAY:
+        case OBJECT:
+          return columnNode;
+        case BOOLEAN:
+          return columnNode.booleanValue();
+        case NULL:
+          return null;
+        case NUMBER:
+          return columnNode.numberValue();
+        case STRING:
+          return columnNode.textValue();
+        case BINARY:
+        case MISSING:
+        case POJO:
+          throw new MarkLogicIOException(columnName+" column with invalid node type: "+nodeType);
+        default:
+          throw new MarkLogicIOException(columnName+" column with unknown node type: "+nodeType);
+      }
+    }
     private Object getTypedRowValue(
       Map<String, String>               datatypes,
       Map<String, RowRecord.ColumnKind> kinds,
       String                            columnName,
-      Map<String,Object>                binding
+      JsonNode                          binding
     ) {
       RowRecord.ColumnKind columnKind = null;
       Object value = null;
-      String datatype = (String) binding.get("type");
+      String datatype = binding.get("type").asText();
       if (datatype != null) {
         datatypes.put(columnName, datatype);
       }
       columnKind = getColumnKind(datatype, null);
       kinds.put(columnName, columnKind);
-      value = (columnKind == RowRecord.ColumnKind.ATOMIC_VALUE) ?
-        binding.get("value") : null;
+      value = (columnKind == RowRecord.ColumnKind.NULL || datatype == null || "cid".equals(datatype)) ?
+          null : getColumnValue(columnName, binding.get("value"));
 
 // TODO: for RowRecord.ColumnKind.CONTENT, increment the count of expected nodes and list the column names expecting values?
       return value;
@@ -825,14 +842,22 @@ public class RowManagerImpl
     private RowRecord.ColumnKind getColumnKind(String datatype, RowRecord.ColumnKind defaultKind) {
       if (datatype == null) {
         throw new MarkLogicInternalException("Column value with null datatype");
-      } else if ("cid".equals(datatype)) {
-        return RowRecord.ColumnKind.CONTENT;
-      } else if ("null".equals(datatype)) {
-        return RowRecord.ColumnKind.NULL;
-      } else if (datatype.contains(":")) {
-        return RowRecord.ColumnKind.ATOMIC_VALUE;
-      } else if (datatype != null && defaultKind != null) {
-        return defaultKind;
+      }
+      switch(datatype) {
+        case "array":
+          return RowRecord.ColumnKind.CONTAINER_VALUE;
+        case "cid":
+          return RowRecord.ColumnKind.CONTENT;
+        case "null":
+          return RowRecord.ColumnKind.NULL;
+        case "object":
+          return RowRecord.ColumnKind.CONTAINER_VALUE;
+        default:
+          if (datatype.contains(":")) {
+            return RowRecord.ColumnKind.ATOMIC_VALUE;
+          } else if (datatype != null && defaultKind != null) {
+            return defaultKind;
+          }
       }
       throw new MarkLogicInternalException("Column value with unsupported datatype: "+datatype);
     }
@@ -1111,44 +1136,72 @@ public class RowManagerImpl
     }
 
     private boolean asBoolean(String columnName, Object value) {
-      if (value instanceof Boolean) {
+      if (value == null) {
+        throw new IllegalStateException("column "+columnName+" has null instead of boolean value");
+      } else if (value instanceof Boolean) {
         return ((Boolean) value).booleanValue();
+      } else if (value instanceof String) {
+        return Boolean.parseBoolean((String) value);
       }
       throw new IllegalStateException("column "+columnName+" does not have a boolean value");
     }
     private byte asByte(String columnName, Object value) {
-      if (value instanceof Number) {
+      if (value == null) {
+        throw new IllegalStateException("column "+columnName+" has null instead of byte value");
+      } else if (value instanceof Number) {
         return ((Number) value).byteValue();
+      } else if (value instanceof String) {
+        return Byte.parseByte((String) value);
       }
       throw new IllegalStateException("column "+columnName+" does not have a byte value");
     }
     private double asDouble(String columnName, Object value) {
-      if (value instanceof Number) {
+      if (value == null) {
+        throw new IllegalStateException("column "+columnName+" has null instead of double value");
+      } else if (value instanceof Number) {
         return ((Number) value).doubleValue();
+      } else if (value instanceof String) {
+        return Double.parseDouble((String) value);
       }
       throw new IllegalStateException("column "+columnName+" does not have a double value");
     }
     private float asFloat(String columnName, Object value) {
-      if (value instanceof Number) {
+      if (value == null) {
+        throw new IllegalStateException("column "+columnName+" has null instead of float value");
+      } else if (value instanceof Number) {
         return ((Number) value).floatValue();
+      } else if (value instanceof String) {
+        return Float.parseFloat((String) value);
       }
       throw new IllegalStateException("column "+columnName+" does not have a float value");
     }
     private int asInt(String columnName, Object value) {
-      if (value instanceof Number) {
+      if (value == null) {
+        throw new IllegalStateException("column "+columnName+" has null instead of integer value");
+      } else if (value instanceof Number) {
         return ((Number) value).intValue();
+      } else if (value instanceof String) {
+        return Integer.parseInt((String) value);
       }
       throw new IllegalStateException("column "+columnName+" does not have an integer value");
     }
     private long asLong(String columnName, Object value) {
-      if (value instanceof Number) {
+      if (value == null) {
+        throw new IllegalStateException("column "+columnName+" has null instead of long value");
+      } else if (value instanceof Number) {
         return ((Number) value).longValue();
+      } else if (value instanceof String) {
+        return Long.parseLong((String) value);
       }
       throw new IllegalStateException("column "+columnName+" does not have a long value");
     }
     private short asShort(String columnName, Object value) {
-      if (value instanceof Number) {
+      if (value == null) {
+        throw new IllegalStateException("column "+columnName+" has null instead of short value");
+      } else if (value instanceof Number) {
         return ((Number) value).shortValue();
+      } else if (value instanceof String) {
+        return Short.parseShort((String) value);
       }
       throw new IllegalStateException("column "+columnName+" does not have a short value");
     }
@@ -1159,8 +1212,9 @@ public class RowManagerImpl
     private String asString(Object value) throws NodeNotAStringException {
       if (value == null || value instanceof String) {
         return (String) value;
-      }
-      if (value instanceof RESTServiceResult) {
+      } else if (value instanceof JsonNode) {
+        return ((JsonNode) value).toPrettyString();
+      } else if (value instanceof RESTServiceResult) {
         RESTServiceResult result = (RESTServiceResult) value;
         if ( result.getMimetype() != null && result.getMimetype().startsWith("text/plain") ) {
           return result.getContent(new StringHandle()).get();
@@ -1183,7 +1237,6 @@ public class RowManagerImpl
     public <T extends XsAnyAtomicTypeVal> T getValueAs(PlanExprCol col, Class<T> as) {
       return getValueAs(getNameForColumn(col), as);
     }
-
     @Override
     public <T extends XsAnyAtomicTypeVal> T getValueAs(String columnName, Class<T> as) {
       if (as == null) {
@@ -1195,14 +1248,15 @@ public class RowManagerImpl
         return null;
       }
 
-			/* NOTE: use if refactor away from Jackson ObjectMapper to value construction
-			if (as.isInstance(value)) {
-				return as.cast(value);
-			}
-			*/
+	  if (as.isInstance(value)) {
+		return as.cast(value);
+	  }
 
       try {
         String valueStr = asString(value);
+        if (String.class.isAssignableFrom(as)) {
+          return as.cast(valueStr);
+        }
 
         Function<String,? extends XsAnyAtomicTypeVal> factory = getFactory(as);
         if (factory != null) {
@@ -1301,6 +1355,53 @@ public class RowManagerImpl
     }
 
     @Override
+    public JsonNode getContainer(PlanExprCol col) {
+      return getContainer(getNameForColumn(col));
+    }
+    @Override
+    public JsonNode getContainer(String columnName) {
+      return asJsonNode(columnName, get(columnName));
+    }
+    @Override
+    public <T extends JSONReadHandle> T getContainer(PlanExprCol col, T containerHandle) {
+      return getContainer(getNameForColumn(col), containerHandle);
+    }
+    @Override
+    public <T extends JSONReadHandle> T getContainer(String columnName, T containerHandle) {
+      Object value = get(columnName);
+      if (value == null) {
+        return null;
+      } else if (value instanceof JsonNode) {
+        return NodeConverter.jsonNodeToHandle((JsonNode) value, containerHandle);
+      } else if (value instanceof RESTServiceResult) {
+        return ((RESTServiceResult) value).getContent(containerHandle);
+      }
+      throw new IllegalStateException("column "+columnName+" does not have a container value");
+    }
+    @Override
+    public <T> T getContainerAs(PlanExprCol col, Class<T> as) {
+      return getContainerAs(getNameForColumn(col), as);
+    }
+    @Override
+    public <T> T getContainerAs(String columnName, Class<T> as) {
+      ContentHandle<T> handle = getHandle(as);
+      if (!JSONReadHandle.class.isInstance(handle)) {
+        throw new IllegalArgumentException("handle cannot read JSON: "+handle.getClass().getSimpleName());
+      }
+      getContainer(columnName, (JSONReadHandle) handle);
+      return handle.get();
+    }
+
+    private JsonNode asJsonNode(String columnName, Object value) {
+      if (value == null || value instanceof JsonNode) {
+        return (JsonNode) value;
+      } else if (value instanceof RESTServiceResult) {
+        return ((RESTServiceResult) value).getContent(new JacksonHandle()).get();
+      }
+      throw new IllegalStateException("column "+columnName+" does not have a JSON container value");
+    }
+
+    @Override
     public Format getContentFormat(PlanExprCol col) {
       return getContentFormat(getNameForColumn(col));
     }
@@ -1358,6 +1459,11 @@ public class RowManagerImpl
     }
     @Override
     public <T> T getContentAs(String columnName, Class<T> as) {
+      ContentHandle<T> handle = getHandle(as);
+      getContent(columnName, handle);
+      return handle.get();
+    }
+    private <T> ContentHandle<T> getHandle(Class<T> as) {
       if (as == null) {
         throw new IllegalArgumentException("Must specify a class for content with a registered handle");
       }
@@ -1367,11 +1473,7 @@ public class RowManagerImpl
         throw new IllegalArgumentException("No handle registered for class: "+as.getName());
       }
 
-      handle = getContent(columnName, handle);
-
-      T content = (handle == null) ? null : handle.get();
-
-      return content;
+      return handle;
     }
 
     @Override
@@ -1434,6 +1536,10 @@ public class RowManagerImpl
                   }
                   break;
               }
+              break;
+            case CONTAINER_VALUE:
+              buf.append("value: ");
+              buf.append(getString(colName));
               break;
             case CONTENT:
               buf.append("format: \"");

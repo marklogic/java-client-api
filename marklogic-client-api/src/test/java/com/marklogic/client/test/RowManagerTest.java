@@ -26,10 +26,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.StringWriter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 import javax.xml.namespace.QName;
 import javax.xml.transform.OutputKeys;
@@ -42,6 +39,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPathExpressionException;
 
+import com.marklogic.client.type.*;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -67,18 +65,13 @@ import com.marklogic.client.row.RowManager.RowStructure;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowRecord.ColumnKind;
 import com.marklogic.client.row.RowSet;
-import com.marklogic.client.type.CtsReferenceExpr;
-import com.marklogic.client.type.PlanColumn;
-import com.marklogic.client.type.PlanParamExpr;
-import com.marklogic.client.type.PlanPrefixer;
-import com.marklogic.client.type.PlanTripleOption;
-import com.marklogic.client.type.PlanValueOption;
 import com.marklogic.client.util.EditableNamespaceContext;
 
 public class RowManagerTest {
   private static String[]             uris           = null;
   private static String[]             docs           = null;
   private static Map<String,Object>[] litRows        = null;
+  private static Map<String,Object>[] groupableRows  = null;
   private static String[][]           triples        = null;
   private static RowStructure[]       rowstructs     = null;
   private static RowSetPart[]         datatypeStyles = null;
@@ -115,6 +108,26 @@ public class RowManagerTest {
     row.put("temp",   "92");
     row.put("uri",    uris[2]);
     litRows[2] = row;
+
+    groupableRows = new Map[3];
+
+    row = new HashMap<>();
+    row.put("c1", "11");
+    row.put("c2", "21");
+    row.put("v",  "2");
+    groupableRows[0] = row;
+
+    row = new HashMap<>();
+    row.put("c1", "12");
+    row.put("c2", "21");
+    row.put("v",  "2");
+    groupableRows[1] = row;
+
+    row = new HashMap<>();
+    row.put("c1", "12");
+    row.put("c2", "22");
+    row.put("v",  "2");
+    groupableRows[2] = row;
 
     triples = new String[][]{
       new String[]{"http://example.org/rowgraph/s1", "http://example.org/rowgraph/p1", "http://example.org/rowgraph/o1"},
@@ -436,6 +449,68 @@ public class RowManagerTest {
     assertEquals("unexpected count of result records", 2, rowNum);
   }
   @Test
+  public void testSearch() {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    PlanSystemColumn viewDocId = p.fragmentIdCol("viewDocId");
+
+    PlanBuilder.ExportablePlan builtPlan =
+            p.fromSearch(p.cts.jsonPropertyValueQuery("instrument", "trumpet"))
+             .joinInner(
+                 p.fromView("opticUnitTest", "musician", "", viewDocId),
+                 p.on(p.fragmentIdCol("fragmentId"), viewDocId)
+                 )
+             .orderBy(p.col("lastName"));
+
+    String[] lastName  = {"Armstrong",  "Davis"};
+    String[] firstName = {"Louis",      "Miles"};
+
+    int rowNum = 0;
+    for (RowRecord row: rowMgr.resultRows(builtPlan)) {
+// System.out.println(row.toString());
+      assertEquals("unexpected lastName value in row record "+rowNum,  lastName[rowNum],  row.getString("lastName"));
+      assertEquals("unexpected firstName value in row record "+rowNum, firstName[rowNum], row.getString("firstName"));
+
+      double score = row.getDouble("score");
+      assertTrue("unexpected score value of "+score+" in row record "+rowNum, score > 0);
+
+      rowNum++;
+    }
+    assertEquals("unexpected count of result records", 2, rowNum);
+  }
+  @Test
+  public void testSearchDocs() {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    PlanBuilder.ExportablePlan builtPlan =
+            p.fromSearchDocs(p.cts.wordQuery("trumpet"))
+             .orderBy(p.desc("score"));
+
+    double lastScore = Double.MAX_VALUE;
+    int rowNum = 0;
+    for (RowRecord row: rowMgr.resultRows(builtPlan)) {
+// System.out.println(row.toString());
+      double score = row.getDouble("score");
+      assertTrue("unexpected score value of "+score+" in row record "+rowNum, score > 0);
+      assertTrue(lastScore+" not greater than "+score+" in row record "+rowNum, lastScore >= score);
+      lastScore = score;
+
+      String uri = row.getString("uri");
+      assertNotNull("empty URI", uri);
+      assertTrue("not a musician uri "+uri+" in row record "+rowNum, uri.matches("^/optic/test/musician[0-9]+.json$"));
+
+      JsonNode doc = row.getContent("doc", new JacksonHandle()).get();
+      assertNotNull("empty document", doc);
+      assertTrue("not a musician document for uri "+uri+" in row record "+rowNum, doc.has("musician"));
+
+      rowNum++;
+    }
+    assertEquals("unexpected count of result records", 2, rowNum);
+  }
+  @Test
   public void testJoinSrcDoc() throws IOException {
     RowManager rowMgr = Common.client.newRowManager();
 
@@ -584,6 +659,298 @@ public class RowManagerTest {
       rowNum++;
     }
     assertEquals("unexpected count of result records", expectedInts.length, rowNum);
+  }
+  @Test
+  public void testGroupByUnionWithGroup() {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    PlanBuilder.ExportablePlan builtPlan =
+           p.fromLiterals(groupableRows)
+            .bindAs("v", p.xs.intExpr(p.col("v")))
+            .groupByUnion(p.groupSeq(p.group(), p.group("c1", "c2")), p.aggregateSeq(
+                p.hasGroupKey("c1Flag", "c1"),
+                p.hasGroupKey("c2Flag", "c2"),
+                p.count("count"),
+                p.sum("sum","v")
+                ))
+            .orderBy(p.colSeq("c1Flag", "c2Flag", "c1", "c2"));
+
+    int[] c1Flag = {0,0,0,1};
+    int[] c2Flag = {0,0,0,1};
+    String[] c1  = {"11","12","12",null};
+    String[] c2  = {"21","21","22",null};
+    int[] count  = {1,1,1,3};
+    int[] sum    = {2,2,2,6};
+
+    checkGroupByUnion(rowMgr, builtPlan, c1Flag, c2Flag, c1, c2, count, sum);
+  }
+  @Test
+  public void testGroupByUnionWithRollup() {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    PlanBuilder.ExportablePlan builtPlan =
+           p.fromLiterals(groupableRows)
+            .bindAs("v", p.xs.intExpr(p.col("v")))
+            .groupByUnion(p.rollup("c1", "c2"), p.aggregateSeq(
+                p.hasGroupKey("c1Flag", "c1"),
+                p.hasGroupKey("c2Flag", "c2"),
+                p.count("count"),
+                p.sum("sum","v")
+                ))
+            .orderBy(p.colSeq("c1Flag", "c2Flag", "c1", "c2"));
+
+    int[] c1Flag = {0,0,0,0,0,1};
+    int[] c2Flag = {0,0,0,1,1,1};
+    String[] c1  = {"11","12","12","11","12",null};
+    String[] c2  = {"21","21","22",null,null,null};
+    int[] count  = {1,1,1,1,2,3};
+    int[] sum    = {2,2,2,2,4,6};
+
+    checkGroupByUnion(rowMgr, builtPlan, c1Flag, c2Flag, c1, c2, count, sum);
+  }
+  @Test
+  public void testGroupByUnionWithCube() {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    PlanBuilder.ExportablePlan builtPlan =
+            p.fromLiterals(groupableRows)
+                    .bindAs("v", p.xs.intExpr(p.col("v")))
+                    .groupByUnion(p.cube("c1", "c2"), p.aggregateSeq(
+                            p.hasGroupKey("c1Flag", "c1"),
+                            p.hasGroupKey("c2Flag", "c2"),
+                            p.count("count"),
+                            p.sum("sum","v")
+                    ))
+                    .orderBy(p.colSeq("c1Flag", "c2Flag", "c1", "c2"));
+
+    int[] c1Flag = {0,0,0,0,0,1,1,1};
+    int[] c2Flag = {0,0,0,1,1,0,0,1};
+    String[] c1  = {"11","12","12","11","12",null,null,null};
+    String[] c2  = {"21","21","22",null,null,"21","22",null};
+    int[] count  = {1,1,1,1,2,2,1,3};
+    int[] sum    = {2,2,2,2,4,4,2,6};
+
+    checkGroupByUnion(rowMgr, builtPlan, c1Flag, c2Flag, c1, c2, count, sum);
+  }
+  private void checkGroupByUnion(
+          RowManager rowMgr, PlanBuilder.ExportablePlan builtPlan,
+          int[] c1Flag, int[] c2Flag, String[] c1, String[] c2, int[] count, int[] sum
+  ) {
+    int rowNum = 0;
+    for (RowRecord row: rowMgr.resultRows(builtPlan)) {
+// System.out.println(row.toString());
+      assertEquals("", c1Flag[rowNum], row.getInt("c1Flag"));
+      assertEquals("", c2Flag[rowNum], row.getInt("c2Flag"));
+      assertEquals("", c1[rowNum], row.getString("c1"));
+      assertEquals("", c2[rowNum], row.getString("c2"));
+      assertEquals("", count[rowNum], row.getInt("count"));
+      assertEquals("", sum[rowNum], row.getInt("sum"));
+      rowNum++;
+    }
+    assertEquals("unexpected count of result records", count.length, rowNum);
+  }
+  @Test
+  public void testArrayContainer() {
+    Set<String> c1Expect = new HashSet<>();
+    Set<String> c2Expect = new HashSet<>();
+    Set<String> vExpect  = new HashSet<>();
+    for (Map<String,Object> row: groupableRows) {
+      c1Expect.add((String) row.get("c1"));
+      c2Expect.add((String) row.get("c2"));
+      vExpect.add((String) row.get("v"));
+    }
+
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    PlanBuilder.ExportablePlan builtPlan =
+            p.fromLiterals(groupableRows)
+             .groupBy(null, p.aggregateSeq(
+                     p.arrayAggregate("c1a", "c1"),
+                     p.arrayAggregate("c2a", "c2"),
+                     p.arrayAggregate("va",  "v")));
+
+    Iterator<RowRecord> rows = rowMgr.resultRows(builtPlan).iterator();
+    assertTrue("no rows", rows.hasNext());
+    RowRecord row = rows.next();
+    assertFalse("too many rows", rows.hasNext());
+// System.out.println(row);
+
+    arrayTestimpl("c1 unequal", c1Expect, row, "c1a");
+    arrayTestimpl("c2 unequal", c2Expect, row, "c2a");
+    arrayTestimpl("v unequal",  vExpect,  row, "va");
+  }
+  private void arrayTestimpl(String msg, Set<String> expect, RowRecord row, String arrayName) {
+    arrayTestimpl(msg, expect, row.getContainer(arrayName));
+    arrayTestimpl(msg, expect, row.getContainer(arrayName, new JacksonHandle()).get());
+    arrayTestimpl(msg, expect, row.getContainerAs(arrayName, JsonNode.class));
+  }
+  private void arrayTestimpl(String msg, Set<String> expect, JsonNode arrayNode) {
+    Set<String> actual = new HashSet<>();
+    arrayNode.iterator().forEachRemaining(node -> actual.add(node.textValue()));
+    assertEquals(msg, expect, actual);
+  }
+  @Test
+  public void testObjectContainer() {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    PlanBuilder.ExportablePlan builtPlan =
+            p.fromLiterals(groupableRows)
+             .orderBy(p.colSeq("c1", "c2"))
+             .select(p.as("o", p.jsonObject(
+                     p.prop("c1p", p.col("c1")),
+                     p.prop("c2p", p.col("c2")),
+                     p.prop("vp",  p.col("v"))
+             )));
+
+    int rowNum = 0;
+    for (RowRecord row: rowMgr.resultRows(builtPlan)) {
+// System.out.println(row);
+      objectTestimpl(groupableRows[rowNum], row, "o");
+      rowNum++;
+    }
+    assertEquals("number of rows unequal", groupableRows.length, rowNum);
+  }
+  private void objectTestimpl(Map<String,Object> expected, RowRecord row, String objectName) {
+    objectTestimpl(expected, row.getContainer(objectName));
+    objectTestimpl(expected, row.getContainer(objectName, new JacksonHandle()).get());
+    objectTestimpl(expected, row.getContainerAs(objectName, JsonNode.class));
+  }
+  private void objectTestimpl(Map<String,Object> expected, JsonNode actual) {
+    assertEquals("c1 unequal", expected.get("c1"), actual.get("c1p").textValue());
+    assertEquals("c2 unequal", expected.get("c2"), actual.get("c2p").textValue());
+    assertEquals("v unequal", expected.get("v"), actual.get("vp").textValue());
+  }
+  @Test
+  public void testGroupToArrays() {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    PlanBuilder.ExportablePlan builtPlan =
+           p.fromLiterals(groupableRows)
+            .bindAs("v", p.xs.intExpr(p.col("v")))
+            .groupToArrays(p.namedGroupSeq(
+                    p.namedGroup("empty"),
+                    p.col("c1"),
+                    p.group("c2"),
+                    p.namedGroup("all", p.colSeq("c1", "c2"))
+                ), p.aggregateSeq(
+                    p.count("count"),
+                    p.sum("sum","v")
+                ));
+
+    Iterator<RowRecord> rows = rowMgr.resultRows(builtPlan).iterator();
+    assertTrue("no rows", rows.hasNext());
+    RowRecord row = rows.next();
+    assertFalse("too many rows", rows.hasNext());
+// System.out.println(row);
+
+    ObjectMapper mapper = new ObjectMapper();
+
+    JsonNode expect =
+            mapper.createArrayNode()
+                  .add(mapper.createObjectNode()
+                             .put("count", 3).put("sum", 6));
+    JsonNode actual = row.getContainer("empty");
+    assertEquals("empty group unequal", expect, actual);
+
+    expect = mapper.createArrayNode()
+                   .add(mapper.createObjectNode()
+                              .put("c1", "11").put("count", 1).put("sum", 2))
+                   .add(mapper.createObjectNode()
+                              .put("c1", "12").put("count", 2).put("sum", 4));
+    actual = row.getContainer("group1");
+    assertEquals("group1 unequal", expect, actual);
+
+    expect = mapper.createArrayNode()
+                   .add(mapper.createObjectNode()
+                              .put("c2", "21").put("count", 2).put("sum", 4))
+                   .add(mapper.createObjectNode()
+                              .put("c2", "22").put("count", 1).put("sum", 2));
+    actual = row.getContainer("group2");
+    assertEquals("group2 unequal", expect, actual);
+
+    expect = mapper.createArrayNode()
+                   .add(mapper.createObjectNode()
+                              .put("c1", "11").put("c2", "21")
+                              .put("count", 1).put("sum", 2))
+                   .add(mapper.createObjectNode()
+                              .put("c1", "12").put("c2", "21")
+                              .put("count", 1).put("sum", 2))
+                   .add(mapper.createObjectNode()
+                              .put("c1", "12").put("c2", "22")
+                              .put("count", 1).put("sum", 2));
+    actual = row.getContainer("all");
+    assertEquals("all group unequal", expect, actual);
+  }
+  @Test
+  public void testFacetBy() {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    PlanBuilder.ExportablePlan builtPlan =
+           p.fromLiterals(groupableRows)
+            .bindAs("v", p.xs.intExpr(p.col("v")))
+            .facetBy(p.colSeq("c1", "c2"));
+
+    Iterator<RowRecord> rows = rowMgr.resultRows(builtPlan).iterator();
+    assertTrue("no rows", rows.hasNext());
+    RowRecord row = rows.next();
+    assertFalse("too many rows", rows.hasNext());
+// System.out.println(row);
+
+    ObjectMapper mapper = new ObjectMapper();
+
+    JsonNode expect =
+             mapper.createArrayNode()
+                   .add(mapper.createObjectNode().put("c1", "11").put("count", 1))
+                   .add(mapper.createObjectNode().put("c1", "12").put("count", 2));
+    JsonNode actual = row.getContainer("group0");
+    assertEquals("group0 unequal", expect, actual);
+
+    expect = mapper.createArrayNode()
+                   .add(mapper.createObjectNode().put("c2", "21").put("count", 2))
+                   .add(mapper.createObjectNode().put("c2", "22").put("count", 1));
+    actual = row.getContainer("group1");
+    assertEquals("group1 unequal", expect, actual);
+  }
+  @Test
+  public void testBindAs() {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    PlanBuilder.ExportablePlan plan =
+           p.fromLiterals(litRows)
+            .orderBy(p.col("rowNum"))
+            .where(p.eq(p.col("city"), p.xs.string("Seattle")))
+            .select(p.colSeq("rowNum", "city", "temp"))
+            .bindAs("divided",   p.divide(p.xs.intExpr(p.col("temp")), p.xs.intVal(9)))
+            .bindAs("compared",  p.eq(p.col("rowNum"), p.xs.intVal(2)))
+            .bindAs("concatted", p.fn.concat(p.col("city"), p.xs.string(", WA")));
+
+    Iterator<RowRecord> rows = rowMgr.resultRows(plan).iterator();
+    assertTrue("no rows", rows.hasNext());
+    RowRecord row = rows.next();
+    assertFalse("too many rows", rows.hasNext());
+// System.out.println(row.toString());
+    assertEquals("unexpected rowNum",           2,             row.getInt("rowNum"));
+    assertEquals("unexpected city",             "Seattle",     row.getString("city"));
+    assertEquals("unexpected temp",             "72",          row.getString("temp"));
+    assertEquals("unexpected divided column",   8,             row.getInt("divided"));
+    assertEquals("unexpected compared column",  true,          row.getBoolean("compared"));
+    assertEquals("unexpected concatted column", "Seattle, WA", row.getString("concatted"));
   }
   @Test
   public void testParams() throws IOException, XPathExpressionException {

@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.impl;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
@@ -24,6 +25,8 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.type.PlanColumn;
 import com.marklogic.client.type.PlanParamExpr;
+import com.marklogic.client.type.PlanSearchOptions;
+import com.marklogic.client.type.XsDoubleVal;
 
 abstract class PlanBuilderBaseImpl extends PlanBuilder {
   final static PlanBuilderSubImpl pb = new PlanBuilderSubImpl();
@@ -51,6 +54,57 @@ abstract class PlanBuilderBaseImpl extends PlanBuilder {
 
   static BaseTypeImpl.Literal literal(Object value) {
     return new BaseTypeImpl.Literal(value);
+  }
+
+  public PlanSearchOptions searchOptions() {
+    return new PlanSearchOptionsImpl(this);
+  }
+
+  static class PlanSearchOptionsImpl implements PlanSearchOptions {
+    private PlanBuilderBaseImpl pb;
+    private XsDoubleVal qualityWeight;
+    private ScoreMethod scoreMethod;
+    PlanSearchOptionsImpl(PlanBuilderBaseImpl pb) {
+      this.pb = pb;
+    }
+    PlanSearchOptionsImpl(PlanBuilderBaseImpl pb, XsDoubleVal qualityWeight, ScoreMethod scoreMethod) {
+      this(pb);
+      this.qualityWeight = qualityWeight;
+      this.scoreMethod   = scoreMethod;
+    }
+
+    @Override
+    public XsDoubleVal getQualityWeight() {
+      return qualityWeight;
+    }
+    @Override
+    public ScoreMethod getScoreMethod() {
+      return scoreMethod;
+    }
+    @Override
+    public PlanSearchOptions withQualityWeight(double qualityWeight) {
+      return withQualityWeight(pb.xs.doubleVal(qualityWeight));
+    }
+    @Override
+    public PlanSearchOptions withQualityWeight(XsDoubleVal qualityWeight) {
+      return new PlanSearchOptionsImpl(pb, qualityWeight, getScoreMethod());
+    }
+    @Override
+    public PlanSearchOptions withScoreMethod(ScoreMethod scoreMethod) {
+      return new PlanSearchOptionsImpl(pb, getQualityWeight(), scoreMethod);
+    }
+    Map<String,String> makeMap() {
+      if (qualityWeight == null && scoreMethod == null) return null;
+
+      Map<String, String> map = new HashMap<String, String>();
+      if (qualityWeight != null) {
+        map.put("qualityWeight", String.valueOf(qualityWeight));
+      }
+      if (scoreMethod != null) {
+        map.put("scoreMethod", scoreMethod.name().toLowerCase());
+      }
+      return map;
+    }
   }
 
   static class PlanParamBase extends BaseTypeImpl.BaseCallImpl<XsValueImpl.StringValImpl> implements PlanParamExpr {
@@ -120,6 +174,9 @@ abstract class PlanBuilderBaseImpl extends PlanBuilder {
 
     public PlanColumn col(String column) {
       return pb.col(column);
+    }
+    public PlanColumn exprCol(String column) {
+      return pb.exprCol(column);
     }
   }
 
