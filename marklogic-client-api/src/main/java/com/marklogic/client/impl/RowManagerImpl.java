@@ -800,17 +800,14 @@ public class RowManagerImpl
     private Object getColumnValue(String columnName, JsonNode columnNode) {
       JsonNodeType nodeType = columnNode.getNodeType();
       switch(nodeType) {
-        case ARRAY:
-        case OBJECT:
-          return columnNode;
-        case BOOLEAN:
-          return columnNode.booleanValue();
         case NULL:
           return null;
+        case ARRAY:
+        case BOOLEAN:
         case NUMBER:
-          return columnNode.numberValue();
+        case OBJECT:
         case STRING:
-          return columnNode.textValue();
+          return columnNode;
         case BINARY:
         case MISSING:
         case POJO:
@@ -1128,101 +1125,79 @@ public class RowManagerImpl
     }
     @Override
     public String getString(String columnName) {
-      try {
-        return asString(get(columnName));
-      } catch(NodeNotAStringException e) {
-        throw new IllegalArgumentException("value for column \""+columnName+"\" not a string");
-      }
+      return asString(columnName, get(columnName));
     }
 
     private boolean asBoolean(String columnName, Object value) {
-      if (value == null) {
-        throw new IllegalStateException("column "+columnName+" has null instead of boolean value");
-      } else if (value instanceof Boolean) {
-        return ((Boolean) value).booleanValue();
-      } else if (value instanceof String) {
-        return Boolean.parseBoolean((String) value);
-      }
-      throw new IllegalStateException("column "+columnName+" does not have a boolean value");
+      return asPrimitiveValueNode(columnName, value).asBoolean();
     }
     private byte asByte(String columnName, Object value) {
-      if (value == null) {
-        throw new IllegalStateException("column "+columnName+" has null instead of byte value");
-      } else if (value instanceof Number) {
-        return ((Number) value).byteValue();
-      } else if (value instanceof String) {
-        return Byte.parseByte((String) value);
-      }
-      throw new IllegalStateException("column "+columnName+" does not have a byte value");
+      return (byte) asPrimitiveValueNode(columnName, value).asInt();
     }
     private double asDouble(String columnName, Object value) {
-      if (value == null) {
-        throw new IllegalStateException("column "+columnName+" has null instead of double value");
-      } else if (value instanceof Number) {
-        return ((Number) value).doubleValue();
-      } else if (value instanceof String) {
-        return Double.parseDouble((String) value);
-      }
-      throw new IllegalStateException("column "+columnName+" does not have a double value");
+      return asPrimitiveValueNode(columnName, value).asDouble();
     }
     private float asFloat(String columnName, Object value) {
-      if (value == null) {
-        throw new IllegalStateException("column "+columnName+" has null instead of float value");
-      } else if (value instanceof Number) {
-        return ((Number) value).floatValue();
-      } else if (value instanceof String) {
-        return Float.parseFloat((String) value);
-      }
-      throw new IllegalStateException("column "+columnName+" does not have a float value");
+      return (float) asPrimitiveValueNode(columnName, value).asDouble();
     }
     private int asInt(String columnName, Object value) {
-      if (value == null) {
-        throw new IllegalStateException("column "+columnName+" has null instead of integer value");
-      } else if (value instanceof Number) {
-        return ((Number) value).intValue();
-      } else if (value instanceof String) {
-        return Integer.parseInt((String) value);
-      }
-      throw new IllegalStateException("column "+columnName+" does not have an integer value");
+      return asPrimitiveValueNode(columnName, value).asInt();
     }
     private long asLong(String columnName, Object value) {
-      if (value == null) {
-        throw new IllegalStateException("column "+columnName+" has null instead of long value");
-      } else if (value instanceof Number) {
-        return ((Number) value).longValue();
-      } else if (value instanceof String) {
-        return Long.parseLong((String) value);
-      }
-      throw new IllegalStateException("column "+columnName+" does not have a long value");
+      return asPrimitiveValueNode(columnName, value).asLong();
     }
     private short asShort(String columnName, Object value) {
-      if (value == null) {
-        throw new IllegalStateException("column "+columnName+" has null instead of short value");
-      } else if (value instanceof Number) {
-        return ((Number) value).shortValue();
-      } else if (value instanceof String) {
-        return Short.parseShort((String) value);
-      }
-      throw new IllegalStateException("column "+columnName+" does not have a short value");
+      return (short) asPrimitiveValueNode(columnName, value).asInt();
     }
-    /**
-     * @throws NodeNotAStringException when the value is a node but not a single text node
-     *   (with content-type "text/plain")
-     */
-    private String asString(Object value) throws NodeNotAStringException {
-      if (value == null || value instanceof String) {
-        return (String) value;
+    private String asString(String columnName, Object value)  {
+      if (value == null) {
+        return null;
       } else if (value instanceof JsonNode) {
-        return ((JsonNode) value).toPrettyString();
+        JsonNode node = (JsonNode) value;
+        if (node.isNull()) {
+          return null;
+        } else if (node.isValueNode()) {
+          return node.asText();
+        } else if (node.isContainerNode()) {
+          return node.toPrettyString();
+        }
       } else if (value instanceof RESTServiceResult) {
         RESTServiceResult result = (RESTServiceResult) value;
-        if ( result.getMimetype() != null && result.getMimetype().startsWith("text/plain") ) {
+        Format format = result.getFormat();
+        if (format != null && format != Format.BINARY) {
           return result.getContent(new StringHandle()).get();
-        } else {
-          throw new NodeNotAStringException();
         }
       }
-      return value.toString();
+      throw new IllegalStateException("column "+columnName+" cannot convert to string");
+    }
+
+    private JsonNode asPrimitiveValueNode(String columnName, Object value) {
+      JsonNode node = asAtomicValueNode(columnName, value);
+      if (node == null) {
+        throw new IllegalStateException("column "+columnName+" has null instead of primitive value");
+      }
+      return node;
+    }
+    private JsonNode asAtomicValueNode(String columnName, Object value) {
+      JsonNode node = asJsonNode(columnName, value);
+      if (node != null && !node.isValueNode()) {
+        throw new IllegalStateException("column "+columnName+" does not have an atomic value");
+      }
+      return node;
+    }
+    private JsonNode asJsonNode(String columnName, Object value) {
+      if (value == null) {
+        return null;
+      }
+      JsonNode node;
+      if (value instanceof JsonNode) {
+        node = (JsonNode) value;
+      } else if (value instanceof RESTServiceResult && getContentFormat(columnName) == Format.JSON) {
+        node = ((RESTServiceResult) value).getContent(new JacksonHandle()).get();
+      } else {
+        throw new IllegalStateException("column "+columnName+" does not have a value");
+      }
+      return node.isNull() ? null : node;
     }
 
     private RESTServiceResult getServiceResult(String columnName) {
@@ -1243,21 +1218,13 @@ public class RowManagerImpl
         throw new IllegalArgumentException("cannot construct "+columnName+" value with null class");
       }
 
-      Object value = get(columnName);
-      if (value == null) {
-        return null;
-      }
-
-	  if (as.isInstance(value)) {
-		return as.cast(value);
-	  }
-
       try {
-        String valueStr = asString(value);
-        if (String.class.isAssignableFrom(as)) {
-          return as.cast(valueStr);
+        JsonNode node = asAtomicValueNode(columnName, get(columnName));
+        if (node == null) {
+          return null;
         }
 
+        String valueStr = node.asText();
         Function<String,? extends XsAnyAtomicTypeVal> factory = getFactory(as);
         if (factory != null) {
           return as.cast(factory.apply(valueStr));
@@ -1272,8 +1239,6 @@ public class RowManagerImpl
         }
 
         return constructor.newInstance(valueStr);
-      } catch(NodeNotAStringException e) {
-        throw new IllegalArgumentException("column \""+columnName+"\" is a node, not an atomic");
       } catch(NoSuchMethodException e) {
         throw new IllegalArgumentException("cannot construct "+columnName+" value as class: "+as.getName());
       } catch (InstantiationException e) {
@@ -1392,15 +1357,6 @@ public class RowManagerImpl
       return handle.get();
     }
 
-    private JsonNode asJsonNode(String columnName, Object value) {
-      if (value == null || value instanceof JsonNode) {
-        return (JsonNode) value;
-      } else if (value instanceof RESTServiceResult) {
-        return ((RESTServiceResult) value).getContent(new JacksonHandle()).get();
-      }
-      throw new IllegalStateException("column "+columnName+" does not have a JSON container value");
-    }
-
     @Override
     public Format getContentFormat(PlanExprCol col) {
       return getContentFormat(getNameForColumn(col));
@@ -1506,40 +1462,39 @@ public class RowManagerImpl
 
           switch(colKind) {
             case ATOMIC_VALUE:
+              String atomicVal = getString(colName);
               buf.append("value: ");
-
-              String colVal = getString(colName);
-
-              switch(colType) {
-                case "xs:boolean":
-                case "xs:byte":
-                case "xs:decimal":
-                case "xs:double":
-                case "xs:float":
-                case "xs:int":
-                case "xs:integer":
-                case "xs:long":
-                case "xs:short":
-                case "xs:unsignedByte":
-                case "xs:unsignedInt":
-                case "xs:unsignedLong":
-                case "xs:unsignedShort":
-                  buf.append(colVal);
-                  break;
-                default:
-                  if (colVal == null) {
-                    buf.append("null");
-                  } else {
+              if (atomicVal == null) {
+                buf.append("null");
+              } else {
+                switch(colType) {
+                  case "xs:boolean":
+                  case "xs:byte":
+                  case "xs:decimal":
+                  case "xs:double":
+                  case "xs:float":
+                  case "xs:int":
+                  case "xs:integer":
+                  case "xs:long":
+                  case "xs:short":
+                  case "xs:unsignedByte":
+                  case "xs:unsignedInt":
+                  case "xs:unsignedLong":
+                  case "xs:unsignedShort":
+                    buf.append(atomicVal);
+                    break;
+                  default:
                     buf.append("\"");
-                    buf.append(colVal.replace("\"", "\\\""));
+                    buf.append(atomicVal.replace("\"", "\\\""));
                     buf.append("\"");
-                  }
-                  break;
+                    break;
+                }
               }
               break;
             case CONTAINER_VALUE:
+              String containerVal = getString(colName);
               buf.append("value: ");
-              buf.append(getString(colName));
+              buf.append((containerVal == null) ? "null" : containerVal);
               break;
             case CONTENT:
               buf.append("format: \"");
@@ -1811,8 +1766,5 @@ public class RowManagerImpl
       setHandle(handle);
       return this;
     }
-  }
-
-  private static class NodeNotAStringException extends Exception {
   }
 }

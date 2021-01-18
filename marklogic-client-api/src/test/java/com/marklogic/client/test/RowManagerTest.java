@@ -530,24 +530,14 @@ public class RowManagerTest {
     String[] firstName = {"Louis",      "Miles"};
 
     int rowNum = 0;
-    boolean didARowFail = false;
     for (RowRecord row: rowMgr.resultRows(builtPlan)) {
       assertEquals("unexpected lastName value in row record "+rowNum,  lastName[rowNum],  row.getString("lastName"));
       assertEquals("unexpected firstName value in row record "+rowNum, firstName[rowNum], row.getString("firstName"));
 
-      String instruments;
-      try {
-        instruments = row.getString("instruments");
-      } catch (IllegalArgumentException e ) {
-        didARowFail = true;
-        instruments = row.getContentAs("instruments", String.class);
-      }
-      assertNotNull("null instrucments value in row record "+rowNum,    instruments);
-      assertTrue("unexpected instrucments value in row record "+rowNum, instruments.contains("trumpet"));
+      String instruments = row.getString("instruments");
+      assertNotNull("null instruments value in row record "+rowNum,    instruments);
+      assertTrue("unexpected instruments value in row record "+rowNum, instruments.contains("trumpet"));
       rowNum++;
-    }
-    if ( didARowFail == false ) {
-      fail("getString(\"instruments\") should throw an exception since some rows return an array");
     }
     assertEquals("unexpected count of result records", 2, rowNum);
   }
