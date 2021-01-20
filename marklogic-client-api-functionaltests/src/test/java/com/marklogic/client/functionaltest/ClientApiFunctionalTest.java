@@ -42,6 +42,10 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import com.marklogic.client.io.marker.JSONWriteHandle;
+
+import com.marklogic.client.impl.BaseProxy;
+
 public class ClientApiFunctionalTest extends BasicJavaClientREST {
 	private static String dbName = "TestClientAPIOneDB";
 	private static String[] fNames = { "TestClientAPIOneDB-1" };
@@ -80,6 +84,8 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 	private static String endPointURI_11 = endPointURI_5;
 	// For testing Open API end
 
+	private static String endPointURI_12 = "/ext/TestE2EModuleXQY/TestE2EModuleXQY";
+
 	/* Note : In case there is a need to re-run the tests, please
 	delete these App Servers manually. The db and forest for these are deleted in aftercalss().
 	These server are left behind and in case of re-runs DB and forest creations will not happen,
@@ -108,7 +114,7 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		createForest(fNamesMod[0], dbNameMod);
 		createAppServer(serverName, port);
 
-		createUserRolesWithPrevilages("apiRole", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke", "xdmp:eval", "xdmp:eval-in");
+		createUserRolesWithPrevilages("apiRole", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke", "xdmp:eval", "xdmp:eval-in", "xdmp:invoke", "xdmp:invoke-in");
 		createRESTUser("apiUser", "ap1U53r", "apiRole", "rest-admin", "rest-writer", "rest-reader",
 				"rest-extension-user", "manage-user");
 		createRESTUser("secondApiUser", "ap1U53r", "apiRole", "rest-admin", "rest-writer", "rest-reader",
@@ -218,35 +224,46 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		file = null;
 		handle = null;
 		// For Open API tests end
+
+		file = new File("src/test/java/com/marklogic/client/functionaltest/data/api/TestE2EModuleXQY.xqy");
+		handle = new FileHandle(file);
+		docMgr.write(endPointURI_12+".xqy", metadataHandle, handle);
+		file = null;
+		handle = null;
+		file = new File("src/test/java/com/marklogic/client/functionaltest/data/api/TestE2EModuleXQY.api");
+		handle = new FileHandle(file);
+		docMgr.write(endPointURI_12+".api", metadataHandle, handle);
+		file = null;
+		handle = null;
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
+
 		System.out.println("In tear down");
+	deleteUserRole("apiRole");
+	deleteRESTUser("apiUser");
+	deleteRESTUser("secondApiUser");
+	deleteUserRole("ForbiddenRole");
+	deleteRESTUser("ForbiddenUser");
 
-		deleteUserRole("apiRole");
-		deleteRESTUser("apiUser");
-		deleteRESTUser("secondApiUser");
-		deleteUserRole("ForbiddenRole");
-		deleteRESTUser("ForbiddenUser");
+	// release client
+	dbclient.release();
+	associateRESTServerWithDB(modServerName, "Documents");
+	associateRESTServerWithDB(serverName, "Documents");
+	associateRESTServerWithModuleDB(modServerName, "Modules");
+	associateRESTServerWithModuleDB(serverName, "Modules");
 
-		// release client
-		dbclient.release();
-		associateRESTServerWithDB(modServerName, "Documents");
-		associateRESTServerWithDB(serverName, "Documents");
-		associateRESTServerWithModuleDB(modServerName, "Modules");
-		associateRESTServerWithModuleDB(serverName, "Modules");
+	associateRESTServerWithDB("TestRESTServerOnAPI", "Documents");
+	associateRESTServerWithModuleDB("TestRESTServerOnAPI", "Modules");
+	deleteDB(dbName);
+	deleteForest(fNames[0]);
 
-		associateRESTServerWithDB("TestRESTServerOnAPI", "Documents");
-		associateRESTServerWithModuleDB("TestRESTServerOnAPI", "Modules");
-		deleteDB(dbName);
-		deleteForest(fNames[0]);
+	deleteDB(dbNameMod);
+	deleteForest(fNamesMod[0]);
 
-		deleteDB(dbNameMod);
-		deleteForest(fNamesMod[0]);
-
-		deleteDB("TestRESTServerOnAPI-modules");
-		deleteForest("TestRESTServerOnAPI-modules-1");
+	deleteDB("TestRESTServerOnAPI-modules");
+	deleteForest("TestRESTServerOnAPI-modules-1");
 	}
 
 	public static void createAppServer(String appServerName, int restPort) {
@@ -374,7 +391,20 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		assertEquals(20000.0, responseBack12, 0.00);
 	}
 
-	// This test requires TestE2ERequiredParam.api Fn Decl file
+	@Test
+	public void TestE2EXqyFunction() throws Exception {
+		System.out.println("Running TestE2EXqyFunction");
+		// Invoke the function
+		String responseBack1 = TestE2EModuleXQY.on(dbclient).xqyfunction("MAGLITE");
+		System.out.println("Response from the Client API call is " + responseBack1);
+		assertTrue("Response when valid parameter passed incorrect", responseBack1.contains("QA Module Returns MAGLITE"));
+		// Pass null for parameter
+		String responseBack2 = TestE2EModuleXQY.on(dbclient).xqyfunction(null);
+		System.out.println("Response from the Client API call is " + responseBack2);
+		assertTrue("Response when null parameter passed incorrect", responseBack2.contains("QA Module Returns Passed in null parameter."));
+	}
+
+		// This test requires TestE2ERequiredParam.api Fn Decl file
 	@Test
 	public void TestE2ERequiredParam() throws Exception {
 
@@ -1073,5 +1103,78 @@ interface TestE2ESession {
 	 *
 	 */
 	void SessionChecks(SessionState api_session, String uri, String content);
+
+}
+
+interface TestE2EModuleXQY {
+	/**
+	 * Creates a TestE2EModuleXQY object for executing operations on the database server.
+	 *
+	 * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
+	 * client object can be used for any number of requests and in multiple threads.
+	 *
+	 * @param db	provides a client for communicating with the database server
+	 * @return	an object for executing database operations
+	 */
+	static TestE2EModuleXQY on(DatabaseClient db) {
+		return on(db, null);
+	}
+	/**
+	 * Creates a TestE2EModuleXQY object for executing operations on the database server.
+	 *
+	 * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
+	 * client object can be used for any number of requests and in multiple threads.
+	 *
+	 * The service declaration uses a custom implementation of the same service instead
+	 * of the default implementation of the service by specifying an endpoint directory
+	 * in the modules database with the implementation. A service.json file with the
+	 * declaration can be read with FileHandle or a string serialization of the JSON
+	 * declaration with StringHandle.
+	 *
+	 * @param db	provides a client for communicating with the database server
+	 * @param serviceDeclaration	substitutes a custom implementation of the service
+	 * @return	an object for executing database operations
+	 */
+	static TestE2EModuleXQY on(DatabaseClient db, JSONWriteHandle serviceDeclaration) {
+		final class TestE2EModuleXQYImpl implements TestE2EModuleXQY {
+			private DatabaseClient dbClient;
+			private BaseProxy baseProxy;
+
+			private BaseProxy.DBFunctionRequest req_xqyfunction;
+
+			private TestE2EModuleXQYImpl(DatabaseClient dbClient, JSONWriteHandle servDecl) {
+				this.dbClient  = dbClient;
+				this.baseProxy = new BaseProxy("/ext/TestE2EModuleXQY/", servDecl);
+
+				this.req_xqyfunction = this.baseProxy.request(
+						"TestE2EModuleXQY.xqy", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC);
+			}
+
+			@Override
+			public String xqyfunction(String items) {
+				return xqyfunction(
+						this.req_xqyfunction.on(this.dbClient), items
+				);
+			}
+			private String xqyfunction(BaseProxy.DBFunctionRequest request, String items) {
+				return BaseProxy.StringType.toString(
+						request
+								.withParams(
+										BaseProxy.atomicParam("items", true, BaseProxy.StringType.fromString(items))
+								).responseSingle(false, null)
+				);
+			}
+		}
+
+		return new TestE2EModuleXQYImpl(db, serviceDeclaration);
+	}
+
+	/**
+	 * Invokes the xqyfunction operation on the database server
+	 *
+	 * @param items	provides input
+	 * @return	as output
+	 */
+	String xqyfunction(String items);
 
 }
