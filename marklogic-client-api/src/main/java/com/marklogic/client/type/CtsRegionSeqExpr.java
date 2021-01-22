@@ -18,7 +18,7 @@ package com.marklogic.client.type;
 // IMPORTANT: Do not edit. This file is generated.
 
 /**
- * A sequence of cts.region expressions.
+ * A sequence of cts.region expressions. See {@link com.marklogic.client.expression.CtsExpr#regionSeq(CtsRegionExpr...)}
  */
 public interface CtsRegionSeqExpr extends ServerExpression {
 }

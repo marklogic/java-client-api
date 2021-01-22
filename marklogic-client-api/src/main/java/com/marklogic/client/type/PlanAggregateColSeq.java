@@ -19,7 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of columns populated by an aggregate expressions
- * in a row pipeline.
+ * in a row pipeline. See {@link com.marklogic.client.expression.PlanBuilder#aggregateSeq(PlanAggregateCol...)}
  */
 public interface PlanAggregateColSeq {
 }

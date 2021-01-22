@@ -21,6 +21,9 @@ package com.marklogic.client.type;
  * A sequence of literal values or columns for positions 
  * within patterns for projecting rows from triples
  * in a row pipeline.
+ * See {@link com.marklogic.client.expression.PlanBuilder#subjectSeq(PlanTriplePosition...)},
+ * {@link com.marklogic.client.expression.PlanBuilder#predicateSeq(PlanTriplePosition...)}, and
+ * {@link com.marklogic.client.expression.PlanBuilder#objectSeq(PlanTriplePosition...)}.
  */
 public interface PlanTriplePositionSeq {
 }

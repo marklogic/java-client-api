@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of server byte values.
+ * See {@link com.marklogic.client.expression.XsValue#byteSeq(byte...)}
  */
 public interface XsByteSeqVal extends XsShortSeqVal {
     public XsByteVal[] getByteItems();

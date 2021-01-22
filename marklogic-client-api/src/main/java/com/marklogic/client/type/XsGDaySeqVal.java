@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of server GDay values.
+ * See {@link com.marklogic.client.expression.XsValue#gDaySeq(String...)}
  */
 public interface XsGDaySeqVal extends XsAnyAtomicTypeSeqVal {
     public XsGDayVal[] getGDayItems();

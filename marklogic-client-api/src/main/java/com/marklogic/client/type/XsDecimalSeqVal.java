@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of server decimal values.
+ * See {@link com.marklogic.client.expression.XsValue#decimalSeq(String...)}
  */
 public interface XsDecimalSeqVal extends XsAnyAtomicTypeSeqVal, XsNumericSeqVal {
     public XsDecimalVal[] getDecimalItems();

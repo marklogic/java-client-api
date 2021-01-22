@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of server GMonthDay values.
+ * See {@link com.marklogic.client.expression.XsValue#gMonthDaySeq(String...)}
  */
 public interface XsGMonthDaySeqVal extends XsAnyAtomicTypeSeqVal {
     public XsGMonthDayVal[] getGMonthDayItems();

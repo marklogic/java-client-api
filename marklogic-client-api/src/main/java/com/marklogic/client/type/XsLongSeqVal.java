@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of server long values.
+ * See {@link com.marklogic.client.expression.XsValue#longSeq(long...)} 
  */
 public interface XsLongSeqVal extends XsIntegerSeqVal {
     public XsLongVal[] getLongItems();

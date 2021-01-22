@@ -19,7 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of column expressions returned by as() or col() calls
- * in a row pipeline.
+ * in a row pipeline. See {@link com.marklogic.client.expression.PlanBuilder#colSeq(String...)}
  */
 public interface PlanExprColSeq extends PlanAggregateColSeq, PlanGroupSeq, PlanSortKeySeq, ServerExpression {
 }

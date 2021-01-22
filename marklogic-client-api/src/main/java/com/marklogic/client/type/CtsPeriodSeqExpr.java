@@ -18,7 +18,7 @@ package com.marklogic.client.type;
 // IMPORTANT: Do not edit. This file is generated.
 
 /**
- * A sequence of cts.period expressions.
+ * A sequence of cts.period expressions. See {@link com.marklogic.client.expression.CtsExpr#periodSeq(CtsPeriodExpr...)}
  */
 public interface CtsPeriodSeqExpr extends ServerExpression  {
 }

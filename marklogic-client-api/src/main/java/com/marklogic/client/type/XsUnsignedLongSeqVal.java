@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of server unsigned long values.
+ * See {@link com.marklogic.client.expression.XsValue#unsignedLongSeq(long...)}
  */
 public interface XsUnsignedLongSeqVal extends XsNonNegativeIntegerSeqVal {
     public XsUnsignedLongVal[] getUnsignedLongItems();

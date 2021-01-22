@@ -20,6 +20,7 @@ package com.marklogic.client.type;
 /**
  * A sequence of group expressions returned
  * by namedGroup() calls in a row pipeline.
+ * See {@link com.marklogic.client.expression.PlanBuilder#namedGroupSeq(PlanNamedGroup...)} 
  */
 public interface PlanNamedGroupSeq {
 }

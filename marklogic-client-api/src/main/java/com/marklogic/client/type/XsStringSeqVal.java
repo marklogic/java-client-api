@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of server string values.
+ * See {@link com.marklogic.client.expression.XsValue#stringSeq(String...)}
  */
 public interface XsStringSeqVal extends XsAnyAtomicTypeSeqVal {
     public XsStringVal[] getStringItems();

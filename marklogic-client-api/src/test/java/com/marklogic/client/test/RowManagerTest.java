@@ -1213,6 +1213,8 @@ public class RowManagerTest {
     RowManager rowMgr = Common.client.newRowManager();
 
     testViewRows(rowMgr.resultRows(rowMgr.newRawSQLPlan(new StringHandle(plan))));
+
+// TODO: test explain
   }
   @Test
   public void testRawSPARQLSelect() throws IOException {
@@ -1237,6 +1239,8 @@ public class RowManagerTest {
       rowNum++;
     }
     assertEquals("unexpected count of result records", 2, rowNum);
+
+// TODO: test explain
   }
   @Test
   public void testRawQueryDSL() throws IOException {
@@ -1252,6 +1256,8 @@ public class RowManagerTest {
     RowManager rowMgr = Common.client.newRowManager();
 
     testViewRows(rowMgr.resultRows(rowMgr.newRawQueryDSLPlan(new StringHandle(plan))));
+
+// TODO: test explain
   }
   private void checkSingleRow(NodeList row, RowSetPart datatypeStyle) {
     assertEquals("unexpected column count in XML", 2, row.getLength());

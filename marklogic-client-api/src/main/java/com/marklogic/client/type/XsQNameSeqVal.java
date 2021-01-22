@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of server qualified name values.
+ * See {@link com.marklogic.client.expression.XsValue#QNameSeq(String...)}
  */
 public interface XsQNameSeqVal extends XsAnyAtomicTypeSeqVal {
     public XsQNameVal[] getQNameItems();

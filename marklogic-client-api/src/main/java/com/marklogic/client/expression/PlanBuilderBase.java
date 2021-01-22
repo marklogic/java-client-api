@@ -26,35 +26,129 @@ import com.marklogic.client.type.*;
  * Use PlanBuilder as the type for instances of PlanBuilder.
  */
 public interface PlanBuilderBase {
-
-/* TODO:
-    JavaDoc for all new including types
- */
+    /**
+     * Provides a convenience for matching documents and constructing rows with the score,
+     * document uri, and document content. The convenience is equivalent to chaining
+     * {@link PlanBuilder#fromSearch(CtsQueryExpr)},
+     * {@link PlanBuilder.ModifyPlan#joinDocUri(String, String)},
+     * and {@link PlanBuilder.ModifyPlan#joinDoc(String, String)}.
+     * <p>The documents can be ordered by the score and limited for the most relevant
+     * documents.</p>
+     * @param query  The cts.query expression for matching the documents.
+     * @return  a ModifyPlan object
+     */
     PlanBuilder.AccessPlan fromSearchDocs(CtsQueryExpr query);
+    /**
+     * Provides a convenience for matching documents and constructing rows with the score,
+     * document uri, and document content. The convenience is equivalent to chaining
+     * {@link PlanBuilder#fromSearch(CtsQueryExpr)},
+     * {@link PlanBuilder.ModifyPlan#joinDocUri(String, String)},
+     * and {@link PlanBuilder.ModifyPlan#joinDoc(String, String)}.
+     * <p>The documents can be ordered by the score and limited for the most relevant
+     * documents.</p>
+     * @param query  The cts.query expression for matching the documents.
+     * @param qualifierName Specifies a name for qualifying the column names similar to a view name.
+     * @return  a ModifyPlan object
+     */
     PlanBuilder.AccessPlan fromSearchDocs(CtsQueryExpr query, String qualifierName);
+    /**
+     * Supports document matching and relevance by constructing rows with the document fragment id and
+     * columns for relevance factors.  Typically, the plan will join the rows on the document fragment id
+     * with the content of documents or with rows, triples, or lexicons indexed on the documents (where
+     * the lexicons include range indexes, the document URI lexicon, and the collection lexicon).
+     * <p>The documents can be ordered by the score or other relevance factors and limited for the 
+     * most relevant documents.</p>
+     * <p>By default, the rows provide fragmentId and score columns.
+     * </p>
+     * @param query  The cts.query expression for matching the documents.
+     * @return  an AccessPlan object
+     */
     PlanBuilder.AccessPlan fromSearch(CtsQueryExpr query);
+    /**
+     * Supports document matching and relevance by constructing rows with the document fragment id and
+     * columns for relevance factors.  Typically, the plan will join the rows on the document fragment id
+     * with the content of documents or with rows, triples, or lexicons indexed on the documents (where
+     * the lexicons include range indexes, the document URI lexicon, and the collection lexicon).
+     * <p>The documents can be ordered by the score or other relevance factors and limited for the 
+     * most relevant documents.</p>
+     * <p>The list of possible columns to project consists of fragmentId, confidence, fitness,
+     * quality, and score. The columns other than the fragmentId provide the same relevance factors
+     * as the <a href="https://docs.marklogic.com/cts.confidence">cts.confidence()</a>,
+     * <a href="https://docs.marklogic.com/cts.fitness">cts.fitness()</a>,
+     * <a href="https://docs.marklogic.com/cts.quality">cts.quality()</a>,
+     * and <a href="https://docs.marklogic.com/cts.score">cts.score()</a> functions
+     * on the server. Pass {@link PlanBuilder#as(String, ServerExpression)} to rename a column.
+     * The default columns are fragmentId and score.
+     * </p>
+     * @param query  The cts.query expression for matching the documents.
+     * @param columns  The columns to project for the documents. See {@link PlanBuilder#colSeq(String...)}
+     * @return  an AccessPlan object
+     */
     PlanBuilder.AccessPlan fromSearch(CtsQueryExpr query, PlanExprCol... columns);
+    /**
+     * Supports document matching and relevance by constructing rows with the document fragment id and
+     * columns for relevance factors.  Typically, the plan will join the rows on the document fragment id
+     * with the content of documents or with rows, triples, or lexicons indexed on the documents (where
+     * the lexicons include range indexes, the document URI lexicon, and the collection lexicon).
+     * <p>The documents can be ordered by the score or other relevance factors and limited for the 
+     * most relevant documents.</p>
+     * <p>The list of possible columns to project consists of fragmentId, confidence, fitness,
+     * quality, and score. The columns other than the fragmentId provide the same relevance factors
+     * as the <a href="https://docs.marklogic.com/cts.confidence">cts.confidence()</a>,
+     * <a href="https://docs.marklogic.com/cts.fitness">cts.fitness()</a>,
+     * <a href="https://docs.marklogic.com/cts.quality">cts.quality()</a>,
+     * and <a href="https://docs.marklogic.com/cts.score">cts.score()</a> functions
+     * on the server. Pass {@link PlanBuilder#as(String, ServerExpression)} to rename a column.
+     * The default columns are fragmentId and score.
+     * </p>
+     * @param query  The cts.query expression for matching the documents.
+     * @param columns  The columns to project for the documents. See {@link PlanBuilder#colSeq(String...)}
+     * @param qualifierName Specifies a name for qualifying the column names similar to a view name.
+     * @return  an AccessPlan object
+     */
     PlanBuilder.AccessPlan fromSearch(CtsQueryExpr query, PlanExprColSeq columns, String qualifierName);
+    /**
+     * Supports document matching and relevance by constructing rows with the document fragment id and
+     * columns for relevance factors.  Typically, the plan will join the rows on the document fragment id
+     * with the content of documents or with rows, triples, or lexicons indexed on the documents (where
+     * the lexicons include range indexes, the document URI lexicon, and the collection lexicon).
+     * <p>The documents can be ordered by the score or other relevance factors and limited for the 
+     * most relevant documents.</p>
+     * <p>The list of possible columns to project consists of fragmentId, confidence, fitness,
+     * quality, and score. The columns other than the fragmentId provide the same relevance factors
+     * as the <a href="https://docs.marklogic.com/cts.confidence">cts.confidence()</a>,
+     * <a href="https://docs.marklogic.com/cts.fitness">cts.fitness()</a>,
+     * <a href="https://docs.marklogic.com/cts.quality">cts.quality()</a>,
+     * and <a href="https://docs.marklogic.com/cts.score">cts.score()</a> functions
+     * on the server. Pass {@link PlanBuilder#as(String, ServerExpression)} to rename a column.
+     * The default columns are fragmentId and score.
+     * </p>
+     * @param query  The cts.query expression for matching the documents.
+     * @param columns  The columns to project for the documents. See {@link PlanBuilder#colSeq(String...)}
+     * @param qualifierName Specifies a name for qualifying the column names similar to a view name.
+     * @param options  Specifies how to calculate the score for the matching documents. See {@link PlanBuilder#searchOptions()}
+     * @return  an AccessPlan object
+     */
     PlanBuilder.AccessPlan fromSearch(CtsQueryExpr query, PlanExprColSeq columns, XsStringVal qualifierName, PlanSearchOptions options);
 
     /**
     * Constructs a literal row set as in the SQL VALUES or SPARQL VALUES statements. 
     * @param rows  This parameter provides any number of objects in which the key is a column name string identifying the column and the value is a literal with the value of the column.
-    * @return  a AccessPlan object
+    * @return  an AccessPlan object
     */
     PlanBuilder.AccessPlan fromLiterals(@SuppressWarnings("unchecked") Map<String,Object>... rows);
     /**
      * Constructs a literal row set as in the SQL VALUES or SPARQL VALUES statements. When specifying rows with arrays, values are mapped to column names by position.
      * @param rows  This parameter is either an array of object literals or sem:binding objects in which the key is a column name string identifying the column and the value is a literal with the value of the column, or this parameter is an object with a columnNames key having a value of an array of column names and a rowValues key having a value of an array of arrays with literal values.
-     * @param qualifierName  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
-     * @return  a AccessPlan object
+     * @param qualifierName  Specifies a name for qualifying the column names similar to a view name
+     * @return  an AccessPlan object
      */
     PlanBuilder.AccessPlan fromLiterals(Map<String,Object>[] rows, String qualifierName);
     /**
      * Constructs a literal row set as in the SQL VALUES or SPARQL VALUES statements. When specifying rows with arrays, values are mapped to column names by position.
      * @param rows  This parameter is either an array of object literals or sem:binding objects in which the key is a column name string identifying the column and the value is a literal with the value of the column, or this parameter is an object with a columnNames key having a value of an array of column names and a rowValues key having a value of an array of arrays with literal values.
-     * @param qualifierName  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
-     * @return  a AccessPlan object
+     * @param qualifierName  Specifies a name for qualifying the column names similar to a view name
+     * @return  an AccessPlan object
      */
     PlanBuilder.AccessPlan fromLiterals(Map<String,Object>[] rows, XsStringVal qualifierName);
 
@@ -109,7 +203,7 @@ public interface PlanBuilderBase {
      * This function concatenates the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the groupBy() function.
      * @param name  The name to be used for column with the concatenated values.
      * @param column  The name of the column with the values to be concatenated for the group.
-     * @param options  The options can take a values key with a distinct value to average the distinct values of the column. In addition to the values key, the options can take a separator key specifying a separator character. The value can be a string or placeholder parameter.
+     * @param options  The options can take a values key with a distinct value to average the distinct values of the column. In addition to the values key, the options can take a separator key specifying a separator character. The value can be a string or placeholder parameter. See {@link PlanBuilder#groupConcatOptions(String, PlanValueOption)}
      * @return  a PlanAggregateCol object
      */
     PlanAggregateCol groupConcat(String name, String column, PlanGroupConcatOptionSeq options);
@@ -117,7 +211,7 @@ public interface PlanBuilderBase {
      * This function concatenates the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the groupBy() function.
      * @param name  The name to be used for column with the concatenated values.
      * @param column  The name of the column with the values to be concatenated for the group.
-     * @param options  The options can take a values key with a distinct value to average the distinct values of the column. In addition to the values key, the options can take a separator key specifying a separator character. The value can be a string or placeholder parameter.
+     * @param options  The options can take a values key with a distinct value to average the distinct values of the column. In addition to the values key, the options can take a separator key specifying a separator character. The value can be a string or placeholder parameter. See {@link PlanBuilder#groupConcatOptions(String, PlanValueOption)}
      * @return  a PlanAggregateCol object
      */
     PlanAggregateCol groupConcat(PlanColumn name, PlanExprCol column, PlanGroupConcatOptionSeq options);
@@ -145,13 +239,78 @@ public interface PlanBuilderBase {
      */
     PlanGroupConcatOptionSeq groupConcatOptions(String separator, PlanValueOption option);
 
+    /**
+     * Specifies the keys for a group when grouping a row set in multiple ways
+     * with {@link PlanBuilder.ModifyPlan#groupByUnion(PlanGroupSeq, PlanAggregateColSeq)}.
+     * Omit the keys to group over all rows.
+     * @param keys the columns, if any, in the group
+     * @return  a PlanGroup object defining the keys for a group
+     */
     PlanGroup group(String... keys);
+    /**
+     * Specifies the keys for a sequence of groups that provide a rollup for a row set.
+     * The rollup consists of each group formed by dropping key columns from right to left
+     * including the empty group for all rows.
+     * The group sequence for the rollup can be passed to
+     * {@link PlanBuilder.ModifyPlan#groupByUnion(PlanGroupSeq, PlanAggregateColSeq)}
+     * or {@link PlanBuilder.ModifyPlan#groupToArrays(PlanNamedGroupSeq, PlanAggregateColSeq)}.
+     * @param keys the columns in the rollup
+     * @return  a PlanGroupSeq object with the groups for the rollup
+     */
     PlanGroupSeq rollup(String... keys);
+    /**
+     * Specifies the keys for a sequence of groups that provide a cube for a row set.
+     * The cube consists of each group with a unique set of key columns
+     * including the empty group for all rows.
+     * The group sequence for the cube can be passed to
+     * {@link PlanBuilder.ModifyPlan#groupByUnion(PlanGroupSeq, PlanAggregateColSeq)}
+     * or {@link PlanBuilder.ModifyPlan#groupToArrays(PlanNamedGroupSeq, PlanAggregateColSeq)}.
+     * @param keys the columns in the cube
+     * @return  a PlanGroupSeq object with the groups for the cube
+     */
     PlanGroupSeq cube(String... keys);
+    /**
+     * Provides the sequence of groups when grouping a row set in multiple ways
+     * with {@link PlanBuilder.ModifyPlan#groupByUnion(PlanGroupSeq, PlanAggregateColSeq)}.
+     * Each group must provide a unique set of key columns, but a key column can appear
+     * in multiple groups
+     * @param group  the groups to apply to the row set
+     * @return  a PlanGroupSeq object with the groups of key columns
+     */
     PlanGroupSeq groupSeq(PlanGroup... group);
+    /**
+     * Specifies the name for a named group over all rows when grouping a row set in multiple ways
+     * with {@link PlanBuilder.ModifyPlan#groupToArrays(PlanNamedGroupSeq, PlanAggregateColSeq)}.
+     * @param name the name of the array for the group
+     * @return  a PlanNamedGroup object defining the name for a named group over all rows
+     */
     PlanNamedGroup namedGroup(String name);
+    /**
+     * Specifies the name and keys for a named group when grouping a row set in multiple ways
+     * with {@link PlanBuilder.ModifyPlan#groupToArrays(PlanNamedGroupSeq, PlanAggregateColSeq)}.
+     * @param name the name of the array for the group
+     * @param keys the columns, if any, in the group.  See {@link PlanBuilder#colSeq(String...)}
+     * @return  a PlanNamedGroup object defining the name and keys for a named group
+     */
     PlanNamedGroup namedGroup(String name, PlanExprColSeq keys);
+    /**
+     * Provides the sequence of named groups when grouping a row set in multiple ways
+     * with {@link PlanBuilder.ModifyPlan#groupToArrays(PlanNamedGroupSeq, PlanAggregateColSeq)}.
+     * Each group must provide a unique set of key columns, but a key column can appear
+     * in multiple groups. Names are assigned to groups without a name; if supplied,
+     * the group name must be unique.
+     * @param namedGroup  the named groups to apply to the row set
+     * @return a PlanNamedGroupSeq object with the named groups of key columns
+     */
     PlanNamedGroupSeq namedGroupSeq(PlanNamedGroup... namedGroup);
+
+    /**
+     * Provides a search options object to configure the execution of the
+     * {@link PlanBuilder#fromSearch(CtsQueryExpr, PlanExprColSeq, XsStringVal, PlanSearchOptions)}
+     * accessor.  Use the fluent methods of the search options object
+     * to set the configuration.
+     * @return  the configuration object
+     */
     PlanSearchOptions searchOptions();
 
     /**
@@ -194,129 +353,177 @@ public interface PlanBuilderBase {
         /**
          * Specifies a boolean primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
          * @param paramName  the name of a placeholder parameter
          * @param literal   a boolean primitive value to replace the parameter
-         * @return  a Plan object
+         * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(String paramName, boolean literal);
         /**
          * Specifies a boolean primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
          * @param param  a placeholder parameter as constructed by the param() method
          * @param literal   a boolean primitive value to replace the parameter
-         * @return  a Plan object
+         * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(PlanParamExpr param, boolean literal);
         /**
          * Specifies a byte primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
          * @param paramName  the name of a placeholder parameter
          * @param literal   a byte primitive value to replace the parameter
-         * @return  a Plan object
+         * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(String paramName, byte    literal);
         /**
          * Specifies a byte primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
          * @param param  a placeholder parameter as constructed by the param() method
          * @param literal   a byte primitive value to replace the parameter
-         * @return  a Plan object
+         * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(PlanParamExpr param, byte    literal);
         /**
          * Specifies a double primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
          * @param paramName  the name of a placeholder parameter
          * @param literal   a double primitive value to replace the parameter
-         * @return  a Plan object
+         * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(String paramName, double  literal);
         /**
          * Specifies a double primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
          * @param param  a placeholder parameter as constructed by the param() method
          * @param literal   a double primitive value to replace the parameter
-         * @return  a Plan object
+         * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(PlanParamExpr param, double  literal);
         /**
          * Specifies a float primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
          * @param paramName  the name of a placeholder parameter
          * @param literal   a float primitive value to replace the parameter
-         * @return  a Plan object
+         * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(String paramName, float   literal);
         /**
          * Specifies a float primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
          * @param param  a placeholder parameter as constructed by the param() method
          * @param literal   a float primitive value to replace the parameter
-         * @return  a Plan object
+         * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(PlanParamExpr param, float   literal);
         /**
          * Specifies an int primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
          * @param paramName  the name of a placeholder parameter
          * @param literal   an int primitive value to replace the parameter
-         * @return  a Plan object
+         * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(String paramName, int     literal);
         /**
          * Specifies an int primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
          * @param param  a placeholder parameter as constructed by the param() method
          * @param literal   an int primitive value to replace the parameter
-         * @return  a Plan object
+         * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(PlanParamExpr param, int     literal);
         /**
          * Specifies a long primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
          * @param paramName  the name of a placeholder parameter
          * @param literal   a long primitive value to replace the parameter
-         * @return  a Plan object
+         * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(String paramName, long    literal);
         /**
          * Specifies a long primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
          * @param param  a placeholder parameter as constructed by the param() method
          * @param literal   a long primitive value to replace the parameter
-         * @return  a Plan object
+         * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(PlanParamExpr param, long    literal);
         /**
          * Specifies a short primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
          * @param paramName  the name of a placeholder parameter
          * @param literal   a short primitive value to replace the parameter
-         * @return  a Plan object
+         * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(String paramName, short   literal);
         /**
          * Specifies a short primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
          * @param param  a placeholder parameter as constructed by the param() method
          * @param literal   a short primitive value to replace the parameter
-         * @return  a Plan object
+         * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(PlanParamExpr param, short   literal);
         /**
          * Specifies a string literal value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
          * @param paramName  the name of a placeholder parameter
          * @param literal   a string literal value to replace the parameter
-         * @return  a Plan object
+         * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(String paramName, String  literal);
         /**
          * Specifies a string literal value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
          * @param param  a placeholder parameter as constructed by the param() method
          * @param literal   a string literal value to replace the parameter
-         * @return  a Plan object
+         * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(PlanParamExpr param, String  literal);
     }
@@ -359,9 +566,85 @@ public interface PlanBuilderBase {
      * Use ModifyPlan as the type for instances of ModifyPlan.
      */
     interface ModifyPlanBase {
+        /**
+         * Constructs multiple groups over a single row set in a single pass.
+         * <p>The keys parameter takes a {@link PlanBuilder#groupSeq(PlanGroup...)} sequence
+         * providing the group specifications.
+         * Use a {@link PlanBuilder#col(String)} value to specify a group with a single key
+         * or a {@link PlanBuilder#group(String...)} value to specify a group with many keys
+         * or (for all rows) no key.
+         * The {@link PlanBuilder#rollup(String...)} and {@link PlanBuilder#cube(String...)}
+         * functions provide conveniences to generate multiple groups over a list of column keys.
+         * Each group must specify a unique set of grouping keys.</p>
+         * @param keys  Specifies the grouping keys for each group.  See {@link PlanBuilder#groupSeq(PlanGroup...)}
+         * @return  a ModifyPlan object
+         */
         PlanBuilder.ModifyPlan groupByUnion(PlanGroupSeq keys);
+        /**
+         * Constructs multiple groups over a single row set in a single pass.
+         * <p>The keys parameter takes a {@link PlanBuilder#groupSeq(PlanGroup...)} sequence
+         * providing the group specifications.
+         * Use a {@link PlanBuilder#col(String)} value to specify a group with a single key
+         * or a {@link PlanBuilder#group(String...)} value to specify a group with many keys
+         * or (for all rows) no key.
+         * The {@link PlanBuilder#rollup(String...)} and {@link PlanBuilder#cube(String...)}
+         * functions provide conveniences to generate multiple groups over a list of column keys.
+         * Each group must specify a unique set of grouping keys.</p>
+         * <p>The aggregates parameter takes a single aggregate or a sequence of aggregates
+         * collected by {@link PlanBuilder#aggregateSeq(PlanAggregateCol...)}.
+         * An aggregate can be a {@link PlanBuilder#col(String)} to sample the column or a
+         * {@link PlanBuilder#arrayAggregate(String, String)},
+         * {@link PlanBuilder#avg(String, String)},
+         * {@link PlanBuilder#count(String, String)},
+         * {@link PlanBuilder#groupConcat(String, String)},
+         * {@link PlanBuilder#hasGroupKey(String, String)},
+         * {@link PlanBuilder#max(String, String)},
+         * {@link PlanBuilder#min(String, String)},
+         * {@link PlanBuilder#sample(String, String)},
+         * {@link PlanBuilder#sum(String, String)},
+         * {@link PlanBuilder#uda(String, String, String, String, String)} aggregate function.</p>
+         * @param keys  Specifies the grouping keys for each group.  See {@link PlanBuilder#groupSeq(PlanGroup...)}
+         * @param aggregates  This parameter specifies either new columns for aggregate functions over the rows or columndefs that are constant. See {@link PlanBuilder#aggregateSeq(PlanAggregateCol...)}
+         * @return  a ModifyPlan object
+         */
         PlanBuilder.ModifyPlan groupByUnion(PlanGroupSeq keys, PlanAggregateColSeq aggregates);
+        /**
+         * Provides a convenience that executes a
+         * {@link PlanBuilder.ModifyPlan#groupByUnion(PlanGroupSeq, PlanAggregateColSeq)}
+         * to produce a single row with a separate array for each group.
+         * The convenience constructs a {@link PlanBuilder#jsonObject(PlanJsonProperty...)}
+         * for each row in each group with a property for each column belonging to the group and
+         * aggregates the objects for each group with
+         * a {@link PlanBuilder#arrayAggregate(PlanColumn, PlanExprCol)}.
+         * @param keys  Specifies the name and grouping keys for each group.  See {@link PlanBuilder#namedGroupSeq(PlanNamedGroup...)}
+         * @return  a ModifyPlan object
+         */
         PlanBuilder.ModifyPlan groupToArrays(PlanNamedGroupSeq keys);
+        /**
+         * Provides a convenience that executes a
+         * {@link PlanBuilder.ModifyPlan#groupByUnion(PlanGroupSeq, PlanAggregateColSeq)}
+         * to produce a single row with a separate array for each group.
+         * The convenience constructs a {@link PlanBuilder#jsonObject(PlanJsonProperty...)}
+         * for each row in each group with a property for each column belonging to the group and
+         * aggregates the objects for each group with
+         * a {@link PlanBuilder#arrayAggregate(PlanColumn, PlanExprCol)}.
+         * <p>The aggregates parameter takes a single aggregate or a sequence of aggregates
+         * collected by {@link PlanBuilder#aggregateSeq(PlanAggregateCol...)}.
+         * An aggregate can be a {@link PlanBuilder#col(String)} to sample the column or a
+         * {@link PlanBuilder#arrayAggregate(String, String)},
+         * {@link PlanBuilder#avg(String, String)},
+         * {@link PlanBuilder#count(String, String)},
+         * {@link PlanBuilder#groupConcat(String, String)},
+         * {@link PlanBuilder#hasGroupKey(String, String)},
+         * {@link PlanBuilder#max(String, String)},
+         * {@link PlanBuilder#min(String, String)},
+         * {@link PlanBuilder#sample(String, String)},
+         * {@link PlanBuilder#sum(String, String)},
+         * {@link PlanBuilder#uda(String, String, String, String, String)} aggregate function.</p>
+         * @param keys  Specifies the name and grouping keys for each group.  See {@link PlanBuilder#namedGroupSeq(PlanNamedGroup...)}
+         * @param aggregates  This parameter specifies either new columns for aggregate functions over the rows or columndefs that are constant. See {@link PlanBuilder#aggregateSeq(PlanAggregateCol...)}
+         * @return  a ModifyPlan object
+         */
         PlanBuilder.ModifyPlan groupToArrays(PlanNamedGroupSeq keys, PlanAggregateColSeq aggregates);
 
         /**

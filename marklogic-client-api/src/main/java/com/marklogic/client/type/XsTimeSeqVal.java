@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of server time values.
+ * See {@link com.marklogic.client.expression.XsValue#timeSeq(String...)}
  */
 public interface XsTimeSeqVal extends XsAnyAtomicTypeSeqVal {
     public XsTimeVal[] getTimeItems();

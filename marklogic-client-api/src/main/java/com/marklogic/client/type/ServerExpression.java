@@ -17,6 +17,7 @@ package com.marklogic.client.type;
 
 /**
  * One or more server expressions.
+ * To pass a sequence of server expressions, see {@link com.marklogic.client.expression.PlanBuilder#seq(ServerExpression...)}.
  *
  * <p>When building server expressions in Java, the parameters and return values
  * of the server expression functions are typed as ServerExpression objects.

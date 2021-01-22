@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of server boolean values.
+ * See {@link com.marklogic.client.expression.XsValue#booleanSeq(boolean...)} 
  */
 public interface XsBooleanSeqVal extends XsAnyAtomicTypeSeqVal {
     public XsBooleanVal[] getBooleanItems();
