@@ -39,6 +39,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPathExpressionException;
 
+import com.marklogic.client.row.*;
 import com.marklogic.client.type.*;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -58,13 +59,9 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.row.RawPlanDefinition;
-import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowManager.RowSetPart;
 import com.marklogic.client.row.RowManager.RowStructure;
-import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowRecord.ColumnKind;
-import com.marklogic.client.row.RowSet;
 import com.marklogic.client.util.EditableNamespaceContext;
 
 public class RowManagerTest {
@@ -1212,9 +1209,11 @@ public class RowManagerTest {
 
     RowManager rowMgr = Common.client.newRowManager();
 
-    testViewRows(rowMgr.resultRows(rowMgr.newRawSQLPlan(new StringHandle(plan))));
+    RawPlan builtPlan = rowMgr.newRawSQLPlan(new StringHandle(plan));
+    testViewRows(rowMgr.resultRows(builtPlan));
 
-// TODO: test explain
+    String stringRoot = rowMgr.explain(builtPlan, new StringHandle()).get();
+    assertNotNull(new ObjectMapper().readTree(stringRoot));
   }
   @Test
   public void testRawSPARQLSelect() throws IOException {
@@ -1229,7 +1228,8 @@ public class RowManagerTest {
 
     RowManager rowMgr = Common.client.newRowManager();
 
-    RowSet<RowRecord> rows = rowMgr.resultRows(rowMgr.newRawSPARQLSelectPlan(new StringHandle(plan)));
+    RawPlan builtPlan = rowMgr.newRawSPARQLSelectPlan(new StringHandle(plan));
+    RowSet<RowRecord> rows = rowMgr.resultRows(builtPlan);
 
     int rowNum = 0;
     for (RowRecord row: rows) {
@@ -1240,7 +1240,8 @@ public class RowManagerTest {
     }
     assertEquals("unexpected count of result records", 2, rowNum);
 
-// TODO: test explain
+    String stringRoot = rowMgr.explain(builtPlan, new StringHandle()).get();
+    assertNotNull(new ObjectMapper().readTree(stringRoot));
   }
   @Test
   public void testRawQueryDSL() throws IOException {
@@ -1255,9 +1256,11 @@ public class RowManagerTest {
 
     RowManager rowMgr = Common.client.newRowManager();
 
-    testViewRows(rowMgr.resultRows(rowMgr.newRawQueryDSLPlan(new StringHandle(plan))));
+    RawPlan builtPlan = rowMgr.newRawQueryDSLPlan(new StringHandle(plan));
+    testViewRows(rowMgr.resultRows(builtPlan));
 
-// TODO: test explain
+    String stringRoot = rowMgr.explain(builtPlan, new StringHandle()).get();
+    assertNotNull(new ObjectMapper().readTree(stringRoot));
   }
   private void checkSingleRow(NodeList row, RowSetPart datatypeStyle) {
     assertEquals("unexpected column count in XML", 2, row.getLength());
