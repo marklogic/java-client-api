@@ -27,8 +27,7 @@ import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.QueryBatchException;
 import com.marklogic.client.datamovement.QueryEvent;
 import com.marklogic.client.datamovement.QueryBatcherListener;
-import com.marklogic.client.impl.HandleAccessor;
-import com.marklogic.client.impl.HandleImplementation;
+import com.marklogic.client.impl.*;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
@@ -39,8 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.impl.QueryManagerImpl;
-import com.marklogic.client.impl.UrisHandle;
 
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -93,8 +90,11 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
           String serializedCtsQuery, Boolean filtered, int maxDocToUriBatchRatio, int defaultDocBatchSize, int maxUriBatchSize
   ) {
     this(moveMgr, forestConfig, maxDocToUriBatchRatio, defaultDocBatchSize, maxUriBatchSize);
-    QueryManagerImpl queryMgr = (QueryManagerImpl) getPrimaryClient().newQueryManager();
-    if (serializedCtsQuery != null && serializedCtsQuery.length() > 0) {
+    // TODO:  skip conversion in DataMovementManagerImpl.newQueryBatcherImpl() unless canSerializeQueryAsJSON()
+    if (serializedCtsQuery != null && serializedCtsQuery.length() > 0 &&
+            originalQuery instanceof AbstractSearchQueryDefinition &&
+            ((AbstractSearchQueryDefinition) originalQuery).canSerializeQueryAsJSON()) {
+      QueryManagerImpl queryMgr = (QueryManagerImpl) getPrimaryClient().newQueryManager();
       this.queryMethod = "POST";
       this.query = queryMgr.newRawCtsQueryDefinition(new StringHandle(serializedCtsQuery).withFormat(Format.JSON));
       this.originalQuery = originalQuery;

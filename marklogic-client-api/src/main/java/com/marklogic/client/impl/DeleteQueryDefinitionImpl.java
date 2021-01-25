@@ -39,4 +39,9 @@ public class DeleteQueryDefinitionImpl extends AbstractQueryDefinition implement
   public void setResponseTransform(ServerTransform transform) {
     throw new UnsupportedOperationException("A server transform has no meaning on a DeleteQueryDefinition");
   }
+
+  @Override
+  public boolean canSerializeQueryAsJSON() {
+    return true;
+  }
 }

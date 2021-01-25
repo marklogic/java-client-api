@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.CtsQueryWriteHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
@@ -175,5 +176,13 @@ abstract public class RawQueryDefinitionImpl<T extends StructureWriteHandle>
       return "";
     }
     return handle.toString();
+  }
+
+  @Override
+  public boolean canSerializeQueryAsJSON() {
+    StructureWriteHandle handle = getHandle();
+    if (handle == null) return false;
+    return HandleAccessor.checkHandle(handle, "raw query").getFormat() == Format.JSON &&
+            getOptionsName() == null;
   }
 }

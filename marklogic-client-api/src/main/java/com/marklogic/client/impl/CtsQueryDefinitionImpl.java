@@ -48,4 +48,9 @@ public class CtsQueryDefinitionImpl extends AbstractSearchQueryDefinition implem
         str.append("}}");
         return str.toString();
     }
+
+    @Override
+    public boolean canSerializeQueryAsJSON() {
+        return getOptionsName() == null;
+    }
 }

@@ -41,4 +41,6 @@ public abstract class AbstractSearchQueryDefinition implements SearchQueryDefini
     public void setResponseTransform(ServerTransform transform) {
         this.transform = transform;
     }
+
+    public abstract boolean canSerializeQueryAsJSON();
 }

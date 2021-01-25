@@ -39,4 +39,9 @@ public class StringQueryDefinitionImpl extends AbstractQueryDefinition implement
     setCriteria(criteria);
     return this;
   }
+
+  @Override
+  public boolean canSerializeQueryAsJSON() {
+    return getOptionsName() == null;
+  }
 }

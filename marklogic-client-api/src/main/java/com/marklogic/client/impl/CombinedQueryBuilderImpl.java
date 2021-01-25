@@ -111,6 +111,10 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
       return format;
     }
 
+    @Override
+    public boolean canSerializeQueryAsJSON() {
+      return getFormat() == Format.JSON && getOptionsName() == null;
+    }
   }
 
   @Override
