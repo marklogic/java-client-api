@@ -16,18 +16,19 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.marklogic.client.row.RowRecord;
+import com.marklogic.client.row.RowSet;
+import com.marklogic.client.type.*;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -49,11 +50,8 @@ import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowManager;
-import com.marklogic.client.type.CtsQueryExpr;
-import com.marklogic.client.type.CtsQuerySeqExpr;
-import com.marklogic.client.type.CtsReferenceExpr;
-import com.marklogic.client.type.PlanPrefixer;
-import com.marklogic.client.type.XsStringSeqVal;
+
+import static org.junit.Assert.*;
 
 /* The tests here are for checks on cts queries.
  */
@@ -65,126 +63,114 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
   private static String[] fNames = { "TestOpticOnCtsQueryDB-1" };
   private static String[] schemafNames = { "TestOpticOnCtsQuerySchemaDB-1" };
 
-  private static DatabaseClient client; 
-  private static String datasource = "src/test/java/com/marklogic/client/functionaltest/data/optics/";
+  private static DatabaseClient client;
 
   @BeforeClass
-  public static void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception
-  {
+  public static void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     System.out.println("In TestOpticOnCtsQuery setup");
     DatabaseClient schemaDBclient = null;
 
     configureRESTServer(dbName, fNames);
 
-    // Add new range elements into this array
-    String[][] rangeElements = {
-        // { scalar-type, namespace-uri, localname, collation,
-        // range-value-positions, invalid-values }
-        // If there is a need to add additional fields, then add them to the end
-        // of each array
-        // and pass empty strings ("") into an array where the additional field
-        // does not have a value.
-        // For example : as in namespace, collections below.
-        // Add new RangeElementIndex as an array below.
-        { "string", "", "city", "http://marklogic.com/collation/", "false", "reject" },
-        { "int", "", "popularity", "", "false", "reject" },
-        { "int", "", "id", "", "false", "reject" },
-        { "double", "", "distance", "", "false", "reject" },
-        { "date", "", "date", "", "false", "reject" },
-        { "string", "", "cityName", "http://marklogic.com/collation/", "false", "reject" },
-        { "string", "", "cityTeam", "http://marklogic.com/collation/", "false", "reject" },
-        { "long", "", "cityPopulation", "", "false", "reject" }
-    };
+      // Add new range elements into this array
+      String[][] rangeElements = {
+              // { scalar-type, namespace-uri, localname, collation,
+              // range-value-positions, invalid-values }
+              // If there is a need to add additional fields, then add them to the end
+              // of each array
+              // and pass empty strings ("") into an array where the additional field
+              // does not have a value.
+              // For example : as in namespace, collections below.
+              // Add new RangeElementIndex as an array below.
+              {"string", "", "city", "http://marklogic.com/collation/", "false", "reject"},
+              {"int", "", "popularity", "", "false", "reject"},
+              {"int", "", "id", "", "false", "reject"},
+              {"double", "", "distance", "", "false", "reject"},
+              {"date", "", "date", "", "false", "reject"},
+              {"string", "", "cityName", "http://marklogic.com/collation/", "false", "reject"},
+              {"string", "", "cityTeam", "http://marklogic.com/collation/", "false", "reject"},
+              {"long", "", "cityPopulation", "", "false", "reject"}
+      };
 
-    // Insert the range indices
-    addRangeElementIndex(dbName, rangeElements);
+      // Insert the range indices
+      addRangeElementIndex(dbName, rangeElements);
 
-    // Insert word lexicon.
-    ObjectMapper mapper = new ObjectMapper();
-    ObjectNode mainNode = mapper.createObjectNode();
-    ArrayNode childArray = mapper.createArrayNode();
-    ObjectNode childNodeObject = mapper.createObjectNode();
+      // Insert word lexicon.
+      ObjectMapper mapper = new ObjectMapper();
+      ObjectNode mainNode = mapper.createObjectNode();
+      ArrayNode childArray = mapper.createArrayNode();
+      ObjectNode childNodeObject = mapper.createObjectNode();
 
-    childNodeObject.put("namespace-uri", "");
-    childNodeObject.put("localname", "city");
-    childNodeObject.put("collation", "http://marklogic.com/collation/");
-    childArray.add(childNodeObject);
-    mainNode.withArray("element-word-lexicon").add(childArray);
+      childNodeObject.put("namespace-uri", "");
+      childNodeObject.put("localname", "city");
+      childNodeObject.put("collation", "http://marklogic.com/collation/");
+      childArray.add(childNodeObject);
+      mainNode.withArray("element-word-lexicon").add(childArray);
 
-    setDatabaseProperties(dbName, "element-word-lexicon", mainNode);
+      setDatabaseProperties(dbName, "element-word-lexicon", mainNode);
 
-    // Add geo element index.
-    addGeospatialElementIndexes(dbName, "latLonPoint", "", "wgs84", "point", false, "reject");
-    // Enable triple index.
-    enableTripleIndex(dbName);
-    waitForServerRestart();
-    // Enable collection lexicon.
-    enableCollectionLexicon(dbName);
-    // Enable uri lexicon.
-    setDatabaseProperties(dbName, "uri-lexicon", true);
-    // Create schema database
-    createDB(schemadbName);
-    createForest(schemafNames[0], schemadbName);
-    // Set the schemadbName database as the Schema database.
-    setDatabaseProperties(dbName, "schema-database", schemadbName);
-    
-    createUserRolesWithPrevilages("opticRole", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
-    createRESTUser("opticUser", "0pt1c", "tde-admin", "tde-view", "opticRole", "rest-admin", "rest-writer", 
-    		                             "rest-reader", "rest-extension-user", "manage-user");    
+      // Add geo element index.
+      addGeospatialElementIndexes(dbName, "latLonPoint", "", "wgs84", "point", false, "reject");
+      // Enable triple index.
+      enableTripleIndex(dbName);
+      waitForServerRestart();
+      // Enable collection lexicon.
+      enableCollectionLexicon(dbName);
+      // Enable uri lexicon.
+      setDatabaseProperties(dbName, "uri-lexicon", true);
+      // Create schema database
+      createDB(schemadbName);
+      createForest(schemafNames[0], schemadbName);
+      // Set the schemadbName database as the Schema database.
+      setDatabaseProperties(dbName, "schema-database", schemadbName);
+
+      createUserRolesWithPrevilages("opticRole", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
+      createRESTUser("opticUser", "0pt1c", "tde-admin", "tde-view", "opticRole", "rest-admin", "rest-writer",
+              "rest-reader", "rest-extension-user", "manage-user");
 
     if (IsSecurityEnabled()) {
-        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", getConnType());
-        client = getDatabaseClient("opticUser", "0pt1c", getConnType());
+      schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", getConnType());
+      client = getDatabaseClient("opticUser", "0pt1c", getConnType());
+    } else {
+      schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("opticUser", "0pt1c"));
+      client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("opticUser", "0pt1c"));
     }
-    else {
-        schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("opticUser", "0pt1c"));
-        client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("opticUser", "0pt1c"));
-    }
+      // Install the TDE templates
+      // loadFileToDB(client, filename, docURI, collection, document format)
+      loadFileToDB(schemaDBclient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[]{"http://marklogic.com/xdmp/tde"});
+      loadFileToDB(schemaDBclient, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON", new String[]{"http://marklogic.com/xdmp/tde"});
+      loadFileToDB(schemaDBclient, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON", new String[]{"http://marklogic.com/xdmp/tde"});
+      loadFileToDB(schemaDBclient, "masterDetail4.tdej", "/optic/view/test/masterDetail4.tdej", "JSON", new String[]{"http://marklogic.com/xdmp/tde"});
 
-    // Install the TDE templates
-    // loadFileToDB(client, filename, docURI, collection, document format)
-    loadFileToDB(schemaDBclient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[] { "http://marklogic.com/xdmp/tde" });
-    loadFileToDB(schemaDBclient, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON", new String[] { "http://marklogic.com/xdmp/tde" });
-    loadFileToDB(schemaDBclient, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON", new String[] { "http://marklogic.com/xdmp/tde" });
-    loadFileToDB(schemaDBclient, "masterDetail4.tdej", "/optic/view/test/masterDetail4.tdej", "JSON", new String[] { "http://marklogic.com/xdmp/tde" });
+      // Load XML data files.
+      loadFileToDB(client, "masterDetail.xml", "/optic/view/test/masterDetail.xml", "XML", new String[]{"/optic/view/test"});
+      loadFileToDB(client, "playerTripleSet.xml", "/optic/triple/test/playerTripleSet.xml", "XML", new String[]{"/optic/player/triple/test"});
+      loadFileToDB(client, "teamTripleSet.xml", "/optic/triple/test/teamTripleSet.xml", "XML", new String[]{"/optic/team/triple/test"});
+      loadFileToDB(client, "otherPlayerTripleSet.xml", "/optic/triple/test/otherPlayerTripleSet.xml", "XML", new String[]{"/optic/other/player/triple/test"});
+      loadFileToDB(client, "doc4.xml", "/optic/lexicon/test/doc4.xml", "XML", new String[]{"/optic/lexicon/test"});
+      loadFileToDB(client, "doc5.xml", "/optic/lexicon/test/doc5.xml", "XML", new String[]{"/optic/lexicon/test"});
 
-    // Load XML data files.
-    loadFileToDB(client, "masterDetail.xml", "/optic/view/test/masterDetail.xml", "XML", new String[] { "/optic/view/test" });
-    loadFileToDB(client, "playerTripleSet.xml", "/optic/triple/test/playerTripleSet.xml", "XML", new String[] { "/optic/player/triple/test" });
-    loadFileToDB(client, "teamTripleSet.xml", "/optic/triple/test/teamTripleSet.xml", "XML", new String[] { "/optic/team/triple/test" });
-    loadFileToDB(client, "otherPlayerTripleSet.xml", "/optic/triple/test/otherPlayerTripleSet.xml", "XML", new String[] { "/optic/other/player/triple/test" });
-    loadFileToDB(client, "doc4.xml", "/optic/lexicon/test/doc4.xml", "XML", new String[] { "/optic/lexicon/test" });
-    loadFileToDB(client, "doc5.xml", "/optic/lexicon/test/doc5.xml", "XML", new String[] { "/optic/lexicon/test" });
+      // Load JSON data files.
+      loadFileToDB(client, "masterDetail2.json", "/optic/view/test/masterDetail2.json", "JSON", new String[]{"/optic/view/test"});
+      loadFileToDB(client, "masterDetail3.json", "/optic/view/test/masterDetail3.json", "JSON", new String[]{"/optic/view/test"});
+      loadFileToDB(client, "masterDetail4.json", "/optic/view/test/masterDetail4.json", "JSON", new String[]{"/optic/view/test"});
+      loadFileToDB(client, "masterDetail5.json", "/optic/view/test/masterDetail5.json", "JSON", new String[]{"/optic/view/test"});
 
-    // Load JSON data files.
-    loadFileToDB(client, "masterDetail2.json", "/optic/view/test/masterDetail2.json", "JSON", new String[] { "/optic/view/test" });
-    loadFileToDB(client, "masterDetail3.json", "/optic/view/test/masterDetail3.json", "JSON", new String[] { "/optic/view/test" });
-    loadFileToDB(client, "masterDetail4.json", "/optic/view/test/masterDetail4.json", "JSON", new String[] { "/optic/view/test" });
-    loadFileToDB(client, "masterDetail5.json", "/optic/view/test/masterDetail5.json", "JSON", new String[] { "/optic/view/test" });
+      loadFileToDB(client, "doc1.json", "/optic/lexicon/test/doc1.json", "JSON", new String[]{"/other/coll1", "/other/coll2"});
+      loadFileToDB(client, "doc2.json", "/optic/lexicon/test/doc2.json", "JSON", new String[]{"/optic/lexicon/test"});
+      loadFileToDB(client, "doc3.json", "/optic/lexicon/test/doc3.json", "JSON", new String[]{"/optic/lexicon/test"});
 
-    loadFileToDB(client, "doc1.json", "/optic/lexicon/test/doc1.json", "JSON", new String[] { "/other/coll1", "/other/coll2" });
-    loadFileToDB(client, "doc2.json", "/optic/lexicon/test/doc2.json", "JSON", new String[] { "/optic/lexicon/test" });
-    loadFileToDB(client, "doc3.json", "/optic/lexicon/test/doc3.json", "JSON", new String[] { "/optic/lexicon/test" });
+      loadFileToDB(client, "city1.json", "/optic/lexicon/test/city1.json", "JSON", new String[]{"/optic/lexicon/test"});
+      loadFileToDB(client, "city2.json", "/optic/lexicon/test/city2.json", "JSON", new String[]{"/optic/lexicon/test"});
+      loadFileToDB(client, "city3.json", "/optic/lexicon/test/city3.json", "JSON", new String[]{"/optic/lexicon/test"});
+      loadFileToDB(client, "city4.json", "/optic/lexicon/test/city4.json", "JSON", new String[]{"/optic/lexicon/test"});
+      loadFileToDB(client, "city5.json", "/optic/lexicon/test/city5.json", "JSON", new String[]{"/optic/lexicon/test"});
+      Thread.sleep(10000);
+      schemaDBclient.release();
 
-    loadFileToDB(client, "city1.json", "/optic/lexicon/test/city1.json", "JSON", new String[] { "/optic/lexicon/test" });
-    loadFileToDB(client, "city2.json", "/optic/lexicon/test/city2.json", "JSON", new String[] { "/optic/lexicon/test" });
-    loadFileToDB(client, "city3.json", "/optic/lexicon/test/city3.json", "JSON", new String[] { "/optic/lexicon/test" });
-    loadFileToDB(client, "city4.json", "/optic/lexicon/test/city4.json", "JSON", new String[] { "/optic/lexicon/test" });
-    loadFileToDB(client, "city5.json", "/optic/lexicon/test/city5.json", "JSON", new String[] { "/optic/lexicon/test" });
-    Thread.sleep(10000);
-    schemaDBclient.release();
   }
-
-  /**
+  /*
    * Write document using DOMHandle
-   * 
-   * @param client
-   * @param filename
-   * @param uri
-   * @param type
-   * @throws IOException
-   * @throws ParserConfigurationException
-   * @throws SAXException
    */
 
   public static void loadFileToDB(DatabaseClient client, String filename, String uri, String type, String[] collections) throws IOException, ParserConfigurationException,
@@ -194,6 +180,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
     DocumentManager docMgr = null;
     docMgr = documentMgrSelector(client, docMgr, type);
 
+    String datasource = "src/test/java/com/marklogic/client/functionaltest/data/optics/";
     File file = new File(datasource + filename);
     // create a handle on the content
     FileHandle handle = new FileHandle(file);
@@ -213,13 +200,8 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
     System.out.println("Write " + uri + " to database");
   }
 
-  /**
+  /*
    * Function to select and create document manager based on the type
-   * 
-   * @param client
-   * @param docMgr
-   * @param type
-   * @return
    */
   public static DocumentManager documentMgrSelector(DatabaseClient client, DocumentManager docMgr, String type) {
     // create doc manager
@@ -815,19 +797,134 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
     assertTrue("Number of Elements after plan execution is incorrect. Should be 6", 6 == jsonBindingsNodes.size());
   }
 
+  /*
+   * Sanity Checks for Plan Builder's fromSearch
+   */
+  @Test
+  public void testfromSearchDocs() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testfromSearchDocs method");
+
+    // Create a new Plan.
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    PlanSystemColumn viewDocId = p.fragmentIdCol("planDocId");
+
+    ModifyPlan output = p.fromSearchDocs(p.cts.wordQuery("Detail 400"))
+                         .joinInner(
+                                 p.fromView("opticFunctionalTest4", "detail4", "", viewDocId),
+                                 p.on(p.fragmentIdCol("fragmentId"), viewDocId)
+                                 )
+                          .where (p.and(
+                                  p.eq(p.col("color"),  p.xs.string("white")),
+                                  p.eq(p.col("masterId"),  p.xs.intVal(100))
+                          ));
+
+    RowSet<RowRecord> rowSet = rowMgr.resultRows (output);
+    Iterator<RowRecord> rowItr = rowSet.iterator();
+
+    RowRecord record = null;
+    long rCount = 0;
+    while (rowItr.hasNext()) {
+      rCount++;
+      record = rowItr.next();
+      assertTrue("Element 1 RowSet Iterator value incorrect", record.getInt("score") > 0);
+      assertEquals("Element 1 RowSet Iterator value incorrect", 100, record.getInt("masterId"));
+      assertEquals("Element 1 RowSet Iterator value incorrect", "white", record.getString("color"));
+      assertEquals("Element 1 RowSet Iterator value incorrect", "Detail 600", record.getString("name"));
+      assertEquals("Element 1 RowSet Iterator value incorrect", 600, record.getInt("id"));
+      assertEquals("Element 1 RowSet Iterator value incorrect", "/optic/view/test/masterDetail5.json", record.getString("uri"));
+    }
+    if (rCount == 0) {
+      fail("Could not traverse Iterator<RowRecord> in testfromSearch method");
+    }
+    else {
+      assertEquals("Incorrect count of records", 1, rCount);
+    }
+  }
+
+  /*
+   * Sanity Checks for Plan Builder's fromSearch
+   */
+  @Test
+  public void testfromSearchScores() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testfromSearchScores method");
+
+    // Create a new Plan.
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail");
+    ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master");
+
+    ModifyPlan plan3 = plan1.joinFullOuter(plan2)
+            .select(
+                    p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
+                    p.schemaCol("opticFunctionalTest", "master", "date"),
+                    p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
+                    p.as("DetailId", p.schemaCol("opticFunctionalTest", "detail", "id")),
+                    p.col("amount"),
+                    p.col("color")
+            )
+            .orderBy(p.sortKeySeq(p.desc(p.col("DetailName")), p.desc(p.schemaCol("opticFunctionalTest", "master", "date"))));
+    PlanSystemColumn fIdCol1 = p.fragmentIdCol("fragIdCol1");
+
+    PlanBuilder.ExportablePlan output = p.fromSearch(p.cts.orQuery(
+            p.cts.elementWordQuery("color", "blue"),
+            p.cts.elementWordQuery("color", "green")))
+            .joinInner(p.fromView("opticFunctionalTest", "detail", null, p.fragmentIdCol("viewDocId")
+                        ),
+                    p.on("fragmentId", "viewDocId")
+            )
+            .select()
+            .orderBy(p.desc("amount"));
+
+    RowSet<RowRecord> rowSet = rowMgr.resultRows (output);
+    Iterator<RowRecord> rowItr = rowSet.iterator();
+
+    RowRecord record = null;
+    JsonNode[] rowsToCheck =  new JsonNode[6];
+    int rCount = 0;
+
+    int score = 0;
+    int[] masterid = new int[] {2, 1, 2, 1, 2, 1};
+    String[] color = new String[] {"green", "green", "green", "blue", "blue", "blue"};
+    String[] detname = new String[] {"Detail 6", "Detail 5", "Detail 4", "Detail 3", "Detail 2", "Detail 1"};
+    double[] amount = new double[] {60.06, 50.05, 40.04, 30.03, 20.02, 10.01};
+    int[] detailid = new int[] {6, 5, 4, 3, 2, 1};
+
+    while (rowItr.hasNext()) {
+
+      record = rowItr.next();
+      score = record.getContainer("score").asInt();
+
+      System.out.println("Results " + record.toString());
+      assertTrue("Element score RowSet Iterator value incorrect", score > 0);
+      assertEquals("Element masterId of RowSet incorrect", masterid[rCount], record.getInt("opticFunctionalTest.detail.masterId"));
+      assertEquals("Element detailId of RowSet incorrect", detailid[rCount], record.getInt("opticFunctionalTest.detail.id"));
+
+      assertEquals("Element color of RowSet incorrect", color[rCount], record.getString("opticFunctionalTest.detail.color"));
+      assertEquals("Element name of RowSet incorrect", detname[rCount], record.getString("opticFunctionalTest.detail.name"));
+      assertEquals("Element color of RowSet incorrect", amount[rCount], record.getDouble("opticFunctionalTest.detail.amount"), 0.0);
+
+      rCount++;
+    }
+
+  }
+
   @AfterClass
   public static void tearDownAfterClass() throws Exception
   {
     System.out.println("In tear down");
     // Delete the temp schema DB after resetting the Schema DB on content DB.
     // Else delete fails.
-    deleteUserRole("opticRole");
-    deleteRESTUser("opticUser");
-    setDatabaseProperties(dbName, "schema-database", dbName);
-    deleteDB(schemadbName);
-    deleteForest(schemafNames[0]);
-    // release client
-    client.release();
-    cleanupRESTServer(dbName, fNames);
+
+      deleteUserRole("opticRole");
+      deleteRESTUser("opticUser");
+      setDatabaseProperties(dbName, "schema-database", dbName);
+      deleteDB(schemadbName);
+      deleteForest(schemafNames[0]);
+      // release client
+      client.release();
+      cleanupRESTServer(dbName, fNames);
   }
 }
