@@ -36,6 +36,7 @@ import javax.xml.xpath.XPathExpressionException;
 import com.marklogic.client.expression.CtsQueryBuilder;
 import com.marklogic.client.query.*;
 import com.marklogic.client.type.CtsQueryExpr;
+import com.marklogic.client.util.EditableNamespaceContext;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -102,6 +103,30 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
     setupJavaRESTServer(dbName, fNames[0], restServerName, restServerPort);
     setupAppServicesConstraint(dbName);
+    String[][] namespacePaths = {
+            // { prefix, namespace-uri }
+            // If there is a need to add additional fields, then add them to
+            // the end
+            // of each array
+            // and pass empty strings ("") into an array where the
+            // additional field
+            // does not have a value.
+            // For example : as in namespace, collections below.
+            { "ns1", "http://www.example1.com" },
+            { "ns2", "http://www.example2.com" },
+            { "nsdate", "http://purl.org/dc/elements/1.1/" }
+            // Add new namespace Paths as an array below.
+    };
+    // Insert the namespaces path
+    addPathNamespace(dbName, namespacePaths);
+
+    // Add additional range path indices with namespaces.
+    String[][] rangePaths = {
+            {"int","/ns1:root/ns1:popularity","","ignore","false"},
+            {"string","/ns2:root/ns2:status","http://marklogic.com/collation/","ignore","false"},
+            {"date","//nsdate:date","","ignore","false"}
+    };
+    addRangePathIndex(dbName, rangePaths);
 
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "rest-extension-user", "manage-user");
@@ -2274,7 +2299,6 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
         DataMovementManager dmManagerTmp = null;
 
         try {
-          System.out.println("Running testUTF8InUri");
 
           String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
           String combinedQueryFileName = "combinedQueryOptionJSON.json";
@@ -2368,4 +2392,144 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
           clearDB();
         }
       }
+
+  // Verify namespaces in query. Refer to Git Issue 1283.
+
+  @Test
+  public void testPathNameSpacesInQuery() throws Exception {
+    System.out.println("Running testPathNameSpacesInQuery");
+    DatabaseClient clientTmp = null;
+    DataMovementManager dmManagerTmp = null;
+
+    try {
+      // Insert docs
+      StringBuilder doc1 = new StringBuilder();
+      doc1.append("<root xmlns=\"http://www.example1.com\">");
+      doc1.append("<title>Vannevar Bush</title>");
+      doc1.append("<popularity>5</popularity>");
+      doc1.append("<id>0011</id>");
+      doc1.append("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2005-01-01</date>");
+      doc1.append("<price xmlns=\"http://cloudbank.com\" amt=\"0.1\"/>");
+      doc1.append("<p>Vannevar Bush wrote an article for The Atlantic Monthly</p>");
+      doc1.append("<status>active</status>");
+      doc1.append("<g-elem-point>12,5</g-elem-point>");
+      doc1.append("<g-elem-child-parent><g-elem-child-point>12,5</g-elem-child-point></g-elem-child-parent>");
+      doc1.append("<g-elem-pair><lat>12</lat><long>5</long></g-elem-pair>");
+      doc1.append("<g-attr-pair lat=\"12\" long=\"5\"/>");
+      doc1.append("</root>");
+
+      StringBuilder doc2 = new StringBuilder();
+      doc2.append("<root xmlns=\"http://www.example2.com\">");
+      doc2.append("<title>The Bush article</title>");
+      doc2.append("<popularity>4</popularity>");
+      doc2.append("<id>0012</id>");
+      doc2.append("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2006-02-02</date>");
+      doc2.append("<price xmlns=\"http://cloudbank.com\" amt=\"0.12\"/>");
+      doc2.append("<p>The Bush article described a device called a Memex.</p>");
+      doc2.append("<status>active</status>");
+      doc2.append("</root>");
+
+      StringBuilder doc3 = new StringBuilder();
+      doc3.append("<root xmlns=\"http://www.example2.com\">");
+      doc3.append("<title>For 1945</title>");
+      doc3.append("<popularity>3</popularity>");
+      doc3.append("<id>0113</id>");
+      doc3.append("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2007-03-03</date>");
+      doc3.append("<price xmlns=\"http://cloudbank.com\" amt=\"1.22\"/>");
+      doc3.append("<p>For 1945, the thoughts expressed in The Atlantic Monthly were groundbreaking.</p>");
+      doc3.append("<status>pending</status>");
+      doc3.append("</root>");
+
+      StringBuilder doc4 = new StringBuilder();
+      doc4.append("<root xmlns=\"http://www.example2.com\">");
+      doc4.append("<title>Vannevar served</title>");
+      doc4.append("<popularity>5</popularity>");
+      doc4.append("<id>0024</id>");
+      doc4.append("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2008-04-04</date>");
+      doc4.append("<price xmlns=\"http://cloudbank.com\" amt=\"12.34\"/>");
+      doc4.append("<p>Vannevar served as a prominent policymaker and public intellectual.</p>");
+      doc4.append("<status>active</status>");
+      doc4.append("</root>");
+
+      StringBuilder doc5 = new StringBuilder();
+      doc5.append("<root xmlns=\"http://www.example2.com\">");
+      doc5.append("<title>The memex</title>");
+      doc5.append("<popularity>5</popularity>");
+      doc5.append("<id>0026</id>");
+      doc5.append("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2009-05-05</date>");
+      doc5.append("<price xmlns=\"http://cloudbank.com\" amt=\"123.45\"/>");
+      doc5.append("<p>The Memex, unfortunately, had no automated search feature.</p>");
+      doc5.append("<status>pending</status>");
+      doc5.append("</root>");
+
+      clientTmp = getDatabaseClient("eval-user", "x", getConnType());
+      dmManager = clientTmp.newDataMovementManager();
+      WriteBatcher batcher = dmManager.newWriteBatcher();
+      dmManager.startJob(batcher);
+      batcher.add("/testdoc/doc1,xml", new StringHandle(doc1.toString()));
+      batcher.add("/testdoc/doc2.xml", new StringHandle(doc2.toString()));
+      batcher.add("/testdoc/doc3.xml", new StringHandle(doc3.toString()));
+      batcher.add("/testdoc/doc4.xml", new StringHandle(doc4.toString()));
+      batcher.add("/testdoc/doc5.xml", new StringHandle(doc5.toString()));
+
+      batcher.flushAndWait();
+      QueryManager queryManager = clientTmp.newQueryManager();
+
+      StringBuilder resultUris = new StringBuilder();
+      StringBuilder failStr = new StringBuilder();
+      AtomicInteger docCnt = new AtomicInteger(0);
+
+      StructuredQueryBuilder queryBuilder = queryManager.newStructuredQueryBuilder();
+      EditableNamespaceContext namespaceContext = new EditableNamespaceContext();
+      namespaceContext.put("nsdate", "http://purl.org/dc/elements/1.1/");
+      namespaceContext.put("ns1", "http://www.example1.com");
+      namespaceContext.put("ns2", "http://www.example2.com");
+      queryBuilder.setNamespaces(namespaceContext);
+
+      StructuredQueryDefinition qd = queryBuilder.range(
+              queryBuilder.pathIndex("//nsdate:date"),
+              "xs:date", StructuredQueryBuilder.Operator.GT, "2007-01-01");
+
+      QueryBatcher qb = dmManager.newQueryBatcher(qd)
+              .onUrisReady(batch -> {
+                System.out.println("Items: " + Arrays.asList(batch.getItems()));
+                for(String s:batch.getItems()) {
+                  resultUris.append(s);
+                  resultUris.append("|");
+                  docCnt.incrementAndGet();
+                }
+              })
+              .onQueryFailure(failure -> {
+                System.out.println("Failure: " + failure.getMessage());
+                failStr.append(failure.getMessage());
+              });
+      try {
+        dmManager.startJob(qb);
+        qb.awaitCompletion();
+      } catch (Exception e) {
+        System.out.println("Exceptions thrown from Query Batcher job");
+      }
+      finally {
+        dmManager.stopJob(qb);
+        int ndocs = docCnt.get();
+        if (! failStr.toString().isEmpty()) {
+          fail("QueryBatcher failed to query required docs.");
+        }
+        assertEquals("Number of docs returned incorrect", 3, ndocs);
+        String res = resultUris.toString();
+        assertTrue("Doc 1 returned incorrect", res.contains("/testdoc/doc3.xml"));
+        assertTrue("Doc 2 returned incorrect", res.contains("/testdoc/doc4.xml"));
+        assertTrue("Doc 3 returned incorrect", res.contains("/testdoc/doc5.xml"));
+      }
+
+    } catch (Exception e) {
+      System.out.println("Exceptions thrown from testPathNameSpacesInQuery");
+      System.out.println(e.getMessage());
+      fail("testPathNameSpacesInQuery mathod failed");
+    } finally {
+      clientTmp.release();
+      clearDB();
+    }
+
+  }
 }
