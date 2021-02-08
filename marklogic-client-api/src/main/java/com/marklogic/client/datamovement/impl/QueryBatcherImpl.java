@@ -344,7 +344,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     return this;
   }
 
-  @Override
+/*  @Override
   public QueryBatcher withBatchSize(int docBatchSize, int docToUriBatchRatio, int threadThrottleFactor) {
     if (threadThrottleFactor < 0 || threadThrottleFactor > this.maxDocToUriBatchRatio) {
       throw new IllegalArgumentException("threadThrottleFactor is less than 0 or " +
@@ -356,14 +356,14 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     withBatchSize(docBatchSize, docToUriBatchRatio);
     this.threadThrottleFactor = threadThrottleFactor;
     return this;
-  }
+  }*/
 
   @Override
   public int getDocToUriBatchRatio() {
     return this.docToUriBatchRatio;
   }
 
-  @Override
+//  @Override
   public int getThreadThrottleFactor() {
     return this.threadThrottleFactor;
   }
