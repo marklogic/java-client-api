@@ -310,7 +310,7 @@ public interface QueryBatcher extends Batcher {
    *                             0 explicitly uses the maximum number of threads
    * @return this instance for method chaining
    */
-  public QueryBatcher withBatchSize(int docBatchSize, int docToUriBatchRatio, int threadThrottleFactor);
+  //public QueryBatcher withBatchSize(int docBatchSize, int docToUriBatchRatio, int threadThrottleFactor);
 
   /**
    * Returns docToUriBatchRatio set to the QueryBatcher
@@ -322,7 +322,7 @@ public interface QueryBatcher extends Batcher {
    * Returns threadThrottleFactor set to the QueryBatcher
    * @return threadThrottleFactor
    */
-  public int getThreadThrottleFactor();
+  //public int getThreadThrottleFactor();
 
   /**
    * Returns defaultDocBatchSize, which is calculated according to server status
