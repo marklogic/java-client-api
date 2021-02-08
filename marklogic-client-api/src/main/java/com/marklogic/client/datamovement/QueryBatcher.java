@@ -292,7 +292,7 @@ public interface QueryBatcher extends Batcher {
    */
   public QueryBatcher withBatchSize(int docBatchSize, int docToUriBatchRatio);
 
-  /**
+  /*
    * Sets the number of documents processed in a batch, the ratio of the document processing batch to the document uri
    * collection batch and threadThrottleFactor. For example, if docBatchSize is 100 and docToUriBatchRatio is 5, the
    * document processing batch size is 100 and the document URI collection batch is 500. Ordinarily, QueryBatcher starts
@@ -318,7 +318,7 @@ public interface QueryBatcher extends Batcher {
    */
   public int getDocToUriBatchRatio();
 
-  /**
+  /*
    * Returns threadThrottleFactor set to the QueryBatcher
    * @return threadThrottleFactor
    */
