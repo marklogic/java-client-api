@@ -1442,6 +1442,9 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   public void writeDefaultMetadata(Transaction transaction, String... uris)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
+    if (uris.length == 0)
+      throw new IllegalArgumentException(
+              "Resetting document metadata with empty identifier list");
     services.delete(requestLogger, transaction, processedMetadata, uris);
   }
 
