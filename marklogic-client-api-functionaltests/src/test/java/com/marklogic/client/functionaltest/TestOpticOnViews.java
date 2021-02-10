@@ -83,64 +83,65 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     System.out.println("In TestOpticOnViews setup");
     DatabaseClient schemaDBclient = null;
 
-    configureRESTServer(dbName, fNames);
+  configureRESTServer(dbName, fNames);
 
-      // Add new range elements into this array
-      String[][] rangeElements = {
-              // { scalar-type, namespace-uri, localname, collation,
-              // range-value-positions, invalid-values }
-              // If there is a need to add additional fields, then add them to the end
-              // of each array
-              // and pass empty strings ("") into an array where the additional field
-              // does not have a value.
-              // For example : as in namespace, collections below.
-              // Add new RangeElementIndex as an array below.
-              {"string", "", "city", "http://marklogic.com/collation/", "false", "reject"},
-              {"int", "", "popularity", "", "false", "reject"},
-              {"double", "", "distance", "", "false", "reject"},
-              {"date", "", "date", "", "false", "reject"},
-              {"string", "", "cityName", "http://marklogic.com/collation/", "false", "reject"},
-              {"string", "", "cityTeam", "http://marklogic.com/collation/", "false", "reject"},
-              {"long", "", "cityPopulation", "", "false", "reject"}
-      };
+  // Add new range elements into this array
+  String[][] rangeElements = {
+          // { scalar-type, namespace-uri, localname, collation,
+          // range-value-positions, invalid-values }
+          // If there is a need to add additional fields, then add them to the end
+          // of each array
+          // and pass empty strings ("") into an array where the additional field
+          // does not have a value.
+          // For example : as in namespace, collections below.
+          // Add new RangeElementIndex as an array below.
+          {"string", "", "city", "http://marklogic.com/collation/", "false", "reject"},
+          {"int", "", "popularity", "", "false", "reject"},
+          {"double", "", "distance", "", "false", "reject"},
+          {"date", "", "date", "", "false", "reject"},
+          {"string", "", "cityName", "http://marklogic.com/collation/", "false", "reject"},
+          {"string", "", "cityTeam", "http://marklogic.com/collation/", "false", "reject"},
+          {"long", "", "cityPopulation", "", "false", "reject"}
+  };
 
-      // Insert the range indices
-      addRangeElementIndex(dbName, rangeElements);
+  // Insert the range indices
+  addRangeElementIndex(dbName, rangeElements);
 
-      // Insert word lexicon.
-      ObjectMapper mapper = new ObjectMapper();
-      ObjectNode mainNode = mapper.createObjectNode();
-      ObjectNode wordLexicon = mapper.createObjectNode();
-      ArrayNode childArray = mapper.createArrayNode();
-      ObjectNode childNodeObject = mapper.createObjectNode();
+  // Insert word lexicon.
+  ObjectMapper mapper = new ObjectMapper();
+  ObjectNode mainNode = mapper.createObjectNode();
+  ObjectNode wordLexicon = mapper.createObjectNode();
+  ArrayNode childArray = mapper.createArrayNode();
+  ObjectNode childNodeObject = mapper.createObjectNode();
 
-      childNodeObject.put("namespace-uri", "http://marklogic.com/collation/");
-      childNodeObject.put("localname", "city");
-      childNodeObject.put("collation", "http://marklogic.com/collation/");
-      childArray.add(childNodeObject);
-      mainNode.withArray("element-word-lexicon").add(childArray);
+  childNodeObject.put("namespace-uri", "http://marklogic.com/collation/");
+  childNodeObject.put("localname", "city");
+  childNodeObject.put("collation", "http://marklogic.com/collation/");
+  childArray.add(childNodeObject);
+  mainNode.withArray("element-word-lexicon").add(childArray);
 
-      setDatabaseProperties(dbName, "element-word-lexicon", mainNode);
+  setDatabaseProperties(dbName, "element-word-lexicon", mainNode);
 
-      // Add geo element index.
-      addGeospatialElementIndexes(dbName, "latLonPoint", "", "wgs84", "point", false, "reject");
-      // Enable triple index.
-      enableTripleIndex(dbName);
-      waitForServerRestart();
-      // Enable collection lexicon.
-      enableCollectionLexicon(dbName);
-      // Enable uri lexicon.
-      setDatabaseProperties(dbName, "uri-lexicon", true);
+  // Add geo element index.
+  addGeospatialElementIndexes(dbName, "latLonPoint", "", "wgs84", "point", false, "reject");
+  // Enable triple index.
+  enableTripleIndex(dbName);
+  waitForServerRestart();
+  // Enable collection lexicon.
+  enableCollectionLexicon(dbName);
+  // Enable uri lexicon.
+  setDatabaseProperties(dbName, "uri-lexicon", true);
 
-      // Create schema database
-      createDB(schemadbName);
-      createForest(schemafNames[0], schemadbName);
-      // Set the schemadbName database as the Schema database.
-      setDatabaseProperties(dbName, "schema-database", schemadbName);
+  // Create schema database
+  createDB(schemadbName);
+  createForest(schemafNames[0], schemadbName);
+  // Set the schemadbName database as the Schema database.
+  setDatabaseProperties(dbName, "schema-database", schemadbName);
 
-      createUserRolesWithPrevilages("opticRole", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
-      createRESTUser("opticUser", "0pt1c", "tde-admin", "tde-view", "opticRole", "rest-admin", "rest-writer",
-              "rest-reader", "rest-extension-user", "manage-user");
+  createUserRolesWithPrevilages("opticRole", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
+  createRESTUser("opticUser", "0pt1c", "tde-admin", "tde-view", "opticRole", "rest-admin", "rest-writer",
+          "rest-reader", "rest-extension-user", "manage-user");
+
     if (IsSecurityEnabled()) {
       schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", getConnType());
       client = getDatabaseClient("opticUser", "0pt1c", getConnType());
@@ -148,34 +149,35 @@ public class TestOpticOnViews extends BasicJavaClientREST {
       schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("opticUser", "0pt1c"));
       client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("opticUser", "0pt1c"));
     }
-      // Install the TDE templates into schemadbName DB
-      // loadFileToDB(client, filename, docURI, collection, document format)
-      loadFileToDB(schemaDBclient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[]{"http://marklogic.com/xdmp/tde"});
-      loadFileToDB(schemaDBclient, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON", new String[]{"http://marklogic.com/xdmp/tde"});
-      loadFileToDB(schemaDBclient, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON", new String[]{"http://marklogic.com/xdmp/tde"});
 
-      // Load XML data files.
-      loadFileToDB(client, "masterDetail.xml", "/optic/view/test/masterDetail.xml", "XML", new String[]{"/optic/view/test"});
-      loadFileToDB(client, "playerTripleSet.xml", "/optic/triple/test/playerTripleSet.xml", "XML", new String[]{"/optic/player/triple/test"});
-      loadFileToDB(client, "teamTripleSet.xml", "/optic/triple/test/teamTripleSet.xml", "XML", new String[]{"/optic/team/triple/test"});
-      loadFileToDB(client, "otherPlayerTripleSet.xml", "/optic/triple/test/otherPlayerTripleSet.xml", "XML", new String[]{"/optic/other/player/triple/test"});
-      loadFileToDB(client, "doc4.xml", "/optic/lexicon/test/doc4.xml", "XML", new String[]{"/optic/lexicon/test"});
-      loadFileToDB(client, "doc5.xml", "/optic/lexicon/test/doc5.xml", "XML", new String[]{"/optic/lexicon/test"});
+  // Install the TDE templates into schemadbName DB
+  // loadFileToDB(client, filename, docURI, collection, document format)
+  loadFileToDB(schemaDBclient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[]{"http://marklogic.com/xdmp/tde"});
+  loadFileToDB(schemaDBclient, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON", new String[]{"http://marklogic.com/xdmp/tde"});
+  loadFileToDB(schemaDBclient, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON", new String[]{"http://marklogic.com/xdmp/tde"});
 
-      // Load JSON data files.
-      loadFileToDB(client, "masterDetail2.json", "/optic/view/test/masterDetail2.json", "JSON", new String[]{"/optic/view/test"});
-      loadFileToDB(client, "masterDetail3.json", "/optic/view/test/masterDetail3.json", "JSON", new String[]{"/optic/view/test"});
+  // Load XML data files.
+  loadFileToDB(client, "masterDetail.xml", "/optic/view/test/masterDetail.xml", "XML", new String[]{"/optic/view/test"});
+  loadFileToDB(client, "playerTripleSet.xml", "/optic/triple/test/playerTripleSet.xml", "XML", new String[]{"/optic/player/triple/test"});
+  loadFileToDB(client, "teamTripleSet.xml", "/optic/triple/test/teamTripleSet.xml", "XML", new String[]{"/optic/team/triple/test"});
+  loadFileToDB(client, "otherPlayerTripleSet.xml", "/optic/triple/test/otherPlayerTripleSet.xml", "XML", new String[]{"/optic/other/player/triple/test"});
+  loadFileToDB(client, "doc4.xml", "/optic/lexicon/test/doc4.xml", "XML", new String[]{"/optic/lexicon/test"});
+  loadFileToDB(client, "doc5.xml", "/optic/lexicon/test/doc5.xml", "XML", new String[]{"/optic/lexicon/test"});
 
-      loadFileToDB(client, "doc1.json", "/optic/lexicon/test/doc1.json", "JSON", new String[]{"/other/coll1", "/other/coll2"});
-      loadFileToDB(client, "doc2.json", "/optic/lexicon/test/doc2.json", "JSON", new String[]{"/optic/lexicon/test"});
-      loadFileToDB(client, "doc3.json", "/optic/lexicon/test/doc3.json", "JSON", new String[]{"/optic/lexicon/test"});
+  // Load JSON data files.
+  loadFileToDB(client, "masterDetail2.json", "/optic/view/test/masterDetail2.json", "JSON", new String[]{"/optic/view/test"});
+  loadFileToDB(client, "masterDetail3.json", "/optic/view/test/masterDetail3.json", "JSON", new String[]{"/optic/view/test"});
 
-      loadFileToDB(client, "city1.json", "/optic/lexicon/test/city1.json", "JSON", new String[]{"/optic/lexicon/test"});
-      loadFileToDB(client, "city2.json", "/optic/lexicon/test/city2.json", "JSON", new String[]{"/optic/lexicon/test"});
-      loadFileToDB(client, "city3.json", "/optic/lexicon/test/city3.json", "JSON", new String[]{"/optic/lexicon/test"});
-      loadFileToDB(client, "city4.json", "/optic/lexicon/test/city4.json", "JSON", new String[]{"/optic/lexicon/test"});
-      loadFileToDB(client, "city5.json", "/optic/lexicon/test/city5.json", "JSON", new String[]{"/optic/lexicon/test"});
-      Thread.sleep(10000);
+  loadFileToDB(client, "doc1.json", "/optic/lexicon/test/doc1.json", "JSON", new String[]{"/other/coll1", "/other/coll2"});
+  loadFileToDB(client, "doc2.json", "/optic/lexicon/test/doc2.json", "JSON", new String[]{"/optic/lexicon/test"});
+  loadFileToDB(client, "doc3.json", "/optic/lexicon/test/doc3.json", "JSON", new String[]{"/optic/lexicon/test"});
+
+  loadFileToDB(client, "city1.json", "/optic/lexicon/test/city1.json", "JSON", new String[]{"/optic/lexicon/test"});
+  loadFileToDB(client, "city2.json", "/optic/lexicon/test/city2.json", "JSON", new String[]{"/optic/lexicon/test"});
+  loadFileToDB(client, "city3.json", "/optic/lexicon/test/city3.json", "JSON", new String[]{"/optic/lexicon/test"});
+  loadFileToDB(client, "city4.json", "/optic/lexicon/test/city4.json", "JSON", new String[]{"/optic/lexicon/test"});
+  loadFileToDB(client, "city5.json", "/optic/lexicon/test/city5.json", "JSON", new String[]{"/optic/lexicon/test"});
+  Thread.sleep(10000);
 
     schemaDBclient.release();
   }
@@ -1483,9 +1485,13 @@ public class TestOpticOnViews extends BasicJavaClientREST {
       System.out.println("Exception message is " + exceptionSch.toString());
     }
     assertTrue("Exception not thrown or invalid message",
+            exceptionSch.contains("SQL-TABLENOTFOUND:") &&
+                    exceptionSch.contains("Unknown table: Table 'opticFunctionalTestInvalid.detail' not found"));
+    /* Original assert
+    assertTrue("Exception not thrown or invalid message",
             exceptionSch.contains("SQL-TABLENOTFOUND: plan.view(\"opticFunctionalTestInvalid\", \"detail\", null, \"MarkLogicQAQualifier\")") &&
                     exceptionSch.contains("Unknown table: Table 'opticFunctionalTestInvalid.detail' not found"));
-
+    */
     // Verify for invalid view name
     AccessPlan planInvalidView = p.fromView("opticFunctionalTest", "detailInvalid", "MarkLogicQAQualifier");
     planInvalidView.orderBy(p.sortKeySeq(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.id")));
@@ -1499,8 +1505,13 @@ public class TestOpticOnViews extends BasicJavaClientREST {
       exceptionVw = ex.getMessage();
       System.out.println("Exception message is " + exceptionVw.toString());
     }
+    /* Original assert
     assertTrue("Exception not thrown or invalid message",
             exceptionVw.contains("SQL-TABLENOTFOUND: plan.view(\"opticFunctionalTest\", \"detailInvalid\", null, \"MarkLogicQAQualifier\")") &&
+                    exceptionVw.contains("Unknown table: Table 'opticFunctionalTest.detailInvalid' not found"));
+     */
+    assertTrue("Exception not thrown or invalid message",
+            exceptionVw.contains("SQL-TABLENOTFOUND") &&
                     exceptionVw.contains("Unknown table: Table 'opticFunctionalTest.detailInvalid' not found"));
 
     // Verify for empty view name
@@ -1761,7 +1772,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
       System.out.println("Exception message is " + strExcept.toString());
     }
     jsonBindingsNodes = jacksonHandle.get();
-    assertEquals("Two nodes not returned from testFragmentId method ", 2, jsonBindingsNodes.size());
+    assertEquals("Two nodes not returned from testDifferentColumns method ", 2, jsonBindingsNodes.size());
   }
 
   /*
@@ -2830,7 +2841,205 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     assertTrue(jsStrNsEx.toString().contains("cannot build call for unknown variable or namespace \"xdmp\" with function \"restart\""));
   }
 
-  //@AfterClass
+  // Similar to testgroupBy
+  @Test
+  public void testgroupByUnion() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testgroupByUnion method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
+            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+
+    ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+    ModifyPlan plan3 = plan1.union(plan2)
+            .select(
+                    p.col("amount"),
+                    p.col("color")
+            )
+            .groupByUnion(p.groupSeq(p.col("color"), p.col("amount")),
+                    p.aggregateSeq(
+                            p.count("ColorCount", "color"),
+                            p.avg("AverageAmout", "amount")
+                    )
+            )
+            .orderBy(p.desc(p.col("ColorCount")));
+
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(plan3, jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get();
+    JsonNode jsonBindingsNodes = jsonResults.path("rows");
+    System.out.println("Results are : " + jsonBindingsNodes);
+    // Should have 10 array nodes returned.
+    assertEquals("Ten nodes not returned from testgroupByUnion method ", 10, jsonBindingsNodes.size());
+    assertEquals("Row 1 testgroupByUnion color value incorrect", "blue", jsonBindingsNodes.get(0).path("color").path("value").asText());
+    assertEquals("Row 1 testgroupByUnion ColorCount size incorrect", 3, jsonBindingsNodes.get(0).path("ColorCount").path("value").asInt());
+    assertEquals("Row 1 testgroupByUnion AverageAmout value incorrect", "20.02", jsonBindingsNodes.get(0).path("AverageAmout").path("value").asText());
+
+    assertEquals("Row 2 testgroupByUnion color value incorrect", "green", jsonBindingsNodes.get(1).path("color").path("value").asText());
+    assertEquals("Row 2 testgroupByUnion ColorCount size incorrect", 3, jsonBindingsNodes.get(1).path("ColorCount").path("value").asInt());
+    assertEquals("Row 2 testgroupByUnion AverageAmout value incorrect", "50.05", jsonBindingsNodes.get(1).path("AverageAmout").path("value").asText());
+    // Assert for null in both grouping columns. We will have one row with nulls
+
+    assertEquals("Row 10 testgroupByUnion color value incorrect", "null", jsonBindingsNodes.get(9).path("color").path("type").asText());
+    assertEquals("Row 10 testgroupByUnion ColorCount size incorrect", 0, jsonBindingsNodes.get(9).path("ColorCount").path("value").asInt());
+    assertEquals("Row 10 testgroupByUnion AverageAmout value incorrect", "null", jsonBindingsNodes.get(9).path("AverageAmout").path("type").asText());
+    // Use date in aggregate
+    ModifyPlan plan4 = plan1.union(plan2)
+            .select(p.as("MasterDate", p.schemaCol("opticFunctionalTest", "master", "date")),
+                    p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
+                    p.col("amount"),
+                    p.col("color")
+            )
+            .groupByUnion(p.groupSeq(p.col("color"), p.col("MasterDate")),
+                    p.aggregateSeq(p.count("DateCount", "MasterDate")))
+            .orderBy(p.desc(p.col("MasterDate")));
+
+    JacksonHandle jacksonHandleDate = new JacksonHandle();
+    jacksonHandleDate.setMimetype("application/json");
+
+    rowMgr.resultDoc(plan4, jacksonHandleDate);
+    JsonNode jsonResultsDate = jacksonHandleDate.get();
+    JsonNode jsonBindingsNodesDate = jsonResultsDate.path("rows");
+    System.out.println("Results from date grouping are : " + jsonBindingsNodesDate);
+
+    assertEquals("Six nodes not returned from testgroupByUnion method ", 6, jsonBindingsNodesDate.size());
+    assertEquals("Row 1 testgroupByUnion MasterDate value incorrect", "2015-12-02", jsonBindingsNodesDate.get(0).path("MasterDate").path("value").asText());
+    assertEquals("Row 1 testgroupByUnion DateCount size incorrect", 1, jsonBindingsNodesDate.get(0).path("DateCount").path("value").asInt());
+    assertEquals("Row 1 testgroupByUnion color value incorrect", "null", jsonBindingsNodesDate.get(0).path("color").path("type").asText());
+
+    assertEquals("Row 2 testgroupByUnion MasterDate value incorrect", "2015-12-01", jsonBindingsNodesDate.get(1).path("MasterDate").path("value").asText());
+    assertEquals("Row 2 testgroupByUnion DateCount size incorrect", 1, jsonBindingsNodesDate.get(1).path("DateCount").path("value").asInt());
+    assertEquals("Row 2 testgroupByUnion color value incorrect", "null", jsonBindingsNodesDate.get(1).path("color").path("type").asText());
+  }
+
+  // Same as testgroupsByUnion with facade.
+  @Test
+  public void testgroupByArrays() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testgroupByArrays method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    ModifyPlan plan1 =
+            p.fromView("opticFunctionalTest", "detail")
+                    .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+    ModifyPlan plan2 =
+            p.fromView("opticFunctionalTest", "master")
+                    .orderBy(p.schemaCol("opticFunctionalTest", "master" , "id"));
+    ModifyPlan plan3 =
+            plan1.joinInner(plan2)
+                    .where(
+                            p.eq(
+                                    p.schemaCol("opticFunctionalTest", "master" , "id"),
+                                    p.schemaCol("opticFunctionalTest", "detail", "masterId")
+                            )
+                    )
+                    .groupToArrays(p.namedGroupSeq(
+                                    p.namedGroup("DetColor", p.col("color")),
+                                    p.namedGroup("Amt", p.schemaCol("opticFunctionalTest", "detail" , "amount"))
+                                ),
+                                p.aggregateSeq(p.sum("sum", "amount"), p.count("CountofColors", "color"))
+
+                    );
+
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(plan3, jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get();
+    JsonNode jsonBindingsNodes = jsonResults.path("rows");
+    System.out.println("Results are : " + jsonBindingsNodes);
+    // Should be returning as one array containing sub arrays for each namedgroup
+    assertEquals("1 node not returned from testgroupByArrays method ", 1, jsonBindingsNodes.size());
+
+    JsonNode jsonDetColorNodes = jsonBindingsNodes.get(0).get("DetColor").get("value");
+    assertEquals("2 nodes not returned from color nodes array ", 2, jsonDetColorNodes.size());
+    assertEquals("Row 1 color node value incorrect", "blue", jsonDetColorNodes.get(0).path("color").asText());
+    assertEquals("Row 1 sum node value incorrect", "60.06", jsonDetColorNodes.get(0).path("sum").asText());
+    assertEquals("Row 1 color count node value incorrect", "3", jsonDetColorNodes.get(0).path("CountofColors").asText());
+
+    assertEquals("Row 2 color node value incorrect", "green", jsonDetColorNodes.get(1).path("color").asText());
+    assertEquals("Row 2 sum node value incorrect", "150.15", jsonDetColorNodes.get(1).path("sum").asText());
+    assertEquals("Row 2 color count node value incorrect", "3", jsonDetColorNodes.get(1).path("CountofColors").asText());
+
+    JsonNode jsonAmtNodes = jsonBindingsNodes.get(0).get("Amt").get("value");
+    assertEquals("6 nodes not returned from color nodes array ", 6, jsonAmtNodes.size());
+  }
+
+  @Test
+  public void testFacetByWithBindParams() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testFacetByWithBindParams method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
+            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+    ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+    PlanParamExpr idParam = p.param("ID");
+    ModifyPlan plan3 = plan1.joinInner(plan2)
+            .where(
+                    p.eq(p.schemaCol("opticFunctionalTest", "master", "id"), idParam)
+            )
+            .facetBy(p.colSeq("color")
+            );
+            //.orderBy(p.asc(p.col("color")));
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(plan3.bindParam("ID", 1), jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get().path("rows").get(0).path("group0").path("value");
+
+    JsonNode jsonBindingsNodes1 = jsonResults.get(0);
+    System.out.println("First Results are : " + jsonBindingsNodes1);
+    assertEquals("Facet Nodes count value incorrect ", 3, jsonBindingsNodes1.get("count").asInt());
+    assertEquals("Facet Nodes color value incorrect ", "blue", jsonBindingsNodes1.get("color").asText());
+
+    // Verify next facet value
+    JsonNode jsonBindingsNodes2 = jsonResults.get(1);
+    System.out.println("Second Results are : " + jsonBindingsNodes2);
+    assertEquals("Facet Nodes count value incorrect ", 3, jsonBindingsNodes2.get("count").asInt());
+    assertEquals("Facet Nodes color value incorrect ", "green", jsonBindingsNodes2.get("color").asText());
+
+    // Verify two parameter facetBy method
+    PlanSystemColumn fIdCol1 = p.fragmentIdCol("fragIdCol1");
+    PlanSystemColumn fIdCol2 = p.fragmentIdCol("fragIdCol2");
+    ModifyPlan plan11 = p.fromView("opticFunctionalTest", "detail", null, fIdCol1)
+            .orderBy(p.col("id"));
+    ModifyPlan plan21 = p.fromView("opticFunctionalTest", "master", null, fIdCol2)
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+
+    ModifyPlan output = plan11.joinInner(plan21).where(
+            p.eq(
+                    p.schemaCol("opticFunctionalTest", "master", "id"),
+                    p.col("masterId")
+            )
+    )
+            .select(
+                    p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
+                    p.schemaCol("opticFunctionalTest", "master", "date"),
+                    p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
+                    p.col("amount"),
+                    p.col("color"),
+                    fIdCol1,
+                    fIdCol2
+            ).facetBy(p.colSeq("color", "amount"), "DetailName");
+            //.orderBy(p.desc(p.col("DetailName")));
+    JacksonHandle jacksonHandleFrg = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(output, jacksonHandleFrg);
+    JsonNode jsonResultsFrag = jacksonHandleFrg.get();
+    System.out.println("Results are " + jsonResultsFrag);
+
+    JsonNode jsonColumnsResults = jsonResultsFrag.get("columns");
+    assertEquals("Facet Nodes group name value incorrect ", "group0", jsonColumnsResults.get(0).get("name").asText());
+    assertEquals("Facet Nodes group name value incorrect ", "group1", jsonColumnsResults.get(1).get("name").asText());
+  }
+
+  @AfterClass
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tear down");
     // Delete the temp schema DB after resetting the Schema DB on content DB.
