@@ -525,6 +525,8 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
     JsonNode jsonResults = jacksonHandle.get();
 
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
+    System.out.println("Results are " + jsonBindingsNodes.toString());
+
     assertTrue("Number of Elements after plan execution is incorrect. Should be 1", 1 == jsonBindingsNodes.size());
     assertEquals("Row 1 myCity.city value incorrect", "new york", jsonBindingsNodes.path(0).path("myCity.city").path("value").asText());
   }
@@ -579,7 +581,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
   @Test
   public void testQNameExport() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
   {
-    System.out.println("In testjsonPropertyWordAndValueQuery method");
+    System.out.println("In testQNameExport method");
 
     // Create a new Plan.
     RowManager rowMgr = client.newRowManager();
@@ -637,70 +639,52 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 
   /*
    * Test cts queries with options and empty results on fromLexicons - TEST 15
-   * and 16 plan1 uses fromLexicon plan2 use fromLexicons TODO when 633 is
-   * fixed.
+   * and 16 plan1 uses fromLexicon plan2 use fromLexicons
    */
   @Test
   public void testEmptyAndInvalidResults() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {/*
-    * System.out.println("In testEmptyAndInvalidResults method");
-    * 
-    * // Create a new Plan. RowManager rowMgr = client.newRowManager();
-    * PlanBuilder p = rowMgr.newPlanBuilder(); Map<String,
-    * CtsReferenceExpr>index1 = new HashMap<String, CtsReferenceExpr>();
-    * index1.put("uri1", p.cts.uriReference()); index1.put("city",
-    * p.cts.jsonPropertyReference("city")); index1.put("popularity",
-    * p.cts.jsonPropertyReference("popularity")); index1.put("date",
-    * p.cts.jsonPropertyReference("date")); index1.put("distance",
-    * p.cts.jsonPropertyReference("distance")); index1.put("point",
-    * p.cts.jsonPropertyReference("latLonPoint"));
-    * 
-    * Map<String, CtsReferenceExpr>index2 = new HashMap<String,
-    * CtsReferenceExpr>(); index2.put("uri2", p.cts.uriReference());
-    * index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
-    * index2.put("cityTeam", p.cts.jsonPropertyReference("cityTeam"));
-    * 
-    * // TODO Ask Eric about query options.
-    * 
-    * ModifyPlan plan1 = p.fromLexicons(index1, "myCity",
-    * p.fragmentIdCol("fragId1"), p.cts.jsonPropertyWordQuery("city", "London",
-    * "case-sensitive")); // plan2 - fromLexicons ModifyPlan plan2 =
-    * p.fromLexicons(index2, "myTeam", p.fragmentIdCol("fragId2"), null);
-    * 
-    * ModifyPlan outputEmpty = plan1.joinInner(plan2)
-    * .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
-    * .orderBy(p.asc(p.col("date"))); JacksonHandle jacksonHandle = new
-    * JacksonHandle(); jacksonHandle.setMimetype("application/json");
-    * rowMgr.resultDoc(outputEmpty, jacksonHandle); JsonNode node = null;
-    * StringBuilder strNull = new StringBuilder(); int nSize = 0; try { node =
-    * jacksonHandle.get(); nSize = node.size(); } catch(Exception ex) {
-    * strNull.append(ex.getMessage());
-    * System.out.println("Exception message is " + strNull.toString()); } //
-    * Should have NullPointerException. assertTrue("Exceptions not found",
-    * strNull.toString().contains("null"));
-    * 
-    * // Invalid operation. ModifyPlan plan3 =
-    * p.fromView("opticFunctionalTest4", "detail4", null, null,
-    * p.cts.jsonPropertyRangeQuery("id", "#", p.xs.intVal(300))); ModifyPlan
-    * plan4 = p.fromView("opticFunctionalTest4", "master4");
-    * 
-    * ModifyPlan outputInvalid = plan3.joinInner(plan4,
-    * p.on(p.schemaCol("opticFunctionalTest4", "detail4", "masterId"),
-    * p.schemaCol("opticFunctionalTest4", "master4", "id")))
-    * .orderBy(p.schemaCol("opticFunctionalTest4", "detail4", "id"));
-    * JacksonHandle jacksonHandleInval = new JacksonHandle();
-    * jacksonHandleInval.setMimetype("application/json"); StringBuilder strInv =
-    * new StringBuilder();
-    * 
-    * try { rowMgr.resultDoc(outputInvalid, jacksonHandleInval); }
-    * catch(Exception ex) { strInv.append(ex.getMessage());
-    * System.out.println("Exception message is " + strInv.toString()); } //
-    * Should have Internal Server Error. Server Message: JS-JAVASCRIPT. Checking
-    * part of exception message. assertTrue("Exceptions not found",
-    * strInv.toString().contains(
-    * "XDMP-ARG: cts.jsonPropertyRangeQuery(\"id\", \"#\", xs.int(\"300\")) -- op is invalid"
-    * ));
-    */
+  {
+     System.out.println("In testEmptyAndInvalidResults method");
+
+     // Create a new Plan. RowManager rowMgr = client.newRowManager();
+     RowManager rowMgr = client.newRowManager();
+     PlanBuilder p = rowMgr.newPlanBuilder();
+     Map<String, CtsReferenceExpr>index1 = new HashMap<String, CtsReferenceExpr>();
+     index1.put("uri1", p.cts.uriReference()); index1.put("city",
+     p.cts.jsonPropertyReference("city")); index1.put("popularity",
+     p.cts.jsonPropertyReference("popularity")); index1.put("date",
+     p.cts.jsonPropertyReference("date")); index1.put("distance",
+     p.cts.jsonPropertyReference("distance")); index1.put("point",
+     p.cts.jsonPropertyReference("latLonPoint"));
+
+     Map<String, CtsReferenceExpr>index2 = new HashMap<String,
+     CtsReferenceExpr>(); index2.put("uri2", p.cts.uriReference());
+     index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
+     index2.put("cityTeam", p.cts.jsonPropertyReference("cityTeam"));
+
+    ModifyPlan plan1 = p.fromLexicons(index1, "myCity", p.fragmentIdCol("fragId1"));
+    ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", p.fragmentIdCol("fragId2"));
+
+    ModifyPlan outputEmpty = plan1
+             .where(p.cts.jsonPropertyWordQuery("city", "London", "case-sensitive"))
+        .joinInner(plan2)
+          .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
+          .orderBy(p.asc(p.col("date")));
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+     rowMgr.resultDoc(outputEmpty, jacksonHandle);
+     JsonNode node = null;
+     StringBuilder strNull = new StringBuilder();
+     int nSize = 0;
+     try {
+          node = jacksonHandle.get();
+          nSize = node.size();
+     } catch(Exception ex) {
+        strNull.append(ex.getMessage());
+        System.out.println("Exception message is " + strNull.toString());
+     }
+     // Should have NullPointerException.
+    assertTrue("Exceptions not found", strNull.toString().contains("null"));
   }
 
   /*
@@ -762,7 +746,6 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
   public void testMultipleQuriesNested() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
   {
     System.out.println("In testMultipleQuriesNested method");
-    System.out.println("In testMultipleQuriesLinear method");
 
     // Create a new Plan.
     RowManager rowMgr = client.newRowManager();
@@ -908,7 +891,6 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 
       rCount++;
     }
-
   }
 
   @AfterClass

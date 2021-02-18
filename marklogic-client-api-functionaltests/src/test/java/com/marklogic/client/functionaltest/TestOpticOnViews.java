@@ -2967,6 +2967,30 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
     JsonNode jsonAmtNodes = jsonBindingsNodes.get(0).get("Amt").get("value");
     assertEquals("6 nodes not returned from color nodes array ", 6, jsonAmtNodes.size());
+
+    // Verify without aggregate param
+    ModifyPlan plan4 =
+            plan1.joinInner(plan2)
+                    .where(
+                            p.eq(
+                                    p.schemaCol("opticFunctionalTest", "master" , "id"),
+                                    p.schemaCol("opticFunctionalTest", "detail", "masterId")
+                            )
+                    )
+                    .groupToArrays(p.namedGroupSeq(
+                            p.namedGroup("DetColor", p.col("color")),
+                            p.namedGroup("Amt", p.schemaCol("opticFunctionalTest", "detail" , "amount"))
+                            )
+                    );
+
+    JacksonHandle jacksonHandleNoAggCol = new JacksonHandle();
+    jacksonHandleNoAggCol.setMimetype("application/json");
+
+    rowMgr.resultDoc(plan4, jacksonHandleNoAggCol);
+    JsonNode jsonResultsNoAgg = jacksonHandleNoAggCol.get();
+    JsonNode jsonBindingsNodesNoAgg = jsonResultsNoAgg.path("rows");
+    System.out.println("Results are : " + jsonBindingsNodesNoAgg);
+
   }
 
   @Test
