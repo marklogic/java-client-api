@@ -21,4 +21,6 @@
     "multiple": true,
     "nullable": true
   }
+  ,
+    "errorDetail": "return"
 }

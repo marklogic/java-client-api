@@ -302,7 +302,17 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
         deleteUserRole("ForbiddenRole");
         deleteRESTUser("ForbiddenUser");
 
-        associateRESTServerWithDB(modServerName, "Documents");
+        associateRESTServerWithDB(modServerName, "App-Services");
+
+        associateRESTServerWithDB(restServerName, "Documents");
+        associateRESTServerWithModuleDB(restServerName, "Modules");
+
+        deleteDB(dbName);
+        deleteForest(fNames[0]);
+        deleteDB(dbNameMod);
+        deleteForest(fNamesMod[0]);
+        deleteDB("TestDynamicIngest-modules");
+        deleteForest("TestDynamicIngest-modules-1");
         // release client
         dbclient.release();
     }
@@ -829,17 +839,16 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
         }
     }
 
-    // Verify errors from sjs module back to client. TODO Fix this test once Git # 1264 is addressed.
-    @Ignore
+    // Verify errors from sjs module back to client.
+    @Test
     public void TestIngestEgressOnJsonDocsError() throws Exception {
         System.out.println("Running TestIngestEgressOnJsonDocsError");
         StringBuilder batchResults = new StringBuilder();
-        StringBuilder err = new StringBuilder();
 
+        StringBuilder retryBuf = new StringBuilder();
         try {
             int startBatchIdx = 0;
             int maxDocSize = 5;
-            StringBuilder retryBuf = new StringBuilder();
 
             ObjectMapper om = new ObjectMapper();
             File apiFile = new File(ApiConfigDirPath + JsonIngestConfigName + ".api");
@@ -897,7 +906,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
                     (retryCount, throwable, callContext)
                             -> {
                         retryBuf.append(throwable.getMessage());
-                        return IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.SKIP_CALL;
+                        return IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.STOP_ALL_CALLS;
                     };
 
             outputBulkCaller.setOutputListener(record -> {
@@ -906,33 +915,19 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
                             String s = mapper.readValue(record, ObjectNode.class).toString();
                             batchResults.append(s);
                         } catch (IOException e) {
-                            err.append(e.getMessage());
                             e.printStackTrace();
                         }
                     }
             );
             outputBulkCaller.setErrorListener(errorListener);
             outputBulkCaller.awaitCompletion();
-            System.out.println("Error buffer is " + retryBuf.toString());
-            System.out.println("Unloader completed in TestIngestEgressOnJsonDocsError");
-
         } catch (Exception e) {
             e.printStackTrace();
-            err.append(e.getMessage());
         }
         finally {
-            String res = batchResults.toString();
-            // # of root elements should be 5.
-            System.out.println("Batch results from TestIngestEgressOnJsonDocs " + res);
-
-            assertTrue("No of docs egressed incorrect. Expected 5.", (res.split("\\btitle\\b").length -1) == 5);
-            assertTrue("No of docs egressed incorrect. Expected only 1 wrote word.", (res.split("\\bwrote\\b").length - 1) == 1);
-            assertTrue("No of docs egressed incorrect. Expected only 1 described word.", (res.split("\\bdescribed\\b").length - 1) == 1);
-            assertTrue("No of docs egressed incorrect. Expected only 1 groundbreaking word.", (res.split("\\bgroundbreaking\\b").length - 1) == 1);
-            assertTrue("No of docs egressed incorrect. Expected only 1 intellectual word.", (res.split("\\bintellectual\\b").length - 1) == 1);
-            assertTrue("No of docs egressed incorrect. Expected only 1 unfortunately word.", (res.split("\\bunfortunately\\b").length - 1) == 1);
-            assertTrue("Unexpected Errors during egress. Should not have any errors.", err.toString().isEmpty());
-            System.out.println("End of TestIngestEgressOnJsonDocs");
+            assertTrue("Error returned incorrect", retryBuf.toString().contains("Internal Server Error."));
+            System.out.println("Error buffer is " + retryBuf.toString());
+            System.out.println("Unloader completed in TestIngestEgressOnJsonDocsError");
         }
     }
 
