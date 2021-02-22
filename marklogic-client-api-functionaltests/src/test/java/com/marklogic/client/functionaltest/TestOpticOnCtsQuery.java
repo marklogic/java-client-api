@@ -167,8 +167,8 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
       loadFileToDB(client, "city5.json", "/optic/lexicon/test/city5.json", "JSON", new String[]{"/optic/lexicon/test"});
       Thread.sleep(10000);
       schemaDBclient.release();
-
   }
+
   /*
    * Write document using DOMHandle
    */
@@ -550,7 +550,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
     // plan2 - fromLiterals
     ModifyPlan plan2 = p.fromView("opticFunctionalTest4", "master4");
 
-    ModifyPlan output = plan1.where(p.cts.jsonPropertyRangeQuery("id", ">", "300"))
+    ModifyPlan output = plan1.where(p.cts.jsonPropertyRangeQuery(p.xs.string("id"), p.xs.string(">"), p.xs.intVal(300)))
         .joinInner(plan2, p.on(
             p.schemaCol("opticFunctionalTest4", "detail4", "masterId"),
             p.schemaCol("opticFunctionalTest4", "master4", "id")
@@ -899,7 +899,6 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
     System.out.println("In tear down");
     // Delete the temp schema DB after resetting the Schema DB on content DB.
     // Else delete fails.
-
       deleteUserRole("opticRole");
       deleteRESTUser("opticUser");
       setDatabaseProperties(dbName, "schema-database", dbName);
