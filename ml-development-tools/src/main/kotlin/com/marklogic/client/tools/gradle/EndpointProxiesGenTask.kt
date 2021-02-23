@@ -17,12 +17,15 @@ package com.marklogic.client.tools.gradle
 
 import com.marklogic.client.tools.proxy.Generator
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 open class EndpointProxiesGenTask : DefaultTask() {
   private val generator = Generator()
 
+  @Input
   var serviceDeclarationFile: String = ""
+  @Input
   var javaBaseDirectory:      String = ""
 
   @TaskAction
