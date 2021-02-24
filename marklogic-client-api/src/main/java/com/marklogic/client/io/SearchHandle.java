@@ -38,6 +38,7 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
+import com.marklogic.client.query.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -54,17 +55,7 @@ import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.query.ExtractedItem;
-import com.marklogic.client.query.ExtractedResult;
-import com.marklogic.client.query.FacetHeatmapValue;
-import com.marklogic.client.query.FacetResult;
-import com.marklogic.client.query.FacetValue;
-import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.MatchLocation;
-import com.marklogic.client.query.MatchSnippet;
-import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.query.SearchMetrics;
-import com.marklogic.client.query.SearchResults;
+
 import java.util.Map;
 
 /**
@@ -88,7 +79,7 @@ public class SearchHandle
   static private String SEARCH_NS = "http://marklogic.com/appservices/search";
   static private String QUERY_NS  = "http://marklogic.com/cts/query";
 
-  private QueryDefinition       querydef;
+  private SearchQueryDefinition       querydef;
   private HandleFactoryRegistry registry;
 
   private MatchDocumentSummary[] summary;
@@ -196,7 +187,7 @@ public class SearchHandle
    *
    * @param querydef The new QueryDefinition
    */
-  public void setQueryCriteria(QueryDefinition querydef) {
+  public void setQueryCriteria(SearchQueryDefinition querydef) {
     this.querydef = querydef;
     summary      = null;
     metrics      = null;
@@ -218,7 +209,7 @@ public class SearchHandle
    * @return The query definition.
    */
   @Override
-  public QueryDefinition getQueryCriteria() {
+  public SearchQueryDefinition getQueryCriteria() {
     return querydef;
   }
 

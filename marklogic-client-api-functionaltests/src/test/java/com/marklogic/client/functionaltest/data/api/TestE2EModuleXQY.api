@@ -1,0 +1,12 @@
+{
+  "functionName" : "xqyfunction",
+  "params" : [ {
+    "name" : "items",
+    "datatype" : "string",
+    "multiple" : false,
+    "nullable" : true
+  } ],
+  "return" : {
+    "datatype" : "string"
+  }
+}

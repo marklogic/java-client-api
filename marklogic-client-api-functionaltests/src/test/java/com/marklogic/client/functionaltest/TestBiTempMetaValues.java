@@ -61,7 +61,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
   private static String schemadbName = "TestBiTempMetaValuesSchemaDB";
   private static String[] schemafNames = { "TestBiTempMetaValuesSchemaDB-1" };
 
-  private DatabaseClient writerClient = null;
+  private static DatabaseClient writerClient = null;
 
   private final static String dateTimeDataTypeString = "dateTime";
 
@@ -119,14 +119,15 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
         temporalLsqtCollectionName, true);
     appServerHostname = getRestAppServerHostName();
     restPort = getRestServerPort();
-    Thread.sleep(1000);
         
-    createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke", "temporal:statement-set-system-time",
+    createUserRolesWithPrevilages("test-eval-bitemp", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke", "temporal:statement-set-system-time",
             "temporal-document-protect", "temporal-document-wipe");
     createUserRolesWithPrevilages("replaceRoleTest", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     
-    createRESTUser("eval-user", "x", "test-eval", "replaceRoleTest", "rest-admin", "rest-writer", "rest-reader", "temporal-admin");
-    createRESTUser("eval-readeruser", "x", "rest-reader");    
+    createRESTUser("eval-bitemp-meta-user", "x", "test-eval-bitemp", "replaceRoleTest", "rest-admin", "rest-writer", "rest-reader", "temporal-admin");
+    createRESTUser("eval-readeruser", "x", "rest-reader");
+
+    writerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-bitemp-meta-user", "x", getConnType());
   }
 
   @AfterClass
@@ -135,9 +136,9 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 
     // Delete database first. Otherwise axis and collection cannot be deleted
     cleanupRESTServer(dbName, fNames);
-    deleteRESTUser("eval-user");
+    deleteRESTUser("eval-bitemp-meta-user");
     deleteRESTUser("eval-readeruser");
-    deleteUserRole("test-eval");
+    deleteUserRole("test-eval-bitemp");
     deleteUserRole("replaceRoleTest");
 
     // Temporal collection needs to be deleted before temporal axis associated
@@ -154,11 +155,6 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
         axisSystemName);
     deleteDB(schemadbName);
     deleteForest(schemafNames[0]);
-  }
-
-  @Before
-  public void setUp() throws Exception {
-    writerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-user", "x", getConnType());
   }
 
   @After

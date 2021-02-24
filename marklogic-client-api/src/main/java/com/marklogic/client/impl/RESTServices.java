@@ -48,12 +48,8 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.marker.*;
-import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.*;
 import com.marklogic.client.query.QueryManager.QueryView;
-import com.marklogic.client.query.SuggestDefinition;
-import com.marklogic.client.query.ValuesDefinition;
-import com.marklogic.client.query.ValuesListDefinition;
 import com.marklogic.client.semantics.GraphPermissions;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.util.EditableNamespaceContext;
@@ -138,7 +134,7 @@ public interface RESTServices {
                                        Set<Metadata> categories, Format format, RequestParameters extraParams,
                                        boolean withContent, String... uris)
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-  DocumentPage getBulkDocuments(RequestLogger logger, long serverTimestamp, QueryDefinition querydef,
+  DocumentPage getBulkDocuments(RequestLogger logger, long serverTimestamp, SearchQueryDefinition querydef,
                                        long start, long pageLength, Transaction transaction, SearchReadHandle searchHandle,
                                        QueryView view, Set<Metadata> categories, Format format, ServerTransform responseTransform,
                                        RequestParameters extraParams, String forestName)
@@ -166,13 +162,13 @@ public interface RESTServices {
     throws ResourceNotFoundException, ResourceNotResendableException,
     ForbiddenUserException, FailedRequestException;
 
-  <T extends SearchReadHandle> T search(RequestLogger logger, T searchHandle, QueryDefinition queryDef,
+  <T extends SearchReadHandle> T search(RequestLogger logger, T searchHandle, SearchQueryDefinition queryDef,
                                                long start, long len, QueryView view, Transaction transaction, String forestName)
     throws ForbiddenUserException, FailedRequestException;
 
   void deleteSearch(RequestLogger logger, DeleteQueryDefinition queryDef, Transaction transaction)
     throws ForbiddenUserException, FailedRequestException;
-  void delete(RequestLogger logger, Transaction transaction, String... uris)
+  void delete(RequestLogger logger, Transaction transaction, Set<Metadata> categories, String... uris)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
   Transaction openTransaction(String name, int timeLimit)
@@ -223,11 +219,11 @@ public interface RESTServices {
   <R extends AbstractReadHandle> R getSystemSchema(RequestLogger reqlog, String schemaName, R output)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-  <R extends UrisReadHandle> R uris(RequestLogger reqlog, String method, QueryDefinition qdef,
+  <R extends UrisReadHandle> R uris(RequestLogger reqlog, String method, SearchQueryDefinition qdef,
                        Boolean filtered, long start, String afterUri, long pageLength, String forestName, R output)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
   <R extends AbstractReadHandle> R forestInfo(RequestLogger reqlog,
-                       String method, RequestParameters params, QueryDefinition qdef, R output
+                       String method, RequestParameters params, SearchQueryDefinition qdef, R output
     ) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
   <R extends AbstractReadHandle> R getResource(RequestLogger reqlog, String path,

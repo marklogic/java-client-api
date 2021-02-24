@@ -27,10 +27,10 @@ import org.w3c.dom.Document;
  */
 public interface SearchResults {
   /**
-   * Returns the query definition associated with this query.
-   * @return The query definition.
+   * Returns the search query definition associated with this query.
+   * @return The search query definition.
    */
-  QueryDefinition getQueryCriteria();
+  SearchQueryDefinition getQueryCriteria();
 
   /**
    * Returns an estimate of the total number of results, which is accurate for unfiltered

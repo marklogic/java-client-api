@@ -19,17 +19,14 @@
  */
 package com.marklogic.client.functionaltest;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -534,4 +531,141 @@ public class TestBulkReadWriteMetaDataChange extends BasicJavaClientREST {
     }
     validateUpdatedMetadataCollections(metadataHandleRead);
   }
-}
+
+  // Test reset of metadata collections in a transaction.
+  @Test
+  public void testDefaultMetadataOnDocManager() throws InterruptedException {
+    System.out.println("Running testDefaultMetadataOnDocManager");
+    Transaction t1 = null, tReset = null;
+    try {
+      String docId[] = {"/foo/test/myFoo1.txt", "/foo/test/myFoo2.txt", "/foo/test/myFoo3.txt",
+      };
+      TextDocumentManager docMgr = client.newTextDocumentManager();
+
+      DocumentWriteSet writeset = docMgr.newWriteSet();
+      // put meta-data
+      DocumentMetadataHandle mh = new DocumentMetadataHandle();
+      DocumentMetadataHandle mhRead = new DocumentMetadataHandle();
+
+      mh.getCollections().addAll("groupCollections");
+      DocumentMetadataHandle docSpecificMetadata =
+              new DocumentMetadataHandle().withCollections("specificDocCollection");
+      writeset.addDefault(mh);
+      writeset.add(docId[0], docSpecificMetadata, new StringHandle().with("This is so foo1"));
+      writeset.add(docId[1], new StringHandle().with("This is so foo2"));
+      writeset.add(docId[2], new StringHandle().with("This is so foo3"));
+      docMgr.write(writeset);
+
+      StringHandle sh = docMgr.read(docId[0], new StringHandle());
+      assertEquals("Doc content incorrect", "This is so foo1", sh.get());
+      docMgr.readMetadata(docId[0], mhRead);
+
+      DocumentCollections collections = mhRead.getCollections();
+      String actualCollections = getDocumentCollectionsString(collections);
+      System.out.println(actualCollections);
+
+      String expectedCollections1 = "size:1|specificDocCollection|";
+      assertEquals("Document collections difference", expectedCollections1, actualCollections);
+
+      // Verify that docId[1] does not have specificDoccollection
+      mhRead = new DocumentMetadataHandle();
+      docMgr.readMetadata(docId[1], mhRead);
+      collections = mhRead.getCollections();
+      actualCollections = getDocumentCollectionsString(collections);
+      System.out.println(actualCollections);
+
+      String expectedCollections2 = "size:1|groupCollections|";
+      assertEquals("Document collections difference", expectedCollections2, actualCollections);
+      // Reset metadata
+      docMgr.writeDefaultMetadata(docId);
+      Thread.sleep(5000);
+      mhRead = new DocumentMetadataHandle();
+      // Read meta data for docId[0] to verify that it reset.
+      docMgr.readMetadata(docId[0], mhRead);
+      collections = mhRead.getCollections();
+      actualCollections = getDocumentCollectionsString(collections);
+      System.out.println(actualCollections);
+      String expectedCollections3 = "size:0|";
+      assertEquals("Document collections difference", expectedCollections3, actualCollections);
+
+      // Call in a writeDefaultMetadata transaction
+      String docIdTx[] = {"/foo/test/myFoo4.txt", "/foo/test/myFoo5.txt"};
+      t1 = client.openTransaction();
+
+      DocumentMetadataHandle docTransSpecificMetadata =
+              new DocumentMetadataHandle().withCollections("TransSpecificDocCollection");
+      TextDocumentManager docMgrTx = client.newTextDocumentManager();
+
+      DocumentWriteSet writesetTx = docMgrTx.newWriteSet();
+      writesetTx.add(docIdTx[0], docTransSpecificMetadata, new StringHandle().with("This is so foo4"));
+      writesetTx.add(docIdTx[1], docTransSpecificMetadata, new StringHandle().with("This is so foo5"));
+      docMgrTx.write(writesetTx, t1);
+      t1.commit();
+      Thread.sleep(2000);
+      t1 = null;
+
+      sh = docMgrTx.read(docIdTx[0], new StringHandle());
+      assertEquals("Doc content incorrect", "This is so foo4", sh.get());
+      docMgrTx.readMetadata(docIdTx[0], mhRead);
+
+      collections = mhRead.getCollections();
+      actualCollections = getDocumentCollectionsString(collections);
+      System.out.println(actualCollections);
+
+      String expectedCollections4 = "size:1|TransSpecificDocCollection|";
+      assertEquals("Document collections difference", expectedCollections4, actualCollections);
+
+      tReset = client.openTransaction();
+      docMgrTx.writeDefaultMetadata(tReset, docIdTx);
+      // Read again without committing
+
+      docMgrTx.readMetadata(docIdTx[0], mhRead);
+
+      collections = mhRead.getCollections();
+      actualCollections = getDocumentCollectionsString(collections);
+      System.out.println(actualCollections);
+
+      expectedCollections4 = "size:1|TransSpecificDocCollection|";
+      assertEquals("Document collections difference", expectedCollections4, actualCollections);
+
+      // Now commit transaction and verify if collections reset.
+      tReset.commit();
+
+      Thread.sleep(2000);
+      tReset = null;
+      mhRead = new DocumentMetadataHandle();
+      // Read meta data for docId[1] to verify that it reset.
+      docMgrTx.readMetadata(docIdTx[1], mhRead);
+      collections = mhRead.getCollections();
+      actualCollections = getDocumentCollectionsString(collections);
+      System.out.println(actualCollections);
+      String expectedCollections5 = "size:0|";
+      assertEquals("Document collections difference", expectedCollections5, actualCollections);
+
+      // Negative case - Call with empty args
+      StringBuilder negStr = new StringBuilder();
+      try {
+        docMgrTx.writeDefaultMetadata();
+      }
+      catch(Exception e) {
+        System.out.println(e.getMessage());
+        negStr.append(e.getMessage());
+      }
+      finally {
+        assertTrue("Negative case failure", negStr.toString().contains("Resetting document metadata with empty identifier list"));
+      }
+    }
+    catch (Exception ex) {
+      System.out.println("Exceptions thrown" + ex.getStackTrace());
+      Assert.fail("Test failed due to exceptions");
+    }
+    finally {
+        if (t1 != null) {
+          t1.rollback();
+        }
+        if (tReset != null) {
+          tReset.rollback();
+        }
+      }
+    }
+  }

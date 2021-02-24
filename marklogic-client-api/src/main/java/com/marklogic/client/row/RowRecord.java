@@ -17,8 +17,10 @@ package com.marklogic.client.row;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.AbstractReadHandle;
+import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.type.PlanExprCol;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 
@@ -28,11 +30,11 @@ import com.marklogic.client.type.XsAnyAtomicTypeVal;
  */
 public interface RowRecord extends Map<String, Object> {
     /**
-     * Distinguishes an atomic value, a content structure such as a document or other node,
-     * and a null value.
+     * Distinguishes an atomic value, an array or object container,
+     * content such as a document or other node, and a null value.
      */
     enum ColumnKind {
-        ATOMIC_VALUE, CONTENT, NULL;
+        ATOMIC_VALUE, CONTAINER_VALUE, CONTENT, NULL;
     }
 
     /**
@@ -226,6 +228,13 @@ public interface RowRecord extends Map<String, Object> {
      * @return	an object of the class with the value of the data type
      */
     <T extends XsAnyAtomicTypeVal> T getValueAs(PlanExprCol col,  Class<T> as);
+
+    JsonNode getContainer(String columnName);
+    JsonNode getContainer(PlanExprCol col);
+    <T extends JSONReadHandle> T getContainer(String columnName, T containerHandle);
+    <T extends JSONReadHandle> T getContainer(PlanExprCol col, T containerHandle);
+    <T> T getContainerAs(String columnName, Class<T> as);
+    <T> T getContainerAs(PlanExprCol col, Class<T> as);
 
     /**
      * Identifies the format where a column has a document or

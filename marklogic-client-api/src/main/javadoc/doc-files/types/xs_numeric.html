@@ -21,38 +21,6 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td class="colLast"><span class="memberNameLink">xs:numeric</span>(<span><a href="xs_anyAtomicType.html">item</a> <i>arg1</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/XsExpr.html#ml-server-type-numeric">java</a></td>
 	  </tr>
-</table></div><br/><div class="summary"><h3>Supertypes</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr class="altColor">
-	    <td><a href="item.html">item</a></td>
-	    <td><a href="xs_anyAtomicType.html">xs:anyAtomicType</a></td>
-	    <td><a href="xs_anySimpleType.html">xs:anySimpleType</a></td>
-	  </tr>
-</table></div><br/><div class="summary"><h3>Subtypes</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr class="altColor">
-	    <td><a href="xs_byte.html">xs:byte</a></td>
-	    <td><a href="xs_decimal.html">xs:decimal</a></td>
-	    <td><a href="xs_double.html">xs:double</a></td>
-	    <td><a href="xs_float.html">xs:float</a></td>
-	    <td><a href="xs_int.html">xs:int</a></td>
-	    <td><a href="xs_integer.html">xs:integer</a></td>
-	  </tr>
-<tr class="altColor">
-	    <td><a href="xs_integer.html">xs:integer</a></td>
-	    <td><a href="xs_long.html">xs:long</a></td>
-	    <td><a href="xs_negativeInteger.html">xs:negativeInteger</a></td>
-	    <td><a href="xs_nonNegativeInteger.html">xs:nonNegativeInteger</a></td>
-	    <td><a href="xs_nonPositiveInteger.html">xs:nonPositiveInteger</a></td>
-	    <td><a href="xs_positiveInteger.html">xs:positiveInteger</a></td>
-	  </tr>
-<tr class="altColor">
-	    <td><a href="xs_positiveInteger.html">xs:positiveInteger</a></td>
-	    <td><a href="xs_short.html">xs:short</a></td>
-	    <td><a href="xs_unsignedByte.html">xs:unsignedByte</a></td>
-	    <td><a href="xs_unsignedInt.html">xs:unsignedInt</a></td>
-	    <td><a href="xs_unsignedLong.html">xs:unsignedLong</a></td>
-	    <td><a href="xs_unsignedShort.html">xs:unsignedShort</a></td>
-	  </tr>
-<tr class="altColor">
-	    <td><a href="xs_unsignedShort.html">xs:unsignedShort</a></td>
-	  </tr>
 </table></div><br/><div class="summary"><h3>Parameter Of</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr>
 	    <th class="colFirst" scope="col">Server Return Type</th>
 	    <th class="colLast" scope="col">Server Function</th>
@@ -102,7 +70,7 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td><a href="http://docs.marklogic.com/fn:subsequence" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="rowColor">
-	    <td class="colFirst"><a href="xs_string.html">xs:string</a>?</td>
+	    <td class="colFirst"><a href="xs_string.html">xs:string</a></td>
 	    <td class="colLast"><span class="memberNameLink">fn:substring</span>(<span><a href="xs_string.html">xs:string</a> <i>sourceString</i>?</span>, <span>xs:numeric <i>startingLoc</i></span>, <span>xs:numeric <i>length</i></span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/FnExpr.html#ml-server-type-substring">java</a></td>
 	    <td><a href="http://docs.marklogic.com/fn:substring" target="mlserverdoc">server</a></td>
@@ -132,8 +100,8 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td><a href="http://docs.marklogic.com/sql:insert" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="altColor">
-	    <td class="colFirst"><a href="xs_string.html">xs:string</a></td>
-	    <td class="colLast"><span class="memberNameLink">sql:left</span>(<span><a href="item.html">item</a> <i>str</i>*</span>, <span>xs:numeric <i>n</i></span>)</td>
+	    <td class="colFirst"><a href="xs_string.html">xs:string</a>?</td>
+	    <td class="colLast"><span class="memberNameLink">sql:left</span>(<span><a href="item.html">item</a> <i>str</i>*</span>, <span>xs:numeric <i>n</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/SqlExpr.html#ml-server-type-left">java</a></td>
 	    <td><a href="http://docs.marklogic.com/sql:left" target="mlserverdoc">server</a></td>
 	  </tr>
@@ -144,20 +112,20 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td><a href="http://docs.marklogic.com/sql:repeat" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="altColor">
-	    <td class="colFirst"><a href="xs_string.html">xs:string</a></td>
-	    <td class="colLast"><span class="memberNameLink">sql:right</span>(<span><a href="item.html">item</a> <i>str</i>*</span>, <span>xs:numeric <i>n</i></span>)</td>
+	    <td class="colFirst"><a href="xs_string.html">xs:string</a>?</td>
+	    <td class="colLast"><span class="memberNameLink">sql:right</span>(<span><a href="item.html">item</a> <i>str</i>*</span>, <span>xs:numeric <i>n</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/SqlExpr.html#ml-server-type-right">java</a></td>
 	    <td><a href="http://docs.marklogic.com/sql:right" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="rowColor">
-	    <td class="colFirst"><a href="item.html">item</a>*</td>
+	    <td class="colFirst">xs:numeric?</td>
 	    <td class="colLast"><span class="memberNameLink">sql:sign</span>(<span>xs:numeric <i>x</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/SqlExpr.html#ml-server-type-sign">java</a></td>
 	    <td><a href="http://docs.marklogic.com/sql:sign" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="altColor">
-	    <td class="colFirst"><a href="xs_string.html">xs:string</a></td>
-	    <td class="colLast"><span class="memberNameLink">sql:space</span>(<span>xs:numeric <i>n</i></span>)</td>
+	    <td class="colFirst"><a href="xs_string.html">xs:string</a>?</td>
+	    <td class="colLast"><span class="memberNameLink">sql:space</span>(<span>xs:numeric <i>n</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/SqlExpr.html#ml-server-type-space">java</a></td>
 	    <td><a href="http://docs.marklogic.com/sql:space" target="mlserverdoc">server</a></td>
 	  </tr>
@@ -250,6 +218,12 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td class="colLast"><span class="memberNameLink">math:trunc</span>(<span>xs:numeric <i>arg</i>?</span>, <span><a href="xs_integer.html">xs:integer</a> <i>n</i></span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/MathExpr.html#ml-server-type-trunc">java</a></td>
 	    <td><a href="http://docs.marklogic.com/math:trunc" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">xs:numeric?</td>
+	    <td class="colLast"><span class="memberNameLink">sql:sign</span>(<span>xs:numeric <i>x</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/SqlExpr.html#ml-server-type-sign">java</a></td>
+	    <td><a href="http://docs.marklogic.com/sql:sign" target="mlserverdoc">server</a></td>
 	  </tr>
 </table></div></div></body>
 </html>

@@ -21,6 +21,7 @@ import java.util.*;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.datatype.Duration;
 
+import com.marklogic.client.query.SearchQueryDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,6 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.util.RequestParameters;
 
@@ -480,61 +480,61 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   }
 
   @Override
-  public DocumentPage search(QueryDefinition querydef, long start) {
+  public DocumentPage search(SearchQueryDefinition querydef, long start) {
     return search(querydef, start, -1, null, null, null);
   }
 
   @Override
-  public DocumentPage search(QueryDefinition querydef, long start, String forestName) {
+  public DocumentPage search(SearchQueryDefinition querydef, long start, String forestName) {
     return search(querydef, start, -1, null, null, forestName);
   }
 
-  public DocumentPage search(QueryDefinition querydef, long start, long serverTimestamp) {
+  public DocumentPage search(SearchQueryDefinition querydef, long start, long serverTimestamp) {
     return search(querydef, start, serverTimestamp, null, null, null);
   }
 
   @Override
-  public DocumentPage search(QueryDefinition querydef, long start,
+  public DocumentPage search(SearchQueryDefinition querydef, long start,
                              SearchReadHandle searchHandle) {
     return search(querydef, start, -1, searchHandle, null, null);
   }
 
   @Override
-  public DocumentPage search(QueryDefinition querydef, long start,
+  public DocumentPage search(SearchQueryDefinition querydef, long start,
                              SearchReadHandle searchHandle, String forestName) {
     return search(querydef, start, -1, searchHandle, null, forestName);
   }
 
   @Override
-  public DocumentPage search(QueryDefinition querydef, long start,
+  public DocumentPage search(SearchQueryDefinition querydef, long start,
                              Transaction transaction) {
     return search(querydef, start, -1, null, transaction, null);
   }
 
   @Override
-  public DocumentPage search(QueryDefinition querydef, long start,
+  public DocumentPage search(SearchQueryDefinition querydef, long start,
                              Transaction transaction, String forestName) {
     return search(querydef, start, -1, null, transaction, forestName);
   }
 
-  public DocumentPage search(QueryDefinition querydef, long start,
+  public DocumentPage search(SearchQueryDefinition querydef, long start,
                              long serverTimestamp, Transaction transaction) {
     return search(querydef, start, serverTimestamp, null, transaction, null);
   }
 
   @Override
-  public DocumentPage search(QueryDefinition querydef, long start,
+  public DocumentPage search(SearchQueryDefinition querydef, long start,
                              SearchReadHandle searchHandle, Transaction transaction) {
     return search(querydef, start, -1, searchHandle, transaction, null);
   }
 
   @Override
-  public DocumentPage search(QueryDefinition querydef, long start,
+  public DocumentPage search(SearchQueryDefinition querydef, long start,
                              SearchReadHandle searchHandle, Transaction transaction, String forestName) {
     return search(querydef, start, -1, searchHandle, transaction, forestName);
   }
 
-  private DocumentPage search(QueryDefinition querydef, long start,
+  private DocumentPage search(SearchQueryDefinition querydef, long start,
                               long serverTimestamp, SearchReadHandle searchHandle, Transaction transaction, String forestName) {
 
     if (searchHandle != null) {
@@ -980,7 +980,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   {
     if ( uris == null ) throw new IllegalArgumentException("uris must not be null");
     if ( uris.length == 0 ) throw new IllegalArgumentException("uris array must not be zero-length");
-    services.delete(requestLogger, null, uris);
+    services.delete(requestLogger, null, null, uris);
   }
 
   @Override
@@ -988,7 +988,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     throws ResourceNotFoundException, ForbiddenUserException,
     FailedRequestException
   {
-    services.delete(requestLogger, transaction, uris);
+    services.delete(requestLogger, transaction, null, uris);
   }
 
   @Override
@@ -1430,6 +1430,22 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     services.deleteDocument(requestLogger,
       new DocumentDescriptorImpl(uri, true), transaction, processedMetadata,
       getWriteParams());
+  }
+
+  @Override
+  public void writeDefaultMetadata(String... uris)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    writeDefaultMetadata((Transaction) null, uris);
+  }
+  @Override
+  public void writeDefaultMetadata(Transaction transaction, String... uris)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    if (uris.length == 0)
+      throw new IllegalArgumentException(
+              "Resetting document metadata with empty identifier list");
+    services.delete(requestLogger, transaction, processedMetadata, uris);
   }
 
   @Override

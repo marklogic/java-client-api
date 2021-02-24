@@ -28,6 +28,8 @@ import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.io.*;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.row.RawPlanDefinition;
+import com.marklogic.client.row.RawQueryDSLPlan;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.test.Common;
 import com.marklogic.client.type.PlanColumn;
@@ -204,6 +206,14 @@ public class RowBatcherTest {
         runJsonRowsTest(jsonBatcher(3), true);
     }
     @Test
+    public void testJsonRows1ThreadRawAST() throws Exception {
+        runJsonRowsTest(jsonBatcher(1), RawPlanDefinition.class);
+    }
+    @Test
+    public void testJsonRows1ThreadRawQueryDSL() throws Exception {
+        runJsonRowsTest(jsonBatcher(1), RawQueryDSLPlan.class);
+    }
+    @Test
     public void testXmlRows3Threads() throws Exception {
         runXmlRowsTest(xmlBatcher(3));
     }
@@ -229,9 +239,17 @@ public class RowBatcherTest {
                 .withThreadCount(threads);
     }
     private void runJsonRowsTest(RowBatcher<JsonNode> rowBatcher) throws Exception {
-        runJsonRowsTest(rowBatcher, false);
+        runJsonRowsTest(rowBatcher, false, PlanBuilder.ModifyPlan.class);
     }
     private void runJsonRowsTest(RowBatcher<JsonNode> rowBatcher, boolean consistentSnapshot) throws Exception {
+        runJsonRowsTest(rowBatcher, consistentSnapshot, PlanBuilder.ModifyPlan.class);
+    }
+    private void runJsonRowsTest(RowBatcher<JsonNode> rowBatcher, Class<? extends PlanBuilder.Plan> planType) throws Exception {
+        runJsonRowsTest(rowBatcher, false, planType);
+    }
+    private void runJsonRowsTest(
+            RowBatcher<JsonNode> rowBatcher, boolean consistentSnapshot, Class<? extends PlanBuilder.Plan> planType
+    ) throws Exception {
         if (consistentSnapshot) {
             rowBatcher.withConsistentSnapshot();
         }
@@ -240,16 +258,32 @@ public class RowBatcherTest {
         RowManager rowMgr = rowBatcher.getRowManager();
         rowMgr.setDatatypeStyle(RowManager.RowSetPart.HEADER);
 
-        PlanBuilder planBuilder = rowMgr.newPlanBuilder();
-        PlanBuilder.ModifyPlan plan =
-                planBuilder.fromView("rowBatcherUnitTest", "code", "");
+        if (planType == null || PlanBuilder.ModifyPlan.class.isAssignableFrom(planType)) {
+            rowBatcher.withBatchView(
+                    rowMgr.newPlanBuilder()
+                          .fromView("rowBatcherUnitTest", "code", "")
+            );
+        } else if (RawPlanDefinition.class.isAssignableFrom(planType)) {
+            rowBatcher.withBatchView(
+                    rowMgr.newRawPlanDefinition(
+                            rowMgr.newPlanBuilder()
+                                  .fromView("rowBatcherUnitTest", "code", "")
+                                  .export(new StringHandle())
+                    ));
+        } else if (RawQueryDSLPlan.class.isAssignableFrom(planType)) {
+            rowBatcher.withBatchView(
+                    rowMgr.newRawQueryDSLPlan(
+                            new StringHandle("op.fromView('rowBatcherUnitTest', 'code', '')")
+                    ));
+        } else {
+            throw new IllegalArgumentException("unknown plan type: "+planType.getName());
+        }
 
         AtomicBoolean addedDoc = consistentSnapshot ? new AtomicBoolean(false) : null;
 
         Set<String> actual = new ConcurrentSkipListSet<>();
         AtomicBoolean failed = new AtomicBoolean(false);
-        rowBatcher.withBatchView(plan)
-                .onSuccess(event -> {
+        rowBatcher.onSuccess(event -> {
                     /* System.out.println("succeeded batch="+event.getJobBatchNumber()+
                             " from "+event.getLowerBound()+" through "+event.getUpperBound()+
                             ((event.getJobBatchNumber() == 1) ? "\n"+event.getRowsDoc() : "")); */

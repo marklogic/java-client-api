@@ -16,10 +16,12 @@
 package com.marklogic.client.impl;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.*;
 import org.w3c.dom.Document;
@@ -595,6 +597,43 @@ public class NodeConverter {
       }
    }
 
+   static public <T extends JSONReadHandle> T jsonNodeToHandle(JsonNode node, T handle) {
+      if (node == null) {
+         return null;
+      } else if (handle == null) {
+         throw new IllegalArgumentException("cannot convert JSON node to null handle");
+      }
+
+      try {
+         HandleImplementation handleImpl = HandleAccessor.checkHandle(handle, "json");
+
+         Class<?> as = handleImpl.receiveAs();
+         if (as == null) {
+            throw new IllegalArgumentException("handle does not specify class to receive content");
+         } else if (byte[].class.isAssignableFrom(as)) {
+            handleImpl.receiveContent(getMapper().writeValueAsBytes(node));
+         } else if (File.class.isAssignableFrom(as)) {
+            Path tempFile = Files.createTempFile("tmp", ".json");
+            Files.copy(new ByteArrayInputStream(getMapper().writeValueAsBytes(node)), tempFile, StandardCopyOption.REPLACE_EXISTING);
+            handleImpl.receiveContent(tempFile.toFile());
+// TODO: JsonParser.class.isAssignableFrom(as)
+         } else if (InputStream.class.isAssignableFrom(as)) {
+            handleImpl.receiveContent(new ByteArrayInputStream(getMapper().writeValueAsBytes(node)));
+         } else if (Reader.class.isAssignableFrom(as)) {
+            handleImpl.receiveContent(new StringReader(getMapper().writeValueAsString(node)));
+         } else if (String.class.isAssignableFrom(as)) {
+            handleImpl.receiveContent(getMapper().writeValueAsString(node));
+         } else {
+            throw new IllegalArgumentException("handle receives content with unsupported class: "+as.getSimpleName());
+         }
+
+         return handle;
+      } catch (JsonProcessingException e) {
+         throw new MarkLogicIOException("could not set handle to JsonNode", e);
+      } catch (IOException e) {
+         throw new MarkLogicIOException("could not create file for JsonNode", e);
+      }
+   }
    static public JsonNode handleToJsonNode(JSONWriteHandle jsonHandle) {
       if (jsonHandle == null) {
          return null;

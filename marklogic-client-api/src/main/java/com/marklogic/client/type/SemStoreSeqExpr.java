@@ -17,7 +17,8 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of semantic store expressions.
+ * See {@link com.marklogic.client.expression.SemExpr#storeSeq(SemStoreExpr...)} 
  */
-public interface SemStoreSeqExpr {
+public interface SemStoreSeqExpr extends ServerExpression {
 
 }

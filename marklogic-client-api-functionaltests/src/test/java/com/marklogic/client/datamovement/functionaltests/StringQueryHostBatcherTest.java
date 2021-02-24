@@ -24,11 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,6 +33,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 
+import com.marklogic.client.expression.CtsQueryBuilder;
+import com.marklogic.client.query.*;
+import com.marklogic.client.type.CtsQueryExpr;
+import com.marklogic.client.util.EditableNamespaceContext;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -71,21 +71,15 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
-import com.marklogic.client.query.RawCtsQueryDefinition;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
-import com.marklogic.client.query.StructuredQueryDefinition;
 
 /**
-* @author ageorge Purpose : Test String Queries - On multiple documents using
-*         Java Client DocumentManager Write method and WriteBatcher. - On
-*         meta-data. - On non-existent document. Verify error message. - With
-*         invalid string query. Verify error message.
-*
-*/
+ * @author ageorge Purpose : Test String Queries - On multiple documents using
+ *         Java Client DocumentManager Write method and WriteBatcher. - On
+ *         meta-data. - On non-existent document. Verify error message. - With
+ *         invalid string query. Verify error message.
+ *
+ */
 public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   private static String dbName = "StringQueryHostBatcherDB";
   private static String[] fNames = { "StringQueryHostBatcherDB-1", "StringQueryHostBatcherDB-2", "StringQueryHostBatcherDB-3" };
@@ -109,6 +103,30 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
     setupJavaRESTServer(dbName, fNames[0], restServerName, restServerPort);
     setupAppServicesConstraint(dbName);
+    String[][] namespacePaths = {
+            // { prefix, namespace-uri }
+            // If there is a need to add additional fields, then add them to
+            // the end
+            // of each array
+            // and pass empty strings ("") into an array where the
+            // additional field
+            // does not have a value.
+            // For example : as in namespace, collections below.
+            { "ns1", "http://www.example1.com" },
+            { "ns2", "http://www.example2.com" },
+            { "nsdate", "http://purl.org/dc/elements/1.1/" }
+            // Add new namespace Paths as an array below.
+    };
+    // Insert the namespaces path
+    addPathNamespace(dbName, namespacePaths);
+
+    // Add additional range path indices with namespaces.
+    String[][] rangePaths = {
+            {"int","/ns1:root/ns1:popularity","","ignore","false"},
+            {"string","/ns2:root/ns2:status","http://marklogic.com/collation/","ignore","false"},
+            {"date","//nsdate:date","","ignore","false"}
+    };
+    addRangePathIndex(dbName, rangePaths);
 
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "rest-extension-user", "manage-user");
@@ -171,7 +189,6 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       }
 
       setQueryOption(client, queryOptionName);
-
       QueryManager queryMgr = client.newQueryManager();
 
       // create query def
@@ -586,93 +603,141 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   }
   
   @Test
-  public void testRawCtsQuery() throws IOException, InterruptedException
-  {
+  public void testRawCtsQuery() throws IOException, InterruptedException {
     System.out.println("Running testRawCtsQuery");
 
     Document readDoc = null;
-	try {
-		String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
-		WriteBatcher batcher = dmManager.newWriteBatcher();
+    try {
+      String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+      WriteBatcher batcher = dmManager.newWriteBatcher();
 
-		batcher.withBatchSize(2);
-		// Move to individual data sub folders.
-		String dataFileDir = dataConfigDirPath + "/data/";
+      batcher.withBatchSize(2);
+      // Move to individual data sub folders.
+      String dataFileDir = dataConfigDirPath + "/data/";
 
-		InputStreamHandle contentHandle1 = new InputStreamHandle();
-		contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
-		InputStreamHandle contentHandle2 = new InputStreamHandle();
-		contentHandle2.set(new FileInputStream(dataFileDir + filenames[1]));
-		InputStreamHandle contentHandle3 = new InputStreamHandle();
-		contentHandle3.set(new FileInputStream(dataFileDir + filenames[2]));
-		InputStreamHandle contentHandle4 = new InputStreamHandle();
-		contentHandle4.set(new FileInputStream(dataFileDir + filenames[3]));
-		InputStreamHandle contentHandle5 = new InputStreamHandle();
-		contentHandle5.set(new FileInputStream(dataFileDir + filenames[4]));
+      InputStreamHandle contentHandle1 = new InputStreamHandle();
+      contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
+      InputStreamHandle contentHandle2 = new InputStreamHandle();
+      contentHandle2.set(new FileInputStream(dataFileDir + filenames[1]));
+      InputStreamHandle contentHandle3 = new InputStreamHandle();
+      contentHandle3.set(new FileInputStream(dataFileDir + filenames[2]));
+      InputStreamHandle contentHandle4 = new InputStreamHandle();
+      contentHandle4.set(new FileInputStream(dataFileDir + filenames[3]));
+      InputStreamHandle contentHandle5 = new InputStreamHandle();
+      contentHandle5.set(new FileInputStream(dataFileDir + filenames[4]));
 
-		batcher.add("cts-constraint1.xml", contentHandle1);
-		batcher.add("cts-constraint2.xml", contentHandle2);
-		batcher.add("cts-constraint3.xml", contentHandle3);
-		batcher.add("cts-constraint4.xml", contentHandle4);
-		batcher.add("cts-constraint5.xml", contentHandle5);
+      batcher.add("cts-constraint1.xml", contentHandle1);
+      batcher.add("cts-constraint2.xml", contentHandle2);
+      batcher.add("cts-constraint3.xml", contentHandle3);
+      batcher.add("cts-constraint4.xml", contentHandle4);
+      batcher.add("cts-constraint5.xml", contentHandle5);
 
-		// Flush
-		batcher.flushAndWait();
-		StringBuilder batchResults = new StringBuilder();
-		
-		// create a search definition
-		QueryManager queryMgr = client.newQueryManager();
-		
-		String wordQuery = "<cts:word-query xmlns:cts=\"http://marklogic.com/cts\">" +
-		                   "<cts:text>unfortunately</cts:text></cts:word-query>";
-		StringHandle handle = new StringHandle().with(wordQuery);
-		RawCtsQueryDefinition querydef = queryMgr.newRawCtsQueryDefinition(handle);
+      // Flush
+      batcher.flushAndWait();
+      StringBuilder batchResults = new StringBuilder();
 
-		// Run a QueryBatcher.
-		QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
-		queryBatcher1.onUrisReady(batch -> {
+      // create a search definition
+      QueryManager queryMgr = client.newQueryManager();
 
-		  for (String str : batch.getItems()) {
-		    batchResults.append(str).append('|');
-		  }
+      String wordQuery = "<cts:word-query xmlns:cts=\"http://marklogic.com/cts\">" +
+              "<cts:text>unfortunately</cts:text></cts:word-query>";
+      StringHandle handle = new StringHandle().with(wordQuery);
+      RawCtsQueryDefinition querydef = queryMgr.newRawCtsQueryDefinition(handle);
 
-		  batchResults.append(batch.getJobResultsSoFar())
-		      .append('|')
-		      .append(batch.getForest().getForestName())
-		      .append('|')
-		      .append(batch.getJobBatchNumber())
-		      .append('|');
+      // Run a QueryBatcher.
+      QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
+      queryBatcher1.onUrisReady(batch -> {
 
-		})
-		.onQueryFailure(throwable -> {
-		    System.out.println("Exceptions thrown from callback onQueryFailure" + throwable.getMessage());
-		});
-		
-		dmManager.startJob(queryBatcher1);
-		queryBatcher1.awaitCompletion(1, TimeUnit.MINUTES);
-		
-		System.out.println("Batch Results are : " + batchResults.toString());
-		System.out.println("File name is : " + filenames[4]);
-		assertTrue("URI returned not correct", batchResults.toString().contains("cts-" +filenames[4]));
+        for (String str : batch.getItems()) {
+          batchResults.append(str).append('|');
+        }
 
-		// Read the document and assert on the value
-		DOMHandle contentHandle = new DOMHandle();
-		contentHandle = readDocumentUsingDOMHandle(client, "cts-"+filenames[4], "XML");
-		readDoc = contentHandle.get();
-		try {
-			System.out.println(convertXMLDocumentToString(readDoc));
-		} catch (TransformerException e) {
-			e.printStackTrace();
-		}
+        batchResults.append(batch.getJobResultsSoFar())
+                .append('|')
+                .append(batch.getForest().getForestName())
+                .append('|')
+                .append(batch.getJobBatchNumber())
+                .append('|');
 
-		assertTrue("Document content returned not correct", readDoc.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
-		assertTrue("Document content returned not correct", readDoc.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
-	
-    assertTrue("Document content returned not correct", readDoc.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));
-	} catch (DOMException e) {
-		e.printStackTrace();
-		fail("testRawCtsQuery method failed");
-	}
+      })
+              .onQueryFailure(throwable -> {
+                System.out.println("Exceptions thrown from callback onQueryFailure" + throwable.getMessage());
+              });
+
+      dmManager.startJob(queryBatcher1);
+      queryBatcher1.awaitCompletion(1, TimeUnit.MINUTES);
+
+      System.out.println("Batch Results are : " + batchResults.toString());
+      System.out.println("File name is : " + filenames[4]);
+      assertTrue("URI returned not correct", batchResults.toString().contains("cts-" + filenames[4]));
+
+      // Read the document and assert on the value
+      DOMHandle contentHandle = new DOMHandle();
+      contentHandle = readDocumentUsingDOMHandle(client, "cts-" + filenames[4], "XML");
+      readDoc = contentHandle.get();
+      try {
+        System.out.println(convertXMLDocumentToString(readDoc));
+      } catch (TransformerException e) {
+        e.printStackTrace();
+      }
+
+      assertTrue("Document content returned not correct", readDoc.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
+      assertTrue("Document content returned not correct", readDoc.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
+
+      assertTrue("Document content returned not correct", readDoc.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));
+
+      // Run a QueryBatcher with CtsQueryBuilder.
+      CtsQueryBuilder ctsQueryBuilder = queryMgr.newCtsSearchBuilder();
+      StringBuilder batchResults2 = new StringBuilder();
+
+      CtsQueryExpr ctsQueryExpr = ctsQueryBuilder.cts.andQuery(ctsQueryBuilder.cts.wordQuery("unfortunately"));
+      CtsQueryDefinition qd = ctsQueryBuilder.newCtsQueryDefinition(ctsQueryExpr);
+      QueryBatcher queryBatcher2 = dmManager.newQueryBatcher(qd);
+
+      queryBatcher2.onUrisReady(batch -> {
+
+        for (String str : batch.getItems()) {
+          batchResults2.append(str).append('|');
+        }
+
+        batchResults2.append(batch.getJobResultsSoFar())
+                .append('|')
+                .append(batch.getForest().getForestName())
+                .append('|')
+                .append(batch.getJobBatchNumber())
+                .append('|');
+
+      })
+              .onQueryFailure(throwable -> {
+                System.out.println("Exceptions thrown from callback onQueryFailure" + throwable.getMessage());
+              });
+
+      dmManager.startJob(queryBatcher2);
+      queryBatcher2.awaitCompletion(1, TimeUnit.MINUTES);
+
+      System.out.println("Batch Results are : " + batchResults2.toString());
+      System.out.println("File name is : " + filenames[4]);
+      assertTrue("URI returned not correct", batchResults2.toString().contains("cts-" + filenames[4]));
+
+      // Read the document and assert on the value
+      Document readDoc2 = null;
+      DOMHandle contentHandleCts = new DOMHandle();
+      contentHandleCts = readDocumentUsingDOMHandle(client, "cts-" + filenames[4], "XML");
+      readDoc2 = contentHandleCts.get();
+      try {
+        System.out.println(convertXMLDocumentToString(readDoc2));
+      } catch (TransformerException e) {
+        e.printStackTrace();
+      }
+
+      assertTrue("Document content returned not correct", readDoc2.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
+      assertTrue("Document content returned not correct", readDoc2.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
+
+      assertTrue("Document content returned not correct", readDoc2.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));
+    } catch (DOMException e) {
+      e.printStackTrace();
+      fail("testRawCtsQuery method failed");
+    }
 	finally {
 		try {
 			clearDB();
@@ -2035,14 +2100,15 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
 		  wbatcher.flushAndWait();
 		  // Read all 6000 docs in a batch and monitor progress.
-		  StringBuilder str6000 = new StringBuilder();
+          Set<String> progressSet = Collections.synchronizedSet(new HashSet<>());
 		  QueryBatcher batcher6000 = dmManager.newQueryBatcher(querydef).withBatchSize(6000).withThreadCount(1);
 		  batcher6000.onUrisReady(
 
 				  new ProgressListener()
 				  .onProgressUpdate(progressUpdate -> {
 					  System.out.println("From ProgressListener (Batch 6000): " + progressUpdate.getProgressAsString());
-					  str6000.append(progressUpdate.getProgressAsString());
+					  int index = progressUpdate.getProgressAsString().indexOf(";");
+                      progressSet.add(progressUpdate.getProgressAsString().substring(0, index));
 				  }));
 		  batcher6000.onQueryFailure((throwable) -> {
 			  System.out.println("queryFailures 6000: ");
@@ -2055,17 +2121,18 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
 		  dmManager.startJob(batcher6000);
 		  batcher6000.awaitCompletion();
-		  System.out.println("From buffer 6000: " + str6000.toString());
-		  assertTrue("Progress Update incorrect", str6000.toString().contains("Progress: 6000 results"));
+          assertTrue("Progress Update incorrect", progressSet.toString().contains("Progress: 6000 results"));
 
 		  // Read in smaller batches and monitor progress
-		  StringBuilder str60 = new StringBuilder();
-		  QueryBatcher batcher60 = dmManager.newQueryBatcher(querydef).withBatchSize(60).withThreadCount(1);
+          Set<String> progressSet60 = Collections.synchronizedSet(new HashSet<>());
+		  QueryBatcher batcher60 = dmManager.newQueryBatcher(querydef).withBatchSize(60, 1);
+                  //.withThreadCount(1);
 		  batcher60.onUrisReady(
 				  new ProgressListener()
 				  .onProgressUpdate(progressUpdate -> {
 					  System.out.println("From ProgressListener (From Batch 60): " + progressUpdate.getProgressAsString());
-					  str60.append(progressUpdate.getProgressAsString());
+                      int index = progressUpdate.getProgressAsString().indexOf(";");
+                      progressSet60.add(progressUpdate.getProgressAsString().substring(0, index));
 				  }));
 		  batcher60.onQueryFailure((throwable) -> {
 			  System.out.println("queryFailures 60: ");
@@ -2079,19 +2146,20 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		  dmManager.startJob(batcher60);
 		  batcher60.awaitCompletion();
 
-		  System.out.println("From buffer 60: " + str60.toString());
 		  // Make sure all updates are available
-		  assertTrue("Progress Update Batch 1 incorrect", str60.toString().contains("Progress: 60 results"));
-		  assertTrue("Progress Update Batch 5940 incorrect", str60.toString().contains("Progress: 5940 results"));
-		  assertTrue("Progress Update incorrect", str60.toString().contains("Progress: 6000 results"));
+          assertTrue("Progress Update Batch 1 incorrect", progressSet60.toString().contains("Progress: 60 results"));
+		  assertTrue("Progress Update Batch 5940 incorrect", progressSet60.toString().contains("Progress: 5940 results"));
+		  assertTrue("Progress Update incorrect", progressSet60.toString().contains("Progress: 6000 results"));
 		  // Batches read are uneven and with multiple threads
-		  StringBuilder str33 = new StringBuilder();
-		  QueryBatcher batcher33 = dmManager.newQueryBatcher(querydef).withBatchSize(33).withThreadCount(3);
+
+          Set<String> progressSet33 = Collections.synchronizedSet(new HashSet<>());
+		  QueryBatcher batcher33 = dmManager.newQueryBatcher(querydef).withBatchSize(33, 1).withThreadCount(3);
 		  batcher33.onUrisReady(
 				  new ProgressListener()
 				  .onProgressUpdate(progressUpdate -> {
 					  System.out.println("From ProgressListener (From Batch 33): " + progressUpdate.getProgressAsString());
-					  str33.append(progressUpdate.getProgressAsString());
+                      int index = progressUpdate.getProgressAsString().indexOf(";");
+                      progressSet33.add(progressUpdate.getProgressAsString().substring(0, index));
 				  }));
 		  batcher33.onQueryFailure((throwable) -> {
 			  System.out.println("queryFailures 33: ");
@@ -2104,11 +2172,10 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		  dmManager.startJob(batcher33);
 		  batcher33.awaitCompletion();
 
-		  System.out.println("From buffer 33: " + str33.toString());
 		  // Make sure all updates are available
-		  assertTrue("Progress Update Batch 1 incorrect", str33.toString().contains("Progress: 33 results"));
-		  assertTrue("Progress Update Batch 5973 incorrect", str33.toString().contains("Progress: 5973 results"));
-		  assertTrue("Progress Update incorrect", str33.toString().contains("Progress: 6000 results"));
+		  assertTrue("Progress Update Batch 1 incorrect", progressSet33.toString().contains("Progress: 33 results"));
+		  assertTrue("Progress Update Batch 5973 incorrect", progressSet33.toString().contains("Progress: 5973 results"));
+		  assertTrue("Progress Update incorrect", progressSet33.toString().contains("Progress: 6000 results"));
 
 		  // Batches read errors
 		  StringBuilder strErr = new StringBuilder();	  
@@ -2232,7 +2299,6 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
         DataMovementManager dmManagerTmp = null;
 
         try {
-          System.out.println("Running testUTF8InUri");
 
           String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
           String combinedQueryFileName = "combinedQueryOptionJSON.json";
@@ -2326,4 +2392,144 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
           clearDB();
         }
       }
+
+  // Verify namespaces in query. Refer to Git Issue 1283.
+
+  @Test
+  public void testPathNameSpacesInQuery() throws Exception {
+    System.out.println("Running testPathNameSpacesInQuery");
+    DatabaseClient clientTmp = null;
+    DataMovementManager dmManagerTmp = null;
+
+    try {
+      // Insert docs
+      StringBuilder doc1 = new StringBuilder();
+      doc1.append("<root xmlns=\"http://www.example1.com\">");
+      doc1.append("<title>Vannevar Bush</title>");
+      doc1.append("<popularity>5</popularity>");
+      doc1.append("<id>0011</id>");
+      doc1.append("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2005-01-01</date>");
+      doc1.append("<price xmlns=\"http://cloudbank.com\" amt=\"0.1\"/>");
+      doc1.append("<p>Vannevar Bush wrote an article for The Atlantic Monthly</p>");
+      doc1.append("<status>active</status>");
+      doc1.append("<g-elem-point>12,5</g-elem-point>");
+      doc1.append("<g-elem-child-parent><g-elem-child-point>12,5</g-elem-child-point></g-elem-child-parent>");
+      doc1.append("<g-elem-pair><lat>12</lat><long>5</long></g-elem-pair>");
+      doc1.append("<g-attr-pair lat=\"12\" long=\"5\"/>");
+      doc1.append("</root>");
+
+      StringBuilder doc2 = new StringBuilder();
+      doc2.append("<root xmlns=\"http://www.example2.com\">");
+      doc2.append("<title>The Bush article</title>");
+      doc2.append("<popularity>4</popularity>");
+      doc2.append("<id>0012</id>");
+      doc2.append("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2006-02-02</date>");
+      doc2.append("<price xmlns=\"http://cloudbank.com\" amt=\"0.12\"/>");
+      doc2.append("<p>The Bush article described a device called a Memex.</p>");
+      doc2.append("<status>active</status>");
+      doc2.append("</root>");
+
+      StringBuilder doc3 = new StringBuilder();
+      doc3.append("<root xmlns=\"http://www.example2.com\">");
+      doc3.append("<title>For 1945</title>");
+      doc3.append("<popularity>3</popularity>");
+      doc3.append("<id>0113</id>");
+      doc3.append("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2007-03-03</date>");
+      doc3.append("<price xmlns=\"http://cloudbank.com\" amt=\"1.22\"/>");
+      doc3.append("<p>For 1945, the thoughts expressed in The Atlantic Monthly were groundbreaking.</p>");
+      doc3.append("<status>pending</status>");
+      doc3.append("</root>");
+
+      StringBuilder doc4 = new StringBuilder();
+      doc4.append("<root xmlns=\"http://www.example2.com\">");
+      doc4.append("<title>Vannevar served</title>");
+      doc4.append("<popularity>5</popularity>");
+      doc4.append("<id>0024</id>");
+      doc4.append("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2008-04-04</date>");
+      doc4.append("<price xmlns=\"http://cloudbank.com\" amt=\"12.34\"/>");
+      doc4.append("<p>Vannevar served as a prominent policymaker and public intellectual.</p>");
+      doc4.append("<status>active</status>");
+      doc4.append("</root>");
+
+      StringBuilder doc5 = new StringBuilder();
+      doc5.append("<root xmlns=\"http://www.example2.com\">");
+      doc5.append("<title>The memex</title>");
+      doc5.append("<popularity>5</popularity>");
+      doc5.append("<id>0026</id>");
+      doc5.append("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2009-05-05</date>");
+      doc5.append("<price xmlns=\"http://cloudbank.com\" amt=\"123.45\"/>");
+      doc5.append("<p>The Memex, unfortunately, had no automated search feature.</p>");
+      doc5.append("<status>pending</status>");
+      doc5.append("</root>");
+
+      clientTmp = getDatabaseClient("eval-user", "x", getConnType());
+      dmManager = clientTmp.newDataMovementManager();
+      WriteBatcher batcher = dmManager.newWriteBatcher();
+      dmManager.startJob(batcher);
+      batcher.add("/testdoc/doc1,xml", new StringHandle(doc1.toString()));
+      batcher.add("/testdoc/doc2.xml", new StringHandle(doc2.toString()));
+      batcher.add("/testdoc/doc3.xml", new StringHandle(doc3.toString()));
+      batcher.add("/testdoc/doc4.xml", new StringHandle(doc4.toString()));
+      batcher.add("/testdoc/doc5.xml", new StringHandle(doc5.toString()));
+
+      batcher.flushAndWait();
+      QueryManager queryManager = clientTmp.newQueryManager();
+
+      StringBuilder resultUris = new StringBuilder();
+      StringBuilder failStr = new StringBuilder();
+      AtomicInteger docCnt = new AtomicInteger(0);
+
+      StructuredQueryBuilder queryBuilder = queryManager.newStructuredQueryBuilder();
+      EditableNamespaceContext namespaceContext = new EditableNamespaceContext();
+      namespaceContext.put("nsdate", "http://purl.org/dc/elements/1.1/");
+      namespaceContext.put("ns1", "http://www.example1.com");
+      namespaceContext.put("ns2", "http://www.example2.com");
+      queryBuilder.setNamespaces(namespaceContext);
+
+      StructuredQueryDefinition qd = queryBuilder.range(
+              queryBuilder.pathIndex("//nsdate:date"),
+              "xs:date", StructuredQueryBuilder.Operator.GT, "2007-01-01");
+
+      QueryBatcher qb = dmManager.newQueryBatcher(qd)
+              .onUrisReady(batch -> {
+                System.out.println("Items: " + Arrays.asList(batch.getItems()));
+                for(String s:batch.getItems()) {
+                  resultUris.append(s);
+                  resultUris.append("|");
+                  docCnt.incrementAndGet();
+                }
+              })
+              .onQueryFailure(failure -> {
+                System.out.println("Failure: " + failure.getMessage());
+                failStr.append(failure.getMessage());
+              });
+      try {
+        dmManager.startJob(qb);
+        qb.awaitCompletion();
+      } catch (Exception e) {
+        System.out.println("Exceptions thrown from Query Batcher job");
+      }
+      finally {
+        dmManager.stopJob(qb);
+        int ndocs = docCnt.get();
+        if (! failStr.toString().isEmpty()) {
+          fail("QueryBatcher failed to query required docs.");
+        }
+        assertEquals("Number of docs returned incorrect", 3, ndocs);
+        String res = resultUris.toString();
+        assertTrue("Doc 1 returned incorrect", res.contains("/testdoc/doc3.xml"));
+        assertTrue("Doc 2 returned incorrect", res.contains("/testdoc/doc4.xml"));
+        assertTrue("Doc 3 returned incorrect", res.contains("/testdoc/doc5.xml"));
+      }
+
+    } catch (Exception e) {
+      System.out.println("Exceptions thrown from testPathNameSpacesInQuery");
+      System.out.println(e.getMessage());
+      fail("testPathNameSpacesInQuery mathod failed");
+    } finally {
+      clientTmp.release();
+      clearDB();
+    }
+
+  }
 }

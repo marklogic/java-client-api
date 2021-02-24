@@ -20,12 +20,7 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.datamovement.*;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.query.RawCtsQueryDefinition;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
-import com.marklogic.client.query.RawStructuredQueryDefinition;
+import com.marklogic.client.query.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,6 +98,11 @@ public class DataMovementManagerImpl implements DataMovementManager {
   }
 
   @Override
+  public QueryBatcher newQueryBatcher(CtsQueryDefinition query) {
+    return newQueryBatcherImpl(query);
+  }
+
+  @Override
   public QueryBatcher newQueryBatcher(StructuredQueryDefinition query) {
     return newQueryBatcherImpl(query);
   }
@@ -126,7 +126,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
     return newQueryBatcherImpl(query);
   }
 
-  private QueryBatcher newQueryBatcherImpl(QueryDefinition query) {
+  private QueryBatcher newQueryBatcherImpl(SearchQueryDefinition query) {
     if ( query == null ) throw new IllegalArgumentException("query must not be null");
 
     QueryBatcherImpl queryBatcher = null;
@@ -134,7 +134,8 @@ public class DataMovementManagerImpl implements DataMovementManager {
     if (Long.compareUnsigned(getServerVersion(), Long.parseUnsignedLong("10000500")) >= 0) {
       DataMovementServices.QueryConfig queryConfig = service.initConfig("POST", query);
       queryBatcher = new QueryBatcherImpl(query, this, queryConfig.forestConfig,
-              queryConfig.serializedCtsQuery, queryConfig.filtered);
+              queryConfig.serializedCtsQuery, queryConfig.filtered,
+              queryConfig.maxDocToUriBatchRatio, queryConfig.defaultDocBatchSize, queryConfig.maxUriBatchSize);
     } else {
       queryBatcher = new QueryBatcherImpl(query, this, getForestConfig());
     }

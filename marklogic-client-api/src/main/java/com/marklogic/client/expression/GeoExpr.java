@@ -15,6 +15,12 @@
  */
 package com.marklogic.client.expression;
 
+import com.marklogic.client.type.CtsBoxExpr;
+import com.marklogic.client.type.CtsBoxSeqExpr;
+import com.marklogic.client.type.CtsCircleExpr;
+import com.marklogic.client.type.CtsPointExpr;
+import com.marklogic.client.type.CtsPointSeqExpr;
+import com.marklogic.client.type.CtsPolygonExpr;
 import com.marklogic.client.type.CtsRegionExpr;
 import com.marklogic.client.type.CtsRegionSeqExpr;
 import com.marklogic.client.type.XsBooleanVal;
@@ -43,7 +49,7 @@ public interface GeoExpr {
   * @param region  A geospatial region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a> server data type
   */
-  public ServerExpression approxCenter(CtsRegionExpr region);
+  public ServerExpression approxCenter(ServerExpression region);
 /**
   * Return a point approximating the center of the given region. For a point, this is the point itself. For a circle, it is the center point. For a box, it is the point whose latitude is half-way between the northern and southern limits and whose longitude is half-way between the western and eastern limits. For polygons, complex polygons, and linestrings, an approximate centroid is returned. This approximation is rough, and useful for quick comparisons.
   * <p>
@@ -52,7 +58,7 @@ public interface GeoExpr {
   * @param options  Options. The default is ().  Options include:  "box-percent=n" An integer between 0 and 100 (default is 100) that indicates what percentage of a polygon's bounding box slivers should be used in constructing the approximate centroid. Lower numbers use fewer slivers, giving faster but less accurate results; larger numbers use more slivers, giving slower but more accurate results.  "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" The precision use for this operation, including the interpretation of input values. Allowed values: float, double. Default: The precision of the governing coordinate system.    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a> server data type
   */
-  public ServerExpression approxCenter(CtsRegionExpr region, String options);
+  public ServerExpression approxCenter(ServerExpression region, String options);
 /**
   * Return a point approximating the center of the given region. For a point, this is the point itself. For a circle, it is the center point. For a box, it is the point whose latitude is half-way between the northern and southern limits and whose longitude is half-way between the western and eastern limits. For polygons, complex polygons, and linestrings, an approximate centroid is returned. This approximation is rough, and useful for quick comparisons.
   * <p>
@@ -61,7 +67,7 @@ public interface GeoExpr {
   * @param options  Options. The default is ().  Options include:  "box-percent=n" An integer between 0 and 100 (default is 100) that indicates what percentage of a polygon's bounding box slivers should be used in constructing the approximate centroid. Lower numbers use fewer slivers, giving faster but less accurate results; larger numbers use more slivers, giving slower but more accurate results.  "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" The precision use for this operation, including the interpretation of input values. Allowed values: float, double. Default: The precision of the governing coordinate system.    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a> server data type
   */
-  public ServerExpression approxCenter(CtsRegionExpr region, ServerExpression options);
+  public ServerExpression approxCenter(ServerExpression region, ServerExpression options);
 /**
   * Returns the point at the intersection of two arcs. If the arcs do not intersect, or lie on the same great circle, or if either arc covers more than 180 degrees, an error is raised.
   *
@@ -142,7 +148,7 @@ public interface GeoExpr {
   * @param region  A geographic region (box, circle, polygon, or point).  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a> server data type
   */
-  public ServerExpression boundingBoxes(CtsRegionExpr region);
+  public ServerExpression boundingBoxes(ServerExpression region);
 /**
   * Returns a sequence of boxes that bound the given region.
   * <p>
@@ -151,7 +157,7 @@ public interface GeoExpr {
   * @param options  Options for the operation. The default is (). Options include: Options include:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "box-percent=n" An integer between 0 and 100 (default is 100) that indicates what percentage of a polygon's bounding box slivers should be returned. Lower numbers give fewer, less accurate boxes; larger numbers give more, more accurate boxes. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. The bounding boxes will be padded to cover any points within tolerance of the region. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option. The default value is 0 (no padding). "boundaries-included" Points on boxes', circles', and polygons' boundaries are counted as matching. This is the default. "boundaries-excluded" Points on boxes', circles', and polygons' boundaries are not counted as matching. "boundaries-latitude-excluded" Points on boxes' latitude boundaries are not counted as matching. "boundaries-longitude-excluded" Points on boxes' longitude boundaries are not counted as matching. "boundaries-south-excluded" Points on the boxes' southern boundaries are not counted as matching. "boundaries-west-excluded" Points on the boxes' western boundaries are not counted as matching. "boundaries-north-excluded" Points on the boxes' northern boundaries are not counted as matching. "boundaries-east-excluded" Points on the boxes' eastern boundaries are not counted as matching. "boundaries-circle-excluded" Points on circles' boundary are not counted as matching. "boundaries-endpoints-excluded" Points on linestrings' boundary (the endpoints) are not counted as matching.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a> server data type
   */
-  public ServerExpression boundingBoxes(CtsRegionExpr region, String options);
+  public ServerExpression boundingBoxes(ServerExpression region, String options);
 /**
   * Returns a sequence of boxes that bound the given region.
   * <p>
@@ -160,7 +166,7 @@ public interface GeoExpr {
   * @param options  Options for the operation. The default is (). Options include: Options include:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "box-percent=n" An integer between 0 and 100 (default is 100) that indicates what percentage of a polygon's bounding box slivers should be returned. Lower numbers give fewer, less accurate boxes; larger numbers give more, more accurate boxes. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. The bounding boxes will be padded to cover any points within tolerance of the region. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option. The default value is 0 (no padding). "boundaries-included" Points on boxes', circles', and polygons' boundaries are counted as matching. This is the default. "boundaries-excluded" Points on boxes', circles', and polygons' boundaries are not counted as matching. "boundaries-latitude-excluded" Points on boxes' latitude boundaries are not counted as matching. "boundaries-longitude-excluded" Points on boxes' longitude boundaries are not counted as matching. "boundaries-south-excluded" Points on the boxes' southern boundaries are not counted as matching. "boundaries-west-excluded" Points on the boxes' western boundaries are not counted as matching. "boundaries-north-excluded" Points on the boxes' northern boundaries are not counted as matching. "boundaries-east-excluded" Points on the boxes' eastern boundaries are not counted as matching. "boundaries-circle-excluded" Points on circles' boundary are not counted as matching. "boundaries-endpoints-excluded" Points on linestrings' boundary (the endpoints) are not counted as matching.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a> server data type
   */
-  public ServerExpression boundingBoxes(CtsRegionExpr region, ServerExpression options);
+  public ServerExpression boundingBoxes(ServerExpression region, ServerExpression options);
 /**
   * Returns true if the box intersects with a region.
   *
@@ -172,7 +178,7 @@ public interface GeoExpr {
   * @param region  One or more geographic regions (boxes, circles, polygons, or points). Where multiple regions are specified, return true if any region intersects the box.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public ServerExpression boxIntersects(ServerExpression box, CtsRegionSeqExpr region);
+  public ServerExpression boxIntersects(ServerExpression box, ServerExpression region);
 /**
   * Returns true if the box intersects with a region.
   * <p>
@@ -182,7 +188,7 @@ public interface GeoExpr {
   * @param options  Options for the operation. The default is (). Options include: Options include:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option. "boundaries-included" Points on boxes', circles', and polygons' boundaries are counted as matching. This is the default. "boundaries-excluded" Points on boxes', circles', and polygons' boundaries are not counted as matching. "boundaries-latitude-excluded" Points on boxes' latitude boundaries are not counted as matching. "boundaries-longitude-excluded" Points on boxes' longitude boundaries are not counted as matching. "boundaries-south-excluded" Points on the boxes' southern boundaries are not counted as matching. "boundaries-west-excluded" Points on the boxes' western boundaries are not counted as matching. "boundaries-north-excluded" Points on the boxes' northern boundaries are not counted as matching. "boundaries-east-excluded" Points on the boxes' eastern boundaries are not counted as matching. "boundaries-circle-excluded" Points on circles' boundary are not counted as matching. "boundaries-endpoints-excluded" Points on linestrings' boundary (the endpoints) are not counted as matching.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public ServerExpression boxIntersects(ServerExpression box, CtsRegionSeqExpr region, String options);
+  public ServerExpression boxIntersects(ServerExpression box, ServerExpression region, String options);
 /**
   * Returns true if the box intersects with a region.
   * <p>
@@ -192,7 +198,7 @@ public interface GeoExpr {
   * @param options  Options for the operation. The default is (). Options include: Options include:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option. "boundaries-included" Points on boxes', circles', and polygons' boundaries are counted as matching. This is the default. "boundaries-excluded" Points on boxes', circles', and polygons' boundaries are not counted as matching. "boundaries-latitude-excluded" Points on boxes' latitude boundaries are not counted as matching. "boundaries-longitude-excluded" Points on boxes' longitude boundaries are not counted as matching. "boundaries-south-excluded" Points on the boxes' southern boundaries are not counted as matching. "boundaries-west-excluded" Points on the boxes' western boundaries are not counted as matching. "boundaries-north-excluded" Points on the boxes' northern boundaries are not counted as matching. "boundaries-east-excluded" Points on the boxes' eastern boundaries are not counted as matching. "boundaries-circle-excluded" Points on circles' boundary are not counted as matching. "boundaries-endpoints-excluded" Points on linestrings' boundary (the endpoints) are not counted as matching.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public ServerExpression boxIntersects(ServerExpression box, CtsRegionSeqExpr region, ServerExpression options);
+  public ServerExpression boxIntersects(ServerExpression box, ServerExpression region, ServerExpression options);
 /**
   * Returns true if the circle intersects with a region.
   *
@@ -204,7 +210,7 @@ public interface GeoExpr {
   * @param region  One or more geographic regions (boxes, circles, polygons, or points). Where multiple regions are specified, return true if any region intersects the target circle.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public ServerExpression circleIntersects(ServerExpression circle, CtsRegionSeqExpr region);
+  public ServerExpression circleIntersects(ServerExpression circle, ServerExpression region);
 /**
   * Returns true if the circle intersects with a region.
   * <p>
@@ -214,7 +220,7 @@ public interface GeoExpr {
   * @param options  Options for the operation. The default is (). Options include:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option. "boundaries-included" Points on boxes', circles', and polygons' boundaries are counted as matching. This is the default. "boundaries-excluded" Points on boxes', circles', and polygons' boundaries are not counted as matching. "boundaries-latitude-excluded" Points on boxes' latitude boundaries are not counted as matching. "boundaries-longitude-excluded" Points on boxes' longitude boundaries are not counted as matching. "boundaries-south-excluded" Points on the boxes' southern boundaries are not counted as matching. "boundaries-west-excluded" Points on the boxes' western boundaries are not counted as matching. "boundaries-north-excluded" Points on the boxes' northern boundaries are not counted as matching. "boundaries-east-excluded" Points on the boxes' eastern boundaries are not counted as matching. "boundaries-circle-excluded" Points on circles' boundary are not counted as matching. "boundaries-endpoints-excluded" Points on linestrings' boundary (the endpoints) are not counted as matching.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public ServerExpression circleIntersects(ServerExpression circle, CtsRegionSeqExpr region, String options);
+  public ServerExpression circleIntersects(ServerExpression circle, ServerExpression region, String options);
 /**
   * Returns true if the circle intersects with a region.
   * <p>
@@ -224,7 +230,7 @@ public interface GeoExpr {
   * @param options  Options for the operation. The default is (). Options include:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option. "boundaries-included" Points on boxes', circles', and polygons' boundaries are counted as matching. This is the default. "boundaries-excluded" Points on boxes', circles', and polygons' boundaries are not counted as matching. "boundaries-latitude-excluded" Points on boxes' latitude boundaries are not counted as matching. "boundaries-longitude-excluded" Points on boxes' longitude boundaries are not counted as matching. "boundaries-south-excluded" Points on the boxes' southern boundaries are not counted as matching. "boundaries-west-excluded" Points on the boxes' western boundaries are not counted as matching. "boundaries-north-excluded" Points on the boxes' northern boundaries are not counted as matching. "boundaries-east-excluded" Points on the boxes' eastern boundaries are not counted as matching. "boundaries-circle-excluded" Points on circles' boundary are not counted as matching. "boundaries-endpoints-excluded" Points on linestrings' boundary (the endpoints) are not counted as matching.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public ServerExpression circleIntersects(ServerExpression circle, CtsRegionSeqExpr region, ServerExpression options);
+  public ServerExpression circleIntersects(ServerExpression circle, ServerExpression region, ServerExpression options);
 /**
   * Construct a polygon approximating a circle.
   * <p>
@@ -276,7 +282,7 @@ public interface GeoExpr {
   * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public ServerExpression countDistinctVertices(CtsRegionExpr region);
+  public ServerExpression countDistinctVertices(ServerExpression region);
 /**
   * Return a count of the distinct number of vertices in a region, taking tolerance into account.
   * <p>
@@ -285,7 +291,7 @@ public interface GeoExpr {
   * @param options  Options include:   "coordinate-system=value" Use the given coordinate system. Valid values are wgs84, wgs84/double, etrs89, etrs89/double, raw and raw/double. Defaults to the governing coordinating system. "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. Defaults to the precision of the governing coordinate system. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option.    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public ServerExpression countDistinctVertices(CtsRegionExpr region, String options);
+  public ServerExpression countDistinctVertices(ServerExpression region, String options);
 /**
   * Return a count of the distinct number of vertices in a region, taking tolerance into account.
   * <p>
@@ -294,7 +300,7 @@ public interface GeoExpr {
   * @param options  Options include:   "coordinate-system=value" Use the given coordinate system. Valid values are wgs84, wgs84/double, etrs89, etrs89/double, raw and raw/double. Defaults to the governing coordinating system. "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. Defaults to the precision of the governing coordinate system. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option.    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public ServerExpression countDistinctVertices(CtsRegionExpr region, ServerExpression options);
+  public ServerExpression countDistinctVertices(ServerExpression region, ServerExpression options);
 /**
   * This function returns a count of the number of vertices in a region.
   *
@@ -305,7 +311,7 @@ public interface GeoExpr {
   * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public ServerExpression countVertices(CtsRegionExpr region);
+  public ServerExpression countVertices(ServerExpression region);
 /**
   * Returns the point at the given distance (in units) along the given bearing (in radians) from the starting point.
   * <p>
@@ -461,6 +467,14 @@ public interface GeoExpr {
   public ServerExpression ellipsePolygon(ServerExpression center, ServerExpression semiMajorAxis, ServerExpression semiMinorAxis, ServerExpression azimuth, ServerExpression arcTolerance, ServerExpression options);
 /**
   * Given a geohash string, return the bounding box for that hash.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/geo:geohash-decode" target="mlserverdoc">geo:geohash-decode</a> server function.
+  * @param hash  The geohash value, as produced by geo:geohash-encode.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a> server data type
+  */
+  public ServerExpression geohashDecode(String hash);
+/**
+  * Given a geohash string, return the bounding box for that hash.
   *
   * <a name="ml-server-type-geohash-decode"></a>
   
@@ -499,7 +513,7 @@ public interface GeoExpr {
   * @param region  The region to encode.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public ServerExpression geohashEncode(CtsRegionExpr region);
+  public ServerExpression geohashEncode(ServerExpression region);
 /**
   * Compute a set of covering geohashes for the given region, to the given level of precision.
   * <p>
@@ -508,7 +522,7 @@ public interface GeoExpr {
   * @param geohashPrecision  The desired precision (length of the geohash). The precision should be between 1 and 12. If the precision is less than 1, or unspecified, the default geohash-precision of 6 is used. A geohash-precision greater than 12 is treated as the same as 12. In the worst case (at the equator) a precision of 12 gives resolution of less than a centimeter.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public ServerExpression geohashEncode(CtsRegionExpr region, long geohashPrecision);
+  public ServerExpression geohashEncode(ServerExpression region, long geohashPrecision);
 /**
   * Compute a set of covering geohashes for the given region, to the given level of precision.
   * <p>
@@ -517,17 +531,7 @@ public interface GeoExpr {
   * @param geohashPrecision  The desired precision (length of the geohash). The precision should be between 1 and 12. If the precision is less than 1, or unspecified, the default geohash-precision of 6 is used. A geohash-precision greater than 12 is treated as the same as 12. In the worst case (at the equator) a precision of 12 gives resolution of less than a centimeter.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public ServerExpression geohashEncode(CtsRegionExpr region, ServerExpression geohashPrecision);
-/**
-  * Compute a set of covering geohashes for the given region, to the given level of precision.
-  * <p>
-  * Provides a client interface to the <a href="http://docs.marklogic.com/geo:geohash-encode" target="mlserverdoc">geo:geohash-encode</a> server function.
-  * @param region  The region to encode.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
-  * @param geohashPrecision  The desired precision (length of the geohash). The precision should be between 1 and 12. If the precision is less than 1, or unspecified, the default geohash-precision of 6 is used. A geohash-precision greater than 12 is treated as the same as 12. In the worst case (at the equator) a precision of 12 gives resolution of less than a centimeter.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
-  * @param options  Options for the operation. The default is (). Options include:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision.  Geohashing is not allowed for non-geodetic coordinate systems. Attempting to use this function with the raw or raw/double coordinate system will result in an XDMP-GEOHASH-COORD error.  "precision=string" Use the coordinate system at the given precision. Allowed values: float (default) and double. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option. geohashes=value Specify which geohashes to return. Allowed values:  all Return a complete set of covering hashes for the region (boundary + interior). This is the default behavior. boundary Return only geohashes that intersect with the boundary of the region. interior Return only geohashes completely contained in the interior of the region. exterior Return all geohashes disjoint from the region. That is, all geohashes completely contained in the exterior of the region.     (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
-  */
-  public ServerExpression geohashEncode(CtsRegionExpr region, long geohashPrecision, String options);
+  public ServerExpression geohashEncode(ServerExpression region, ServerExpression geohashPrecision);
 /**
   * Compute a set of covering geohashes for the given region, to the given level of precision.
   * <p>
@@ -537,7 +541,17 @@ public interface GeoExpr {
   * @param options  Options for the operation. The default is (). Options include:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision.  Geohashing is not allowed for non-geodetic coordinate systems. Attempting to use this function with the raw or raw/double coordinate system will result in an XDMP-GEOHASH-COORD error.  "precision=string" Use the coordinate system at the given precision. Allowed values: float (default) and double. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option. geohashes=value Specify which geohashes to return. Allowed values:  all Return a complete set of covering hashes for the region (boundary + interior). This is the default behavior. boundary Return only geohashes that intersect with the boundary of the region. interior Return only geohashes completely contained in the interior of the region. exterior Return all geohashes disjoint from the region. That is, all geohashes completely contained in the exterior of the region.     (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public ServerExpression geohashEncode(CtsRegionExpr region, ServerExpression geohashPrecision, ServerExpression options);
+  public ServerExpression geohashEncode(ServerExpression region, long geohashPrecision, String options);
+/**
+  * Compute a set of covering geohashes for the given region, to the given level of precision.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/geo:geohash-encode" target="mlserverdoc">geo:geohash-encode</a> server function.
+  * @param region  The region to encode.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
+  * @param geohashPrecision  The desired precision (length of the geohash). The precision should be between 1 and 12. If the precision is less than 1, or unspecified, the default geohash-precision of 6 is used. A geohash-precision greater than 12 is treated as the same as 12. In the worst case (at the equator) a precision of 12 gives resolution of less than a centimeter.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
+  * @param options  Options for the operation. The default is (). Options include:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision.  Geohashing is not allowed for non-geodetic coordinate systems. Attempting to use this function with the raw or raw/double coordinate system will result in an XDMP-GEOHASH-COORD error.  "precision=string" Use the coordinate system at the given precision. Allowed values: float (default) and double. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option. geohashes=value Specify which geohashes to return. Allowed values:  all Return a complete set of covering hashes for the region (boundary + interior). This is the default behavior. boundary Return only geohashes that intersect with the boundary of the region. interior Return only geohashes completely contained in the interior of the region. exterior Return all geohashes disjoint from the region. That is, all geohashes completely contained in the exterior of the region.     (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
+  */
+  public ServerExpression geohashEncode(ServerExpression region, ServerExpression geohashPrecision, ServerExpression options);
 /**
   * Given a geohash string, return hashes for the neighbors. The result is a map with the keys "N", "NE", "E", "SE", "S", "SW", "W", "NW" for the neighbors in those directions.
   *
@@ -591,7 +605,7 @@ public interface GeoExpr {
   * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a> server data type
   */
-  public ServerExpression interiorPoint(CtsRegionExpr region);
+  public ServerExpression interiorPoint(ServerExpression region);
 /**
   * This function returns a point that is guaranteed to be inside the bounds of the given region. For a given region and set of options, the point returned should be stable from one call to the next.
   * <p>
@@ -600,7 +614,7 @@ public interface GeoExpr {
   * @param options  Options include:   "coordinate-system=value" Use the given coordinate system. Valid values are wgs84, wgs84/double, etrs89, etrs89/double, raw and raw/double. Defaults to the governing coordinating system. "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. Defaults to the precision of the governing coordinate system. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option.    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a> server data type
   */
-  public ServerExpression interiorPoint(CtsRegionExpr region, String options);
+  public ServerExpression interiorPoint(ServerExpression region, String options);
 /**
   * This function returns a point that is guaranteed to be inside the bounds of the given region. For a given region and set of options, the point returned should be stable from one call to the next.
   * <p>
@@ -609,87 +623,96 @@ public interface GeoExpr {
   * @param options  Options include:   "coordinate-system=value" Use the given coordinate system. Valid values are wgs84, wgs84/double, etrs89, etrs89/double, raw and raw/double. Defaults to the governing coordinating system. "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. Defaults to the precision of the governing coordinate system. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option.    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a> server data type
   */
-  public ServerExpression interiorPoint(CtsRegionExpr region, ServerExpression options);
+  public ServerExpression interiorPoint(ServerExpression region, ServerExpression options);
 /**
   * Returns a sequence of geospatial regions parsed from Well-Known Text format.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:parse-wkt" target="mlserverdoc">geo:parse-wkt</a> server function.
-  * @param wkt  A sequence of strings in Well-Known Text format.
-  * @return  a CtsRegionSeqExpr server expression sequence
+  * @param wkt  A sequence of strings in Well-Known Text format.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a> server data type
   */
   public CtsRegionSeqExpr parseWkt(String wkt);
 /**
   * Returns a sequence of geospatial regions parsed from Well-Known Text format.
+  *
+  * <a name="ml-server-type-parse-wkt"></a>
+  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:parse-wkt" target="mlserverdoc">geo:parse-wkt</a> server function.
-  * @param wkt  A sequence of strings in Well-Known Text format.
-  * @return  a CtsRegionSeqExpr server expression sequence
+  * @param wkt  A sequence of strings in Well-Known Text format.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a> server data type
   */
-  public CtsRegionSeqExpr parseWkt(XsStringSeqVal wkt);
+  public CtsRegionSeqExpr parseWkt(ServerExpression wkt);
 /**
   * This function returns a simplified approximation of the region, using the Douglas-Peucker algorithm.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:region-approximate" target="mlserverdoc">geo:region-approximate</a> server function.
-  * @param region  A cts region.
-  * @param threshold  How close the approximation should be, in the units specified by the units option.
-  * @return  a CtsRegionExpr server expression
+  * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
+  * @param threshold  How close the approximation should be, in the units specified by the units option.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a> server data type
   */
-  public CtsRegionExpr regionApproximate(CtsRegionExpr region, double threshold);
+  public CtsRegionExpr regionApproximate(ServerExpression region, double threshold);
+/**
+  * This function returns a simplified approximation of the region, using the Douglas-Peucker algorithm.
+  *
+  * <a name="ml-server-type-region-approximate"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/geo:region-approximate" target="mlserverdoc">geo:region-approximate</a> server function.
+  * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
+  * @param threshold  How close the approximation should be, in the units specified by the units option.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a> server data type
+  */
+  public CtsRegionExpr regionApproximate(ServerExpression region, ServerExpression threshold);
 /**
   * This function returns a simplified approximation of the region, using the Douglas-Peucker algorithm.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:region-approximate" target="mlserverdoc">geo:region-approximate</a> server function.
-  * @param region  A cts region.
-  * @param threshold  How close the approximation should be, in the units specified by the units option.
-  * @return  a CtsRegionExpr server expression
+  * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
+  * @param threshold  How close the approximation should be, in the units specified by the units option.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param options  Options include:   "coordinate-system=value" Use the given coordinate system. Valid values are wgs84, wgs84/double, etrs89, etrs89/double, raw and raw/double. Defaults to the governing coordinating system. "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. Defaults to the precision of the governing coordinate system. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option. Tolerance must be smaller than the value of the threhold parameter.    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a> server data type
   */
-  public CtsRegionExpr regionApproximate(CtsRegionExpr region, XsDoubleVal threshold);
+  public CtsRegionExpr regionApproximate(ServerExpression region, double threshold, String options);
 /**
   * This function returns a simplified approximation of the region, using the Douglas-Peucker algorithm.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:region-approximate" target="mlserverdoc">geo:region-approximate</a> server function.
-  * @param region  A cts region.
-  * @param threshold  How close the approximation should be, in the units specified by the units option.
-  * @param options  Options include:   "coordinate-system=value" Use the given coordinate system. Valid values are wgs84, wgs84/double, etrs89, etrs89/double, raw and raw/double. Defaults to the governing coordinating system. "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. Defaults to the precision of the governing coordinate system. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option. Tolerance must be smaller than the value of the threhold parameter.  
-  * @return  a CtsRegionExpr server expression
+  * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
+  * @param threshold  How close the approximation should be, in the units specified by the units option.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param options  Options include:   "coordinate-system=value" Use the given coordinate system. Valid values are wgs84, wgs84/double, etrs89, etrs89/double, raw and raw/double. Defaults to the governing coordinating system. "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. Defaults to the precision of the governing coordinate system. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option. Tolerance must be smaller than the value of the threhold parameter.    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a> server data type
   */
-  public CtsRegionExpr regionApproximate(CtsRegionExpr region, double threshold, String options);
+  public CtsRegionExpr regionApproximate(ServerExpression region, ServerExpression threshold, ServerExpression options);
 /**
-  * This function returns a simplified approximation of the region, using the Douglas-Peucker algorithm.
+  * This function fixes various problems with the region or raises an error if it is not repairable. The only relevant fix for MarkLogic is to remove duplicate adjacent vertices in polygons (including inner and outer polygons of complex polygons). The only relevant options are options controlling the coordinate system and the tolerance option.
+  *
+  * <a name="ml-server-type-region-clean"></a>
+  
   * <p>
-  * Provides a client interface to the <a href="http://docs.marklogic.com/geo:region-approximate" target="mlserverdoc">geo:region-approximate</a> server function.
-  * @param region  A cts region.
-  * @param threshold  How close the approximation should be, in the units specified by the units option.
-  * @param options  Options include:   "coordinate-system=value" Use the given coordinate system. Valid values are wgs84, wgs84/double, etrs89, etrs89/double, raw and raw/double. Defaults to the governing coordinating system. "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. Defaults to the precision of the governing coordinate system. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option. Tolerance must be smaller than the value of the threhold parameter.  
-  * @return  a CtsRegionExpr server expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/geo:region-clean" target="mlserverdoc">geo:region-clean</a> server function.
+  * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a> server data type
   */
-  public CtsRegionExpr regionApproximate(CtsRegionExpr region, XsDoubleVal threshold, XsStringSeqVal options);
+  public CtsRegionExpr regionClean(ServerExpression region);
 /**
   * This function fixes various problems with the region or raises an error if it is not repairable. The only relevant fix for MarkLogic is to remove duplicate adjacent vertices in polygons (including inner and outer polygons of complex polygons). The only relevant options are options controlling the coordinate system and the tolerance option.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:region-clean" target="mlserverdoc">geo:region-clean</a> server function.
-  * @param region  A cts region.
-  * @return  a CtsRegionExpr server expression
+  * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
+  * @param options  The tolerance, units, coordinate system. Options include:   "coordinate-system=value" Use the given coordinate system. Valid values are wgs84, wgs84/double, etrs89, etrs89/double, raw and raw/double. Defaults to the governing coordinating system. "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. Defaults to the precision of the governing coordinate system. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option.    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a> server data type
   */
-  public CtsRegionExpr regionClean(CtsRegionExpr region);
+  public CtsRegionExpr regionClean(ServerExpression region, String options);
 /**
   * This function fixes various problems with the region or raises an error if it is not repairable. The only relevant fix for MarkLogic is to remove duplicate adjacent vertices in polygons (including inner and outer polygons of complex polygons). The only relevant options are options controlling the coordinate system and the tolerance option.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:region-clean" target="mlserverdoc">geo:region-clean</a> server function.
-  * @param region  A cts region.
-  * @param options  The tolerance, units, coordinate system. Options include:   "coordinate-system=value" Use the given coordinate system. Valid values are wgs84, wgs84/double, etrs89, etrs89/double, raw and raw/double. Defaults to the governing coordinating system. "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. Defaults to the precision of the governing coordinate system. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option.  
-  * @return  a CtsRegionExpr server expression
+  * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
+  * @param options  The tolerance, units, coordinate system. Options include:   "coordinate-system=value" Use the given coordinate system. Valid values are wgs84, wgs84/double, etrs89, etrs89/double, raw and raw/double. Defaults to the governing coordinating system. "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. Defaults to the precision of the governing coordinate system. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option.    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a> server data type
   */
-  public CtsRegionExpr regionClean(CtsRegionExpr region, String options);
-/**
-  * This function fixes various problems with the region or raises an error if it is not repairable. The only relevant fix for MarkLogic is to remove duplicate adjacent vertices in polygons (including inner and outer polygons of complex polygons). The only relevant options are options controlling the coordinate system and the tolerance option.
-  * <p>
-  * Provides a client interface to the <a href="http://docs.marklogic.com/geo:region-clean" target="mlserverdoc">geo:region-clean</a> server function.
-  * @param region  A cts region.
-  * @param options  The tolerance, units, coordinate system. Options include:   "coordinate-system=value" Use the given coordinate system. Valid values are wgs84, wgs84/double, etrs89, etrs89/double, raw and raw/double. Defaults to the governing coordinating system. "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. Defaults to the precision of the governing coordinate system. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option.  
-  * @return  a CtsRegionExpr server expression
-  */
-  public CtsRegionExpr regionClean(CtsRegionExpr region, XsStringSeqVal options);
+  public CtsRegionExpr regionClean(ServerExpression region, ServerExpression options);
 /**
   * Returns true if one region contains the other region.
   *
@@ -701,7 +724,7 @@ public interface GeoExpr {
   * @param region  One or more geographic regions (boxes, circles, polygons, or points). Where multiple regions are specified, return true if target contains any of the regions.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public ServerExpression regionContains(CtsRegionExpr target, CtsRegionSeqExpr region);
+  public ServerExpression regionContains(ServerExpression target, ServerExpression region);
 /**
   * Returns true if one region contains the other region.
   * <p>
@@ -711,7 +734,7 @@ public interface GeoExpr {
   * @param options  Options for the operation. The default is (). Options include: Options include:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option. "boundaries-included" Points on boxes', circles', and regions' boundaries are counted as matching. This is the default. "boundaries-excluded" Points on boxes', circles', and regions' boundaries are not counted as matching. "boundaries-latitude-excluded" Points on boxes' latitude boundaries are not counted as matching. "boundaries-longitude-excluded" Points on boxes' longitude boundaries are not counted as matching. "boundaries-south-excluded" Points on the boxes' southern boundaries are not counted as matching. "boundaries-west-excluded" Points on the boxes' western boundaries are not counted as matching. "boundaries-north-excluded" Points on the boxes' northern boundaries are not counted as matching. "boundaries-east-excluded" Points on the boxes' eastern boundaries are not counted as matching. "boundaries-circle-excluded" Points on circles' boundary are not counted as matching. "boundaries-endpoints-excluded" Points on linestrings' boundary (the endpoints) are not counted as matching.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public ServerExpression regionContains(CtsRegionExpr target, CtsRegionSeqExpr region, String options);
+  public ServerExpression regionContains(ServerExpression target, ServerExpression region, String options);
 /**
   * Returns true if one region contains the other region.
   * <p>
@@ -721,7 +744,7 @@ public interface GeoExpr {
   * @param options  Options for the operation. The default is (). Options include: Options include:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option. "boundaries-included" Points on boxes', circles', and regions' boundaries are counted as matching. This is the default. "boundaries-excluded" Points on boxes', circles', and regions' boundaries are not counted as matching. "boundaries-latitude-excluded" Points on boxes' latitude boundaries are not counted as matching. "boundaries-longitude-excluded" Points on boxes' longitude boundaries are not counted as matching. "boundaries-south-excluded" Points on the boxes' southern boundaries are not counted as matching. "boundaries-west-excluded" Points on the boxes' western boundaries are not counted as matching. "boundaries-north-excluded" Points on the boxes' northern boundaries are not counted as matching. "boundaries-east-excluded" Points on the boxes' eastern boundaries are not counted as matching. "boundaries-circle-excluded" Points on circles' boundary are not counted as matching. "boundaries-endpoints-excluded" Points on linestrings' boundary (the endpoints) are not counted as matching.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public ServerExpression regionContains(CtsRegionExpr target, CtsRegionSeqExpr region, ServerExpression options);
+  public ServerExpression regionContains(ServerExpression target, ServerExpression region, ServerExpression options);
 /**
   * Calculates the Dimensionally Extended nine-Intersection Matrix (DE-9IM) of two geospatial regions.
   *
@@ -733,7 +756,7 @@ public interface GeoExpr {
   * @param region2  The second geospatial region to compare.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public ServerExpression regionDe9im(CtsRegionExpr region1, CtsRegionExpr region2);
+  public ServerExpression regionDe9im(ServerExpression region1, ServerExpression region2);
 /**
   * Calculates the Dimensionally Extended nine-Intersection Matrix (DE-9IM) of two geospatial regions.
   * <p>
@@ -743,7 +766,7 @@ public interface GeoExpr {
   * @param options  Options to this operation. The default is (). Available options:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public ServerExpression regionDe9im(CtsRegionExpr region1, CtsRegionExpr region2, String options);
+  public ServerExpression regionDe9im(ServerExpression region1, ServerExpression region2, String options);
 /**
   * Calculates the Dimensionally Extended nine-Intersection Matrix (DE-9IM) of two geospatial regions.
   * <p>
@@ -753,7 +776,7 @@ public interface GeoExpr {
   * @param options  Options to this operation. The default is (). Available options:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public ServerExpression regionDe9im(CtsRegionExpr region1, CtsRegionExpr region2, ServerExpression options);
+  public ServerExpression regionDe9im(ServerExpression region1, ServerExpression region2, ServerExpression options);
 /**
   * Returns true if the target region intersects with a region.
   *
@@ -765,7 +788,7 @@ public interface GeoExpr {
   * @param region  One or more geographic regions. Where multiple regions are specified, return true if any region intersects the target region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public ServerExpression regionIntersects(CtsRegionExpr target, CtsRegionSeqExpr region);
+  public ServerExpression regionIntersects(ServerExpression target, ServerExpression region);
 /**
   * Returns true if the target region intersects with a region.
   * <p>
@@ -775,7 +798,7 @@ public interface GeoExpr {
   * @param options  Options for the operation. The default is (). Options include: Options include:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option. "boundaries-included" Points on regions' boundaries are counted as matching. This is the default. "boundaries-excluded" Points on regions' boundaries are not counted as matching. "boundaries-latitude-excluded" Points on boxes' latitude boundaries are not counted as matching. "boundaries-longitude-excluded" Points on boxes' longitude boundaries are not counted as matching. "boundaries-south-excluded" Points on the boxes' southern boundaries are not counted as matching. "boundaries-west-excluded" Points on the boxes' western boundaries are not counted as matching. "boundaries-north-excluded" Points on the boxes' northern boundaries are not counted as matching. "boundaries-east-excluded" Points on the boxes' eastern boundaries are not counted as matching. "boundaries-circle-excluded" Points on circles' boundary are not counted as matching. "boundaries-endpoints-excluded" Points on linestrings' boundary (the endpoints) are not counted as matching.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public ServerExpression regionIntersects(CtsRegionExpr target, CtsRegionSeqExpr region, String options);
+  public ServerExpression regionIntersects(ServerExpression target, ServerExpression region, String options);
 /**
   * Returns true if the target region intersects with a region.
   * <p>
@@ -785,7 +808,7 @@ public interface GeoExpr {
   * @param options  Options for the operation. The default is (). Options include: Options include:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option. "boundaries-included" Points on regions' boundaries are counted as matching. This is the default. "boundaries-excluded" Points on regions' boundaries are not counted as matching. "boundaries-latitude-excluded" Points on boxes' latitude boundaries are not counted as matching. "boundaries-longitude-excluded" Points on boxes' longitude boundaries are not counted as matching. "boundaries-south-excluded" Points on the boxes' southern boundaries are not counted as matching. "boundaries-west-excluded" Points on the boxes' western boundaries are not counted as matching. "boundaries-north-excluded" Points on the boxes' northern boundaries are not counted as matching. "boundaries-east-excluded" Points on the boxes' eastern boundaries are not counted as matching. "boundaries-circle-excluded" Points on circles' boundary are not counted as matching. "boundaries-endpoints-excluded" Points on linestrings' boundary (the endpoints) are not counted as matching.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public ServerExpression regionIntersects(CtsRegionExpr target, CtsRegionSeqExpr region, ServerExpression options);
+  public ServerExpression regionIntersects(ServerExpression target, ServerExpression region, ServerExpression options);
 /**
   * Compares geospatial regions based on a specified relationship. For example, determine if two regions overlap.
   * <p>
@@ -795,7 +818,7 @@ public interface GeoExpr {
   * @param region2  The second geospatial region to compare. This region is the right operand of $operation.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public ServerExpression regionRelate(CtsRegionExpr region1, String operation, CtsRegionExpr region2);
+  public ServerExpression regionRelate(ServerExpression region1, String operation, ServerExpression region2);
 /**
   * Compares geospatial regions based on a specified relationship. For example, determine if two regions overlap.
   *
@@ -808,7 +831,7 @@ public interface GeoExpr {
   * @param region2  The second geospatial region to compare. This region is the right operand of $operation.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public ServerExpression regionRelate(CtsRegionExpr region1, ServerExpression operation, CtsRegionExpr region2);
+  public ServerExpression regionRelate(ServerExpression region1, ServerExpression operation, ServerExpression region2);
 /**
   * Compares geospatial regions based on a specified relationship. For example, determine if two regions overlap.
   * <p>
@@ -819,7 +842,7 @@ public interface GeoExpr {
   * @param options  Options to this operation. The default is (). Available options:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public ServerExpression regionRelate(CtsRegionExpr region1, String operation, CtsRegionExpr region2, String options);
+  public ServerExpression regionRelate(ServerExpression region1, String operation, ServerExpression region2, String options);
 /**
   * Compares geospatial regions based on a specified relationship. For example, determine if two regions overlap.
   * <p>
@@ -830,33 +853,36 @@ public interface GeoExpr {
   * @param options  Options to this operation. The default is (). Available options:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public ServerExpression regionRelate(CtsRegionExpr region1, ServerExpression operation, CtsRegionExpr region2, ServerExpression options);
+  public ServerExpression regionRelate(ServerExpression region1, ServerExpression operation, ServerExpression region2, ServerExpression options);
+/**
+  * Remove duplicate (adjacent) vertices.
+  *
+  * <a name="ml-server-type-remove-duplicate-vertices"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/geo:remove-duplicate-vertices" target="mlserverdoc">geo:remove-duplicate-vertices</a> server function.
+  * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a> server data type
+  */
+  public CtsRegionExpr removeDuplicateVertices(ServerExpression region);
 /**
   * Remove duplicate (adjacent) vertices.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:remove-duplicate-vertices" target="mlserverdoc">geo:remove-duplicate-vertices</a> server function.
-  * @param region  A cts region.
-  * @return  a CtsRegionExpr server expression
+  * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
+  * @param options  The tolerance, units, coordinate system. Options include:   "coordinate-system=value" Use the given coordinate system. Valid values are wgs84, wgs84/double, etrs89, etrs89/double, raw and raw/double. Defaults to the governing coordinating system. "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. Defaults to the precision of the governing coordinate system. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option.    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a> server data type
   */
-  public CtsRegionExpr removeDuplicateVertices(CtsRegionExpr region);
+  public CtsRegionExpr removeDuplicateVertices(ServerExpression region, String options);
 /**
   * Remove duplicate (adjacent) vertices.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:remove-duplicate-vertices" target="mlserverdoc">geo:remove-duplicate-vertices</a> server function.
-  * @param region  A cts region.
-  * @param options  The tolerance, units, coordinate system. Options include:   "coordinate-system=value" Use the given coordinate system. Valid values are wgs84, wgs84/double, etrs89, etrs89/double, raw and raw/double. Defaults to the governing coordinating system. "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. Defaults to the precision of the governing coordinate system. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option.  
-  * @return  a CtsRegionExpr server expression
+  * @param region  A cts region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
+  * @param options  The tolerance, units, coordinate system. Options include:   "coordinate-system=value" Use the given coordinate system. Valid values are wgs84, wgs84/double, etrs89, etrs89/double, raw and raw/double. Defaults to the governing coordinating system. "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. Defaults to the precision of the governing coordinate system. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option.    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a> server data type
   */
-  public CtsRegionExpr removeDuplicateVertices(CtsRegionExpr region, String options);
-/**
-  * Remove duplicate (adjacent) vertices.
-  * <p>
-  * Provides a client interface to the <a href="http://docs.marklogic.com/geo:remove-duplicate-vertices" target="mlserverdoc">geo:remove-duplicate-vertices</a> server function.
-  * @param region  A cts region.
-  * @param options  The tolerance, units, coordinate system. Options include:   "coordinate-system=value" Use the given coordinate system. Valid values are wgs84, wgs84/double, etrs89, etrs89/double, raw and raw/double. Defaults to the governing coordinating system. "precision=value" Use the coordinate system at the given precision. Allowed values: float and double. Defaults to the precision of the governing coordinate system. "units=value" Measure distance, radii of circles, and tolerance in the specified units. Allowed values: miles (default), km, feet, meters. "tolerance=distance" Tolerance is the largest allowable variation in geometry calculations. If the distance between two points is less than tolerance, then the two points are considered equal. For the raw coordinate system, use the units of the coordinates. For geographic coordinate systems, use the units specified by the units option.  
-  * @return  a CtsRegionExpr server expression
-  */
-  public CtsRegionExpr removeDuplicateVertices(CtsRegionExpr region, XsStringSeqVal options);
+  public CtsRegionExpr removeDuplicateVertices(ServerExpression region, ServerExpression options);
 /**
   * Returns the great circle distance (in units) between a point and a region. The region is defined by a cts:region.
   *
@@ -868,7 +894,7 @@ public interface GeoExpr {
   * @param region  A region such as a circle, box, polygon, linestring, or complex-polygon. For compatibility with previous versions, a sequence of points is interpreted as a sequence of arcs (defined pairwise) and the distance returned is the shortest distance to one of those points. If the first parameter is a point within the region specified in this parameter, then this function returns 0. If the point specified in the first parameter in not in the region specified in this parameter, then this function returns the shortest distance to the boundary of the region.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public ServerExpression shortestDistance(ServerExpression p1, CtsRegionSeqExpr region);
+  public ServerExpression shortestDistance(ServerExpression p1, ServerExpression region);
 /**
   * Returns the great circle distance (in units) between a point and a region. The region is defined by a cts:region.
   * <p>
@@ -878,7 +904,7 @@ public interface GeoExpr {
   * @param options  Options for the operation. The default is (). Options include:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "units=value" Measure distance and the radii of circles in the specified units. Allowed values: miles (default), km, feet, meters. "precision=value" Use the coordinate system at the given precision. Allowed values: float and double.    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public ServerExpression shortestDistance(ServerExpression p1, CtsRegionSeqExpr region, String options);
+  public ServerExpression shortestDistance(ServerExpression p1, ServerExpression region, String options);
 /**
   * Returns the great circle distance (in units) between a point and a region. The region is defined by a cts:region.
   * <p>
@@ -888,7 +914,7 @@ public interface GeoExpr {
   * @param options  Options for the operation. The default is (). Options include:   "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "units=value" Measure distance and the radii of circles in the specified units. Allowed values: miles (default), km, feet, meters. "precision=value" Use the coordinate system at the given precision. Allowed values: float and double.    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public ServerExpression shortestDistance(ServerExpression p1, CtsRegionSeqExpr region, ServerExpression options);
+  public ServerExpression shortestDistance(ServerExpression p1, ServerExpression region, ServerExpression options);
 /**
   * Returns a sequence of strings in Well-Known Text format.
   *
@@ -899,7 +925,7 @@ public interface GeoExpr {
   * @param wkt  A sequence of geospatial regions.  (of <a href="{@docRoot}/doc-files/types/cts_region.html">cts:region</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public ServerExpression toWkt(CtsRegionSeqExpr wkt);
+  public ServerExpression toWkt(ServerExpression wkt);
 /**
   * Returns true if the string is valid Well-Known Text for a supported region type.
   *

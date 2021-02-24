@@ -15,6 +15,12 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.type.CtsBoxExpr;
+import com.marklogic.client.type.CtsBoxSeqExpr;
+import com.marklogic.client.type.CtsCircleExpr;
+import com.marklogic.client.type.CtsPointExpr;
+import com.marklogic.client.type.CtsPointSeqExpr;
+import com.marklogic.client.type.CtsPolygonExpr;
 import com.marklogic.client.type.CtsRegionExpr;
 import com.marklogic.client.type.CtsRegionSeqExpr;
 import com.marklogic.client.type.XsBooleanVal;
@@ -41,26 +47,26 @@ class GeoExprImpl implements GeoExpr {
 
     
   @Override
-  public ServerExpression approxCenter(CtsRegionExpr region) {
+  public ServerExpression approxCenter(ServerExpression region) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for approxCenter() cannot be null");
     }
-    return new CtsExprImpl.PointCallImpl("geo", "approx-center", new Object[]{ region });
+    return new CtsExprImpl.RegionCallImpl("geo", "approx-center", new Object[]{ region });
   }
 
   
   @Override
-  public ServerExpression approxCenter(CtsRegionExpr region, String options) {
-    return approxCenter(region, (options == null) ? (ServerExpression) null : xs.string(options));
+  public ServerExpression approxCenter(ServerExpression region, String options) {
+    return approxCenter(region, (options == null) ? (XsStringVal) null : xs.string(options));
   }
 
   
   @Override
-  public ServerExpression approxCenter(CtsRegionExpr region, ServerExpression options) {
+  public ServerExpression approxCenter(ServerExpression region, ServerExpression options) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for approxCenter() cannot be null");
     }
-    return new CtsExprImpl.PointCallImpl("geo", "approx-center", new Object[]{ region, options });
+    return new CtsExprImpl.RegionCallImpl("geo", "approx-center", new Object[]{ region, options });
   }
 
   
@@ -78,13 +84,13 @@ class GeoExprImpl implements GeoExpr {
     if (q2 == null) {
       throw new IllegalArgumentException("q2 parameter for arcIntersection() cannot be null");
     }
-    return new CtsExprImpl.PointCallImpl("geo", "arc-intersection", new Object[]{ p1, p2, q1, q2 });
+    return new CtsExprImpl.RegionCallImpl("geo", "arc-intersection", new Object[]{ p1, p2, q1, q2 });
   }
 
   
   @Override
   public ServerExpression arcIntersection(ServerExpression p1, ServerExpression p2, ServerExpression q1, ServerExpression q2, String options) {
-    return arcIntersection(p1, p2, q1, q2, (options == null) ? (ServerExpression) null : xs.string(options));
+    return arcIntersection(p1, p2, q1, q2, (options == null) ? (XsStringVal) null : xs.string(options));
   }
 
   
@@ -102,7 +108,7 @@ class GeoExprImpl implements GeoExpr {
     if (q2 == null) {
       throw new IllegalArgumentException("q2 parameter for arcIntersection() cannot be null");
     }
-    return new CtsExprImpl.PointCallImpl("geo", "arc-intersection", new Object[]{ p1, p2, q1, q2, options });
+    return new CtsExprImpl.RegionCallImpl("geo", "arc-intersection", new Object[]{ p1, p2, q1, q2, options });
   }
 
   
@@ -137,31 +143,31 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression boundingBoxes(CtsRegionExpr region) {
+  public ServerExpression boundingBoxes(ServerExpression region) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for boundingBoxes() cannot be null");
     }
-    return new CtsExprImpl.BoxSeqCallImpl("geo", "bounding-boxes", new Object[]{ region });
+    return new CtsExprImpl.RegionSeqCallImpl("geo", "bounding-boxes", new Object[]{ region });
   }
 
   
   @Override
-  public ServerExpression boundingBoxes(CtsRegionExpr region, String options) {
-    return boundingBoxes(region, (options == null) ? (ServerExpression) null : xs.string(options));
+  public ServerExpression boundingBoxes(ServerExpression region, String options) {
+    return boundingBoxes(region, (options == null) ? (XsStringVal) null : xs.string(options));
   }
 
   
   @Override
-  public ServerExpression boundingBoxes(CtsRegionExpr region, ServerExpression options) {
+  public ServerExpression boundingBoxes(ServerExpression region, ServerExpression options) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for boundingBoxes() cannot be null");
     }
-    return new CtsExprImpl.BoxSeqCallImpl("geo", "bounding-boxes", new Object[]{ region, options });
+    return new CtsExprImpl.RegionSeqCallImpl("geo", "bounding-boxes", new Object[]{ region, options });
   }
 
   
   @Override
-  public ServerExpression boxIntersects(ServerExpression box, CtsRegionSeqExpr region) {
+  public ServerExpression boxIntersects(ServerExpression box, ServerExpression region) {
     if (box == null) {
       throw new IllegalArgumentException("box parameter for boxIntersects() cannot be null");
     }
@@ -170,13 +176,13 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression boxIntersects(ServerExpression box, CtsRegionSeqExpr region, String options) {
+  public ServerExpression boxIntersects(ServerExpression box, ServerExpression region, String options) {
     return boxIntersects(box, region, (options == null) ? (ServerExpression) null : xs.string(options));
   }
 
   
   @Override
-  public ServerExpression boxIntersects(ServerExpression box, CtsRegionSeqExpr region, ServerExpression options) {
+  public ServerExpression boxIntersects(ServerExpression box, ServerExpression region, ServerExpression options) {
     if (box == null) {
       throw new IllegalArgumentException("box parameter for boxIntersects() cannot be null");
     }
@@ -185,7 +191,7 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression circleIntersects(ServerExpression circle, CtsRegionSeqExpr region) {
+  public ServerExpression circleIntersects(ServerExpression circle, ServerExpression region) {
     if (circle == null) {
       throw new IllegalArgumentException("circle parameter for circleIntersects() cannot be null");
     }
@@ -194,13 +200,13 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression circleIntersects(ServerExpression circle, CtsRegionSeqExpr region, String options) {
+  public ServerExpression circleIntersects(ServerExpression circle, ServerExpression region, String options) {
     return circleIntersects(circle, region, (options == null) ? (ServerExpression) null : xs.string(options));
   }
 
   
   @Override
-  public ServerExpression circleIntersects(ServerExpression circle, CtsRegionSeqExpr region, ServerExpression options) {
+  public ServerExpression circleIntersects(ServerExpression circle, ServerExpression region, ServerExpression options) {
     if (circle == null) {
       throw new IllegalArgumentException("circle parameter for circleIntersects() cannot be null");
     }
@@ -222,13 +228,13 @@ class GeoExprImpl implements GeoExpr {
     if (arcTolerance == null) {
       throw new IllegalArgumentException("arcTolerance parameter for circlePolygon() cannot be null");
     }
-    return new CtsExprImpl.PolygonCallImpl("geo", "circle-polygon", new Object[]{ circle, arcTolerance });
+    return new CtsExprImpl.RegionCallImpl("geo", "circle-polygon", new Object[]{ circle, arcTolerance });
   }
 
   
   @Override
   public ServerExpression circlePolygon(ServerExpression circle, double arcTolerance, String options) {
-    return circlePolygon(circle, xs.doubleVal(arcTolerance), (options == null) ? (ServerExpression) null : xs.string(options));
+    return circlePolygon(circle, xs.doubleVal(arcTolerance), (options == null) ? (XsStringVal) null : xs.string(options));
   }
 
   
@@ -240,12 +246,12 @@ class GeoExprImpl implements GeoExpr {
     if (arcTolerance == null) {
       throw new IllegalArgumentException("arcTolerance parameter for circlePolygon() cannot be null");
     }
-    return new CtsExprImpl.PolygonCallImpl("geo", "circle-polygon", new Object[]{ circle, arcTolerance, options });
+    return new CtsExprImpl.RegionCallImpl("geo", "circle-polygon", new Object[]{ circle, arcTolerance, options });
   }
 
   
   @Override
-  public ServerExpression countDistinctVertices(CtsRegionExpr region) {
+  public ServerExpression countDistinctVertices(ServerExpression region) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for countDistinctVertices() cannot be null");
     }
@@ -254,13 +260,13 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression countDistinctVertices(CtsRegionExpr region, String options) {
+  public ServerExpression countDistinctVertices(ServerExpression region, String options) {
     return countDistinctVertices(region, (options == null) ? (ServerExpression) null : xs.string(options));
   }
 
   
   @Override
-  public ServerExpression countDistinctVertices(CtsRegionExpr region, ServerExpression options) {
+  public ServerExpression countDistinctVertices(ServerExpression region, ServerExpression options) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for countDistinctVertices() cannot be null");
     }
@@ -269,7 +275,7 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression countVertices(CtsRegionExpr region) {
+  public ServerExpression countVertices(ServerExpression region) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for countVertices() cannot be null");
     }
@@ -294,13 +300,13 @@ class GeoExprImpl implements GeoExpr {
     if (distance == null) {
       throw new IllegalArgumentException("distance parameter for destination() cannot be null");
     }
-    return new CtsExprImpl.PointCallImpl("geo", "destination", new Object[]{ p, bearing, distance });
+    return new CtsExprImpl.RegionCallImpl("geo", "destination", new Object[]{ p, bearing, distance });
   }
 
   
   @Override
   public ServerExpression destination(ServerExpression p, double bearing, double distance, String options) {
-    return destination(p, xs.doubleVal(bearing), xs.doubleVal(distance), (options == null) ? (ServerExpression) null : xs.string(options));
+    return destination(p, xs.doubleVal(bearing), xs.doubleVal(distance), (options == null) ? (XsStringVal) null : xs.string(options));
   }
 
   
@@ -315,7 +321,7 @@ class GeoExprImpl implements GeoExpr {
     if (distance == null) {
       throw new IllegalArgumentException("distance parameter for destination() cannot be null");
     }
-    return new CtsExprImpl.PointCallImpl("geo", "destination", new Object[]{ p, bearing, distance, options });
+    return new CtsExprImpl.RegionCallImpl("geo", "destination", new Object[]{ p, bearing, distance, options });
   }
 
   
@@ -384,13 +390,13 @@ class GeoExprImpl implements GeoExpr {
     if (arcTolerance == null) {
       throw new IllegalArgumentException("arcTolerance parameter for ellipsePolygon() cannot be null");
     }
-    return new CtsExprImpl.PolygonCallImpl("geo", "ellipse-polygon", new Object[]{ center, semiMajorAxis, semiMinorAxis, azimuth, arcTolerance });
+    return new CtsExprImpl.RegionCallImpl("geo", "ellipse-polygon", new Object[]{ center, semiMajorAxis, semiMinorAxis, azimuth, arcTolerance });
   }
 
   
   @Override
   public ServerExpression ellipsePolygon(ServerExpression center, double semiMajorAxis, double semiMinorAxis, double azimuth, double arcTolerance, String options) {
-    return ellipsePolygon(center, xs.doubleVal(semiMajorAxis), xs.doubleVal(semiMinorAxis), xs.doubleVal(azimuth), xs.doubleVal(arcTolerance), (options == null) ? (ServerExpression) null : xs.string(options));
+    return ellipsePolygon(center, xs.doubleVal(semiMajorAxis), xs.doubleVal(semiMinorAxis), xs.doubleVal(azimuth), xs.doubleVal(arcTolerance), (options == null) ? (XsStringVal) null : xs.string(options));
   }
 
   
@@ -408,7 +414,13 @@ class GeoExprImpl implements GeoExpr {
     if (arcTolerance == null) {
       throw new IllegalArgumentException("arcTolerance parameter for ellipsePolygon() cannot be null");
     }
-    return new CtsExprImpl.PolygonCallImpl("geo", "ellipse-polygon", new Object[]{ center, semiMajorAxis, semiMinorAxis, azimuth, arcTolerance, options });
+    return new CtsExprImpl.RegionCallImpl("geo", "ellipse-polygon", new Object[]{ center, semiMajorAxis, semiMinorAxis, azimuth, arcTolerance, options });
+  }
+
+  
+  @Override
+  public ServerExpression geohashDecode(String hash) {
+    return geohashDecode((hash == null) ? (XsStringVal) null : xs.string(hash));
   }
 
   
@@ -417,13 +429,13 @@ class GeoExprImpl implements GeoExpr {
     if (hash == null) {
       throw new IllegalArgumentException("hash parameter for geohashDecode() cannot be null");
     }
-    return new CtsExprImpl.BoxCallImpl("geo", "geohash-decode", new Object[]{ hash });
+    return new CtsExprImpl.RegionCallImpl("geo", "geohash-decode", new Object[]{ hash });
   }
 
   
   @Override
   public ServerExpression geohashDecodePoint(String hash) {
-    return geohashDecodePoint((hash == null) ? (ServerExpression) null : xs.string(hash));
+    return geohashDecodePoint((hash == null) ? (XsStringVal) null : xs.string(hash));
   }
 
   
@@ -432,12 +444,12 @@ class GeoExprImpl implements GeoExpr {
     if (hash == null) {
       throw new IllegalArgumentException("hash parameter for geohashDecodePoint() cannot be null");
     }
-    return new CtsExprImpl.PointCallImpl("geo", "geohash-decode-point", new Object[]{ hash });
+    return new CtsExprImpl.RegionCallImpl("geo", "geohash-decode-point", new Object[]{ hash });
   }
 
   
   @Override
-  public ServerExpression geohashEncode(CtsRegionExpr region) {
+  public ServerExpression geohashEncode(ServerExpression region) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for geohashEncode() cannot be null");
     }
@@ -446,13 +458,13 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression geohashEncode(CtsRegionExpr region, long geohashPrecision) {
+  public ServerExpression geohashEncode(ServerExpression region, long geohashPrecision) {
     return geohashEncode(region, xs.integer(geohashPrecision));
   }
 
   
   @Override
-  public ServerExpression geohashEncode(CtsRegionExpr region, ServerExpression geohashPrecision) {
+  public ServerExpression geohashEncode(ServerExpression region, ServerExpression geohashPrecision) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for geohashEncode() cannot be null");
     }
@@ -461,13 +473,13 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression geohashEncode(CtsRegionExpr region, long geohashPrecision, String options) {
+  public ServerExpression geohashEncode(ServerExpression region, long geohashPrecision, String options) {
     return geohashEncode(region, xs.integer(geohashPrecision), (options == null) ? (ServerExpression) null : xs.string(options));
   }
 
   
   @Override
-  public ServerExpression geohashEncode(CtsRegionExpr region, ServerExpression geohashPrecision, ServerExpression options) {
+  public ServerExpression geohashEncode(ServerExpression region, ServerExpression geohashPrecision, ServerExpression options) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for geohashEncode() cannot be null");
     }
@@ -512,26 +524,26 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression interiorPoint(CtsRegionExpr region) {
+  public ServerExpression interiorPoint(ServerExpression region) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for interiorPoint() cannot be null");
     }
-    return new CtsExprImpl.PointCallImpl("geo", "interior-point", new Object[]{ region });
+    return new CtsExprImpl.RegionCallImpl("geo", "interior-point", new Object[]{ region });
   }
 
   
   @Override
-  public ServerExpression interiorPoint(CtsRegionExpr region, String options) {
-    return interiorPoint(region, (options == null) ? (ServerExpression) null : xs.string(options));
+  public ServerExpression interiorPoint(ServerExpression region, String options) {
+    return interiorPoint(region, (options == null) ? (XsStringVal) null : xs.string(options));
   }
 
   
   @Override
-  public ServerExpression interiorPoint(CtsRegionExpr region, ServerExpression options) {
+  public ServerExpression interiorPoint(ServerExpression region, ServerExpression options) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for interiorPoint() cannot be null");
     }
-    return new CtsExprImpl.PointCallImpl("geo", "interior-point", new Object[]{ region, options });
+    return new CtsExprImpl.RegionCallImpl("geo", "interior-point", new Object[]{ region, options });
   }
 
   
@@ -542,19 +554,19 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public CtsRegionSeqExpr parseWkt(XsStringSeqVal wkt) {
+  public CtsRegionSeqExpr parseWkt(ServerExpression wkt) {
     return new CtsExprImpl.RegionSeqCallImpl("geo", "parse-wkt", new Object[]{ wkt });
   }
 
   
   @Override
-  public CtsRegionExpr regionApproximate(CtsRegionExpr region, double threshold) {
+  public CtsRegionExpr regionApproximate(ServerExpression region, double threshold) {
     return regionApproximate(region, xs.doubleVal(threshold));
   }
 
   
   @Override
-  public CtsRegionExpr regionApproximate(CtsRegionExpr region, XsDoubleVal threshold) {
+  public CtsRegionExpr regionApproximate(ServerExpression region, ServerExpression threshold) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for regionApproximate() cannot be null");
     }
@@ -566,13 +578,13 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public CtsRegionExpr regionApproximate(CtsRegionExpr region, double threshold, String options) {
+  public CtsRegionExpr regionApproximate(ServerExpression region, double threshold, String options) {
     return regionApproximate(region, xs.doubleVal(threshold), (options == null) ? (XsStringVal) null : xs.string(options));
   }
 
   
   @Override
-  public CtsRegionExpr regionApproximate(CtsRegionExpr region, XsDoubleVal threshold, XsStringSeqVal options) {
+  public CtsRegionExpr regionApproximate(ServerExpression region, ServerExpression threshold, ServerExpression options) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for regionApproximate() cannot be null");
     }
@@ -584,7 +596,7 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public CtsRegionExpr regionClean(CtsRegionExpr region) {
+  public CtsRegionExpr regionClean(ServerExpression region) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for regionClean() cannot be null");
     }
@@ -593,13 +605,13 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public CtsRegionExpr regionClean(CtsRegionExpr region, String options) {
+  public CtsRegionExpr regionClean(ServerExpression region, String options) {
     return regionClean(region, (options == null) ? (XsStringVal) null : xs.string(options));
   }
 
   
   @Override
-  public CtsRegionExpr regionClean(CtsRegionExpr region, XsStringSeqVal options) {
+  public CtsRegionExpr regionClean(ServerExpression region, ServerExpression options) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for regionClean() cannot be null");
     }
@@ -608,7 +620,7 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression regionContains(CtsRegionExpr target, CtsRegionSeqExpr region) {
+  public ServerExpression regionContains(ServerExpression target, ServerExpression region) {
     if (target == null) {
       throw new IllegalArgumentException("target parameter for regionContains() cannot be null");
     }
@@ -617,13 +629,13 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression regionContains(CtsRegionExpr target, CtsRegionSeqExpr region, String options) {
+  public ServerExpression regionContains(ServerExpression target, ServerExpression region, String options) {
     return regionContains(target, region, (options == null) ? (ServerExpression) null : xs.string(options));
   }
 
   
   @Override
-  public ServerExpression regionContains(CtsRegionExpr target, CtsRegionSeqExpr region, ServerExpression options) {
+  public ServerExpression regionContains(ServerExpression target, ServerExpression region, ServerExpression options) {
     if (target == null) {
       throw new IllegalArgumentException("target parameter for regionContains() cannot be null");
     }
@@ -632,7 +644,7 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression regionDe9im(CtsRegionExpr region1, CtsRegionExpr region2) {
+  public ServerExpression regionDe9im(ServerExpression region1, ServerExpression region2) {
     if (region1 == null) {
       throw new IllegalArgumentException("region1 parameter for regionDe9im() cannot be null");
     }
@@ -644,13 +656,13 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression regionDe9im(CtsRegionExpr region1, CtsRegionExpr region2, String options) {
+  public ServerExpression regionDe9im(ServerExpression region1, ServerExpression region2, String options) {
     return regionDe9im(region1, region2, (options == null) ? (ServerExpression) null : xs.string(options));
   }
 
   
   @Override
-  public ServerExpression regionDe9im(CtsRegionExpr region1, CtsRegionExpr region2, ServerExpression options) {
+  public ServerExpression regionDe9im(ServerExpression region1, ServerExpression region2, ServerExpression options) {
     if (region1 == null) {
       throw new IllegalArgumentException("region1 parameter for regionDe9im() cannot be null");
     }
@@ -662,7 +674,7 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression regionIntersects(CtsRegionExpr target, CtsRegionSeqExpr region) {
+  public ServerExpression regionIntersects(ServerExpression target, ServerExpression region) {
     if (target == null) {
       throw new IllegalArgumentException("target parameter for regionIntersects() cannot be null");
     }
@@ -671,13 +683,13 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression regionIntersects(CtsRegionExpr target, CtsRegionSeqExpr region, String options) {
+  public ServerExpression regionIntersects(ServerExpression target, ServerExpression region, String options) {
     return regionIntersects(target, region, (options == null) ? (ServerExpression) null : xs.string(options));
   }
 
   
   @Override
-  public ServerExpression regionIntersects(CtsRegionExpr target, CtsRegionSeqExpr region, ServerExpression options) {
+  public ServerExpression regionIntersects(ServerExpression target, ServerExpression region, ServerExpression options) {
     if (target == null) {
       throw new IllegalArgumentException("target parameter for regionIntersects() cannot be null");
     }
@@ -686,13 +698,13 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression regionRelate(CtsRegionExpr region1, String operation, CtsRegionExpr region2) {
+  public ServerExpression regionRelate(ServerExpression region1, String operation, ServerExpression region2) {
     return regionRelate(region1, (operation == null) ? (ServerExpression) null : xs.string(operation), region2);
   }
 
   
   @Override
-  public ServerExpression regionRelate(CtsRegionExpr region1, ServerExpression operation, CtsRegionExpr region2) {
+  public ServerExpression regionRelate(ServerExpression region1, ServerExpression operation, ServerExpression region2) {
     if (region1 == null) {
       throw new IllegalArgumentException("region1 parameter for regionRelate() cannot be null");
     }
@@ -707,13 +719,13 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression regionRelate(CtsRegionExpr region1, String operation, CtsRegionExpr region2, String options) {
+  public ServerExpression regionRelate(ServerExpression region1, String operation, ServerExpression region2, String options) {
     return regionRelate(region1, (operation == null) ? (ServerExpression) null : xs.string(operation), region2, (options == null) ? (ServerExpression) null : xs.string(options));
   }
 
   
   @Override
-  public ServerExpression regionRelate(CtsRegionExpr region1, ServerExpression operation, CtsRegionExpr region2, ServerExpression options) {
+  public ServerExpression regionRelate(ServerExpression region1, ServerExpression operation, ServerExpression region2, ServerExpression options) {
     if (region1 == null) {
       throw new IllegalArgumentException("region1 parameter for regionRelate() cannot be null");
     }
@@ -728,7 +740,7 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public CtsRegionExpr removeDuplicateVertices(CtsRegionExpr region) {
+  public CtsRegionExpr removeDuplicateVertices(ServerExpression region) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for removeDuplicateVertices() cannot be null");
     }
@@ -737,13 +749,13 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public CtsRegionExpr removeDuplicateVertices(CtsRegionExpr region, String options) {
+  public CtsRegionExpr removeDuplicateVertices(ServerExpression region, String options) {
     return removeDuplicateVertices(region, (options == null) ? (XsStringVal) null : xs.string(options));
   }
 
   
   @Override
-  public CtsRegionExpr removeDuplicateVertices(CtsRegionExpr region, XsStringSeqVal options) {
+  public CtsRegionExpr removeDuplicateVertices(ServerExpression region, ServerExpression options) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for removeDuplicateVertices() cannot be null");
     }
@@ -752,7 +764,7 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression shortestDistance(ServerExpression p1, CtsRegionSeqExpr region) {
+  public ServerExpression shortestDistance(ServerExpression p1, ServerExpression region) {
     if (p1 == null) {
       throw new IllegalArgumentException("p1 parameter for shortestDistance() cannot be null");
     }
@@ -761,13 +773,13 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression shortestDistance(ServerExpression p1, CtsRegionSeqExpr region, String options) {
+  public ServerExpression shortestDistance(ServerExpression p1, ServerExpression region, String options) {
     return shortestDistance(p1, region, (options == null) ? (ServerExpression) null : xs.string(options));
   }
 
   
   @Override
-  public ServerExpression shortestDistance(ServerExpression p1, CtsRegionSeqExpr region, ServerExpression options) {
+  public ServerExpression shortestDistance(ServerExpression p1, ServerExpression region, ServerExpression options) {
     if (p1 == null) {
       throw new IllegalArgumentException("p1 parameter for shortestDistance() cannot be null");
     }
@@ -776,7 +788,7 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
-  public ServerExpression toWkt(CtsRegionSeqExpr wkt) {
+  public ServerExpression toWkt(ServerExpression wkt) {
     return new XsExprImpl.StringSeqCallImpl("geo", "to-wkt", new Object[]{ wkt });
   }
 

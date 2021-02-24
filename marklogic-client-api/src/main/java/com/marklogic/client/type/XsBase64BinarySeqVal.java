@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of server base 64 binary values.
+ * See {@link com.marklogic.client.expression.XsValue#base64BinarySeq(XsBase64BinaryVal...)}
  */
 public interface XsBase64BinarySeqVal extends XsAnyAtomicTypeSeqVal {
     public XsBase64BinaryVal[] getBase64BinaryItems();

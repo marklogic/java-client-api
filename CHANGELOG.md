@@ -1,8 +1,17 @@
 # CHANGELOG
 
-## 5.3.2
+## 5.4.0
+#### New Functionality
+
+- [#1260](https://github.com/marklogic/java-client-api/issues/1260) - CtsQueryBuilder for search is available
+- [#1280](https://github.com/marklogic/java-client-api/issues/1280) - Optic query DSL - Support for human-oriented representation of Optic query
+- [#1282](https://github.com/marklogic/java-client-api/issues/1282) - Optic enhancements - support for document matching, relevance, multiple groups
+
 #### Improvements and Bug Fixes
-- [#1274](https://github.com/marklogic/java-client-api/issues/1274) - Enable TCP keepalive level to maintain enode or loadbalancer connection
+- [#1256](https://github.com/marklogic/java-client-api/issues/1256) - Clear collections is not working in Java API
+- [#1268](https://github.com/marklogic/java-client-api/issues/1268) - Gradle wrapper upgrade to 6.7
+- [#1269](https://github.com/marklogic/java-client-api/issues/1269) - Increased concurrency for DMSDK QueryBatcher
+- [#1283](https://github.com/marklogic/java-client-api/issues/1283) - QueryBatcher fails when using path range query
 
 ## 5.3.1
 #### Improvements and Bug Fixes

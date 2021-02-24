@@ -233,7 +233,9 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 								return;
 
 							case STOP_ALL_CALLS:
-								getCallerThreadPoolExecutor().shutdown();
+								if (getCallerThreadPoolExecutor() != null) {
+									getCallerThreadPoolExecutor().shutdown();
+								}
 						}
 					}
 				}

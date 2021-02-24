@@ -17,13 +17,16 @@ package com.marklogic.client.tools.gradle
 
 import com.marklogic.client.tools.proxy.Generator
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 open class ServiceCompareTask : DefaultTask() {
   private val generator = Generator()
 
-  var customServiceDeclarationFile:  String = ""
-  var baseServiceDeclarationFile:   String = ""
+    @Input
+    var customServiceDeclarationFile:  String = ""
+    @Input
+    var baseServiceDeclarationFile:   String = ""
 
   @TaskAction
   fun compareCustomServiceToBase() {

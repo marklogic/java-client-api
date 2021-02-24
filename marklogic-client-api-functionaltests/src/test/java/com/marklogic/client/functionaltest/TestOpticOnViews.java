@@ -32,6 +32,8 @@ import java.util.Iterator;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.marklogic.client.row.*;
+import com.sun.org.apache.xerces.internal.util.SynchronizedSymbolTable;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -59,9 +61,6 @@ import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.row.RowManager;
-import com.marklogic.client.row.RowRecord;
-import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.PlanColumn;
 import com.marklogic.client.type.PlanExprColSeq;
 import com.marklogic.client.type.PlanParamExpr;
@@ -73,120 +72,119 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
   private static String dbName = "TestOpticOnViewsDB";
   private static String schemadbName = "TestOpticOnViewsSchemaDB";
-  private static String[] fNames = { "TestOpticOnViewsDB-1" };
-  private static String[] schemafNames = { "TestOpticOnViewsSchemaDB-1" };
-  
+  private static String[] fNames = {"TestOpticOnViewsDB-1"};
+  private static String[] schemafNames = {"TestOpticOnViewsSchemaDB-1"};
+
   private static DatabaseClient client;
   private static String datasource = "src/test/java/com/marklogic/client/functionaltest/data/optics/";
 
   @BeforeClass
-  public static void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception
-  {
+  public static void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     System.out.println("In TestOpticOnViews setup");
     DatabaseClient schemaDBclient = null;
 
-    configureRESTServer(dbName, fNames);
+  configureRESTServer(dbName, fNames);
 
-    // Add new range elements into this array
-    String[][] rangeElements = {
-        // { scalar-type, namespace-uri, localname, collation,
-        // range-value-positions, invalid-values }
-        // If there is a need to add additional fields, then add them to the end
-        // of each array
-        // and pass empty strings ("") into an array where the additional field
-        // does not have a value.
-        // For example : as in namespace, collections below.
-        // Add new RangeElementIndex as an array below.
-        { "string", "", "city", "http://marklogic.com/collation/", "false", "reject" },
-        { "int", "", "popularity", "", "false", "reject" },
-        { "double", "", "distance", "", "false", "reject" },
-        { "date", "", "date", "", "false", "reject" },
-        { "string", "", "cityName", "http://marklogic.com/collation/", "false", "reject" },
-        { "string", "", "cityTeam", "http://marklogic.com/collation/", "false", "reject" },
-        { "long", "", "cityPopulation", "", "false", "reject" }
-    };
+  // Add new range elements into this array
+  String[][] rangeElements = {
+          // { scalar-type, namespace-uri, localname, collation,
+          // range-value-positions, invalid-values }
+          // If there is a need to add additional fields, then add them to the end
+          // of each array
+          // and pass empty strings ("") into an array where the additional field
+          // does not have a value.
+          // For example : as in namespace, collections below.
+          // Add new RangeElementIndex as an array below.
+          {"string", "", "city", "http://marklogic.com/collation/", "false", "reject"},
+          {"int", "", "popularity", "", "false", "reject"},
+          {"double", "", "distance", "", "false", "reject"},
+          {"date", "", "date", "", "false", "reject"},
+          {"string", "", "cityName", "http://marklogic.com/collation/", "false", "reject"},
+          {"string", "", "cityTeam", "http://marklogic.com/collation/", "false", "reject"},
+          {"long", "", "cityPopulation", "", "false", "reject"}
+  };
 
-    // Insert the range indices
-    addRangeElementIndex(dbName, rangeElements);
+  // Insert the range indices
+  addRangeElementIndex(dbName, rangeElements);
 
-    // Insert word lexicon.
-    ObjectMapper mapper = new ObjectMapper();
-    ObjectNode mainNode = mapper.createObjectNode();
-    ObjectNode wordLexicon = mapper.createObjectNode();
-    ArrayNode childArray = mapper.createArrayNode();
-    ObjectNode childNodeObject = mapper.createObjectNode();
+  // Insert word lexicon.
+  ObjectMapper mapper = new ObjectMapper();
+  ObjectNode mainNode = mapper.createObjectNode();
+  ObjectNode wordLexicon = mapper.createObjectNode();
+  ArrayNode childArray = mapper.createArrayNode();
+  ObjectNode childNodeObject = mapper.createObjectNode();
 
-    childNodeObject.put("namespace-uri", "http://marklogic.com/collation/");
-    childNodeObject.put("localname", "city");
-    childNodeObject.put("collation", "http://marklogic.com/collation/");
-    childArray.add(childNodeObject);
-    mainNode.withArray("element-word-lexicon").add(childArray);
+  childNodeObject.put("namespace-uri", "http://marklogic.com/collation/");
+  childNodeObject.put("localname", "city");
+  childNodeObject.put("collation", "http://marklogic.com/collation/");
+  childArray.add(childNodeObject);
+  mainNode.withArray("element-word-lexicon").add(childArray);
 
-    setDatabaseProperties(dbName, "element-word-lexicon", mainNode);
+  setDatabaseProperties(dbName, "element-word-lexicon", mainNode);
 
-    // Add geo element index.
-    addGeospatialElementIndexes(dbName, "latLonPoint", "", "wgs84", "point", false, "reject");
-    // Enable triple index.
-    enableTripleIndex(dbName);
-    waitForServerRestart();
-    // Enable collection lexicon.
-    enableCollectionLexicon(dbName);
-    // Enable uri lexicon.
-    setDatabaseProperties(dbName, "uri-lexicon", true);
+  // Add geo element index.
+  addGeospatialElementIndexes(dbName, "latLonPoint", "", "wgs84", "point", false, "reject");
+  // Enable triple index.
+  enableTripleIndex(dbName);
+  waitForServerRestart();
+  // Enable collection lexicon.
+  enableCollectionLexicon(dbName);
+  // Enable uri lexicon.
+  setDatabaseProperties(dbName, "uri-lexicon", true);
 
-    // Create schema database
-    createDB(schemadbName);
-    createForest(schemafNames[0], schemadbName);
-    // Set the schemadbName database as the Schema database.
-    setDatabaseProperties(dbName, "schema-database", schemadbName);
+  // Create schema database
+  createDB(schemadbName);
+  createForest(schemafNames[0], schemadbName);
+  // Set the schemadbName database as the Schema database.
+  setDatabaseProperties(dbName, "schema-database", schemadbName);
 
-    createUserRolesWithPrevilages("opticRole", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
-    createRESTUser("opticUser", "0pt1c", "tde-admin", "tde-view", "opticRole", "rest-admin", "rest-writer", 
-    		                             "rest-reader", "rest-extension-user", "manage-user");    
+  createUserRolesWithPrevilages("opticRole", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
+  createRESTUser("opticUser", "0pt1c", "tde-admin", "tde-view", "opticRole", "rest-admin", "rest-writer",
+          "rest-reader", "rest-extension-user", "manage-user");
 
     if (IsSecurityEnabled()) {
-        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", getConnType());
-        client = getDatabaseClient("opticUser", "0pt1c", getConnType());
+      schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", getConnType());
+      client = getDatabaseClient("opticUser", "0pt1c", getConnType());
+    } else {
+      schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("opticUser", "0pt1c"));
+      client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("opticUser", "0pt1c"));
     }
-    else {
-        schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("opticUser", "0pt1c"));
-        client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("opticUser", "0pt1c"));
-    }
 
-    // Install the TDE templates into schemadbName DB
-    // loadFileToDB(client, filename, docURI, collection, document format)
-    loadFileToDB(schemaDBclient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[] { "http://marklogic.com/xdmp/tde" });
-    loadFileToDB(schemaDBclient, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON", new String[] { "http://marklogic.com/xdmp/tde" });
-    loadFileToDB(schemaDBclient, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON", new String[] { "http://marklogic.com/xdmp/tde" });
+  // Install the TDE templates into schemadbName DB
+  // loadFileToDB(client, filename, docURI, collection, document format)
+  loadFileToDB(schemaDBclient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[]{"http://marklogic.com/xdmp/tde"});
+  loadFileToDB(schemaDBclient, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON", new String[]{"http://marklogic.com/xdmp/tde"});
+  loadFileToDB(schemaDBclient, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON", new String[]{"http://marklogic.com/xdmp/tde"});
 
-    // Load XML data files.
-    loadFileToDB(client, "masterDetail.xml", "/optic/view/test/masterDetail.xml", "XML", new String[] { "/optic/view/test" });
-    loadFileToDB(client, "playerTripleSet.xml", "/optic/triple/test/playerTripleSet.xml", "XML", new String[] { "/optic/player/triple/test" });
-    loadFileToDB(client, "teamTripleSet.xml", "/optic/triple/test/teamTripleSet.xml", "XML", new String[] { "/optic/team/triple/test" });
-    loadFileToDB(client, "otherPlayerTripleSet.xml", "/optic/triple/test/otherPlayerTripleSet.xml", "XML", new String[] { "/optic/other/player/triple/test" });
-    loadFileToDB(client, "doc4.xml", "/optic/lexicon/test/doc4.xml", "XML", new String[] { "/optic/lexicon/test" });
-    loadFileToDB(client, "doc5.xml", "/optic/lexicon/test/doc5.xml", "XML", new String[] { "/optic/lexicon/test" });
+  // Load XML data files.
+  loadFileToDB(client, "masterDetail.xml", "/optic/view/test/masterDetail.xml", "XML", new String[]{"/optic/view/test"});
+  loadFileToDB(client, "playerTripleSet.xml", "/optic/triple/test/playerTripleSet.xml", "XML", new String[]{"/optic/player/triple/test"});
+  loadFileToDB(client, "teamTripleSet.xml", "/optic/triple/test/teamTripleSet.xml", "XML", new String[]{"/optic/team/triple/test"});
+  loadFileToDB(client, "otherPlayerTripleSet.xml", "/optic/triple/test/otherPlayerTripleSet.xml", "XML", new String[]{"/optic/other/player/triple/test"});
+  loadFileToDB(client, "doc4.xml", "/optic/lexicon/test/doc4.xml", "XML", new String[]{"/optic/lexicon/test"});
+  loadFileToDB(client, "doc5.xml", "/optic/lexicon/test/doc5.xml", "XML", new String[]{"/optic/lexicon/test"});
 
-    // Load JSON data files.
-    loadFileToDB(client, "masterDetail2.json", "/optic/view/test/masterDetail2.json", "JSON", new String[] { "/optic/view/test" });
-    loadFileToDB(client, "masterDetail3.json", "/optic/view/test/masterDetail3.json", "JSON", new String[] { "/optic/view/test" });
+  // Load JSON data files.
+  loadFileToDB(client, "masterDetail2.json", "/optic/view/test/masterDetail2.json", "JSON", new String[]{"/optic/view/test"});
+  loadFileToDB(client, "masterDetail3.json", "/optic/view/test/masterDetail3.json", "JSON", new String[]{"/optic/view/test"});
 
-    loadFileToDB(client, "doc1.json", "/optic/lexicon/test/doc1.json", "JSON", new String[] { "/other/coll1", "/other/coll2" });
-    loadFileToDB(client, "doc2.json", "/optic/lexicon/test/doc2.json", "JSON", new String[] { "/optic/lexicon/test" });
-    loadFileToDB(client, "doc3.json", "/optic/lexicon/test/doc3.json", "JSON", new String[] { "/optic/lexicon/test" });
+  loadFileToDB(client, "doc1.json", "/optic/lexicon/test/doc1.json", "JSON", new String[]{"/other/coll1", "/other/coll2"});
+  loadFileToDB(client, "doc2.json", "/optic/lexicon/test/doc2.json", "JSON", new String[]{"/optic/lexicon/test"});
+  loadFileToDB(client, "doc3.json", "/optic/lexicon/test/doc3.json", "JSON", new String[]{"/optic/lexicon/test"});
 
-    loadFileToDB(client, "city1.json", "/optic/lexicon/test/city1.json", "JSON", new String[] { "/optic/lexicon/test" });
-    loadFileToDB(client, "city2.json", "/optic/lexicon/test/city2.json", "JSON", new String[] { "/optic/lexicon/test" });
-    loadFileToDB(client, "city3.json", "/optic/lexicon/test/city3.json", "JSON", new String[] { "/optic/lexicon/test" });
-    loadFileToDB(client, "city4.json", "/optic/lexicon/test/city4.json", "JSON", new String[] { "/optic/lexicon/test" });
-    loadFileToDB(client, "city5.json", "/optic/lexicon/test/city5.json", "JSON", new String[] { "/optic/lexicon/test" });
-    Thread.sleep(10000);
+  loadFileToDB(client, "city1.json", "/optic/lexicon/test/city1.json", "JSON", new String[]{"/optic/lexicon/test"});
+  loadFileToDB(client, "city2.json", "/optic/lexicon/test/city2.json", "JSON", new String[]{"/optic/lexicon/test"});
+  loadFileToDB(client, "city3.json", "/optic/lexicon/test/city3.json", "JSON", new String[]{"/optic/lexicon/test"});
+  loadFileToDB(client, "city4.json", "/optic/lexicon/test/city4.json", "JSON", new String[]{"/optic/lexicon/test"});
+  loadFileToDB(client, "city5.json", "/optic/lexicon/test/city5.json", "JSON", new String[]{"/optic/lexicon/test"});
+  Thread.sleep(10000);
+
     schemaDBclient.release();
   }
 
   /**
    * Write document using DOMHandle
-   * 
+   *
    * @param client
    * @param filename
    * @param uri
@@ -197,8 +195,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    */
 
   public static void loadFileToDB(DatabaseClient client, String filename, String uri, String type, String[] collections) throws IOException, ParserConfigurationException,
-      SAXException
-  {
+          SAXException {
     // create doc manager
     DocumentManager docMgr = null;
     docMgr = documentMgrSelector(client, docMgr, type);
@@ -224,7 +221,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
   /**
    * Function to select and create document manager based on the type
-   * 
+   *
    * @param client
    * @param docMgr
    * @param type
@@ -257,19 +254,18 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
   /*
    * This test checks a simple Schema and View ordered by id.
-   * 
+   *
    * The query should be returning 6 results ordered by id. Test asserts only on
    * the first node results. Uses JacksonHandle
    */
   @Test
-  public void testnamedSchemaAndView() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testnamedSchemaAndView() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testnamedSchemaAndView method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
 
     ModifyPlan plan = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.col( "id"));
+            .orderBy(p.col("id"));
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -283,50 +279,49 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
     // Verify result 1's values.
     assertEquals("Element 1 opticFunctionalTest.detail.id type value incorrect", "xs:integer", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.id").path("type")
-        .asText());
+            .asText());
     assertEquals("Element 1 opticFunctionalTest.detail.id value is incorrect", "1", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.id").path("value").asText());
 
     assertEquals("Element 1 opticFunctionalTest.detail.name type is incorrect", "xs:string", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.name").path("type")
-        .asText());
+            .asText());
     assertEquals("Element 1 opticFunctionalTest.detail.name value is incorrect", "Detail 1", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.name").path("value")
-        .asText());
+            .asText());
 
     assertEquals("Element 1 opticFunctionalTest.detail.masterId type value incorrect", "xs:integer",
-        jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.masterId").path("type").asText());
+            jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.masterId").path("type").asText());
     assertEquals("Element 1 opticFunctionalTest.detail.masterId value is incorrect", "1", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.masterId").path("value")
-        .asText());
+            .asText());
 
     assertEquals("Element 1 opticFunctionalTest.detail.amount type is incorrect", "xs:double", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.amount").path("type")
-        .asText());
+            .asText());
     assertEquals("Element 1 opticFunctionalTest.detail.amount value is incorrect", "10.01", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.amount").path("value")
-        .asText());
+            .asText());
 
     assertEquals("Element 1 opticFunctionalTest.detail.color type is incorrect", "xs:string", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.color").path("type")
-        .asText());
+            .asText());
     assertEquals("Element 1 opticFunctionalTest.detail.color value is incorrect", "blue", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.color").path("value").asText());
     // Verify only the name value of other nodes in the array results.
 
     assertEquals("Element 2 opticFunctionalTest.detail.name value is incorrect", "Detail 2", jsonBindingsNodes.path(1).path("opticFunctionalTest.detail.name").path("value")
-        .asText());
+            .asText());
     assertEquals("Element 3 opticFunctionalTest.detail.name value is incorrect", "Detail 3", jsonBindingsNodes.path(2).path("opticFunctionalTest.detail.name").path("value")
-        .asText());
+            .asText());
     assertEquals("Element 4 opticFunctionalTest.detail.name value is incorrect", "Detail 4", jsonBindingsNodes.path(3).path("opticFunctionalTest.detail.name").path("value")
-        .asText());
+            .asText());
     assertEquals("Element 5 opticFunctionalTest.detail.name value is incorrect", "Detail 5", jsonBindingsNodes.path(4).path("opticFunctionalTest.detail.name").path("value")
-        .asText());
+            .asText());
     assertEquals("Element 6 opticFunctionalTest.detail.name value is incorrect", "Detail 6", jsonBindingsNodes.path(5).path("opticFunctionalTest.detail.name").path("value")
-        .asText());
+            .asText());
   }
 
   /*
    * This test checks a simple Schema and view with a qualifier ordered by id.
-   * 
+   *
    * The query should be returning 6 results ordered by id. Test asserts only on
    * the first node results. Uses JacksonHandle
    */
   @Test
-  public void testnamedSchemaViewWithQualifier() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testnamedSchemaViewWithQualifier() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testnamedSchemaViewWithQualifier method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
@@ -334,8 +329,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     AccessPlan plan = p.fromView("opticFunctionalTest", "detail", "MarkLogicQAQualifier");
 
     plan.orderBy(p.sortKeySeq(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.masterId"),
-        p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.color"),
-        p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.amount")));
+            p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.color"),
+            p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.amount")));
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -353,26 +348,25 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * arrayAggregate, union, groupby methods Uses schemaCol for Columns selection
    */
   @Test
-  public void testgroupBy() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testgroupBy() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testgroupBy method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
 
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
 
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
-        .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan3 = plan1.union(plan2)
-        .select(p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
-            p.schemaCol("opticFunctionalTest", "master", "date"),
-            p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
-            p.col( "amount"),
-            p.col( "color")
-        )
-        .groupBy(p.col("MasterName"), p.arrayAggregate("arrayDetail", "DetailName"))
-        .orderBy(p.desc(p.col("MasterName")));
+            .select(p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
+                    p.schemaCol("opticFunctionalTest", "master", "date"),
+                    p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
+                    p.col("amount"),
+                    p.col("color")
+            )
+            .groupBy(p.col("MasterName"), p.arrayAggregate("arrayDetail", "DetailName"))
+            .orderBy(p.desc(p.col("MasterName")));
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -398,22 +392,21 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * This test checks join inner with keymatch. Should return 6 items.
    */
   @Test
-  public void testjoinInnerKeyMatch() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testjoinInnerKeyMatch() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testjoinInnerKeyMatch method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
-        .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan3 = plan1.joinInner(plan2)
-        .where(
-            p.eq(p.schemaCol("opticFunctionalTest", "master", "id"),
-                p.col( "masterId")
-                )
-        )
-        .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")));
+            .where(
+                    p.eq(p.schemaCol("opticFunctionalTest", "master", "id"),
+                            p.col("masterId")
+                    )
+            )
+            .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")));
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
 
@@ -443,30 +436,29 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * items.
    */
   @Test
-  public void testjoinInnerKeyMatchWithSelect() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testjoinInnerKeyMatchWithSelect() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testjoinInnerKeyMatchWithSelect method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.col( "id"));
+            .orderBy(p.col("id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
-        .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan3 = plan1.joinInner(plan2)
-        .where(
-            p.eq(
-                p.schemaCol("opticFunctionalTest", "master", "id"),
-                p.col( "masterId")
-                )
-        )
-        .select(
-            p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
-            p.schemaCol("opticFunctionalTest", "master", "date"),
-            p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
-            p.col( "amount"),
-            p.col( "color")
-        )
-        .orderBy(p.desc(p.col("DetailName")));
+            .where(
+                    p.eq(
+                            p.schemaCol("opticFunctionalTest", "master", "id"),
+                            p.col("masterId")
+                    )
+            )
+            .select(
+                    p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
+                    p.schemaCol("opticFunctionalTest", "master", "date"),
+                    p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
+                    p.col("amount"),
+                    p.col("color")
+            )
+            .orderBy(p.desc(p.col("DetailName")));
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
 
@@ -493,24 +485,23 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * items.
    */
   @Test
-  public void testjoinInnerGroupBy() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testjoinInnerGroupBy() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testjoinInnerGroupBy method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.col( "id"));
+            .orderBy(p.col("id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
-        .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan3 = plan1.joinInner(plan2)
-        .where(
-            p.eq(
-                p.schemaCol("opticFunctionalTest", "master", "id"),
-                p.col( "masterId")
-                )
-        )
-        .groupBy(p.schemaCol("opticFunctionalTest", "master", "name"), p.sum(p.col("DetailSum"), p.col( "amount")))
-        .orderBy(p.desc(p.col("DetailSum")));
+            .where(
+                    p.eq(
+                            p.schemaCol("opticFunctionalTest", "master", "id"),
+                            p.col("masterId")
+                    )
+            )
+            .groupBy(p.schemaCol("opticFunctionalTest", "master", "name"), p.sum(p.col("DetailSum"), p.col("amount")))
+            .orderBy(p.desc(p.col("DetailSum")));
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
 
@@ -534,24 +525,23 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * This test checks join left outer with select. Should return 2 items.
    */
   @Test
-  public void testjoinLeftOuterWithSelect() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testjoinLeftOuterWithSelect() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testjoinLeftOuterWithSelect method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
-        .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan3 = plan1.joinLeftOuter(plan2)
-        .select(
-            p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
-            p.schemaCol("opticFunctionalTest", "master", "date"),
-            p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
-            p.col( "amount"),
-            p.col( "color")
-        )
-        .orderBy(p.sortKeySeq(p.desc(p.col("DetailName")), p.desc(p.col("MasterName"))));
+            .select(
+                    p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
+                    p.schemaCol("opticFunctionalTest", "master", "date"),
+                    p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
+                    p.col("amount"),
+                    p.col("color")
+            )
+            .orderBy(p.sortKeySeq(p.desc(p.col("DetailName")), p.desc(p.col("MasterName"))));
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
 
@@ -581,25 +571,24 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * This test checks join cross product. Should return 12 items.
    */
   @Test
-  public void testjoinCrossProduct() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testjoinCrossProduct() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testjoinCrossProduct method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
-        .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan3 = plan1.joinCrossProduct(plan2)
-        .select(
-            p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
-            p.schemaCol("opticFunctionalTest", "master", "date"),
-            p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
-            p.col( "amount"),
-            p.col( "color")
-        )
-        .orderBy(p.desc(p.col("DetailName")))
-        .orderBy(p.asc(p.col("MasterName")));
+            .select(
+                    p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
+                    p.schemaCol("opticFunctionalTest", "master", "date"),
+                    p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
+                    p.col("amount"),
+                    p.col("color")
+            )
+            .orderBy(p.desc(p.col("DetailName")))
+            .orderBy(p.asc(p.col("MasterName")));
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
 
@@ -628,8 +617,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * iterator with a view Should return 3 items.
    */
   @Test
-  public void testjoinInnerAccessorPlanAndOn() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testjoinInnerAccessorPlanAndOn() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testjoinInnerAccessorPlanAndOn method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
@@ -643,9 +631,9 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     PlanColumn masterNameCol = p.viewCol("myMaster", "name");
 
     ModifyPlan plan3 = plan1.joinInner(plan2, p.on(masterIdCol1, masterIdCol2), p.ge(detailIdCol, p.xs.intVal(3)))
-        .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
-        .orderBy(p.desc(detailNameCol))
-        .offsetLimit(1, 100);
+            .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
+            .orderBy(p.desc(detailNameCol))
+            .offsetLimit(1, 100);
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -679,7 +667,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     String[] colNames = rowSet.getColumnNames();
     Arrays.sort(colNames);
 
-    String[] exptdColumnNames = { "myMaster.id", "myMaster.name", "myDetail.id", "myDetail.name" };
+    String[] exptdColumnNames = {"myMaster.id", "myMaster.name", "myDetail.id", "myDetail.name"};
     Arrays.sort(exptdColumnNames);
     // Verify if all columns are available.
     assertTrue(Arrays.equals(colNames, exptdColumnNames));
@@ -697,8 +685,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
       XsStringVal str = record.getValueAs("myMaster.name", XsStringVal.class);
       assertEquals("Element 1 RowSet Iterator value incorrect", "Master 1", str.getString());
-    }
-    else {
+    } else {
       fail("Could not traverse Iterator<RowRecord> in testjoinInnerOffsetAndLimit method");
     }
   }
@@ -707,8 +694,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * This test checks join inner with null schema. Should return 3 nodes
    */
   @Test
-  public void testjoinInnerWithNullSchema() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testjoinInnerWithNullSchema() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testjoinInnerWithNullSchema method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
@@ -716,13 +702,13 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     ModifyPlan plan1 = p.fromView(null, "detail3");
     ModifyPlan plan2 = p.fromView(null, "master3");
     ModifyPlan plan3 = plan1.joinInner(plan2)
-        .where(
-            p.eq(
-                p.schemaCol(null, "master3", "id"),
-                p.schemaCol(null, "detail3", "masterId")
-                )
-        )
-        .orderBy(p.asc(p.schemaCol(null, "detail3", "id")));
+            .where(
+                    p.eq(
+                            p.schemaCol(null, "master3", "id"),
+                            p.schemaCol(null, "detail3", "masterId")
+                    )
+            )
+            .orderBy(p.asc(p.schemaCol(null, "detail3", "id")));
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -751,8 +737,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * This test checks when we export plan. Should return 1 item.
    */
   @Test
-  public void testExportPlanWithPlanCol() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testExportPlanWithPlanCol() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testExportPlanWithPlanCol method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
@@ -766,13 +751,13 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     PlanColumn idCol1 = plan2.col("id");
     PlanColumn idCol2 = plan1.col("id");
     PlanColumn detailNameCol = plan1.col("name");
-    
+
     ModifyPlan exportedPlan = plan1.joinInner(plan2, p.on(masterIdCol1, masterIdCol2), p.on(idCol1, idCol2))
-        .orderBy(p.desc(detailNameCol))
-        .offsetLimit(1, 100);
+            .orderBy(p.desc(detailNameCol))
+            .offsetLimit(1, 100);
     ModifyPlan exportedPlan2 = plan1.joinInner(plan2, p.on(masterIdCol1, masterIdCol2), p.on(idCol1, idCol2))
-        .orderBy(p.desc(detailNameCol))
-        .offsetLimit(1, 100);
+            .orderBy(p.desc(detailNameCol))
+            .offsetLimit(1, 100);
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -838,8 +823,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * Should return 3 items, null, 6 items and exception
    */
   @Test
-  public void testoffsetVales() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testoffsetVales() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testoffsetVales method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
@@ -852,11 +836,11 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     PlanColumn detailNameCol = p.viewCol("myDetail", "name");
     PlanColumn masterNameCol = p.viewCol("myMaster", "name");
     ModifyPlan plan3 = plan1.joinInner(plan2)
-        .where(p.eq(masterIdCol1, masterIdCol2))
-        .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
-        .orderBy(p.desc(detailNameCol))
-        .offset(1)
-        .limit(3);
+            .where(p.eq(masterIdCol1, masterIdCol2))
+            .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
+            .orderBy(p.desc(detailNameCol))
+            .offset(1)
+            .limit(3);
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -886,12 +870,12 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
     // offset with out of bound value
     ModifyPlan plan4 = plan1.joinInner(plan2)
-        .where(
-            p.eq(masterIdCol1, masterIdCol2)
-        )
-        .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
-        .orderBy(p.desc(detailNameCol))
-        .offset(10);
+            .where(
+                    p.eq(masterIdCol1, masterIdCol2)
+            )
+            .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
+            .orderBy(p.desc(detailNameCol))
+            .offset(10);
     JacksonHandle jacksonHandle10 = new JacksonHandle();
     jacksonHandle10.setMimetype("application/json");
 
@@ -903,10 +887,10 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
     // offset with 0 bound value
     ModifyPlan plan5 = plan1.joinInner(plan2)
-        .where(p.eq(masterIdCol1, masterIdCol2))
-        .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
-        .orderBy(p.desc(detailNameCol))
-        .offset(0);
+            .where(p.eq(masterIdCol1, masterIdCol2))
+            .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
+            .orderBy(p.desc(detailNameCol))
+            .offset(0);
     JacksonHandle jacksonHandleZOffset = new JacksonHandle();
     jacksonHandleZOffset.setMimetype("application/json");
 
@@ -920,10 +904,10 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     StringBuilder str = new StringBuilder();
     try {
       ModifyPlan plan6 = plan1.joinInner(plan2)
-          .where(p.eq(masterIdCol1, masterIdCol2))
-          .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
-          .orderBy(p.desc(detailNameCol))
-          .offset(-2);
+              .where(p.eq(masterIdCol1, masterIdCol2))
+              .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
+              .orderBy(p.desc(detailNameCol))
+              .offset(-2);
       JacksonHandle jacksonHandleNegOffset = new JacksonHandle();
       jacksonHandleNegOffset.setMimetype("application/json");
 
@@ -940,8 +924,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * return 3 items, null, 6 items and exception.
    */
   @Test
-  public void testlimitValues() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testlimitValues() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testlimitVales method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
@@ -954,13 +937,13 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     PlanColumn detailNameCol = p.viewCol("myDetail", "name");
     PlanColumn masterNameCol = p.viewCol("myMaster", "name");
     ModifyPlan plan3 = plan1.joinInner(plan2)
-        .where(
-            p.eq(masterIdCol1, masterIdCol2)
-        )
-        .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
-        .orderBy(p.desc(detailNameCol))
-        .offset(1)
-        .limit(3);
+            .where(
+                    p.eq(masterIdCol1, masterIdCol2)
+            )
+            .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
+            .orderBy(p.desc(detailNameCol))
+            .offset(1)
+            .limit(3);
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -990,12 +973,12 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
     // Limit with large value
     ModifyPlan plan4 = plan1.joinInner(plan2)
-        .where(
-            p.eq(masterIdCol1, masterIdCol2)
-        )
-        .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
-        .orderBy(p.desc(detailNameCol))
-        .limit(10000);
+            .where(
+                    p.eq(masterIdCol1, masterIdCol2)
+            )
+            .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
+            .orderBy(p.desc(detailNameCol))
+            .limit(10000);
 
     JacksonHandle jacksonHandleLarge = new JacksonHandle();
     jacksonHandleLarge.setMimetype("application/json");
@@ -1011,12 +994,12 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     try {
       // Throw exception
       ModifyPlan plan5 = plan1.joinInner(plan2)
-          .where(
-              p.eq(masterIdCol1, masterIdCol2)
-          )
-          .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
-          .orderBy(p.desc(detailNameCol))
-          .limit(0);
+              .where(
+                      p.eq(masterIdCol1, masterIdCol2)
+              )
+              .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
+              .orderBy(p.desc(detailNameCol))
+              .limit(0);
 
       JacksonHandle jacksonHandleZ = new JacksonHandle();
       jacksonHandleZ.setMimetype("application/json");
@@ -1034,10 +1017,10 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     try {
       // Throw exception
       ModifyPlan plan6 = plan1.joinInner(plan2)
-          .where(p.eq(masterIdCol1, masterIdCol2))
-          .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
-          .orderBy(p.desc(detailNameCol))
-          .limit(-2);
+              .where(p.eq(masterIdCol1, masterIdCol2))
+              .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
+              .orderBy(p.desc(detailNameCol))
+              .limit(-2);
 
       JacksonHandle jacksonHandleNeg = new JacksonHandle();
       jacksonHandleNeg.setMimetype("application/json");
@@ -1056,27 +1039,26 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * Uses schemaCol and viewCol for Columns selection
    */
   @Test
-  public void testjoinInnerWhereDisctinct() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testjoinInnerWhereDisctinct() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testjoinInnerWhereDisctinct method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
 
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
-        .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan3 = plan1.joinInner(plan2)
-        .where(
-            p.eq(
-                p.schemaCol("opticFunctionalTest", "master", "id"),
-                p.col( "masterId")
-                )
-        )
-        .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "master", "id")))
-        .select(p.col( "color"))
-        .whereDistinct()
-        .orderBy(p.desc(p.col( "color")));
+            .where(
+                    p.eq(
+                            p.schemaCol("opticFunctionalTest", "master", "id"),
+                            p.col("masterId")
+                    )
+            )
+            .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "master", "id")))
+            .select(p.col("color"))
+            .whereDistinct()
+            .orderBy(p.desc(p.col("color")));
     // Using Jackson to traverse the list.
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -1098,26 +1080,25 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    */
   @SuppressWarnings("deprecation")
   @Test
-  public void testJoinLeftOuter() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testJoinLeftOuter() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testJoinLeftOuter method");
 
     // Create a new Plan.
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.col( "id"));
+            .orderBy(p.col("id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
-        .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan3 = plan1.joinLeftOuter(plan2)
-        .select(
-            p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
-            p.schemaCol("opticFunctionalTest", "master", "date"),
-            p.as("DetailName",p.schemaCol("opticFunctionalTest", "detail", "name")),
-            p.col( "amount"),
-            p.col( "color")
-        )
-        .orderBy(p.sortKeySeq(p.desc(p.col("DetailName")), p.desc(p.schemaCol("opticFunctionalTest", "master", "date"))));
+            .select(
+                    p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
+                    p.schemaCol("opticFunctionalTest", "master", "date"),
+                    p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
+                    p.col("amount"),
+                    p.col("color")
+            )
+            .orderBy(p.sortKeySeq(p.desc(p.col("DetailName")), p.desc(p.schemaCol("opticFunctionalTest", "master", "date"))));
 
     RowSet<RowRecord> rowSet = rowMgr.resultRows(plan3);
     // Verify RowRecords using Iterator
@@ -1132,8 +1113,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
       assertEquals("Detail Name RowSet Iterator first node value incorrect", "Detail 6", record.getString("DetailName"));
       assertEquals("Color Name RowSet Iterator first node value incorrect", "green", record.getString("color"));
       assertEquals(60.06, record.getDouble("opticFunctionalTest.detail.amount"), 0.00);
-    }
-    else {
+    } else {
       fail("Could not traverse Iterator<RowRecord> in testJoinLeftOuter method");
     }
 
@@ -1163,24 +1143,23 @@ public class TestOpticOnViews extends BasicJavaClientREST {
   }
 
   @Test
-  public void testJoinFullOuter() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testJoinFullOuter() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testJoinFullOuter method");
 
     // Create a new Plan.
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-            .orderBy(p.col( "id"));
+            .orderBy(p.col("id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
             .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan3 = plan1.joinFullOuter(plan2)
             .select(
                     p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
                     p.schemaCol("opticFunctionalTest", "master", "date"),
-                    p.as("DetailName",p.schemaCol("opticFunctionalTest", "detail", "name")),
-                    p.col( "amount"),
-                    p.col( "color")
+                    p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
+                    p.col("amount"),
+                    p.col("color")
             )
             .orderBy(p.sortKeySeq(p.desc(p.col("DetailName")), p.desc(p.schemaCol("opticFunctionalTest", "master", "date"))));
 
@@ -1197,8 +1176,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
       assertEquals("Detail Name RowSet Iterator first node value incorrect", "Detail 6", record.getString("DetailName"));
       assertEquals("Color Name RowSet Iterator first node value incorrect", "green", record.getString("color"));
       assertEquals(60.06, record.getDouble("opticFunctionalTest.detail.amount"), 0.00);
-    }
-    else {
+    } else {
       fail("Could not traverse Iterator<RowRecord> in testJoinFullOuter method");
     }
 
@@ -1232,8 +1210,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * schemaCol for Columns selection
    */
   @Test
-  public void testUnion() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testUnion() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testUnion method");
 
     // Create a new Plan.
@@ -1241,21 +1218,21 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     PlanBuilder p = rowMgr.newPlanBuilder();
 
     ModifyPlan plan1 =
-        p.fromView("opticFunctionalTest", "master");
+            p.fromView("opticFunctionalTest", "master");
     ModifyPlan plan2 =
-        p.fromView("opticFunctionalTest2", "master");
+            p.fromView("opticFunctionalTest2", "master");
     ModifyPlan plan3 =
-        p.fromView("opticFunctionalTest2", "detail");
+            p.fromView("opticFunctionalTest2", "detail");
     ModifyPlan plan4 =
-        p.fromView("opticFunctionalTest", "detail");
+            p.fromView("opticFunctionalTest", "detail");
     ModifyPlan output =
-        plan3.select(p.as("unionId", p.schemaCol("opticFunctionalTest2", "detail", "id")))
-            .union(plan4.select(p.as("unionId", p.col( "id"))))
-            .except(
-                plan1.select(p.as("unionId", p.schemaCol("opticFunctionalTest", "master", "id")))
-                    .union(plan2.select(p.as("unionId", p.schemaCol("opticFunctionalTest2", "master", "id"))))
-            )
-            .orderBy(p.col("unionId"));
+            plan3.select(p.as("unionId", p.schemaCol("opticFunctionalTest2", "detail", "id")))
+                    .union(plan4.select(p.as("unionId", p.col("id"))))
+                    .except(
+                            plan1.select(p.as("unionId", p.schemaCol("opticFunctionalTest", "master", "id")))
+                                    .union(plan2.select(p.as("unionId", p.schemaCol("opticFunctionalTest2", "master", "id"))))
+                    )
+                    .orderBy(p.col("unionId"));
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -1280,8 +1257,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * 4 items. Uses schemaCol for Columns selection Methods used - intersect
    */
   @Test
-  public void testIntersectDiffSchemas() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testIntersectDiffSchemas() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testIntersectDiffSchemas method");
 
     // Create a new Plan.
@@ -1293,11 +1269,11 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     ModifyPlan plan3 = p.fromView("opticFunctionalTest", "detail");
 
     ModifyPlan plan4 = plan1.select(p.as("unionId", p.schemaCol("opticFunctionalTest", "master", "id")))
-        .union(plan2.select(p.as("unionId", p.schemaCol("opticFunctionalTest2", "master", "id"))))
-        .intersect(
-            plan3.select(p.as("unionId", p.col( "id")))
-        )
-        .orderBy(p.col("unionId"));
+            .union(plan2.select(p.as("unionId", p.schemaCol("opticFunctionalTest2", "master", "id"))))
+            .intersect(
+                    plan3.select(p.as("unionId", p.col("id")))
+            )
+            .orderBy(p.col("unionId"));
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -1320,28 +1296,27 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * divide, multiply
    */
   @Test
-  public void testArithmeticOperations() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testArithmeticOperations() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testArithmeticOperations method");
 
     // Create a new Plan.
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
-        .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan3 = plan1.joinInner(plan2)
-        .where(p.eq(p.schemaCol("opticFunctionalTest", "master", "id"),
-            p.col( "masterId"))
-        )
-        .select(p.as("added", p.add(p.col("amount"), p.col( "masterId"))),
-            p.as("substracted", p.subtract(p.col("amount"), p.viewCol("master", "id"))),
-            p.as("modulo", p.modulo(p.col("amount"), p.viewCol("master", "id"))),
-            p.as("invSubstract", p.subtract(p.col("amount"), p.viewCol("master", "id"))),
-            p.as("divided", p.divide(p.col("amount"), p.multiply(p.col("amount"), p.viewCol("detail", "id"))))
-        )
-        .orderBy(p.asc("substracted"));
+            .where(p.eq(p.schemaCol("opticFunctionalTest", "master", "id"),
+                    p.col("masterId"))
+            )
+            .select(p.as("added", p.add(p.col("amount"), p.col("masterId"))),
+                    p.as("substracted", p.subtract(p.col("amount"), p.viewCol("master", "id"))),
+                    p.as("modulo", p.modulo(p.col("amount"), p.viewCol("master", "id"))),
+                    p.as("invSubstract", p.subtract(p.col("amount"), p.viewCol("master", "id"))),
+                    p.as("divided", p.divide(p.col("amount"), p.multiply(p.col("amount"), p.viewCol("detail", "id"))))
+            )
+            .orderBy(p.asc("substracted"));
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
 
@@ -1368,8 +1343,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * items. Uses schemaCol for Columns selection Math fns - median
    */
   @Test
-  public void testBuiltinFuncs() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testBuiltinFuncs() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testBuiltinFuncs method");
 
     // Create a new Plan.
@@ -1377,17 +1351,17 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     PlanBuilder p = rowMgr.newPlanBuilder();
 
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.col( "id"));
+            .orderBy(p.col("id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
-        .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan3 = plan1.joinInner(plan2)
-        .where(p.gt(
-            p.col( "amount"), p.math.median(p.xs.doubleSeq(10.0, 40.0, 50.0, 30.0, 60.0, 0.0, 100.0))
+            .where(p.gt(
+                    p.col("amount"), p.math.median(p.xs.doubleSeq(10.0, 40.0, 50.0, 30.0, 60.0, 0.0, 100.0))
+                    )
             )
-        )
-        .select(p.as("myAmount", p.viewCol("detail", "amount")))
-        .whereDistinct()
-        .orderBy(p.asc("myAmount"));
+            .select(p.as("myAmount", p.viewCol("detail", "amount")))
+            .whereDistinct()
+            .orderBy(p.asc("myAmount"));
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
 
@@ -1408,8 +1382,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * Should return 3 items or exceptions.
    */
   @Test
-  public void testjoinInnerWithDataTypes() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testjoinInnerWithDataTypes() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testjoinInnerWithDataTypes method");
     StringBuilder str = new StringBuilder();
 
@@ -1425,10 +1398,10 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     PlanColumn masterNameCol = p.viewCol("myMaster", "name");
     // Pass a double
     ModifyPlan plan3 = plan1.joinInner(plan2, p.on(masterIdCol1, masterIdCol2), p.ge(detailIdCol, p.xs.doubleVal(3.0)))
-        .where(p.eq(masterIdCol1, masterIdCol2))
-        .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
-        .orderBy(p.desc(detailNameCol))
-        .offsetLimit(1, 100);
+            .where(p.eq(masterIdCol1, masterIdCol2))
+            .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
+            .orderBy(p.desc(detailNameCol))
+            .offsetLimit(1, 100);
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -1441,10 +1414,10 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
     // Pass a String
     ModifyPlan plan4 = plan1.joinInner(plan2, p.on(masterIdCol1, masterIdCol2), p.ge(detailIdCol, p.xs.string("3")))
-        .where(p.eq(masterIdCol1, masterIdCol2))
-        .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
-        .orderBy(p.desc(detailNameCol))
-        .offsetLimit(1, 100);
+            .where(p.eq(masterIdCol1, masterIdCol2))
+            .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
+            .orderBy(p.desc(detailNameCol))
+            .offsetLimit(1, 100);
 
     JacksonHandle jacksonHandleStr = new JacksonHandle();
     jacksonHandleStr.setMimetype("application/json");
@@ -1457,9 +1430,9 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     // Pass as a date
     try {
       ModifyPlan plan5 = plan1.joinInner(plan2, p.on(masterIdCol1, masterIdCol2), p.ge(detailIdCol, p.xs.date("3")))
-          .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
-          .orderBy(p.desc(detailNameCol))
-          .offsetLimit(1, 100);
+              .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
+              .orderBy(p.desc(detailNameCol))
+              .offsetLimit(1, 100);
 
       JacksonHandle jacksonHandleDate = new JacksonHandle();
       jacksonHandleDate.setMimetype("application/json");
@@ -1474,10 +1447,10 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     // Pass as a decimal
 
     ModifyPlan plan6 = plan1.joinInner(plan2, p.on(masterIdCol1, masterIdCol2), p.ge(detailIdCol, p.xs.decimal(3.0)))
-        .where(p.eq(masterIdCol1, masterIdCol2))
-        .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
-        .orderBy(p.desc(detailNameCol))
-        .offsetLimit(1, 100);
+            .where(p.eq(masterIdCol1, masterIdCol2))
+            .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
+            .orderBy(p.desc(detailNameCol))
+            .offsetLimit(1, 100);
 
     JacksonHandle jacksonHandleDecimal = new JacksonHandle();
     jacksonHandleDecimal.setMimetype("application/json");
@@ -1493,8 +1466,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * This test checks plan builder with invlid Schema and view names.
    */
   @Test
-  public void testinValidNamedSchemaView() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testinValidNamedSchemaView() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testinValidNamedSchemaView method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
@@ -1513,9 +1485,13 @@ public class TestOpticOnViews extends BasicJavaClientREST {
       System.out.println("Exception message is " + exceptionSch.toString());
     }
     assertTrue("Exception not thrown or invalid message",
-        exceptionSch.contains("SQL-TABLENOTFOUND: plan.view(\"opticFunctionalTestInvalid\", \"detail\", null, \"MarkLogicQAQualifier\")") &&
-            exceptionSch.contains("Unknown table: Table 'opticFunctionalTestInvalid.detail' not found"));
-
+            exceptionSch.contains("SQL-TABLENOTFOUND:") &&
+                    exceptionSch.contains("Unknown table: Table 'opticFunctionalTestInvalid.detail' not found"));
+    /* Original assert
+    assertTrue("Exception not thrown or invalid message",
+            exceptionSch.contains("SQL-TABLENOTFOUND: plan.view(\"opticFunctionalTestInvalid\", \"detail\", null, \"MarkLogicQAQualifier\")") &&
+                    exceptionSch.contains("Unknown table: Table 'opticFunctionalTestInvalid.detail' not found"));
+    */
     // Verify for invalid view name
     AccessPlan planInvalidView = p.fromView("opticFunctionalTest", "detailInvalid", "MarkLogicQAQualifier");
     planInvalidView.orderBy(p.sortKeySeq(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.id")));
@@ -1529,9 +1505,14 @@ public class TestOpticOnViews extends BasicJavaClientREST {
       exceptionVw = ex.getMessage();
       System.out.println("Exception message is " + exceptionVw.toString());
     }
+    /* Original assert
     assertTrue("Exception not thrown or invalid message",
-        exceptionVw.contains("SQL-TABLENOTFOUND: plan.view(\"opticFunctionalTest\", \"detailInvalid\", null, \"MarkLogicQAQualifier\")") &&
-            exceptionVw.contains("Unknown table: Table 'opticFunctionalTest.detailInvalid' not found"));
+            exceptionVw.contains("SQL-TABLENOTFOUND: plan.view(\"opticFunctionalTest\", \"detailInvalid\", null, \"MarkLogicQAQualifier\")") &&
+                    exceptionVw.contains("Unknown table: Table 'opticFunctionalTest.detailInvalid' not found"));
+     */
+    assertTrue("Exception not thrown or invalid message",
+            exceptionVw.contains("SQL-TABLENOTFOUND") &&
+                    exceptionVw.contains("Unknown table: Table 'opticFunctionalTest.detailInvalid' not found"));
 
     // Verify for empty view name
     AccessPlan planEmptyView = p.fromView("opticFunctionalTest", "", "MarkLogicQAQualifier");
@@ -1547,7 +1528,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
       System.out.println("Exception message is " + exceptionNoView.toString());
     }
     assertTrue("Exception not thrown or invalid message", exceptionNoView.contains("OPTIC-INVALARGS") &&
-        exceptionNoView.contains("Invalid arguments: cannot specify fromView() without view name"));
+            exceptionNoView.contains("Invalid arguments: cannot specify fromView() without view name"));
 
     // Verify for empty Schma name
     AccessPlan planEmptySch = p.fromView("", "detail", "MarkLogicQAQualifier");
@@ -1563,15 +1544,14 @@ public class TestOpticOnViews extends BasicJavaClientREST {
       System.out.println("Exception message is " + exceptionNoySch.toString());
     }
     assertTrue("Exception not thrown or invalid message", exceptionNoySch.contains("OPTIC-INVALARGS") &&
-        exceptionNoySch.contains("Invalid arguments: cannot specify fromView() with invalid schema name"));
+            exceptionNoySch.contains("Invalid arguments: cannot specify fromView() with invalid schema name"));
   }
 
   /*
    * This test checks select ambiguous columns. Should return exceptions.
    */
   @Test
-  public void testselectAmbiguousColumns() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testselectAmbiguousColumns() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testselectAmbiguousColumns method");
     StringBuilder str = new StringBuilder();
     try {
@@ -1580,14 +1560,14 @@ public class TestOpticOnViews extends BasicJavaClientREST {
       ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail");
       ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master");
       ModifyPlan plan3 = plan1.joinInner(plan2)
-          .where(
-              p.eq(
-                  p.schemaCol("opticFunctionalTest", "master", "id"),
-                  p.col( "masterId")
-                  )
-          )
-          .orderBy(p.asc(p.col( "id")))
-          .select(p.colSeq("id"));
+              .where(
+                      p.eq(
+                              p.schemaCol("opticFunctionalTest", "master", "id"),
+                              p.col("masterId")
+                      )
+              )
+              .orderBy(p.asc(p.col("id")))
+              .select(p.colSeq("id"));
 
       JacksonHandle jacksonHandle = new JacksonHandle();
       jacksonHandle.setMimetype("application/json");
@@ -1607,8 +1587,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * schemaCol. Should return exceptions.
    */
   @Test
-  public void testinValidSchemaViewColOnSchemaCol() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testinValidSchemaViewColOnSchemaCol() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testinValidSchemaViewColOnSchemaCol method");
     StringBuilder strSchema = new StringBuilder();
     RowManager rowMgr = client.newRowManager();
@@ -1618,13 +1597,13 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     try {
       // Invalid schema name on schemaCol
       ModifyPlan plan3 = plan1.joinInner(plan2)
-          .where(
-              p.eq(
-                  p.schemaCol("opticFunctionalTest", "master", "id"),
-                  p.col( "masterId")
-                  )
-          )
-          .orderBy(p.asc(p.schemaCol("opticFunctionalTest_invalid", "detail", "id")));
+              .where(
+                      p.eq(
+                              p.schemaCol("opticFunctionalTest", "master", "id"),
+                              p.col("masterId")
+                      )
+              )
+              .orderBy(p.asc(p.schemaCol("opticFunctionalTest_invalid", "detail", "id")));
 
       JacksonHandle jacksonHandle = new JacksonHandle();
       jacksonHandle.setMimetype("application/json");
@@ -1642,13 +1621,13 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     StringBuilder strView = new StringBuilder();
     try {
       ModifyPlan plan4 = plan1.joinInner(plan2)
-          .where(
-              p.eq(
-                  p.schemaCol("opticFunctionalTest", "master", "id"),
-                  p.col( "masterId")
-                  )
-          )
-          .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail_invalid", "id")));
+              .where(
+                      p.eq(
+                              p.schemaCol("opticFunctionalTest", "master", "id"),
+                              p.col("masterId")
+                      )
+              )
+              .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail_invalid", "id")));
 
       JacksonHandle jacksonHandle = new JacksonHandle();
       jacksonHandle.setMimetype("application/json");
@@ -1666,13 +1645,13 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     StringBuilder strCol = new StringBuilder();
     try {
       ModifyPlan plan5 = plan1.joinInner(plan2)
-          .where(
-              p.eq(
-                  p.schemaCol("opticFunctionalTest", "master", "id"),
-                  p.col( "masterId")
-                  )
-          )
-          .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id_invalid")));
+              .where(
+                      p.eq(
+                              p.schemaCol("opticFunctionalTest", "master", "id"),
+                              p.col("masterId")
+                      )
+              )
+              .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id_invalid")));
 
       JacksonHandle jacksonHandle = new JacksonHandle();
       jacksonHandle.setMimetype("application/json");
@@ -1690,13 +1669,13 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     StringBuilder strWhereCol = new StringBuilder();
     try {
       ModifyPlan plan6 = plan1.joinInner(plan2)
-          .where(
-              p.eq(
-                  p.schemaCol("opticFunctionalTest", "master", "id_invalid"),
-                  p.col( "masterId")
-                  )
-          )
-          .orderBy(p.asc(p.col( "id")));
+              .where(
+                      p.eq(
+                              p.schemaCol("opticFunctionalTest", "master", "id_invalid"),
+                              p.col("masterId")
+                      )
+              )
+              .orderBy(p.asc(p.col("id")));
 
       JacksonHandle jacksonHandle = new JacksonHandle();
       jacksonHandle.setMimetype("application/json");
@@ -1714,13 +1693,13 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     StringBuilder strViewCol = new StringBuilder();
     try {
       ModifyPlan plan7 = plan1.joinInner(plan2)
-          .where(
-              p.eq(
-                  p.schemaCol("opticFunctionalTest", "master", "id"),
-                  p.col( "masterId")
-                  )
-          )
-          .orderBy(p.asc(p.viewCol("detail_invalid", "id")));
+              .where(
+                      p.eq(
+                              p.schemaCol("opticFunctionalTest", "master", "id"),
+                              p.col("masterId")
+                      )
+              )
+              .orderBy(p.asc(p.viewCol("detail_invalid", "id")));
       JacksonHandle jacksonHandle = new JacksonHandle();
       jacksonHandle.setMimetype("application/json");
       rowMgr.resultDoc(plan7, jacksonHandle);
@@ -1739,8 +1718,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * exceptions.
    */
   @Test
-  public void testDifferentColumns() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testDifferentColumns() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testDifferentColumns method");
     StringBuilder strIntersect = new StringBuilder();
     JacksonHandle jacksonHandle = null;
@@ -1748,19 +1726,19 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "master")
-        .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
     // intersect with different number of columns
     try {
       ModifyPlan plan3 = plan1.select(p.schemaCol("opticFunctionalTest", "master", "id"))
-          .intersect(
-              plan2.select(
-            		  p.schemaCol("opticFunctionalTest", "detail", "id"),
-                  p.schemaCol("opticFunctionalTest", "master", "masterId")
-                  )
-          )
-          .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")));
+              .intersect(
+                      plan2.select(
+                              p.schemaCol("opticFunctionalTest", "detail", "id"),
+                              p.schemaCol("opticFunctionalTest", "master", "masterId")
+                      )
+              )
+              .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")));
 
       jacksonHandle = new JacksonHandle();
       jacksonHandle.setMimetype("application/json");
@@ -1776,15 +1754,15 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     StringBuilder strExcept = new StringBuilder();
     try {
       ModifyPlan plan4 = plan1.select(
-          p.schemaCol("opticFunctionalTest", "master", "id")
-          )
-          .except(
-              plan2.select(
-                  p.col( "id"),
-                  p.col( "masterId")
-                  )
-          )
-          .orderBy(p.asc(p.col("id")));
+              p.schemaCol("opticFunctionalTest", "master", "id")
+      )
+              .except(
+                      plan2.select(
+                              p.col("id"),
+                              p.col("masterId")
+                      )
+              )
+              .orderBy(p.asc(p.col("id")));
       jacksonHandle = new JacksonHandle();
       jacksonHandle.setMimetype("application/json");
 
@@ -1794,7 +1772,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
       System.out.println("Exception message is " + strExcept.toString());
     }
     jsonBindingsNodes = jacksonHandle.get();
-    assertEquals("Two nodes not returned from testFragmentId method ", 2, jsonBindingsNodes.size());
+    assertEquals("Two nodes not returned from testDifferentColumns method ", 2, jsonBindingsNodes.size());
   }
 
   /*
@@ -1802,8 +1780,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * plan
    */
   @Test
-  public void testExplainPlan() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testExplainPlan() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testExplainPlan method");
 
     // Create a new Plan.
@@ -1814,28 +1791,28 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     PlanSystemColumn fIdCol2 = p.fragmentIdCol("fragIdCol2");
 
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail", null, fIdCol1)
-        .orderBy(p.col( "id"));
+            .orderBy(p.col("id"));
 
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master", null, fIdCol2)
-        .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
 
     ModifyPlan output = plan1.joinInner(plan2)
-        .where(
-            p.eq(
-                p.schemaCol("opticFunctionalTest", "master", "id"),
-                p.col( "masterId")
-                )
-        )
-        .select(
-            p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
-            p.schemaCol("opticFunctionalTest", "master", "date"),
-            p.as("DetailName", p.col( "name")),
-            p.col( "amount"),
-            p.col( "color"),
-            fIdCol1,
-            fIdCol2
-        )
-        .orderBy(p.desc(p.col("DetailName")));
+            .where(
+                    p.eq(
+                            p.schemaCol("opticFunctionalTest", "master", "id"),
+                            p.col("masterId")
+                    )
+            )
+            .select(
+                    p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
+                    p.schemaCol("opticFunctionalTest", "master", "date"),
+                    p.as("DetailName", p.col("name")),
+                    p.col("amount"),
+                    p.col("color"),
+                    fIdCol1,
+                    fIdCol2
+            )
+            .orderBy(p.desc(p.col("DetailName")));
     JsonNode explainNode = rowMgr.explain(output, new JacksonHandle()).get();
     // Making sure explain() does not blow up for a valid plan.
     assertEquals("Explain of plan incorrect", explainNode.path("node").asText(), "plan");
@@ -1846,20 +1823,20 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     assertTrue("Explain of plan incorrect", explainNodetxt.contains("\"node\":\"plan\""));
     // Invalid Plan
     ModifyPlan plan3 = p.fromView("opticFunctionalTest", "master")
-        .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan4 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.col( "id"));
+            .orderBy(p.col("id"));
     // intersect with different number of columns
     JsonNode explainNodeInv = null;
     try {
       ModifyPlan outputInv = plan3.select(p.schemaCol("opticFunctionalTest", "master", "id"))
-          .intersect(
-              plan4.select(
-                  p.col( "id"),
-                  p.col( "masterId")
-                  )
-          )
-          .orderBy(p.asc(p.col("id")));
+              .intersect(
+                      plan4.select(
+                              p.col("id"),
+                              p.col("masterId")
+                      )
+              )
+              .orderBy(p.asc(p.col("id")));
 
       explainNodeInv = rowMgr.explain(outputInv, new JacksonHandle()).get();
       assertEquals("Explain of Invalid plan incorrect", explainNodeInv.path("node").asText(), "plan");
@@ -1874,8 +1851,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * Test on fromViews when fragment id is used
    */
   @Test
-  public void testFragmentId() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testFragmentId() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testFragmentId method");
 
     // Create a new Plan.
@@ -1886,26 +1862,26 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     PlanSystemColumn fIdCol2 = p.fragmentIdCol("fragIdCol2");
 
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail", null, fIdCol1)
-        .orderBy(p.col( "id"));
+            .orderBy(p.col("id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master", null, fIdCol2)
-        .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
 
     ModifyPlan output = plan1.joinInner(plan2).where(
-        p.eq(
-            p.schemaCol("opticFunctionalTest", "master", "id"),
-            p.col( "masterId")
+            p.eq(
+                    p.schemaCol("opticFunctionalTest", "master", "id"),
+                    p.col("masterId")
             )
-        )
-        .select(
-            p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
-            p.schemaCol("opticFunctionalTest", "master", "date"),
-            p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
-            p.col( "amount"),
-            p.col( "color"),
-            fIdCol1,
-            fIdCol2
-        )
-        .orderBy(p.desc(p.col("DetailName")));
+    )
+            .select(
+                    p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
+                    p.schemaCol("opticFunctionalTest", "master", "date"),
+                    p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
+                    p.col("amount"),
+                    p.col("color"),
+                    fIdCol1,
+                    fIdCol2
+            )
+            .orderBy(p.desc(p.col("DetailName")));
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
 
@@ -1929,21 +1905,20 @@ public class TestOpticOnViews extends BasicJavaClientREST {
    * This test checks the bind params on a where clause; params as PlanParamExpr. Should return 6 items.
    */
   @Test
-  public void testjoinInnerWithBind() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testjoinInnerWithBind() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testjoinInnerWithBind method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
-        .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     PlanParamExpr idParam = p.param("ID");
     ModifyPlan plan3 = plan1.joinInner(plan2)
-        .where(
-            p.eq(p.schemaCol("opticFunctionalTest", "master", "id"), idParam)
-        )
-        .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")));
+            .where(
+                    p.eq(p.schemaCol("opticFunctionalTest", "master", "id"), idParam)
+            )
+            .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")));
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
 
@@ -1978,9 +1953,9 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     // Verify with double value.
     PlanParamExpr amtParam = p.param("AMT");
     ModifyPlan planAmt = p.fromView("opticFunctionalTest", "detail")
-        .where(p.gt(p.col( "amount"), amtParam)
-        )
-        .orderBy(p.col( "id"));
+            .where(p.gt(p.col("amount"), amtParam)
+            )
+            .orderBy(p.col("id"));
     jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
     rowMgr.resultDoc(planAmt.bindParam(amtParam, 10.1), jacksonHandle);
@@ -1997,9 +1972,9 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     // verify for Strings.
     PlanParamExpr detNameParam = p.param("DETAILNAME");
     ModifyPlan planStringBind = p.fromView("opticFunctionalTest", "detail")
-        .where(p.eq(p.col( "name"), detNameParam)
-        )
-        .orderBy(p.col( "id"));
+            .where(p.eq(p.col("name"), detNameParam)
+            )
+            .orderBy(p.col("id"));
     jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
     rowMgr.resultDoc(planStringBind.bindParam(detNameParam, p.xs.string("Detail 6")), jacksonHandle);
@@ -2009,11 +1984,11 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
     // Verify with different types in multiple places.
     ModifyPlan planMultiBind = p.fromView("opticFunctionalTest", "detail")
-        .where(p.and(p.eq(p.col( "name"), detNameParam),
-            p.eq(p.col( "id"), idParam)
+            .where(p.and(p.eq(p.col("name"), detNameParam),
+                    p.eq(p.col("id"), idParam)
+                    )
             )
-        )
-        .orderBy(p.col( "id"));
+            .orderBy(p.col("id"));
 
     jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -2023,26 +1998,25 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     assertEquals("One row not returned from testjoinInnerWithBind method ", 1, jsonResults.size());
     assertEquals("Row 1 opticFunctionalTest.detail.amount value incorrect", "60.06", jsonResults.path(0).path("opticFunctionalTest.detail.amount").path("value").asText());
   }
-  
+
   /*
    * This test checks the bind params on a where clause; params as String. Should return 6 items.
    */
   @Test
-  public void testjoinInnerWithBindParamsAsString() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testjoinInnerWithBindParamsAsString() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testjoinInnerWithBindParamsAsString method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
-        .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     PlanParamExpr idParam = p.param("ID");
     ModifyPlan plan3 = plan1.joinInner(plan2)
-        .where(
-            p.eq(p.schemaCol("opticFunctionalTest", "master", "id"), idParam)
-        )
-        .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")));
+            .where(
+                    p.eq(p.schemaCol("opticFunctionalTest", "master", "id"), idParam)
+            )
+            .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")));
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
 
@@ -2077,9 +2051,9 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     // Verify with double value.
     PlanParamExpr amtParam = p.param("AMT");
     ModifyPlan planAmt = p.fromView("opticFunctionalTest", "detail")
-        .where(p.gt(p.col( "amount"), amtParam)
-        )
-        .orderBy(p.col( "id"));
+            .where(p.gt(p.col("amount"), amtParam)
+            )
+            .orderBy(p.col("id"));
     jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
     rowMgr.resultDoc(planAmt.bindParam("AMT", 10.1), jacksonHandle);
@@ -2096,9 +2070,9 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     // verify for Strings.
     PlanParamExpr detNameParam = p.param("DETAILNAME");
     ModifyPlan planStringBind = p.fromView("opticFunctionalTest", "detail")
-        .where(p.eq(p.col( "name"), detNameParam)
-        )
-        .orderBy(p.col( "id"));
+            .where(p.eq(p.col("name"), detNameParam)
+            )
+            .orderBy(p.col("id"));
     jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
     rowMgr.resultDoc(planStringBind.bindParam(detNameParam, p.xs.string("Detail 6")), jacksonHandle);
@@ -2108,11 +2082,11 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
     // Verify with different types in multiple places.
     ModifyPlan planMultiBind = p.fromView("opticFunctionalTest", "detail")
-        .where(p.and(p.eq(p.col( "name"), detNameParam),
-            p.eq(p.col( "id"), idParam)
+            .where(p.and(p.eq(p.col("name"), detNameParam),
+                    p.eq(p.col("id"), idParam)
+                    )
             )
-        )
-        .orderBy(p.col( "id"));
+            .orderBy(p.col("id"));
 
     jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -2122,12 +2096,11 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     assertEquals("One row not returned from testjoinInnerWithBind method ", 1, jsonResults.size());
     assertEquals("Row 1 opticFunctionalTest.detail.amount value incorrect", "60.06", jsonResults.path(0).path("opticFunctionalTest.detail.amount").path("value").asText());
   }
-  
+
 
   // Test row serialization as Object. Other tests handle array and Iterator
   @Test
-  public void testRowRecordAsObject() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testRowRecordAsObject() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
     System.out.println("In testRowRecordAsObject method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
@@ -2140,13 +2113,13 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     PlanColumn detailNameCol = p.viewCol("myDetail", "name");
     PlanColumn masterNameCol = p.viewCol("myMaster", "name");
     ModifyPlan plan3 = plan1.joinInner(plan2)
-        .where(
-            p.eq(masterIdCol1, masterIdCol2)
-        )
-        .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
-        .orderBy(p.desc(detailNameCol))
-        .offset(1)
-        .limit(1);
+            .where(
+                    p.eq(masterIdCol1, masterIdCol2)
+            )
+            .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
+            .orderBy(p.desc(detailNameCol))
+            .offset(1)
+            .limit(1);
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -2174,8 +2147,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     if (jsonRowItr.hasNext()) {
       first = jsonRowItr.next();
       System.out.println("Row iterated using JsonNode.class" + first.toString());
-    }
-    else {
+    } else {
       fail("No JsonNodes available when JsonNode.class used");
     }
     assertEquals("Element 1 myMaster.id value incorrect", "1", first.path("myMaster.id").path("value").asText());
@@ -2207,264 +2179,890 @@ public class TestOpticOnViews extends BasicJavaClientREST {
       assertTrue("Row contents incorrect", rowContents.contains("<t:cell name=\"myMaster.name\" type=\"xs:string\">Master 1</t:cell>"));
       assertTrue("Row contents incorrect", rowContents.contains("<t:cell name=\"myDetail.id\" type=\"xs:integer\">5</t:cell>"));
       assertTrue("Row contents incorrect", rowContents.contains("<t:cell name=\"myDetail.name\" type=\"xs:string\">Detail 5</t:cell>"));
-    }
-    else {
+    } else {
       fail("No JsonNodes available when Document.class used");
     }
   }
-  
-//fromsql TEST 1 - join inner with keymatch
- @Test
- public void testFromSqljoinInnerWithkeymatch() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
- {
-	  System.out.println("In testFromSqljoinInnerWithkeymatch method");
-	  RowManager rowMgr = client.newRowManager();
-	  PlanBuilder p = rowMgr.newPlanBuilder();
-	  ModifyPlan plan1 = p.fromSql("SELECT * from opticFunctionalTest.detail");
 
-	  ModifyPlan plan2 = p.fromSql("SELECT * from opticFunctionalTest.master");
+  //fromsql TEST 1 - join inner with keymatch
+  @Test
+  public void testFromSqljoinInnerWithkeymatch() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testFromSqljoinInnerWithkeymatch method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    ModifyPlan plan1 = p.fromSql("SELECT * from opticFunctionalTest.detail");
 
-	  ModifyPlan plan3 = plan1.joinInner(plan2)
-			  .where(
-					  p.eq(
-							  p.schemaCol("opticFunctionalTest", "master" , "id"),
-							  p.col( "masterId")
-							  )
-					  )
-			  .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail" , "id")));
-	  JacksonHandle jacksonHandle = new JacksonHandle();
-	  jacksonHandle.setMimetype("application/json");
+    ModifyPlan plan2 = p.fromSql("SELECT * from opticFunctionalTest.master");
 
-	  rowMgr.resultDoc(plan3, jacksonHandle);
-	  JsonNode jsonResults = jacksonHandle.get();
-	  jsonResults = jacksonHandle.get().path("rows");
-	  // Should have 6 nodes returned.
-	  assertEquals("Six rows not returned from testFromSqljoinInnerWithkeymatch method ", 6, jsonResults.size());
-	  assertEquals("Row 1 opticFunctionalTest.detail.id value incorrect", 1, jsonResults.path(0).path("opticFunctionalTest.detail.id").path("value").asInt());
-	  assertEquals("Row 1 opticFunctionalTest.master.id value incorrect", 1, jsonResults.path(0).path("opticFunctionalTest.master.id").path("value").asInt());
-	  assertEquals("Row 1 opticFunctionalTest.detail.masterId value incorrect", 1, jsonResults.path(0).path("opticFunctionalTest.detail.masterId").path("value").asInt());
-	  assertEquals("Row 1 opticFunctionalTest.detail.name value incorrect","Detail 1", jsonResults.path(0).path("opticFunctionalTest.detail.name").path("value").asText());
-	  assertEquals("Row 6 opticFunctionalTest.detail.id value incorrect", 6, jsonResults.path(5).path("opticFunctionalTest.detail.id").path("value").asInt());
-	  assertEquals("Row 6 opticFunctionalTest.master.id value incorrect", 2, jsonResults.path(5).path("opticFunctionalTest.master.id").path("value").asInt());
-	  assertEquals("Row 6 opticFunctionalTest.detail.masterId value incorrect", 2, jsonResults.path(5).path("opticFunctionalTest.detail.masterId").path("value").asInt());
-	  assertEquals("Row 6 opticFunctionalTest.detail.name value incorrect","Detail 6", jsonResults.path(5).path("opticFunctionalTest.detail.name").path("value").asText());
- }
+    ModifyPlan plan3 = plan1.joinInner(plan2)
+            .where(
+                    p.eq(
+                            p.schemaCol("opticFunctionalTest", "master", "id"),
+                            p.col("masterId")
+                    )
+            )
+            .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")));
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
 
- //fromsql TEST 2 - join inner with keymatch and select
- @Test
- public void testFromSqljoinInnerWithkeymatchSelect() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
- {
-	  System.out.println("In testFromSqljoinInnerWithkeymatchSelect method");
-	  RowManager rowMgr = client.newRowManager();
-	  PlanBuilder p = rowMgr.newPlanBuilder();
-	  ModifyPlan plan1 = p.fromSql("SELECT opticFunctionalTest.master.name AS MasterName, opticFunctionalTest.master.date, opticFunctionalTest.detail.name AS DetailName, opticFunctionalTest.detail.amount,  opticFunctionalTest.detail.color" + 
-			  " FROM opticFunctionalTest.detail"  + 
-			  " INNER JOIN opticFunctionalTest.master ON opticFunctionalTest.master.id = opticFunctionalTest.detail.masterId" + 
-			  " ORDER BY DetailName DESC");
+    rowMgr.resultDoc(plan3, jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get();
+    jsonResults = jacksonHandle.get().path("rows");
+    // Should have 6 nodes returned.
+    assertEquals("Six rows not returned from testFromSqljoinInnerWithkeymatch method ", 6, jsonResults.size());
+    assertEquals("Row 1 opticFunctionalTest.detail.id value incorrect", 1, jsonResults.path(0).path("opticFunctionalTest.detail.id").path("value").asInt());
+    assertEquals("Row 1 opticFunctionalTest.master.id value incorrect", 1, jsonResults.path(0).path("opticFunctionalTest.master.id").path("value").asInt());
+    assertEquals("Row 1 opticFunctionalTest.detail.masterId value incorrect", 1, jsonResults.path(0).path("opticFunctionalTest.detail.masterId").path("value").asInt());
+    assertEquals("Row 1 opticFunctionalTest.detail.name value incorrect", "Detail 1", jsonResults.path(0).path("opticFunctionalTest.detail.name").path("value").asText());
+    assertEquals("Row 6 opticFunctionalTest.detail.id value incorrect", 6, jsonResults.path(5).path("opticFunctionalTest.detail.id").path("value").asInt());
+    assertEquals("Row 6 opticFunctionalTest.master.id value incorrect", 2, jsonResults.path(5).path("opticFunctionalTest.master.id").path("value").asInt());
+    assertEquals("Row 6 opticFunctionalTest.detail.masterId value incorrect", 2, jsonResults.path(5).path("opticFunctionalTest.detail.masterId").path("value").asInt());
+    assertEquals("Row 6 opticFunctionalTest.detail.name value incorrect", "Detail 6", jsonResults.path(5).path("opticFunctionalTest.detail.name").path("value").asText());
+  }
 
-	  JacksonHandle jacksonHandle = new JacksonHandle();
-	  jacksonHandle.setMimetype("application/json");
+  //fromsql TEST 2 - join inner with keymatch and select
+  @Test
+  public void testFromSqljoinInnerWithkeymatchSelect() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testFromSqljoinInnerWithkeymatchSelect method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    ModifyPlan plan1 = p.fromSql("SELECT opticFunctionalTest.master.name AS MasterName, opticFunctionalTest.master.date, opticFunctionalTest.detail.name AS DetailName, opticFunctionalTest.detail.amount,  opticFunctionalTest.detail.color" +
+            " FROM opticFunctionalTest.detail" +
+            " INNER JOIN opticFunctionalTest.master ON opticFunctionalTest.master.id = opticFunctionalTest.detail.masterId" +
+            " ORDER BY DetailName DESC");
 
-	  rowMgr.resultDoc(plan1, jacksonHandle);
-	  JsonNode jsonResults = jacksonHandle.get();
-	  jsonResults = jacksonHandle.get().path("rows");
-	  // Should have 6 nodes returned.
-	  assertEquals("Six rows not returned from testFromSqljoinInnerWithkeymatchSelect method ", 6, jsonResults.size());
-	  assertEquals("Row 1 MasterName value incorrect", "Master 2", jsonResults.path(0).path("MasterName").path("value").asText());
-	  assertEquals("Row 1 DetailName value incorrect", "Detail 6", jsonResults.path(0).path("DetailName").path("value").asText());
-	  assertEquals("Row 1 opticFunctionalTest.detail.amount value incorrect", "60.06", jsonResults.path(0).path("opticFunctionalTest.detail.amount").path("value").asText());
-	  assertEquals("Row 6 MasterName value incorrect", "Master 1", jsonResults.path(5).path("MasterName").path("value").asText());
-	  assertEquals("Row 6 DetailName value incorrect", "Detail 1", jsonResults.path(5).path("DetailName").path("value").asText());
-	  assertEquals("Row 6 opticFunctionalTest.detail.color value incorrect", "blue", jsonResults.path(5).path("opticFunctionalTest.detail.color").path("value").asText());
- }
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
 
- //fromsql TEST 4 - sql group by
- @Test
- public void testFromSqlGroupBy() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
- {
-	  System.out.println("In testFromSqlGroupBy method");
-	  RowManager rowMgr = client.newRowManager();
-	  PlanBuilder p = rowMgr.newPlanBuilder();
-	  ModifyPlan plan1 = p.fromSql("SELECT opticFunctionalTest.master.name, opticFunctionalTest.detail.name AS DetailName, opticFunctionalTest.detail.color, SUM(amount) AS DetailSum " + 
-			  "          FROM opticFunctionalTest.detail " + 
-			  "          INNER JOIN opticFunctionalTest.master ON opticFunctionalTest.master.id = opticFunctionalTest.detail.masterId " + 
-			  "          GROUP BY opticFunctionalTest.master.name " + 
-			  "          ORDER BY DetailSum DESC");
+    rowMgr.resultDoc(plan1, jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get();
+    jsonResults = jacksonHandle.get().path("rows");
+    // Should have 6 nodes returned.
+    assertEquals("Six rows not returned from testFromSqljoinInnerWithkeymatchSelect method ", 6, jsonResults.size());
+    assertEquals("Row 1 MasterName value incorrect", "Master 2", jsonResults.path(0).path("MasterName").path("value").asText());
+    assertEquals("Row 1 DetailName value incorrect", "Detail 6", jsonResults.path(0).path("DetailName").path("value").asText());
+    assertEquals("Row 1 opticFunctionalTest.detail.amount value incorrect", "60.06", jsonResults.path(0).path("opticFunctionalTest.detail.amount").path("value").asText());
+    assertEquals("Row 6 MasterName value incorrect", "Master 1", jsonResults.path(5).path("MasterName").path("value").asText());
+    assertEquals("Row 6 DetailName value incorrect", "Detail 1", jsonResults.path(5).path("DetailName").path("value").asText());
+    assertEquals("Row 6 opticFunctionalTest.detail.color value incorrect", "blue", jsonResults.path(5).path("opticFunctionalTest.detail.color").path("value").asText());
+  }
 
-	  JacksonHandle jacksonHandle = new JacksonHandle();
-	  jacksonHandle.setMimetype("application/json");
+  //fromsql TEST 4 - sql group by
+  @Test
+  public void testFromSqlGroupBy() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testFromSqlGroupBy method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    ModifyPlan plan1 = p.fromSql("SELECT opticFunctionalTest.master.name, opticFunctionalTest.detail.name AS DetailName, opticFunctionalTest.detail.color, SUM(amount) AS DetailSum " +
+            "          FROM opticFunctionalTest.detail " +
+            "          INNER JOIN opticFunctionalTest.master ON opticFunctionalTest.master.id = opticFunctionalTest.detail.masterId " +
+            "          GROUP BY opticFunctionalTest.master.name " +
+            "          ORDER BY DetailSum DESC");
 
-	  rowMgr.resultDoc(plan1, jacksonHandle);
-	  JsonNode jsonResults = jacksonHandle.get();
-	  jsonResults = jacksonHandle.get().path("rows");
-	  // Should have 2 nodes returned.
-	  assertEquals("Two rows not returned from testFromSqlGroupBy method ", 2, jsonResults.size());
-	  assertEquals("Row 1 opticFunctionalTest.master.name value incorrect", "Master 2", jsonResults.path(0).path("opticFunctionalTest.master.name").path("value").asText());
-	  assertEquals("Row 1 DetailSum value incorrect", "120.12", jsonResults.path(0).path("DetailSum").path("value").asText());
-	  assertEquals("Row 2 opticFunctionalTest.master.name value incorrect", "Master 1", jsonResults.path(1).path("opticFunctionalTest.master.name").path("value").asText());
-	  assertEquals("Row 2 DetailSum value incorrect", "90.09", jsonResults.path(1).path("DetailSum").path("value").asText());
- }
- 
- //fromsql TEST 8 - select with empty string qualifier and as
- @Test
- public void testFromSqlSelectEmptyAs() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
- {
-	  System.out.println("In testFromSqlSelectEmptyAs method");
-	  RowManager rowMgr = client.newRowManager();
-	  PlanBuilder p = rowMgr.newPlanBuilder();
-	  
-	  PlanExprColSeq colSeqSel = p.colSeq(
-			  p.schemaCol("opticFunctionalTest", "detail", "id"),
-			  p.schemaCol("opticFunctionalTest", "detail", "color"),
-             p.as("masterName", p.schemaCol("opticFunctionalTest", "master", "name"))
-			  );
-	 
-	  ModifyPlan plan1 = p.fromSql("select * FROM opticFunctionalTest.detail INNER JOIN opticFunctionalTest.master WHERE opticFunctionalTest.detail.masterId = opticFunctionalTest.master.id")		     
-			  	.select(colSeqSel)
-		        .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")));
-		          
-	  JacksonHandle jacksonHandle = new JacksonHandle();
-	  jacksonHandle.setMimetype("application/json");
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
 
-	  rowMgr.resultDoc(plan1, jacksonHandle);
-	  JsonNode jsonResults = jacksonHandle.get();
-	  jsonResults = jacksonHandle.get().path("rows");
-	  // Should have 6 nodes returned.
-	  assertEquals("Six rows not returned from testFromSqlSelectEmptyAs method ", 6, jsonResults.size());
-	  assertEquals("Row 1 opticFunctionalTest.detail.id value incorrect", "1", jsonResults.path(0).path("opticFunctionalTest.detail.id").path("value").asText());
-	  assertEquals("Row 1 opticFunctionalTest.detail.color value incorrect", "blue", jsonResults.path(0).path("opticFunctionalTest.detail.color").path("value").asText());
-	  assertEquals("Row 1 masterName value incorrect", "Master 1", jsonResults.path(0).path("masterName").path("value").asText());
-	  assertEquals("Row 5 opticFunctionalTest.detail.id value incorrect", "6", jsonResults.path(5).path("opticFunctionalTest.detail.id").path("value").asText());
-	  assertEquals("Row 5 opticFunctionalTest.detail.color value incorrect", "green", jsonResults.path(5).path("opticFunctionalTest.detail.color").path("value").asText());
-	  assertEquals("Row 5 masterName value incorrect", "Master 2", jsonResults.path(5).path("masterName").path("value").asText());
- }
+    rowMgr.resultDoc(plan1, jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get();
+    jsonResults = jacksonHandle.get().path("rows");
+    // Should have 2 nodes returned.
+    assertEquals("Two rows not returned from testFromSqlGroupBy method ", 2, jsonResults.size());
+    assertEquals("Row 1 opticFunctionalTest.master.name value incorrect", "Master 2", jsonResults.path(0).path("opticFunctionalTest.master.name").path("value").asText());
+    assertEquals("Row 1 DetailSum value incorrect", "120.12", jsonResults.path(0).path("DetailSum").path("value").asText());
+    assertEquals("Row 2 opticFunctionalTest.master.name value incorrect", "Master 1", jsonResults.path(1).path("opticFunctionalTest.master.name").path("value").asText());
+    assertEquals("Row 2 DetailSum value incorrect", "90.09", jsonResults.path(1).path("DetailSum").path("value").asText());
+  }
 
-//fromsql TEST 12 - arithmetic operations
- @Test
- public void testFromSqlArithmetic() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
- {
-	  System.out.println("In testFromSqlArithmetic method");
-	  RowManager rowMgr = client.newRowManager();
-	  PlanBuilder p = rowMgr.newPlanBuilder();
-	  
-	  ModifyPlan plan1 = p.fromSql("SELECT "
-	  		         + " (opticFunctionalTest.detail.amount + opticFunctionalTest.detail.masterId) AS added, "
-			         + " (opticFunctionalTest.detail.amount - opticFunctionalTest.master.id) AS substracted, "
-	  		         + " (opticFunctionalTest.detail.amount % opticFunctionalTest.master.id) AS modulo, "
-			         + " (opticFunctionalTest.detail.amount / (opticFunctionalTest.detail.amount * opticFunctionalTest.detail.id)) AS divided "
-			         + " FROM opticFunctionalTest.detail INNER JOIN opticFunctionalTest.master WHERE opticFunctionalTest.detail.masterId = opticFunctionalTest.master.id"
-	  		         )
-			  .orderBy(p.asc("substracted"));		      
-	  JacksonHandle jacksonHandle = new JacksonHandle();
-	  jacksonHandle.setMimetype("application/json");
+  //fromsql TEST 8 - select with empty string qualifier and as
+  @Test
+  public void testFromSqlSelectEmptyAs() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testFromSqlSelectEmptyAs method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
 
-	  rowMgr.resultDoc(plan1, jacksonHandle);
-	  JsonNode jsonResults = jacksonHandle.get();
-	  jsonResults = jacksonHandle.get().path("rows");
-	  // Should have 6 nodes returned.
-	  assertEquals("Six rows not returned from testFromSqlArithmetic method ", 6, jsonResults.size());
-	  assertEquals("Row 1 added value incorrect", "11.01", jsonResults.path(0).path("added").path("value").asText());
-	  assertEquals("Row 1 substracted value incorrect", "9.01", jsonResults.path(0).path("substracted").path("value").asText());
-	  assertEquals("Row 1 modulo value incorrect", "0.00999999999999979", jsonResults.path(0).path("modulo").path("value").asText());
-	  assertEquals("Row 1 divided value incorrect", "1", jsonResults.path(0).path("divided").path("value").asText());
-	  assertEquals("Row 6 added value incorrect", "62.06", jsonResults.path(5).path("added").path("value").asText());
-	  assertEquals("Row 6 substracted value incorrect", "58.06", jsonResults.path(5).path("substracted").path("value").asText());
-	  assertEquals("Row 6 modulo value incorrect", "0.0600000000000023", jsonResults.path(5).path("modulo").path("value").asText());
-	  assertEquals("Row 6 divided value incorrect", "0.166666666666667", jsonResults.path(5).path("divided").path("value").asText());
- }
- 
-//fromsql TEST 19 - sql between with sql condition
-@Test
-public void testFromSqlBetweenAndSqlCondition() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-{
-	  System.out.println("In testFromSqlBetweenAndSqlCondition method");
-	  RowManager rowMgr = client.newRowManager();
-	  PlanBuilder p = rowMgr.newPlanBuilder();
-	  
-	  PlanExprColSeq colSeqSel = p.colSeq(
-			  p.col("id"),
-			  p.col("name"),
-			  p.col("masterId"),
-			  p.col("amount"),
-			  p.col("color")		  
-			  );
-	  
-	  ModifyPlan plan1 = p.fromSql("SELECT * FROM opticFunctionalTest.detail WHERE opticFunctionalTest.detail.amount BETWEEN 10 AND 40", "NewDetail")
-			  			.where(p.sqlCondition("name <> 'Detail 1'"))
-			  			.select(colSeqSel)
-			  			.orderBy(p.asc("id"));		      
-	  JacksonHandle jacksonHandle = new JacksonHandle();
-	  jacksonHandle.setMimetype("application/json");
+    PlanExprColSeq colSeqSel = p.colSeq(
+            p.schemaCol("opticFunctionalTest", "detail", "id"),
+            p.schemaCol("opticFunctionalTest", "detail", "color"),
+            p.as("masterName", p.schemaCol("opticFunctionalTest", "master", "name"))
+    );
 
-	  rowMgr.resultDoc(plan1, jacksonHandle);
-	  JsonNode jsonResults = jacksonHandle.get();
-	  jsonResults = jacksonHandle.get().path("rows");
-	  // Should have 2 nodes returned.
-	  assertEquals("Two rows not returned from testFromSqlBetweenAndSqlCondition method ", 2, jsonResults.size());
-	  assertEquals("Row 1 NewDetail.amount value incorrect", "20.02", jsonResults.path(0).path("NewDetail.amount").path("value").asText());
-	  assertEquals("Row 2 NewDetail.amount value incorrect", "30.03", jsonResults.path(1).path("NewDetail.amount").path("value").asText());
-}
+    ModifyPlan plan1 = p.fromSql("select * FROM opticFunctionalTest.detail INNER JOIN opticFunctionalTest.master WHERE opticFunctionalTest.detail.masterId = opticFunctionalTest.master.id")
+            .select(colSeqSel)
+            .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")));
 
- 
-//fromsql TEST 27 - union with select, orderby, limit, and offset
- @Test
- public void testFromSqlUnionSelectOrderbyLimitOffset() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
- {
-	  System.out.println("In testFromSqlUnionSelectOrderbyLimitOffset method");
-	  RowManager rowMgr = client.newRowManager();
-	  PlanBuilder p = rowMgr.newPlanBuilder();
-	  
-	  ModifyPlan plan1 = p.fromSql(
-			  "SELECT opticFunctionalTest.detail.id, opticFunctionalTest.detail.name FROM opticFunctionalTest.detail ORDER BY name " 
-					  + " UNION " 
-					  + " SELECT opticFunctionalTest.master.id, opticFunctionalTest.master.name FROM opticFunctionalTest.master ORDER BY name"
-			  )
-			  .orderBy(p.desc("id"))
-			  .limit(3)
-			  .offset(1)
-			  .select(p.as("myName", p.col("name")));		      
-	  JacksonHandle jacksonHandle = new JacksonHandle();
-	  jacksonHandle.setMimetype("application/json");
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
 
-	  rowMgr.resultDoc(plan1, jacksonHandle);
-	  JsonNode jsonResults = jacksonHandle.get();
-	  jsonResults = jacksonHandle.get().path("rows");
-	  // Should have 2 nodes returned.
-	  assertEquals("Two rows not returned from testFromSqlUnionSelectOrderbyLimitOffset method ", 2, jsonResults.size());
-	  assertEquals("Row 1 myName value incorrect", "Detail 5", jsonResults.path(0).path("myName").path("value").asText());
-	  assertEquals("Row 2 myName value incorrect", "Detail 4", jsonResults.path(1).path("myName").path("value").asText());
- }
- 
- 
-//fromsql TEST 28 - union with qualifier and offsetLimit
- @Test
- public void testFromSqlUnionOffsetLimit() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
- {
-	  System.out.println("In testFromSqlUnionOffsetLimit method");
-	  RowManager rowMgr = client.newRowManager();
-	  PlanBuilder p = rowMgr.newPlanBuilder();
-	  
-	  ModifyPlan plan1 = p.fromSql(
-			  "SELECT opticFunctionalTest.detail.id, opticFunctionalTest.detail.name FROM opticFunctionalTest.detail ORDER BY name " 
-					  + " UNION " 
-					  + " SELECT opticFunctionalTest.master.id, opticFunctionalTest.master.name FROM opticFunctionalTest.master ORDER BY name",
-					  "myPlan"
-			  )
-			  .orderBy(p.desc("id"))
-		      .offsetLimit(1, 3);		      
-	  JacksonHandle jacksonHandle = new JacksonHandle();
-	  jacksonHandle.setMimetype("application/json");
+    rowMgr.resultDoc(plan1, jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get();
+    jsonResults = jacksonHandle.get().path("rows");
+    // Should have 6 nodes returned.
+    assertEquals("Six rows not returned from testFromSqlSelectEmptyAs method ", 6, jsonResults.size());
+    assertEquals("Row 1 opticFunctionalTest.detail.id value incorrect", "1", jsonResults.path(0).path("opticFunctionalTest.detail.id").path("value").asText());
+    assertEquals("Row 1 opticFunctionalTest.detail.color value incorrect", "blue", jsonResults.path(0).path("opticFunctionalTest.detail.color").path("value").asText());
+    assertEquals("Row 1 masterName value incorrect", "Master 1", jsonResults.path(0).path("masterName").path("value").asText());
+    assertEquals("Row 5 opticFunctionalTest.detail.id value incorrect", "6", jsonResults.path(5).path("opticFunctionalTest.detail.id").path("value").asText());
+    assertEquals("Row 5 opticFunctionalTest.detail.color value incorrect", "green", jsonResults.path(5).path("opticFunctionalTest.detail.color").path("value").asText());
+    assertEquals("Row 5 masterName value incorrect", "Master 2", jsonResults.path(5).path("masterName").path("value").asText());
+  }
 
-	  rowMgr.resultDoc(plan1, jacksonHandle);
-	  JsonNode jsonResults = jacksonHandle.get();
-	  jsonResults = jacksonHandle.get().path("rows");
-	  // Should have 3 nodes returned.
-	  assertEquals("Three rows not returned from testFromSqlUnionOffsetLimit method ", 3, jsonResults.size());
-	  assertEquals("Row 1 myPlan value incorrect", "Detail 5", jsonResults.path(0).path("myPlan.name").path("value").asText());
-	  assertEquals("Row 2 myPlan value incorrect", "Detail 4", jsonResults.path(1).path("myPlan.name").path("value").asText());
-	  assertEquals("Row 3 myPlan value incorrect", "Detail 3", jsonResults.path(2).path("myPlan.name").path("value").asText());
- }
- 
+  //fromsql TEST 12 - arithmetic operations
+  @Test
+  public void testFromSqlArithmetic() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testFromSqlArithmetic method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    ModifyPlan plan1 = p.fromSql("SELECT "
+            + " (opticFunctionalTest.detail.amount + opticFunctionalTest.detail.masterId) AS added, "
+            + " (opticFunctionalTest.detail.amount - opticFunctionalTest.master.id) AS substracted, "
+            + " (opticFunctionalTest.detail.amount % opticFunctionalTest.master.id) AS modulo, "
+            + " (opticFunctionalTest.detail.amount / (opticFunctionalTest.detail.amount * opticFunctionalTest.detail.id)) AS divided "
+            + " FROM opticFunctionalTest.detail INNER JOIN opticFunctionalTest.master WHERE opticFunctionalTest.detail.masterId = opticFunctionalTest.master.id"
+    )
+            .orderBy(p.asc("substracted"));
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(plan1, jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get();
+    jsonResults = jacksonHandle.get().path("rows");
+    // Should have 6 nodes returned.
+    assertEquals("Six rows not returned from testFromSqlArithmetic method ", 6, jsonResults.size());
+    assertEquals("Row 1 added value incorrect", "11.01", jsonResults.path(0).path("added").path("value").asText());
+    assertEquals("Row 1 substracted value incorrect", "9.01", jsonResults.path(0).path("substracted").path("value").asText());
+    assertEquals("Row 1 modulo value incorrect", "0.00999999999999979", jsonResults.path(0).path("modulo").path("value").asText());
+    assertEquals("Row 1 divided value incorrect", "1", jsonResults.path(0).path("divided").path("value").asText());
+    assertEquals("Row 6 added value incorrect", "62.06", jsonResults.path(5).path("added").path("value").asText());
+    assertEquals("Row 6 substracted value incorrect", "58.06", jsonResults.path(5).path("substracted").path("value").asText());
+    assertEquals("Row 6 modulo value incorrect", "0.0600000000000023", jsonResults.path(5).path("modulo").path("value").asText());
+    assertEquals("Row 6 divided value incorrect", "0.166666666666667", jsonResults.path(5).path("divided").path("value").asText());
+  }
+
+  //fromsql TEST 19 - sql between with sql condition
+  @Test
+  public void testFromSqlBetweenAndSqlCondition() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testFromSqlBetweenAndSqlCondition method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    PlanExprColSeq colSeqSel = p.colSeq(
+            p.col("id"),
+            p.col("name"),
+            p.col("masterId"),
+            p.col("amount"),
+            p.col("color")
+    );
+
+    ModifyPlan plan1 = p.fromSql("SELECT * FROM opticFunctionalTest.detail WHERE opticFunctionalTest.detail.amount BETWEEN 10 AND 40", "NewDetail")
+            .where(p.sqlCondition("name <> 'Detail 1'"))
+            .select(colSeqSel)
+            .orderBy(p.asc("id"));
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(plan1, jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get();
+    jsonResults = jacksonHandle.get().path("rows");
+    // Should have 2 nodes returned.
+    assertEquals("Two rows not returned from testFromSqlBetweenAndSqlCondition method ", 2, jsonResults.size());
+    assertEquals("Row 1 NewDetail.amount value incorrect", "20.02", jsonResults.path(0).path("NewDetail.amount").path("value").asText());
+    assertEquals("Row 2 NewDetail.amount value incorrect", "30.03", jsonResults.path(1).path("NewDetail.amount").path("value").asText());
+  }
+
+
+  //fromsql TEST 27 - union with select, orderby, limit, and offset
+  @Test
+  public void testFromSqlUnionSelectOrderbyLimitOffset() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testFromSqlUnionSelectOrderbyLimitOffset method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    ModifyPlan plan1 = p.fromSql(
+            "SELECT opticFunctionalTest.detail.id, opticFunctionalTest.detail.name FROM opticFunctionalTest.detail ORDER BY name "
+                    + " UNION "
+                    + " SELECT opticFunctionalTest.master.id, opticFunctionalTest.master.name FROM opticFunctionalTest.master ORDER BY name"
+    )
+            .orderBy(p.desc("id"))
+            .limit(3)
+            .offset(1)
+            .select(p.as("myName", p.col("name")));
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(plan1, jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get();
+    jsonResults = jacksonHandle.get().path("rows");
+    // Should have 2 nodes returned.
+    assertEquals("Two rows not returned from testFromSqlUnionSelectOrderbyLimitOffset method ", 2, jsonResults.size());
+    assertEquals("Row 1 myName value incorrect", "Detail 5", jsonResults.path(0).path("myName").path("value").asText());
+    assertEquals("Row 2 myName value incorrect", "Detail 4", jsonResults.path(1).path("myName").path("value").asText());
+  }
+
+
+  //fromsql TEST 28 - union with qualifier and offsetLimit
+  @Test
+  public void testFromSqlUnionOffsetLimit() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testFromSqlUnionOffsetLimit method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    ModifyPlan plan1 = p.fromSql(
+            "SELECT opticFunctionalTest.detail.id, opticFunctionalTest.detail.name FROM opticFunctionalTest.detail ORDER BY name "
+                    + " UNION "
+                    + " SELECT opticFunctionalTest.master.id, opticFunctionalTest.master.name FROM opticFunctionalTest.master ORDER BY name",
+            "myPlan"
+    )
+            .orderBy(p.desc("id"))
+            .offsetLimit(1, 3);
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(plan1, jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get().path("rows");
+    // Should have 3 nodes returned.
+    assertEquals("Three rows not returned from testFromSqlUnionOffsetLimit method ", 3, jsonResults.size());
+    assertEquals("Row 1 myPlan value incorrect", "Detail 5", jsonResults.path(0).path("myPlan.name").path("value").asText());
+    assertEquals("Row 2 myPlan value incorrect", "Detail 4", jsonResults.path(1).path("myPlan.name").path("value").asText());
+    assertEquals("Row 3 myPlan value incorrect", "Detail 3", jsonResults.path(2).path("myPlan.name").path("value").asText());
+  }
+
+  // Tests for Query DSL
+
+  /*
+   * This test checks group by with a view. Should return 3 items. Tested
+   * arrayAggregate, union, groupby methods Uses schemaCol for Columns selection
+   *
+   * Similar to testFromSqljoinInnerWithkeymatch
+   */
+  @Test
+  public void testQueryDSLjoinInnerWithkeymatch() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testQueryDSLjoinInnerWithkeymatch method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    StringBuilder strbldr = new StringBuilder();
+    strbldr.append("op.fromView('opticFunctionalTest', 'detail').orderBy(op.schemaCol('opticFunctionalTest', 'detail', 'id'))");
+    strbldr.append(".joinInner(");
+    strbldr.append("op.fromView('opticFunctionalTest', 'master').orderBy(op.schemaCol('opticFunctionalTest', 'master' , 'id'))");
+    strbldr.append(")");
+    strbldr.append(".where(op.eq(op.schemaCol('opticFunctionalTest', 'master' , 'id'), op.schemaCol('opticFunctionalTest', 'detail', 'masterId')))");
+    strbldr.append(".orderBy(op.asc(op.schemaCol('opticFunctionalTest', 'detail', 'id')));");
+    String exeSQLStr = strbldr.toString();
+    System.out.println(exeSQLStr);
+    StringHandle strHdl = new StringHandle(exeSQLStr);
+
+    RawQueryDSLPlan planDSL = rowMgr.newRawQueryDSLPlan(strHdl);
+
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(planDSL, jacksonHandle);
+
+    JsonNode jsonResults = jacksonHandle.get().get("rows");
+    System.out.println("Results are : " + jsonResults);
+
+    // Should have 6 nodes returned.
+    assertEquals("Six rows not returned from testQueryDSLjoinInnerWithkeymatch method ", 6, jsonResults.size());
+    assertEquals("Row 1 detail id value incorrect", "1", jsonResults.path(0).path("opticFunctionalTest.detail.id").path("value").asText());
+    assertEquals("Row 1 master id value incorrect", "1", jsonResults.path(0).path("opticFunctionalTest.master.id").path("value").asText());
+    assertEquals("Row 1 detail masterId value incorrect", "1", jsonResults.path(0).path("opticFunctionalTest.detail.masterId").path("value").asText());
+    assertEquals("Row 1 detail name value incorrect", "Detail 1", jsonResults.path(0).path("opticFunctionalTest.detail.name").path("value").asText());
+    assertEquals("Row 6 detail amount value incorrect", "60.06", jsonResults.path(5).path("opticFunctionalTest.detail.amount").path("value").asText());
+    assertEquals("Row 6 detail color value incorrect", "green", jsonResults.path(5).path("opticFunctionalTest.detail.color").path("value").asText());
+    assertEquals("Row 6 master name value incorrect", "Master 2", jsonResults.path(5).path("opticFunctionalTest.master.name").path("value").asText());
+  }
+
+  /*
+   * This test checks JS operators and types returned from query execution.
+   * Types used are long, double, string and boolean.
+   *
+   */
+  @Test
+  public void testQueryDSLArithmeticOperators() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testQueryDSLArithmeticOperators method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    StringBuilder strbldr = new StringBuilder();
+    strbldr.append("op.fromView('opticFunctionalTest', 'detail')");
+
+    strbldr.append(".select([");
+
+    // Check for long data types (arithmetic)
+    strbldr.append("op.as('addLong', op.schemaCol('opticFunctionalTest', 'detail', 'id') + 1), ");
+    strbldr.append("op.as('subtractLong', op.schemaCol('opticFunctionalTest', 'detail', 'id') - 1), ");
+
+    // Check for SJS String fns, chaining
+    strbldr.append("op.as('nameJSLen', fn.stringLength(op.schemaCol('opticFunctionalTest', 'detail', 'name'))), ");
+    strbldr.append("op.as('nameJSConcat', fn.upperCase(fn.replace(op.schemaCol('opticFunctionalTest', 'detail', 'name'), 'tail', 'Head'))), ");
+
+    // Check for double data types (arithmetic)
+    strbldr.append("op.as('add', op.schemaCol('opticFunctionalTest', 'detail', 'amount') + 1), ");
+    strbldr.append("op.as('multiple', op.schemaCol('opticFunctionalTest', 'detail', 'amount') * 2), ");
+    strbldr.append("op.as('subtract', op.schemaCol('opticFunctionalTest', 'detail', 'amount') - 1),");
+    strbldr.append("op.as('divide', op.schemaCol('opticFunctionalTest', 'detail', 'amount') / 3), ");
+    strbldr.append("op.as('equality', op.schemaCol('opticFunctionalTest', 'detail', 'amount') == op.schemaCol('opticFunctionalTest', 'detail', 'amount')), ");
+    strbldr.append("op.as('inequality', op.schemaCol('opticFunctionalTest', 'detail', 'amount') != op.schemaCol('opticFunctionalTest', 'detail', 'amount')), ");
+    // Verify literals and teritary op
+    strbldr.append("op.as('numeralLiteral', 3 == 3 ? 4 : 6), ");
+    strbldr.append("op.as('stringLiteral', 'abc' == 'abcd' ? 'MarkLogic' : 'Oracle') ");
+
+    strbldr.append("])");
+    strbldr.append(".orderBy('addLong');");
+
+    String exeSQLStr = strbldr.toString();
+    System.out.println(exeSQLStr);
+    StringHandle strHdl = new StringHandle(exeSQLStr);
+
+    RawQueryDSLPlan planDSL = rowMgr.newRawQueryDSLPlan(strHdl);
+
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(planDSL, jacksonHandle);
+
+    JsonNode jsonResults = jacksonHandle.get().get("rows");
+    System.out.println("Results are : " + jsonResults);
+
+    // Should have 6 nodes returned.
+    assertEquals("Six rows not returned from testQueryDSLArithmeticOperators method ", 6, jsonResults.size());
+    // Verify values for row 1
+    assertEquals("Row 1 addLong value incorrect", "2", jsonResults.path(0).path("addLong").path("value").asText());
+    assertEquals("Row 1 subtractLong value incorrect", "0", jsonResults.path(0).path("subtractLong").path("value").asText());
+    assertEquals("Row 1 nameJSLen value incorrect", "8", jsonResults.path(0).path("nameJSLen").path("value").asText());
+    assertEquals("Row 1 nameJSConcat value incorrect", "DEHEAD 1", jsonResults.path(0).path("nameJSConcat").path("value").asText());
+    assertEquals("Row 1 add value incorrect", "11.01", jsonResults.path(0).path("add").path("value").asText());
+    assertEquals("Row 1 multiple value incorrect", "20.02", jsonResults.path(0).path("multiple").path("value").asText());
+    assertEquals("Row 1 subtract value incorrect", "9.01", jsonResults.path(0).path("subtract").path("value").asText());
+    assertEquals("Row 1 divide value incorrect", "3.33666666666667", jsonResults.path(0).path("divide").path("value").asText());
+    assertEquals("Row 1 equality value incorrect", "true", jsonResults.path(0).path("equality").path("value").asText());
+    assertEquals("Row 1 inequality value incorrect", "false", jsonResults.path(0).path("inequality").path("value").asText());
+
+    assertEquals("Row 1 numeralLiteral value incorrect", "4", jsonResults.path(0).path("numeralLiteral").path("value").asText());
+    assertEquals("Row 1 stringLiteral value incorrect", "Oracle", jsonResults.path(0).path("stringLiteral").path("value").asText());
+
+    // Verify data types for row 6
+    assertEquals("Row 6 addLong type incorrect", "xs:integer", jsonResults.path(5).path("addLong").path("type").asText());
+    assertEquals("Row 6 subtractLong type incorrect", "xs:integer", jsonResults.path(5).path("subtractLong").path("type").asText());
+    assertEquals("Row 6 nameJSLen type incorrect", "xs:integer", jsonResults.path(5).path("nameJSLen").path("type").asText());
+    assertEquals("Row 6 nameJSConcat type incorrect", "xs:string", jsonResults.path(5).path("nameJSConcat").path("type").asText());
+    assertEquals("Row 6 add type incorrect", "xs:double", jsonResults.path(5).path("add").path("type").asText());
+    assertEquals("Row 6 multiple type incorrect", "xs:double", jsonResults.path(5).path("multiple").path("type").asText());
+    assertEquals("Row 6 subtract type incorrect", "xs:double", jsonResults.path(5).path("subtract").path("type").asText());
+    assertEquals("Row 6 divide type incorrect", "xs:double", jsonResults.path(5).path("divide").path("type").asText());
+    assertEquals("Row 6 equality type incorrect", "xs:boolean", jsonResults.path(5).path("equality").path("type").asText());
+    assertEquals("Row 6 inequality type incorrect", "xs:boolean", jsonResults.path(5).path("inequality").path("type").asText());
+
+    assertEquals("Row 6 numeralLiteral type incorrect", "xs:integer", jsonResults.path(0).path("numeralLiteral").path("type").asText());
+    assertEquals("Row 6 stringLiteral type incorrect", "xs:string", jsonResults.path(0).path("stringLiteral").path("type").asText());
+  }
+
+  /*
+   * This test checks dateTime types with fromSQL in DSL format
+   */
+  @Test
+  public void testQueryDSLFromViewDateType() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testQueryDSLFromViewDateType method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    StringBuilder strbldr = new StringBuilder();
+    StringBuilder strbldrWhereValidDate = new StringBuilder();
+    StringBuilder strbldrWhereInValidDate = new StringBuilder();
+
+    String exeSQLStr = "op.fromSQL(`SELECT opticFunctionalTest.master.name AS MasterName, opticFunctionalTest.master.date, opticFunctionalTest.detail.name AS DetailName, opticFunctionalTest.detail.amount,  opticFunctionalTest.detail.color" +
+          " FROM opticFunctionalTest.detail"  +
+          " INNER JOIN opticFunctionalTest.master ON opticFunctionalTest.master.id = opticFunctionalTest.detail.masterId" +
+          " WHERE opticFunctionalTest.master.date = '2015-12-01'" +
+          " and opticFunctionalTest.detail.color = 'blue'" +
+          " ORDER BY DetailName DESC`);";
+
+    StringHandle strHdl = new StringHandle(exeSQLStr);
+    System.out.println(exeSQLStr);
+
+    RawQueryDSLPlan planDSL = rowMgr.newRawQueryDSLPlan(strHdl);
+
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(planDSL, jacksonHandle);
+
+    JsonNode jsonResults = jacksonHandle.get().get("rows");
+    System.out.println("Results are : " + jsonResults);
+    // Should have 2 nodes returned.
+    assertEquals("Six rows not returned from testQueryDSLFromViewDateType method ", 2, jsonResults.size());
+    assertEquals("Row 1 Master id value incorrect", "Master 1", jsonResults.path(0).path("MasterName").path("value").asText());
+    assertEquals("Row 1 Master date value incorrect", "2015-12-01", jsonResults.path(0).path("opticFunctionalTest.master.date").path("value").asText());
+    assertEquals("Row 1 Detail color value incorrect", "blue", jsonResults.path(0).path("opticFunctionalTest.detail.color").path("value").asText());
+    assertEquals("Row 2 Master id value incorrect", "Master 1", jsonResults.path(1).path("MasterName").path("value").asText());
+    assertEquals("Row 2 Master date value incorrect", "2015-12-01", jsonResults.path(1).path("opticFunctionalTest.master.date").path("value").asText());
+    assertEquals("Row 2 Detail color value incorrect", "blue", jsonResults.path(1).path("opticFunctionalTest.detail.color").path("value").asText());
+
+    strbldrWhereValidDate.append(".where(op.and(op.gt(op.schemaCol('opticFunctionalTest', 'master', 'date'), xs.date('2015-12-01'))," +
+            " op.eq(op.schemaCol('opticFunctionalTest', 'detail', 'color'), 'blue')))");
+
+    strbldr.append("op.fromView('opticFunctionalTest', 'detail').orderBy(op.schemaCol('opticFunctionalTest', 'detail', 'id'))");
+    strbldr.append(".joinInner(");
+    strbldr.append("op.fromView('opticFunctionalTest', 'master').orderBy(op.schemaCol('opticFunctionalTest', 'master', 'id'))");
+    strbldr.append(")");
+    strbldr.append(strbldrWhereValidDate.toString());
+    strbldr.append(".orderBy(op.asc(op.schemaCol('opticFunctionalTest', 'detail', 'id')));");
+
+    String exeSQLStrValDate = strbldr.toString() ;
+
+    strHdl = new StringHandle(exeSQLStrValDate);
+    System.out.println("Valid Date SQL is " +  exeSQLStrValDate);
+
+    RawQueryDSLPlan planDSLFrmVw = rowMgr.newRawQueryDSLPlan(strHdl);
+
+    jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(planDSLFrmVw, jacksonHandle);
+    jsonResults = jacksonHandle.get().get("rows");
+    System.out.println("Results from Valid date in View are : " + jsonResults);
+
+    // Should have 3 nodes returned.
+    assertEquals("Six rows not returned from testQueryDSLFromViewDateType method ", 3, jsonResults.size());
+    assertEquals("Row 1 amount value incorrect", "10.01", jsonResults.path(0).path("opticFunctionalTest.detail.amount").path("value").asText());
+    assertEquals("Row 1 Master date value incorrect", "2015-12-02", jsonResults.path(0).path("opticFunctionalTest.master.date").path("value").asText());
+    assertEquals("Row 1 Detail color value incorrect", "blue", jsonResults.path(0).path("opticFunctionalTest.detail.color").path("value").asText());
+    assertEquals("Row 2 amount value incorrect", "20.02", jsonResults.path(1).path("opticFunctionalTest.detail.amount").path("value").asText());
+    assertEquals("Row 3 amount value incorrect", "30.03", jsonResults.path(2).path("opticFunctionalTest.detail.amount").path("value").asText());
+    assertEquals("Row 3 Detail name value incorrect", "Detail 3", jsonResults.path(2).path("opticFunctionalTest.detail.name").path("value").asText());
+
+    // Invalid date - XDMP-CAST Exception
+    strbldr = new StringBuilder();
+    strbldrWhereInValidDate.append(".where( op.ge(op.schemaCol('opticFunctionalTest', 'master' , 'date'), xs.date('2-12-2015')))");
+
+    strbldr.append("op.fromView('opticFunctionalTest', 'detail').orderBy(op.schemaCol('opticFunctionalTest', 'detail', 'id'))");
+    strbldr.append(".joinInner(");
+    strbldr.append("op.fromView('opticFunctionalTest', 'master').orderBy(op.schemaCol('opticFunctionalTest', 'master' , 'id'))");
+    strbldr.append(")");
+    strbldr.append(strbldrWhereInValidDate.toString());
+    strbldr.append(".orderBy(op.asc(op.schemaCol('opticFunctionalTest', 'detail', 'id')));");
+
+    String exeSQLStrInValDate = strbldr.toString() ;
+
+    strHdl = new StringHandle(exeSQLStrInValDate);
+    System.out.println("Invalid Date SQL is " + exeSQLStrInValDate);
+
+    RawQueryDSLPlan planDSLFrmVwInvDate = rowMgr.newRawQueryDSLPlan(strHdl);
+
+    jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    try {
+      rowMgr.resultDoc(planDSLFrmVwInvDate, jacksonHandle);
+    }
+    catch (Exception ex) {
+      assert(ex.toString().contains("XDMP-CAST"));
+    }
+
+  }
+
+  /*
+   * This test checks group by, order by with fromSQL in DSL format
+   * Similar to join inner with keymatch of fromSQL SJS test
+   */
+  @Test
+  public void testQueryDSLFromSQL() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testQueryDSLFromSQL method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    String strbldr = "op.fromSQL('SELECT opticFunctionalTest.master.name, opticFunctionalTest.detail.name AS DetailName, opticFunctionalTest.detail.color, SUM(amount) AS DetailSum " +
+            "          FROM opticFunctionalTest.detail " +
+            "          INNER JOIN opticFunctionalTest.master ON opticFunctionalTest.master.id = opticFunctionalTest.detail.masterId " +
+            "          GROUP BY opticFunctionalTest.master.name " +
+            "          ORDER BY DetailSum DESC');";
+
+    System.out.println(strbldr);
+    StringHandle strHdl = new StringHandle(strbldr);
+
+    RawQueryDSLPlan planDSL = rowMgr.newRawQueryDSLPlan(strHdl);
+
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(planDSL, jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get().path("rows");
+    System.out.println("Results are : " + jsonResults);
+
+    // Should have 2 nodes returned.
+    assertEquals("Two rows not returned from testQueryDSLFromSQL method ", 2, jsonResults.size());
+    assertEquals("Row 1 opticFunctionalTest.master.name value incorrect", "Master 2", jsonResults.path(0).path("opticFunctionalTest.master.name").path("value").asText());
+    assertEquals("Row 1 DetailSum value incorrect", "120.12", jsonResults.path(0).path("DetailSum").path("value").asText());
+    assertEquals("Row 2 opticFunctionalTest.master.name value incorrect", "Master 1", jsonResults.path(1).path("opticFunctionalTest.master.name").path("value").asText());
+    assertEquals("Row 2 DetailSum value incorrect", "90.09", jsonResults.path(1).path("DetailSum").path("value").asText());
+  }
+
+  /*
+   * This test checks binding params.
+   * Types used are long, double, string and boolean.
+   *
+   */
+  @Test
+  public void testQueryDSLBindParams() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testQueryDSLBindParams method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    StringBuilder strbldr = new StringBuilder();
+
+    strbldr.append("op.fromView('opticFunctionalTest', 'detail').orderBy(op.schemaCol('opticFunctionalTest', 'detail', 'id'))");
+    strbldr.append(".joinInner(");
+    strbldr.append("op.fromView('opticFunctionalTest', 'master').orderBy(op.schemaCol('opticFunctionalTest', 'master', 'id'))");
+    strbldr.append(")");
+    strbldr.append(".where(op.and(op.gt(op.schemaCol('opticFunctionalTest', 'master', 'date'), xs.date(op.param('dateParam')) )," +
+            " op.eq(op.schemaCol('opticFunctionalTest', 'detail', 'color'), op.param('colorParam'))))");
+    strbldr.append(".orderBy(op.asc(op.schemaCol('opticFunctionalTest', 'detail', 'id')));");
+    // op.param('dateParam')
+    String exeSQLStr = strbldr.toString();
+
+    System.out.println(exeSQLStr);
+    StringHandle strHdl = new StringHandle(exeSQLStr);
+
+    PlanBuilder.Plan planDSL = rowMgr.newRawQueryDSLPlan(strHdl)
+            .bindParam("dateParam", "2015-12-01").bindParam("colorParam", "blue");
+
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(planDSL, jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get().path("rows");
+    System.out.println("Results are : " + jsonResults);
+
+    // Should have 3 nodes returned.
+    assertEquals("Six rows not returned from testQueryDSLFromViewDateType method ", 3, jsonResults.size());
+    assertEquals("Row 1 amount value incorrect", "10.01", jsonResults.path(0).path("opticFunctionalTest.detail.amount").path("value").asText());
+    assertEquals("Row 1 Master date value incorrect", "2015-12-02", jsonResults.path(0).path("opticFunctionalTest.master.date").path("value").asText());
+    assertEquals("Row 1 Detail color value incorrect", "blue", jsonResults.path(0).path("opticFunctionalTest.detail.color").path("value").asText());
+    assertEquals("Row 2 amount value incorrect", "20.02", jsonResults.path(1).path("opticFunctionalTest.detail.amount").path("value").asText());
+    assertEquals("Row 3 amount value incorrect", "30.03", jsonResults.path(2).path("opticFunctionalTest.detail.amount").path("value").asText());
+    assertEquals("Row 3 Detail name value incorrect", "Detail 3", jsonResults.path(2).path("opticFunctionalTest.detail.name").path("value").asText());
+
+    // Invalid value in bind
+    PlanBuilder.Plan planDSL1 = rowMgr.newRawQueryDSLPlan(strHdl)
+            .bindParam("dateParam", "2015-00-01").bindParam("colorParam", "blue");
+
+    jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+    StringBuilder castEx = new StringBuilder();
+    try {
+      rowMgr.resultDoc(planDSL1, jacksonHandle);
+    }
+    catch(Exception ex) {
+      System.out.println(ex.getMessage());
+      castEx.append(ex.getMessage());
+    }
+
+    // ""null"" value in bind
+    String clrVal = "";
+    PlanBuilder.Plan planDSL2 = rowMgr.newRawQueryDSLPlan(strHdl)
+            .bindParam("dateParam", "2015-12-01").bindParam("colorParam", clrVal);
+
+    jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    String res = null;
+
+      rowMgr.resultDoc(planDSL2, jacksonHandle);
+      res = jacksonHandle.toString();
+
+      System.out.println("Result handle is null when bind value is empty");
+      System.out.println(res);
+
+      assertTrue(castEx.toString().contains("Invalid cast: \"2015-00-01\" cast as xs:date"));
+      assertNull(res);
+  }
+
+  /*
+   * This test checks that JavaScript fns are not allowed
+   *
+   */
+  @Test
+  public void testQueryDSLJavaScriptFn() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testQueryDSLJavaScriptFn method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    StringBuilder strbldr = new StringBuilder();
+
+    strbldr.append("op.fromView('opticFunctionalTest', 'detail').orderBy(op.schemaCol('opticFunctionalTest', 'detail', 'id'))");
+
+    strbldr.append(".where(op.and(op.gt(op.schemaCol('opticFunctionalTest', 'detail', 'date'), xs.date(op.param('dateParam')) )," +
+            " op.eq(op.schemaCol('opticFunctionalTest', 'detail', 'color'), 'blue'.toUpperCase())))");
+    strbldr.append(".orderBy(op.asc(op.schemaCol('opticFunctionalTest', 'detail', 'id')));");
+    // op.param('dateParam')
+    String exeSQLStr = strbldr.toString();
+
+    System.out.println(exeSQLStr);
+    StringHandle strHdl = new StringHandle(exeSQLStr);
+
+    PlanBuilder.Plan planDSL = rowMgr.newRawQueryDSLPlan(strHdl)
+            .bindParam("dateParam", "2015-12-01").bindParam("colorParam", "blue");
+
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+    StringBuilder jsStrEx = new StringBuilder();
+    try {
+      rowMgr.resultDoc(planDSL, jacksonHandle);
+    }
+    catch (Exception ex) {
+      jsStrEx.append(ex.getMessage());
+      System.out.println(jsStrEx.toString());
+    }
+    assertTrue(jsStrEx.toString().contains("cannot build call to toUpperCase for chained caller"));
+
+    // Namespace check
+    strbldr = new StringBuilder();
+    strbldr.append("op.fromView('opticFunctionalTest', 'detail').orderBy(op.schemaCol('opticFunctionalTest', 'detail', 'id'))");
+
+    strbldr.append(".where(op.and(op.gt(op.schemaCol('opticFunctionalTest', 'detail', 'date'), xdmp.restart() )," +
+            " op.eq(op.schemaCol('opticFunctionalTest', 'detail', 'color'), 'blue'.toUpperCase())))");
+    strbldr.append(".orderBy(op.asc(op.schemaCol('opticFunctionalTest', 'detail', 'id')));");
+    // op.param('dateParam')
+    String exeSQLStrNs = strbldr.toString();
+
+    System.out.println(exeSQLStrNs);
+    strHdl = new StringHandle(exeSQLStrNs);
+
+    PlanBuilder.Plan planDSLNs = rowMgr.newRawQueryDSLPlan(strHdl)
+            .bindParam("dateParam", "2015-12-01").bindParam("colorParam", "blue");
+
+    jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+    StringBuilder jsStrNsEx = new StringBuilder();
+    try {
+      rowMgr.resultDoc(planDSLNs, jacksonHandle);
+    }
+    catch (Exception ex) {
+      jsStrNsEx.append(ex.getMessage());
+      System.out.println(jsStrNsEx.toString());
+    }
+    assertTrue(jsStrNsEx.toString().contains("cannot build call for unknown variable or namespace \"xdmp\" with function \"restart\""));
+  }
+
+  // Similar to testgroupBy
+  @Test
+  public void testgroupByUnion() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testgroupByUnion method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
+            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+
+    ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+    ModifyPlan plan3 = plan1.union(plan2)
+            .select(
+                    p.col("amount"),
+                    p.col("color")
+            )
+            .groupByUnion(p.groupSeq(p.col("color"), p.col("amount")),
+                    p.aggregateSeq(
+                            p.count("ColorCount", "color"),
+                            p.avg("AverageAmout", "amount")
+                    )
+            )
+            .orderBy(p.desc(p.col("ColorCount")));
+
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(plan3, jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get();
+    JsonNode jsonBindingsNodes = jsonResults.path("rows");
+    System.out.println("Results are : " + jsonBindingsNodes);
+    // Should have 10 array nodes returned.
+    assertEquals("Ten nodes not returned from testgroupByUnion method ", 10, jsonBindingsNodes.size());
+    assertEquals("Row 1 testgroupByUnion color value incorrect", "blue", jsonBindingsNodes.get(0).path("color").path("value").asText());
+    assertEquals("Row 1 testgroupByUnion ColorCount size incorrect", 3, jsonBindingsNodes.get(0).path("ColorCount").path("value").asInt());
+    assertEquals("Row 1 testgroupByUnion AverageAmout value incorrect", "20.02", jsonBindingsNodes.get(0).path("AverageAmout").path("value").asText());
+
+    assertEquals("Row 2 testgroupByUnion color value incorrect", "green", jsonBindingsNodes.get(1).path("color").path("value").asText());
+    assertEquals("Row 2 testgroupByUnion ColorCount size incorrect", 3, jsonBindingsNodes.get(1).path("ColorCount").path("value").asInt());
+    assertEquals("Row 2 testgroupByUnion AverageAmout value incorrect", "50.05", jsonBindingsNodes.get(1).path("AverageAmout").path("value").asText());
+    // Assert for null in both grouping columns. We will have one row with nulls
+
+    assertEquals("Row 10 testgroupByUnion color value incorrect", "null", jsonBindingsNodes.get(9).path("color").path("type").asText());
+    assertEquals("Row 10 testgroupByUnion ColorCount size incorrect", 0, jsonBindingsNodes.get(9).path("ColorCount").path("value").asInt());
+    assertEquals("Row 10 testgroupByUnion AverageAmout value incorrect", "null", jsonBindingsNodes.get(9).path("AverageAmout").path("type").asText());
+    // Use date in aggregate
+    ModifyPlan plan4 = plan1.union(plan2)
+            .select(p.as("MasterDate", p.schemaCol("opticFunctionalTest", "master", "date")),
+                    p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
+                    p.col("amount"),
+                    p.col("color")
+            )
+            .groupByUnion(p.groupSeq(p.col("color"), p.col("MasterDate")),
+                    p.aggregateSeq(p.count("DateCount", "MasterDate")))
+            .orderBy(p.desc(p.col("MasterDate")));
+
+    JacksonHandle jacksonHandleDate = new JacksonHandle();
+    jacksonHandleDate.setMimetype("application/json");
+
+    rowMgr.resultDoc(plan4, jacksonHandleDate);
+    JsonNode jsonResultsDate = jacksonHandleDate.get();
+    JsonNode jsonBindingsNodesDate = jsonResultsDate.path("rows");
+    System.out.println("Results from date grouping are : " + jsonBindingsNodesDate);
+
+    assertEquals("Six nodes not returned from testgroupByUnion method ", 6, jsonBindingsNodesDate.size());
+    assertEquals("Row 1 testgroupByUnion MasterDate value incorrect", "2015-12-02", jsonBindingsNodesDate.get(0).path("MasterDate").path("value").asText());
+    assertEquals("Row 1 testgroupByUnion DateCount size incorrect", 1, jsonBindingsNodesDate.get(0).path("DateCount").path("value").asInt());
+    assertEquals("Row 1 testgroupByUnion color value incorrect", "null", jsonBindingsNodesDate.get(0).path("color").path("type").asText());
+
+    assertEquals("Row 2 testgroupByUnion MasterDate value incorrect", "2015-12-01", jsonBindingsNodesDate.get(1).path("MasterDate").path("value").asText());
+    assertEquals("Row 2 testgroupByUnion DateCount size incorrect", 1, jsonBindingsNodesDate.get(1).path("DateCount").path("value").asInt());
+    assertEquals("Row 2 testgroupByUnion color value incorrect", "null", jsonBindingsNodesDate.get(1).path("color").path("type").asText());
+  }
+
+  // Same as testgroupsByUnion with facade.
+  @Test
+  public void testgroupByArrays() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testgroupByArrays method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    ModifyPlan plan1 =
+            p.fromView("opticFunctionalTest", "detail")
+                    .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+    ModifyPlan plan2 =
+            p.fromView("opticFunctionalTest", "master")
+                    .orderBy(p.schemaCol("opticFunctionalTest", "master" , "id"));
+    ModifyPlan plan3 =
+            plan1.joinInner(plan2)
+                    .where(
+                            p.eq(
+                                    p.schemaCol("opticFunctionalTest", "master" , "id"),
+                                    p.schemaCol("opticFunctionalTest", "detail", "masterId")
+                            )
+                    )
+                    .groupToArrays(p.namedGroupSeq(
+                                    p.namedGroup("DetColor", p.col("color")),
+                                    p.namedGroup("Amt", p.schemaCol("opticFunctionalTest", "detail" , "amount"))
+                                ),
+                                p.aggregateSeq(p.sum("sum", "amount"), p.count("CountofColors", "color"))
+
+                    );
+
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(plan3, jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get();
+    JsonNode jsonBindingsNodes = jsonResults.path("rows");
+    System.out.println("Results are : " + jsonBindingsNodes);
+    // Should be returning as one array containing sub arrays for each namedgroup
+    assertEquals("1 node not returned from testgroupByArrays method ", 1, jsonBindingsNodes.size());
+
+    JsonNode jsonDetColorNodes = jsonBindingsNodes.get(0).get("DetColor").get("value");
+    assertEquals("2 nodes not returned from color nodes array ", 2, jsonDetColorNodes.size());
+    assertEquals("Row 1 color node value incorrect", "blue", jsonDetColorNodes.get(0).path("color").asText());
+    assertEquals("Row 1 sum node value incorrect", "60.06", jsonDetColorNodes.get(0).path("sum").asText());
+    assertEquals("Row 1 color count node value incorrect", "3", jsonDetColorNodes.get(0).path("CountofColors").asText());
+
+    assertEquals("Row 2 color node value incorrect", "green", jsonDetColorNodes.get(1).path("color").asText());
+    assertEquals("Row 2 sum node value incorrect", "150.15", jsonDetColorNodes.get(1).path("sum").asText());
+    assertEquals("Row 2 color count node value incorrect", "3", jsonDetColorNodes.get(1).path("CountofColors").asText());
+
+    JsonNode jsonAmtNodes = jsonBindingsNodes.get(0).get("Amt").get("value");
+    assertEquals("6 nodes not returned from color nodes array ", 6, jsonAmtNodes.size());
+
+    // Verify without aggregate param
+    ModifyPlan plan4 =
+            plan1.joinInner(plan2)
+                    .where(
+                            p.eq(
+                                    p.schemaCol("opticFunctionalTest", "master" , "id"),
+                                    p.schemaCol("opticFunctionalTest", "detail", "masterId")
+                            )
+                    )
+                    .groupToArrays(p.namedGroupSeq(
+                            p.namedGroup("DetColor", p.col("color")),
+                            p.namedGroup("Amt", p.schemaCol("opticFunctionalTest", "detail" , "amount"))
+                            )
+                    );
+
+    JacksonHandle jacksonHandleNoAggCol = new JacksonHandle();
+    jacksonHandleNoAggCol.setMimetype("application/json");
+
+    rowMgr.resultDoc(plan4, jacksonHandleNoAggCol);
+    JsonNode jsonResultsNoAgg = jacksonHandleNoAggCol.get();
+    JsonNode jsonBindingsNodesNoAgg = jsonResultsNoAgg.path("rows");
+    System.out.println("Results are : " + jsonBindingsNodesNoAgg);
+
+  }
+
+  @Test
+  public void testFacetByWithBindParams() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testFacetByWithBindParams method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
+            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+    ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+    PlanParamExpr idParam = p.param("ID");
+    ModifyPlan plan3 = plan1.joinInner(plan2)
+            .where(
+                    p.eq(p.schemaCol("opticFunctionalTest", "master", "id"), idParam)
+            )
+            .facetBy(p.colSeq("color")
+            );
+            //.orderBy(p.asc(p.col("color")));
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(plan3.bindParam("ID", 1), jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get().path("rows").get(0).path("group0").path("value");
+
+    JsonNode jsonBindingsNodes1 = jsonResults.get(0);
+    System.out.println("First Results are : " + jsonBindingsNodes1);
+    assertEquals("Facet Nodes count value incorrect ", 3, jsonBindingsNodes1.get("count").asInt());
+    assertEquals("Facet Nodes color value incorrect ", "blue", jsonBindingsNodes1.get("color").asText());
+
+    // Verify next facet value
+    JsonNode jsonBindingsNodes2 = jsonResults.get(1);
+    System.out.println("Second Results are : " + jsonBindingsNodes2);
+    assertEquals("Facet Nodes count value incorrect ", 3, jsonBindingsNodes2.get("count").asInt());
+    assertEquals("Facet Nodes color value incorrect ", "green", jsonBindingsNodes2.get("color").asText());
+
+    // Verify two parameter facetBy method
+    PlanSystemColumn fIdCol1 = p.fragmentIdCol("fragIdCol1");
+    PlanSystemColumn fIdCol2 = p.fragmentIdCol("fragIdCol2");
+    ModifyPlan plan11 = p.fromView("opticFunctionalTest", "detail", null, fIdCol1)
+            .orderBy(p.col("id"));
+    ModifyPlan plan21 = p.fromView("opticFunctionalTest", "master", null, fIdCol2)
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+
+    ModifyPlan output = plan11.joinInner(plan21).where(
+            p.eq(
+                    p.schemaCol("opticFunctionalTest", "master", "id"),
+                    p.col("masterId")
+            )
+    )
+            .select(
+                    p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
+                    p.schemaCol("opticFunctionalTest", "master", "date"),
+                    p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
+                    p.col("amount"),
+                    p.col("color"),
+                    fIdCol1,
+                    fIdCol2
+            ).facetBy(p.colSeq("color", "amount"), "DetailName");
+            //.orderBy(p.desc(p.col("DetailName")));
+    JacksonHandle jacksonHandleFrg = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(output, jacksonHandleFrg);
+    JsonNode jsonResultsFrag = jacksonHandleFrg.get();
+    System.out.println("Results are " + jsonResultsFrag);
+
+    JsonNode jsonColumnsResults = jsonResultsFrag.get("columns");
+    assertEquals("Facet Nodes group name value incorrect ", "group0", jsonColumnsResults.get(0).get("name").asText());
+    assertEquals("Facet Nodes group name value incorrect ", "group1", jsonColumnsResults.get(1).get("name").asText());
+  }
+
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tear down");

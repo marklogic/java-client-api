@@ -1237,6 +1237,11 @@ public class StructuredQueryBuilder {
     }
 
     public abstract void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException;
+
+    @Override
+    public boolean canSerializeQueryAsJSON() {
+      return StructuredQueryBuilder.this.getNamespaces() == null && getOptionsName() == null;
+    }
   }
 
   protected class AndQuery

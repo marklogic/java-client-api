@@ -39,11 +39,11 @@ reasonably expect to use in a production application), while remaining as
 simple as possible to facilitate grokking for newbies to the Java Client API.
 It should have helpful comments throughout, including javadocs since it will
 show up in the published javadocs.  It should be added to
-[AllCookbookExamples.java](https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/example/cookbook/AllCookbookExamples.java)
+[AllCookbookExamples.java](https://github.com/marklogic/java-client-api/blob/master/marklogic-client-api/src/main/java/com/marklogic/client/example/cookbook/AllCookbookExamples.java)
 in order of recommended examples for developers to review.
 
 It should have a unit test added to
-[this package](https://github.com/marklogic/java-client-api/tree/develop/src/test/java/com/marklogic/client/test/example/cookbook).
+[this package](https://github.com/marklogic/java-client-api/tree/master/marklogic-client-api/src/test/java/com/marklogic/client/test/example/cookbook).
 The unit test can test whatever is needed, however most cookbook unit tests
 just run the class and consider it success if no errors are thrown.  Some
 cookbook examples, such as SSLClientCreator and KerberosClientCreator cannot be

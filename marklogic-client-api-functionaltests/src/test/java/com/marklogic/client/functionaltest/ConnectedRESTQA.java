@@ -1514,6 +1514,30 @@ public abstract class ConnectedRESTQA {
 		setDatabaseProperties(dbName, "range-path-index", childNode);
 	}
 
+	public static void addPathNamespace(String dbName, String[][] pathNamespace) throws Exception {
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode childNode = mapper.createObjectNode();
+		ArrayNode childArray = mapper.createArrayNode();
+
+		int nRowsLen = pathNamespace.length;
+		int j = 0;
+		for (int i = 0; i < nRowsLen; i++) {
+			ObjectNode childNodeObject = mapper.createObjectNode();
+			childNodeObject.put("prefix", pathNamespace[i][j++]);
+			childNodeObject.put("namespace-uri", pathNamespace[i][j++]);
+			/*
+			 * if new field elements are to be added, then: 1) Increment value
+			 * of j 2) add them below here using
+			 * childNodeObject.put("FIELD-NAME", rangePaths[i][j++]);
+			 */
+
+			childArray.add(childNodeObject);
+			j = 0;
+		}
+		childNode.putArray("path-namespace").addAll(childArray);
+		setDatabaseProperties(dbName, "path-namespace", childNode);
+	}
+
 	public static void addGeospatialElementIndexes(String dbName, String localname, String namespace,
 			String coordinateSystem, String pointFormat, boolean rangeValuePositions, String invalidValues)
 			throws Exception {
@@ -1857,12 +1881,9 @@ public abstract class ConnectedRESTQA {
 
 		enableCollectionLexicon(dbName);
 		enableWordLexicon(dbName);
-
 		// Insert the range indices
 		addRangeElementIndex(dbName, rangeElements);
-
 		enableTrailingWildcardSearches(dbName);
-
 		// Insert the path range indices
 		addRangePathIndex(dbName, rangePaths);
 	}
@@ -2300,9 +2321,6 @@ public abstract class ConnectedRESTQA {
 	/**
 	 * Clear the database contents based on port for SSL or non SSL enabled REST
 	 * Server.
-	 * 
-	 * @param dbName
-	 * @param fNames
 	 * @throws Exception
 	 */
 	public static void clearDB() throws Exception {
@@ -3034,4 +3052,32 @@ public abstract class ConnectedRESTQA {
 		  }
 		  client.getConnectionManager().shutdown();
 	  }
+
+	public static void associateRESTServerWithModuleDB(String restServerName, String modulesDbName) throws Exception {
+		DefaultHttpClient client = null;
+		try {
+			client = new DefaultHttpClient();
+
+			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
+					new UsernamePasswordCredentials("admin", "admin"));
+			String body = "{\"modules-database\": \"" + modulesDbName + "\",\"group-name\": \"Default\"}";
+
+			HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
+					+ "/properties?server-type=http");
+			put.addHeader("Content-type", "application/json");
+			put.setEntity(new StringEntity(body));
+
+			HttpResponse response2 = client.execute(put);
+			HttpEntity respEntity = response2.getEntity();
+			if (respEntity != null) {
+				String content = EntityUtils.toString(respEntity);
+				System.out.println(content);
+			}
+		} catch (Exception e) {
+			// writing error to Log
+			e.printStackTrace();
+		} finally {
+			client.getConnectionManager().shutdown();
+		}
+	}
 }

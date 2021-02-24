@@ -27,7 +27,7 @@ import com.marklogic.client.datamovement.*;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.datamovement.JobTicket.JobType;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.SearchQueryDefinition;
 import com.marklogic.client.util.RequestParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,7 @@ public class DataMovementServices {
     return this;
   }
 
-  QueryConfig initConfig(String method, QueryDefinition qdef) {
+  QueryConfig initConfig(String method, SearchQueryDefinition qdef) {
     logger.debug("initializing forest configuration with query");
     if (qdef == null) throw new IllegalArgumentException("null query definition");
 
@@ -71,6 +71,28 @@ public class DataMovementServices {
         queryConfig.filtered = filteredResult.asBoolean();
         logger.debug("initialized filtering to: {}", queryConfig.filtered.toString());
       }
+      JsonNode maxDocToUriBatchRatio = result.get("maxDocToUriBatchRatio");
+      if (maxDocToUriBatchRatio != null && maxDocToUriBatchRatio.isInt()) {
+        queryConfig.maxDocToUriBatchRatio = maxDocToUriBatchRatio.asInt();
+        logger.debug("initialized maxDocToUriBatchRatio to : {}", queryConfig.maxDocToUriBatchRatio);
+      } else {
+        queryConfig.maxDocToUriBatchRatio = -1;
+      }
+      JsonNode defaultDocBatchSize = result.get("defaultDocBatchSize");
+      if (defaultDocBatchSize != null && defaultDocBatchSize.isInt()) {
+        queryConfig.defaultDocBatchSize = defaultDocBatchSize.asInt();
+        logger.debug("initialized defaultDocBatchSize to : {}", queryConfig.defaultDocBatchSize);
+      } else {
+        queryConfig.defaultDocBatchSize = -1;
+      }
+      JsonNode maxUriBatchSize = result.get("maxUriBatchSize");
+      if (maxUriBatchSize != null && maxUriBatchSize.isInt()) {
+        queryConfig.maxUriBatchSize = maxUriBatchSize.asInt();
+        logger.debug("initialized maxUriBatchSize to : {}", queryConfig.maxUriBatchSize);
+      } else {
+        queryConfig.maxUriBatchSize = -1;
+      }
+
     } catch (JsonProcessingException e) {
       logger.error("failed to initialize query", e);
     }
@@ -177,5 +199,8 @@ public class DataMovementServices {
     String serializedCtsQuery;
     ForestConfiguration forestConfig;
     Boolean filtered;
+    int maxDocToUriBatchRatio;
+    int defaultDocBatchSize;
+    int maxUriBatchSize;
   }
 }

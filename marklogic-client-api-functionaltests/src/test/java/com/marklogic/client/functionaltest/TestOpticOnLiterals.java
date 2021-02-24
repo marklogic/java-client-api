@@ -1659,16 +1659,16 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     
     // Delete the temp schema DB after resetting the Schema DB on content DB.
     // Else delete fails.
-    //deleteUserRole("opticRole");
-    //deleteRESTUser("opticUser");
+    deleteUserRole("opticRole");
+    deleteRESTUser("opticUser");
     setDatabaseProperties(dbName, "schema-database", dbName);
-    //deleteDB(schemadbName);
-    //deleteForest(schemafNames[0]);
+    deleteDB(schemadbName);
+    deleteForest(schemafNames[0]);
     // release client
     clientRes.release();
     client.release();
-    //cleanupRESTServer(dbName, fNames);
-   // deleteRESTUser("eval-user");
-    //deleteUserRole("test-eval");
+    cleanupRESTServer(dbName, fNames);
+    deleteRESTUser("eval-user");
+    deleteUserRole("test-eval");
   }
 }

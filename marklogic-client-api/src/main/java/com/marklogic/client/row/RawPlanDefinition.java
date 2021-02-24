@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2019-2020 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.marklogic.client.row;
 
-import com.marklogic.client.expression.PlanBuilder.Plan;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
 /**
@@ -23,14 +22,14 @@ import com.marklogic.client.io.marker.JSONWriteHandle;
  * in a JSON serialization of the exported
  * AST (Abstract Syntax Tree) for the plan.
  */
-public interface RawPlanDefinition extends Plan {
+public interface RawPlanDefinition extends RawPlan {
     /**
-     * Returns the handle for the JSON representation of the plan.
+     * Returns the handle for the JSON representation of the AST for the plan.
      * @return	the JSON handle
      */
     JSONWriteHandle getHandle();
     /**
-     * Specifies the handle for the JSON representation of the plan.
+     * Specifies the handle for the JSON representation of the AST for the plan.
      * @param handle	the JSON handle
      */
     void setHandle(JSONWriteHandle handle);

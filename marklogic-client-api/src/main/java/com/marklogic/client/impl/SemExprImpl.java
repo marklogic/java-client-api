@@ -208,7 +208,7 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public SemStoreExpr rulesetStore(XsStringSeqVal locations) {
+  public SemStoreExpr rulesetStore(ServerExpression locations) {
     return new StoreCallImpl("sem", "ruleset-store", new Object[]{ locations });
   }
 
@@ -220,19 +220,19 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public SemStoreExpr rulesetStore(XsStringSeqVal locations, SemStoreSeqExpr store) {
+  public SemStoreExpr rulesetStore(ServerExpression locations, ServerExpression store) {
     return new StoreCallImpl("sem", "ruleset-store", new Object[]{ locations, store });
   }
 
   
   @Override
-  public SemStoreExpr rulesetStore(String locations, SemStoreSeqExpr store, String options) {
+  public SemStoreExpr rulesetStore(String locations, ServerExpression store, String options) {
     return rulesetStore((locations == null) ? (XsStringVal) null : xs.string(locations), store, (options == null) ? (XsStringVal) null : xs.string(options));
   }
 
   
   @Override
-  public SemStoreExpr rulesetStore(XsStringSeqVal locations, SemStoreSeqExpr store, XsStringSeqVal options) {
+  public SemStoreExpr rulesetStore(ServerExpression locations, ServerExpression store, ServerExpression options) {
     return new StoreCallImpl("sem", "ruleset-store", new Object[]{ locations, store, options });
   }
 
@@ -268,19 +268,19 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public SemStoreExpr store(XsStringSeqVal options) {
+  public SemStoreExpr store(ServerExpression options) {
     return new StoreCallImpl("sem", "store", new Object[]{ options });
   }
 
   
   @Override
-  public SemStoreExpr store(String options, CtsQueryExpr query) {
+  public SemStoreExpr store(String options, ServerExpression query) {
     return store((options == null) ? (XsStringVal) null : xs.string(options), query);
   }
 
   
   @Override
-  public SemStoreExpr store(XsStringSeqVal options, CtsQueryExpr query) {
+  public SemStoreExpr store(ServerExpression options, ServerExpression query) {
     return new StoreCallImpl("sem", "store", new Object[]{ options, query });
   }
 

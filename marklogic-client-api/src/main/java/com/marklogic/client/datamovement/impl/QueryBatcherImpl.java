@@ -27,20 +27,17 @@ import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.QueryBatchException;
 import com.marklogic.client.datamovement.QueryEvent;
 import com.marklogic.client.datamovement.QueryBatcherListener;
-import com.marklogic.client.impl.HandleAccessor;
-import com.marklogic.client.impl.HandleImplementation;
+import com.marklogic.client.impl.*;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.RawQueryDefinition;
+import com.marklogic.client.query.SearchQueryDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.impl.QueryManagerImpl;
-import com.marklogic.client.impl.UrisHandle;
 
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -59,8 +56,8 @@ import java.util.stream.Collectors;
 public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private static Logger logger = LoggerFactory.getLogger(QueryBatcherImpl.class);
   private String queryMethod;
-  private QueryDefinition query;
-  private QueryDefinition originalQuery;
+  private SearchQueryDefinition query;
+  private SearchQueryDefinition originalQuery;
   private Boolean filtered;
   private Iterator<String> iterator;
   private boolean threadCountSet = false;
@@ -82,14 +79,22 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private boolean isSingleThreaded = false;
   private long maxUris = Long.MAX_VALUE;
   private long maxBatches = Long.MAX_VALUE;
+  private int maxDocToUriBatchRatio;
+  private int docToUriBatchRatio;
+  private int defaultDocBatchSize;
+  private int maxUriBatchSize;
+  private int threadThrottleFactor;
 
   QueryBatcherImpl(
-          QueryDefinition originalQuery, DataMovementManager moveMgr, ForestConfiguration forestConfig,
-          String serializedCtsQuery, Boolean filtered
+          SearchQueryDefinition originalQuery, DataMovementManager moveMgr, ForestConfiguration forestConfig,
+          String serializedCtsQuery, Boolean filtered, int maxDocToUriBatchRatio, int defaultDocBatchSize, int maxUriBatchSize
   ) {
-    this(moveMgr, forestConfig);
-    QueryManagerImpl queryMgr = (QueryManagerImpl) getPrimaryClient().newQueryManager();
-    if (serializedCtsQuery != null && serializedCtsQuery.length() > 0) {
+    this(moveMgr, forestConfig, maxDocToUriBatchRatio, defaultDocBatchSize, maxUriBatchSize);
+    // TODO:  skip conversion in DataMovementManagerImpl.newQueryBatcherImpl() unless canSerializeQueryAsJSON()
+    if (serializedCtsQuery != null && serializedCtsQuery.length() > 0 &&
+            originalQuery instanceof AbstractSearchQueryDefinition &&
+            ((AbstractSearchQueryDefinition) originalQuery).canSerializeQueryAsJSON()) {
+      QueryManagerImpl queryMgr = (QueryManagerImpl) getPrimaryClient().newQueryManager();
       this.queryMethod = "POST";
       this.query = queryMgr.newRawCtsQueryDefinition(new StringHandle(serializedCtsQuery).withFormat(Format.JSON));
       this.originalQuery = originalQuery;
@@ -100,7 +105,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       initQuery(originalQuery);
     }
   }
-  public QueryBatcherImpl(QueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
+  public QueryBatcherImpl(SearchQueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     this(moveMgr, forestConfig);
     initQuery(query);
   }
@@ -108,12 +113,22 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     this(moveMgr, forestConfig);
     this.iterator = iterator;
   }
+  private QueryBatcherImpl(DataMovementManager moveMgr, ForestConfiguration forestConfig,
+                           int maxDocToUriBatchRatio, int defaultDocBatchSize, int maxUriBatchSize) {
+    this(moveMgr, forestConfig);
+    this.maxDocToUriBatchRatio = maxDocToUriBatchRatio;
+    this.defaultDocBatchSize = defaultDocBatchSize;
+    this.maxUriBatchSize = maxUriBatchSize;
+    withBatchSize(defaultDocBatchSize);
+  }
   private QueryBatcherImpl(DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super(moveMgr);
     withForestConfig(forestConfig);
-    withBatchSize(1000);
   }
-  private void initQuery(QueryDefinition query) {
+  public ThreadPoolExecutor getThreadPool () { //for testing purpose
+    return threadPool;
+  }
+  private void initQuery(SearchQueryDefinition query) {
     if (query == null) {
       throw new IllegalArgumentException("Cannot create QueryBatcher with null query");
     }
@@ -209,7 +224,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     logger.trace("retryForest {} on retryHost {} at start {}",
       retryForest.getForestName(), retryForest.getPreferredHost(), start);
     QueryTask runnable = new QueryTask(getMoveMgr(), this, retryForest, queryMethod, query, filtered,
-      queryEvent.getForestBatchNumber(), start, queryEvent.getLastUriForForest(),
+      queryEvent.getForestBatchNumber(), start, null, queryEvent.getLastUriForForest(),
       queryEvent.getJobBatchNumber(), callFailListeners);
     runnable.run();
   }
@@ -296,10 +311,76 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
   @Override
-  public QueryBatcher withBatchSize(int batchSize) {
+  public QueryBatcher withBatchSize(int docBatchSize) {
+    if (docBatchSize > this.maxUriBatchSize) {
+      logger.warn("docBatchSize is beyond maxDocBatchSize");
+    }
+    if (docBatchSize < 1) {
+      throw new IllegalArgumentException("docBatchSize cannot be less than 1");
+    }
     requireNotStarted();
-    super.withBatchSize(batchSize);
+    super.withBatchSize(docBatchSize);
+    this.docToUriBatchRatio = Math.min(this.maxDocToUriBatchRatio, this.maxUriBatchSize / docBatchSize);
+    if (this.docToUriBatchRatio == 0) {
+      this.docToUriBatchRatio = 1;
+    }
+    this.threadThrottleFactor = 0;
     return this;
+  }
+
+  @Override
+  public QueryBatcher withBatchSize(int docBatchSize, int docToUriBatchRatio) {
+    if (docToUriBatchRatio > this.maxDocToUriBatchRatio) {
+      throw new IllegalArgumentException("docToUriBatchRatio is beyond maxDocToUriBatchRatio");
+    }
+    if (docBatchSize * docToUriBatchRatio > this.maxUriBatchSize) {
+      throw new IllegalArgumentException("docToUriBatchRatio is beyond maxUriBatchSize/docBatchSize");
+    }
+    if (docToUriBatchRatio < 1) {
+      throw new IllegalArgumentException("docToUriBatchRatio is less than 1");
+    }
+    withBatchSize(docBatchSize);
+    this.docToUriBatchRatio = docToUriBatchRatio;
+    return this;
+  }
+
+/*  @Override
+  public QueryBatcher withBatchSize(int docBatchSize, int docToUriBatchRatio, int threadThrottleFactor) {
+    if (threadThrottleFactor < 0 || threadThrottleFactor > this.maxDocToUriBatchRatio) {
+      throw new IllegalArgumentException("threadThrottleFactor is less than 0 or " +
+              "threadThrottleFactor is larger than maxDocToUriBatchRatio");
+    }
+    if (threadThrottleFactor >= docToUriBatchRatio) {
+      throw new IllegalArgumentException("threadThrottleFactor must be less than docToUriBatchRatio");
+    }
+    withBatchSize(docBatchSize, docToUriBatchRatio);
+    this.threadThrottleFactor = threadThrottleFactor;
+    return this;
+  }*/
+
+  @Override
+  public int getDocToUriBatchRatio() {
+    return this.docToUriBatchRatio;
+  }
+
+//  @Override
+  public int getThreadThrottleFactor() {
+    return this.threadThrottleFactor;
+  }
+
+  @Override
+  public int getDefaultDocBatchSize() {
+    return this.defaultDocBatchSize;
+  }
+
+  @Override
+  public int getMaxUriBatchSize() {
+    return this.maxUriBatchSize;
+  }
+
+  @Override
+  public int getMaxDocToUriBatchRatio() {
+    return this.maxDocToUriBatchRatio;
   }
 
   @Override
@@ -366,7 +447,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
     if ( getBatchSize() <= 0 ) {
       withBatchSize(1);
-      logger.warn("batchSize should be 1 or greater--setting batchSize to 1");
+      logger.warn("docBatchSize should be 1 or greater--setting docBatchSize to 1");
     }
     super.setJobTicket(ticket);
     initialize();
@@ -392,7 +473,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       if ( query != null ) {
         Forest[] forests = getForestConfig().listForests();
         logger.warn("threadCount not set--defaulting to number of forests ({})", forests.length);
-        withThreadCount(forests.length);
+        withThreadCount(forests.length * (docToUriBatchRatio - threadThrottleFactor));
       } else {
         int hostCount = clientList.get().size();
         logger.warn("threadCount not set--defaulting to number of hosts ({})", hostCount);
@@ -407,8 +488,10 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     if(getThreadCount() == 1) {
       isSingleThreaded = true;
     }
-    logger.info("Starting job batchSize={}, threadCount={}, onUrisReady listeners={}, failure listeners={}",
-      getBatchSize(), getThreadCount(), urisReadyListeners.size(), failureListeners.size());
+    logger.info("Starting job docBatchSize={}, docToUriBatchRatio={}, threadThrottleFactor= {}, threadCount={}, " +
+                    "onUrisReady listeners={}, failure listeners={}",
+      getBatchSize(), getDocToUriBatchRatio(), getThreadThrottleFactor(), getThreadCount(),
+            urisReadyListeners.size(), failureListeners.size());
     threadPool = new QueryThreadPoolExecutor(getThreadCount(), this);
   }
 
@@ -525,7 +608,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       // we don't need to worry about consistentSnapshotFirstQueryHasRun because that's already done
       // or we wouldn't be here because we wouldn't have a synchronized lock on this
       threadPool.execute(new QueryTask(
-          getMoveMgr(), this, forest, queryMethod, query, filtered, 1, 1
+          getMoveMgr(), this, forest, queryMethod, query, filtered, 1, 1, null
       ));
     }
     if ( restartedForests.size() > 0 ) {
@@ -553,11 +636,13 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
   /* All we do to startQuerying is create a task per forest that queries that
-   * forest for the first page of results, then spawns a new task to query for
-   * the next page of results, etc.  Tasks are handled by threadPool which is a
+   * forest for the first page of results, and process part of the results.
+   * Then spawns (docToUriBatchRatio - 1) tasks to process other results. After
+   * that spawns a new task to query for the next page of results, etc.
+   * Tasks are handled by threadPool which is a
    * slightly modified ThreadPoolExecutor with threadCount threads.  We don't
    * know whether we're at the end of the result set from a forest until we get
-   * the last batch that isn't full (batch size != batchSize).  Therefore, any
+   * the last batch that isn't full (batch size != uri batch size).  Therefore, any
    * error to retrieve a batch might prevent us from getting the next batch and
    * all remaining batches.  To mitigate the risk of one error effectively
    * cancelling the rest of the pagination for that forest,
@@ -568,16 +653,17 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
    * failure scenarios and retry those batches.
    */
   private synchronized void startQuerying() {
-    boolean consistentSnapshotFirstQueryHasRun = false;
-    for ( Forest forest : getForestConfig().listForests() ) {
+    Forest[] forests = getForestConfig().listForests();
+    boolean runInApplicationThread = (consistentSnapshot && forests.length > 1);
+    for (Forest forest:  forests) {
       QueryTask runnable = new QueryTask(
-          getMoveMgr(), this, forest, queryMethod, query, filtered, 1, 1
+              getMoveMgr(), this, forest, queryMethod, query, filtered, 1, 1, null
       );
-      if ( consistentSnapshot == true && consistentSnapshotFirstQueryHasRun == false ) {
+      if ( runInApplicationThread) {
         // let's run this first time in-line so we'll have the serverTimestamp set
         // before we launch all the parallel threads
+        runInApplicationThread = false;
         runnable.run();
-        consistentSnapshotFirstQueryHasRun = true;
       } else {
         threadPool.execute(runnable);
       }
@@ -589,7 +675,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     private QueryBatcherImpl batcher;
     private Forest forest;
     private String queryMethod;
-    private QueryDefinition query;
+    private SearchQueryDefinition query;
     private Boolean filtered;
     private long forestBatchNum;
     private long start;
@@ -597,20 +683,26 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     private boolean callFailListeners;
     private String afterUri;
     private String nextAfterUri;
+    boolean isQueryBatch;
+    private QueryBatchImpl batch;
+    private int totalProcessedCount = 0;
+    private boolean isLastBatch;
+    private int lastBatchNum;
 
     QueryTask(DataMovementManager moveMgr, QueryBatcherImpl batcher, Forest forest,
-        String queryMethod, QueryDefinition query, Boolean filtered, long forestBatchNum, long start
-    ) {
-      this(moveMgr, batcher, forest, queryMethod, query, filtered, forestBatchNum, start, null, -1, true);
+        String queryMethod, SearchQueryDefinition query, Boolean filtered, long forestBatchNum, long start, QueryBatchImpl batch
+              ) {
+      this(moveMgr, batcher, forest, queryMethod, query, filtered, forestBatchNum, start, batch, null, -1, true);
     }
     QueryTask(DataMovementManager moveMgr, QueryBatcherImpl batcher, Forest forest,
-        String queryMethod, QueryDefinition query, Boolean filtered, long forestBatchNum, long start, String afterUri
+        String queryMethod, SearchQueryDefinition query, Boolean filtered, long forestBatchNum, long start, QueryBatchImpl batch, String afterUri
     ) {
-      this(moveMgr, batcher, forest, queryMethod, query, filtered, forestBatchNum, start, afterUri, -1, true);
+      this(moveMgr, batcher, forest, queryMethod, query, filtered, forestBatchNum, start, batch, afterUri,
+              -1, true);
     }
     QueryTask(DataMovementManager moveMgr, QueryBatcherImpl batcher, Forest forest,
-        String queryMethod, QueryDefinition query, Boolean filtered, long forestBatchNum, long start, String afterUri,
-        long retryBatchNumber, boolean callFailListeners
+        String queryMethod, SearchQueryDefinition query, Boolean filtered, long forestBatchNum, long start,
+              QueryBatchImpl batch, String afterUri, long retryBatchNumber, boolean callFailListeners
     ) {
       this.moveMgr = moveMgr;
       this.batcher = batcher;
@@ -620,8 +712,10 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       this.filtered = filtered;
       this.forestBatchNum = forestBatchNum;
       this.start = start;
+      this.isQueryBatch = isQueryBatch;
       this.retryBatchNumber = retryBatchNumber;
       this.callFailListeners = callFailListeners;
+      this.batch = batch;
 
       // ignore the afterUri if the effective version is less than 9.0-9
       if (Long.compareUnsigned(getMoveMgr().getServerVersion(), Long.parseUnsignedLong("9000900")) >= 0) {
@@ -630,39 +724,33 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
 
     public void run() {
-      // don't proceed if this forest is marked as done (because we already got the last batch)
-      AtomicBoolean isDone = forestIsDone.get(forest);
-      if ( isDone.get() == true) {
-        logger.error("Attempt to query forest '{}' forestBatchNum {} with start {} after the last batch " +
-          "for that forest has already been retrieved", forest.getForestName(), forestBatchNum, start);
-        return;
-      }
-      
       // don't proceed if this job is stopped (because dataMovementManager.stopJob was called)
-      if (batcher.getStopped().get() == true ) {
+      if (batcher.getStopped().get() == true) {
         logger.warn("Cancelling task to query forest '{}' forestBatchNum {} with start {} after the job is stopped",
-          forest.getForestName(), forestBatchNum, start);
+                forest.getForestName(), forestBatchNum, start);
         return;
       }
       DatabaseClient client = getMoveMgr().getForestClient(forest);
       Calendar queryStart = Calendar.getInstance();
-      QueryBatchImpl batch = new QueryBatchImpl()
-        .withBatcher(batcher)
-        .withClient(client)
-        .withTimestamp(queryStart)
-        .withJobTicket(getJobTicket())
-        .withForestBatchNumber(forestBatchNum)
-        .withForest(forest);
-      if ( retryBatchNumber != -1 ) {
-        batch = batch.withJobBatchNumber(retryBatchNumber);
-      } else {
-        batch = batch.withJobBatchNumber(batchNumber.incrementAndGet());
-      }
-      try {
+      List<List<String>> uris = new ArrayList<>();
+      AtomicBoolean isDone = forestIsDone.get(forest);
+      boolean hasLastBatch = false;
+      int lastBatchNum = 0;
+
+      if (this.batch == null) { // if it's query batch
+        this.batch = new QueryBatchImpl()
+                .withBatcher(batcher)
+                .withClient(client)
+                .withTimestamp(queryStart)
+                .withJobTicket(getJobTicket())
+                .withForestBatchNumber(forestBatchNum)
+                .withForest(forest);
+
         QueryManagerImpl queryMgr = (QueryManagerImpl) client.newQueryManager();
-        queryMgr.setPageLength(getBatchSize());
+        queryMgr.setPageLength(getBatchSize() * getDocToUriBatchRatio());
         UrisHandle handle = new UrisHandle();
-        if ( consistentSnapshot == true && serverTimestamp.get() > -1 ) {
+
+        if (consistentSnapshot == true && serverTimestamp.get() > -1) {
           handle.setPointInTimeQueryTimestamp(serverTimestamp.get());
         }
         // this try-with-resources block will call results.close() once the block is done
@@ -671,76 +759,150 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
         try (UrisHandle results = queryMgr.uris(queryMethod, query, filtered, handle, start, afterUri, forest.getForestName())) {
           // if we're doing consistentSnapshot and this is the first result set, let's capture the
           // serverTimestamp so we can use it for all future queries
-          if ( consistentSnapshot == true && serverTimestamp.get() == -1 ) {
+          if (consistentSnapshot == true && serverTimestamp.get() == -1) {
             if (serverTimestamp.compareAndSet(-1, results.getServerTimestamp())) {
               logger.info("Consistent snapshot timestamp=[{}]", serverTimestamp);
             }
           }
-          List<String> uris = new ArrayList<>();
-          for ( String uri : results ) {
-            uris.add( uri );
-          }
-          
-          batch = batch
-            .withItems(uris.toArray(new String[uris.size()]))
-            .withServerTimestamp(serverTimestamp.get())
-            .withJobResultsSoFar(resultsSoFar.addAndGet(uris.size()))
-            .withForestResultsSoFar(forestResults.get(forest).addAndGet(uris.size()));
-          
-          if(maxUris <= (resultsSoFar.longValue())) {
-              isDone.set(true);
-          } else if ( uris.size() == getBatchSize() ) {
-              nextAfterUri = uris.get(getBatchSize() - 1);
-              // this is a full batch
-              launchNextTask();
-            }
 
-          logger.trace("batch size={}, jobBatchNumber={}, jobResultsSoFar={}, forest={}", uris.size(),
-            batch.getJobBatchNumber(), batch.getJobResultsSoFar(), forest.getForestName());
-          // now that we have the QueryBatch, let's send it to each onUrisReady listener
-          for (QueryBatchListener listener : urisReadyListeners) {
-            try {
-              listener.processEvent(batch);
-            } catch (Throwable t) {
-              logger.error("Exception thrown by an onUrisReady listener", t);
+          for (int i = 0; i < getDocToUriBatchRatio(); i++) {
+            uris.add(new ArrayList<>());
+          }
+
+          totalProcessedCount = 0;
+          for (String uri : results) {
+            int batchNum = totalProcessedCount / getBatchSize();
+            uris.get(batchNum).add(uri);
+            totalProcessedCount++;
+          }
+
+          if (totalProcessedCount == 0) {
+            isDone.set(true);
+          } else if (totalProcessedCount != docToUriBatchRatio * getBatchSize()) {
+            hasLastBatch = true;
+            if (totalProcessedCount % getBatchSize() == 0) {
+              lastBatchNum = totalProcessedCount / getBatchSize() - 1;
+            } else {
+              lastBatchNum = totalProcessedCount / getBatchSize();
             }
           }
-          if ( uris.size() != getBatchSize() ) {
-            // we're done if we get a partial batch (always the last)
-            isDone.set(true);
+        } catch (ResourceNotFoundException e) {
+          // we're done if we get a 404 NOT FOUND which throws ResourceNotFoundException
+          // this should only happen if the last query retrieved a full batch so it thought
+          // there would be more and queued this task which retrieved 0 results
+          isDone.set(true);
+          shutdownIfAllForestsAreDone();
+          return;
+        }
+
+        batch = batch
+                .withItems(uris.get(0).toArray(new String[uris.get(0).size()]))
+                .withServerTimestamp(serverTimestamp.get())
+                .withJobResultsSoFar(resultsSoFar.addAndGet(uris.get(0).size()))
+                .withForestResultsSoFar(forestResults.get(forest).addAndGet(uris.get(0).size()));
+
+        if(hasLastBatch && lastBatchNum == 0) {
+          batch.withIsLastBatch(true);
+        }
+
+        for (int i = 1; i < getDocToUriBatchRatio(); i++) {
+          if (uris.get(i).size() == 0) {
+            continue;
+          }
+
+          QueryBatchImpl docBatch = new QueryBatchImpl() //have to create a new batch, otherwise withItems cannot overwrite
+                  .withBatcher(batcher)
+                  .withClient(client)
+                  .withTimestamp(queryStart)
+                  .withJobTicket(getJobTicket())
+                  .withForestBatchNumber(forestBatchNum)
+                  .withForest(forest)
+                  .withItems(uris.get(i).toArray(new String[uris.get(i).size()]))
+                  .withServerTimestamp(serverTimestamp.get())
+                  .withJobResultsSoFar(resultsSoFar.addAndGet(uris.get(i).size()))
+                  .withForestResultsSoFar(forestResults.get(forest).addAndGet(uris.get(i).size()));
+
+          if (hasLastBatch && lastBatchNum == i) {
+            docBatch.withIsLastBatch(true);
+          }
+
+          threadPool.execute(
+                  new QueryTask(moveMgr, batcher, forest, QueryBatcherImpl.this.queryMethod, query, filtered,
+                          forestBatchNum + i, start, docBatch, nextAfterUri
+                  )
+          );
+        }
+      } //end query batch if
+
+      if (batch.getItems().length != 0) {
+        processDocs(batch);
+      }
+
+      if (maxUris <= (resultsSoFar.longValue())) {
+        isDone.set(true);
+      }
+
+      if (totalProcessedCount == getBatchSize() * getDocToUriBatchRatio()) {
+        //document processing batch won't step in
+        nextAfterUri = uris.get(getDocToUriBatchRatio() - 1).get(getBatchSize() - 1);
+        launchNextTask();
+      }
+
+      if (isDone.get()) {
+        shutdownIfAllForestsAreDone();
+      }
+    }
+
+    private void processDocs(QueryBatchImpl batch) {
+      AtomicBoolean isDone = forestIsDone.get(forest);
+
+      try {
+        if (retryBatchNumber != -1) {
+          batch = batch.withJobBatchNumber(retryBatchNumber);
+        } else {
+          batch = batch.withJobBatchNumber(batchNumber.incrementAndGet());
+        }
+
+        logger.trace("Uri batch size={}, jobBatchNumber={}, jobResultsSoFar={}, forest={}", batch.getItems().length,
+                batch.getJobBatchNumber(), batch.getJobResultsSoFar(), forest.getForestName());
+        // now that we have the QueryBatch, let's send it to each onUrisReady listener
+        for (QueryBatchListener listener : urisReadyListeners) {
+          try {
+            listener.processEvent(batch);
+          } catch (Throwable t) {
+            logger.error("Exception thrown by an onUrisReady listener", t);
           }
         }
-      } catch (ResourceNotFoundException e) {
-        // we're done if we get a 404 NOT FOUND which throws ResourceNotFoundException
-        // this should only happen if the last query retrieved a full batch so it thought
-        // there would be more and queued this task which retrieved 0 results
-        isDone.set(true);
+        if (batch.getItems().length != getBatchSize()) {
+          // we're done if we get a partial batch (always the last)
+          isDone.set(true);
+        }
+        if (batch.getIsLastBatch()) {
+          isDone.set(true);
+        }
       } catch (Throwable t) {
         // any error outside listeners is grounds for stopping queries to this forest
-        if ( callFailListeners == true ) {
+        if (callFailListeners == true) {
           batch = batch
-            .withJobResultsSoFar(resultsSoFar.get())
-            .withForestResultsSoFar(forestResults.get(forest).get());
-          for ( QueryFailureListener listener : failureListeners ) {
+                  .withJobResultsSoFar(resultsSoFar.get())
+                  .withForestResultsSoFar(forestResults.get(forest).get());
+          for (QueryFailureListener listener : failureListeners) {
             try {
               listener.processFailure(new QueryBatchException(batch, t));
             } catch (Throwable e2) {
               logger.error("Exception thrown by an onQueryFailure listener", e2);
             }
           }
-          if(retryForestMap.get(forest).get() == 0) {
+          if (retryForestMap.get(forest).get() == 0) {
             isDone.set(true);
           } else {
             retryForestMap.get(forest).decrementAndGet();
           }
-        } else if ( t instanceof RuntimeException ) {
+        } else if (t instanceof RuntimeException) {
           throw (RuntimeException) t;
         } else {
           throw new DataMovementException("Failed to retry batch", t);
         }
-      }
-      if(isDone.get()) {
-        shutdownIfAllForestsAreDone();
       }
     }
 
@@ -754,10 +916,10 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       if ( isDone.get() == true ) {
     	  shutdownIfAllForestsAreDone();
     	  return;
-    }
-      long nextStart = start + getBatchSize();
+      }
+      long nextStart = start + getBatchSize() * getDocToUriBatchRatio();
       threadPool.execute(new QueryTask(
-          moveMgr, batcher, forest, QueryBatcherImpl.this.queryMethod, query, filtered, forestBatchNum + 1, nextStart, nextAfterUri
+          moveMgr, batcher, forest, QueryBatcherImpl.this.queryMethod, query, filtered, forestBatchNum + getBatchSize(), nextStart, null, nextAfterUri
       ));
     }
   };

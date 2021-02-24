@@ -17,12 +17,15 @@ package com.marklogic.client.tools.gradle
 
 import com.marklogic.client.tools.proxy.Generator
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 open class ModuleInitTask : DefaultTask() {
   private val generator = Generator()
 
+  @Input
   var endpointDeclarationFile: String = ""
+  @Input
   var moduleExtension:         String = ""
 
   @TaskAction

@@ -21,6 +21,7 @@ package com.marklogic.client.type;
  * A sequence of columns - potentially with a sort direction
  * specified by an asc() or desc() call - for an orderBy() 
  * operation in a row pipeline.
+ * See {@link com.marklogic.client.expression.PlanBuilder#sortKeySeq(PlanSortKey...)}
  */
 public interface PlanSortKeySeq {
 }

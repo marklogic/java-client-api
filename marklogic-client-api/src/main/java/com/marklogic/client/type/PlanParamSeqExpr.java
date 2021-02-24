@@ -23,5 +23,5 @@ package com.marklogic.client.type;
  * in expressions and can be passed on bind() calls to be
  * assigned literal values when invoking a row pipeline.
  */
-public interface PlanParamSeqExpr {
+public interface PlanParamSeqExpr extends ServerExpression {
 }

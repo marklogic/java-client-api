@@ -30,6 +30,9 @@ import java.util.TreeMap;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import com.marklogic.client.expression.CtsQueryBuilder;
+import com.marklogic.client.query.*;
+import com.marklogic.client.type.*;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -68,11 +71,7 @@ import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonDatabindHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.TemporalOperator;
-import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class TestBiTemporal extends BasicJavaClientREST {
 
@@ -2568,8 +2567,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
     boolean exceptionThrown = false;
 
-    System.out
-        .println("Inside testInsertJSONDocumentUsingNonExistingTemporalCollection");
+    System.out.println("Inside testInsertJSONDocumentUsingNonExistingTemporalCollection");
 
     JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
         "2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON",
@@ -3586,4 +3584,201 @@ public class TestBiTemporal extends BasicJavaClientREST {
     assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
   }
 
-}
+  /*
+   * Insert multiple temporal documents to test bulk write of temporal
+   * documents. Similar to testBulkWritReadWithTransaction, but uses CtsQueryBuilder.
+   */
+  @Test
+  public void testBulkWRTransactionCtsQueryBldr() throws Exception {
+
+    boolean tstatus = false;
+    DocumentPage termQueryResults = null;
+
+    Transaction tx = writerClient.openTransaction();
+    try {
+      XMLDocumentManager docMgr = writerClient.newXMLDocumentManager();
+
+      DocumentWriteSet writeset = docMgr.newWriteSet();
+      String[] docId = new String[4];
+      docId[0] = "1.xml";
+      docId[1] = "2.xml";
+      docId[2] = "3.xml";
+      docId[3] = "4.xml";
+
+      DOMHandle handle1 = getXMLDocumentHandle("2001-01-01T00:00:00",
+              "2011-12-31T23:59:56", "999 Skyway Park - XML", docId[0]);
+      DOMHandle handle2 = getXMLDocumentHandle("2001-01-02T00:00:00",
+              "2011-12-31T23:59:57", "999 Skyway Park - XML", docId[1]);
+      DOMHandle handle3 = getXMLDocumentHandle("2001-01-03T00:00:00",
+              "2011-12-31T23:59:58", "999 Skyway Park - XML", docId[2]);
+      DOMHandle handle4 = getXMLDocumentHandle("2001-01-04T00:00:00",
+              "2011-12-31T23:59:59", "999 Skyway Park - XML", docId[3]);
+      DocumentMetadataHandle mh = setMetadata(false);
+
+      writeset.add(docId[0], mh, handle1);
+      writeset.add(docId[1], mh, handle2);
+      writeset.add(docId[2], mh, handle3);
+      writeset.add(docId[3], mh, handle4);
+      Map<String, DOMHandle> map = new TreeMap<String, DOMHandle>();
+      map.put(docId[0], handle1);
+      map.put(docId[1], handle2);
+      map.put(docId[2], handle3);
+      map.put(docId[3], handle4);
+
+      docMgr.write(writeset, null, null, bulktemporalCollectionName);
+
+      QueryManager queryMgr = readerClient.newQueryManager();
+      StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+
+      CtsQueryBuilder ctsQueryBuilder = queryMgr.newCtsSearchBuilder();
+
+      XsStringSeqVal collectionSeq = ctsQueryBuilder.xs.stringSeq(latestCollectionName, bulktemporalCollectionName, "insertCollection" );
+      CtsQueryExpr collExpr = ctsQueryBuilder.cts.collectionQuery(collectionSeq);
+      CtsQueryDefinition termQuery = ctsQueryBuilder.newCtsQueryDefinition(collExpr);
+
+      long start = 1;
+      docMgr = readerClient.newXMLDocumentManager();
+      docMgr.setMetadataCategories(Metadata.ALL); // Get all metadata
+      termQueryResults = docMgr.search(termQuery, start);
+      assertEquals("Records counts is incorrect", 4, termQueryResults.size());
+      // Verify the Document Record content with map contents for each record.
+      while (termQueryResults.hasNext()) {
+
+        DocumentRecord record = termQueryResults.next();
+
+        DOMHandle recordHandle = new DOMHandle();
+        record.getContent(recordHandle);
+
+        String recordContent = recordHandle.toString();
+
+        System.out.println("Record URI = " + record.getUri());
+        System.out.println("Record content is = " + recordContent);
+
+        DOMHandle readDOMHandle = map.get(record.getUri());
+        String mapContent = readDOMHandle.evaluateXPath("/root/Address/text()", String.class);
+        System.out.println("Map Content is " + mapContent);
+        assertTrue("Address value is incorrect ", recordContent.contains(mapContent));
+
+        readDOMHandle = null;
+        mapContent = null;
+      }
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      tstatus = true;
+      throw e;
+    } finally {
+      if (tstatus) {
+        if (termQueryResults != null)
+          termQueryResults.close();
+      }
+      tx.rollback();
+      tx = null;
+    }
+  }
+
+  /* Test LSQT advance manually. Should have automation set to false on the temporal collection used.
+  Similar to testAdvancingLSQT - using CtsQueryBuilder.
+   */
+  @Test
+  public void testAdvancingLSQTWithCtsQueryBuilder() throws Exception {
+      try {
+        System.out.println("Inside testAdvancingLSQTWithCtsQueryBuilder");
+        ConnectedRESTQA.disableAutomationOnTemporalCollection(dbName, temporalLsqtCollectionName, true);
+
+        String docId = "javaSingleJSONDoc.json";
+        String afterLSQTAdvance = null;
+
+        Calendar firstInsertTime = DatatypeConverter.parseDateTime("2010-01-01T00:00:01");
+        JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
+
+        JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
+                "2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON",
+                docId);
+        TemporalDescriptor desc = docMgr.write(docId, null, handle, null, null, temporalLsqtCollectionName, firstInsertTime);
+        // Verify permissions for LSQT advance
+        String permnExceptMsg = "User is not allowed to advanceLsqt resource at temporal/collections/" + temporalLsqtCollectionName;
+        String extMsg = null;
+        try {
+          JSONDocumentManager docMgr1 = readerClient.newJSONDocumentManager();
+          docMgr1.advanceLsqt(temporalLsqtCollectionName);
+        } catch (ForbiddenUserException ex) {
+          extMsg = ex.getMessage();
+          System.out.println("Permissions exception message for LSQT advance is " + extMsg);
+        }
+        assertTrue("Expected exception message incorrect for LSQT advance user permission", extMsg.contains(permnExceptMsg));
+
+        QueryManager queryMgrLSQT = adminClient.newQueryManager();
+
+        CtsQueryBuilder sqbLSQT = queryMgrLSQT.newCtsSearchBuilder();
+
+        XsStringVal collName = sqbLSQT.xs.string(temporalLsqtCollectionName);
+        XsStringSeqVal options = sqbLSQT.xs.stringSeq("", "");
+        Calendar calTimeLSQT = DatatypeConverter.parseDateTime("2007-01-01T00:00:01");
+
+        XsDateTimeVal queryTimeLSQT = sqbLSQT.xs.dateTime(calTimeLSQT);
+        XsDoubleVal weight = sqbLSQT.xs.doubleVal(0.0);
+
+        CtsQueryExpr ctsQueryExpr = sqbLSQT.cts.lsqtQuery(collName, queryTimeLSQT);
+        CtsQueryDefinition periodQueryLSQT = sqbLSQT.newCtsQueryDefinition(ctsQueryExpr);
+
+        long startLSQT = 1;
+        JSONDocumentManager docMgrQy = adminClient.newJSONDocumentManager();
+        String WithoutAdvaceSetExceptMsg = "Timestamp 2007-01-01T00:00:01-08:00 provided is greater than LSQT 1601-01-01T00:00:00Z";
+        String actualNoAdvanceMsg = null;
+        DocumentPage termQueryResultsLSQT = null;
+        try {
+          termQueryResultsLSQT = docMgrQy.search(periodQueryLSQT, startLSQT);
+        } catch (Exception ex) {
+          actualNoAdvanceMsg = ex.getMessage();
+          System.out.println("Exception message for LSQT without advance set is " + actualNoAdvanceMsg);
+        }
+        assertTrue("Expected exception message not available for LSQT advance user permission", actualNoAdvanceMsg.contains(WithoutAdvaceSetExceptMsg));
+
+        // Set the Advance manually.
+        docMgr.advanceLsqt(temporalLsqtCollectionName);
+        termQueryResultsLSQT = docMgrQy.search(periodQueryLSQT, startLSQT);
+
+        assertTrue("LSQT Query results (Total Pages) before advance is incorrect", termQueryResultsLSQT.getTotalPages() == 0);
+        assertTrue("LSQT Query results (Size) before advance is incorrect", termQueryResultsLSQT.size() == 0);
+
+        // After Advance of the LSQT, query again with new query time greater than LSQT
+
+        afterLSQTAdvance = desc.getTemporalSystemTime();
+        Calendar calTimeLSQT2 = DatatypeConverter.parseDateTime(afterLSQTAdvance);
+        calTimeLSQT2.add(Calendar.YEAR, 10);
+        XsDateTimeVal queryTimeLSQT2 = sqbLSQT.xs.dateTime(calTimeLSQT2);
+        docMgrQy = adminClient.newJSONDocumentManager();
+        docMgrQy.setMetadataCategories(Metadata.ALL); // Get all meta-data
+
+        CtsQueryExpr ctsQueryExpr2 = sqbLSQT.cts.lsqtQuery(collName, queryTimeLSQT2);
+        CtsQueryDefinition periodQueryLSQT2 = sqbLSQT.newCtsQueryDefinition(ctsQueryExpr2);
+
+        String excepMsgGrtr = "Timestamp 2020-01-01T00:00:01-08:00 provided is greater than LSQT 2010-01-01T08:00:01Z";
+        String actGrMsg = null;
+        DocumentPage termQueryResultsLSQT2 = null;
+        try {
+          termQueryResultsLSQT2 = docMgrQy.search(periodQueryLSQT2, startLSQT);
+        } catch (Exception ex) {
+          actGrMsg = ex.getMessage();
+        }
+        assertTrue("Expected exception message not available for LSQT advance user permission", actGrMsg.contains(excepMsgGrtr));
+
+        // Query again with query time less than LSQT. 10 minutes less than the LSQT
+        Calendar callessTime = DatatypeConverter.parseDateTime("2009-01-01T00:00:01");
+        XsDateTimeVal lessTime = sqbLSQT.xs.dateTime(callessTime);
+
+        CtsQueryExpr ctsQueryExprLess = sqbLSQT.cts.lsqtQuery(collName, lessTime/*, options, weight*/);
+        CtsQueryDefinition lessDef = sqbLSQT.newCtsQueryDefinition(ctsQueryExprLess);
+        termQueryResultsLSQT2 = docMgrQy.search(lessDef, startLSQT);
+
+        System.out.println("LSQT Query results (Total Pages) after advance " + termQueryResultsLSQT2.getTotalPages());
+        System.out.println("LSQT Query results (Size) after advance " + termQueryResultsLSQT2.size());
+        assertTrue("LSQT Query results (Total Pages) after advance is incorrect", termQueryResultsLSQT2.getTotalPages() == 0);
+        assertTrue("LSQT Query results (Size) after advance is incorrect", termQueryResultsLSQT2.size() == 0);
+      } catch (Exception ex) {
+        System.out.println("Exception thrown from testAdvacingLSQT method " + ex.getMessage());
+      } finally {
+        ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName, temporalLsqtCollectionName, true);
+      }
+    }
+  }

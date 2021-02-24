@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of server untyped atomic values.
+ * See {@link com.marklogic.client.expression.XsValue#untypedAtomicSeq(String...)}
  */
 public interface XsUntypedAtomicSeqVal extends XsAnyAtomicTypeSeqVal {
     public XsUntypedAtomicVal[] getUntypedAtomicItems();

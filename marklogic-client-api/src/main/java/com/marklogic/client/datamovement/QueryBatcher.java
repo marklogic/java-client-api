@@ -272,14 +272,75 @@ public interface QueryBatcher extends Batcher {
   QueryBatcher withJobId(String jobId);
 
   /**
-   * Sets the number of uris to retrieve per batch. Since uris are small
-   * relative to full documents, this number should be much higher than the
-   * batch size for WriteBatcher. The default batch size is 1000.
-   *
+   * Sets the number of documents processed in a batch.
+   * @param docBatchSize the number of documents processed in a batch
    * @return this instance for method chaining
    */
   @Override
-  public QueryBatcher withBatchSize(int batchSize);
+  public QueryBatcher withBatchSize(int docBatchSize);
+
+  /**
+   * Sets the number of documents processed in a batch and the ratio of the document processing batch to
+   * the document uri collection batch. For example, if docBatchSize is 100 and docToUriBatchRatio is 5,
+   * the document processing batch size is 100 and the document URI collection batch is 500.
+   * @param docBatchSize the number of documents processed in a batch
+   * @param docToUriBatchRatio the ratio of the document processing batch to the document uri collection batch. The
+   *                           docToUriBatchRatio should ordinarily be larger than 1 because URIs are small relative to
+   *                           full documents and because collecting URIs from indexes is ordinarily faster than
+   *                           processing documents.
+   * @return this instance for method chaining
+   */
+  public QueryBatcher withBatchSize(int docBatchSize, int docToUriBatchRatio);
+
+  /*
+   * Sets the number of documents processed in a batch, the ratio of the document processing batch to the document uri
+   * collection batch and threadThrottleFactor. For example, if docBatchSize is 100 and docToUriBatchRatio is 5, the
+   * document processing batch size is 100 and the document URI collection batch is 500. Ordinarily, QueryBatcher starts
+   * a separate thread for each document processing batch (and also collects document uris in one of these threads).
+   * The threadThrottleFactor reduces the number of default threads. Thus, a threadThrottleFactor equal to the
+   * docToUriBatchRatio - 1 runs in a single thread. A threadThrottleFactor of 0 explicitly uses the maximum number of
+   * threads.
+   * @param docBatchSize the number of documents processed in a batch
+   * @param docToUriBatchRatio the ratio of the document processing batch to the document uri collection batch. The
+   *                           docToUriBatchRatio should ordinarily be larger than 1 because URIs are small relative to
+   *                           full documents and because collecting URIs from indexes is ordinarily faster than
+   *                           processing documents
+   * @param threadThrottleFactor The threadThrottleFactor reduces the number of default threads. A threadThrottleFactor
+   *                             equal to the docToUriBatchRatio - 1 runs in a single thread. A threadThrottleFactor of
+   *                             0 explicitly uses the maximum number of threads
+   * @return this instance for method chaining
+   */
+  //public QueryBatcher withBatchSize(int docBatchSize, int docToUriBatchRatio, int threadThrottleFactor);
+
+  /**
+   * Returns docToUriBatchRatio set to the QueryBatcher
+   * @return docToUriBatchRatio
+   */
+  public int getDocToUriBatchRatio();
+
+  /*
+   * Returns threadThrottleFactor set to the QueryBatcher
+   * @return threadThrottleFactor
+   */
+  //public int getThreadThrottleFactor();
+
+  /**
+   * Returns defaultDocBatchSize, which is calculated according to server status
+   * @return defaultDocBatchSize
+   */
+  public int getDefaultDocBatchSize();
+
+  /**
+   * Returns maxUriBatchSize, which is calculated according to server status
+   * @return maxUriBatchSize
+   */
+  public int getMaxUriBatchSize();
+
+  /**
+   * Returns maxDocToUriBatchRatio, which is calculated according to server status
+   * @return maxDocToUriBatchRatio
+   */
+  public int getMaxDocToUriBatchRatio();
 
   /**
    * Sets the number of threads added to the internal thread pool for this

@@ -183,18 +183,17 @@ public class DeleteListenerTest extends BasicJavaClientREST {
 
   @Test
   public void massDeleteSingleThread() throws Exception {
-    Set<String> uriSet = new HashSet<>();
+    HashSet<String> urisList = new HashSet<>();
 
-    Assert.assertTrue(uriSet.isEmpty());
+    Assert.assertTrue(urisList.isEmpty());
     Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
 
     QueryBatcher queryBatcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("DeleteListener"))
-        .withBatchSize(11)
-        .withThreadCount(1)
+        .withBatchSize(11, 1)
+        //.withThreadCount(1)
         .onUrisReady(batch -> {
-          for (String s : batch.getItems()) {
-            uriSet.add(s);
-
+          synchronized (this) {
+            urisList.addAll(Arrays.asList(batch.getItems()));
           }
         })
         .onQueryFailure(throwable -> {
@@ -208,13 +207,13 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     dmManager.stopJob(ticket);
 
     Thread.currentThread().sleep(2000L);
-    Assert.assertTrue(uriSet.size() == 2000);
+    Assert.assertTrue(urisList.size() == 2000);
 
     AtomicInteger successDocs = new AtomicInteger();
     HashSet<String> uris2 = new HashSet<>();
     StringBuffer failures2 = new StringBuffer();
 
-    QueryBatcher deleteBatcher = dmManager.newQueryBatcher(uriSet.iterator())
+    QueryBatcher deleteBatcher = dmManager.newQueryBatcher(urisList.iterator())
         .withBatchSize(23)
         .withThreadCount(1)
         .onUrisReady(new DeleteListener())
@@ -365,7 +364,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     Thread t1;
     t1 = new Thread(new MyRunnable());
 
-    HashSet<String> urisList = new HashSet<>();
+    Set<String> urisList = Collections.synchronizedSet(new HashSet<>());
 
     QueryBatcher queryBatcher = dmManager.newQueryBatcher(
         new StructuredQueryBuilder().collection("DeleteListener"))
@@ -392,7 +391,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
 
     System.out.println("URI's size " + urisList.size());
     AtomicInteger successDocs = new AtomicInteger();
-    HashSet<String> uris2 = new HashSet<>();
+    Set<String> uris2 = Collections.synchronizedSet(new HashSet<>());
     StringBuffer failures2 = new StringBuffer();
 
     QueryBatcher deleteBatcher = dmManager.newQueryBatcher(urisList.iterator())
@@ -645,7 +644,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
 
   public ArrayList<String> getUris() {
 
-    Set<String> uris = new HashSet<>();
+    Set<String> uris = Collections.synchronizedSet(new HashSet<>());
 
     QueryBatcher getUris = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("DeleteListener"))
         .withBatchSize(5000)
@@ -658,7 +657,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
   }
 
   public ArrayList<String> writeUrisToDisk() throws IOException {
-    Set<String> uris = new HashSet<>();
+    Set<String> uris = Collections.synchronizedSet(new HashSet<>());
 
     FileWriter writer = new FileWriter("uriCache.txt");
     QueryBatcher getUris = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("DeleteListener"))

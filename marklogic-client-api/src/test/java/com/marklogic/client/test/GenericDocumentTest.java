@@ -342,6 +342,15 @@ public class GenericDocumentTest {
       assertEquals("Collection with wrong size", collectionMax, readCollections.size());
     }
 
+    docMgr.setMetadataCategories(Metadata.COLLECTIONS);
+    docMgr.writeDefaultMetadata(docIds);
+    for (String docId: docIds) {
+      DocumentMetadataHandle metaReadHandle = docMgr.readMetadata(docId, new DocumentMetadataHandle());
+
+      DocumentCollections readCollections = metaReadHandle.getCollections();
+      assertEquals("Collection with wrong size", 0, readCollections.size());
+    }
+
     for (String docId: docIds) {
       docMgr.delete(docId);
     }

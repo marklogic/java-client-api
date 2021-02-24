@@ -20,6 +20,8 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 
+import com.marklogic.client.expression.*;
+import com.marklogic.client.query.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
@@ -39,19 +41,6 @@ import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TuplesReadHandle;
 import com.marklogic.client.io.marker.ValuesListReadHandle;
 import com.marklogic.client.io.marker.ValuesReadHandle;
-import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
-import com.marklogic.client.query.RawCtsQueryDefinition;
-import com.marklogic.client.query.RawQueryByExampleDefinition;
-import com.marklogic.client.query.RawStructuredQueryDefinition;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.SuggestDefinition;
-import com.marklogic.client.query.ValuesDefinition;
-import com.marklogic.client.query.ValuesListDefinition;
 import com.marklogic.client.util.RequestParameters;
 
 public class QueryManagerImpl
@@ -135,37 +124,37 @@ public class QueryManagerImpl
   }
 
   @Override
-  public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle) {
+  public <T extends SearchReadHandle> T search(SearchQueryDefinition querydef, T searchHandle) {
     return search(querydef, searchHandle, 1, null, null);
   }
   @Override
-  public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, String forestName) {
+  public <T extends SearchReadHandle> T search(SearchQueryDefinition querydef, T searchHandle, String forestName) {
     return search(querydef, searchHandle, 1, null, forestName);
   }
   @Override
-  public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start) {
+  public <T extends SearchReadHandle> T search(SearchQueryDefinition querydef, T searchHandle, long start) {
     return search(querydef, searchHandle, start, null, null);
   }
   @Override
-  public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, String forestName) {
+  public <T extends SearchReadHandle> T search(SearchQueryDefinition querydef, T searchHandle, long start, String forestName) {
     return search(querydef, searchHandle, start, null, forestName);
   }
   @Override
-  public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction) {
+  public <T extends SearchReadHandle> T search(SearchQueryDefinition querydef, T searchHandle, Transaction transaction) {
     return search(querydef, searchHandle, 1, transaction, null);
   }
   @Override
-  public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction, String forestName) {
+  public <T extends SearchReadHandle> T search(SearchQueryDefinition querydef, T searchHandle, Transaction transaction, String forestName) {
     return search(querydef, searchHandle, 1, transaction, forestName);
   }
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction) {
+  public <T extends SearchReadHandle> T search(SearchQueryDefinition querydef, T searchHandle, long start, Transaction transaction) {
     return search(querydef, searchHandle, start, transaction, null);
   }
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction, String forestName) {
+  public <T extends SearchReadHandle> T search(SearchQueryDefinition querydef, T searchHandle, long start, Transaction transaction, String forestName) {
 
     if (searchHandle instanceof SearchHandle) {
       SearchHandle responseHandle = (SearchHandle) searchHandle;
@@ -175,7 +164,7 @@ public class QueryManagerImpl
     return services.search(requestLogger, searchHandle, querydef, start, pageLen, view, transaction, forestName);
   }
 
-  public <T extends UrisReadHandle> T uris(String method, QueryDefinition querydef, Boolean filtered, T urisHandle,
+  public <T extends UrisReadHandle> T uris(String method, SearchQueryDefinition querydef, Boolean filtered, T urisHandle,
         long start, String afterUri, String forestName) {
     return services.uris(requestLogger, method, querydef, filtered, start, afterUri, pageLen, forestName, urisHandle);
   }
@@ -387,6 +376,11 @@ public class QueryManagerImpl
   @Override
   public <T extends StructureReadHandle> T validate(RawQueryByExampleDefinition query, T convertedHandle) {
     return convertOrValidate(query, convertedHandle, "validate");
+  }
+
+  @Override
+  public CtsQueryBuilder newCtsSearchBuilder() {
+    return new CtsQueryBuilderImpl();
   }
 
   @SuppressWarnings("unchecked")

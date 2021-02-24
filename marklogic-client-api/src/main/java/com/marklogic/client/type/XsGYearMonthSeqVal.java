@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of server GYearMonth values.
+ * See {@link com.marklogic.client.expression.XsValue#gYearMonthSeq(String...)}
  */
 public interface XsGYearMonthSeqVal extends XsAnyAtomicTypeSeqVal {
     public XsGYearMonthVal[] getGYearMonthItems();

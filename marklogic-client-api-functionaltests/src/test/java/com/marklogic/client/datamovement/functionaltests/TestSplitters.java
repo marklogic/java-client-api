@@ -15,10 +15,7 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -44,10 +41,12 @@ public class TestSplitters  extends BasicJavaClientREST {
     private static String host = null;
     private static String user = "admin";
     private static String password = "admin";
+    private static String delim;
 
     @BeforeClass
     public static void setUp() throws Exception {
         System.out.println("In setup");
+        delim = System.lineSeparator();
         configureRESTServer(dbName, fNames);
         setupAppServicesConstraint(dbName);
         createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
@@ -59,7 +58,9 @@ public class TestSplitters  extends BasicJavaClientREST {
 
     @AfterClass
     public static void testCleanUp() throws Exception {
-        clearDB();
+        associateRESTServerWithDB(getRestServerName(), "Documents");
+        deleteDB(dbName);
+        deleteForest(fNames[0]);
         System.out.println("Running clear script");
     }
 
@@ -111,6 +112,11 @@ public class TestSplitters  extends BasicJavaClientREST {
         } catch (Exception ex) {
             System.out.println("Exceptions thrown from testBasicLineSplitInJson " + ex.getMessage());
         } finally {
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             jsonfs.close();
         }
     }
@@ -124,7 +130,7 @@ public class TestSplitters  extends BasicJavaClientREST {
         FileInputStream jsonfs2 = null;
         String docIdPrefix = "/LS-DocMgrLarge-";
         String collectionName = "LS-LARGE";
-        int nDocs = 8192;
+        int nDocs = 4096;
 
         AtomicInteger id = new AtomicInteger(0);
         AtomicInteger cnt1 = new AtomicInteger(0);
@@ -135,11 +141,13 @@ public class TestSplitters  extends BasicJavaClientREST {
             DocumentManager docMgr = client.newJSONDocumentManager();
             DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle().withCollections(collectionName).withProperty("docMeta-1", "true");
 
+            String beg = "{\"animal\":\"dog";
+            String end = "\", \"says\":\"woof\"}";
             for (int i = 0; i < nDocs; i++) {
-                String line = new String("{\"animal\":\"dog" + i + "\", \"says\":\"woof\"}");
+                String line = new String(beg + i + end);
                 //System.out.println("Line is " + line);
                 bw.write(line);
-                bw.write(System.lineSeparator());
+                bw.write(delim);
             }
             bw.close();
 
@@ -155,8 +163,8 @@ public class TestSplitters  extends BasicJavaClientREST {
             // Verify docs
             QueryBatcher queryBatcherdMgr = dmManager.newQueryBatcher(
                     new StructuredQueryBuilder().collection(collectionName))
-                    .withBatchSize(20)
-                    .withThreadCount(1)
+                    .withBatchSize(2000)
+                    .withThreadCount(2)
                     .onUrisReady((batch) -> {
                         cnt1.set(cnt1.get() + batch.getItems().length);
                     });
@@ -172,7 +180,7 @@ public class TestSplitters  extends BasicJavaClientREST {
             WriteBatcher batcher = dmManager.newWriteBatcher();
             String woCollectionStr = "From-WriteOps";
             DocumentMetadataHandle meta2 = new DocumentMetadataHandle().withCollections(woCollectionStr).withQuality(8);
-            batcher.withBatchSize(5).withDefaultMetadata(meta2);
+            batcher.withBatchSize(2000).withDefaultMetadata(meta2);
 
             dmManager.startJob(batcher);
             batcher.addAll(docsStream);
@@ -181,8 +189,8 @@ public class TestSplitters  extends BasicJavaClientREST {
             // Verify docs
             QueryBatcher queryBatcherdMgr1 = dmManager.newQueryBatcher(
                     new StructuredQueryBuilder().collection(woCollectionStr))
-                    .withBatchSize(20)
-                    .withThreadCount(1)
+                    .withBatchSize(2000)
+                    .withThreadCount(2)
                     .onUrisReady((batch) -> {
                         cnt2.set(cnt2.get() + batch.getItems().length);
                     });
@@ -197,6 +205,11 @@ public class TestSplitters  extends BasicJavaClientREST {
             if (jsonfs2 != null)
                 jsonfs2.close();
             tempJsonFile.deleteOnExit();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -239,6 +252,11 @@ public class TestSplitters  extends BasicJavaClientREST {
             System.out.println("Exceptions thrown from testCharSetWithJson " + ex.getMessage());
         } finally {
             jsonfs.close();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -258,7 +276,7 @@ public class TestSplitters  extends BasicJavaClientREST {
         FileInputStream jsonfs1;
         final FileInputStream jsonfs2;
 
-        final int nDocs = 8192;
+        final int nDocs = 4096;
         final AtomicInteger id1 = new AtomicInteger(0);
         final AtomicInteger id2 = new AtomicInteger(8193);
 
@@ -268,10 +286,12 @@ public class TestSplitters  extends BasicJavaClientREST {
             DocumentManager docMgrJson1 = client.newJSONDocumentManager();
             DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle().withCollections(collectionName).withProperty("docMeta-1", "true");
 
+            String beg = "{\"animal\":\"dog";
+            String end = "\", \"says\":\"woof\"}";
             for (int i = 0; i < nDocs; i++) {
-                String line = new String("{\"animal\":\"dog" + i + "\", \"says\":\"woof\"}");
+                String line = new String(beg + i + end);
                 bwJson1.write(line);
-                bwJson1.write(System.lineSeparator());
+                bwJson1.write(delim);
             }
             bwJson1.close();
 
@@ -281,7 +301,7 @@ public class TestSplitters  extends BasicJavaClientREST {
             for (int i = 0; i < nDocs; i++) {
                 String line = new String("{\"animal\":\"parrot" + i + "\", \"says\":\"Hello\"}");
                 bwJson2.write(line);
-                bwJson2.write(System.lineSeparator());
+                bwJson2.write(delim);
             }
             bwJson2.close();
 
@@ -317,12 +337,12 @@ public class TestSplitters  extends BasicJavaClientREST {
             t1.join();
             t2.join();
 
-            Thread.sleep(10000);
+            Thread.sleep(1000);
             // Verify docs
             QueryBatcher queryBatcherdMgr = dmManager.newQueryBatcher(
                     new StructuredQueryBuilder().collection(collectionName))
-                    .withBatchSize(20)
-                    .withThreadCount(1)
+                    .withBatchSize(2000)
+                    .withThreadCount(2)
                     .onUrisReady((batch) -> {
                         cnt1.set(cnt1.get() + batch.getItems().length);
                     });
@@ -341,6 +361,11 @@ public class TestSplitters  extends BasicJavaClientREST {
                 tempJsonFile1.deleteOnExit();
             if (tempJsonFile2 != null)
                 tempJsonFile2.deleteOnExit();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -383,6 +408,11 @@ public class TestSplitters  extends BasicJavaClientREST {
             System.out.println("Exceptions thrown from testCharSetWithXml " + ex.getMessage());
         } finally {
             jsonfs.close();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -416,6 +446,11 @@ public class TestSplitters  extends BasicJavaClientREST {
             System.out.println("Exceptions thrown from testIncorrectCharSetWithJson " + msg);
             assertTrue(msg.contains("XDMP-JSONDOC: Document is not JSON"));
             jsonfs.close();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -434,7 +469,7 @@ public class TestSplitters  extends BasicJavaClientREST {
         FileInputStream jsonfs1;
         final FileInputStream jsonfs2;
 
-        final int nDocs = 8192;
+        final int nDocs = 4096;
         final AtomicInteger id1 = new AtomicInteger(0);
         final AtomicInteger id2 = new AtomicInteger(8193);
 
@@ -448,20 +483,24 @@ public class TestSplitters  extends BasicJavaClientREST {
             DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle().withCollections(collectionName).withProperty("docMeta-1", "true");
             wbatcher1.withDefaultMetadata(metadataHandle1);
 
+            String beg1 = "{\"animal\":\"camel";
+            String end1 = "\", \"says\":\"brey\"}";
             for (int i = 0; i < nDocs; i++) {
-                String line = new String("{\"animal\":\"camel" + i + "\", \"says\":\"brey\"}");
+                String line = new String(beg1+ i + end1);
                 bwJson1.write(line);
-                bwJson1.write(System.lineSeparator());
+                bwJson1.write(delim);
             }
             bwJson1.close();
 
             tempJsonFile2 = File.createTempFile("TestWriteOps2", ".json");
             BufferedWriter bwJson2 = new BufferedWriter(new FileWriter(tempJsonFile2));
 
+            String beg2 = "{\"animal\":\"sunbird";
+            String end2 = "\", \"says\":\"chirps\"}";
             for (int i = 0; i < nDocs; i++) {
-                String line = new String("{\"animal\":\"sunbird" + i + "\", \"says\":\"chirps\"}");
+                String line = new String(beg2 + i + end2);
                 bwJson2.write(line);
-                bwJson2.write(System.lineSeparator());
+                bwJson2.write(delim);
             }
             bwJson2.close();
 
@@ -491,14 +530,14 @@ public class TestSplitters  extends BasicJavaClientREST {
             t1.join();
             t2.join();
 
-            Thread.sleep(10000);
+            Thread.sleep(1000);
             // Verify docs count
             QueryBatcher queryBatcherdMgr = dmManager.newQueryBatcher(
                     new StructuredQueryBuilder().collection(collectionName))
                     .withBatchSize(20)
-                    .withThreadCount(1)
+                    //.withThreadCount(1)
                     .onUrisReady((batch) -> {
-                        cnt1.set(cnt1.get() + batch.getItems().length);
+                        cnt1.addAndGet(batch.getItems().length);
                     });
             dmManager.startJob(queryBatcherdMgr);
             queryBatcherdMgr.awaitCompletion();
@@ -534,6 +573,11 @@ public class TestSplitters  extends BasicJavaClientREST {
                 tempJsonFile1.deleteOnExit();
             if (tempJsonFile2 != null)
                 tempJsonFile2.deleteOnExit();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -609,6 +653,11 @@ public class TestSplitters  extends BasicJavaClientREST {
     } finally {
             if(fileInputStream1 != null)
              fileInputStream1.close();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -661,6 +710,11 @@ public class TestSplitters  extends BasicJavaClientREST {
         finally {
             if(fileInputStream2 != null)
                 fileInputStream2.close();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -689,6 +743,11 @@ public class TestSplitters  extends BasicJavaClientREST {
         finally {
             if(fileInputStream1 != null)
                 fileInputStream1.close();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -755,34 +814,46 @@ public class TestSplitters  extends BasicJavaClientREST {
             if (fileInputStream != null) fileInputStream.close();
             if (fileInputStream1 != null) fileInputStream1.close();
             if (fileInputStream2 != null) fileInputStream2.close();
+            try {
+                clearDB();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Test
     public void testXMLSplitterAttr() throws Exception {
         System.out.println("Running testXMLSplitterAttr");
-        String fileName1 = "xml-splitter-2.xml";
+        try {
+            String fileName1 = "xml-splitter-2.xml";
 
-        FileInputStream fileInputStream = new FileInputStream(new File(datasource + fileName1));
-        OrderedDateAttrVisitor visitor = new OrderedDateAttrVisitor("http://www.mlqa.com/",
-                "Item",
-                "PartNumber",
-                "SY-650-ANI");
+            FileInputStream fileInputStream = new FileInputStream(new File(datasource + fileName1));
+            OrderedDateAttrVisitor visitor = new OrderedDateAttrVisitor("http://www.mlqa.com/",
+                    "Item",
+                    "PartNumber",
+                    "SY-650-ANI");
 
-        XMLSplitter splitter = new XMLSplitter(visitor);
+            XMLSplitter splitter = new XMLSplitter(visitor);
 
-        Stream<StringHandle> contentStream = splitter.split(fileInputStream);
-        assertNotNull(contentStream);
+            Stream<StringHandle> contentStream = splitter.split(fileInputStream);
+            assertNotNull(contentStream);
 
-        StringHandle[] result = contentStream.toArray(size -> new StringHandle[size]);
-        assertEquals(1, splitter.getCount());
-        assertNotNull(result);
+            StringHandle[] result = contentStream.toArray(size -> new StringHandle[size]);
+            assertEquals(1, splitter.getCount());
+            assertNotNull(result);
 
-        for (int i = 0; i < result.length; i++) {
-            String row = result[i].get();
-            //System.out.println("result element is " + row);
-            assertTrue(row.contains("<ml:ProductName>Sony BLU-RAY</ml:ProductName>"));
-            assertTrue(row.contains("<ml:USPrice>523.45</ml:USPrice>"));
+            for (int i = 0; i < result.length; i++) {
+                String row = result[i].get();
+                //System.out.println("result element is " + row);
+                assertTrue(row.contains("<ml:ProductName>Sony BLU-RAY</ml:ProductName>"));
+                assertTrue(row.contains("<ml:USPrice>523.45</ml:USPrice>"));
+            }
+        } catch (Exception ex) {
+            System.out.println("Exception thrown from testXMLSplitterAttr" + ex.toString());
+        }
+        finally {
+            clearDB();
         }
     }
 
@@ -790,45 +861,52 @@ public class TestSplitters  extends BasicJavaClientREST {
     @Test
     public void testCSVSplitterWriteOperationAndUriMaker() throws Exception {
         System.out.println("Running testCSVSplitterWriteOperationAndUriMaker");
-        String fileName1 = "comma-sep-1.csv";
-        String collectionName = "csvSplitter";
+        try {
+            String fileName1 = "comma-sep-1.csv";
+            String collectionName = "csvSplitter";
 
-        FileInputStream fileInputStream = new FileInputStream(new File(datasource + fileName1));
-        JacksonCSVSplitter splitter = new JacksonCSVSplitter();
-        JacksonCSVSplitter.UriMaker uriMaker = new QADocUriFromHandle();
-        uriMaker.setInputAfter("/QAFolder/");
-        uriMaker.setSplitFilename("SacMetroHomeSale");
-        splitter.setUriMaker(uriMaker);
-        Stream<DocumentWriteOperation> contentStream1 = splitter.splitWriteOperations(fileInputStream);
+            FileInputStream fileInputStream = new FileInputStream(new File(datasource + fileName1));
+            JacksonCSVSplitter splitter = new JacksonCSVSplitter();
+            JacksonCSVSplitter.UriMaker uriMaker = new QADocUriFromHandle();
+            uriMaker.setInputAfter("/QAFolder/");
+            uriMaker.setSplitFilename("SacMetroHomeSale");
+            splitter.setUriMaker(uriMaker);
+            Stream<DocumentWriteOperation> contentStream1 = splitter.splitWriteOperations(fileInputStream);
 
-        DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle().withCollections(collectionName).withProperty("Author-ratings", "10.0");
+            DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle().withCollections(collectionName).withProperty("Author-ratings", "10.0");
 
-        WriteBatcher batcher = dmManager.newWriteBatcher();
-        batcher.withBatchSize(5).withDefaultMetadata(metadataHandle1);
+            WriteBatcher batcher = dmManager.newWriteBatcher();
+            batcher.withBatchSize(5).withDefaultMetadata(metadataHandle1);
 
-        batcher.addAll(contentStream1);
-        dmManager.startJob(batcher);
-        batcher.flushAndWait();
+            batcher.addAll(contentStream1);
+            dmManager.startJob(batcher);
+            batcher.flushAndWait();
 
-        // create a search definition for assert
-        QueryManager queryMgr = client.newQueryManager();
-        JSONDocumentManager jsonDocMgr = client.newJSONDocumentManager();
+            // create a search definition for assert
+            QueryManager queryMgr = client.newQueryManager();
+            JSONDocumentManager jsonDocMgr = client.newJSONDocumentManager();
 
-        String wordQuery = "<cts:word-query xmlns:cts=\"http://marklogic.com/cts\">" +
-                "<cts:text>TRINITY</cts:text></cts:word-query>";
-        StringHandle handle = new StringHandle().with(wordQuery);
-        RawCtsQueryDefinition querydef = queryMgr.newRawCtsQueryDefinition(handle);
+            String wordQuery = "<cts:word-query xmlns:cts=\"http://marklogic.com/cts\">" +
+                    "<cts:text>TRINITY</cts:text></cts:word-query>";
+            StringHandle handle = new StringHandle().with(wordQuery);
+            RawCtsQueryDefinition querydef = queryMgr.newRawCtsQueryDefinition(handle);
 
-        JacksonHandle resultsHandle = new JacksonHandle();
-        queryMgr.search(querydef, resultsHandle);
+            JacksonHandle resultsHandle = new JacksonHandle();
+            queryMgr.search(querydef, resultsHandle);
 
-        JsonNode result = resultsHandle.get();
-        String uri1 = result.path("results").get(0).path("uri").asText();
-        assertTrue(uri1.contains("38.621188-121.270555"));
+            JsonNode result = resultsHandle.get();
+            String uri1 = result.path("results").get(0).path("uri").asText();
+            assertTrue(uri1.contains("38.621188-121.270555"));
 
-        String text = jsonDocMgr.read(uri1, new StringHandle()).get();
-        assertTrue(text.contains("11150 TRINITY RIVER DR Unit 114"));
-        //System.out.println("text is " + text);
+            String text = jsonDocMgr.read(uri1, new StringHandle()).get();
+            assertTrue(text.contains("11150 TRINITY RIVER DR Unit 114"));
+            //System.out.println("text is " + text);
+        } catch (Exception ex) {
+            System.out.println("Execeptions thrown from testCSVSplitterWriteOperationAndUriMaker" + ex.toString());
+        }
+        finally {
+            clearDB();
+        }
     }
 }
 

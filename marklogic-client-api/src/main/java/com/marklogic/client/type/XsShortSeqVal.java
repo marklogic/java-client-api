@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of server short values.
+ * See {@link com.marklogic.client.expression.XsValue#shortSeq(short...)}
  */
 public interface XsShortSeqVal extends XsIntSeqVal {
     public XsShortVal[] getShortItems();

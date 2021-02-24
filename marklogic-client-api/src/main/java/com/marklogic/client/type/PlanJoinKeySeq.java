@@ -20,6 +20,7 @@ package com.marklogic.client.type;
 /**
  * A sequence of join key equivalence expressions returned 
  * by on() calls in a row pipeline.
+ * See {@link com.marklogic.client.expression.PlanBuilder#joinKeySeq(PlanJoinKey...)}
  */
 public interface PlanJoinKeySeq {
 }

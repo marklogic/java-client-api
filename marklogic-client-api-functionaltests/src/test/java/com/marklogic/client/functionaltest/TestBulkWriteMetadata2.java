@@ -63,8 +63,8 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
 
-/**
- * @author skottam This test is test the DocumentWriteSet function public
+/*
+ *         This test is test the DocumentWriteSet function public
  *         DocumentWriteSet add(String uri, DocumentMetadataWriteHandle
  *         metadataHandle); This test intention is to test the system default ,
  *         request wide, and document specific update to metadata will overwrite
@@ -85,7 +85,7 @@ public class TestBulkWriteMetadata2 extends BasicJavaClientREST {
 
   private DatabaseClient client;
 
-  /**
+  /*
    * @throws java.lang.Exception
    */
   @BeforeClass
@@ -98,7 +98,7 @@ public class TestBulkWriteMetadata2 extends BasicJavaClientREST {
     setMaintainLastModified(dbName, true);
   }
 
-  /**
+  /*
    * @throws java.lang.Exception
    */
   @AfterClass
@@ -109,7 +109,7 @@ public class TestBulkWriteMetadata2 extends BasicJavaClientREST {
     deleteRESTUser("usr1");
   }
 
-  /**
+  /*
    * @throws java.lang.Exception
    */
   @Before
@@ -118,7 +118,7 @@ public class TestBulkWriteMetadata2 extends BasicJavaClientREST {
     client = getDatabaseClient("usr1", "password", getConnType());
   }
 
-  /**
+  /*
    * @throws java.lang.Exception
    */
   @After
@@ -543,36 +543,15 @@ public class TestBulkWriteMetadata2 extends BasicJavaClientREST {
     FileInputStream fis = new FileInputStream(file1);
     InputStreamHandle handle1 = new InputStreamHandle(fis);
     handle1.setFormat(Format.BINARY);
-
-    writeset.add("/generic/Pandakarlino.jpg", handle1); // This document
-                                                        // implicitly gets the
-                                                        // default metadata that
-                                                        // we added in the
-                                                        // begining
-
+    // This document implicitly gets the default metadata that we added in the beginning
+    writeset.add("/generic/Pandakarlino.jpg", handle1);
     JacksonHandle jh = new JacksonHandle();
     ObjectMapper objM = new ObjectMapper();
     JsonNode jn = objM.readTree(new String("{\"animal\":\"dog\", \"says\":\"woof\"}"));
     jh.set(jn);
     jh.setFormat(Format.JSON);
-
-    writeset.add("/generic/dog.json", new DocumentMetadataHandle().withQuality(10), jh); // This
-                                                                                         // document
-                                                                                         // suppose
-                                                                                         // to
-                                                                                         // get
-                                                                                         // the
-                                                                                         // in
-                                                                                         // scope
-                                                                                         // metadata
-                                                                                         // quality
-                                                                                         // and
-                                                                                         // should
-                                                                                         // set
-                                                                                         // collections
-                                                                                         // to
-                                                                                         // system
-                                                                                         // default
+    // This document suppose to get the in scope metadata quality and should set collections to system default
+    writeset.add("/generic/dog.json", new DocumentMetadataHandle().withQuality(10), jh);
 
     String foo1 = "This is foo1 of byte Array";
     byte[] ba = foo1.getBytes();
@@ -586,23 +565,8 @@ public class TestBulkWriteMetadata2 extends BasicJavaClientREST {
     sh.set(ds);
     sh.setFormat(Format.XML);
     DocumentMetadataHandle mh2 = new DocumentMetadataHandle();
-    writeset.add("/generic/foo.xml", mh2.withCollections("genericCollection"), sh); // This
-                                                                                    // document
-                                                                                    // should
-                                                                                    // over
-                                                                                    // write
-                                                                                    // the
-                                                                                    // system
-                                                                                    // default
-                                                                                    // and
-                                                                                    // default
-                                                                                    // collection
-                                                                                    // list
-                                                                                    // and
-                                                                                    // get
-                                                                                    // document
-                                                                                    // specific
-                                                                                    // collection
+    // This document should over write the system default and default collection list and get document specific collection
+    writeset.add("/generic/foo.xml", mh2.withCollections("genericCollection"), sh);
 
     docMgr.write(writeset);
 

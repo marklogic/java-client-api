@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of server float values.
+ * See {@link com.marklogic.client.expression.XsValue#floatSeq(float...)}
  */
 public interface XsFloatSeqVal extends XsAnyAtomicTypeSeqVal, XsNumericSeqVal {
     public XsFloatVal[] getFloatItems();

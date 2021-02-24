@@ -91,6 +91,7 @@ public interface SemValue {
      * Takes any number of triple store specifications and constructs a store sequence
      * @param stores	the triple store specifications
      * @return	a sequence of triple store specifications
+     * @deprecated use {@link SemExpr#storeSeq(SemStoreExpr...)}
      */
     public SemStoreSeqExpr stores(SemStoreExpr... stores);
 }

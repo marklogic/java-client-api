@@ -40,20 +40,8 @@ import com.marklogic.client.eval.EvalResultIterator;
 
 import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.*;
-import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.*;
 import com.marklogic.client.query.QueryManager.QueryView;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
-import com.marklogic.client.query.RawCtsQueryDefinition;
-import com.marklogic.client.query.RawQueryByExampleDefinition;
-import com.marklogic.client.query.RawQueryDefinition;
-import com.marklogic.client.query.RawStructuredQueryDefinition;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.query.SuggestDefinition;
-import com.marklogic.client.query.ValueQueryDefinition;
-import com.marklogic.client.query.ValuesDefinition;
-import com.marklogic.client.query.ValuesListDefinition;
 import com.marklogic.client.semantics.Capability;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.GraphPermissions;
@@ -897,7 +885,7 @@ public class OkHttpServices implements RESTServices {
 
   @Override
   public DocumentPage getBulkDocuments(RequestLogger reqlog, long serverTimestamp,
-                                       QueryDefinition querydef,
+                                       SearchQueryDefinition querydef,
                                        long start, long pageLength,
                                        Transaction transaction,
                                        SearchReadHandle searchHandle, QueryView view,
@@ -1017,7 +1005,7 @@ public class OkHttpServices implements RESTServices {
   }
 
   private OkHttpResultIterator getBulkDocumentsImpl(RequestLogger reqlog, long serverTimestamp,
-                                                    QueryDefinition querydef, long start, long pageLength,
+                                                    SearchQueryDefinition querydef, long start, long pageLength,
                                                     Transaction transaction, SearchReadHandle searchHandle, QueryView view,
                                                     Set<Metadata> categories, Format format, ServerTransform responseTransform,
                                                     RequestParameters extraParams, String forestName)
@@ -1026,8 +1014,7 @@ public class OkHttpServices implements RESTServices {
     try {
       RequestParameters params = new RequestParameters();
       if ( extraParams != null ) params.putAll(extraParams);
-      boolean withContent = true;
-      addCategoryParams(categories, params, withContent);
+      addCategoryParams(categories, params, true);
       if ( searchHandle != null && view != null ) params.add("view", view.toString().toLowerCase());
       if ( start > 1 ) params.add("start", Long.toString(start));
       if ( pageLength >= 0 ) params.add("pageLength", Long.toString(pageLength));
@@ -1802,20 +1789,25 @@ public class OkHttpServices implements RESTServices {
     closeResponse(response);
   }
 
-  private void addCategoryParams(Set<Metadata> categories, RequestParameters params,
-                                 boolean withContent)
+  private void addCategoryParams(Set<Metadata> categories, RequestParameters params, boolean withContent)
   {
     if (withContent)
       params.add("category", "content");
     if (categories != null && categories.size() > 0) {
       if (categories.contains(Metadata.ALL)) {
-        params.add("category", "metadata");
+          addCategoryParam(params, "metadata");
       } else {
         for (Metadata category : categories) {
-          params.add("category", category.name().toLowerCase());
+            addCategoryParam(params, category);
         }
       }
     }
+  }
+  private void addCategoryParam(RequestParameters params, Metadata category) {
+      addCategoryParam(params, category.name().toLowerCase());
+  }
+  private void addCategoryParam(RequestParameters params, String category) {
+    params.add("category", category);
   }
 
   private RequestParameters makeDocumentParams(String uri,
@@ -2056,7 +2048,7 @@ public class OkHttpServices implements RESTServices {
 
   @Override
   public <T extends SearchReadHandle> T search(RequestLogger reqlog, T searchHandle,
-                                               QueryDefinition queryDef, long start, long len, QueryView view,
+                                               SearchQueryDefinition queryDef, long start, long len, QueryView view,
                                                Transaction transaction, String forestName)
     throws ForbiddenUserException, FailedRequestException
   {
@@ -2124,7 +2116,7 @@ public class OkHttpServices implements RESTServices {
     return searchHandle;
   }
 
-  private OkHttpSearchRequest generateSearchRequest(RequestLogger reqlog, QueryDefinition queryDef,
+  private OkHttpSearchRequest generateSearchRequest(RequestLogger reqlog, SearchQueryDefinition queryDef,
                                                     String mimetype, Transaction transaction, ServerTransform responseTransform,
                                                     RequestParameters params, String forestName)
   {
@@ -2135,7 +2127,7 @@ public class OkHttpServices implements RESTServices {
 
   private class OkHttpSearchRequest {
     RequestLogger reqlog;
-    QueryDefinition queryDef;
+    SearchQueryDefinition queryDef;
     String mimetype;
     RequestParameters params;
     ServerTransform responseTransform;
@@ -2145,7 +2137,7 @@ public class OkHttpServices implements RESTServices {
     String structure = null;
     HandleImplementation baseHandle = null;
 
-    OkHttpSearchRequest(RequestLogger reqlog, QueryDefinition queryDef, String mimetype,
+    OkHttpSearchRequest(RequestLogger reqlog, SearchQueryDefinition queryDef, String mimetype,
                         Transaction transaction, ServerTransform responseTransform, RequestParameters params) {
       this.reqlog = reqlog;
       this.queryDef = queryDef;
@@ -2158,12 +2150,14 @@ public class OkHttpServices implements RESTServices {
     }
 
     void addParams() {
-      String directory = queryDef.getDirectory();
-      if (directory != null) {
-        params.add("directory", directory);
-      }
+        if (queryDef instanceof QueryDefinition) {
+            String directory = ((QueryDefinition) queryDef).getDirectory();
+            if (directory != null) {
+                params.add("directory", directory);
+            }
 
-      params.add("collection", queryDef.getCollections());
+            params.add("collection", ((QueryDefinition) queryDef).getCollections());
+        }
 
       String optionsName = queryDef.getOptionsName();
       if (optionsName != null && optionsName.length() > 0) {
@@ -2256,7 +2250,15 @@ public class OkHttpServices implements RESTServices {
 
         requestBldr = setupRequest("search", params);
         requestBldr = requestBldr.header(HEADER_ACCEPT, mimetype);
-      } else {
+      } else if (queryDef instanceof  CtsQueryDefinition) {
+          structure = ((CtsQueryDefinition) queryDef).serialize();
+          if (logger.isDebugEnabled()) {
+              logger.debug("Searching Cts Query: ", ((CtsQueryDefinition) queryDef).serialize());
+          }
+          requestBldr = setupRequest("search", params);
+          requestBldr = requestBldr.header(HEADER_CONTENT_TYPE, MIMETYPE_APPLICATION_JSON);
+          requestBldr = requestBldr.header(HEADER_ACCEPT, mimetype);
+      }else {
         throw new UnsupportedOperationException("Cannot search with "
           + queryDef.getClass().getName());
       }
@@ -2291,6 +2293,8 @@ public class OkHttpServices implements RESTServices {
           response = doPost(reqlog, requestBldr, baseHandle.sendContent());
         } else if (queryDef instanceof StringQueryDefinition) {
           response = doGet(requestBldr);
+        } else if (queryDef instanceof CtsQueryDefinition) {
+            response = doPost(reqlog, requestBldr, structure);
         } else {
           throw new UnsupportedOperationException("Cannot search with "
             + queryDef.getClass().getName());
@@ -2406,10 +2410,11 @@ public class OkHttpServices implements RESTServices {
   }
 
   @Override
-  public void delete(RequestLogger logger, Transaction transaction, String... uris)
+  public void delete(RequestLogger logger, Transaction transaction, Set<Metadata> categories, String... uris)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     RequestParameters params = new RequestParameters();
+    addCategoryParams(categories, params, false);
     for ( String uri : uris ) {
       params.add("uri", uri);
     }
@@ -3012,7 +3017,7 @@ public class OkHttpServices implements RESTServices {
     return getResource(reqlog, "internal/schemas", null, params, output);
   }
   @Override
-  public <R extends UrisReadHandle> R uris(RequestLogger reqlog, String method, QueryDefinition qdef,
+  public <R extends UrisReadHandle> R uris(RequestLogger reqlog, String method, SearchQueryDefinition qdef,
         Boolean filtered, long start, String afterUri, long pageLength, String forestName, R output
   ) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
       logger.debug("Querying for uris");
@@ -3026,19 +3031,25 @@ public class OkHttpServices implements RESTServices {
   }
   @Override
   public <R extends AbstractReadHandle> R forestInfo(RequestLogger reqlog,
-        String method, RequestParameters params, QueryDefinition qdef, R output
+        String method, RequestParameters params, SearchQueryDefinition qdef, R output
   ) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
       return processQuery(reqlog, "internal/forestinfo", method, params, qdef, output);
   }
   private <R extends AbstractReadHandle> R processQuery(RequestLogger reqlog, String path,
-        String method, RequestParameters params, QueryDefinition qdef, R output
+        String method, RequestParameters params, SearchQueryDefinition qdef, R output
   ) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-    if (qdef.getDirectory() != null) params.add("directory",   qdef.getDirectory());
-    if (qdef.getCollections() != null ) {
-      for ( String collection : qdef.getCollections() ) {
-        params.add("collection", collection);
+      if (qdef instanceof QueryDefinition) {
+          if (((QueryDefinition)qdef).getDirectory() != null) {
+              params.add("directory",   ((QueryDefinition)qdef).getDirectory());
+          }
+
+          if (((QueryDefinition)qdef).getCollections() != null ) {
+              for ( String collection : ((QueryDefinition)qdef).getCollections() ) {
+                  params.add("collection", collection);
+              }
+          }
       }
-    }
+
     if (qdef.getOptionsName()!= null && qdef.getOptionsName().length() > 0) {
       params.add("options", qdef.getOptionsName());
     }
@@ -3100,7 +3111,14 @@ public class OkHttpServices implements RESTServices {
       RawQueryDefinition rawQuery = (RawQueryDefinition) qdef;
       logger.debug("{} processing raw query", path);
       input = checkFormat(rawQuery.getHandle());
-    } else {
+    } else if (qdef instanceof CtsQueryDefinition) {
+        CtsQueryDefinition builtCtsQuery = (CtsQueryDefinition) qdef;
+        structure = builtCtsQuery.serialize();
+        logger.debug("{} processing cts query {}", path, structure);
+        if (sendQueryAsPayload && structure != null) {
+            input = new StringHandle(structure).withFormat(Format.JSON);
+        }
+    }else {
       throw new UnsupportedOperationException(path+" cannot process query of "+qdef.getClass().getName());
     }
 
