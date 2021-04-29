@@ -1540,6 +1540,15 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
   @Override
+  public ModifyPlan bind(PlanExprColSeq columns) {
+    if (columns == null) {
+      throw new IllegalArgumentException("columns parameter for bind() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "bind", new Object[]{ columns });
+  }
+
+    
+  @Override
   public ModifyPlan bindAs(String column, ServerExpression expression) {
     return bindAs((column == null) ? (PlanColumn) null : col(column), expression);
   }
@@ -1560,6 +1569,45 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
       throw new IllegalArgumentException("right parameter for except() cannot be null");
     }
     return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "except", new Object[]{ right });
+  }
+
+    
+  @Override
+  public ModifyPlan existsJoin(ModifyPlan right) {
+    if (right == null) {
+      throw new IllegalArgumentException("right parameter for existsJoin() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "exists-join", new Object[]{ right });
+  }
+
+    
+  @Override
+  public ModifyPlan existsJoin(ModifyPlan right, PlanJoinKey... keys) {
+    return existsJoin(right, new JoinKeySeqListImpl(keys));
+  }
+
+    
+  @Override
+  public ModifyPlan existsJoin(ModifyPlan right, PlanJoinKeySeq keys) {
+    if (right == null) {
+      throw new IllegalArgumentException("right parameter for existsJoin() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "exists-join", new Object[]{ right, keys });
+  }
+
+    
+  @Override
+  public ModifyPlan existsJoin(ModifyPlan right, PlanJoinKeySeq keys, boolean condition) {
+    return existsJoin(right, keys, xs.booleanVal(condition));
+  }
+
+    
+  @Override
+  public ModifyPlan existsJoin(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition) {
+    if (right == null) {
+      throw new IllegalArgumentException("right parameter for existsJoin() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "exists-join", new Object[]{ right, keys, condition });
   }
 
     
@@ -1782,6 +1830,45 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
       throw new IllegalArgumentException("right parameter for joinLeftOuter() cannot be null");
     }
     return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "join-left-outer", new Object[]{ right, keys, condition });
+  }
+
+    
+  @Override
+  public ModifyPlan notExistsJoin(ModifyPlan right) {
+    if (right == null) {
+      throw new IllegalArgumentException("right parameter for notExistsJoin() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "not-exists-join", new Object[]{ right });
+  }
+
+    
+  @Override
+  public ModifyPlan notExistsJoin(ModifyPlan right, PlanJoinKey... keys) {
+    return notExistsJoin(right, new JoinKeySeqListImpl(keys));
+  }
+
+    
+  @Override
+  public ModifyPlan notExistsJoin(ModifyPlan right, PlanJoinKeySeq keys) {
+    if (right == null) {
+      throw new IllegalArgumentException("right parameter for notExistsJoin() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "not-exists-join", new Object[]{ right, keys });
+  }
+
+    
+  @Override
+  public ModifyPlan notExistsJoin(ModifyPlan right, PlanJoinKeySeq keys, boolean condition) {
+    return notExistsJoin(right, keys, xs.booleanVal(condition));
+  }
+
+    
+  @Override
+  public ModifyPlan notExistsJoin(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition) {
+    if (right == null) {
+      throw new IllegalArgumentException("right parameter for notExistsJoin() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "not-exists-join", new Object[]{ right, keys, condition });
   }
 
     

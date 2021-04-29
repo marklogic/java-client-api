@@ -76,6 +76,16 @@ public interface SemExpr extends SemValue {
   */
   public ServerExpression datatype(ServerExpression value);
 /**
+  * Returns the iri of the default graph. 
+  *
+  * <a name="ml-server-type-default-graph-iri"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/sem:default-graph-iri" target="mlserverdoc">sem:default-graph-iri</a> server function.
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/sem_iri.html">sem:iri</a> server data type
+  */
+  public ServerExpression defaultGraphIri();
+/**
   * The IF function form evaluates the first argument, interprets it as a effective boolean value, then returns the value of expression2 if the EBV is true, otherwise it returns the value of expression3. Only one of expression2 and expression3 is evaluated. If evaluating the first argument raises an error, then an error is raised for the evaluation of the IF expression. This XQuery function backs up the SPARQL IF() functional form. 
   *
   * <a name="ml-server-type-if"></a>

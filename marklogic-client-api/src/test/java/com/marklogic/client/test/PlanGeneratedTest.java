@@ -969,6 +969,11 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     }
 
     @Test
+    public void testSemDefaultGraphIri0Exec() {
+        executeTester("testSemDefaultGraphIri0", p.sem.defaultGraphIri(), false, "sem:iri", null, null, "http://marklogic.com/semantics#default-graph", new ServerExpression[]{  });
+    }
+
+    @Test
     public void testSemIfExpr3Exec() {
         executeTester("testSemIfExpr3", p.sem.ifExpr(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "a", new ServerExpression[]{ p.xs.booleanVal(true), p.xs.string("a"), p.xs.string("b") });
     }

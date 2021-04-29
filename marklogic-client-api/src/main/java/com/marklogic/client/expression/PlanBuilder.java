@@ -322,7 +322,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public abstract PlanExprColSeq colSeq(String... col);
   /**
    * Passes multiple columns as a parameter to an operation.
-   * @param col the columns. See {@link PlanBuilder#col(String)} and {@link PlanBuilder#as(String, ServerExpression)}  
+   * @param col the columns. See {@link PlanBuilder#col(String)} and {@link PlanBuilder#as(String, ServerExpression)}
    * @return the sequence of columns
    */
   public abstract PlanExprColSeq colSeq(PlanExprCol... col);
@@ -1276,6 +1276,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
  * of the plan for executing a row pipeline on the server.
  */
   public interface ModifyPlan extends PreparePlan, PlanBuilderBase.ModifyPlanBase {
+public abstract ModifyPlan bind(PlanExprColSeq columns);
 /**
   * This function adds a column based on an expression without altering the existing columns in the row set.
   * @param column  The name of the column to be defined.
@@ -1296,6 +1297,42 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan except(ModifyPlan right);
+/**
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * @param right  The row set from the right view.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan existsJoin(ModifyPlan right);
+/**
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan existsJoin(ModifyPlan right, PlanJoinKey... keys);
+/**
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan existsJoin(ModifyPlan right, PlanJoinKeySeq keys);
+/**
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan existsJoin(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
+/**
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan existsJoin(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
 /**
   * This method counts values for multiple grouping key columns. 
   * @param keys  This parameter specifies the list of column keys for performing counts. For each column, the operation determines the unique values of that column and produces a separate count for the rows with that value.  A column can be named with a string or a column parameter function such as op:col or constructed from an expression with the op:as function. See {@link PlanBuilder#colSeq(String...)}
@@ -1491,6 +1528,42 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinFullOuter(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
+/**
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * @param right  The row set from the right view.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan notExistsJoin(ModifyPlan right);
+/**
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan notExistsJoin(ModifyPlan right, PlanJoinKey... keys);
+/**
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan notExistsJoin(ModifyPlan right, PlanJoinKeySeq keys);
+/**
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan notExistsJoin(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
+/**
+  * This method is a filtering join that filters based on whether the join exists or not but doesn't add any columns. 
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan notExistsJoin(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
 /**
   * This method sorts the row set by the specified order definition.
   * @param keys  The specified column or sortdef output from the op:asc or op:desc function. See {@link PlanBuilder#sortKeySeq(PlanSortKey...)}
