@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2021 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ public interface OutputEndpoint extends OutputCaller<InputStream> {
         final class EndpointLocal<I> extends OutputEndpointImpl<I,InputStream>
                 implements OutputEndpoint {
             private EndpointLocal(DatabaseClient client, JSONWriteHandle apiDecl) {
-                super(client, apiDecl, new InputStreamHandle());
+                super(client, apiDecl, false, new InputStreamHandle());
             }
             public OutputEndpoint.BulkOutputCaller bulkCaller() {
                 return new BulkLocal(this);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2021 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.marklogic.client.dataservices.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.SessionState;
 import com.marklogic.client.impl.BaseProxy;
 import com.marklogic.client.impl.NodeConverter;
@@ -24,18 +25,15 @@ import com.marklogic.client.impl.RESTServices;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.marker.BufferableContentHandle;
-import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
-
-import java.util.stream.Stream;
 
 abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
     private final JsonNode                    apiDeclaration;
     private final String                      endpointPath;
     private final BaseProxy.DBFunctionRequest requester;
 
-    private BufferableContentHandle<I,?> inputHandle;
-    private BufferableContentHandle<O,?> outputHandle;
+    private BufferableContentHandle<?,?> inputHandle;
+    private BufferableContentHandle<?,?> outputHandle;
 
     private ParamdefImpl  endpointStateParamdef;
     private ParamdefImpl  sessionParamdef;
@@ -43,10 +41,15 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
     private ParamdefImpl  inputParamdef;
     private ReturndefImpl returndef;
 
+    private boolean isHandleIO = false;
+
     IOCallerImpl(
-            JSONWriteHandle apiDeclaration, BufferableContentHandle<I,?> inputHandle, BufferableContentHandle<O,?> outputHandle
+       JSONWriteHandle apiDeclaration, boolean isHandleIO,
+       BufferableContentHandle<?,?> inputHandle, BufferableContentHandle<?,?> outputHandle
     ) {
         super();
+
+        this.isHandleIO = isHandleIO;
 
         if (apiDeclaration== null) {
             throw new IllegalArgumentException("null endpoint declaration");
@@ -178,18 +181,40 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
         );
     }
 
-    BufferableContentHandle<I, ?> getInputHandle() {
-        return inputHandle;
-    }
-    BufferableContentHandle<O, ?> getOutputHandle() {
+    BufferableContentHandle<?, ?> getOutputHandle() {
         return outputHandle;
+    }
+    BufferableContentHandle<?, ?> castInputAsHandle(I input) {
+        if (!isHandleIO) {
+            throw new MarkLogicInternalException("Cannot cast input to handle unless using handles for IO");
+        }
+        return (BufferableContentHandle<?, ?>) input;
+    }
+    O castHandleAsOutput(BufferableContentHandle<?, ?> handle) {
+        if (!isHandleIO) {
+            throw new MarkLogicInternalException("Cannot cast handle to output unless using handles for IO");
+        }
+        return (O) handle;
+    }
+
+    BufferableContentHandle<I, ?> getContentInputHandle() {
+        if (isHandleIO) {
+            throw new MarkLogicInternalException("Cannot get handle for input when using handles for IO");
+        }
+        return (BufferableContentHandle<I, ?>) inputHandle;
+    }
+    BufferableContentHandle<O, ?> getContentOutputHandle() {
+        if (isHandleIO) {
+            throw new MarkLogicInternalException("Cannot get handle for output when using handles for IO");
+        }
+        return (BufferableContentHandle<O, ?>) outputHandle;
     }
 
     BaseProxy.DBFunctionRequest makeRequest(DatabaseClient db, CallContextImpl<I,O> callCtxt) {
         return makeRequest(db, callCtxt, (RESTServices.CallField) null);
     }
     BaseProxy.DBFunctionRequest makeRequest(
-            DatabaseClient db, CallContextImpl<I,O> callCtxt, BufferableHandle[] input
+            DatabaseClient db, CallContextImpl<I,O> callCtxt, BufferableContentHandle[] input
     ) {
         RESTServices.CallField inputField = null;
 
@@ -286,10 +311,14 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
             throw new UnsupportedOperationException("multiple return from endpoint: "+getEndpointPath());
         }
 
-        return request.responseSingle(getReturndef().isNullable(), getReturndef().getFormat()).asContent(outputHandle);
+        return request.responseSingle(
+            getReturndef().isNullable(), getReturndef().getFormat()).asContent(getContentOutputHandle()
+        );
     }
     O[] responseMultipleAsArray(BaseProxy.DBFunctionRequest request, CallContextImpl<I,O> callCtxt) {
-        return responseMultiple(request).asArrayOfContent(callCtxt.isLegacyContext() ? null : callCtxt.getEndpointState(), outputHandle);
+        return responseMultiple(request).asArrayOfContent(
+            callCtxt.isLegacyContext() ? null : callCtxt.getEndpointState(), getContentOutputHandle()
+        );
     }
     private RESTServices.MultipleCallResponse responseMultiple(BaseProxy.DBFunctionRequest request) {
         if (getReturndef() == null) {

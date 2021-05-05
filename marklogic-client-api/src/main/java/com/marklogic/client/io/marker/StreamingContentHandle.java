@@ -19,16 +19,17 @@ import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.BytesHandle;
 
 /**
- * A Streaming Content Handle provides an adapter for a content
- * representation to allow the content to be read multiple times
- * for purposes such as resending input when retrying after a
+ * A Streaming Content Handle provides an adapter for a streaming content
+ * representation to make it possible to construct a bufferable content
+ * representation so the content can be read multiple times for purposes
+ * such as resending input when retrying after a
  * failed request.
  * @param <C> the handled content representation
  * @param <R> the serialization when reading the content
  */
 public interface StreamingContentHandle<C, R> extends BufferableContentHandle<C, R> {
     @Override
-    default BufferableHandle resendableHandleFor(C content) {
+    default BufferableContentHandle resendableHandleFor(C content) {
         return new BytesHandle(contentToBytes(content))
                 .withFormat(((BaseHandle<R,?>) this).getFormat());
     }

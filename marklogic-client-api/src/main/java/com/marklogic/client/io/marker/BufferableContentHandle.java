@@ -48,15 +48,15 @@ public interface BufferableContentHandle<C, R> extends BufferableHandle, Content
      * @param content the content
      * @return the resendable handle
      */
-    BufferableHandle resendableHandleFor(C content);
+    BufferableContentHandle resendableHandleFor(C content);
     /**
      * Provides an array of handles that can resend an array of content.
      * @param content the array of content
      * @return the array of resendable handles
      */
-    default BufferableHandle[] resendableHandleFor(C[] content) {
+    default BufferableContentHandle[] resendableHandleFor(C[] content) {
         if (content == null) return null;
-        BufferableHandle[] result = new BufferableHandle[content.length];
+        BufferableContentHandle[] result = new BufferableContentHandle[content.length];
         for (int i=0; i < content.length; i++) {
             result[i] = resendableHandleFor(content[i]);
         }
