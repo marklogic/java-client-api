@@ -44,9 +44,16 @@ public interface InputOutputCaller<I,O> extends IOEndpoint {
      */
     static <I,O> InputOutputCaller<I,O> on(
             DatabaseClient client, JSONWriteHandle apiDecl,
-            BufferableContentHandle<I,?> inputHandle, BufferableContentHandle<I,?> outputHandle
+            BufferableContentHandle<I,?> inputHandle, BufferableContentHandle<O,?> outputHandle
     ) {
-      return new InputOutputEndpointImpl(client, apiDecl, inputHandle, outputHandle);
+      return new InputOutputEndpointImpl(client, apiDecl, false, inputHandle, outputHandle);
+    }
+
+    static <I extends BufferableContentHandle<?,?>,O extends BufferableContentHandle<?,?>> InputOutputCaller<I,O> onHandles(
+            DatabaseClient client, JSONWriteHandle apiDecl,
+            I inputHandle, O outputHandle
+    ) {
+        return new InputOutputEndpointImpl(client, apiDecl, true, inputHandle, outputHandle);
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2021 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import com.marklogic.client.dataservices.InputCaller;
 import com.marklogic.client.io.marker.BufferableContentHandle;
-import com.marklogic.client.io.marker.BufferableHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,8 +34,10 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 	private final InputCallerImpl<I,O> caller;
 	private final int batchSize;
 
-	public InputEndpointImpl(DatabaseClient client, JSONWriteHandle apiDecl, BufferableContentHandle<I,?> inputHandle) {
-		this(client, new InputCallerImpl<>(apiDecl, inputHandle));
+	public InputEndpointImpl(
+        DatabaseClient client, JSONWriteHandle apiDecl, boolean isHandleIO, BufferableContentHandle<?,?> inputHandle
+	) {
+		this(client, new InputCallerImpl<>(apiDecl, isHandleIO, inputHandle));
 	}
 	private InputEndpointImpl(DatabaseClient client, InputCallerImpl<I,O> caller) {
 		super(client, caller);
@@ -58,7 +59,7 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 	@Override
 	public void call(CallContext callContext, I[] input) {
 		InputCallerImpl<I,O> callerImpl = getCaller();
-		callerImpl.arrayCall(getClient(), checkAllowedArgs(callContext), callerImpl.getInputHandle().resendableHandleFor(input));
+		callerImpl.arrayCall(getClient(), checkAllowedArgs(callContext), callerImpl.getContentInputHandle().resendableHandleFor(input));
 	}
 
 	@Deprecated
@@ -196,7 +197,7 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 
 			ErrorDisposition error = ErrorDisposition.RETRY;
 
-			BufferableHandle[] inputHandles = callerImpl.getInputHandle().resendableHandleFor(inputBatch);
+			BufferableContentHandle<?,?>[] inputHandles = callerImpl.getContentInputHandle().resendableHandleFor(inputBatch);
 			for (int retryCount = 0; retryCount < DEFAULT_MAX_RETRIES && error == ErrorDisposition.RETRY; retryCount++) {
 				Throwable throwable = null;
 				try {

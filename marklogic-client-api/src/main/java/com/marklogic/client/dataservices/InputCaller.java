@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2021 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public interface InputCaller<I> extends IOEndpoint {
 	 * @return  the InputCaller instance for calling the endpoint.
 	 */
 	static <I> InputCaller<I> on(DatabaseClient client, JSONWriteHandle apiDecl, BufferableContentHandle<I,?> inputHandle) {
-		return new InputEndpointImpl(client, apiDecl, inputHandle);
+		return new InputEndpointImpl(client, apiDecl, false, inputHandle);
 	}
 
 	/**

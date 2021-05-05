@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2021 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,15 @@
  */
 package com.marklogic.client.dataservices.impl;
 
-import java.util.stream.Stream;
-
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.marker.BufferableContentHandle;
-import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
 final public class InputCallerImpl<I,O> extends IOCallerImpl<I,O> {
-    public InputCallerImpl(JSONWriteHandle apiDeclaration, BufferableContentHandle<I,?> inputHandle) {
-        super(apiDeclaration, inputHandle, null);
+    public InputCallerImpl(
+            JSONWriteHandle apiDeclaration,  boolean isHandleIO, BufferableContentHandle<?,?> inputHandle
+    ) {
+        super(apiDeclaration, isHandleIO, inputHandle, null);
 
         if (getInputParamdef() == null) {
             throw new IllegalArgumentException("input parameter missing in endpoint: "+ getEndpointPath());
@@ -42,7 +41,7 @@ final public class InputCallerImpl<I,O> extends IOCallerImpl<I,O> {
         }
     }
 
-    public void arrayCall(DatabaseClient db, CallContextImpl<I,O> callCtxt, BufferableHandle[] input) {
+    public void arrayCall(DatabaseClient db, CallContextImpl<I,O> callCtxt, BufferableContentHandle<?,?>[] input) {
         responseWithState(makeRequest(db, callCtxt, input), callCtxt);
     }
 }

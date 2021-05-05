@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2021 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.InputOutputCaller;
 import com.marklogic.client.io.marker.BufferableContentHandle;
-import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,10 +34,10 @@ public class InputOutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements
     private final int batchSize;
 
     public InputOutputEndpointImpl(
-            DatabaseClient client, JSONWriteHandle apiDecl,
-            BufferableContentHandle<I,?> inputHandle, BufferableContentHandle<O,?> outputHandle
+            DatabaseClient client, JSONWriteHandle apiDecl, boolean isHandleIO,
+            BufferableContentHandle<?,?> inputHandle, BufferableContentHandle<?,?> outputHandle
     ) {
-        this(client, new InputOutputCallerImpl<>(apiDecl, inputHandle, outputHandle));
+        this(client, new InputOutputCallerImpl<>(apiDecl, isHandleIO, inputHandle, outputHandle));
     }
     private InputOutputEndpointImpl(DatabaseClient client, InputOutputCallerImpl<I,O> caller) {
         super(client, caller);
@@ -103,7 +102,7 @@ public class InputOutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements
     private O[] getResponseData(CallContext callContext, I[] input) {
         InputOutputCallerImpl<I,O> callerImpl = getCaller();
         return callerImpl.arrayCall(
-                getClient(), checkAllowedArgs(callContext), callerImpl.getInputHandle().resendableHandleFor(input)
+                getClient(), checkAllowedArgs(callContext), callerImpl.getContentInputHandle().resendableHandleFor(input)
         );
     }
 
@@ -201,7 +200,7 @@ public class InputOutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements
 
             ErrorDisposition error = ErrorDisposition.RETRY;
 
-            BufferableHandle[] inputHandles = callerImpl.getInputHandle().resendableHandleFor(inputBatch);
+            BufferableContentHandle<?,?>[] inputHandles = callerImpl.getContentInputHandle().resendableHandleFor(inputBatch);
             for (int retryCount = 0; retryCount < DEFAULT_MAX_RETRIES && error == ErrorDisposition.RETRY; retryCount++) {
                 Throwable throwable = null;
                 O[] output = null;

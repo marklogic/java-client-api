@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2021 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,10 @@ public class OutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Outp
     private static final Logger logger = LoggerFactory.getLogger(OutputEndpointImpl.class);
     private final OutputCallerImpl<I,O> caller;
 
-    public OutputEndpointImpl(DatabaseClient client, JSONWriteHandle apiDecl, BufferableContentHandle<O,?> outputHandle) {
-        this(client, new OutputCallerImpl<>(apiDecl, outputHandle));
+    public OutputEndpointImpl(
+        DatabaseClient client, JSONWriteHandle apiDecl, boolean isHandleIO, BufferableContentHandle<?,?> outputHandle
+    ) {
+        this(client, new OutputCallerImpl<>(apiDecl, isHandleIO, outputHandle));
     }
     private OutputEndpointImpl(DatabaseClient client, OutputCallerImpl<I,O> caller) {
         super(client, caller);
@@ -218,7 +220,7 @@ public class OutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Outp
                                 if(callContext.getEndpoint().allowsEndpointState()) {
                                     callContext.withEndpointState(null);
                                 }
-                                return getEndpoint().getCaller().getOutputHandle().newArray(0);
+                                return getEndpoint().getCaller().getContentOutputHandle().newArray(0);
 
                             case STOP_ALL_CALLS:
                                 if (getCallerThreadPoolExecutor() != null) {
@@ -229,7 +231,7 @@ public class OutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Outp
                 }
             }
 
-            return (output == null) ? getEndpoint().getCaller().getOutputHandle().newArray(0) : output;
+            return (output == null) ? getEndpoint().getCaller().getContentOutputHandle().newArray(0) : output;
         }
 
         private void processOutput() {

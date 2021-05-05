@@ -24,7 +24,7 @@ package com.marklogic.client.io.marker;
  */
 public interface ResendableContentHandle<C, R> extends BufferableContentHandle<C, R> {
     @Override
-    default BufferableHandle resendableHandleFor(C content) {
-        return (BufferableHandle) newHandle(content);
+    default BufferableContentHandle resendableHandleFor(C content) {
+        return (BufferableContentHandle) newHandle(content);
     }
 }
