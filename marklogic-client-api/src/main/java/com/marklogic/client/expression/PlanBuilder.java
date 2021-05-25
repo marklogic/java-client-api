@@ -26,7 +26,7 @@ import java.util.Map;
  */
 public abstract class PlanBuilder implements PlanBuilderBase {
   protected PlanBuilder(
-    CtsExpr cts, FnExpr fn, GeoExpr geo, JsonExpr json, MapExpr map, MathExpr math, RdfExpr rdf, SemExpr sem, SpellExpr spell, SqlExpr sql, XdmpExpr xdmp, XsExpr xs
+    CtsExpr cts, FnExpr fn, GeoExpr geo, JsonExpr json, MapExpr map, MathExpr math, RdfExpr rdf, SemExpr sem, SpellExpr spell, SqlExpr sql, XdmpExpr xdmp, XsExpr xs, RdtExpr rdt
     ) {
     this.cts = cts;
      this.fn = fn;
@@ -40,7 +40,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
      this.sql = sql;
      this.xdmp = xdmp;
      this.xs = xs;
-
+     this.rdt = rdt;
   }
 /**
   * Builds expressions with cts server functions.
@@ -90,7 +90,8 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * Builds expressions with xs server functions.
   */
   public final XsExpr xs;
-/**
+  public final RdtExpr rdt;
+  /**
   * This function returns the sum of the specified numeric expressions. In expressions, the call should pass the result from an op:col function to identify a column. 
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:add" target="mlserverdoc">op:add</a> server function.
