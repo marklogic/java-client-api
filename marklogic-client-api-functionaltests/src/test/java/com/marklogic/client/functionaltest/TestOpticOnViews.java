@@ -2914,6 +2914,33 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     assertEquals("Row 2 testgroupByUnion MasterDate value incorrect", "2015-12-01", jsonBindingsNodesDate.get(1).path("MasterDate").path("value").asText());
     assertEquals("Row 2 testgroupByUnion DateCount size incorrect", 1, jsonBindingsNodesDate.get(1).path("DateCount").path("value").asInt());
     assertEquals("Row 2 testgroupByUnion color value incorrect", "null", jsonBindingsNodesDate.get(1).path("color").path("type").asText());
+
+    // Note that this plan5 is ued to verify if non-alphabetic col key name have any issues. Refer to BT56490
+    ModifyPlan plan5 = plan1.union(plan2)
+            .select(p.as("MasterDate", p.schemaCol("opticFunctionalTest", "master", "date")),
+                    p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
+                    p.as("DetailId", p.schemaCol("opticFunctionalTest", "detail", "masterId")),
+                    p.col("amount"),
+                    p.col("color")
+            )
+            .groupByUnion(p.groupSeq(p.col("DetailId"), p.col("MasterDate"), p.col("color")),
+                    p.aggregateSeq(p.count("DateCount", "MasterDate")))
+            .orderBy(p.desc(p.col("MasterDate")));
+
+    JacksonHandle jacksonHandleColOrder = new JacksonHandle();
+    jacksonHandleColOrder.setMimetype("application/json");
+
+    rowMgr.resultDoc(plan5, jacksonHandleColOrder);
+    JsonNode jsonResultsColOrd = jacksonHandleColOrder.get();
+    JsonNode jsonBindingsNodesColOrd = jsonResultsColOrd.path("rows");
+    System.out.println("Results from Column in non alphbetic column name order are : " + jsonBindingsNodesColOrd);
+
+    assertEquals("Nine nodes not returned from testgroupByUnion of plan5 ", 9, jsonBindingsNodesColOrd.size());
+    assertEquals("Row 1 plan5 of testgroupByUnion MasterDate value incorrect", "2015-12-02", jsonBindingsNodesColOrd.get(0).path("MasterDate").path("value").asText());
+    assertEquals("Row 1 plan5 of testgroupByUnion DateCount size incorrect", 1, jsonBindingsNodesColOrd.get(0).path("DateCount").path("value").asInt());
+    assertEquals("Row 7 plan5 of testgroupByUnion color type incorrect", "null", jsonBindingsNodesColOrd.get(7).path("color").path("type").asText());
+    assertEquals("Row 7 plan5 of testgroupByUnion color value incorrect", "blue", jsonBindingsNodesColOrd.get(6).path("color").path("value").asText());
+
   }
 
   // Same as testgroupsByUnion with facade.
