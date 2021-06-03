@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2021 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,51 +16,6 @@
 
 package com.marklogic.client.functionaltest;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.InetAddress;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.json.JSONObject;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -72,8 +27,21 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.admin.ServerConfigurationManager;
+import com.marklogic.client.impl.OkHttpServices;
+import com.marklogic.client.impl.RESTServices;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
+import okhttp3.*;
+import org.json.JSONObject;
+
+import javax.net.ssl.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.security.*;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.*;
 
 public abstract class ConnectedRESTQA {
 	private String serverName = "";
@@ -103,58 +71,79 @@ public abstract class ConnectedRESTQA {
 	private static Boolean isLBHost = false;
 	
 	private static int PROPERTY_WAIT = 0;
+	private static final int ML_RES_OK = 200;
+	private static final int ML_RES_CREATED = 201;
+	private static final int ML_RES_SRVRDELETE = 202;
+	private static final int ML_RES_CHANGED = 204;
+	private static final int ML_RES_BADREQT = 400;
+	private static final int ML_RES_NOTFND = 404;
+	private static final String ML_MANAGE_DB = "App-Services";
 
 	SSLContext sslContext = null;
 
-	/**
-	 * Use Rest call to create a database.
-	 * 
-	 * @param dbName
-	 */
-	private static final Logger logger = LogManager.getLogger(ConnectedRESTQA.class);
+	// Using MarkLogic client API's OKHttpClient Impl to connect to App-Services DB and use REST Manage API calls.
+	private static OkHttpClient createManageAdminClient(String username, String password) {
+		// build client with authentication information.
+		RESTServices services = new OkHttpServices();
+		services.connect(host_name, Integer.parseInt(admin_port), ML_MANAGE_DB, new DatabaseClientFactory.DigestAuthContext(username, password));
+		OkHttpClient okHttpClient  = (OkHttpClient) services.getClientImplementation();
+		return okHttpClient;
+	}
 
+	// Use Rest call to create a database.
 	public static void createDB(String dbName) {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-
-			HttpPost post = new HttpPost("http://" + host_name + ":" + admin_port + "/manage/v2/databases?format=json");
+			client = createManageAdminClient("admin", "admin");
 			String JSONString = "[{\"database-name\":\"" + dbName + "\"}]";
+			String  urlStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases");
 
-			post.addHeader("Content-type", "application/json");
-			post.setEntity(new StringEntity(JSONString));
-
-			HttpResponse response = client.execute(post);
-			HttpEntity respEntity = response.getEntity();
-
-			if (respEntity != null) {
-				// EntityUtils to get the response content
-				String content = EntityUtils.toString(respEntity);
-				System.out.println(content);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(urlStr)
+					.post(RequestBody.create(JSONString, MediaType.parse("application/json")))
+					.build();
+			try (Response response = client.newCall(request).execute()) {
+				if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+				else {
+					// Get response body
+					if (response.code() == ML_RES_CREATED) {
+						System.out.println("Created " + dbName + " database");
+						System.out.println(response);
+					}
+				}
 			}
-			EntityUtils.consume(respEntity);
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
-		} finally {
-			client.getConnectionManager().shutdown();
 		}
 	}
 
-	public static String getBootStrapHostFromML() {
-		InputStream jstream = null;
-		DefaultHttpClient client = null;
+	public static String getBootStrapHostFromML()  {
+		OkHttpClient client;
+		StringBuilder resp = new StringBuilder();
 		try {
-			client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-			HttpGet getrequest = new HttpGet(
+			client = createManageAdminClient("admin", "admin");
+			StringBuilder strBuf = new StringBuilder();
+			String getrequest = new String(
 					"http://" + host_name + ":" + admin_port + "/manage/v2/properties?format=json");
-			HttpResponse resp = client.execute(getrequest);
-			jstream = resp.getEntity().getContent();
-			JsonNode jnode = new ObjectMapper().readTree(jstream);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(getrequest)
+					.build();
+			try (Response response = client.newCall(request).execute()) {
+				if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+				else {
+					// Get response body
+					if (response.code() == 200) {
+						resp.append(response.body().string());
+						System.out.println("BootStrapHostFromML : " + resp.toString());
+					}
+				}
+			}
+		 catch (Exception e) {
+			e.printStackTrace();
+		}
+			JsonNode jnode = new ObjectMapper().readTree(resp.toString());
 			String propName = "bootstrap-host";
 			if (!jnode.isNull()) {
 				if (jnode.has(propName)) {
@@ -172,84 +161,68 @@ public abstract class ConnectedRESTQA {
 				return InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
 			return host_name;
-		} finally {
-			try {
-				jstream.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			jstream = null;
-			client.getConnectionManager().shutdown();
 		}
 	}
 
 	public static void createForest(String fName, String dbName) {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-			HttpPost post = new HttpPost("http://" + host_name + ":" + admin_port + "/manage/v2/forests?format=json");
+			client = createManageAdminClient("admin", "admin");
+			String urlStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/forests?format=json");
 			String hName = getBootStrapHostFromML();
 			String JSONString = "{\"database\":\"" + dbName + "\",\"forest-name\":\"" + fName + "\",\"host\":\"" + hName
 					+ "\"}";
-			post.addHeader("Content-type", "application/json");
-			post.setEntity(new StringEntity(JSONString));
-
-			HttpResponse response = client.execute(post);
-			HttpEntity respEntity = response.getEntity();
-
-			if (respEntity != null) {
-				// EntityUtils to get the response content
-				String content = EntityUtils.toString(respEntity);
-				System.out.println(content);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(urlStr)
+					.post(RequestBody.create(JSONString, MediaType.parse("application/json")))
+					.build();
+			try (Response response = client.newCall(request).execute()) {
+				if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+				else {
+					if (response.code() == ML_RES_CREATED) {
+						System.out.println("Created forest " + fName);
+						System.out.println(response.body().string());
+					}
+				}
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
-		} finally {
-			client.getConnectionManager().shutdown();
 		}
 	}
 
-	/*
-	 * creating forests on different hosts
-	 */
+	// creating forests on different hosts
 	public static void createForestonHost(String fName, String dbName, String hName) {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-			HttpPost post = new HttpPost("http://" + host_name + ":" + admin_port + "/manage/v2/forests?format=json");
+			client = createManageAdminClient("admin", "admin");
+			String urlStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/forests?format=json");
 			String JSONString = "{\"database\":\"" + dbName + "\",\"forest-name\":\"" + fName + "\",\"host\":\"" + hName
 					+ "\"}";
 
-			post.addHeader("Content-type", "application/json");
-			post.setEntity(new StringEntity(JSONString));
-
-			HttpResponse response = client.execute(post);
-			HttpEntity respEntity = response.getEntity();
-
-			if (respEntity != null) {
-				// EntityUtils to get the response content
-				String content = EntityUtils.toString(respEntity);
-				System.out.println(content);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(urlStr)
+					.post(RequestBody.create(JSONString, MediaType.parse("application/json")))
+					.build();
+			try (Response response = client.newCall(request).execute()) {
+				if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+				else {
+					if (response.code() == ML_RES_CREATED) {
+						System.out.println("Created forest " + fName + " on host " + hName);
+						System.out.println(response.body().string());
+					}
+				}
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
-		} finally {
-			client.getConnectionManager().shutdown();
 		}
 	}
 
 	public static void postRequest(Map<String, String> payload, Map<String, String> params, String endpoint) {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		JSONObject JSONpayload = null; 
 		try {
 			if (payload == null) {
@@ -258,56 +231,65 @@ public abstract class ConnectedRESTQA {
 			else {
 				JSONpayload = new JSONObject(payload);
 			}
-			client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-			HttpPost post = new HttpPost("http://" + host_name + ":" + admin_port + endpoint);
-			if (params != null) {
-				Iterator localIterator;
-				ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
-				for (localIterator = params.entrySet().iterator(); localIterator.hasNext();) {
-					Map.Entry<String, String> localEntry = (Map.Entry<String, String>) localIterator.next();
-					postParameters.add(new BasicNameValuePair(localEntry.getKey(), localEntry.getValue()));
-				}
-				post.setEntity(new UrlEncodedFormEntity(postParameters));
-			}
-			if (payload != null) {
-				post.addHeader("Content-type", "application/json");
-				post.setEntity(new StringEntity(JSONpayload.toString()));
-			}
+			client = createManageAdminClient("admin", "admin");
+			String postUrl = new String("http://" + host_name + ":" + admin_port + endpoint);
+			StringBuilder resp = new StringBuilder();
+			// Initialize Builder (not RequestBody)
+			FormBody.Builder builder = new FormBody.Builder();
 
-			HttpResponse response = client.execute(post);
-			HttpEntity respEntity = response.getEntity();
-			if (respEntity != null) {
-				// EntityUtils to get the response content
-				String content = EntityUtils.toString(respEntity);
-				System.out.println(content);
+			if (params != null) {
+				for(Map.Entry<String, String> entry: params.entrySet()) {
+					builder.add(entry.getKey(), entry.getValue());
+				}
+			}
+			RequestBody formBody = builder.build();
+
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(postUrl)
+					.post(formBody)
+					.build();
+			try (Response response = client.newCall(request).execute()) {
+				if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+				else  if (response.code() == ML_RES_OK) {
+					resp.append(response.body().string());
+					if (!resp.toString().isEmpty()) {
+						System.out.println("Posted params ");
+						System.out.println(resp);
+					}
+				} else {
+					System.out.println("No proper reponse from post request");
+					System.out.println(response);
+				}
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
-		} finally {
-			client.close();
 		}
 	}
 
 	public static void assocRESTServer(String restServerName, String dbName, int restPort) {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-
-			HttpPost post = new HttpPost("http://" + host_name + ":" + admin_port + "/v1/rest-apis?format=json");
+			client = createManageAdminClient("admin", "admin");
+			String urlStr = new String("http://" + host_name + ":" + admin_port + "/v1/rest-apis?format=json");
 			String JSONString = "{ \"rest-api\": {\"name\":\"" + restServerName + "\",\"database\":\"" + dbName
 					+ "\",\"port\":\"" + restPort + "\"}}";
 
-			post.addHeader("Content-type", "application/json");
-			post.setEntity(new StringEntity(JSONString));
-
-			HttpResponse response = client.execute(post);
-
-			if (response.getStatusLine().getStatusCode() == 400) {
+			StringBuilder resp = new StringBuilder();
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(urlStr)
+					.post(RequestBody.create(JSONString, MediaType.parse("application/json")))
+					.build();
+			try (Response response = client.newCall(request).execute()) {
+				resp.append(response.body().string());
+				if (!resp.toString().isEmpty()) {
+					System.out.println("Will try to associate RESTServer with DB");
+					//System.out.println(resp);
+				}
+			}
+			JsonNode returnResp = new ObjectMapper().readTree(resp.toString());
+			if (returnResp.get("errorResponse").get("statusCode").asInt() == ML_RES_BADREQT) {
 				System.out.println("AppServer already exist");
 				if (dbName.equals("Documents")) {
 					System.out.println("and Context database is Documents DB");
@@ -315,74 +297,70 @@ public abstract class ConnectedRESTQA {
 					System.out.println("and changing context database to " + dbName);
 					associateRESTServerWithDB(restServerName, dbName);
 				}
-			} else if (response.getStatusLine().getStatusCode() == 201) {
+			} else if (returnResp.get("errorResponse").get("statusCode").asInt() == ML_RES_CREATED) {
 				// Enable security on new REST Http Server if SSL is turned on.
 				if (IsSecurityEnabled()) {
 					enableSecurityOnRESTServer(restServerName, dbName);
 				}
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
-		} finally {
-			client.getConnectionManager().shutdown();
 		}
 	}
 
 	public static void enableSecurityOnRESTServer(String restServerName, String dbName) throws Exception {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
-
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
+			client = createManageAdminClient("admin", "admin");
 			String body = "{\"group-name\": \"Default\",\"internal-security\":\"true\", \"ssl-certificate-template\":\"ssl1-QAXdbcServer\", \"ssl-require-client-certificate\":\"true\""
 					+ "}";
-
-			HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
+			StringBuilder resp = new StringBuilder();
+			String put = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
 					+ "/properties?server-type=http");
-			put.addHeader("Content-type", "application/json");
-			put.setEntity(new StringEntity(body));
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(put)
+					.put(RequestBody.create(body, MediaType.parse("application/json")))
+					.build();
+			try (Response response = client.newCall(request).execute()) {
+				if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+				else {
 
-			HttpResponse response2 = client.execute(put);
-			HttpEntity respEntity = response2.getEntity();
-			if (respEntity != null) {
-				String content = EntityUtils.toString(respEntity);
-				System.out.println(content);
+					if (response.code() == ML_RES_CHANGED) {
+						System.out.println("Enabled Security OnRESTServer " + restServerName) ;
+						System.out.println(response.body().toString());
+					}
+				}
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
-		} finally {
-			client.getConnectionManager().shutdown();
 		}
 	}
 
 	public static void associateRESTServerWithDB(String restServerName, String dbName) throws Exception {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
-
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
+			client = createManageAdminClient("admin", "admin");
 			String body = "{\"content-database\": \"" + dbName + "\",\"group-name\": \"Default\"}";
 
-			HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
+			String put = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
 					+ "/properties?server-type=http");
-			put.addHeader("Content-type", "application/json");
-			put.setEntity(new StringEntity(body));
-
-			HttpResponse response2 = client.execute(put);
-			HttpEntity respEntity = response2.getEntity();
-			if (respEntity != null) {
-				String content = EntityUtils.toString(respEntity);
-				System.out.println(content);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(put)
+					.put(RequestBody.create(body, MediaType.parse("application/json")))
+					.build();
+			try (Response response = client.newCall(request).execute()) {
+				if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+				else {
+					if (response.code() == ML_RES_CHANGED) {
+						System.out.println("Associated " + restServerName + " with database " + dbName);
+						System.out.println(response);
+					}
+				}
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
-		} finally {
-			client.getConnectionManager().shutdown();
 		}
 	}
 
@@ -392,31 +370,30 @@ public abstract class ConnectedRESTQA {
 	 */
 	public static void associateRESTServerWithDefaultUser(String restServerName, String userName, String authType)
 			throws Exception {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
-
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
+			client = createManageAdminClient("admin", "admin");
 			String body = "{ \"default-user\":\"" + userName + "\",\"authentication\": \"" + authType
 					+ "\",\"group-name\": \"Default\"}";
-
-			HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
+			StringBuilder resp = new StringBuilder();
+			String put = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
 					+ "/properties?server-type=http");
-			put.addHeader("Content-type", "application/json");
-			put.setEntity(new StringEntity(body));
-
-			HttpResponse response2 = client.execute(put);
-			HttpEntity respEntity = response2.getEntity();
-			if (respEntity != null) {
-				String content = EntityUtils.toString(respEntity);
-				System.out.println(content);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(put)
+					.put(RequestBody.create(body, MediaType.parse("application/json")))
+					.build();
+			try (Response response = client.newCall(request).execute()) {
+				if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+				else {
+					if (response.code() == ML_RES_CREATED) {
+						System.out.println("Associate REST server with default user successful") ;
+						System.out.println(response);
+					}
+				}
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
-		} finally {
-			client.getConnectionManager().shutdown();
 		}
 	}
 
@@ -424,32 +401,40 @@ public abstract class ConnectedRESTQA {
 	 * Creating RESTServer With default content and module database
 	 */
 	public static void createRESTServerWithDB(String restServerName, int restPort) {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
+			client = createManageAdminClient("admin", "admin");
+			String getrequest = new String(
+					"http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName + "?group-id=Default");
+			Request requestGet = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(getrequest)
+					.build();
+			try (Response responseGet = client.newCall(requestGet).execute()) {
+				if (responseGet.code() == ML_RES_OK) {
+						System.out.println("Rest Server already present " + restServerName);
+				}
+				else if (responseGet.code() == ML_RES_NOTFND) {
+						String post = new String("http://" + host_name + ":" + admin_port + "/v1/rest-apis?format=json");
+						String JSONString = "{ \"rest-api\": {\"name\":\"" + restServerName + "\",\"port\":\"" + restPort + "\"}}";
 
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-			HttpPost post = new HttpPost("http://" + host_name + ":" + admin_port + "/v1/rest-apis?format=json");
-			//
-			String JSONString = "{ \"rest-api\": {\"name\":\"" + restServerName + "\",\"port\":\"" + restPort + "\"}}";
+						Request request = new Request.Builder()
+							.header("Content-type", "application/json")
+							.url(post)
+							.post(RequestBody.create(JSONString, MediaType.parse("application/json")))
+							.build();
+						try (Response response = client.newCall(request).execute()) {
+						if (!responseGet.isSuccessful()) throw new IOException("Unexpected code " + responseGet);
 
-			post.addHeader("Content-type", "application/json");
-			post.setEntity(new StringEntity(JSONString));
-
-			HttpResponse response = client.execute(post);
-			HttpEntity respEntity = response.getEntity();
-
-			if (respEntity != null) {
-				// EntityUtils to get the response content
-				String content = EntityUtils.toString(respEntity);
-				System.out.println(content);
+						if (response.code() == ML_RES_CREATED) {
+							System.out.println("created REST Server " + restServerName + " With DB");
+							System.out.println(response.body().string());
+						}
+					}
+				}
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
-		} finally {
-			client.getConnectionManager().shutdown();
 		}
 	}
 
@@ -463,7 +448,7 @@ public abstract class ConnectedRESTQA {
 		Date d = cal.getTime();
 		long beforeSetup = cal.getTimeInMillis();
 		long before = cal.getTimeInMillis();
-		logger.info("### Starting TESTCASE SETUP." + dbName + "### " + d);
+		//logger.info("### Starting TESTCASE SETUP." + dbName + "### " + d);
 
 		createDB(dbName);
 		logTestMessages("CREATE-DB", before);
@@ -505,97 +490,94 @@ public abstract class ConnectedRESTQA {
 	}
 
 	/*
-	 * Create a role with given privilages
+	 * Create a role with given privileges
 	 */
 	public static void createUserRolesWithPrevilages(String roleName, String... privNames) {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-			HttpGet getrequest = new HttpGet("http://" + host_name + ":" + admin_port + "/manage/v2/roles/" + roleName);
-			HttpResponse resp = client.execute(getrequest);
+			client = createManageAdminClient("admin", "admin");
+			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/roles/" + roleName);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(getrequest)
+					.build();
+				Response response = client.newCall(request).execute();
+				if (response.code() == ML_RES_OK) {
+					System.out.println("Role already exist");
+				} else if (response.code() == ML_RES_NOTFND) {
+					System.out.println("Role does not exist, will create now");
+					String[] roleNames = { "rest-reader", "rest-writer" };
 
-			if (resp.getStatusLine().getStatusCode() == 200) {
-				System.out.println("Role already exist");
-			} else {
-				System.out.println("Role dont exist, will create now");
-				String[] roleNames = { "rest-reader", "rest-writer" };
-				client = new DefaultHttpClient();
-				client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-						new UsernamePasswordCredentials("admin", "admin"));
+					ObjectMapper mapper = new ObjectMapper();
+					ObjectNode mainNode = mapper.createObjectNode();
 
-				ObjectMapper mapper = new ObjectMapper();
-				ObjectNode mainNode = mapper.createObjectNode();
+					ArrayNode roleArray = mapper.createArrayNode();
+					ArrayNode privArray = mapper.createArrayNode();
+					ArrayNode permArray = mapper.createArrayNode();
+					mainNode.put("role-name", roleName);
+					mainNode.put("description", "role discription");
 
-				ArrayNode roleArray = mapper.createArrayNode();
-				ArrayNode privArray = mapper.createArrayNode();
-				ArrayNode permArray = mapper.createArrayNode();
-				mainNode.put("role-name", roleName);
-				mainNode.put("description", "role discription");
+					for (String rolename : roleNames)
+						roleArray.add(rolename);
+					mainNode.withArray("role").addAll(roleArray);
+					for (String privName : privNames) {
+						ObjectNode privNode = mapper.createObjectNode();
+						privNode.put("privilege-name", privName);
+						privNode.put("action", "http://marklogic.com/xdmp/privileges/" + privName.replace(":", "-"));
+						privNode.put("kind", "execute");
+						privArray.add(privNode);
+					}
+					mainNode.withArray("privilege").addAll(privArray);
+					permArray.add(getPermissionNode(roleNames[0], Capability.READ).get("permission").get(0));
+					permArray.add(getPermissionNode(roleNames[1], Capability.READ).get("permission").get(0));
+					permArray.add(getPermissionNode(roleNames[1], Capability.EXECUTE).get("permission").get(0));
+					permArray.add(getPermissionNode(roleNames[1], Capability.UPDATE).get("permission").get(0));
+					mainNode.withArray("permission").addAll(permArray);
+					System.out.println(mainNode.toString());
 
-				for (String rolename : roleNames)
-					roleArray.add(rolename);
-				mainNode.withArray("role").addAll(roleArray);
-				for (String privName : privNames) {
-					ObjectNode privNode = mapper.createObjectNode();
-					privNode.put("privilege-name", privName);
-					privNode.put("action", "http://marklogic.com/xdmp/privileges/" + privName.replace(":", "-"));
-					privNode.put("kind", "execute");
-					privArray.add(privNode);
-				}
-				mainNode.withArray("privilege").addAll(privArray);
-				permArray.add(getPermissionNode(roleNames[0], Capability.READ).get("permission").get(0));
-				permArray.add(getPermissionNode(roleNames[1], Capability.READ).get("permission").get(0));
-				permArray.add(getPermissionNode(roleNames[1], Capability.EXECUTE).get("permission").get(0));
-				permArray.add(getPermissionNode(roleNames[1], Capability.UPDATE).get("permission").get(0));
-				mainNode.withArray("permission").addAll(permArray);
-				System.out.println(mainNode.toString());
-				HttpPost post = new HttpPost("http://" + host_name + ":" + admin_port + "/manage/v2/roles?format=json");
-				post.addHeader("Content-type", "application/json");
-				post.setEntity(new StringEntity(mainNode.toString()));
-
-				HttpResponse response = client.execute(post);
-				HttpEntity respEntity = response.getEntity();
-				if (response.getStatusLine().getStatusCode() == 400) {
-					System.out.println("creation of role got a problem");
-				} else if (respEntity != null) {
-					// EntityUtils to get the response content
-					String content = EntityUtils.toString(respEntity);
-					System.out.println(content);
-				} else {
-					System.out.println("No Proper Response");
+					String postUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/roles?format=json");
+					Request requestPost = new Request.Builder()
+							.header("Content-type", "application/json")
+							.url(postUrl)
+							.post(RequestBody.create(mainNode.toString(), MediaType.parse("application/json")))
+							.build();
+					Response responsePost = client.newCall(requestPost).execute();
+					if (responsePost.code() == ML_RES_BADREQT) {
+						System.out.println("Creation of role has a problem");
+					} else if (responsePost.code() == ML_RES_CREATED && responsePost.body().string()!= null) {
+						System.out.println("Created role " + roleName + " with required privileges");
+						System.out.println(responsePost);
+					} else {
+						System.out.println("No Proper Response");
 				}
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
-		} finally {
-			client.getConnectionManager().shutdown();
+		}
+		finally {
+			client = null;
 		}
 	}
 
 	/*
-	 * Create a role with given privilages. With added Node Update Capability
-	 * Similar to createUserRolesWithPrevilages method, but have Node Update.
+	 * Create a role with given privileges. With added Node Update Capability
+	 * Similar to createUserRolesWithPrevileges method, but have Node Update.
 	 */
 	public static void createRoleWithNodeUpdate(String roleName, String... privNames) {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-			HttpGet getrequest = new HttpGet("http://" + host_name + ":" + admin_port + "/manage/v2/roles/" + roleName);
-			HttpResponse resp = client.execute(getrequest);
-
-			if (resp.getStatusLine().getStatusCode() == 200) {
+			client = createManageAdminClient("admin", "admin");
+			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/roles/" + roleName);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(getrequest)
+					.build();
+			Response response = client.newCall(request).execute();
+			if (response.code() == ML_RES_OK) {
 				System.out.println("Role already exist");
-			} else {
-				System.out.println("Role dont exist, will create now");
+			} else if (response.code() == ML_RES_NOTFND) {
+				System.out.println("Role does not exist, will create now");
 				String[] roleNames = { "rest-reader", "rest-writer" };
-				client = new DefaultHttpClient();
-				client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-						new UsernamePasswordCredentials("admin", "admin"));
 
 				ObjectMapper mapper = new ObjectMapper();
 				ObjectNode mainNode = mapper.createObjectNode();
@@ -625,49 +607,44 @@ public abstract class ConnectedRESTQA {
 
 				mainNode.withArray("permission").addAll(permArray);
 				System.out.println(mainNode.toString());
-				HttpPost post = new HttpPost("http://" + host_name + ":" + admin_port + "/manage/v2/roles?format=json");
-				post.addHeader("Content-type", "application/json");
-				post.setEntity(new StringEntity(mainNode.toString()));
-
-				HttpResponse response = client.execute(post);
-				HttpEntity respEntity = response.getEntity();
-				if (response.getStatusLine().getStatusCode() == 400) {
-					System.out.println("creation of role got a problem");
-				} else if (respEntity != null) {
-					// EntityUtils to get the response content
-					String content = EntityUtils.toString(respEntity);
-					System.out.println(content);
+				String postUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/roles?format=json");
+				Request requestPost = new Request.Builder()
+						.header("Content-type", "application/json")
+						.url(postUrl)
+						.post(RequestBody.create(mainNode.toString(), MediaType.parse("application/json")))
+						.build();
+				Response responsePost = client.newCall(requestPost).execute();
+				if (responsePost.code() == ML_RES_BADREQT) {
+					System.out.println("Creation of role has a problem");
+				} else if (responsePost.code() == ML_RES_CREATED && responsePost.body().string() != null) {
+					System.out.println("Created role " + roleName + " with required privileges");
+					System.out.println(responsePost);
 				} else {
 					System.out.println("No Proper Response");
 				}
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			client.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 
-	/*
-	 * This function creates a REST user with given roles
-	 */
+	// This function creates a REST user with given roles
 	public static void createRESTUser(String usrName, String pass, String... roleNames) {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-			HttpGet getrequest = new HttpGet("http://" + host_name + ":" + admin_port + "/manage/v2/users/" + usrName);
-			HttpResponse resp = client.execute(getrequest);
-
-			if (resp.getStatusLine().getStatusCode() == 200) {
+			client = createManageAdminClient("admin", "admin");
+			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users/" + usrName);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(getrequest)
+					.build();
+			Response response = client.newCall(request).execute();
+			if (response.code() == ML_RES_OK) {
 				System.out.println("User already exist");
 			} else {
-				System.out.println("User dont exist");
-				client = new DefaultHttpClient();
-				client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-						new UsernamePasswordCredentials("admin", "admin"));
+				System.out.println("User does not exist");
 
 				ObjectMapper mapper = new ObjectMapper();
 				ObjectNode mainNode = mapper.createObjectNode();
@@ -681,34 +658,30 @@ public abstract class ConnectedRESTQA {
 				mainNode.withArray("role").addAll(childArray);
 
 				System.out.println(mainNode.toString());
-				HttpPost post = new HttpPost("http://" + host_name + ":" + admin_port + "/manage/v2/users?format=json");
-				post.addHeader("Content-type", "application/json");
-				post.setEntity(new StringEntity(mainNode.toString()));
-
-				HttpResponse response = client.execute(post);
-				HttpEntity respEntity = response.getEntity();
-				if (response.getStatusLine().getStatusCode() == 400) {
-					System.out.println("User already exist");
-				} else if (respEntity != null) {
-					// EntityUtils to get the response content
-					String content = EntityUtils.toString(respEntity);
-					System.out.println(content);
+				String postUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users?format=json");
+				Request requestPost = new Request.Builder()
+						.header("Content-type", "application/json")
+						.url(postUrl)
+						.post(RequestBody.create(mainNode.toString(), MediaType.parse("application/json")))
+						.build();
+				Response responsePost = client.newCall(requestPost).execute();
+				if (responsePost.code() == ML_RES_BADREQT) {
+					System.out.println("Creation of user has a problem");
+				} else if (responsePost.code() == ML_RES_CREATED && responsePost.body().string()!= null) {
+					System.out.println("Created user " + usrName + " with required roles");
+					System.out.println(responsePost);
 				} else {
 					System.out.println("No Proper Response");
 				}
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			client.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 
-	/*
-	 * "permission": [ { "role-name": "dls-user", "capability": "read" }
-	 */
-
+	// "permission": [ { "role-name": "dls-user", "capability": "read" }
 	public static ObjectNode getPermissionNode(String roleName, DocumentMetadataHandle.Capability... cap) {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode mNode = mapper.createObjectNode();
@@ -738,21 +711,19 @@ public abstract class ConnectedRESTQA {
 
 	public static void createRESTUserWithPermissions(String usrName, String pass, ObjectNode perm,
 			ObjectNode colections, String... roleNames) {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-			HttpGet getrequest = new HttpGet("http://" + host_name + ":" + admin_port + "/manage/v2/users/" + usrName);
-			HttpResponse resp = client.execute(getrequest);
-
-			if (resp.getStatusLine().getStatusCode() == 200) {
+			client = createManageAdminClient("admin", "admin");
+			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users/" + usrName);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(getrequest)
+					.build();
+			Response response = client.newCall(request).execute();
+			if (response.code() == ML_RES_OK) {
 				System.out.println("User already exist");
 			} else {
-				System.out.println("User dont exist");
-				client = new DefaultHttpClient();
-				client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-						new UsernamePasswordCredentials("admin", "admin"));
+				System.out.println("User does not exist");
 
 				ObjectMapper mapper = new ObjectMapper();
 				ObjectNode mainNode = mapper.createObjectNode();
@@ -768,73 +739,80 @@ public abstract class ConnectedRESTQA {
 				mainNode.setAll(colections);
 
 				System.out.println(mainNode.toString());
-				HttpPost post = new HttpPost("http://" + host_name + ":" + admin_port + "/manage/v2/users?format=json");
-				post.addHeader("Content-type", "application/json");
-				post.setEntity(new StringEntity(mainNode.toString()));
-
-				HttpResponse response = client.execute(post);
-				HttpEntity respEntity = response.getEntity();
-				if (response.getStatusLine().getStatusCode() == 400) {
+				String postUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users?format=json");
+				Request requestPost = new Request.Builder()
+						.header("Content-type", "application/json")
+						.url(postUrl)
+						.post(RequestBody.create(mainNode.toString(), MediaType.parse("application/json")))
+						.build();
+				Response responsePost = client.newCall(requestPost).execute();
+				if (responsePost.code() == ML_RES_BADREQT) {
 					System.out.println("Bad User creation request");
-				} else if (respEntity != null) {
-					// EntityUtils to get the response content
-					String content = EntityUtils.toString(respEntity);
-					System.out.println(content);
+				} else if (responsePost.code() == ML_RES_CREATED) {
+					System.out.println(responsePost.body().string());
 				} else {
 					System.out.println("No Proper Response");
 				}
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			client.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 
 	public static void deleteRESTUser(String usrName) {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
-
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-
-			HttpDelete delete = new HttpDelete(
-					"http://" + host_name + ":" + admin_port + "/manage/v2/users/" + usrName);
-
-			HttpResponse response = client.execute(delete);
-			if (response.getStatusLine().getStatusCode() == 202) {
+			client = createManageAdminClient("admin", "admin");
+			String deleteUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users/" + usrName);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(deleteUrl)
+					.delete()
+					.build();
+			Response response = client.newCall(request).execute();
+			if (response.code() == ML_RES_CHANGED) {
 				Thread.sleep(3500);
+				System.out.println("User " + usrName + " deleted");
+				System.out.println(response.body().string());
+			}
+			else {
+					System.out.println("User " + usrName + " deletion has issues");
+					System.out.println("Response from user deletion is: " + response);
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			client.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 
 	public static void deleteUserRole(String roleName) {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
+			client = createManageAdminClient("admin", "admin");
+			String deleteUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/roles/" + roleName);
 
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-
-			HttpDelete delete = new HttpDelete(
-					"http://" + host_name + ":" + admin_port + "/manage/v2/roles/" + roleName);
-
-			HttpResponse response = client.execute(delete);
-			if (response.getStatusLine().getStatusCode() == 202) {
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(deleteUrl)
+					.delete()
+					.build();
+			Response response = client.newCall(request).execute();
+			if (response.code() == ML_RES_CHANGED) {
 				Thread.sleep(3500);
+				System.out.println("Role " + roleName + " deleted");
+				System.out.println(response.body().string());
+			}
+			else {
+				System.out.println("Role " + roleName + " deletion has issues");
+				System.out.println("Response from role deletion is: " + response);
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			client.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 
@@ -850,148 +828,172 @@ public abstract class ConnectedRESTQA {
 	 * This function deletes the REST appserver along with attached content
 	 * database and module database
 	 */
-
 	public static void deleteRESTServerWithDB(String restServerName) {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
-
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-
-			HttpDelete delete = new HttpDelete("http://" + host_name + ":" + admin_port + "/v1/rest-apis/"
+			client = createManageAdminClient("admin", "admin");
+			String deleteUrl = new String("http://" + host_name + ":" + admin_port + "/v1/rest-apis/"
 					+ restServerName + "?include=content&include=modules");
 
-			HttpResponse response = client.execute(delete);
-			if (response.getStatusLine().getStatusCode() == 202) {
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(deleteUrl)
+					.delete()
+					.build();
+			Response response = client.newCall(request).execute();
+			if (response.code() == ML_RES_SRVRDELETE) {
 				Thread.sleep(9500);
+				System.out.println("Server " + restServerName + " deleted");
+				//System.out.println(response.body().string());
+			}
+			else {
+				System.out.println("Server " + restServerName + " deletion has issues");
+				System.out.println("Response from server deletion is: " + response);
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			client.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 
 	public static void deleteRESTServer(String restServerName) {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
-
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-
-			HttpDelete delete = new HttpDelete(
+			client = createManageAdminClient("admin", "admin");
+			String deleteUrl = new String(
 					"http://" + host_name + ":" + admin_port + "/v1/rest-apis/" + restServerName + "&include=modules");
-			HttpResponse response = client.execute(delete);
 
-			if (response.getStatusLine().getStatusCode() == 202) {
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(deleteUrl)
+					.delete()
+					.build();
+			Response response = client.newCall(request).execute();
+
+			if (response.code() == ML_RES_SRVRDELETE) {
 				Thread.sleep(3500);
 				waitForServerRestart();
-			} else
-				System.out.println("Server response " + response.getStatusLine().getStatusCode());
+			} else {
+				Thread.sleep(3500);
+				System.out.println("Server response " + response.body().string());
+			}
 		} catch (Exception e) {
-			// writing error to Log
 			System.out.println("Inside Deleting Rest server is throwing an error");
 			e.printStackTrace();
 		} finally {
-			client.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 
 	public static void detachForest(String dbName, String fName) {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
+			client = createManageAdminClient("admin", "admin");
 
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
+			String postUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/forests/" + fName);
+			RequestBody formBody = new FormBody.Builder()
+					.add("state", "detach")
+					.add("database", dbName)
+					.build();
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(postUrl)
+					.post(formBody)
+					.build();
+			Response response = client.newCall(request).execute();
 
-			HttpPost post = new HttpPost("http://" + host_name + ":" + admin_port + "/manage/v2/forests/" + fName);
-			List<NameValuePair> urlParameters = new ArrayList<>();
-			urlParameters.add(new BasicNameValuePair("state", "detach"));
-			urlParameters.add(new BasicNameValuePair("database", dbName));
-
-			post.setEntity(new UrlEncodedFormEntity(urlParameters));
-
-			HttpResponse response = client.execute(post);
-			HttpEntity respEntity = response.getEntity();
-
-			if (respEntity != null) {
-				// EntityUtils to get the response content
-				String content = EntityUtils.toString(respEntity);
-				System.out.println(content);
+			if (response.code() == ML_RES_OK) {
+				System.out.println("Forest " + fName + " has been detached from database " + dbName);
+			} else {
+				System.out.println("Forest " + fName + " detaching from database " + dbName + " ran into problems");
+				System.out.println(response);
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			client.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 
-	/*
-	 * Deleting a forest is a HTTP Delete request
-	 */
+	// Deleting a forest is a HTTP Delete request
 	public static void deleteForest(String fName) {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-
-			HttpDelete delete = new HttpDelete(
+			client = createManageAdminClient("admin", "admin");
+			String deleteUrl = new String(
 					"http://" + host_name + ":" + admin_port + "/manage/v2/forests/" + fName + "?level=full");
-			client.execute(delete);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(deleteUrl)
+					.delete()
+					.build();
+			Response response = client.newCall(request).execute();
+			if (response.code() == ML_RES_CHANGED) {
+				System.out.println("Forest " + fName + " has been deleted");
+			} else {
+				System.out.println("Forest " + fName + " deletion ran into problems");
+				System.out.println(response);
+			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			client.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 
-	/*
-	 * Deleting Database
-	 */
+	// Deleting Database
 	public static void deleteDB(String dbName) {
-		DefaultHttpClient client = null;
+		OkHttpClient client;
 		try {
-			client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-
-			HttpDelete delete = new HttpDelete(
-					"http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName);
-			client.execute(delete);
+			client = createManageAdminClient("admin", "admin");
+			String deleteUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(deleteUrl)
+					.delete()
+					.build();
+			Response response = client.newCall(request).execute();
+			if (response.code() == ML_RES_CHANGED) {
+				System.out.println("Database " + dbName + " has been deleted");
+			} else {
+				System.out.println("Database " + dbName + " deletion ran into problems");
+				System.out.println(response);
+			}
 
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			client.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 
-	/*
-	 * Clear the Database
-	 */
+	//Clear the Database
 	public static void clearDB(int port) {
-		DefaultHttpClient client = null;
+		OkHttpClient client = createManageAdminClient("admin", "admin");
 		try {
 			InputStream jsonstream = null;
 			String uri = null;
-			if (IsSecurityEnabled()) {
+			String resGet = null;
+			JsonNode jnode = null;
+			if (/*IsSecurityEnabled()*/false) {
 				// In case of SSL use 8002 port to clear DB contents.
-				client = new DefaultHttpClient();
-				client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-						new UsernamePasswordCredentials("admin", "admin"));
-				HttpGet getrequest = new HttpGet("http://" + host_name + ":" + admin_port + "/manage/v2/servers/"
+				String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/"
 						+ getRestAppServerName() + "/properties?group-id=Default&format=json");
-				HttpResponse response1 = client.execute(getrequest);
-				jsonstream = response1.getEntity().getContent();
-				JsonNode jnode = new ObjectMapper().readTree(jsonstream);
+				Request request = new Request.Builder()
+						.header("Content-type", "application/json")
+						.url(getrequest)
+						.build();
+				Response response = client.newCall(request).execute();
+
+				if (response.code() == ML_RES_OK) {
+					resGet = response.body().string();
+					System.out.println("Response from Get is " + resGet);
+				}
+				if (resGet != null && !resGet.isEmpty())
+					jnode = new ObjectMapper().readTree(resGet);
+				else throw new Exception("Unexpected error " + response);
+
 				String dbName = jnode.get("content-database").asText();
 				System.out.println("App Server's content database properties value from ClearDB is :" + dbName);
 
@@ -1000,58 +1002,61 @@ public abstract class ConnectedRESTQA {
 
 				mainNode.put("operation", "clear-database");
 
-				HttpPost post = new HttpPost(
-						"http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName);
-				post.addHeader("Content-type", "application/json");
-				post.setEntity(new StringEntity(mainNode.toString()));
-
-				HttpResponse response = client.execute(post);
-				HttpEntity respEntity = response.getEntity();
-				if (response.getStatusLine().getStatusCode() == 400) {
-					System.out.println("Database contents cleared");
-				} else if (respEntity != null) {
-					// EntityUtils to get the response content
-					String content = EntityUtils.toString(respEntity);
-					System.out.println(content);
+				String postUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName);
+				Request requestSSLClear = new Request.Builder()
+						.header("Content-type", "application/json")
+						.url(postUrl)
+						.post(RequestBody.create(mainNode.toString(), MediaType.parse("application/json")))
+						.build();
+				Response responseSSLClear = client.newCall(requestSSLClear).execute();
+				if (responseSSLClear.code() == ML_RES_OK) {
+					System.out.println(dbName + " database contents cleared");
 				} else {
-					System.out.println("No Proper Response from clearDB in SSL.");
+					System.out.println("Database contents did not clear");
 				}
 			} else {
-				client = new DefaultHttpClient();
-				client.getCredentialsProvider().setCredentials(new AuthScope(host_name, port),
-						new UsernamePasswordCredentials("admin", "admin"));
 				uri = "http://" + host_name + ":" + port + "/v1/search/";
-				HttpDelete delete = new HttpDelete(uri);
-				client.execute(delete);
+				Request requestNormClear = new Request.Builder()
+						.header("Content-type", "application/json")
+						.url(uri)
+						.delete()
+						.build();
+				Response responseNormClear = client.newCall(requestNormClear).execute();
+				if (responseNormClear.code() == ML_RES_CHANGED)
+					System.out.println("Content database cleared for App Server on port " + port);
+				else {
+					System.out.println("Content database not cleared");
+					throw new Exception("Unexpected error " + responseNormClear);
+				}
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			client.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 
 	public static void waitForServerRestart() {
-		DefaultHttpClient client = null;
+		OkHttpClient client = createManageAdminClient("admin", "admin");;
 		try {
 			int count = 0;
 			while (count < 20) {
-				client = new DefaultHttpClient();
-				client.getCredentialsProvider().setCredentials(new AuthScope(host_name, 8001),
-						new UsernamePasswordCredentials("admin", "admin"));
-
 				count++;
 				try {
-					HttpGet getrequest = new HttpGet("http://" + host_name + ":8001/admin/v1/timestamp");
-					HttpResponse response = client.execute(getrequest);
-					if (response.getStatusLine().getStatusCode() == 503) {
+					String getrequestUrl = new String("http://" + host_name + ":8001/admin/v1/timestamp");
+					Request requestGet = new Request.Builder()
+							.header("Content-type", "application/json")
+							.url(getrequestUrl)
+							.build();
+					Response responseGet = client.newCall(requestGet).execute();
+
+					if (responseGet.code() == 503) {
 						Thread.sleep(5000);
-					} else if (response.getStatusLine().getStatusCode() == 200) {
+					} else if (responseGet.code() == 200) {
 						break;
 					} else {
 						System.out.println("Waiting for response from server, Trial :"
-								+ response.getStatusLine().getStatusCode() + count);
+								+ responseGet.code() + count);
 						Thread.sleep(6000);
 					}
 				} catch (Exception e) {
@@ -1062,7 +1067,7 @@ public abstract class ConnectedRESTQA {
 			System.out.println("Inside wait for server restart is throwing an error");
 			e.printStackTrace();
 		} finally {
-			client.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 
@@ -1082,7 +1087,7 @@ public abstract class ConnectedRESTQA {
 		Calendar cal = Calendar.getInstance();
 		Date d = cal.getTime();
 		long beforeTeardown = cal.getTimeInMillis();
-		logger.info("### StartingTestCase TEARDOWN " + dbName + " ### " + d);
+		//logger.info("### StartingTestCase TEARDOWN " + dbName + " ### " + d);
 
 		long before = cal.getTimeInMillis();
 		try {
@@ -1120,9 +1125,7 @@ public abstract class ConnectedRESTQA {
 		logTestMessages(" Ending TESTCASE TEARDOWN ", beforeTeardown);
 	}
 
-	/*
-	 * This function deletes rest server along with default forest and database
-	 */
+	// This function deletes rest server along with default forest and database
 	public static void tearDownJavaRESTServerWithDB(String restServerName) throws Exception {
 		try {
 			deleteRESTServerWithDB(restServerName);
@@ -1133,93 +1136,100 @@ public abstract class ConnectedRESTQA {
 		Thread.sleep(6000);
 	}
 
-	/*
-	 * 
-	 * setting up AppServices configurations setting up database properties
-	 * whose value is string
-	 */
+	// Setting up AppServices configurations setting up database properties whose value is string
 	public static void setDatabaseProperties(String dbName, String prop, String propValue) throws IOException {
-		InputStream jsonstream = null;
-		DefaultHttpClient client = null;
+		String resGet = null;
+		JsonNode jnode = null;
+		Response responsePut = null;
+		OkHttpClient client = createManageAdminClient("admin", "admin");
 		try {
-			client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-			HttpGet getrequest = new HttpGet("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
+			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
 					+ "/properties?format=json");
-			HttpResponse response1 = client.execute(getrequest);
-			jsonstream = response1.getEntity().getContent();
-			JsonNode jnode = new ObjectMapper().readTree(jsonstream);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(getrequest)
+					.build();
+			Response response1 = client.newCall(request).execute();
+			if (response1.code() == ML_RES_OK) {
+				resGet = response1.body().string();
+				System.out.println("Response from Get is " + resGet);
+			}
+			if (resGet != null && !resGet.isEmpty())
+				jnode = new ObjectMapper().readTree(resGet);
+			else throw new Exception("Unexpected error " + response1);
 
 			if (!jnode.isNull()) {
 				((ObjectNode) jnode).put(prop, propValue);
-				HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
+				String putUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
 						+ "/properties?format=json");
-				put.addHeader("Content-type", "application/json");
-				put.setEntity(new StringEntity(jnode.toString()));
 
-				HttpResponse response2 = client.execute(put);
-				HttpEntity respEntity = response2.getEntity();
+				String putProps = jnode.toString();
+				Request requestPut = new Request.Builder()
+						.header("Content-type", "application/json")
+						.url(putUrl)
+						.put(RequestBody.create(putProps, MediaType.parse("application/json")))
+						.build();
+				responsePut = client.newCall(requestPut).execute();
 
-				if (respEntity != null) {
-					String content = EntityUtils.toString(respEntity);
-					System.out.println(content);
+				if (responsePut.code() == ML_RES_CHANGED) {
+					System.out.println("Database " + dbName + ". property " + prop +" has been updated with " + propValue);
 				}
 			} else {
-				System.out.println("REST call for database properties returned NULL ");
+				System.out.println("REST call for database properties update has issues");
+				System.out.println(responsePut.toString());
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			if (jsonstream == null) {
-			} else {
-				jsonstream.close();
-			}
-			client.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 
 	public static void setDatabaseProperties(String dbName, String prop, boolean propValue) throws IOException {
-		InputStream jsonstream = null;
-		DefaultHttpClient client = null;
+		String resGet = null;
+		JsonNode jnode = null;
+		Response responsePut = null;
+		OkHttpClient client = createManageAdminClient("admin", "admin");
 		try {
-			client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-			HttpGet getrequest = new HttpGet("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
+			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
 					+ "/properties?format=json");
-			HttpResponse response1 = client.execute(getrequest);
-			jsonstream = response1.getEntity().getContent();
-			JsonNode jnode = new ObjectMapper().readTree(jsonstream);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(getrequest)
+					.build();
+			Response response1 = client.newCall(request).execute();
+			if (response1.code() == ML_RES_OK) {
+				resGet = response1.body().string();
+				System.out.println("Response from Get is " + resGet);
+			}
+			if (resGet != null && !resGet.isEmpty())
+				jnode = new ObjectMapper().readTree(resGet);
+			else throw new Exception("Unexpected error " + response1);
 
 			if (!jnode.isNull()) {
 				((ObjectNode) jnode).put(prop, propValue);
-
-				HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
+				String putUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
 						+ "/properties?format=json");
-				put.addHeader("Content-type", "application/json");
-				put.setEntity(new StringEntity(jnode.toString()));
 
-				HttpResponse response2 = client.execute(put);
-				HttpEntity respEntity = response2.getEntity();
+				String putProps = jnode.toString();
+				Request requestPut = new Request.Builder()
+						.header("Content-type", "application/json")
+						.url(putUrl)
+						.put(RequestBody.create(putProps, MediaType.parse("application/json")))
+						.build();
+				responsePut = client.newCall(requestPut).execute();
 
-				if (respEntity != null) {
-					String content = EntityUtils.toString(respEntity);
-					System.out.println(content);
+				if (responsePut.code() == ML_RES_CHANGED) {
+					System.out.println("Database " + dbName + ". property " + prop +" has been updated with " + propValue);
 				}
 			} else {
-				System.out.println("REST call for database properties returned NULL ");
+				System.out.println("REST call for database properties update has issues");
+				System.out.println(responsePut.toString());
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			if (jsonstream == null) {
-			} else {
-				jsonstream.close();
-			}
-			client.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 
@@ -1230,18 +1240,26 @@ public abstract class ConnectedRESTQA {
 	 * adds elements to that array
 	 */
 	public static void setDatabaseProperties(String dbName, String propName, ObjectNode objNode) throws IOException {
-		InputStream jsonstream = null;
-		DefaultHttpClient client = null;
+		String resGet = null;
+		JsonNode jnode = null;
+		Response responsePut = null;
+		OkHttpClient client = createManageAdminClient("admin", "admin");
 		try {
-			client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-			HttpGet getrequest = new HttpGet("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
+			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
 					+ "/properties?format=json");
-			HttpResponse response1 = client.execute(getrequest);
-			jsonstream = response1.getEntity().getContent();
-			ObjectMapper mapper = new ObjectMapper();
-			JsonNode jnode = mapper.readTree(jsonstream);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(getrequest)
+					.build();
+			Response response1 = client.newCall(request).execute();
+			if (response1.code() == ML_RES_OK) {
+				resGet = response1.body().string();
+				System.out.println("Response from Get is " + resGet);
+			}
+			if (resGet != null && !resGet.isEmpty())
+				jnode = new ObjectMapper().readTree(resGet);
+			else throw new Exception("Unexpected error " + response1);
+
 			if (!jnode.isNull()) {
 				if (!jnode.has(propName)) {
 					((ObjectNode) jnode).putArray(propName).addAll(objNode.withArray(propName));
@@ -1256,31 +1274,30 @@ public abstract class ConnectedRESTQA {
 						}
 					}
 				}
-
-				HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
+				String putUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
 						+ "/properties?format=json");
-				put.addHeader("Content-type", "application/json");
-				put.setEntity(new StringEntity(jnode.toString()));
 
-				HttpResponse response2 = client.execute(put);
-				HttpEntity respEntity = response2.getEntity();
-				if (respEntity != null) {
-					String content = EntityUtils.toString(respEntity);
-					System.out.println(content);
+				String putProps = jnode.toString();
+				Request requestPut = new Request.Builder()
+						.header("Content-type", "application/json")
+						.url(putUrl)
+						.put(RequestBody.create(putProps, MediaType.parse("application/json")))
+						.build();
+				responsePut = client.newCall(requestPut).execute();
+				System.out.println(responsePut);
+				if (responsePut.code() == ML_RES_CHANGED) {
+					System.out.println("Database " + dbName + ". property " + propName +" has been updated");
 				}
 			} else {
-				System.out.println("REST call for database properties returned NULL \n" + jnode.toString() + "\n"
-						+ response1.getStatusLine().getStatusCode());
+				System.out.println("REST call for database properties update has issues");
+				System.out.println(responsePut.toString());
+				System.out.println(jnode.toString());
 			}
 		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			if (jsonstream == null) {
-			} else {
-				jsonstream.close();
-			}
-			client.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 
@@ -1735,18 +1752,26 @@ public abstract class ConnectedRESTQA {
 	 */
 	public static void setDatabaseFieldProperties(String dbName, String field_name, String propName, ObjectNode objNode)
 			throws IOException {
-		InputStream jsonstream = null;
-		DefaultHttpClient client = null;
+		String resGet = null;
+		JsonNode jnode = null;
+		Response responsePut = null;
+		OkHttpClient client = createManageAdminClient("admin", "admin");
 		try {
-			client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-			HttpGet getrequest = new HttpGet("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
+			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
 					+ "/properties?format=json");
-			HttpResponse response1 = client.execute(getrequest);
-			jsonstream = response1.getEntity().getContent();
-			ObjectMapper mapper = new ObjectMapper();
-			JsonNode jnode = mapper.readTree(jsonstream);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(getrequest)
+					.build();
+			Response response1 = client.newCall(request).execute();
+			if (response1.code() == ML_RES_OK) {
+				resGet = response1.body().string();
+				System.out.println("Response from Get is " + resGet);
+			}
+			if (resGet != null && !resGet.isEmpty())
+				jnode = new ObjectMapper().readTree(resGet);
+			else throw new Exception("Unexpected error " + response1);
+
 			if (!jnode.isNull() && jnode.has("field")) {
 				JsonNode fieldNode = jnode.withArray("field");
 				Iterator<JsonNode> fnode = fieldNode.elements();
@@ -1761,31 +1786,28 @@ public abstract class ConnectedRESTQA {
 						}
 					}
 				}
-
-				HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
+				String putUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
 						+ "/properties?format=json");
-				put.addHeader("Content-type", "application/json");
-				put.setEntity(new StringEntity(jnode.toString()));
-
-				HttpResponse response2 = client.execute(put);
-				HttpEntity respEntity = response2.getEntity();
-				if (respEntity != null) {
-					String content = EntityUtils.toString(respEntity);
-					System.out.println(content);
+				String putProps = jnode.toString();
+				Request requestPut = new Request.Builder()
+						.header("Content-type", "application/json")
+						.url(putUrl)
+						.put(RequestBody.create(putProps, MediaType.parse("application/json")))
+						.build();
+				responsePut = client.newCall(requestPut).execute();
+				System.out.println(responsePut);
+				if (responsePut.code() == ML_RES_CHANGED) {
+					System.out.println("Database " + dbName + ". property " + propName +" has been updated");
 				}
 			} else {
-				System.out.println("REST call for database properties returned NULL \n" + jnode.toString() + "\n"
-						+ response1.getStatusLine().getStatusCode());
+				System.out.println("REST call for database properties update has issues");
+				System.out.println(responsePut.toString());
+				System.out.println(jnode.toString());
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			if (jsonstream == null) {
-			} else {
-				jsonstream.close();
-			}
-			client.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 
@@ -1937,86 +1959,59 @@ public abstract class ConnectedRESTQA {
 
 		axisEnd.set("element-reference", elementReferenceEnd);
 		rootNode.set("axis-end", axisEnd);
-
 		System.out.println(rootNode.toString());
 
-		DefaultHttpClient client = new DefaultHttpClient();
-		client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-				new UsernamePasswordCredentials("admin", "admin"));
+		OkHttpClient client = createManageAdminClient("admin", "admin");
 
-		HttpPost post = new HttpPost("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
+		String postStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
 				+ "/temporal/axes?format=json");
 
-		post.addHeader("Content-type", "application/json");
-		post.addHeader("accept", "application/json");
-		post.setEntity(new StringEntity(rootNode.toString()));
-
-		HttpResponse response = client.execute(post);
-		HttpEntity respEntity = response.getEntity();
-		if (response.getStatusLine().getStatusCode() == 400) {
-			HttpEntity entity = response.getEntity();
-			String responseString = EntityUtils.toString(entity, "UTF-8");
-			System.out.println(responseString);
-		} else if (respEntity != null) {
-			// EntityUtils to get the response content
-			String content = EntityUtils.toString(respEntity);
-			System.out.println(content);
-
-			System.out.println("Temporal axis: " + axisName + " created");
-			System.out.println("==============================================================");
-		} else {
-			System.out.println("No Proper Response");
+		Request request = new Request.Builder()
+				.header("Content-type", "application/json")
+				.url(postStr)
+				.post(RequestBody.create(rootNode.toString(), MediaType.parse("application/json")))
+				.build();
+		Response response = client.newCall(request).execute();
+		System.out.println(response);
+		if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+		else {
+				if (response.code() == ML_RES_CREATED) {
+					System.out.println("Temporal axis: " + axisName + " created");
+				}
+				else {
+					System.out.println("No Proper Response in Temporal axis creation");
+					System.out.println(response);
+			}
 		}
-		client.getConnectionManager().shutdown();
+		client = null;
 	}
 
-	/*
-	 * Delete a temporal axis
-	 * 
-	 * @dbName Database Name
-	 * 
-	 * @axisName Axis Name
-	 */
 	public static void deleteElementRangeIndexTemporalAxis(String dbName, String axisName) throws Exception {
-		DefaultHttpClient client = new DefaultHttpClient();
-		client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-				new UsernamePasswordCredentials("admin", "admin"));
+		OkHttpClient client = createManageAdminClient("admin", "admin");
 
-		HttpDelete del = new HttpDelete("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
+		String delStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
 				+ "/temporal/axes/" + axisName + "?format=json");
 
-		del.addHeader("Content-type", "application/json");
-		del.addHeader("accept", "application/json");
+		Request request = new Request.Builder()
+				.header("Content-type", "application/json")
+				.url(delStr)
+				.delete()
+				.build();
+		Response response = client.newCall(request).execute();
 
-		HttpResponse response = client.execute(del);
-		HttpEntity respEntity = response.getEntity();
-		if (response.getStatusLine().getStatusCode() == 400) {
-			HttpEntity entity = response.getEntity();
-			String responseString = EntityUtils.toString(entity, "UTF-8");
-			System.out.println(responseString);
-		} else if (respEntity != null) {
-			// EntityUtils to get the response content
-			String content = EntityUtils.toString(respEntity);
-			System.out.println(content);
-		} else {
-			System.out.println("Axis: " + axisName + " deleted");
-			System.out.println("==============================================================");
+		if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+			else {
+				if (response.code() == ML_RES_CHANGED) {
+					System.out.println(axisName + " Axis deleted " + " on database " + dbName) ;
+				}
+				else {
+					System.out.println("No Proper Response in Temporal axis deletion");
+					System.out.println(response);
+			}
 		}
-		client.getConnectionManager().shutdown();
+		client = null;
 	}
 
-	/*
-	 * Create a temporal collection
-	 * 
-	 * @dbName Database Name
-	 * 
-	 * @collectionName Collection Name (name of temporal collection that needs
-	 * to be created)
-	 * 
-	 * @systemAxisName Name of System axis
-	 * 
-	 * @validAxisName Name of Valid axis
-	 */
 	public static void addElementRangeIndexTemporalCollection(String dbName, String collectionName,
 			String systemAxisName, String validAxisName) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
@@ -2025,51 +2020,28 @@ public abstract class ConnectedRESTQA {
 		rootNode.put("collection-name", collectionName);
 		rootNode.put("system-axis", systemAxisName);
 		rootNode.put("valid-axis", validAxisName);
-
 		System.out.println(rootNode.toString());
 
-		DefaultHttpClient client = new DefaultHttpClient();
-		client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-				new UsernamePasswordCredentials("admin", "admin"));
-
-		HttpPost post = new HttpPost("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
+		OkHttpClient client = createManageAdminClient("admin", "admin");
+		String postStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
 				+ "/temporal/collections?format=json");
 
-		post.addHeader("Content-type", "application/json");
-		post.addHeader("accept", "application/json");
-		post.setEntity(new StringEntity(rootNode.toString()));
-
-		HttpResponse response = client.execute(post);
-		HttpEntity respEntity = response.getEntity();
-		if (response.getStatusLine().getStatusCode() == 400) {
-			HttpEntity entity = response.getEntity();
-			String responseString = EntityUtils.toString(entity, "UTF-8");
-			System.out.println(responseString);
-		} else if (respEntity != null) {
-			// EntityUtils to get the response content
-			String content = EntityUtils.toString(respEntity);
-			System.out.println(content);
-
+		Request request = new Request.Builder()
+				.header("Content-type", "application/json")
+				.url(postStr)
+				.post(RequestBody.create(rootNode.toString(), MediaType.parse("application/json")))
+				.build();
+		Response response = client.newCall(request).execute();
+		if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+		else if (response.code() == ML_RES_CREATED) {
 			System.out.println("Temporal collection: " + collectionName + " created");
-			System.out.println("==============================================================");
 		} else {
-			System.out.println("No Proper Response");
+			System.out.println("No Proper Response from Temporal collection creation");
 		}
-		client.getConnectionManager().shutdown();
+		client = null;
 	}
 
-	/*
-	 * Create a temporal collection
-	 * 
-	 * @dbName Database Name
-	 * 
-	 * @collectionName Collection Name (name of temporal collection that needs
-	 * to be created)
-	 * 
-	 * @systemAxisName Name of System axis
-	 * 
-	 * @validAxisName Name of Valid axis
-	 */
+	// Update temporal collection
 	public static void updateTemporalCollectionForLSQT(String dbName, String collectionName, boolean enable)
 			throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
@@ -2079,145 +2051,131 @@ public abstract class ConnectedRESTQA {
 		// Set system time values
 		ObjectNode automation = mapper.createObjectNode();
 		automation.put("enabled", true);
-
 		rootNode.set("automation", automation);
-
 		System.out.println(rootNode.toString());
 
-		DefaultHttpClient client = new DefaultHttpClient();
-		client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-				new UsernamePasswordCredentials("admin", "admin"));
+		OkHttpClient client =createManageAdminClient("admin", "admin");
 
-		HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
+		String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
 				+ "/temporal/collections/lsqt/properties?collection=" + collectionName);
 
-		put.addHeader("Content-type", "application/json");
-		put.addHeader("accept", "application/json");
-		put.setEntity(new StringEntity(rootNode.toString()));
-
-		HttpResponse response = client.execute(put);
-		HttpEntity respEntity = response.getEntity();
-		if (response.getStatusLine().getStatusCode() == 400) {
-			HttpEntity entity = response.getEntity();
-			String responseString = EntityUtils.toString(entity, "UTF-8");
-			System.out.println(responseString);
-		} else if (respEntity != null) {
-			// EntityUtils to get the response content
-			String content = EntityUtils.toString(respEntity);
-			System.out.println(content);
-
-			System.out.println("Temporal collection: " + collectionName + " created");
-			System.out.println("==============================================================");
+		Request request = new Request.Builder()
+				.header("Content-type", "application/json")
+				.url(putStr)
+				.put(RequestBody.create(rootNode.toString(), MediaType.parse("application/json")))
+				.build();
+		Response response = client.newCall(request).execute();
+		if (response.code() == ML_RES_CHANGED) {
+			System.out.println("Temporal collection: " + collectionName + " updated");
 		} else {
-			System.out.println("No Proper Response");
+			System.out.println("No Proper Response from Temporal collection update");
 		}
-		client.getConnectionManager().shutdown();
+		client = null;
 	}
 
-	/*
-	 * Delete a temporal collection
-	 * 
-	 * @dbName Database Name
-	 * 
-	 * @collectionName Collection Name
-	 */
+	// Delete a temporal collection
 	public static void deleteElementRangeIndexTemporalCollection(String dbName, String collectionName)
 			throws Exception {
-		DefaultHttpClient client = new DefaultHttpClient();
-		client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-				new UsernamePasswordCredentials("admin", "admin"));
+		OkHttpClient client = createManageAdminClient("admin", "admin");
 
-		HttpDelete del = new HttpDelete("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
+		String del = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
 				+ "/temporal/collections?collection=" + collectionName + "&format=json");
-
-		del.addHeader("Content-type", "application/json");
-		del.addHeader("accept", "application/json");
-
-		HttpResponse response = client.execute(del);
-		HttpEntity respEntity = response.getEntity();
-		if (response.getStatusLine().getStatusCode() == 400) {
-			HttpEntity entity = response.getEntity();
-			String responseString = EntityUtils.toString(entity, "UTF-8");
-			System.out.println(responseString);
-		} else if (respEntity != null) {
-			// EntityUtils to get the response content
-			String content = EntityUtils.toString(respEntity);
-			System.out.println(content);
-		} else {
-			System.out.println("Collection: " + collectionName + " deleted");
-			System.out.println("==============================================================");
+		Request request = new Request.Builder()
+				.header("Content-type", "application/json")
+				.url(del)
+				.delete()
+				.build();
+		Response response = client.newCall(request).execute();
+		if (response.code() == ML_RES_CHANGED) {
+			Thread.sleep(3500);
+			System.out.println("collection " + collectionName + " deleted");
+			System.out.println(response.body().string());
 		}
-		client.getConnectionManager().shutdown();
+		else {
+			System.out.println("collection " + collectionName + " deletion has issues");
+			System.out.println("Response from collection deletion is: " + response);
+		}
+		client = null;
 	}
 
 	public static void loadBug18993() {
-		DefaultHttpClient client = null;
+		OkHttpClient client = null;
 		try {
-			client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, 8011),
-					new UsernamePasswordCredentials("admin", "admin"));
+			client = createManageAdminClient("admin", "admin");
 			String document = "<foo>a space b</foo>";
 			String perm = "perm:rest-writer=read&perm:rest-writer=insert&perm:rest-writer=update&perm:rest-writer=execute";
-			HttpPut put = new HttpPut(
+			String putStr = new String(
 					"http://" + host_name + ":" + getRestAppServerPort() + "/v1/documents?uri=/a%20b&" + perm);
-			put.addHeader("Content-type", "application/xml");
-			put.setEntity(new StringEntity(document));
-			HttpResponse response = client.execute(put);
-			HttpEntity respEntity = response.getEntity();
-			if (respEntity != null) {
-				String content = EntityUtils.toString(respEntity);
-				System.out.println(content);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(putStr)
+					.put(RequestBody.create(document.toLowerCase(), MediaType.parse("application/xml")))
+					.build();
+			Response response = client.newCall(request).execute();
+			if (response.code() == ML_RES_BADREQT) {
+				System.out.println(response);
+			}
+			else {
+				System.out.println("Loading documents for test 189933 has issues");
+				System.out.println(response);
 			}
 		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			client.getConnectionManager().shutdown();
+			client= null;
 		}
 	}
 
 	public static void setAuthentication(String level, String restServerName)
-			throws ClientProtocolException, IOException {
-		DefaultHttpClient client = new DefaultHttpClient();
-
-		client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-				new UsernamePasswordCredentials("admin", "admin"));
+			throws IOException {
+		OkHttpClient  client = createManageAdminClient("admin", "admin");
 		String body = "{\"authentication\": \"" + level + "\"}";
 
-		HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
+		String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
 				+ "/properties?server-type=http&group-id=Default");
-		put.addHeader("Content-type", "application/json");
-		put.setEntity(new StringEntity(body));
+		Request request = new Request.Builder()
+				.header("Content-type", "application/json")
+				.url(putStr)
+				.put(RequestBody.create(body, MediaType.parse("application/json")))
+				.build();
+		Response response = client.newCall(request).execute();
 
-		HttpResponse response2 = client.execute(put);
-		HttpEntity respEntity = response2.getEntity();
-		if (respEntity != null) {
-			String content = EntityUtils.toString(respEntity);
-			System.out.println(content);
+		if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+		else if (response.code() == ML_RES_CHANGED) {
+			System.out.println("App Server Authentication value changed to " + level);
 		}
-		client.getConnectionManager().shutdown();
+		else {
+			System.out.println("App Server Authentication value change ran into issues");
+			System.out.println(response);
+		}
+		client = null;
 	}
 
-	public static void setDefaultUser(String usr, String restServerName) throws ClientProtocolException, IOException {
+	public static void setDefaultUser(String usr, String restServerName) throws IOException {
 
-		DefaultHttpClient client = new DefaultHttpClient();
+		OkHttpClient client = createManageAdminClient("admin", "admin");
 
-		client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-				new UsernamePasswordCredentials("admin", "admin"));
 		String body = "{\"default-user\": \"" + usr + "\"}";
 
-		HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
+		String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
 				+ "/properties?server-type=http&group-id=Default");
-		put.addHeader("Content-type", "application/json");
-		put.setEntity(new StringEntity(body));
+		Request request = new Request.Builder()
+				.header("Content-type", "application/json")
+				.url(putStr)
+				.put(RequestBody.create(body, MediaType.parse("application/json")))
+				.build();
+		Response response = client.newCall(request).execute();
 
-		HttpResponse response2 = client.execute(put);
-		HttpEntity respEntity = response2.getEntity();
-		if (respEntity != null) {
-			String content = EntityUtils.toString(respEntity);
-			System.out.println(content);
+		if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+		else if (response.code() == ML_RES_CHANGED) {
+			System.out.println("Default User name changed to " + usr);
 		}
-		client.getConnectionManager().shutdown();
+		else {
+			System.out.println("Default User name change ran into issues");
+			System.out.println(response);
+		}
+		client = null;
 	}
 
 	public static void setupServerRequestLogging(DatabaseClient client, boolean flag) throws Exception {
@@ -2232,32 +2190,35 @@ public abstract class ConnectedRESTQA {
 	 * database.
 	 */
 	public static void setPathRangeIndexInDatabase(String dbName, JsonNode jnode) throws IOException {
-		DefaultHttpClient client = null;
+		OkHttpClient client = null;
 		try {
-			client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
+			client = createManageAdminClient("admin", "admin");
 
-			HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
+			String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
 					+ "/properties?format=json");
-			put.addHeader("Content-type", "application/json");
-			put.setEntity(new StringEntity(jnode.toString()));
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(putStr)
+					.put(RequestBody.create(jnode.toString(), MediaType.parse("application/json")))
+					.build();
+			Response response = client.newCall(request).execute();
 
-			HttpResponse response = client.execute(put);
-			HttpEntity respEntity = response.getEntity();
-			if (respEntity != null) {
-				String content = EntityUtils.toString(respEntity);
-				System.out.println(content);
+			if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+			else if (response.code() == ML_RES_CHANGED) {
+				System.out.println("Path index assignment successful ");
+			}
+			else {
+				System.out.println("Path index assignment ran into issues");
+				System.out.println(response);
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			client.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 
-	/**
+	/*
 	 * Returns a SSLContext, so that the tests can run on a SSL enabled REST
 	 * server.
 	 * 
@@ -2318,7 +2279,7 @@ public abstract class ConnectedRESTQA {
 		return mlsslContext;
 	}
 
-	/**
+	/*
 	 * Clear the database contents based on port for SSL or non SSL enabled REST
 	 * Server.
 	 * @throws Exception
@@ -2327,7 +2288,7 @@ public abstract class ConnectedRESTQA {
 		clearDB(getRestServerPort());
 	}
 
-	/**
+	/*
 	 * Configure a SSL or non SSL enabled REST Server based on the build.gradle
 	 * ssl setting.
 	 * 
@@ -2345,14 +2306,7 @@ public abstract class ConnectedRESTQA {
 			setRESTServerWithDistributeTimestamps(restServerName, "cluster");
 	}
 
-	/**
-	 * Configure a SSL or non SSL enabled REST Server based on the build.gradle
-	 * ssl setting. Associate database or not
-	 * 
-	 * @param dbName
-	 * @param fNames
-	 * @throws Exception
-	 */
+	//Configure a SSL or non SSL enabled REST Server based on the build.gradle
 	public static void configureRESTServer(String dbName, String[] fNames, boolean bAssociateDB) throws Exception {
 		loadGradleProperties();
 		if (IsSecurityEnabled())
@@ -2361,13 +2315,7 @@ public abstract class ConnectedRESTQA {
 			setupJavaRESTServer(dbName, fNames[0], restServerName, getRestServerPort(), bAssociateDB);
 	}
 
-	/**
-	 * Removes the database and forest from a REST server.
-	 * 
-	 * @param dbName
-	 * @param fNames
-	 * @throws Exception
-	 */
+	// Removes the database and forest from a REST server.
 	public static void cleanupRESTServer(String dbName, String[] fNames) throws Exception {
 		if (IsSecurityEnabled())
 			tearDownJavaRESTServer(dbName, fNames, restSslServerName);
@@ -2375,11 +2323,7 @@ public abstract class ConnectedRESTQA {
 			tearDownJavaRESTServer(dbName, fNames, restServerName);
 	}
 
-	/**
-	 * Returns true or false based security (ssl) is enabled or disabled.
-	 * 
-	 * @return
-	 */
+	// Returns true or false based security (ssl) is enabled or disabled.
 	public static boolean IsSecurityEnabled() {
 		boolean bSecurityEnabled = false;
 		if (getSslEnabled().trim().equalsIgnoreCase("true"))
@@ -2484,35 +2428,28 @@ public abstract class ConnectedRESTQA {
 		return client;
 	}
 
-	/**
-	 * Return a Server name. For SSL runs returns value in restSslServerName For
-	 * non SSL runs returns restServerName
-	 * 
-	 * @return
-	 */
-
+	//Return a Server name. For SSL runs returns value in restSslServerName For
+	// non SSL runs returns restServerName
 	public static String getRestServerName() {
 		return (getSslEnabled().trim().equalsIgnoreCase("true") ? restSslServerName : restServerName);
 	}
 
-	/**
+	/*
 	 * Return a Server host name configured in build.gradle. For SSL runs
 	 * returns SSL_HOST_NAME For non SSL runs returns HOST_NAME
 	 * 
 	 * @return
 	 */
-
 	public static String getRestServerHostName() {
 		return (getSslEnabled().trim().equalsIgnoreCase("true") ? getSslServer() : getServer());
 	}
 
-	/**
+	/*
 	 * Return a Server host port configured in build.gradle. For SSL runs
 	 * returns HTTPS_PORT For non SSL runs returns HTTP_PORT
 	 * 
 	 * @return
 	 */
-
 	public static int getRestServerPort() {
 		return (getSslEnabled().trim().equalsIgnoreCase("true") ? getHttpsPort() : getHttpPort());
 	}
@@ -2619,14 +2556,12 @@ public abstract class ConnectedRESTQA {
 		return (IsSecurityEnabled() ? getHttpsPort() : getHttpPort());
 	}
 
-	// Returns the name of the REST Application server name. Currently on single
-	// node.
+	// Returns the name of the REST Application server name. Currently on single node.
 	public static String getRestAppServerName() {
 		return (IsSecurityEnabled() ? getSslAppServerName() : getAppServerName());
 	}
 
-	// Returns the Host name where REST Application server runs. Currently on
-	// single node.
+	// Returns the Host name where REST Application server runs. Currently on single node.
 	public static String getRestAppServerHostName() {
 		return (IsSecurityEnabled() ? getSslServer() : getServer());
 	}
@@ -2686,67 +2621,60 @@ public abstract class ConnectedRESTQA {
 	 */
 	public static void associateRESTServerWithKerberosExtSecurity(String restServerName, String extSecurityrName)
 			throws Exception {
-		DefaultHttpClient client = new DefaultHttpClient();
-
-		client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-				new UsernamePasswordCredentials("admin", "admin"));
+		OkHttpClient client = createManageAdminClient("admin", "admin");
 		String body = "{\"group-name\": \"Default\", \"authentication\":\"kerberos-ticket\",\"internal-security\": \"false\",\"external-security\": \""
 				+ extSecurityrName + "\"}";
 
-		HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
+		String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
 				+ "/properties?server-type=http");
-		put.addHeader("Content-type", "application/json");
-		put.setEntity(new StringEntity(body));
-
-		HttpResponse response2 = client.execute(put);
-		HttpEntity respEntity = response2.getEntity();
-		if (respEntity != null) {
-			String content = EntityUtils.toString(respEntity);
-			System.out.println(content);
+		Request request = new Request.Builder()
+				.header("Content-type", "application/json")
+				.url(putStr)
+				.put(RequestBody.create(body, MediaType.parse("application/json")))
+				.build();
+		Response response = client.newCall(request).execute();
+		if (response.code() == ML_RES_CHANGED) {
+			System.out.println("External security " + extSecurityrName + " has been associated with " + restServerName + " server");
 		}
-		client.getConnectionManager().shutdown();
+		else {
+			System.out.println("External security association with App server has issues");
+			System.out.println(response);
+		}
+		client = null;
 	}
 
 	/*
 	 * Associate REST server with Digest Auth Property changes needed for
-	 * Kerberos are:
-	 * 
+	 * are:
 	 * authentication set to "Digest" internal security set to "true"
 	 */
 	public static void associateRESTServerWithDigestAuth(String restServerName) throws Exception {
-		DefaultHttpClient client = new DefaultHttpClient();
-
-		client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-				new UsernamePasswordCredentials("admin", "admin"));
+		OkHttpClient client = createManageAdminClient("admin", "admin");
 		String extSecurityrName = "";
 		String body = "{\"group-name\": \"Default\", \"authentication\":\"Digest\",\"internal-security\": \"true\",\"external-security\": \""
 				+ extSecurityrName + "\"}";
-		;
-
-		HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
+		String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
 				+ "/properties?server-type=http");
-		put.addHeader("Content-type", "application/json");
-		put.setEntity(new StringEntity(body));
-
-		HttpResponse response2 = client.execute(put);
-		HttpEntity respEntity = response2.getEntity();
-		if (respEntity != null) {
-			String content = EntityUtils.toString(respEntity);
-			System.out.println(content);
+		Request request = new Request.Builder()
+				.header("Content-type", "application/json")
+				.url(putStr)
+				.put(RequestBody.create(body, MediaType.parse("application/json")))
+				.build();
+		Response response = client.newCall(request).execute();
+		if (response.code() == ML_RES_CHANGED) {
+			System.out.println("Digest Auth has been associated with " + restServerName + " server");
 		}
-		client.getConnectionManager().shutdown();
+		else {
+			System.out.println("Digest Auth association with App server has issues");
+			System.out.println(response);
+		}
+		client = null;
 	}
 
-	/*
-	 * Creates an external security name.
-	 */
-
+	// Creates an external security name.
 	public static void createExternalSecurityForKerberos(String restServerName, String extSecurityName)
 			throws Exception {
-		DefaultHttpClient client = new DefaultHttpClient();
-
-		client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-				new UsernamePasswordCredentials("admin", "admin"));
+		OkHttpClient client = createManageAdminClient("admin", "admin");
 		String body = "{\"authentication\": \"kerberos\", \"external-security-name\":\"" + extSecurityName
 				+ "\", \"description\":\"External Kerberos Security\""
 				+ ",\"cache-timeout\":\"300\", \"authorization\":\"internal\"," + "\"ldap-server-uri\":\"\","
@@ -2754,41 +2682,38 @@ public abstract class ConnectedRESTQA {
 				+ "\"ldap-password\":\"\"," + "\"ldap-bind-method\":\"MD5\","
 				+ "\"ssl-require-client-certificate\":\"true\"" + "}";
 
-		HttpPost post = new HttpPost("http://" + host_name + ":" + admin_port + "/manage/v2/external-security");
-		post.addHeader("Content-type", "application/json");
-		post.setEntity(new StringEntity(body));
-
-		HttpResponse response2 = client.execute(post);
-		HttpEntity respEntity = response2.getEntity();
-		if (respEntity != null) {
-			String content = EntityUtils.toString(respEntity);
-			System.out.println(content);
+		String postStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/external-security");
+		Request request = new Request.Builder()
+				.header("Content-type", "application/json")
+				.url(postStr)
+				.post(RequestBody.create(body, MediaType.parse("application/json")))
+				.build();
+		Response response = client.newCall(request).execute();
+		if (response.code() == ML_RES_CREATED) {
+			System.out.println("External security " + extSecurityName + " created and associated with " + restServerName + " server");
 		}
-		client.getConnectionManager().shutdown();
+		else {
+			System.out.println("External security creation and association with App server has issues");
+			System.out.println(response);
+		}
+		client = null;
 	}
 
-	/*
-	 * This function creates a REST user with a Kerberos External name and given
-	 * roles
-	 */
-
+	// This function creates a REST user with a Kerberos External name and given roles
 	public static void createRESTKerberosUser(String usrName, String pass, String externalName, String... roleNames) {
-		DefaultHttpClient clientReq = null;
-		DefaultHttpClient clientPost = null;
+		OkHttpClient client = createManageAdminClient("admin", "admin");;
 		try {
-			clientReq = new DefaultHttpClient();
-			clientReq.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-			HttpGet getrequest = new HttpGet("http://" + host_name + ":" + admin_port + "/manage/v2/users/" + usrName);
-			HttpResponse resp = clientReq.execute(getrequest);
+			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users/" + usrName);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(getrequest)
+					.build();
+			Response responseGet = client.newCall(request).execute();
 
-			if (resp.getStatusLine().getStatusCode() == 200) {
-				System.out.println("Kerberos User already exist");
+			if (responseGet.code() == ML_RES_OK) {
+				System.out.println("Kerberos User " + usrName + " already exist");
 			} else {
-				System.out.println("Kerberos User dont exist");
-				clientPost = new DefaultHttpClient();
-				clientPost.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-						new UsernamePasswordCredentials("admin", "admin"));
+				System.out.println("Kerberos User does exist");
 
 				ObjectMapper mapper = new ObjectMapper();
 				ObjectNode mainNode = mapper.createObjectNode();
@@ -2810,32 +2735,31 @@ public abstract class ConnectedRESTQA {
 				mainNode.withArray("external-names").addAll(childArrayExtNames);
 
 				System.out.println(mainNode.toString());
-				HttpPost post = new HttpPost("http://" + host_name + ":" + admin_port + "/manage/v2/users?format=json");
-				post.addHeader("Content-type", "application/json");
-				post.setEntity(new StringEntity(mainNode.toString()));
-
-				HttpResponse response = clientPost.execute(post);
-				HttpEntity respEntity = response.getEntity();
-				if (response.getStatusLine().getStatusCode() == 400) {
+				String postStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users?format=json");
+				Request requestUsr = new Request.Builder()
+						.header("Content-type", "application/json")
+						.url(postStr)
+						.post(RequestBody.create(mainNode.toString(), MediaType.parse("application/json")))
+						.build();
+				Response responseUsr = client.newCall(requestUsr).execute();
+				if (responseUsr.code() == ML_RES_BADREQT) {
 					System.out.println("Kerberos User already exist - Status Code 400");
-				} else if (respEntity != null) {
-					// EntityUtils to get the response content
-					String content = EntityUtils.toString(respEntity);
-					System.out.println(content);
+				} else if (responseUsr.code() == ML_RES_CREATED) {
+					System.out.println("Kerberos User " + usrName + " associated with " + externalName + " external name");
 				} else {
 					System.out.println("No Proper Response - Kerberos User");
+					System.out.println(responseUsr);
 				}
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			clientReq.getConnectionManager().shutdown();
-			clientPost.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 
 	public static void changeProperty(Map<String, String> properties, String endpoint) {
+		OkHttpClient client = null;
 		try {
 			StringBuffer xmlBuff = new StringBuffer();
 			xmlBuff.append("{");
@@ -2852,32 +2776,36 @@ public abstract class ConnectedRESTQA {
 				j++;
 			}
 			xmlBuff.append('}');
-			DefaultHttpClient client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
+			client = createManageAdminClient("admin", "admin");
 
-			HttpPut post = new HttpPut("http://" + host_name + ":" + admin_port + endpoint);
-			post.addHeader("Content-type", "application/json");
-			post.setEntity(new StringEntity(xmlBuff.toString()));
+			String putStr = new String("http://" + host_name + ":" + admin_port + endpoint);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(putStr)
+					.put(RequestBody.create(xmlBuff.toString(), MediaType.parse("application/json")))
+					.build();
 
-			HttpResponse response = client.execute(post);
-			HttpEntity respEntity = response.getEntity();
-
-			if (respEntity != null) {
-				String content = EntityUtils.toString(respEntity);
-				System.out.println(content);
+			Response response = client.newCall(request).execute();
+			if (response.code() == ML_RES_BADREQT) {
+				System.out.println("Property change returned - Status Code 400");
+				System.out.println(response);
+			} else if (response.code() == ML_RES_CHANGED) {
+				System.out.println("Property changes successful");
+			} else {
+				System.out.println("No Proper Response");
+				System.out.println(response);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		finally {
+			client = null;
 		}
 	}
 
 	public static JsonNode getState(Map<String, String> properties, String endpoint) {
 		try {
-
-			DefaultHttpClient client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
+			OkHttpClient client = createManageAdminClient("admin", "admin");
 
 			StringBuilder xmlBuff = new StringBuilder();
 			Iterator it = properties.entrySet().iterator();
@@ -2891,17 +2819,22 @@ public abstract class ConnectedRESTQA {
 				} else {
 					xmlBuff.append('=').append(pair.getValue()).append('&');
 				}
-
 				j++;
 			}
-			HttpGet get = new HttpGet(
-					"http://" + host_name + ":" + admin_port + endpoint + "?format=json&" + xmlBuff.toString());
-			HttpResponse response = client.execute(get);
-			ResponseHandler<String> handler = new BasicResponseHandler();
-			String body = handler.handleResponse(response);
-			JsonNode actualObj = new ObjectMapper().readTree(body);
-			return actualObj;
-
+			String getStr = new String("http://" + host_name + ":" + admin_port + endpoint + "?format=json&" + xmlBuff.toString());
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(getStr)
+					.build();
+			Response response = client.newCall(request).execute();
+			if(response.code() == ML_RES_OK) {
+				String body = response.body().string();
+				JsonNode actualObj = new ObjectMapper().readTree(body);
+				return actualObj;
+			}
+			else {
+				System.out.println("No proper response from getState");
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -2909,22 +2842,29 @@ public abstract class ConnectedRESTQA {
 	}
 
 	public static String[] getHosts() {
+		String body = null;
 		try {
-			DefaultHttpClient client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
-			HttpGet get = new HttpGet("http://" + host_name + ":" + admin_port + "/manage/v2/hosts?format=json");
+			OkHttpClient client = createManageAdminClient("admin", "admin");
+			String getStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/hosts?format=json");
 
-			HttpResponse response = client.execute(get);
-			ResponseHandler<String> handler = new BasicResponseHandler();
-			String body = handler.handleResponse(response);
-			JsonNode actualObj = new ObjectMapper().readTree(body);
-			JsonNode nameNode = actualObj.path("host-default-list").path("list-items");
-			List<String> hosts = nameNode.findValuesAsText("nameref");
-			String[] s = new String[hosts.size()];
-			hosts.toArray(s);
-			return s;
-
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(getStr)
+					.build();
+			Response response = client.newCall(request).execute();
+			if(response.code() != ML_RES_OK) {
+				System.out.println("No proper response from getHosts");
+				System.out.println(response);
+			}
+			else if (response.code() == ML_RES_OK) {
+				body = response.body().string();
+				JsonNode actualObj = new ObjectMapper().readTree(body);
+				JsonNode nameNode = actualObj.path("host-default-list").path("list-items");
+				List<String> hosts = nameNode.findValuesAsText("nameref");
+				String[] s = new String[hosts.size()];
+				hosts.toArray(s);
+				return s;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -2943,74 +2883,64 @@ public abstract class ConnectedRESTQA {
 	      automation.put("enabled", false);
 
 	      rootNode.set("automation", automation);
-
 	      System.out.println(rootNode.toString());
 
-	      DefaultHttpClient client = new DefaultHttpClient();
-	      client.getCredentialsProvider().setCredentials(
-	              new AuthScope(host_name, getAdminPort()),
-	              new UsernamePasswordCredentials("admin", "admin"));
+		  OkHttpClient client = createManageAdminClient("admin", "admin");
 
-	      HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName + "/temporal/collections/lsqt/properties?collection=" + collectionName);
+	      String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName + "/temporal/collections/lsqt/properties?collection=" + collectionName);
 
-	      put.addHeader("Content-type", "application/json");
-	      put.addHeader("accept", "application/json");
-	      put.setEntity(new StringEntity(rootNode.toString()));
-
-	      HttpResponse response = client.execute(put);
-	      HttpEntity respEntity = response.getEntity();
-	      if (response.getStatusLine().getStatusCode() == 400) {
-	          HttpEntity entity = response.getEntity();
-	          String responseString = EntityUtils.toString(entity, "UTF-8");
-	          System.out.println(responseString);
+		  Request request = new Request.Builder()
+				  .header("Content-type", "application/json")
+				  .url(putStr)
+				  .put(RequestBody.create(rootNode.toString(), MediaType.parse("application/json")))
+				  .build();
+		  Response response = client.newCall(request).execute();
+	      if (response.code() == ML_RES_BADREQT) {
+	      	System.out.println("Disable automation for a LSQT enabled DB on a collection - Failed");
+	          System.out.println(response);
 	      }
-	      else if (respEntity != null) {
-	          // EntityUtils to get the response content
-	          String content = EntityUtils.toString(respEntity);
-	          System.out.println(content);
-
-	          System.out.println("Temporal collection: " + collectionName + " created");
-	          System.out.println("==============================================================");
+	      else if (response.code() == ML_RES_CHANGED) {
+	          System.out.println("Disable automation for a LSQT on " + collectionName + " successful");
 	      }
 	      else {
-	          System.out.println("No Proper Response");
+	          System.out.println("No Proper Response for Disable automation for a LSQT");
 	      }
-	      client.getConnectionManager().shutdown();
+	      client = null;
 	  }
 	  
 	  public static int getDocumentCount(String dbName) throws IOException {
-	      InputStream jsonstream = null;
-	      DefaultHttpClient client = null;
+	      String jsonStr = null;
+		  OkHttpClient client = null;
 	      int nCount = 0;
 	      try {
-	          client = new DefaultHttpClient();
-	          client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-	                  new UsernamePasswordCredentials("admin", "admin"));
-	          HttpGet getrequest = new HttpGet("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
+	          client = createManageAdminClient("admin", "admin");
+	          String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
 	                  + "?view=counts&format=json");
-	          HttpResponse response1 = client.execute(getrequest);
-	          jsonstream = response1.getEntity().getContent();
-	          JsonNode jnode = new ObjectMapper().readTree(jsonstream);
+			  Request request = new Request.Builder()
+					  .header("Content-type", "application/json")
+					  .url(getrequest)
+					  .build();
+			  Response response1 = client.newCall(request).execute();
+			  if (!response1.isSuccessful()) throw new IOException("Unexpected code " + response1);
+			  else {
+				  jsonStr = response1.body().string();
+				  JsonNode jnode = new ObjectMapper().readTree(jsonStr);
 
-
-	          if (!jnode.isNull()) {
-	              nCount = jnode.path("database-counts").path("count-properties").path("documents").get("value").asInt();
-	              System.out.println(jnode);
-	          } else {
-	              System.out.println("REST call for database properties returned NULL ");
-	          }
+				  if (!jnode.isNull()) {
+					  nCount = jnode.path("database-counts").path("count-properties").path("documents").get("value").asInt();
+					  System.out.println(jnode);
+				  } else {
+					  System.out.println("REST call for database properties returned NULL ");
+				  }
+			  }
 	      } catch (Exception e) {
-	          // writing error to Log
 	          e.printStackTrace();
 	      } finally {
-	          if (jsonstream == null) {
-	          } else {
-	              jsonstream.close();
-	          }
-	          client.getConnectionManager().shutdown();
+	          client = null;
 	      }
 	      return nCount;
 	  }
+
 	  // Wait for all nodes to be informed when property is updated in AWS env
 	  public static void waitForPropertyPropagate() {
 		  waitFor(PROPERTY_WAIT);
@@ -3025,59 +2955,64 @@ public abstract class ConnectedRESTQA {
 			  }
 		  }
 	  }
+
 	  /*
 	   * Associate REST server with timestamps in "distribute timestamps" to specify distribution of commit timestamps
 	   * For example set to "strict" for Application Load Balancing (AWS) 
 	   * 
 	   */
 	  private static void setRESTServerWithDistributeTimestamps(String restServerName, String distributeTimestampType) throws Exception {
-		  DefaultHttpClient client = new DefaultHttpClient();
 
-		  client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-				  new UsernamePasswordCredentials("admin", "admin"));
-		  String extSecurityrName = "";
-		  String body = "{\"group-name\": \"Default\",\"distribute-timestamps\": \"" + distributeTimestampType + "\"}";
-		  ;
+		  OkHttpClient client = createManageAdminClient("admin", "admin");
+		  try {
+			  String extSecurityrName = "";
+			  String body = "{\"group-name\": \"Default\",\"distribute-timestamps\": \"" + distributeTimestampType + "\"}";
 
-		  HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
-				  + "/properties?server-type=http");
-		  put.addHeader("Content-type", "application/json");
-		  put.setEntity(new StringEntity(body));
-
-		  HttpResponse response2 = client.execute(put);
-		  HttpEntity respEntity = response2.getEntity();
-		  if (respEntity != null) {
-			  String content = EntityUtils.toString(respEntity);
-			  System.out.println(content);
+			  String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
+					  + "/properties?server-type=http");
+			  Request request = new Request.Builder()
+					  .header("Content-type", "application/json")
+					  .url(putStr)
+					  .put(RequestBody.create(body, MediaType.parse("application/json")))
+					  .build();
+			  Response response = client.newCall(request).execute();
+			  if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+			  else if (response.code() == ML_RES_CHANGED) {
+				  System.out.println("Property " + distributeTimestampType + " successfully set");
+			  }
 		  }
-		  client.getConnectionManager().shutdown();
+		  catch (Exception ex) {
+		  	ex.printStackTrace();
+		  } finally {
+			  client = null;
+		  }
 	  }
 
 	public static void associateRESTServerWithModuleDB(String restServerName, String modulesDbName) throws Exception {
-		DefaultHttpClient client = null;
+		OkHttpClient client = null;
 		try {
-			client = new DefaultHttpClient();
-
-			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
-					new UsernamePasswordCredentials("admin", "admin"));
+			client = createManageAdminClient("admin", "admin");
 			String body = "{\"modules-database\": \"" + modulesDbName + "\",\"group-name\": \"Default\"}";
 
-			HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
+			String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
 					+ "/properties?server-type=http");
-			put.addHeader("Content-type", "application/json");
-			put.setEntity(new StringEntity(body));
-
-			HttpResponse response2 = client.execute(put);
-			HttpEntity respEntity = response2.getEntity();
-			if (respEntity != null) {
-				String content = EntityUtils.toString(respEntity);
-				System.out.println(content);
+			Request request = new Request.Builder()
+					.header("Content-type", "application/json")
+					.url(putStr)
+					.put(RequestBody.create(body, MediaType.parse("application/json")))
+					.build();
+			Response response = client.newCall(request).execute();
+			if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+			else if (response.code() == ML_RES_CHANGED) {
+				System.out.println(restServerName + " server successfully associated with " + modulesDbName + "database");
+			}
+			else {
+				System.out.println("No proper response in associating RESTServer With ModuleDB");
 			}
 		} catch (Exception e) {
-			// writing error to Log
 			e.printStackTrace();
 		} finally {
-			client.getConnectionManager().shutdown();
+			client = null;
 		}
 	}
 }
