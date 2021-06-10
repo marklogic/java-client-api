@@ -31,6 +31,9 @@ public class StringQueryDefinitionImpl extends AbstractQueryDefinition implement
 
   @Override
   public void setCriteria(String criteria) {
+    if (criteria.length() == 0) {
+      throw new IllegalArgumentException("Criteria cannot be an empty string.");
+    }
     this.criteria = criteria;
   }
 
