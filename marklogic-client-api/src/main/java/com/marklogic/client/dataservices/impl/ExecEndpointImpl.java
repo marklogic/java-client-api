@@ -254,7 +254,7 @@ public class ExecEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements ExecCa
                     submitTask(this);
                 }
                 else {
-                    if (aliveCallContextCount.decrementAndGet() == 0) {
+                    if (aliveCallContextCount.decrementAndGet() == 0 && getCallerThreadPoolExecutor() != null) {
                         getCallerThreadPoolExecutor().shutdown();
                     }
                 }
