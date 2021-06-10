@@ -313,7 +313,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   @Override
   public QueryBatcher withBatchSize(int docBatchSize) {
     if (docBatchSize > this.maxUriBatchSize) {
-      logger.warn("docBatchSize is beyond maxDocBatchSize");
+      logger.debug("docBatchSize is beyond maxDocBatchSize, which is {}.", this.maxUriBatchSize);
     }
     if (docBatchSize < 1) {
       throw new IllegalArgumentException("docBatchSize cannot be less than 1");
