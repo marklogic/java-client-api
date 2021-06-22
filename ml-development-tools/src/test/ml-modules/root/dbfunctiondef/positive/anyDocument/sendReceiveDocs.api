@@ -1,0 +1,19 @@
+{
+  "functionName": "sendReceiveDocs",
+  "params": [ {
+      "name":     "uris",
+      "datatype": "string",
+      "multiple": true,
+      "nullable": true
+    }, {
+      "name":     "docs",
+      "datatype": "anyDocument",
+      "multiple": true,
+      "nullable": true
+    } ],
+  "return": {
+    "datatype": "anyDocument",
+    "multiple": true,
+    "nullable": true
+  }
+}

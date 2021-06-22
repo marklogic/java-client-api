@@ -158,6 +158,11 @@ public class SourceHandle
     return new SourceHandle().withMimetype(getMimetype());
   }
   @Override
+  public SourceHandle[] newHandleArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new SourceHandle[length];
+  }
+  @Override
   public Source[] newArray(int length) {
     if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
     return new Source[length];

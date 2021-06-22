@@ -16,6 +16,7 @@
 package com.marklogic.client.dataservices;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.dataservices.impl.HandleProvider;
 import com.marklogic.client.dataservices.impl.InputEndpointImpl;
 import com.marklogic.client.io.marker.BufferableContentHandle;
 import com.marklogic.client.io.marker.BufferableHandle;
@@ -37,7 +38,7 @@ public interface InputCaller<I> extends IOEndpoint {
 	 * @return  the InputCaller instance for calling the endpoint.
 	 */
 	static <I> InputCaller<I> on(DatabaseClient client, JSONWriteHandle apiDecl, BufferableContentHandle<I,?> inputHandle) {
-		return new InputEndpointImpl(client, apiDecl, false, inputHandle);
+		return new InputEndpointImpl(client, apiDecl, new HandleProvider.ContentHandleProvider<>(inputHandle,null));
 	}
 
 	/**

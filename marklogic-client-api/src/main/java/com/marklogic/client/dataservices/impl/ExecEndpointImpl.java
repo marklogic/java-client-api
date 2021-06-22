@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2021 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,7 +127,7 @@ public class ExecEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements ExecCa
             else if(getCallContextQueue() != null && !getCallContextQueue().isEmpty()){
                 try {
                     for (int i = 0; i < getThreadCount(); i++) {
-                        BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this);
+                        BulkCallableImpl<I,O> bulkCallableImpl = new BulkCallableImpl(this);
                         submitTask(bulkCallableImpl);
                     }
                     if(getCallerThreadPoolExecutor() != null)
@@ -235,8 +235,7 @@ public class ExecEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements ExecCa
             }
         }
 
-// TODO: static private class BulkCallableImpl<I,O>
-        private class BulkCallableImpl implements Callable<Boolean> {
+        static private class BulkCallableImpl<I,O> implements Callable<Boolean> {
             private final BulkExecCallerImpl<I,O> bulkExecCallerImpl;
 
             BulkCallableImpl(BulkExecCallerImpl<I,O> bulkExecCallerImpl) {
@@ -251,11 +250,11 @@ public class ExecEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements ExecCa
 
                 if(continueCalling) {
                     bulkExecCallerImpl.getCallContextQueue().put(callContext);
-                    submitTask(this);
+                    bulkExecCallerImpl.submitTask(this);
                 }
                 else {
-                    if (aliveCallContextCount.decrementAndGet() == 0 && getCallerThreadPoolExecutor() != null) {
-                        getCallerThreadPoolExecutor().shutdown();
+                    if (bulkExecCallerImpl.aliveCallContextCount.decrementAndGet() == 0 && bulkExecCallerImpl.getCallerThreadPoolExecutor() != null) {
+                        bulkExecCallerImpl.getCallerThreadPoolExecutor().shutdown();
                     }
                 }
 

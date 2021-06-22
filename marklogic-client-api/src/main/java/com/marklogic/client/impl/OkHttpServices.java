@@ -2046,6 +2046,27 @@ public class OkHttpServices implements RESTServices {
     return requestBldr;
   }
 
+  static private <R extends AbstractReadHandle> R updateHandle(BodyPart part, R handle) {
+    HandleImplementation handleBase = HandleAccessor.as(handle);
+
+    updateFormat(handleBase, getHeaderFormat(part));
+    updateMimetype(handleBase, getHeaderMimetype(OkHttpServices.getHeader(part, HEADER_CONTENT_TYPE)));
+    updateLength(handleBase, getHeaderLength(OkHttpServices.getHeader(part, HEADER_CONTENT_LENGTH)));
+    handleBase.receiveContent(getEntity(part, handleBase.receiveAs()));
+
+    return handle;
+  }
+  static private <R extends AbstractReadHandle> R updateHandle(Headers headers, ResponseBody body, R handle) {
+      HandleImplementation handleBase = HandleAccessor.as(handle);
+
+      updateFormat(handleBase, getHeaderFormat(headers));
+      updateMimetype(handleBase, getHeaderMimetype(headers.get(HEADER_CONTENT_TYPE)));
+      updateLength(handleBase, getHeaderLength(headers.get(HEADER_CONTENT_LENGTH)));
+      handleBase.receiveContent(getEntity(body, handleBase.receiveAs()));
+
+      return handle;
+  }
+
   @Override
   public <T extends SearchReadHandle> T search(RequestLogger reqlog, T searchHandle,
                                                SearchQueryDefinition queryDef, long start, long len, QueryView view,
@@ -5424,8 +5445,9 @@ public class OkHttpServices implements RESTServices {
   static private <T> T getEntity(BodyPart part, Class<T> as) {
     try {
       String contentType = part.getContentType();
-      return getEntity(ResponseBody.create(MediaType.parse(contentType), part.getSize(),
-        Okio.buffer(Okio.source(part.getInputStream()))), as);
+      return getEntity(
+        ResponseBody.create(Okio.buffer(Okio.source(part.getInputStream())), MediaType.parse(contentType), part.getSize()),
+        as);
     } catch (IOException e) {
       throw new MarkLogicIOException(e);
     } catch (MessagingException e) {
@@ -5976,6 +5998,9 @@ public class OkHttpServices implements RESTServices {
     private boolean isNull = true;
     private Response response;
 
+    Response getResponse() {
+      return response;
+    }
     void setResponse(Response response) {
       this.response = response;
     }
@@ -6063,12 +6088,19 @@ public class OkHttpServices implements RESTServices {
       return content;
     }
     @Override
+    public <C,R> BufferableContentHandle<C,R> asHandle(BufferableContentHandle<C,R> outputHandle) {
+      if (responseBody == null) return null;
+
+      return updateHandle(getResponse().headers(), responseBody, outputHandle);
+    }
+    @Override
     public InputStream asInputStream() {
       return (responseBody == null) ? null : responseBody.byteStream();
     }
     @Override
     public InputStreamHandle asInputStreamHandle() {
-      return (responseBody == null) ? null : new InputStreamHandle(asInputStream());
+      return (responseBody == null) ? null :
+              updateHandle(getResponse().headers(), responseBody, new InputStreamHandle());
     }
     @Override
     public Reader asReader() {
@@ -6076,7 +6108,8 @@ public class OkHttpServices implements RESTServices {
     }
     @Override
     public ReaderHandle asReaderHandle() {
-      return (responseBody == null) ? null : new ReaderHandle(asReader());
+      return (responseBody == null) ? null :
+              updateHandle(getResponse().headers(), responseBody, new ReaderHandle(asReader()));
     }
     @Override
     public String asString() {
@@ -6169,9 +6202,9 @@ public class OkHttpServices implements RESTServices {
         }
         return builder.build();
       } catch (MessagingException e) {
-        throw new RuntimeException(e);
+        throw new MarkLogicIOException(e);
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new MarkLogicIOException(e);
       }
     }
     @Override
@@ -6191,14 +6224,44 @@ public class OkHttpServices implements RESTServices {
         Stream.Builder<C> builder = Stream.builder();
 
         for (int i=0; i < partCount; i++) {
-          C value = responsePartToContent(outputHandle, multipart.getBodyPart(i), receiveClass);
+          BodyPart bodyPart = multipart.getBodyPart(i);
           if (hasEndpointState && i == 0) {
-            endpointStateHandle.set(outputHandle.contentToBytes(value));
+            updateHandle(bodyPart, endpointStateHandle);
           } else {
+            C value = responsePartToContent(outputHandle, bodyPart, receiveClass);
             builder.accept(value);
           }
         }
 
+        return builder.build();
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } finally {
+        outputHandle.set(null);
+      }
+    }
+    @Override
+    public <C,R> Stream<BufferableContentHandle<C,R>> asStreamOfHandles(
+            BytesHandle endpointStateHandle, BufferableContentHandle<C,R> outputHandle
+    ) {
+      try {
+        if (multipart == null) {
+          return Stream.empty();
+        }
+
+        boolean hasEndpointState = (endpointStateHandle != null);
+
+        Stream.Builder<BufferableContentHandle<C,R>> builder = Stream.builder();
+
+        int partCount = multipart.getCount();
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          if (hasEndpointState && i == 0) {
+            updateHandle(bodyPart, endpointStateHandle);
+          } else {
+            builder.accept(updateHandle(bodyPart, outputHandle.newHandle()));
+          }
+        }
         return builder.build();
       } catch (MessagingException e) {
         throw new MarkLogicIOException(e);
@@ -6217,12 +6280,10 @@ public class OkHttpServices implements RESTServices {
         Stream.Builder<InputStreamHandle> builder = Stream.builder();
         for (int i=0; i < partCount; i++) {
           BodyPart bodyPart = multipart.getBodyPart(i);
-          builder.accept(new InputStreamHandle(bodyPart.getInputStream()));
+          builder.accept(updateHandle(bodyPart, new InputStreamHandle()));
         }
         return builder.build();
       } catch (MessagingException e) {
-        throw new MarkLogicIOException(e);
-      } catch (IOException e) {
         throw new MarkLogicIOException(e);
       }
     }
@@ -6277,12 +6338,10 @@ public class OkHttpServices implements RESTServices {
         Stream.Builder<ReaderHandle> builder = Stream.builder();
         for (int i=0; i < partCount; i++) {
           BodyPart bodyPart = multipart.getBodyPart(i);
-          builder.accept(new ReaderHandle(NodeConverter.InputStreamToReader(bodyPart.getInputStream())));
+          builder.accept(updateHandle(bodyPart, new ReaderHandle()));
         }
         return builder.build();
       } catch (MessagingException e) {
-        throw new MarkLogicIOException(e);
-      } catch (IOException e) {
         throw new MarkLogicIOException(e);
       }
     }
@@ -6343,15 +6402,45 @@ public class OkHttpServices implements RESTServices {
         int partCount = multipart.getCount();
         C[] result = outputHandle.newArray(hasEndpointState ? (partCount - 1) : partCount);
         for (int i=0; i < partCount; i++) {
-          C value = responsePartToContent(outputHandle, multipart.getBodyPart(i), receiveClass);
+          BodyPart bodyPart = multipart.getBodyPart(i);
           if (hasEndpointState && i == 0) {
-              endpointStateHandle.set(outputHandle.contentToBytes(value));
+            updateHandle(bodyPart, endpointStateHandle);
           } else {
-              result[hasEndpointState ? (i - 1) : i] = value;
+            C value = responsePartToContent(outputHandle, bodyPart, receiveClass);
+            result[hasEndpointState ? (i - 1) : i] = value;
           }
         }
 
         return result;
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } finally {
+        outputHandle.set(null);
+      }
+    }
+    @Override
+    public <C,R> BufferableContentHandle<C,R>[] asArrayOfHandles(
+            BytesHandle endpointStateHandle, BufferableContentHandle<C,R> outputHandle
+    ) {
+      try {
+          if (multipart == null) {
+              return outputHandle.newHandleArray(0);
+          }
+
+          boolean hasEndpointState = (endpointStateHandle != null);
+
+          int partCount = multipart.getCount();
+          BufferableContentHandle<C,R>[] result = outputHandle.newHandleArray(hasEndpointState ? (partCount - 1) : partCount);
+          for (int i=0; i < partCount; i++) {
+             BodyPart bodyPart = multipart.getBodyPart(i);
+             if (hasEndpointState && i == 0) {
+               updateHandle(bodyPart, endpointStateHandle);
+             } else {
+               result[hasEndpointState ? (i - 1) : i] = updateHandle(bodyPart, outputHandle.newHandle());
+             }
+          }
+
+          return result;
       } catch (MessagingException e) {
         throw new MarkLogicIOException(e);
       } finally {
@@ -6392,12 +6481,10 @@ public class OkHttpServices implements RESTServices {
         InputStreamHandle[] result = new InputStreamHandle[partCount];
         for (int i=0; i < partCount; i++) {
           BodyPart bodyPart = multipart.getBodyPart(i);
-          result[i] = new InputStreamHandle(bodyPart.getInputStream());
+          result[i] = updateHandle(bodyPart, new InputStreamHandle());
         }
         return result;
       } catch (MessagingException e) {
-        throw new MarkLogicIOException(e);
-      } catch (IOException e) {
         throw new MarkLogicIOException(e);
       }
     }
@@ -6412,12 +6499,10 @@ public class OkHttpServices implements RESTServices {
         ReaderHandle[] result = new ReaderHandle[partCount];
         for (int i=0; i < partCount; i++) {
           BodyPart bodyPart = multipart.getBodyPart(i);
-          result[i] = new ReaderHandle(NodeConverter.InputStreamToReader(bodyPart.getInputStream()));
+          result[i] = updateHandle(bodyPart, new ReaderHandle());
         }
         return result;
       } catch (MessagingException e) {
-        throw new MarkLogicIOException(e);
-      } catch (IOException e) {
         throw new MarkLogicIOException(e);
       }
     }

@@ -16,14 +16,11 @@
 package com.marklogic.client.dataservices.impl;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.io.marker.BufferableContentHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
 final public class InputCallerImpl<I,O> extends IOCallerImpl<I,O> {
-    public InputCallerImpl(
-            JSONWriteHandle apiDeclaration,  boolean isHandleIO, BufferableContentHandle<?,?> inputHandle
-    ) {
-        super(apiDeclaration, isHandleIO, inputHandle, null);
+    public InputCallerImpl(JSONWriteHandle apiDeclaration, HandleProvider<I,O> handleProvider) {
+        super(apiDeclaration, handleProvider);
 
         if (getInputParamdef() == null) {
             throw new IllegalArgumentException("input parameter missing in endpoint: "+ getEndpointPath());
@@ -41,7 +38,7 @@ final public class InputCallerImpl<I,O> extends IOCallerImpl<I,O> {
         }
     }
 
-    public void arrayCall(DatabaseClient db, CallContextImpl<I,O> callCtxt, BufferableContentHandle<?,?>[] input) {
+    public void arrayCall(DatabaseClient db, CallContextImpl<I,O> callCtxt, I[] input) {
         responseWithState(makeRequest(db, callCtxt, input), callCtxt);
     }
 }

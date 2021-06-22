@@ -158,6 +158,11 @@ public class XMLEventReaderHandle
     return new XMLEventReaderHandle().withMimetype(getMimetype());
   }
   @Override
+  public XMLEventReaderHandle[] newHandleArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new XMLEventReaderHandle[length];
+  }
+  @Override
   public XMLEventReader[] newArray(int length) {
     if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
     return new XMLEventReader[length];

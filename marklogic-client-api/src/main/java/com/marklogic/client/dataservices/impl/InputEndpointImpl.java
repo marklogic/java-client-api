@@ -20,7 +20,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.marklogic.client.dataservices.InputCaller;
-import com.marklogic.client.io.marker.BufferableContentHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,9 +34,9 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 	private final int batchSize;
 
 	public InputEndpointImpl(
-        DatabaseClient client, JSONWriteHandle apiDecl, boolean isHandleIO, BufferableContentHandle<?,?> inputHandle
+        DatabaseClient client, JSONWriteHandle apiDecl, HandleProvider<I,O> handleProvider
 	) {
-		this(client, new InputCallerImpl<>(apiDecl, isHandleIO, inputHandle));
+		this(client, new InputCallerImpl<>(apiDecl, handleProvider));
 	}
 	private InputEndpointImpl(DatabaseClient client, InputCallerImpl<I,O> caller) {
 		super(client, caller);
@@ -59,7 +58,7 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 	@Override
 	public void call(CallContext callContext, I[] input) {
 		InputCallerImpl<I,O> callerImpl = getCaller();
-		callerImpl.arrayCall(getClient(), checkAllowedArgs(callContext), callerImpl.getContentInputHandle().resendableHandleFor(input));
+		callerImpl.arrayCall(getClient(), checkAllowedArgs(callContext), input);
 	}
 
 	@Deprecated
@@ -197,11 +196,10 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 
 			ErrorDisposition error = ErrorDisposition.RETRY;
 
-			BufferableContentHandle<?,?>[] inputHandles = callerImpl.getContentInputHandle().resendableHandleFor(inputBatch);
 			for (int retryCount = 0; retryCount < DEFAULT_MAX_RETRIES && error == ErrorDisposition.RETRY; retryCount++) {
 				Throwable throwable = null;
 				try {
-					getEndpoint().getCaller().arrayCall(callContext.getClient(), callContext, inputHandles);
+					getEndpoint().getCaller().arrayCall(callContext.getClient(), callContext, inputBatch);
 					incrementCallCount();
 					return;
 				} catch (Throwable catchedThrowable) {
@@ -216,7 +214,9 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 
 						try {
 							if (retryCount < DEFAULT_MAX_RETRIES - 1) {
-								error = getErrorListener().processError(retryCount, throwable, callContext, inputHandles);
+								error = getErrorListener().processError(
+										retryCount, throwable, callContext, callerImpl.bufferableInputHandleOn(inputBatch)
+								);
 							} else {
 								error = ErrorDisposition.SKIP_CALL;
 							}

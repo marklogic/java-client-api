@@ -115,6 +115,7 @@ class Generator {
     return mapOf(
         "array"             to "Reader",
         "object"            to "Reader",
+        "anyDocument"       to "com.marklogic.client.io.InputStreamHandle",
         "binaryDocument"    to "InputStream",
         "jsonDocument"      to "Reader",
         "textDocument"      to "Reader",
@@ -172,6 +173,8 @@ class Generator {
             "java.lang.String",
             "com.fasterxml.jackson.databind.node.ArrayNode",
             "com.fasterxml.jackson.core.JsonParser"),
+        "anyDocument"       to setOf(
+            "com.marklogic.client.io.InputStreamHandle"),
         "binaryDocument"    to setOf(
             "java.io.InputStream"),
         "jsonDocument"      to setOf(
@@ -205,7 +208,7 @@ class Generator {
     return getAtomicDataTypes() + getDocumentDataTypes()
   }
   fun getAllMappings(): Map<String,Set<String>> {
-    return getAtomicMappings() + getDocumentMappings()
+    return getAtomicMappings() + getDocumentMappings().filterNot{entry -> (entry.key == "anyDocument")}
   }
   fun getJavaDataType(
       dataType: String, mapping: String?, dataKind: String, isMultiple: Boolean

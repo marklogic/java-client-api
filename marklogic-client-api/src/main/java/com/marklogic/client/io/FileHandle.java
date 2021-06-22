@@ -124,6 +124,11 @@ public class FileHandle
     return new FileHandle().withFormat(getFormat()).withMimetype(getMimetype());
   }
   @Override
+  public FileHandle[] newHandleArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new FileHandle[length];
+  }
+  @Override
   public File[] newArray(int length) {
     if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
     return new File[length];

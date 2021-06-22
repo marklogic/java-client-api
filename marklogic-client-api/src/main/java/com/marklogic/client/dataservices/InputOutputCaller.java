@@ -16,6 +16,7 @@
 package com.marklogic.client.dataservices;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.dataservices.impl.HandleProvider;
 import com.marklogic.client.dataservices.impl.InputOutputEndpointImpl;
 import com.marklogic.client.io.marker.BufferableContentHandle;
 import com.marklogic.client.io.marker.BufferableHandle;
@@ -46,15 +47,17 @@ public interface InputOutputCaller<I,O> extends IOEndpoint {
             DatabaseClient client, JSONWriteHandle apiDecl,
             BufferableContentHandle<I,?> inputHandle, BufferableContentHandle<O,?> outputHandle
     ) {
-      return new InputOutputEndpointImpl(client, apiDecl, false, inputHandle, outputHandle);
+      return new InputOutputEndpointImpl<>(client, apiDecl, new HandleProvider.ContentHandleProvider<>(inputHandle, outputHandle));
     }
 
-    static <I extends BufferableContentHandle<?,?>,O extends BufferableContentHandle<?,?>> InputOutputCaller<I,O> onHandles(
+/* TODO: ADD TO ISSUE -- ALSO FOR InputCaller AND OutputCaller -- AND DELETE
+    static <IC,IR,OC,OR> InputOutputCaller<BufferableContentHandle<IC,IR>,BufferableContentHandle<OC,OR>> onHandles(
             DatabaseClient client, JSONWriteHandle apiDecl,
-            I inputHandle, O outputHandle
+            BufferableContentHandle<IC,IR> inputHandle, BufferableContentHandle<OC,OR> outputHandle
     ) {
-        return new InputOutputEndpointImpl(client, apiDecl, true, inputHandle, outputHandle);
+        return new InputOutputEndpointImpl<>(client, apiDecl, new HandleProvider.DirectHandleProvider<>(inputHandle, outputHandle));
     }
+ */
 
     /**
      * Makes one call to an endpoint that doesn't take endpoint constants, endpoint state, or a session.

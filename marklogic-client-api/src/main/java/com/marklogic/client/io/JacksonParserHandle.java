@@ -147,6 +147,11 @@ public class JacksonParserHandle
     return new JacksonParserHandle().withMimetype(getMimetype());
   }
   @Override
+  public JacksonParserHandle[] newHandleArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new JacksonParserHandle[length];
+  }
+  @Override
   public JsonParser[] newArray(int length) {
     if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
     return new JsonParser[length];

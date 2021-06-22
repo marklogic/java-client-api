@@ -151,6 +151,11 @@ public class BytesHandle
     return new BytesHandle().withFormat(getFormat()).withMimetype(getMimetype());
   }
   @Override
+  public BytesHandle[] newHandleArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new BytesHandle[length];
+  }
+  @Override
   public byte[][] newArray(int length) {
     if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
     return new byte[length][];

@@ -19,7 +19,6 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.OutputCaller;
-import com.marklogic.client.io.marker.BufferableContentHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +33,9 @@ public class OutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Outp
     private final OutputCallerImpl<I,O> caller;
 
     public OutputEndpointImpl(
-        DatabaseClient client, JSONWriteHandle apiDecl, boolean isHandleIO, BufferableContentHandle<?,?> outputHandle
+        DatabaseClient client, JSONWriteHandle apiDecl, HandleProvider<I,O> handleProvider
     ) {
-        this(client, new OutputCallerImpl<>(apiDecl, isHandleIO, outputHandle));
+        this(client, new OutputCallerImpl<>(apiDecl, handleProvider));
     }
     private OutputEndpointImpl(DatabaseClient client, OutputCallerImpl<I,O> caller) {
         super(client, caller);
@@ -167,7 +166,7 @@ public class OutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Outp
             else if(getCallContextQueue() != null && !getCallContextQueue().isEmpty()){
                 try {
                     for (int i = 0; i < getThreadCount(); i++) {
-                        BulkCallableImpl bulkCallableImpl = new BulkCallableImpl(this);
+                        BulkCallableImpl<I,O> bulkCallableImpl = new BulkCallableImpl(this);
                         submitTask(bulkCallableImpl);
                     }
                     getCallerThreadPoolExecutor().awaitTermination();
@@ -220,7 +219,7 @@ public class OutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Outp
                                 if(callContext.getEndpoint().allowsEndpointState()) {
                                     callContext.withEndpointState(null);
                                 }
-                                return getEndpoint().getCaller().getContentOutputHandle().newArray(0);
+                                return getEndpoint().getCaller().newContentOutputArray(0);
 
                             case STOP_ALL_CALLS:
                                 if (getCallerThreadPoolExecutor() != null) {
@@ -231,7 +230,7 @@ public class OutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Outp
                 }
             }
 
-            return (output == null) ? getEndpoint().getCaller().getContentOutputHandle().newArray(0) : output;
+            return (output == null) ? getEndpoint().getCaller().newContentOutputArray(0) : output;
         }
 
         private void processOutput() {
@@ -276,8 +275,7 @@ public class OutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Outp
 
         }
 
-// TODO: make static private class BulkCallableImpl<I,O>
-        private class BulkCallableImpl implements Callable<Boolean> {
+        static private class BulkCallableImpl<I,O> implements Callable<Boolean> {
             private final BulkOutputCallerImpl<I,O> bulkOutputCallerImpl;
 
             BulkCallableImpl(BulkOutputCallerImpl<I,O> bulkOutputCallerImpl) {
@@ -291,10 +289,10 @@ public class OutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Outp
                     boolean continueCalling = (callContext == null) ? false : bulkOutputCallerImpl.processOutput(callContext);
                     if (continueCalling) {
                         bulkOutputCallerImpl.getCallContextQueue().put(callContext);
-                        submitTask(this);
+                        bulkOutputCallerImpl.submitTask(this);
                     } else {
-                        if (getCallerThreadPoolExecutor() != null && aliveCallContextCount.decrementAndGet() == 0) {
-                            getCallerThreadPoolExecutor().shutdown();
+                        if (bulkOutputCallerImpl.getCallerThreadPoolExecutor() != null && bulkOutputCallerImpl.aliveCallContextCount.decrementAndGet() == 0) {
+                            bulkOutputCallerImpl.getCallerThreadPoolExecutor().shutdown();
                         }
                     }
 

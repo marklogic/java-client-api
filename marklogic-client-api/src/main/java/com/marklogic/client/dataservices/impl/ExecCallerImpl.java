@@ -20,7 +20,7 @@ import com.marklogic.client.io.marker.JSONWriteHandle;
 
 final public class ExecCallerImpl<I,O> extends IOCallerImpl<I,O> {
     public ExecCallerImpl(JSONWriteHandle apiDeclaration) {
-        super(apiDeclaration, false, null, null);
+        super(apiDeclaration, new HandleProvider.ContentHandleProvider<>(null, null));
 
         if (getInputParamdef() != null) {
             throw new IllegalArgumentException("input parameter not supported in endpoint: "+ getEndpointPath());

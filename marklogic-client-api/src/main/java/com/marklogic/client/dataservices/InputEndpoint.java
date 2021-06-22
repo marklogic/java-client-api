@@ -19,6 +19,7 @@ import java.io.InputStream;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
+import com.marklogic.client.dataservices.impl.HandleProvider;
 import com.marklogic.client.dataservices.impl.InputEndpointImpl;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
@@ -39,7 +40,7 @@ public interface InputEndpoint extends InputCaller<InputStream> {
 		final class EndpointLocal<O> extends InputEndpointImpl<InputStream,O>
 				implements InputEndpoint {
 			private EndpointLocal(DatabaseClient client, JSONWriteHandle apiDecl) {
-				super(client, apiDecl, false, new InputStreamHandle());
+				super(client, apiDecl, new HandleProvider.ContentHandleProvider<>(new InputStreamHandle(), null));
 			}
 			public InputEndpoint.BulkInputCaller bulkCaller() {
 				return new BulkLocal(this);

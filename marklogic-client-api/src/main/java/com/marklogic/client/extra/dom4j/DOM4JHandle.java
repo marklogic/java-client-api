@@ -95,6 +95,11 @@ public class DOM4JHandle
   public DOM4JHandle newHandle() {
     return new DOM4JHandle();
   }
+  @Override
+  public DOM4JHandle[] newHandleArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new DOM4JHandle[length];
+  }
 
   /**
    * Returns the dom4j reader for XML content.
