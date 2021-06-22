@@ -36,7 +36,7 @@ const val TEST_PACKAGE = "com.marklogic.client.test.dbfunction.generated"
 
 val generator     = Generator()
 val atomicMap     = generator.getAtomicDataTypes()
-val documentMap   = generator.getDocumentDataTypes()
+val documentMap   = generator.getDocumentDataTypes().filterNot{entry -> (entry.key == "anyDocument")}
 
 val mapper        = jacksonObjectMapper()
 val serializer    = mapper.writerWithDefaultPrettyPrinter()
@@ -1604,7 +1604,7 @@ if (true) {
   val testList =
       when (testType) {
           "negative" -> listOf("badExecution")
-          "positive" -> listOf("decoratorBase", "decoratorCustom", "described", "mimetype", "sessions")
+          "positive" -> listOf("anyDocument", "decoratorBase", "decoratorCustom", "described", "mimetype", "sessions")
           else       -> throw IllegalStateException("Unknown test type of $testType")
       }
   for (testName in testList) {

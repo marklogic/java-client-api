@@ -157,6 +157,11 @@ public class DOMHandle
     return new DOMHandle().withMimetype(getMimetype());
   }
   @Override
+  public DOMHandle[] newHandleArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new DOMHandle[length];
+  }
+  @Override
   public Document[] newArray(int length) {
     if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
     return new Document[length];

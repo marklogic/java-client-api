@@ -18,7 +18,6 @@ package com.marklogic.client.dataservices.impl;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.InputOutputCaller;
-import com.marklogic.client.io.marker.BufferableContentHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,10 +33,9 @@ public class InputOutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements
     private final int batchSize;
 
     public InputOutputEndpointImpl(
-            DatabaseClient client, JSONWriteHandle apiDecl, boolean isHandleIO,
-            BufferableContentHandle<?,?> inputHandle, BufferableContentHandle<?,?> outputHandle
+            DatabaseClient client, JSONWriteHandle apiDecl, HandleProvider<I,O> handleProvider
     ) {
-        this(client, new InputOutputCallerImpl<>(apiDecl, isHandleIO, inputHandle, outputHandle));
+        this(client, new InputOutputCallerImpl<>(apiDecl, handleProvider));
     }
     private InputOutputEndpointImpl(DatabaseClient client, InputOutputCallerImpl<I,O> caller) {
         super(client, caller);
@@ -102,7 +100,7 @@ public class InputOutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements
     private O[] getResponseData(CallContext callContext, I[] input) {
         InputOutputCallerImpl<I,O> callerImpl = getCaller();
         return callerImpl.arrayCall(
-                getClient(), checkAllowedArgs(callContext), callerImpl.getContentInputHandle().resendableHandleFor(input)
+                getClient(), checkAllowedArgs(callContext), input
         );
     }
 
@@ -200,12 +198,11 @@ public class InputOutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements
 
             ErrorDisposition error = ErrorDisposition.RETRY;
 
-            BufferableContentHandle<?,?>[] inputHandles = callerImpl.getContentInputHandle().resendableHandleFor(inputBatch);
             for (int retryCount = 0; retryCount < DEFAULT_MAX_RETRIES && error == ErrorDisposition.RETRY; retryCount++) {
                 Throwable throwable = null;
                 O[] output = null;
                 try {
-                    output = callerImpl.arrayCall(callContext.getClient(), callContext, inputHandles);
+                    output = callerImpl.arrayCall(callContext.getClient(), callContext, inputBatch);
 
                     incrementCallCount();
                     processOutputBatch(output, getOutputListener());
@@ -218,7 +215,9 @@ public class InputOutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements
                     if (getErrorListener() != null) {
                         try {
                             if (retryCount < DEFAULT_MAX_RETRIES - 1) {
-                                error = getErrorListener().processError(retryCount, throwable, callContext, inputHandles);
+                                error = getErrorListener().processError(
+                                        retryCount, throwable, callContext, callerImpl.bufferableInputHandleOn(inputBatch)
+                                );
                             } else {
                                 error = ErrorDisposition.SKIP_CALL;
                             }

@@ -17,6 +17,7 @@ package com.marklogic.client.dataservices;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
+import com.marklogic.client.dataservices.impl.HandleProvider;
 import com.marklogic.client.dataservices.impl.OutputEndpointImpl;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
@@ -39,7 +40,7 @@ public interface OutputEndpoint extends OutputCaller<InputStream> {
         final class EndpointLocal<I> extends OutputEndpointImpl<I,InputStream>
                 implements OutputEndpoint {
             private EndpointLocal(DatabaseClient client, JSONWriteHandle apiDecl) {
-                super(client, apiDecl, false, new InputStreamHandle());
+                super(client, apiDecl, new HandleProvider.ContentHandleProvider<>(null, new InputStreamHandle()));
             }
             public OutputEndpoint.BulkOutputCaller bulkCaller() {
                 return new BulkLocal(this);

@@ -177,6 +177,11 @@ public class InputSourceHandle
     return new InputSourceHandle().withMimetype(getMimetype());
   }
   @Override
+  public InputSourceHandle[] newHandleArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new InputSourceHandle[length];
+  }
+  @Override
   public InputSource[] newArray(int length) {
     if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
     return new InputSource[length];

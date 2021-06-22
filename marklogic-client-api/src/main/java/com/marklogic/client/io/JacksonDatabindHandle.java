@@ -142,6 +142,11 @@ public class JacksonDatabindHandle<T>
   public JacksonDatabindHandle<T> newHandle() {
     return new JacksonDatabindHandle<>(getContentClass()).withFormat(getFormat()).withMimetype(getMimetype());
   }
+  @Override
+  public JacksonDatabindHandle<T>[] newHandleArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new JacksonDatabindHandle[length];
+  }
 
   /**
    * Provides access to the ObjectMapper used internally so you can configure

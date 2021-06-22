@@ -17,7 +17,6 @@ package com.marklogic.client.dataservices.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.SessionState;
 import com.marklogic.client.impl.BaseProxy;
 import com.marklogic.client.impl.NodeConverter;
@@ -32,50 +31,48 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
     private final String                      endpointPath;
     private final BaseProxy.DBFunctionRequest requester;
 
-    private BufferableContentHandle<?,?> inputHandle;
-    private BufferableContentHandle<?,?> outputHandle;
-
     private ParamdefImpl  endpointStateParamdef;
     private ParamdefImpl  sessionParamdef;
     private ParamdefImpl  endpointConstantsParamdef;
     private ParamdefImpl  inputParamdef;
     private ReturndefImpl returndef;
 
-    private boolean isHandleIO = false;
+    private final HandleProvider<I,O> handleProvider;
 
-    IOCallerImpl(
-       JSONWriteHandle apiDeclaration, boolean isHandleIO,
-       BufferableContentHandle<?,?> inputHandle, BufferableContentHandle<?,?> outputHandle
-    ) {
+    IOCallerImpl(JSONWriteHandle apiDeclaration, HandleProvider<I,O> handleProvider) {
         super();
-
-        this.isHandleIO = isHandleIO;
-
-        if (apiDeclaration== null) {
+        if (apiDeclaration == null) {
             throw new IllegalArgumentException("null endpoint declaration");
+        } else if (handleProvider == null) {
+            throw new IllegalArgumentException("null handle provider");
         }
 
         this.apiDeclaration = NodeConverter.handleToJsonNode(apiDeclaration);
         if (!this.apiDeclaration.isObject()) {
             throw new IllegalArgumentException(
-                    "endpoint declaration must be object: " + this.apiDeclaration.toString()
+                    "endpoint declaration must be object: " + this.apiDeclaration
             );
         }
+
+        this.handleProvider = handleProvider;
 
         this.endpointPath = getText(this.apiDeclaration.get("endpoint"));
         if (this.endpointPath == null || this.endpointPath.length() == 0) {
             throw new IllegalArgumentException(
-                    "no endpoint in endpoint declaration: " + this.apiDeclaration.toString()
+                    "no endpoint in endpoint declaration: " + this.apiDeclaration
             );
         }
 
         int nodeArgCount = 0;
 
+        BaseHandle<?,?> inputHandleBase  = (BaseHandle<?,?>) handleProvider.getInputHandle();
+        BaseHandle<?,?> outputHandleBase = (BaseHandle<?,?>) handleProvider.getOutputHandle();
+
         JsonNode functionParams = this.apiDeclaration.get("params");
         if (functionParams != null) {
             if (!functionParams.isArray()) {
                 throw new IllegalArgumentException(
-                        "params must be array in endpoint declaration: " + this.apiDeclaration.toString()
+                        "params must be array in endpoint declaration: " + this.apiDeclaration
                 );
             }
 
@@ -84,7 +81,7 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
                 for (JsonNode functionParam : functionParams) {
                     if (!functionParam.isObject()) {
                         throw new IllegalArgumentException(
-                                "parameter must be object in endpoint declaration: " + functionParam.toString()
+                                "parameter must be object in endpoint declaration: " + functionParam
                         );
                     }
                     ParamdefImpl paramdef = new ParamdefImpl(functionParam);
@@ -107,11 +104,10 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
                                 throw new IllegalArgumentException("input parameter must be nullable");
                             }
                             this.inputParamdef = paramdef;
-                            if (inputHandle == null) {
+                            if (inputHandleBase == null) {
                                 throw new IllegalArgumentException("no input handle provided for input parameter");
                             }
-                            ((BaseHandle) inputHandle).setFormat(paramdef.getFormat());
-                            this.inputHandle  = inputHandle;
+                            inputHandleBase.setFormat(paramdef.getFormat());
                             nodeArgCount += 2;
                             break;
                         case "session":
@@ -139,7 +135,7 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
                 }
             }
         }
-        if (this.inputParamdef == null && inputHandle != null) {
+        if (this.inputParamdef == null && inputHandleBase != null) {
             throw new IllegalArgumentException("no input parameter declared but input handle provided");
         }
 
@@ -147,20 +143,19 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
         if (functionReturn != null) {
             if (!functionReturn.isObject()) {
                 throw new IllegalArgumentException(
-                        "return must be object in endpoint declaration: "+functionReturn.toString()
+                        "return must be object in endpoint declaration: "+ functionReturn
                 );
             }
             this.returndef = new ReturndefImpl(functionReturn);
             if (!this.returndef.isNullable()) {
                 throw new IllegalArgumentException("return must be nullable");
             }
-            if (outputHandle != null) {
-                ((BaseHandle) outputHandle).setFormat(this.returndef.getFormat());
-                this.outputHandle = outputHandle;
+            if (outputHandleBase != null) {
+                outputHandleBase.setFormat(this.returndef.getFormat());
             } else if (this.endpointStateParamdef == null) {
                 throw new IllegalArgumentException("no output handle provided for return values");
             }
-        } else if (outputHandle != null) {
+        } else if (outputHandleBase != null) {
             throw new IllegalArgumentException("no return values declared but output handle provided");
         }
 
@@ -181,40 +176,26 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
         );
     }
 
-    BufferableContentHandle<?, ?> getOutputHandle() {
-        return outputHandle;
+    BufferableContentHandle<?,?>[] bufferableInputHandleOn(I[] input) {
+        return handleProvider.bufferableInputHandleOn(input);
     }
-    BufferableContentHandle<?, ?> castInputAsHandle(I input) {
-        if (!isHandleIO) {
-            throw new MarkLogicInternalException("Cannot cast input to handle unless using handles for IO");
-        }
-        return (BufferableContentHandle<?, ?>) input;
+    I[] newContentInputArray(int length) {
+        return handleProvider.newInputArray(length);
     }
-    O castHandleAsOutput(BufferableContentHandle<?, ?> handle) {
-        if (!isHandleIO) {
-            throw new MarkLogicInternalException("Cannot cast handle to output unless using handles for IO");
-        }
-        return (O) handle;
-    }
-
-    BufferableContentHandle<I, ?> getContentInputHandle() {
-        if (isHandleIO) {
-            throw new MarkLogicInternalException("Cannot get handle for input when using handles for IO");
-        }
-        return (BufferableContentHandle<I, ?>) inputHandle;
-    }
-    BufferableContentHandle<O, ?> getContentOutputHandle() {
-        if (isHandleIO) {
-            throw new MarkLogicInternalException("Cannot get handle for output when using handles for IO");
-        }
-        return (BufferableContentHandle<O, ?>) outputHandle;
+    O[] newContentOutputArray(int length) {
+        return handleProvider.newOutputArray(length);
     }
 
     BaseProxy.DBFunctionRequest makeRequest(DatabaseClient db, CallContextImpl<I,O> callCtxt) {
         return makeRequest(db, callCtxt, (RESTServices.CallField) null);
     }
     BaseProxy.DBFunctionRequest makeRequest(
-            DatabaseClient db, CallContextImpl<I,O> callCtxt, BufferableContentHandle[] input
+            DatabaseClient db, CallContextImpl<I,O> callCtxt, I[] input
+    ) {
+        return makeRequest(db, callCtxt, bufferableInputHandleOn(input));
+    }
+    private BaseProxy.DBFunctionRequest makeRequest(
+            DatabaseClient db, CallContextImpl<I,O> callCtxt, BufferableContentHandle<?,?>[] input
     ) {
         RESTServices.CallField inputField = null;
 
@@ -304,21 +285,8 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
         return request.responseSingle(getReturndef().isNullable(), getReturndef().getFormat())
                .asEndpointState(callCtxt.getEndpointState());
     }
-    O responseSingle(BaseProxy.DBFunctionRequest request) {
-        if (getReturndef() == null) {
-            throw new UnsupportedOperationException("no return from endpoint: "+getEndpointPath());
-        } else if (getReturndef().isMultiple()) {
-            throw new UnsupportedOperationException("multiple return from endpoint: "+getEndpointPath());
-        }
-
-        return request.responseSingle(
-            getReturndef().isNullable(), getReturndef().getFormat()).asContent(getContentOutputHandle()
-        );
-    }
     O[] responseMultipleAsArray(BaseProxy.DBFunctionRequest request, CallContextImpl<I,O> callCtxt) {
-        return responseMultiple(request).asArrayOfContent(
-            callCtxt.isLegacyContext() ? null : callCtxt.getEndpointState(), getContentOutputHandle()
-        );
+        return handleProvider.outputAsArray(callCtxt, responseMultiple(request));
     }
     private RESTServices.MultipleCallResponse responseMultiple(BaseProxy.DBFunctionRequest request) {
         if (getReturndef() == null) {

@@ -29,7 +29,7 @@ import com.marklogic.client.io.BytesHandle;
  */
 public interface StreamingContentHandle<C, R> extends BufferableContentHandle<C, R> {
     @Override
-    default BufferableContentHandle resendableHandleFor(C content) {
+    default BufferableContentHandle<?,?> resendableHandleFor(C content) {
         return new BytesHandle(contentToBytes(content))
                 .withFormat(((BaseHandle<R,?>) this).getFormat());
     }

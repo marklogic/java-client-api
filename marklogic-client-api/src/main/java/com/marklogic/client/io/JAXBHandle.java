@@ -180,6 +180,11 @@ public class JAXBHandle<C>
   public JAXBHandle<C> newHandle() {
     return new JAXBHandle<>(context, getContentClass()).withMimetype(getMimetype());
   }
+  @Override
+  public JAXBHandle<C>[] newHandleArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new JAXBHandle[length];
+  }
 
   /**
    * Restricts the format to XML.

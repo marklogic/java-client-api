@@ -16,6 +16,7 @@
 package com.marklogic.client.dataservices;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.dataservices.impl.HandleProvider;
 import com.marklogic.client.dataservices.impl.OutputEndpointImpl;
 import com.marklogic.client.io.marker.BufferableContentHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
@@ -40,7 +41,7 @@ public interface OutputCaller<O> extends IOEndpoint {
     static <O> OutputCaller<O> on(
             DatabaseClient client, JSONWriteHandle apiDecl, BufferableContentHandle<O,?> outputHandle
     ) {
-        return new OutputEndpointImpl(client, apiDecl, false, outputHandle);
+        return new OutputEndpointImpl(client, apiDecl, new HandleProvider.ContentHandleProvider<>(null, outputHandle));
     }
 
     /**

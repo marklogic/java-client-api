@@ -95,6 +95,12 @@ public class JDOMHandle
     return new JDOMHandle();
   }
 
+  @Override
+  public JDOMHandle[] newHandleArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new JDOMHandle[length];
+  }
+
   /**
    * Returns the JDOM structure builder for XML content.
    *

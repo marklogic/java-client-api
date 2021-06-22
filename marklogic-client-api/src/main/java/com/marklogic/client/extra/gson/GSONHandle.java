@@ -89,6 +89,11 @@ public class GSONHandle
   public GSONHandle newHandle() {
     return new GSONHandle();
   }
+  @Override
+  public GSONHandle[] newHandleArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new GSONHandle[length];
+  }
 
   /**
    * Returns the parser used to construct element objects from JSON.

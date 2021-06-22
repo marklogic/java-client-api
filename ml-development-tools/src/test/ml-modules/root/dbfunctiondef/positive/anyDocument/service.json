@@ -1,0 +1,4 @@
+{
+  "endpointDirectory" : "/dbf/test/anyDocument/",
+  "$javaClass" : "com.marklogic.client.test.dbfunction.positive.AnyDocumentBundle"
+}
