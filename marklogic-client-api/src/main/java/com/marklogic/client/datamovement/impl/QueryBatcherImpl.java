@@ -492,7 +492,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
                     "onUrisReady listeners={}, failure listeners={}",
       getBatchSize(), getDocToUriBatchRatio(), getThreadThrottleFactor(), getThreadCount(),
             urisReadyListeners.size(), failureListeners.size());
-    threadPool = new QueryThreadPoolExecutor(getThreadCount(), this);
+    threadPool = new QueryThreadPoolExecutor(getThreadCount(), getDocToUriBatchRatio(), this);
   }
 
   /* When withForestConfig is called before the job starts, it just provides
@@ -1141,9 +1141,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private class QueryThreadPoolExecutor extends ThreadPoolExecutor {
     private Object objectToNotifyFrom;
 
-    QueryThreadPoolExecutor(int threadCount, Object objectToNotifyFrom) {
+    QueryThreadPoolExecutor(int threadCount, int docToUriBatchRatio, Object objectToNotifyFrom) {
       super(threadCount, threadCount, 0, TimeUnit.MILLISECONDS,
-        new LinkedBlockingQueue<Runnable>(threadCount * 25), new BlockingRunsPolicy());
+        new LinkedBlockingQueue<Runnable>(threadCount * (docToUriBatchRatio + 2)), new BlockingRunsPolicy());
       this.objectToNotifyFrom = objectToNotifyFrom;
     }
 
