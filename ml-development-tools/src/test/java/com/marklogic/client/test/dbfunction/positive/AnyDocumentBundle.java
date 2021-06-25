@@ -65,17 +65,17 @@ public interface AnyDocumentBundle {
                     );
             }
             private Stream<com.marklogic.client.io.InputStreamHandle> sendReceiveDocs(BaseProxy.DBFunctionRequest request, Stream<String> uris, Stream<com.marklogic.client.io.InputStreamHandle> docs) {
-/* TODO: revise to take sample handle for output and call asStreamOfHandles(endpointStateHandle, outputHandle)
-              return BaseProxy.AnyDocumentType.toInputStreamHandle(
-                request
-                      .withParams(
-                          BaseProxy.atomicParam("uris", true, BaseProxy.StringType.fromString(uris)),
-                          BaseProxy.documentParam("docs", true, docs)
-                          ).responseMultiple(true, Format.UNKNOWN)
-                );
-
+/* TODO:
+    generate code that
+        instead of wrapping with BaseProxy.AnyDocumentType.toInputStreamHandle()
+        calls .asStreamOfHandles()
  */
-                return null;
+                return request
+                        .withParams(
+                                BaseProxy.atomicParam("uris", true, BaseProxy.StringType.fromString(uris)),
+                                BaseProxy.documentParam("docs", true, docs)
+                        ).responseMultiple(true, Format.UNKNOWN)
+                        .asStreamOfHandles(null, new com.marklogic.client.io.InputStreamHandle());
             }
         }
 
