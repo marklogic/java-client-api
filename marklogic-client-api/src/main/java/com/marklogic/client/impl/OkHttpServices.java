@@ -6240,8 +6240,8 @@ public class OkHttpServices implements RESTServices {
       }
     }
     @Override
-    public <C,R> Stream<BufferableContentHandle<C,R>> asStreamOfHandles(
-            BytesHandle endpointStateHandle, BufferableContentHandle<C,R> outputHandle
+    public <T extends BufferableContentHandle<?,?>> Stream<T> asStreamOfHandles(
+            BytesHandle endpointStateHandle, T outputHandle
     ) {
       try {
         if (multipart == null) {
@@ -6250,7 +6250,7 @@ public class OkHttpServices implements RESTServices {
 
         boolean hasEndpointState = (endpointStateHandle != null);
 
-        Stream.Builder<BufferableContentHandle<C,R>> builder = Stream.builder();
+        Stream.Builder<T> builder = Stream.builder();
 
         int partCount = multipart.getCount();
         for (int i=0; i < partCount; i++) {
@@ -6258,7 +6258,7 @@ public class OkHttpServices implements RESTServices {
           if (hasEndpointState && i == 0) {
             updateHandle(bodyPart, endpointStateHandle);
           } else {
-            builder.accept(updateHandle(bodyPart, outputHandle.newHandle()));
+            builder.accept(updateHandle(bodyPart, (T) outputHandle.newHandle()));
           }
         }
         return builder.build();
