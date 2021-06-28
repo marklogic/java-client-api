@@ -469,9 +469,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
   private synchronized void initialize() {
+    Forest[] forests = getForestConfig().listForests();
     if ( threadCountSet == false ) {
       if ( query != null ) {
-        Forest[] forests = getForestConfig().listForests();
         logger.warn("threadCount not set--defaulting to number of forests ({})", forests.length);
         withThreadCount(forests.length * (docToUriBatchRatio - threadThrottleFactor));
       } else {
@@ -488,11 +488,11 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     if(getThreadCount() == 1) {
       isSingleThreaded = true;
     }
-    logger.info("Starting job docBatchSize={}, docToUriBatchRatio={}, threadThrottleFactor= {}, threadCount={}, " +
-                    "onUrisReady listeners={}, failure listeners={}",
-      getBatchSize(), getDocToUriBatchRatio(), getThreadThrottleFactor(), getThreadCount(),
+    logger.info("Starting job forest length={}, docBatchSize={}, docToUriBatchRatio={}, threadThrottleFactor= {}, " +
+                    "threadCount={}, onUrisReady listeners={}, failure listeners={}",
+            forests.length, getBatchSize(), getDocToUriBatchRatio(), getThreadThrottleFactor(), getThreadCount(),
             urisReadyListeners.size(), failureListeners.size());
-    threadPool = new QueryThreadPoolExecutor(getThreadCount(), getDocToUriBatchRatio(), this);
+    threadPool = new QueryThreadPoolExecutor(getThreadCount(), forests.length, getDocToUriBatchRatio(), this);
   }
 
   /* When withForestConfig is called before the job starts, it just provides
@@ -1141,9 +1141,10 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private class QueryThreadPoolExecutor extends ThreadPoolExecutor {
     private Object objectToNotifyFrom;
 
-    QueryThreadPoolExecutor(int threadCount, int docToUriBatchRatio, Object objectToNotifyFrom) {
+    QueryThreadPoolExecutor(int threadCount, int forestsLength, int docToUriBatchRatio, Object objectToNotifyFrom) {
       super(threadCount, threadCount, 0, TimeUnit.MILLISECONDS,
-        new LinkedBlockingQueue<Runnable>(threadCount * (docToUriBatchRatio + 2)), new BlockingRunsPolicy());
+        new LinkedBlockingQueue<>((forestsLength * docToUriBatchRatio * 2) +  threadCount),
+        new BlockingRunsPolicy());
       this.objectToNotifyFrom = objectToNotifyFrom;
     }
 
