@@ -1908,8 +1908,12 @@ public class OkHttpServices implements RESTServices {
 
   static private Format getHeaderFormat(Headers headers) {
     String format = headers.get(HEADER_VND_MARKLOGIC_DOCUMENT_FORMAT);
-    if (format != null) {
+    if (format != null && format.length() > 0) {
       return Format.valueOf(format.toUpperCase());
+    }
+    String contentType = headers.get(HEADER_CONTENT_TYPE);
+    if (contentType != null && contentType.length() > 0) {
+      return Format.getFromMimetype(contentType);
     }
     return null;
   }
@@ -6088,7 +6092,7 @@ public class OkHttpServices implements RESTServices {
       return content;
     }
     @Override
-    public <C,R> BufferableContentHandle<C,R> asHandle(BufferableContentHandle<C,R> outputHandle) {
+    public <T extends BufferableContentHandle<?,?>> T asHandle(T outputHandle) {
       if (responseBody == null) return null;
 
       return updateHandle(getResponse().headers(), responseBody, outputHandle);
@@ -6560,12 +6564,14 @@ public class OkHttpServices implements RESTServices {
               "Returned document with unknown mime type instead of "+expectedFormat.getDefaultMimetype()
           );
         }
-        Format actualFormat = Format.getFromMimetype(actualType.toString());
-        if (expectedFormat != actualFormat) {
-          body.close();
-          throw new RuntimeException(
-              "Mime type "+actualType.toString()+" for returned document not recognized for "+expectedFormat.name()
-          );
+        if (expectedFormat != Format.UNKNOWN) {
+          Format actualFormat = Format.getFromMimetype(actualType.toString());
+          if (expectedFormat != actualFormat) {
+            body.close();
+            throw new RuntimeException(
+                "Mime type "+actualType.toString()+" for returned document not recognized for "+expectedFormat.name()
+            );
+          }
         }
         return false;
       }
@@ -6583,11 +6589,13 @@ public class OkHttpServices implements RESTServices {
                 "Returned document with unknown mime type instead of "+expectedFormat.getDefaultMimetype()
             );
           }
-          Format actualFormat = Format.getFromMimetype(actualType);
-          if (expectedFormat != actualFormat) {
-            throw new RuntimeException(
-                "Mime type "+actualType+" for returned document not recognized for "+expectedFormat.name()
-            );
+          if (expectedFormat != Format.UNKNOWN) {
+            Format actualFormat = Format.getFromMimetype(actualType);
+            if (expectedFormat != actualFormat) {
+              throw new RuntimeException(
+                  "Mime type "+actualType+" for returned document not recognized for "+expectedFormat.name()
+              );
+            }
           }
           return false;
         }
@@ -6604,8 +6612,10 @@ public class OkHttpServices implements RESTServices {
   }
 
   Request.Builder forDocumentResponse(Request.Builder requestBldr, Format format) {
-    return requestBldr.addHeader(HEADER_ACCEPT, (format == null || format == Format.BINARY) ?
-            "application/x-unknown-content-type" : format.getDefaultMimetype());
+    return requestBldr.addHeader(
+            HEADER_ACCEPT,
+            (format == null || format == Format.BINARY || format == Format.UNKNOWN) ?
+                "application/x-unknown-content-type" : format.getDefaultMimetype());
   }
 
   Request.Builder forMultipartMixedResponse(Request.Builder requestBldr) {

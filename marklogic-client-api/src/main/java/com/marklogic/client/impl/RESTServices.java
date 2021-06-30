@@ -596,7 +596,7 @@ public interface RESTServices {
   interface SingleCallResponse extends CallResponse {
     byte[]            asBytes();
     <C,R> C           asContent(BufferableContentHandle<C,R> outputHandle);
-    <C,R> BufferableContentHandle<C,R> asHandle(BufferableContentHandle<C,R> outputHandle);
+    <T extends BufferableContentHandle<?,?>> T asHandle(T outputHandle);
     InputStream       asInputStream();
     InputStreamHandle asInputStreamHandle();
     Reader            asReader();

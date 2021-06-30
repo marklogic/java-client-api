@@ -1,0 +1,19 @@
+{
+  "functionName": "sendReceiveOptionalDoc",
+  "params": [ {
+    "name":     "uri",
+    "datatype": "string",
+    "multiple": false,
+    "nullable": true
+  }, {
+    "name":     "doc",
+    "datatype": "anyDocument",
+    "multiple": false,
+    "nullable": true
+  } ],
+  "return": {
+    "datatype": "anyDocument",
+    "multiple": false,
+    "nullable": true
+  }
+}

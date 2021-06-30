@@ -645,26 +645,36 @@ ${funcDecls}
                           """)}
                           )"""
 
-    val returnConverter =
-        if (returnType === null || returnMapped === null)
-          ""
-        else
+    val returnFormat  =
+        if (returnType === null || returnKind != "document") "null"
+        else typeFormat(returnType)
+    val returnChained =
+        if (returnKind === null)         """.responseNone()"""
+        else if (returnMultiple == true) """.responseMultiple(${returnNullable}, ${returnFormat})"""
+        else                             """.responseSingle(${returnNullable}, ${returnFormat})"""
+
+    val callImpl = """request${sessionFluent}${paramsFluent}${returnChained}"""
+
+// TODO: also array support?
+    val bodyImpl =
+        if (returnType === null || returnMapped === null) {
+          """${callImpl};"""
+        } else if (returnType == "anyDocument") {
+          """return ${callImpl}
+                      ${
+          if (returnMultiple) """.asStreamOfHandles(null, new ${returnMapped}())"""
+          else """.asHandle(new ${returnMapped}())"""
+          };"""
+        } else {
           """return BaseProxy.${typeConverter(returnType)}.to${
           if (returnMapped.contains("."))
             returnMapped.substringAfterLast(".").capitalize()
           else
             returnMapped.capitalize()
           }(
-                """
-    val returnFormat  =
-        if (returnType === null || returnKind != "document") "null"
-        else typeFormat(returnType)
-    val returnChained =
-        if (returnKind === null)         """.responseNone()"""
-        else if (returnMultiple == true) """.responseMultiple(${returnNullable}, ${returnFormat})
-                )"""
-        else                             """.responseSingle(${returnNullable}, ${returnFormat})
-                )"""
+                ${callImpl}
+                );"""
+          }
 
     val fieldReturn    =
         if (returnType === null) ""
@@ -710,8 +720,7 @@ ${funcDecls}
                     );
             }
             private ${sigImpl} {
-              ${returnConverter
-                }request${sessionFluent}${paramsFluent}${returnChained};
+              ${bodyImpl}
             }"""
     return defSource
   }
@@ -797,13 +806,16 @@ ${funcDecls}
     return methods
   }
   fun paramConverter(paramName: String, paramKind: String, paramType: String, mappedType: String, isNullable: Boolean) : String {
-    val converter =
-          """BaseProxy.${paramKind}Param("${paramName}", ${isNullable}, BaseProxy.${typeConverter(paramType)}.from${
+    val convertExpr =
+        if (paramType == "anyDocument") paramName
+        else """BaseProxy.${typeConverter(paramType)}.from${
           if (mappedType.contains("."))
             mappedType.substringAfterLast(".").capitalize()
           else
             mappedType.capitalize()
-          }(${paramName}))"""
+          }(${paramName})"""
+    val converter =
+          """BaseProxy.${paramKind}Param("${paramName}", ${isNullable}, ${convertExpr})"""
     return converter
   }
   fun typeConverter(datatype: String) : String {
@@ -816,6 +828,7 @@ ${funcDecls}
   fun typeFormat(documentType: String) : String {
     val format =
         if (documentType == "array" || documentType == "object") "Format.JSON"
+        else if (documentType == "anyDocument")                  "Format.UNKNOWN"
         else "Format."+documentType.substringBefore("Document").toUpperCase()
     return format
   }
