@@ -1,0 +1,19 @@
+{
+  "functionName": "sendReceiveRequiredDoc",
+  "params": [ {
+      "name":     "uri",
+      "datatype": "string",
+      "multiple": false,
+      "nullable": false
+    }, {
+      "name":     "doc",
+      "datatype": "anyDocument",
+      "multiple": false,
+      "nullable": false
+    } ],
+  "return": {
+    "datatype": "anyDocument",
+    "multiple": false,
+    "nullable": false
+  }
+}
