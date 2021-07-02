@@ -1,0 +1,21 @@
+{
+  "functionName": "sendReceiveMappedDoc",
+  "params": [ {
+    "name":     "uri",
+    "datatype": "string",
+    "multiple": false,
+    "nullable": true
+  }, {
+    "name":     "doc",
+    "datatype": "anyDocument",
+    "multiple": false,
+    "nullable": true,
+    "$javaClass" : "com.marklogic.client.io.StringHandle"
+  } ],
+  "return": {
+    "datatype": "anyDocument",
+    "multiple": false,
+    "nullable": true,
+    "$javaClass" : "com.marklogic.client.io.StringHandle"
+  }
+}
