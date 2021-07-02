@@ -50,15 +50,6 @@ public interface InputOutputCaller<I,O> extends IOEndpoint {
       return new InputOutputEndpointImpl<>(client, apiDecl, new HandleProvider.ContentHandleProvider<>(inputHandle, outputHandle));
     }
 
-/* TODO: ADD TO ISSUE -- ALSO FOR InputCaller AND OutputCaller -- AND DELETE
-    static <IC,IR,OC,OR> InputOutputCaller<BufferableContentHandle<IC,IR>,BufferableContentHandle<OC,OR>> onHandles(
-            DatabaseClient client, JSONWriteHandle apiDecl,
-            BufferableContentHandle<IC,IR> inputHandle, BufferableContentHandle<OC,OR> outputHandle
-    ) {
-        return new InputOutputEndpointImpl<>(client, apiDecl, new HandleProvider.DirectHandleProvider<>(inputHandle, outputHandle));
-    }
- */
-
     /**
      * Makes one call to an endpoint that doesn't take endpoint constants, endpoint state, or a session.
      * @param input  the request data sent to the endpoint

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2021 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.marklogic.client.io.marker.BufferableContentHandle
 import java.io.File
 import com.networknt.schema.*
 
@@ -233,12 +234,22 @@ class Generator {
 
     val allMappings  = getAllMappings()
     val typeMappings = allMappings[dataType]
-    if (typeMappings === null) {
+    if (typeMappings?.contains(mapping) == true) {
+      return mapping
+    } else if (dataType == "anyDocument") {
+      try {
+        val mappingClass = Class.forName(mapping)
+        if (!BufferableContentHandle::class.java.isAssignableFrom(mappingClass)) {
+          throw IllegalArgumentException("""mapped class ${mapping} for anyDocument data type must extend BufferableContentHandle""")
+        }
+        return mapping
+      } catch(e: ClassNotFoundException) {
+        throw IllegalArgumentException("""could not load mapped class ${mapping} for anyDocument data type""")
+      }
+    } else if (typeMappings === null) {
       throw IllegalArgumentException("""no mappings for data type ${dataType}""")
-    } else if (!typeMappings.contains(mapping)) {
-      throw IllegalArgumentException("""no mapping to ${mapping} for data type ${dataType}""")
     }
-    return mapping
+    throw IllegalArgumentException("""no mapping to ${mapping} for data type ${dataType}""")
   }
   fun getSigDataType(mappedType: String, isMultiple: Boolean): String {
     val sigType =

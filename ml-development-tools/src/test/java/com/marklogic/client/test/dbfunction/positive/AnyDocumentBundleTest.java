@@ -17,12 +17,15 @@ package com.marklogic.client.test.dbfunction.positive;
 
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.impl.BaseProxy;
+import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.BufferableContentHandle;
 import com.marklogic.client.test.dbfunction.DBFunctionTestUtil;
 import org.junit.Test;
 
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
@@ -38,59 +41,53 @@ public class AnyDocumentBundleTest {
    };
    final static private AnyDocumentBundle testObj = AnyDocumentBundle.on(DBFunctionTestUtil.db);
 
-/* TODO:
-    positive test:
-        mapped StringHandle
-    negative test:
-        mapped to a class that's not a handle for single or multiple param or return value
-    */
+   @Test
+   public void sendReceiveOptionalJSONDocTest() {
+       testInputStreamImpl(uris[0], Format.JSON, docs[0], testObj::sendReceiveOptionalDoc);
+   }
+   @Test
+   public void sendReceiveOptionalXMLDocTest() {
+      testInputStreamImpl(uris[1], Format.XML, docs[1], testObj::sendReceiveOptionalDoc);
+   }
+   @Test
+   public void sendReceiveOptionalNullUriTest() {
+      // send null uri with non-null handle to optional endpoint
+      testInputStreamImpl(null, Format.JSON, docs[0], testObj::sendReceiveOptionalDoc);
+   }
+   @Test
+   public void sendReceiveOptionalNullDocTest() {
+      // send non-null uri with null handle to optional endpoint
+      testInputStreamImpl(uris[0], null, null, testObj::sendReceiveOptionalDoc);
+   }
+   @Test
+   public void sendReceiveOptionalNullUriDocTest() {
+      // send null uri and null handle to optional endpoint
+      testInputStreamImpl(null, null, null, testObj::sendReceiveOptionalDoc);
+   }
 
    @Test
-   public void sendReceiveOptionalJSONDocTest() throws IOException {
-       testDocImpl(uris[0], Format.JSON, docs[0], testObj::sendReceiveOptionalDoc);
+   public void sendReceiveRequiredJSONDocTest() {
+      testInputStreamImpl(uris[0], Format.JSON, docs[0], testObj::sendReceiveRequiredDoc);
    }
    @Test
-   public void sendReceiveOptionalXMLDocTest() throws IOException {
-      testDocImpl(uris[1], Format.XML, docs[1], testObj::sendReceiveOptionalDoc);
+   public void sendReceiveRequiredXMLDocTest() {
+      testInputStreamImpl(uris[1], Format.XML, docs[1], testObj::sendReceiveRequiredDoc);
    }
    @Test
-   public void sendReceiveRequiredJSONDocTest() throws IOException {
-      testDocImpl(uris[0], Format.JSON, docs[0], testObj::sendReceiveRequiredDoc);
-   }
-   @Test
-   public void sendReceiveRequiredXMLDocTest() throws IOException {
-      testDocImpl(uris[1], Format.XML, docs[1], testObj::sendReceiveRequiredDoc);
-   }
-   @Test
-   public void sendReceiveOptionalNullUriTest() throws IOException {
-      // send null uri with non-null handle to optional endpoint
-      testDocImpl(null, Format.JSON, docs[0], testObj::sendReceiveOptionalDoc);
-   }
-   @Test
-   public void sendReceiveOptionalNullDocTest() throws IOException {
-      // send non-null uri with null handle to optional endpoint
-      testDocImpl(uris[0], null, null, testObj::sendReceiveOptionalDoc);
-   }
-   @Test
-   public void sendReceiveOptionalNullUriDocTest() throws IOException {
-      // send null uri and null handle to optional endpoint
-      testDocImpl(null, null, null, testObj::sendReceiveOptionalDoc);
-   }
-   @Test
-   public void sendReceiveRequiredNullDocTest() throws IOException {
+   public void sendReceiveRequiredNullDocTest() {
       // negative test: send non-null uri with null handle to required endpoint
       try {
-         testDocImpl(uris[0], null, null, testObj::sendReceiveRequiredDoc);
+         testInputStreamImpl(uris[0], null, null, testObj::sendReceiveRequiredDoc);
          fail("no exception for required parameter with null value");
       } catch(BaseProxy.RequiredParamException e) {
          assertEquals("null value for required parameter: doc", e.getMessage());
       }
    }
    @Test
-   public void sendReceiveOptionalInvalidFormatDocTest() throws IOException {
+   public void sendReceiveOptionalInvalidFormatDocTest() {
       // negative test: send handle with invalid format
       try {
-         testDocImpl(uris[0], formats[1], docs[0], testObj::sendReceiveOptionalDoc);
+         testInputStreamImpl(uris[0], formats[1], docs[0], testObj::sendReceiveOptionalDoc);
          fail("no exception for invalid format");
       } catch(FailedRequestException e) {
          assertEquals(400, e.getServerStatusCode());
@@ -99,43 +96,68 @@ public class AnyDocumentBundleTest {
    }
 
    @Test
-   public void sendReceiveAnyTwoDocsTest() throws IOException {
+   public void sendReceiveMappedJSONDocTest() {
+      testStringImpl(uris[0], Format.JSON, docs[0], testObj::sendReceiveMappedDoc);
+   }
+   @Test
+   public void sendReceiveMappedXMLDocTest() {
+      testStringImpl(uris[1], Format.XML, docs[1], testObj::sendReceiveMappedDoc);
+   }
+   @Test
+   public void sendReceiveMappedNullUriTest() {
+      // send null uri with non-null handle to optional endpoint
+      testStringImpl(null, Format.JSON, docs[0], testObj::sendReceiveMappedDoc);
+   }
+   @Test
+   public void sendReceiveMappedNullDocTest() {
+      // send non-null uri with null handle to optional endpoint
+      testStringImpl(uris[0], null, null, testObj::sendReceiveMappedDoc);
+   }
+   @Test
+   public void sendReceiveMappedNullUriDocTest() {
+      // send null uri and null handle to optional endpoint
+      testStringImpl(null, null, null, testObj::sendReceiveMappedDoc);
+   }
+
+   @Test
+   public void sendReceiveAnyTwoDocsTest() {
       testDocsImpl(uris, formats, docs, testObj::sendReceiveAnyDocs);
    }
    @Test
-   public void sendReceiveAnyOneJSONDocTest() throws IOException {
+   public void sendReceiveAnyOneJSONDocTest() {
       testDocsImpl(uris[0], formats[0], docs[0], testObj::sendReceiveAnyDocs);
    }
    @Test
-   public void sendReceiveAnyOneXMLDocTest() throws IOException {
+   public void sendReceiveAnyOneXMLDocTest() {
       testDocsImpl(uris[1], formats[1], docs[1], testObj::sendReceiveAnyDocs);
    }
    @Test
-   public void sendReceiveManyTwoDocsTest() throws IOException {
-      testDocsImpl(uris, formats, docs, testObj::sendReceiveManyDocs);
-   }
-   @Test
-   public void sendReceiveManyOneJSONDocTest() throws IOException {
-      testDocsImpl(uris[0], formats[0], docs[0], testObj::sendReceiveManyDocs);
-   }
-   @Test
-   public void sendReceiveManyOneXMLDocTest() throws IOException {
-      testDocsImpl(uris[1], formats[1], docs[1], testObj::sendReceiveManyDocs);
-   }
-   @Test
-   public void sendReceiveAnyNullUrisTest() throws IOException {
+   public void sendReceiveAnyNullUrisTest() {
       testDocsImpl(null, formats, docs, testObj::sendReceiveAnyDocs);
    }
    @Test
-   public void sendReceiveAnyNullDocsTest() throws IOException {
+   public void sendReceiveAnyNullDocsTest() {
       testDocsImpl(uris, null, null, testObj::sendReceiveAnyDocs);
    }
    @Test
-   public void sendReceiveAnyNullUrisDocsTest() throws IOException {
+   public void sendReceiveAnyNullUrisDocsTest() {
       testDocsImpl(null, (Format[]) null, null, testObj::sendReceiveAnyDocs);
    }
+
    @Test
-   public void sendReceiveManyNullDocsTest() throws IOException {
+   public void sendReceiveManyTwoDocsTest() {
+      testDocsImpl(uris, formats, docs, testObj::sendReceiveManyDocs);
+   }
+   @Test
+   public void sendReceiveManyOneJSONDocTest() {
+      testDocsImpl(uris[0], formats[0], docs[0], testObj::sendReceiveManyDocs);
+   }
+   @Test
+   public void sendReceiveManyOneXMLDocTest() {
+      testDocsImpl(uris[1], formats[1], docs[1], testObj::sendReceiveManyDocs);
+   }
+   @Test
+   public void sendReceiveManyNullDocsTest() {
       try {
          testDocsImpl(uris, null, null, testObj::sendReceiveManyDocs);
          fail("no exception for required parameter with null value");
@@ -146,7 +168,7 @@ public class AnyDocumentBundleTest {
       }
    }
    @Test
-   public void sendReceiveAnyInvalidFormatDocsTest() throws IOException {
+   public void sendReceiveAnyInvalidFormatDocsTest() {
       // negative test: send handle with invalid format
       try {
          testDocsImpl(uris[1], formats[0], docs[1], testObj::sendReceiveAnyDocs);
@@ -157,21 +179,28 @@ public class AnyDocumentBundleTest {
       }
    }
 
-   private void testDocImpl(String uri, Format format, String doc, BiFunction<String, InputStreamHandle, InputStreamHandle> caller) {
-      InputStreamHandle inputHandle = null;
-      if (doc != null) {
-         inputHandle = new InputStreamHandle();
-         if (format != null) {
-            inputHandle.setFormat(format);
-         }
-         inputHandle.fromBuffer(doc.getBytes());
+   private void testStringImpl(String uri, Format format, String doc, BiFunction<String, StringHandle, StringHandle> caller) {
+      testDocImpl(uri, format, (doc == null) ? null : new StringHandle(doc), caller);
+   }
+   private void testInputStreamImpl(String uri, Format format, String doc, BiFunction<String, InputStreamHandle, InputStreamHandle> caller) {
+      testDocImpl(uri, format, (doc == null) ? null : new InputStreamHandle(new ByteArrayInputStream(doc.getBytes())), caller);
+   }
+   private <T extends BufferableContentHandle<?,?>> void testDocImpl(String uri, Format format, T inputHandle, BiFunction<String, T, T> caller) {
+      if (inputHandle != null && format != null) {
+         BaseHandle<?, ?> inputBase = (BaseHandle<?, ?>) inputHandle;
+         inputBase.setFormat(format);
       }
+      testDocImpl(uri, inputHandle, caller);
+   }
+   private <T extends BufferableContentHandle<?,?>> void testDocImpl(String uri, T inputHandle, BiFunction<String, T, T> caller) {
+      T outputHandle = caller.apply(uri, inputHandle);
 
-      InputStreamHandle outputHandle = caller.apply(uri, inputHandle);
-
-      if (doc != null) {
-         assertEquals(format, outputHandle.getFormat());
-         assertEquals(doc, new String(outputHandle.toBuffer()).trim());
+      if (inputHandle != null) {
+         assertNotNull(outputHandle);
+         BaseHandle<?,?> inputBase = (BaseHandle<?,?>) inputHandle;
+         BaseHandle<?,?> outputBase = (BaseHandle<?,?>) outputHandle;
+         assertEquals(inputBase.getFormat(), outputBase.getFormat());
+         assertEquals(new String(inputHandle.toBuffer()).trim(), new String(outputHandle.toBuffer()).trim());
       } else {
          assertNull(outputHandle);
       }

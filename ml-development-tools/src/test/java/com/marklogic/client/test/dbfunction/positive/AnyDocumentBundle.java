@@ -52,6 +52,7 @@ public interface AnyDocumentBundle {
             private BaseProxy.DBFunctionRequest req_sendReceiveRequiredDoc;
             private BaseProxy.DBFunctionRequest req_sendReceiveOptionalDoc;
             private BaseProxy.DBFunctionRequest req_sendReceiveAnyDocs;
+            private BaseProxy.DBFunctionRequest req_sendReceiveMappedDoc;
 
             private AnyDocumentBundleImpl(DatabaseClient dbClient, JSONWriteHandle servDecl) {
                 this.dbClient  = dbClient;
@@ -65,6 +66,8 @@ public interface AnyDocumentBundle {
                     "sendReceiveOptionalDoc.sjs", BaseProxy.ParameterValuesKind.MULTIPLE_MIXED);
                 this.req_sendReceiveAnyDocs = this.baseProxy.request(
                     "sendReceiveAnyDocs.sjs", BaseProxy.ParameterValuesKind.MULTIPLE_MIXED);
+                this.req_sendReceiveMappedDoc = this.baseProxy.request(
+                    "sendReceiveMappedDoc.sjs", BaseProxy.ParameterValuesKind.MULTIPLE_MIXED);
             }
 
             @Override
@@ -126,6 +129,21 @@ public interface AnyDocumentBundle {
                           ).responseMultiple(true, Format.UNKNOWN)
                       .asStreamOfHandles(null, new com.marklogic.client.io.InputStreamHandle());
             }
+
+            @Override
+            public com.marklogic.client.io.StringHandle sendReceiveMappedDoc(String uri, com.marklogic.client.io.StringHandle doc) {
+                return sendReceiveMappedDoc(
+                    this.req_sendReceiveMappedDoc.on(this.dbClient), uri, doc
+                    );
+            }
+            private com.marklogic.client.io.StringHandle sendReceiveMappedDoc(BaseProxy.DBFunctionRequest request, String uri, com.marklogic.client.io.StringHandle doc) {
+              return request
+                      .withParams(
+                          BaseProxy.atomicParam("uri", true, BaseProxy.StringType.fromString(uri)),
+                          BaseProxy.documentParam("doc", true, doc)
+                          ).responseSingle(true, Format.UNKNOWN)
+                      .asHandle(new com.marklogic.client.io.StringHandle());
+            }
         }
 
         return new AnyDocumentBundleImpl(db, serviceDeclaration);
@@ -166,5 +184,14 @@ public interface AnyDocumentBundle {
    * @return	as output
    */
     Stream<com.marklogic.client.io.InputStreamHandle> sendReceiveAnyDocs(Stream<String> uris, Stream<com.marklogic.client.io.InputStreamHandle> docs);
+
+  /**
+   * Invokes the sendReceiveMappedDoc operation on the database server
+   *
+   * @param uri	provides input
+   * @param doc	provides input
+   * @return	as output
+   */
+    com.marklogic.client.io.StringHandle sendReceiveMappedDoc(String uri, com.marklogic.client.io.StringHandle doc);
 
 }
