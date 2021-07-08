@@ -78,6 +78,8 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
 
     // Egress error endpoint ConfigName
     private static String JsonEgressErrorConfigName = "DynamicEgressServicesForJsonError";
+    // Ingest error endpoint ConfigName
+    private static String JsonIngestErrorConfigName = "DynamicIngestServicesForTextError";
 
     // Ingest and Egress endpoint ConfigName
     private static String IngestEgressSessionFieldsConfigName = "DynamicIngestEgressSessionFields";
@@ -94,6 +96,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
     private static String IngestServicesXmlURI = "/dynamic/fntest/DynamicIngestServices/xml/";
     private static String IngestServicesTextURI = "/dynamic/fntest/DynamicIngestServices/text/";
     private static String IngestServicesBinURI = "/dynamic/fntest/DynamicIngestServices/bin/";
+    private static String IngestServicesJsonErrorURI = "/dynamic/fntest/DynamicIngestServicesError/json/";
     //Output URI
     private static String EgressServicesJsonURI = "/dynamic/fntest/DynamicEgressServices/json/";
     private static String EgressServicesJsonErrorURI = "/dynamic/fntest/DynamicEgressServicesError/json/";
@@ -238,6 +241,18 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
         file = new File(ApiConfigDirPath + JsonEgressErrorConfigName + ".api");
         handle = new FileHandle(file);
         docMgr.write(EgressServicesJsonErrorURI + JsonEgressErrorConfigName +".api", metadataHandle, handle);
+        file = null;
+        handle = null;
+
+        file = new File(ApiConfigDirPath + JsonIngestErrorConfigName + ".sjs");
+        handle = new FileHandle(file);
+        docMgr.write(IngestServicesJsonErrorURI + JsonIngestErrorConfigName +".sjs", metadataHandle, handle);
+        file = null;
+        handle = null;
+
+        file = new File(ApiConfigDirPath + JsonIngestErrorConfigName + ".api");
+        handle = new FileHandle(file);
+        docMgr.write(IngestServicesJsonErrorURI + JsonIngestErrorConfigName +".api", metadataHandle, handle);
         file = null;
         handle = null;
 
@@ -643,6 +658,61 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
             inputbulkCaller.awaitCompletion();
 
             Assert.assertTrue(dbclient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 5);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+            System.out.println("End of TestIngestEgressOnTextDocs");
+        }
+    }
+
+    // Use /dynamic/fntest/DynamicIngestServices/text/DynamicIngestServicesForTextError.sjs endpoint to test Text Documents ingest
+    // Verify that STOP_ALL_CALLS in client does not throw NPE. Git # 1265
+    @Test
+    public void TestIngestOnTextDocsError() throws Exception {
+        System.out.println("Running TestIngestOnTextDocsError");
+        StringBuilder errorBuf = new StringBuilder();
+        try {
+            int startBatchIdx = 0;
+            int maxDocSize = 100;
+
+            ObjectMapper om = new ObjectMapper();
+            File apiFile = new File(ApiConfigDirPath + JsonIngestErrorConfigName + ".api");
+
+            JsonNode api = om.readTree(new FileReader(apiFile));
+            JacksonHandle jhAPI = new JacksonHandle(api);
+
+            String state = "{\"next\":"+startBatchIdx+"}";
+            String work = "{\"max\":"+maxDocSize+"}";
+
+            InputCaller<String> ingressEndpt = InputCaller.on(dbclient, jhAPI, new StringHandle());
+            InputCaller.BulkInputCaller<String> inputbulkCaller = ingressEndpt.bulkCaller(ingressEndpt.newCallContext()
+                    .withEndpointConstantsAs(work.getBytes())
+                    .withEndpointStateAs(state));
+            String[] strContent = { "This is first test document",
+                    "This is second test document",
+                    "This is third test document",
+                    "This is fourth test document",
+                    "This is fifth test document"
+            };
+            InputCaller.BulkInputCaller.ErrorListener InerrorListener =
+                    (retryCount, throwable, callContext, inputHandles)
+                            -> {
+                        for(BufferableHandle h:inputHandles) {
+                            errorBuf.append(h.toString());
+                        }
+                        return IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.STOP_ALL_CALLS;
+                    };
+
+            Stream<String> input = Stream.of(strContent);
+            input.forEach(inputbulkCaller::accept);
+            inputbulkCaller.setErrorListener(InerrorListener);
+            inputbulkCaller.awaitCompletion();
+            String errStr = errorBuf.toString();
+            //System.out.println("Error buffer when STOP_ALL_CALLS " + errorBuf.toString());
+            Assert.assertTrue(!errStr.contains("Exception"));
+            Assert.assertTrue(errStr.isEmpty());
 
         } catch (Exception e) {
             e.printStackTrace();
