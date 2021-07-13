@@ -55,7 +55,6 @@ public class ConcurrencyTest {
         int batchSize = 20;
         int docToUriBatchRatio = 5;
         int totalCount = 1000;
-        //int threadThrottleFactor = 4;
 
         DocumentMetadataHandle documentMetadata = new DocumentMetadataHandle().withCollections("ConcurrencyTest");
         WriteBatcher batcher = moveMgr.newWriteBatcher().withDefaultMetadata(documentMetadata);
@@ -96,7 +95,7 @@ public class ConcurrencyTest {
 /*        QueryBatcher queryBatcherAfter = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("ConcurrencyTest"));
         AtomicInteger minAfter = new AtomicInteger(Integer.MAX_VALUE);
         AtomicInteger maxAfter = new AtomicInteger(0);
-        queryBatcherAfter.withBatchSize(batchSize, docToUriBatchRatio, threadThrottleFactor)
+        queryBatcherAfter.withBatchSize(batchSize, docToUriBatchRatio)
                 .onUrisReady(batch -> {
                     ThreadPoolExecutor threadPoolAfter = ((QueryBatcherImpl) queryBatcherAfter).getThreadPool();
                     int activeThreadCount = threadPoolAfter.getPoolSize();
@@ -116,7 +115,7 @@ public class ConcurrencyTest {
         dmManager.stopJob(queryBatcherAfter);*/
 
         assertTrue(max.get() <= forest_count * docToUriBatchRatio);
-        //assertTrue(maxAfter.get() <= forest_count * (docToUriBatchRatio - threadThrottleFactor));
+        //assertTrue(maxAfter.get() <= forest_count * docToUriBatchRatio);
     }
 
     static void changeAssignmentPolicy(String value) throws IOException {
