@@ -83,7 +83,6 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private int docToUriBatchRatio;
   private int defaultDocBatchSize;
   private int maxUriBatchSize;
-  private int threadThrottleFactor;
 
   QueryBatcherImpl(
           SearchQueryDefinition originalQuery, DataMovementManager moveMgr, ForestConfiguration forestConfig,
@@ -324,7 +323,6 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     if (this.docToUriBatchRatio == 0) {
       this.docToUriBatchRatio = 1;
     }
-    this.threadThrottleFactor = 0;
     return this;
   }
 
@@ -344,28 +342,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     return this;
   }
 
-/*  @Override
-  public QueryBatcher withBatchSize(int docBatchSize, int docToUriBatchRatio, int threadThrottleFactor) {
-    if (threadThrottleFactor < 0 || threadThrottleFactor > this.maxDocToUriBatchRatio) {
-      throw new IllegalArgumentException("threadThrottleFactor is less than 0 or " +
-              "threadThrottleFactor is larger than maxDocToUriBatchRatio");
-    }
-    if (threadThrottleFactor >= docToUriBatchRatio) {
-      throw new IllegalArgumentException("threadThrottleFactor must be less than docToUriBatchRatio");
-    }
-    withBatchSize(docBatchSize, docToUriBatchRatio);
-    this.threadThrottleFactor = threadThrottleFactor;
-    return this;
-  }*/
-
   @Override
   public int getDocToUriBatchRatio() {
     return this.docToUriBatchRatio;
-  }
-
-//  @Override
-  public int getThreadThrottleFactor() {
-    return this.threadThrottleFactor;
   }
 
   @Override
@@ -473,7 +452,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     if ( threadCountSet == false ) {
       if ( query != null ) {
         logger.warn("threadCount not set--defaulting to number of forests ({})", forests.length);
-        withThreadCount(forests.length * (docToUriBatchRatio - threadThrottleFactor));
+        withThreadCount(forests.length * docToUriBatchRatio);
       } else {
         int hostCount = clientList.get().size();
         logger.warn("threadCount not set--defaulting to number of hosts ({})", hostCount);
@@ -488,9 +467,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     if(getThreadCount() == 1) {
       isSingleThreaded = true;
     }
-    logger.info("Starting job forest length={}, docBatchSize={}, docToUriBatchRatio={}, threadThrottleFactor= {}, " +
+    logger.info("Starting job forest length={}, docBatchSize={}, docToUriBatchRatio={}, " +
                     "threadCount={}, onUrisReady listeners={}, failure listeners={}",
-            forests.length, getBatchSize(), getDocToUriBatchRatio(), getThreadThrottleFactor(), getThreadCount(),
+            forests.length, getBatchSize(), getDocToUriBatchRatio(), getThreadCount(),
             urisReadyListeners.size(), failureListeners.size());
     threadPool = new QueryThreadPoolExecutor(getThreadCount(), forests.length, getDocToUriBatchRatio(), this);
   }
