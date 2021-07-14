@@ -53,17 +53,22 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST {
   public static void setUpBeforeClass() throws Exception {
     System.out.println("In setup");
     configureRESTServer(dbName, fNames);
+    createUserRolesWithPrevilages("pojoRole", "xdmp:eval", "xdmp:eval-in", "xdbc:eval", "xdbc:eval-in", "any-uri", "xdbc:invoke", "xdbc:invoke-in", "xdmp:invoke", "xdmp:invoke-in");
+    createRESTUser("pojoUser", "pojoUser", "tde-admin", "tde-view", "pojoRole", "rest-admin", "rest-writer",
+            "rest-reader", "rest-extension-user", "manage-user", "query-view-admin");
   }
 
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tear down");
+    deleteUserRole("pojoRole");
+    deleteRESTUser("pojoUser");
     cleanupRESTServer(dbName, fNames);
   }
 
   @Before
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-    client = getDatabaseClient("rest-admin", "x", getConnType());
+    client = getDatabaseClient("pojoUser", "pojoUser", getConnType());
   }
 
   @After
