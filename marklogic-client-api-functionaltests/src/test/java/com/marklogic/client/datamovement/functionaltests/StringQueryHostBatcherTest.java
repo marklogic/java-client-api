@@ -1332,6 +1332,9 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		});
 		dmManager.startJob(queryBatcher1);
 		queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);
+        while (!queryBatcher1.isStopped()) {
+        // Do nothing. Wait for batcher to complete.
+        }
 		
 		if (queryBatcher1.isStopped()) {
 		  // Verify the batch results now.
