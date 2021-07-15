@@ -5827,9 +5827,10 @@ public class OkHttpServices implements RESTServices {
           if (paramValues != null) {
             paramValues
                 .filter(paramValue -> paramValue != null)
-                .forEachOrdered(paramValue ->
-                    multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue))
-                );
+                .forEachOrdered(paramValue -> {
+                    hasValue.set();
+                    multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue));
+                });
           }
         } else if (param instanceof SingleNodeCallField) {
           SingleNodeCallField singleNodeParam = (SingleNodeCallField) param;

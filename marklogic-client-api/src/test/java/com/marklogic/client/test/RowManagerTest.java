@@ -1172,6 +1172,27 @@ public class RowManagerTest {
     }
   }
   @Test
+  public void testGenerateView() throws IOException {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    PlanBuilder.ExportablePlan builtPlan =
+          p.fromView("opticUnitTest", "musician")
+           .where(
+              p.cts.andQuery(
+                 p.cts.jsonPropertyWordQuery("instrument", "trumpet"),
+                 p.cts.jsonPropertyWordQuery(p.xs.string("lastName"), p.xs.stringSeq("Armstrong", "Davis"))
+                 )
+              )
+           .orderBy(p.col("lastName"));
+
+    Document xmlRoot = rowMgr.generateView(builtPlan, "opticUnitTest", "musicianView", new DOMHandle()).get();
+    assertNotNull(xmlRoot);
+    xmlRoot = rowMgr.generateViewAs(builtPlan, "opticUnitTest", "musicianView", Document.class);
+    assertNotNull(xmlRoot);
+  }
+  @Test
   public void testExplain() throws IOException {
     RowManager rowMgr = Common.client.newRowManager();
 

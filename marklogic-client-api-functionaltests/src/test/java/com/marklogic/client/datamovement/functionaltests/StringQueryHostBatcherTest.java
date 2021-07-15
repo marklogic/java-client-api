@@ -239,6 +239,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       StringBuilder batchResults = new StringBuilder();
       StringBuilder forestResults = new StringBuilder();
       StringBuilder batchFailResults = new StringBuilder();
+      StringBuilder batchIllegalState = new StringBuilder();
 
       // Run a QueryBatcher on the new URIs.
       QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
@@ -276,7 +277,23 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       else {
     	  fail("testAndWordQuery test failed");
       }
-    } catch (Exception e) {
+
+      try {
+        // Verify Git # 1290
+        QueryBatcher qb = dmManager.newQueryBatcher(client.newQueryManager().newStringDefinition().withCriteria("")).withBatchSize(10);
+
+        qb.onQueryFailure(throwable -> {
+          throwable.printStackTrace();
+          batchIllegalState.append(throwable.getMessage());
+        });
+        dmManager.startJob(qb);
+        qb.awaitCompletion();
+      } catch (Exception ex) {
+        batchIllegalState.append(ex.getMessage());
+        System.out.println("Exceptions buffer from empty withCriteria : " + batchIllegalState.toString());
+        assertTrue("Exception message incorrect", batchIllegalState.toString().contains("Criteria cannot be an empty string"));
+      }
+      } catch (Exception e) {
       System.out.print(e.getMessage());
     } finally {
     	clearDB();
@@ -1315,6 +1332,9 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		});
 		dmManager.startJob(queryBatcher1);
 		queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);
+        while (!queryBatcher1.isStopped()) {
+        // Do nothing. Wait for batcher to complete.
+        }
 		
 		if (queryBatcher1.isStopped()) {
 		  // Verify the batch results now.

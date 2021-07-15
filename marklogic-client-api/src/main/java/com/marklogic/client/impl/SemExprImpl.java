@@ -73,6 +73,12 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
+  public ServerExpression defaultGraphIri() {
+    return new IriCallImpl("sem", "default-graph-iri", new Object[]{  });
+  }
+
+  
+  @Override
   public ServerExpression ifExpr(ServerExpression condition, ServerExpression then, ServerExpression elseExpr) {
     if (condition == null) {
       throw new IllegalArgumentException("condition parameter for ifExpr() cannot be null");

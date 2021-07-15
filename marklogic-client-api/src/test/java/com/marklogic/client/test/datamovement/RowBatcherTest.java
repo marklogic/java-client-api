@@ -182,6 +182,12 @@ public class RowBatcherTest {
         runJsonRowsTest(jsonBatcher(1));
     }
     @Test
+    public void testJsonRows1ThreadForDB() throws Exception {
+        runJsonRowsTest(jsonBatcher(
+                Common.newClient("java-unittest").newDataMovementManager(),
+                1));
+    }
+    @Test
     public void testJsonRows3Threads() throws Exception {
         runJsonRowsTest(jsonBatcher(3));
     }
@@ -224,6 +230,9 @@ public class RowBatcherTest {
     /* TODO: style tests
      */
     private RowBatcher<JsonNode> jsonBatcher(int threads) {
+        return jsonBatcher(moveMgr, threads);
+    }
+    private RowBatcher<JsonNode> jsonBatcher(DataMovementManager moveMgr, int threads) {
         return moveMgr.newRowBatcher(new JacksonHandle())
                         .withBatchSize(30)
                         .withThreadCount(threads);

@@ -76,7 +76,7 @@ public class TestSearchMultipleForests extends BasicJavaClientREST {
 
     // create query def
     StringQueryDefinition querydef = queryMgr.newStringDefinition("");
-    querydef.setCriteria("");
+    querydef.setCriteria("hello");
 
     SearchHandle sHandle = new SearchHandle();
     // New handles to search for documents on individual forests.

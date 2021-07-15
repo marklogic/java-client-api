@@ -154,7 +154,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
     // Temporal collection needs to be delete before temporal axis associated
     // with it can be deleted
-    ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
+    /*ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
         temporalLsqtCollectionName);
     ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
         temporalCollectionName);
@@ -163,7 +163,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     ConnectedRESTQA.deleteElementRangeIndexTemporalAxis("Documents",
         axisValidName);
     ConnectedRESTQA.deleteElementRangeIndexTemporalAxis("Documents",
-        axisSystemName);
+        axisSystemName);*/
     deleteDB(schemadbName);
     deleteForest(schemafNames[0]);
   }
@@ -1204,7 +1204,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // Make sure there are 8 documents in total. Use string search for this
     queryMgr = readerClient.newQueryManager();
     StringQueryDefinition stringQD = queryMgr.newStringDefinition();
-    stringQD.setCriteria("");
+    stringQD.setCriteria("Skyway Park");
 
     start = 1;
     termQueryResults = xmlDocMgr.search(stringQD, start);
@@ -1356,7 +1356,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // Make sure there are 4 documents in total. Use string search for this
     queryMgr = writerClient.newQueryManager();
     StringQueryDefinition stringQD = queryMgr.newStringDefinition();
-    stringQD.setCriteria("");
+    stringQD.setCriteria("Skyway Park");
 
     start = 1;
     docMgr.setMetadataCategories(Metadata.ALL);
@@ -2919,7 +2919,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // Make sure there are 4 documents in total. Use string search for this
     queryMgr = readerClient.newQueryManager();
     StringQueryDefinition stringQD = queryMgr.newStringDefinition();
-    stringQD.setCriteria("");
+    stringQD.setCriteria("Skyway Park");
 
     start = 1;
     docMgr.setMetadataCategories(Metadata.ALL);
