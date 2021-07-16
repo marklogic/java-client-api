@@ -37,11 +37,7 @@ import com.marklogic.client.expression.CtsQueryBuilder;
 import com.marklogic.client.query.*;
 import com.marklogic.client.type.CtsQueryExpr;
 import com.marklogic.client.util.EditableNamespaceContext;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -130,10 +126,6 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "rest-extension-user", "manage-user");
-
-    // For use with Java/REST Client API
-    client = getDatabaseClient("eval-user", "x", getConnType());
-    dmManager = client.newDataMovementManager();
   }
 
   /**
@@ -153,12 +145,20 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     deleteForest(fNames[0]);
   }
 
+  @Before
+  public void setUp() throws Exception  {
+    System.out.println("In setup");
+    client = getDatabaseClient("eval-user", "x", getConnType());
+    dmManager = client.newDataMovementManager();
+  }
+
   /**
    * @throws java.lang.Exception
    */
   @After
   public void tearDown() throws Exception {
     System.out.println("In tearDown");
+    client.release();
     clearDB(restServerPort);
   }
 
