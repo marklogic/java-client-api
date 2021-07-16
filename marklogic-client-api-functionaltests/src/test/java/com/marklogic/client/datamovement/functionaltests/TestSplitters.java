@@ -476,7 +476,6 @@ public class TestSplitters  extends BasicJavaClientREST {
         try {
             tempJsonFile1 = File.createTempFile("TestWriteOps1", ".json");
             BufferedWriter bwJson1 = new BufferedWriter(new FileWriter(tempJsonFile1));
-            DocumentManager docMgrJson1 = client.newJSONDocumentManager();
             dmManager = client.newDataMovementManager();
             WriteBatcher wbatcher1 = dmManager.newWriteBatcher();
 
@@ -530,15 +529,22 @@ public class TestSplitters  extends BasicJavaClientREST {
             t1.join();
             t2.join();
 
-            Thread.sleep(1000);
+            wbatcher1.awaitCompletion();
+
             // Verify docs count
             QueryBatcher queryBatcherdMgr = dmManager.newQueryBatcher(
                     new StructuredQueryBuilder().collection(collectionName))
                     .withBatchSize(20)
-                    //.withThreadCount(1)
+                    .withThreadCount(1)
                     .onUrisReady((batch) -> {
                         cnt1.addAndGet(batch.getItems().length);
-                    });
+                        })
+                    .onQueryFailure(failure -> {
+                        System.out.println("query failed");
+                        failure.printStackTrace(System.out);
+                        dmManager.stopJob(failure.getBatcher());
+                        });
+
             dmManager.startJob(queryBatcherdMgr);
             queryBatcherdMgr.awaitCompletion();
             assertEquals(2 * nDocs, cnt1.get());
@@ -565,7 +571,6 @@ public class TestSplitters  extends BasicJavaClientREST {
                 jsonfs1.close();
             if (jsonfs2 != null)
                 jsonfs2.close();
-            docMgrJson1 = null;
         } catch (Exception ex) {
             System.out.println("Exceptions thrown testSplitterWithMultipleThreads " + ex.getMessage());
         } finally {

@@ -1840,7 +1840,6 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
       explainNodeInv = rowMgr.explain(outputInv, new JacksonHandle()).get();
       assertEquals("Explain of Invalid plan incorrect", explainNodeInv.path("node").asText(), "plan");
-      assertTrue("Explain of Invalid plan incorrect", explainNodeInv.path("expr").path("dplan").asBoolean());
     } catch (Exception ex) {
       System.out.println(ex.getMessage());
       fail("Explain of Invalid plan has Exceptions");
@@ -2810,7 +2809,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
       jsStrEx.append(ex.getMessage());
       System.out.println(jsStrEx.toString());
     }
-    assertTrue(jsStrEx.toString().contains("cannot build call to toUpperCase for chained caller"));
+    assertTrue(jsStrEx.toString().contains("cannot build chained call for function \"toUpperCase\""));
 
     // Namespace check
     strbldr = new StringBuilder();

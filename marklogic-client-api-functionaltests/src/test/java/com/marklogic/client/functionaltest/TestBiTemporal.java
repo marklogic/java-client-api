@@ -1204,7 +1204,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // Make sure there are 8 documents in total. Use string search for this
     queryMgr = readerClient.newQueryManager();
     StringQueryDefinition stringQD = queryMgr.newStringDefinition();
-    stringQD.setCriteria("");
+    stringQD.setCriteria("Skyway Park");
 
     start = 1;
     termQueryResults = xmlDocMgr.search(stringQD, start);
@@ -1356,7 +1356,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // Make sure there are 4 documents in total. Use string search for this
     queryMgr = writerClient.newQueryManager();
     StringQueryDefinition stringQD = queryMgr.newStringDefinition();
-    stringQD.setCriteria("");
+    stringQD.setCriteria("Skyway Park");
 
     start = 1;
     docMgr.setMetadataCategories(Metadata.ALL);
@@ -2919,7 +2919,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // Make sure there are 4 documents in total. Use string search for this
     queryMgr = readerClient.newQueryManager();
     StringQueryDefinition stringQD = queryMgr.newStringDefinition();
-    stringQD.setCriteria("");
+    stringQD.setCriteria("Skyway Park");
 
     start = 1;
     docMgr.setMetadataCategories(Metadata.ALL);

@@ -1,0 +1,32 @@
+{
+  "endpoint": "/dynamic/fntest/DynamicIngestServices/text/DynamicIngestServicesForTextError.sjs",
+  "params": [ {
+    "name":     "endpointState",
+    "datatype": "jsonDocument",
+    "multiple": false,
+    "nullable": true
+    }, {
+    "name":     "session",
+    "datatype": "session",
+    "multiple": false,
+    "nullable": true
+    }, {
+    "name":     "endpointConstants",
+    "datatype": "jsonDocument",
+    "multiple": false,
+    "nullable": true
+    }, {
+    "name":     "input",
+    "datatype": "textDocument",
+    "multiple": true,
+    "nullable": true
+  } ],
+  "return": {
+    "datatype": "jsonDocument",
+    "multiple": false,
+    "nullable": true
+  },
+  "$bulk":{
+    "inputBatchSize":1
+  }
+}
