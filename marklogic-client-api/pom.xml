@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This file was generated via Gradle and is being used primarily for github's Dependency Graph feature.
+It is not intended to be used to build this project.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <!-- This module was also published with a richer model, Gradle metadata,  -->
+  <!-- which should be used instead. Do not delete the following line which  -->
+  <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
+  <!-- that they should prefer consuming it instead. -->
+  <!-- do_not_remove: published-with-gradle-metadata -->
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.marklogic</groupId>
+  <artifactId>marklogic-client-api</artifactId>
+  <version>5.5.0</version>
+  <dependencies>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+      <version>4.7.2</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>logging-interceptor</artifactId>
+      <version>4.7.2</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.github.rburgst</groupId>
+      <artifactId>okhttp-digest</artifactId>
+      <version>2.5</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.mail</groupId>
+      <artifactId>javax.mail</artifactId>
+      <version>1.6.2</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>javax.ws.rs-api</artifactId>
+      <version>2.1.1</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.30</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>2.11.1</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>2.11.1</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.11.1</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-csv</artifactId>
+      <version>2.11.1</version>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+  <packaging>jar</packaging>
+  <name>marklogic-client-api</name>
+  <description>The MarkLogic Java Client API</description>
+  <url>https://github.com/marklogic/java-client-api</url>
+  <licenses>
+    <license>
+      <name>The Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>MarkLogic</name>
+      <email>java-sig@marklogic.com</email>
+      <organization>MarkLogic</organization>
+      <organizationUrl>https://www.marklogic.com</organizationUrl>
+    </developer>
+    <developer>
+      <name>MarkLogic Github Contributors</name>
+      <email>general@developer.marklogic.com</email>
+      <organization>Github Contributors</organization>
+      <organizationUrl>https://github.com/marklogic/java-client-api/graphs/contributors</organizationUrl>
+    </developer>
+  </developers>
+  <scm>
+    <url>git@github.com:marklogic/java-client-api.git</url>
+    <connection>scm:git:git@github.com:marklogic/java-client-api.git</connection>
+    <developerConnection>scm:git:git@github.com:marklogic/java-client-api.git</developerConnection>
+  </scm>
+</project>
