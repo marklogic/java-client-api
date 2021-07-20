@@ -535,6 +535,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 
 		batcher = batcher.onUrisReady((batch) -> {
 			successCount.set(dmManager.getJobReport(queryTicket).getSuccessEventsCount());
+			System.out.println("Results so far in this Forest " + batch.getForest().getForestName() + " is  " + batch.getForestResultsSoFar());
 
 		}).onUrisReady(listener);
 		queryTicket = dmManager.startJob(batcher);
@@ -554,6 +555,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 						if (dh.get().getElementsByTagName("foo").item(0).getAttributes().item(0) == null) {
 							count.incrementAndGet();
 							System.out.println("stopTransformJobTest: skipped in server" + rec.getUri());
+							System.out.println("stopTransformJobTest: skipped in server" + rec.getContentAs(String.class));
 						}
 					}
 					
