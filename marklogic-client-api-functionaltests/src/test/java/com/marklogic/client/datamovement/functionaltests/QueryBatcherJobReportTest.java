@@ -125,7 +125,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		}
 
 		// FileHandle
-		fileJson = FileUtils.toFile(WriteHostBatcherTest.class.getResource(TEST_DIR_PREFIX + "dir.json"));
+		fileJson = FileUtils.toFile(BasicJavaClientREST.class.getResource(TEST_DIR_PREFIX + "dir.json"));
 		fileHandle = new FileHandle(fileJson);
 		fileHandle.setFormat(Format.JSON);
 		meta1 = new DocumentMetadataHandle().withCollections("JsonTransform");
@@ -170,13 +170,13 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		metadata.setVersion("0.1");
 		// get the transform file
 		File transformFile = FileUtils
-				.toFile(WriteHostBatcherTest.class.getResource(TEST_DIR_PREFIX + "add-attr-xquery-transform.xqy"));
+				.toFile(BasicJavaClientREST.class.getResource(TEST_DIR_PREFIX + "add-attr-xquery-transform.xqy"));
 		FileHandle transformHandle = new FileHandle(transformFile);
 		transMgr.writeXQueryTransform("add-attr-xquery-transform", transformHandle, metadata);
 
 		// JS Transformation
 		File transformFile1 = FileUtils
-				.toFile(WriteHostBatcherTest.class.getResource(TEST_DIR_PREFIX + "javascript_transform.sjs"));
+				.toFile(BasicJavaClientREST.class.getResource(TEST_DIR_PREFIX + "javascript_transform.sjs"));
 		FileHandle transformHandle1 = new FileHandle(transformFile1);
 		transMgr.writeJavascriptTransform("jsTransform", transformHandle1);
 
@@ -210,7 +210,9 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		Assert.assertTrue("Job Name incorrect", batcher.getJobName().trim().equalsIgnoreCase("XmlTransform"));
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(queryTicket);
-		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), 4);
+		System.out.println("Number of success batches " + dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
+		// Account for cluster env and number of forests; and/or single node env test runs.
+		Assert.assertTrue(dmManager.getJobReport(queryTicket).getSuccessBatchesCount() >= 4);
 
 		batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
 				.withBatchSize(500)
@@ -510,13 +512,16 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		transform.put("value", "French");
 		List<String> skippedBatch = new ArrayList<>();
 		List<String> successBatch = new ArrayList<>();
+		AtomicLong skippedApplyTransCount = new AtomicLong(0L);
+
 		ApplyTransformListener listener = new ApplyTransformListener().withTransform(transform)
 				.withApplyResult(ApplyResult.REPLACE).onSuccess(batch -> {
+
 					List<String> batchList = Arrays.asList(batch.getItems());
 					successBatch.addAll(batchList);
-					System.out.println("stopTransformJobTest: Success: " + batch.getItems()[0]);
+					/*System.out.println("stopTransformJobTest: Success: " + batch.getItems()[0]);
 					System.out.println("stopTransformJobTest: Success: " + dbClient.newServerEval()
-							.xquery("fn:doc(\"" + batch.getItems()[0] + "\")").eval().next().getString());
+							.xquery("fn:doc(\"" + batch.getItems()[0] + "\")").eval().next().getString());*/
 				}).onSkipped(batch -> {
 					List<String> batchList = Arrays.asList(batch.getItems());
 					skippedBatch.addAll(batchList);
@@ -535,14 +540,12 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 
 		batcher = batcher.onUrisReady((batch) -> {
 			successCount.set(dmManager.getJobReport(queryTicket).getSuccessEventsCount());
-			System.out.println("Results so far in this Forest " + batch.getForest().getForestName() + " is  " + batch.getForestResultsSoFar());
-
 		}).onUrisReady(listener);
 		queryTicket = dmManager.startJob(batcher);
 		Thread.currentThread().sleep(4000L);
 		dmManager.stopJob(queryTicket);
 		
-		AtomicInteger count = new AtomicInteger(0);
+		AtomicInteger appliedTranscount = new AtomicInteger(0);
 		QueryBatcher resultBatcher = dmManager
 				.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
 				.withBatchSize(25).withThreadCount(5)
@@ -552,10 +555,14 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 					while (page.hasNext()) {
 						DocumentRecord rec = page.next();
 						rec.getContent(dh);
-						if (dh.get().getElementsByTagName("foo").item(0).getAttributes().item(0) == null) {
-							count.incrementAndGet();
-							System.out.println("stopTransformJobTest: skipped in server" + rec.getUri());
-							System.out.println("stopTransformJobTest: skipped in server" + rec.getContentAs(String.class));
+						if (dh.get().getElementsByTagName("foo").item(0).hasAttributes()) {
+							String appliedTransStrValue = dh.get().getElementsByTagName("foo").item(0).getAttributes().item(0).getNodeValue();
+							if (appliedTransStrValue.equalsIgnoreCase("French")) {
+								appliedTranscount.incrementAndGet();
+								System.out.println("stopTransformJobTest: Did not get skipped in server" + rec.getUri());
+							}
+						}else {
+							skippedApplyTransCount.incrementAndGet();
 						}
 					}
 					
@@ -564,11 +571,12 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		resultBatcher.awaitCompletion();
 
 		System.out.println("stopTransformJobTest: Success: " + successBatch.size());
+		System.out.println("stopTransformJobTest: Skipped Apply Transform count : " + skippedApplyTransCount.get());
 		System.out.println("stopTransformJobTest: Skipped: " + skippedBatch.size());
-		System.out.println("stopTransformJobTest : count " + count);
+		System.out.println("stopTransformJobTest : Applied Trans count " + appliedTranscount.get());
 		
 		System.out.println("stopTransformJobTest : successCount.get() " + successCount.get());
-		Assert.assertEquals(successCount.get(), successBatch.size());
+		assertTrue("Number of docs transformed must be <= number of docs selected", appliedTranscount.get() <= successBatch.size());
 	}
 	
 	/* Test 1 setMaxBatches(2035) - maximum specified in advance
@@ -705,9 +713,9 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			// Validate Test 1 setMaxBatches(2035)
 			System.out.println("Max URIs size is : " + batchResults.size());
 			/* 12 times 2035 equals 24420 with one Thread on QueryBatcher.
-			 * With thread count > 1 on QueryBatcher, batchResults size is less than 24420. 
+			 * With thread count > 1 on QueryBatcher, batchResults size is greater than 24420. 
 			 */
-			assertTrue("Stop QueryBatcher with setMaxBatches set to 2035 is incorrect", batchResults.size() == 24420);
+			assertTrue("Stop QueryBatcher with setMaxBatches set to 2035 is incorrect", batchResults.size() >= 24420);
 
 			/* Test 2 setMaxBatches()
 			 */
@@ -761,7 +769,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			System.out.println("Doc count after setMaxBatches() is called " +  batchResults2.size());
 			
 			assertTrue("Batches of URIs collected so far", batchResults2.size() > 0);
-			assertTrue("Number of Uris collected does not fall in the range", (batchResults2.size()>initialUrisSize && batchResults2.size()< 2436));
+			assertTrue("Number of Uris collected does not fall in the range", (batchResults2.size()>initialUrisSize && batchResults2.size()<= 2436));
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
