@@ -168,7 +168,7 @@ public interface CtsExpr {
   * @param box  The box.  (of <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public ServerExpression boxEast(CtsBoxExpr box);
+  public ServerExpression boxEast(ServerExpression box);
 /**
   * Returns a box's northern boundary.
   *
@@ -179,7 +179,7 @@ public interface CtsExpr {
   * @param box  The box.  (of <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public ServerExpression boxNorth(CtsBoxExpr box);
+  public ServerExpression boxNorth(ServerExpression box);
 /**
   * Returns a box's southern boundary.
   *
@@ -190,7 +190,7 @@ public interface CtsExpr {
   * @param box  The box.  (of <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public ServerExpression boxSouth(CtsBoxExpr box);
+  public ServerExpression boxSouth(ServerExpression box);
 /**
   * Returns a box's western boundary.
   *
@@ -201,17 +201,7 @@ public interface CtsExpr {
   * @param box  The box.  (of <a href="{@docRoot}/doc-files/types/cts_box.html">cts:box</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public ServerExpression boxWest(CtsBoxExpr box);
-  /**
-   * Returns a geospatial circle value.
-   *
-   * <p>
-   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:circle" target="mlserverdoc">cts:circle</a> server function.
-   * @param radius  The radius of the circle. The units for the radius is determined at runtime by the query options (miles is currently the only option).  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
-   * @param center  A point representing the center of the circle.  (of <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a>)
-   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_circle.html">cts:circle</a> server data type
-   */
-  public CtsCircleExpr circle(double radius, double center);
+  public ServerExpression boxWest(ServerExpression box);
 /**
   * Returns a geospatial circle value.
   * <p>
@@ -254,7 +244,7 @@ public interface CtsExpr {
   * @param circle  The circle.  (of <a href="{@docRoot}/doc-files/types/cts_circle.html">cts:circle</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public ServerExpression circleRadius(CtsCircleExpr circle);
+  public ServerExpression circleRadius(ServerExpression circle);
 /**
   * Match documents in at least one of the specified collections. It will match both documents and properties documents in the collections with the given URIs.
   * <p>
@@ -2677,7 +2667,7 @@ public interface CtsExpr {
   * @param point  The point.  (of <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public ServerExpression pointLatitude(CtsPointExpr point);
+  public ServerExpression pointLatitude(ServerExpression point);
 /**
   * Returns a point's longitude value.
   *
@@ -2688,7 +2678,7 @@ public interface CtsExpr {
   * @param point  The point.  (of <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public ServerExpression pointLongitude(CtsPointExpr point);
+  public ServerExpression pointLongitude(ServerExpression point);
 /**
   * Returns a geospatial polygon value.
   *
@@ -3057,20 +3047,6 @@ public interface CtsExpr {
   */
   public CtsBoxSeqExpr boxSeq(CtsBoxExpr... items);
  
-/**
-  * Constructs a sequence of CtsCircleExpr items.
-  * @param items  the CtsCircleExpr items collected by the sequence
-  * @return  a CtsCircleSeqExpr sequence
-  */
-  public CtsCircleSeqExpr circleSeq(CtsCircleExpr... items);
- 
-/**
-  * Constructs a sequence of CtsBoxExpr items.
-  * @param items  the CtsBoxExpr items collected by the sequence
-  * @return  a CtsBoxSeqExpr sequence
-  */
-  public CtsBoxSeqExpr boxSeq(CtsBoxExpr... items);
-
 /**
   * Constructs a sequence of CtsCircleExpr items.
   * @param items  the CtsCircleExpr items collected by the sequence

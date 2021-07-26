@@ -148,7 +148,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression boxEast(CtsBoxExpr box) {
+  public ServerExpression boxEast(ServerExpression box) {
     if (box == null) {
       throw new IllegalArgumentException("box parameter for boxEast() cannot be null");
     }
@@ -157,7 +157,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression boxNorth(CtsBoxExpr box) {
+  public ServerExpression boxNorth(ServerExpression box) {
     if (box == null) {
       throw new IllegalArgumentException("box parameter for boxNorth() cannot be null");
     }
@@ -166,7 +166,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression boxSouth(CtsBoxExpr box) {
+  public ServerExpression boxSouth(ServerExpression box) {
     if (box == null) {
       throw new IllegalArgumentException("box parameter for boxSouth() cannot be null");
     }
@@ -175,12 +175,13 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression boxWest(CtsBoxExpr box) {
+  public ServerExpression boxWest(ServerExpression box) {
     if (box == null) {
       throw new IllegalArgumentException("box parameter for boxWest() cannot be null");
     }
     return new XsExprImpl.NumericCallImpl("cts", "box-west", new Object[]{ box });
   }
+
 
   @Override
   public CtsCircleExpr circle(double radius, ServerExpression center) {
@@ -210,7 +211,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression circleRadius(CtsCircleExpr circle) {
+  public ServerExpression circleRadius(ServerExpression circle) {
     if (circle == null) {
       throw new IllegalArgumentException("circle parameter for circleRadius() cannot be null");
     }
@@ -1764,7 +1765,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression pointLatitude(CtsPointExpr point) {
+  public ServerExpression pointLatitude(ServerExpression point) {
     if (point == null) {
       throw new IllegalArgumentException("point parameter for pointLatitude() cannot be null");
     }
@@ -1773,7 +1774,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public ServerExpression pointLongitude(CtsPointExpr point) {
+  public ServerExpression pointLongitude(ServerExpression point) {
     if (point == null) {
       throw new IllegalArgumentException("point parameter for pointLongitude() cannot be null");
     }
