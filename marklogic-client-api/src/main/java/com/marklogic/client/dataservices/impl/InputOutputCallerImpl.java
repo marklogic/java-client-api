@@ -16,6 +16,7 @@
 package com.marklogic.client.dataservices.impl;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.io.marker.BufferableContentHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
 final public class InputOutputCallerImpl<I,O> extends IOCallerImpl<I,O> {
@@ -34,7 +35,7 @@ final public class InputOutputCallerImpl<I,O> extends IOCallerImpl<I,O> {
         }
     }
 
-    public O[] arrayCall(DatabaseClient db, CallContextImpl<I,O> callCtxt, I[] input) {
+    public O[] arrayCall(DatabaseClient db, CallContextImpl<I,O> callCtxt, BufferableContentHandle<?,?>[] input) {
         return responseMultipleAsArray(makeRequest(db, callCtxt, input), callCtxt);
     }
 }

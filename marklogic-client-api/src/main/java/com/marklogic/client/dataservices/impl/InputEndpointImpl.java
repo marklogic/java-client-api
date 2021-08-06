@@ -20,6 +20,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.marklogic.client.dataservices.InputCaller;
+import com.marklogic.client.io.marker.BufferableContentHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +59,8 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 	@Override
 	public void call(CallContext callContext, I[] input) {
 		InputCallerImpl<I,O> callerImpl = getCaller();
-		callerImpl.arrayCall(getClient(), checkAllowedArgs(callContext), input);
+		BufferableContentHandle<?,?>[] inputHandles = callerImpl.bufferableInputHandleOn(input);
+		callerImpl.arrayCall(getClient(), checkAllowedArgs(callContext), inputHandles);
 	}
 
 	@Deprecated
@@ -196,10 +198,11 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 
 			ErrorDisposition error = ErrorDisposition.RETRY;
 
+			BufferableContentHandle<?,?>[] inputHandles = callerImpl.bufferableInputHandleOn(inputBatch);
 			for (int retryCount = 0; retryCount < DEFAULT_MAX_RETRIES && error == ErrorDisposition.RETRY; retryCount++) {
 				Throwable throwable = null;
 				try {
-					getEndpoint().getCaller().arrayCall(callContext.getClient(), callContext, inputBatch);
+					getEndpoint().getCaller().arrayCall(callContext.getClient(), callContext, inputHandles);
 					incrementCallCount();
 					return;
 				} catch (Throwable catchedThrowable) {
@@ -211,11 +214,10 @@ public class InputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements Input
 						logger.error("No error listener set. Stop all calls. " + getEndpoint().getEndpointPath(), throwable);
 						error = ErrorDisposition.STOP_ALL_CALLS;
 					} else {
-
 						try {
 							if (retryCount < DEFAULT_MAX_RETRIES - 1) {
 								error = getErrorListener().processError(
-										retryCount, throwable, callContext, callerImpl.bufferableInputHandleOn(inputBatch)
+										retryCount, throwable, callContext, inputHandles
 								);
 							} else {
 								error = ErrorDisposition.SKIP_CALL;

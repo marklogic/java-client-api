@@ -190,11 +190,6 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
         return makeRequest(db, callCtxt, (RESTServices.CallField) null);
     }
     BaseProxy.DBFunctionRequest makeRequest(
-            DatabaseClient db, CallContextImpl<I,O> callCtxt, I[] input
-    ) {
-        return makeRequest(db, callCtxt, bufferableInputHandleOn(input));
-    }
-    private BaseProxy.DBFunctionRequest makeRequest(
             DatabaseClient db, CallContextImpl<I,O> callCtxt, BufferableContentHandle<?,?>[] input
     ) {
         RESTServices.CallField inputField = null;

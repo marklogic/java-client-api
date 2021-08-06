@@ -18,6 +18,7 @@ package com.marklogic.client.dataservices.impl;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
 import com.marklogic.client.dataservices.InputOutputCaller;
+import com.marklogic.client.io.marker.BufferableContentHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,9 +100,8 @@ public class InputOutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements
 
     private O[] getResponseData(CallContext callContext, I[] input) {
         InputOutputCallerImpl<I,O> callerImpl = getCaller();
-        return callerImpl.arrayCall(
-                getClient(), checkAllowedArgs(callContext), input
-        );
+        BufferableContentHandle<?,?>[] inputHandles = callerImpl.bufferableInputHandleOn(input);
+        return callerImpl.arrayCall(getClient(), checkAllowedArgs(callContext), inputHandles);
     }
 
     static public class BulkInputOutputCallerImpl<I,O> extends IOEndpointImpl.BulkIOEndpointCallerImpl<I,O>
@@ -198,11 +198,12 @@ public class InputOutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements
 
             ErrorDisposition error = ErrorDisposition.RETRY;
 
+            BufferableContentHandle<?,?>[] inputHandles = callerImpl.bufferableInputHandleOn(inputBatch);
             for (int retryCount = 0; retryCount < DEFAULT_MAX_RETRIES && error == ErrorDisposition.RETRY; retryCount++) {
                 Throwable throwable = null;
                 O[] output = null;
                 try {
-                    output = callerImpl.arrayCall(callContext.getClient(), callContext, inputBatch);
+                    output = callerImpl.arrayCall(callContext.getClient(), callContext, inputHandles);
 
                     incrementCallCount();
                     processOutputBatch(output, getOutputListener());
@@ -216,7 +217,7 @@ public class InputOutputEndpointImpl<I,O> extends IOEndpointImpl<I,O> implements
                         try {
                             if (retryCount < DEFAULT_MAX_RETRIES - 1) {
                                 error = getErrorListener().processError(
-                                        retryCount, throwable, callContext, callerImpl.bufferableInputHandleOn(inputBatch)
+                                        retryCount, throwable, callContext, inputHandles
                                 );
                             } else {
                                 error = ErrorDisposition.SKIP_CALL;
