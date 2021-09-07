@@ -1279,14 +1279,14 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public interface ModifyPlan extends PreparePlan, PlanBuilderBase.ModifyPlanBase {
 public abstract ModifyPlan bind(PlanExprColSeq columns);
 /**
-  * This function adds a column based on an expression without altering the existing columns in the row set.
+  * This function is deprecated in favor of the bind() function and will not be supported in MarkLogic 11. This function adds a column based on an expression without altering the existing columns in the row set.
   * @param column  The name of the column to be defined.
   * @param expression  The expression that specifies the value the column in the row.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan bindAs(String column, ServerExpression expression);
 /**
-  * This function adds a column based on an expression without altering the existing columns in the row set.
+  * This function is deprecated in favor of the bind() function and will not be supported in MarkLogic 11. This function adds a column based on an expression without altering the existing columns in the row set.
   * @param column  The name of the column to be defined.
   * @param expression  The expression that specifies the value the column in the row.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a ModifyPlan object

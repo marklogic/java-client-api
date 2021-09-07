@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.expression;
 
+import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 import com.marklogic.client.type.XsBooleanVal;
 import com.marklogic.client.type.XsDecimalVal;
@@ -44,6 +45,47 @@ public interface SqlExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
   public ServerExpression bitLength(ServerExpression str);
+/**
+  * Returns an integer specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the lesser index.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/sql:bucket" target="mlserverdoc">sql:bucket</a> server function.
+  * @param bucketEdgesParam  A sequence of ordered values indicating the edges of a collection of buckets.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param srchParam  A value to find an index for in the bucket edge list.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
+  */
+  public ServerExpression bucket(ServerExpression bucketEdgesParam, String srchParam);
+/**
+  * Returns an integer specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the lesser index.
+  *
+  * <a name="ml-server-type-bucket"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/sql:bucket" target="mlserverdoc">sql:bucket</a> server function.
+  * @param bucketEdgesParam  A sequence of ordered values indicating the edges of a collection of buckets.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param srchParam  A value to find an index for in the bucket edge list.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
+  */
+  public ServerExpression bucket(ServerExpression bucketEdgesParam, ServerExpression srchParam);
+/**
+  * Returns an integer specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the lesser index.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/sql:bucket" target="mlserverdoc">sql:bucket</a> server function.
+  * @param bucketEdgesParam  A sequence of ordered values indicating the edges of a collection of buckets.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param srchParam  A value to find an index for in the bucket edge list.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param collationLiteral  A collation identifier.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
+  */
+  public ServerExpression bucket(ServerExpression bucketEdgesParam, String srchParam, String collationLiteral);
+/**
+  * Returns an integer specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the lesser index.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/sql:bucket" target="mlserverdoc">sql:bucket</a> server function.
+  * @param bucketEdgesParam  A sequence of ordered values indicating the edges of a collection of buckets.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param srchParam  A value to find an index for in the bucket edge list.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param collationLiteral  A collation identifier.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
+  */
+  public ServerExpression bucket(ServerExpression bucketEdgesParam, ServerExpression srchParam, ServerExpression collationLiteral);
 /**
   * Returns an rdf:collatedString value with the given value and collation tag. The rdf:collatedString type extends xs:string , and represents a collation tagged string in RDF. 
   * <p>
@@ -229,7 +271,7 @@ public interface SqlExpr {
   * Returns a string that is the leftmost characters of the target string. The number of characters to return is specified by the second argument.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:left" target="mlserverdoc">sql:left</a> server function.
-  * @param str  The base string. If the value is not a string, its string value will be used.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param str  The base string. If the value is not a string, its string value will be used.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @param n  The number of leftmost characters of the string to return.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
@@ -241,7 +283,7 @@ public interface SqlExpr {
   
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:left" target="mlserverdoc">sql:left</a> server function.
-  * @param str  The base string. If the value is not a string, its string value will be used.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param str  The base string. If the value is not a string, its string value will be used.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @param n  The number of leftmost characters of the string to return.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
@@ -401,7 +443,7 @@ public interface SqlExpr {
   * Returns a string that is the rightmost characters of the target string. The number of characters to return is specified by the second argument.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:right" target="mlserverdoc">sql:right</a> server function.
-  * @param str  The base string. If the value is not a string, its string value will be used.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param str  The base string. If the value is not a string, its string value will be used.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @param n  The number of rightmost characters of the string to return.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
@@ -413,7 +455,7 @@ public interface SqlExpr {
   
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:right" target="mlserverdoc">sql:right</a> server function.
-  * @param str  The base string. If the value is not a string, its string value will be used.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param str  The base string. If the value is not a string, its string value will be used.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @param n  The number of rightmost characters of the string to return.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */

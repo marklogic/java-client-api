@@ -250,6 +250,90 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
+  public CtsQueryExpr columnRangeQuery(String schema, String view, String column, String value) {
+    return columnRangeQuery((schema == null) ? (XsStringVal) null : xs.string(schema), (view == null) ? (XsStringVal) null : xs.string(view), (column == null) ? (XsStringVal) null : xs.string(column), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value));
+  }
+
+  
+  @Override
+  public CtsQueryExpr columnRangeQuery(ServerExpression schema, ServerExpression view, ServerExpression column, ServerExpression value) {
+    if (schema == null) {
+      throw new IllegalArgumentException("schema parameter for columnRangeQuery() cannot be null");
+    }
+    if (view == null) {
+      throw new IllegalArgumentException("view parameter for columnRangeQuery() cannot be null");
+    }
+    if (column == null) {
+      throw new IllegalArgumentException("column parameter for columnRangeQuery() cannot be null");
+    }
+    return new QueryCallImpl("cts", "column-range-query", new Object[]{ schema, view, column, value });
+  }
+
+  
+  @Override
+  public CtsQueryExpr columnRangeQuery(String schema, String view, String column, String value, String operator) {
+    return columnRangeQuery((schema == null) ? (XsStringVal) null : xs.string(schema), (view == null) ? (XsStringVal) null : xs.string(view), (column == null) ? (XsStringVal) null : xs.string(column), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value), (operator == null) ? (XsStringVal) null : xs.string(operator));
+  }
+
+  
+  @Override
+  public CtsQueryExpr columnRangeQuery(ServerExpression schema, ServerExpression view, ServerExpression column, ServerExpression value, ServerExpression operator) {
+    if (schema == null) {
+      throw new IllegalArgumentException("schema parameter for columnRangeQuery() cannot be null");
+    }
+    if (view == null) {
+      throw new IllegalArgumentException("view parameter for columnRangeQuery() cannot be null");
+    }
+    if (column == null) {
+      throw new IllegalArgumentException("column parameter for columnRangeQuery() cannot be null");
+    }
+    return new QueryCallImpl("cts", "column-range-query", new Object[]{ schema, view, column, value, operator });
+  }
+
+  
+  @Override
+  public CtsQueryExpr columnRangeQuery(String schema, String view, String column, String value, String operator, String... options) {
+    return columnRangeQuery((schema == null) ? (XsStringVal) null : xs.string(schema), (view == null) ? (XsStringVal) null : xs.string(view), (column == null) ? (XsStringVal) null : xs.string(column), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value), (operator == null) ? (XsStringVal) null : xs.string(operator), (options == null) ? (XsStringVal) null : xs.stringSeq(options));
+  }
+
+  
+  @Override
+  public CtsQueryExpr columnRangeQuery(ServerExpression schema, ServerExpression view, ServerExpression column, ServerExpression value, ServerExpression operator, ServerExpression options) {
+    if (schema == null) {
+      throw new IllegalArgumentException("schema parameter for columnRangeQuery() cannot be null");
+    }
+    if (view == null) {
+      throw new IllegalArgumentException("view parameter for columnRangeQuery() cannot be null");
+    }
+    if (column == null) {
+      throw new IllegalArgumentException("column parameter for columnRangeQuery() cannot be null");
+    }
+    return new QueryCallImpl("cts", "column-range-query", new Object[]{ schema, view, column, value, operator, options });
+  }
+
+  
+  @Override
+  public CtsQueryExpr columnRangeQuery(String schema, String view, String column, String value, String operator, String options, double weight) {
+    return columnRangeQuery((schema == null) ? (XsStringVal) null : xs.string(schema), (view == null) ? (XsStringVal) null : xs.string(view), (column == null) ? (XsStringVal) null : xs.string(column), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value), (operator == null) ? (XsStringVal) null : xs.string(operator), (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
+  }
+
+  
+  @Override
+  public CtsQueryExpr columnRangeQuery(ServerExpression schema, ServerExpression view, ServerExpression column, ServerExpression value, ServerExpression operator, ServerExpression options, ServerExpression weight) {
+    if (schema == null) {
+      throw new IllegalArgumentException("schema parameter for columnRangeQuery() cannot be null");
+    }
+    if (view == null) {
+      throw new IllegalArgumentException("view parameter for columnRangeQuery() cannot be null");
+    }
+    if (column == null) {
+      throw new IllegalArgumentException("column parameter for columnRangeQuery() cannot be null");
+    }
+    return new QueryCallImpl("cts", "column-range-query", new Object[]{ schema, view, column, value, operator, options, weight });
+  }
+
+  
+  @Override
   public CtsPolygonExpr complexPolygon(ServerExpression outer, ServerExpression inner) {
     if (outer == null) {
       throw new IllegalArgumentException("outer parameter for complexPolygon() cannot be null");
@@ -1781,7 +1865,7 @@ class CtsExprImpl implements CtsExpr {
     return new XsExprImpl.NumericCallImpl("cts", "point-longitude", new Object[]{ point });
   }
 
-  
+
   @Override
   public CtsPolygonExpr polygon(ServerExpression vertices) {
     return new PolygonCallImpl("cts", "polygon", new Object[]{ vertices });
