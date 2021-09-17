@@ -10,9 +10,9 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 To the extent required by the applicable open source license, a complete machine-readable copy of the source code corresponding to such code is available upon request. This offer is valid to anyone in receipt of this information and shall expire three years following the date of the final distribution of this product version by MarkLogic. To obtain such source code, send an email to legal@marklogic.com. Please specify the product and version for which you are requesting source code.
 
-The following software may be included in this project (last updated May 23, 2021):
+The following software may be included in this project (last updated September 17, 2021):
 
-
+ 
 @angular-mdl/core 6.0.1
 Attribution Statements
 http://mseemann.io/angular2-mdl/
@@ -1738,7 +1738,7 @@ Copyright (c) 2009-2014 Luaj.org.
 Copyright Statements
 Axel Kramer
 
-License Text (Error! Hyperlink reference not valid.)
+License Text (http:// https://spdx.org/licenses/EPL-1.0.html)
 Made available under the Eclipse Public License 1.0. See Appendix for full text.
 
 Source materials are available for download at: https://bitbucket.org/axelclk/info.bliki.wiki/src
@@ -6115,6 +6115,18 @@ License Text (http://spdx.org/licenses/MIT)
 Made available under the MIT License. See Appendix for full text.
 
 Source materials are available for download at: https://github.com/gulpjs/vinyl
+vis-timeline 7.3.6
+Attribution Statements
+https://github.com/visjs/vis-timeline
+
+Copyright Statements
+Copyright (c) 2014-2017 Almende B.V. and contributors
+Copyright (c) 2017-2019 vis.js contributors
+
+License Text (http://spdx.org/licenses/MIT)
+Made available under the MIT License. See Appendix for full text.
+
+Source materials are available for download at: https://github.com/visjs/vis-timeline
 Wikipedia content
 Attribution Statements
 https://www.wikipedia.org/
@@ -6238,13 +6250,12 @@ Made available under the MIT License. See Appendix for full text.
 
 Source materials are available for download at: https://github.com/angular/zone.js
 
- 
+ 
 Appendix
 
 License Text
 
- 
-
+ 
 Apache License 2.0
 https://spdx.org/licenses/Apache-2.0.html
 
@@ -6321,8 +6332,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and 
 limitations under the License.
 
- 
-
+ 
 BSD 2-Clause "Simplified" License
 https://spdx.org/licenses/BSD-2-Clause.html
 
@@ -6336,8 +6346,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
- 
-
+ 
 BSD 3-Clause "New" or "Revised" License
 https://spdx.org/licenses/BSD-3-Clause.html
 
@@ -6352,8 +6361,7 @@ Redistribution and use in source and binary forms, with or without modification,
 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- 
-
+ 
 Common Development and Distribution License 1.1
 https://spdx.org/licenses/CDDL-1.1.html
 
@@ -6466,8 +6474,7 @@ As between Initial Developer and the Contributors, each party is responsible for
 NOTICE PURSUANT TO SECTION 9 OF THE COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) 
 The code released under the CDDL shall be governed by the laws of the State of California (excluding conflict-of-law provisions). Any litigation relating to this License shall be subject to the jurisdiction of the Federal Courts of the Northern District of California and the state courts of the State of California, with venue lying in Santa Clara County, California.
 
- 
-
+ 
 Creative Commons Attribution Share Alike 3.0 Unported
 https://spdx.org/licenses/CC-BY-SA-3.0.html
 
@@ -6564,8 +6571,7 @@ Except for the limited purpose of indicating to the public that the Work is lice
 
 Creative Commons may be contacted at http://creativecommons.org/.
 
- 
-
+ 
 Do What The F*ck You Want To Public License
 https://spdx.org/licenses/WTFPL.html
 
@@ -6581,8 +6587,7 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
 0. You just DO WHAT THE FUCK YOU WANT TO.
 
- 
-
+ 
 Eclipse Public License 1.0
 https://spdx.org/licenses/EPL-1.0.html
 
@@ -6659,8 +6664,7 @@ Everyone is permitted to copy and distribute copies of this Agreement, but in or
 
 This Agreement is governed by the laws of the State of New York and the intellectual property laws of the United States of America. No party to this Agreement will bring a legal action under this Agreement more than one year after the cause of action arose. Each party waives its rights to a jury trial in any resulting litigation.
 
- 
-
+ 
 Eclipse Public License 2.0
 https://spdx.org/licenses/EPL-2.0.html
 
@@ -6742,8 +6746,7 @@ Simply including a copy of this Agreement, including this Exhibit A is not suffi
 
 If it is not possible or desirable to put the notice in a particular file, then You may include the notice in a location (such as a LICENSE file in a relevant directory) where a recipient would be likely to look for such a notice.
 
-You may add additional accurate notices of copyright ownership. 
-
+You may add additional accurate notices of copyright ownership. 
 ISC License
 https://spdx.org/licenses/ISC.html
 
@@ -6756,8 +6759,7 @@ Permission to use, copy, modify, and/or distribute this software for any purpose
 
 THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
- 
-
+ 
 JSON License
 https://spdx.org/licenses/JSON.html
 
@@ -6773,8 +6775,7 @@ The Software shall be used for Good, not Evil.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
- 
-
+ 
 MIT License
 http://spdx.org/licenses/MIT
 
@@ -6788,8 +6789,7 @@ The above copyright notice and this permission notice (including the next paragr
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
- 
-
+ 
 Mozilla Public License 2.0
 https://spdx.org/licenses/MPL-2.0.html
 
@@ -6926,8 +6926,7 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
 
 This Source Code Form is "Incompatible With Secondary Licenses", as defined by the Mozilla Public License, v. 2.0.
 
- 
-
+ 
 SIL Open Font License 1.1
 https://spdx.org/licenses/OFL-1.1.html
 
@@ -6974,8 +6973,7 @@ DISCLAIMER
 
 THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
 
- 
-
+ 
 The Unlicense
 https://spdx.org/licenses/Unlicense.html
 
