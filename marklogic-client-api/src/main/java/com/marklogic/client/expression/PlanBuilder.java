@@ -90,6 +90,9 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * Builds expressions with xs server functions.
   */
   public final XsExpr xs;
+ /**
+  * Builds expressions with ordt server functions.
+  */
   public final RdtExpr rdt;
   /**
   * This function returns the sum of the specified numeric expressions. In expressions, the call should pass the result from an op:col function to identify a column. 
@@ -551,6 +554,22 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan fromSparql(XsStringVal select, XsStringVal qualifierName);
   /**
+  * This function dynamically constructs a row set based on a SPARQL SELECT query from triples.
+  * @param select  A SPARQL SELECT query expressed as a string.
+  * @param qualifierName  Specifies a name for qualifying the column names. An "@" in front of the name specifies a parameter placeholder. A parameter placeholder in the SPARQL string must be bound to a parameter value in the result() call.
+  * @param option  Options consisting of key-value pairs that set options. At present, the options consist of dedup and base. Option dedup can take an on|off value to enable or disable deduplication. Deduplication is on by default but will become off by default in a future release. Option base takes a string as the initial base IRI for the query.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan fromSparql(String select, String qualifierName, PlanSparqlOptions option);
+  /**
+  * This function dynamically constructs a row set based on a SPARQL SELECT query from triples.
+  * @param select  A SPARQL SELECT query expressed as a string.
+  * @param qualifierName  Specifies a name for qualifying the column names. An "@" in front of the name specifies a parameter placeholder. A parameter placeholder in the SPARQL string must be bound to a parameter value in the result() call.
+  * @param option  Options consisting of key-value pairs that set options. At present, the options consist of dedup and base. Option dedup can take an on|off value to enable or disable deduplication. Deduplication is on by default but will become off by default in a future release. Option base takes a string as the initial base IRI for the query.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan fromSparql(XsStringVal select, XsStringVal qualifierName, PlanSparqlOptions option);
+  /**
   * This function dynamically constructs a row set based on a SQL SELECT query from views.
   * @param select  A SQL SELECT query expressed as a string.
   * @return  a ModifyPlan object
@@ -629,6 +648,18 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   /**
   * This function specifies the grouping keys for a group as a named list of zero or more columns. The result is used for building the first parameter for the op:group-to-arrays function.
   * @param name  The name for the list of grouping keys.
+  * @return  a PlanNamedGroup object
+  */
+  public abstract PlanNamedGroup namedGroup(String name);
+  /**
+  * This function specifies the grouping keys for a group as a named list of zero or more columns. The result is used for building the first parameter for the op:group-to-arrays function.
+  * @param name  The name for the list of grouping keys.
+  * @return  a PlanNamedGroup object
+  */
+  public abstract PlanNamedGroup namedGroup(XsStringVal name);
+  /**
+  * This function specifies the grouping keys for a group as a named list of zero or more columns. The result is used for building the first parameter for the op:group-to-arrays function.
+  * @param name  The name for the list of grouping keys.
   * @param keys  The columns (if any) to use as grouping keys. The columns can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as.
   * @return  a PlanNamedGroup object
   */
@@ -636,10 +667,44 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   /**
   * This function specifies the grouping keys for a group as a named list of zero or more columns. The result is used for building the first parameter for the op:group-to-arrays function.
   * @param name  The name for the list of grouping keys.
-  * @param keys  The columns (if any) to use as grouping keys. The columns can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as. See {@link PlanBuilder#colSeq(String...)}
+  * @param keys  The column (if any) to use as grouping keys. The columns can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as. See {@link PlanBuilder#colSeq(String...)}
   * @return  a PlanNamedGroup object
   */
   public abstract PlanNamedGroup namedGroup(XsStringVal name, PlanExprColSeq keys);
+  /**
+  * This function can be used as a named group in functions op:group-to-arrays or op:facet-by. After grouping, the plan can also join a literal table with descriptive metadata based for each bucket number. Developers can handle special cases by taking the same approach as the convenience function and binding a new column on the return value of an sql:bucket expression on a numeric or datetime column to use as a grouping key.
+  * @param name  The name of both the group and the new grouping key column with numbered buckets.
+  * @param key  The identifier for the existing column with the values (typically numeric or datetime) to put into buckets. The column can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as.
+  * @param boundaries  An ordered XQuery sequence of values that specify the boundaries between buckets. The values must have the same type as the existing column.
+  * @return  a PlanNamedGroup object
+  */
+  public abstract PlanNamedGroup bucketGroup(String name, String key, XsAnyAtomicTypeSeqVal boundaries);
+  /**
+  * This function can be used as a named group in functions op:group-to-arrays or op:facet-by. After grouping, the plan can also join a literal table with descriptive metadata based for each bucket number. Developers can handle special cases by taking the same approach as the convenience function and binding a new column on the return value of an sql:bucket expression on a numeric or datetime column to use as a grouping key.
+  * @param name  The name of both the group and the new grouping key column with numbered buckets.
+  * @param key  The identifier for the existing column with the values (typically numeric or datetime) to put into buckets. The column can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as.
+  * @param boundaries  An ordered XQuery sequence of values that specify the boundaries between buckets. The values must have the same type as the existing column.
+  * @return  a PlanNamedGroup object
+  */
+  public abstract PlanNamedGroup bucketGroup(XsStringVal name, PlanExprCol key, XsAnyAtomicTypeSeqVal boundaries);
+  /**
+  * This function can be used as a named group in functions op:group-to-arrays or op:facet-by. After grouping, the plan can also join a literal table with descriptive metadata based for each bucket number. Developers can handle special cases by taking the same approach as the convenience function and binding a new column on the return value of an sql:bucket expression on a numeric or datetime column to use as a grouping key.
+  * @param name  The name of both the group and the new grouping key column with numbered buckets.
+  * @param key  The identifier for the existing column with the values (typically numeric or datetime) to put into buckets. The column can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as.
+  * @param boundaries  An ordered XQuery sequence of values that specify the boundaries between buckets. The values must have the same type as the existing column.
+  * @param collation  The collation to use when comparing strings as described in 'Collation URI Syntax' in the  Application Developer's Guide
+  * @return  a PlanNamedGroup object
+  */
+  public abstract PlanNamedGroup bucketGroup(String name, String key, XsAnyAtomicTypeSeqVal boundaries, String collation);
+  /**
+  * This function can be used as a named group in functions op:group-to-arrays or op:facet-by. After grouping, the plan can also join a literal table with descriptive metadata based for each bucket number. Developers can handle special cases by taking the same approach as the convenience function and binding a new column on the return value of an sql:bucket expression on a numeric or datetime column to use as a grouping key.
+  * @param name  The name of both the group and the new grouping key column with numbered buckets.
+  * @param key  The identifier for the existing column with the values (typically numeric or datetime) to put into buckets. The column can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as.
+  * @param boundaries  An ordered XQuery sequence of values that specify the boundaries between buckets. The values must have the same type as the existing column.
+  * @param collation  The collation to use when comparing strings as described in 'Collation URI Syntax' in the  Application Developer's Guide
+  * @return  a PlanNamedGroup object
+  */
+  public abstract PlanNamedGroup bucketGroup(XsStringVal name, PlanExprCol key, XsAnyAtomicTypeSeqVal boundaries, XsStringVal collation);
   /**
   * This function averages the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the aggregated column.
@@ -1260,6 +1325,12 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a PlanColumn object
   */
   public abstract PlanColumn col(XsStringVal column);
+/**
+  * This function samples rows from a view or from a pattern match on the triple index.
+  * @param option  the option  value.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan sampleBy(PlanSampleByOptions option);
   }
 
   
@@ -1277,7 +1348,12 @@ public abstract class PlanBuilder implements PlanBuilderBase {
  * of the plan for executing a row pipeline on the server.
  */
   public interface ModifyPlan extends PreparePlan, PlanBuilderBase.ModifyPlanBase {
-public abstract ModifyPlan bind(PlanExprColSeq columns);
+/**
+  * This function adds new columns or modifies existing columns based on expressions while preserving existing unmodified columns in the row set.
+  * @param columns  The op:as calls that specify the column name and the expression that constructs the column values.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan bind(PlanExprColSeq columns);
 /**
   * This function is deprecated in favor of the bind() function and will not be supported in MarkLogic 11. This function adds a column based on an expression without altering the existing columns in the row set.
   * @param column  The name of the column to be defined.

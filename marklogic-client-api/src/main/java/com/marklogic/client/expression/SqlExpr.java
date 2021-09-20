@@ -46,43 +46,43 @@ public interface SqlExpr {
   */
   public ServerExpression bitLength(ServerExpression str);
 /**
-  * Returns an integer specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the lesser index.
+  * Returns an unsignedLong specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the lesser index.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:bucket" target="mlserverdoc">sql:bucket</a> server function.
-  * @param bucketEdgesParam  A sequence of ordered values indicating the edges of a collection of buckets.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param bucketEdgesParam  A sequence of ordered values indicating the edges of a collection of buckets. If the sequence is out of order or has duplicates, SQL-UNORDERED is thrown.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @param srchParam  A value to find an index for in the bucket edge list.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
   public ServerExpression bucket(ServerExpression bucketEdgesParam, String srchParam);
 /**
-  * Returns an integer specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the lesser index.
+  * Returns an unsignedLong specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the lesser index.
   *
   * <a name="ml-server-type-bucket"></a>
   
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:bucket" target="mlserverdoc">sql:bucket</a> server function.
-  * @param bucketEdgesParam  A sequence of ordered values indicating the edges of a collection of buckets.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param bucketEdgesParam  A sequence of ordered values indicating the edges of a collection of buckets. If the sequence is out of order or has duplicates, SQL-UNORDERED is thrown.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @param srchParam  A value to find an index for in the bucket edge list.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
   public ServerExpression bucket(ServerExpression bucketEdgesParam, ServerExpression srchParam);
 /**
-  * Returns an integer specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the lesser index.
+  * Returns an unsignedLong specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the lesser index.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:bucket" target="mlserverdoc">sql:bucket</a> server function.
-  * @param bucketEdgesParam  A sequence of ordered values indicating the edges of a collection of buckets.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param bucketEdgesParam  A sequence of ordered values indicating the edges of a collection of buckets. If the sequence is out of order or has duplicates, SQL-UNORDERED is thrown.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @param srchParam  A value to find an index for in the bucket edge list.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
-  * @param collationLiteral  A collation identifier.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param collationLiteral  A collation identifier. All bucketEdgesParam and srcParam are converted to a string of this collation if supplied.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
   public ServerExpression bucket(ServerExpression bucketEdgesParam, String srchParam, String collationLiteral);
 /**
-  * Returns an integer specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the lesser index.
+  * Returns an unsignedLong specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the lesser index.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:bucket" target="mlserverdoc">sql:bucket</a> server function.
-  * @param bucketEdgesParam  A sequence of ordered values indicating the edges of a collection of buckets.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param bucketEdgesParam  A sequence of ordered values indicating the edges of a collection of buckets. If the sequence is out of order or has duplicates, SQL-UNORDERED is thrown.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @param srchParam  A value to find an index for in the bucket edge list.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
-  * @param collationLiteral  A collation identifier.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param collationLiteral  A collation identifier. All bucketEdgesParam and srcParam are converted to a string of this collation if supplied.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
   public ServerExpression bucket(ServerExpression bucketEdgesParam, ServerExpression srchParam, ServerExpression collationLiteral);

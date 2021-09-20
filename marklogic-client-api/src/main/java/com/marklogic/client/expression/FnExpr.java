@@ -379,7 +379,7 @@ public interface FnExpr {
   */
   public ServerExpression count(ServerExpression arg, ServerExpression maximum);
 /**
-  * Returns xs:date(fn:current-dateTime()) . This is an xs:date (with timezone) that is current at some time during the evaluation of a query or transformation in which fn:current-date() is executed. This function is *stable*. The precise instant during the query or transformation represented by the value of fn:current-date() is *implementation dependent*.
+  * Returns xs:date(fn:current-dateTime()). This is an xs:date (with timezone) that is current at some time during the evaluation of a query or transformation in which fn:current-date() is executed. This function is *stable*. The precise instant during the query or transformation represented by the value of fn:current-date() is *implementation dependent*.
   *
   * <a name="ml-server-type-current-date"></a>
   
@@ -399,7 +399,7 @@ public interface FnExpr {
   */
   public ServerExpression currentDateTime();
 /**
-  * Returns xs:time(fn:current-dateTime()) . This is an xs:time (with timezone) that is current at some time during the evaluation of a query or transformation in which fn:current-time() is executed. This function is *stable*. The precise instant during the query or transformation represented by the value of fn:current-time() is *implementation dependent*.
+  * Returns xs:time(fn:current-dateTime()). This is an xs:time (with timezone) that is current at some time during the evaluation of a query or transformation in which fn:current-time() is executed. This function is *stable*. The precise instant during the query or transformation represented by the value of fn:current-time() is *implementation dependent*.
   *
   * <a name="ml-server-type-current-time"></a>
   
@@ -1922,7 +1922,7 @@ public interface FnExpr {
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/fn:sum" target="mlserverdoc">fn:sum</a> server function.
   * @param arg  The sequence of values to be summed.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
-  * @param zero  The value to return as zero if the input sequence is the empty sequence.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param zero  The value to return as zero if the input sequence is the empty sequence. This parameter is not available in the 0.9-ml XQuery dialect.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
   public ServerExpression sum(ServerExpression arg, String zero);
@@ -1931,7 +1931,7 @@ public interface FnExpr {
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/fn:sum" target="mlserverdoc">fn:sum</a> server function.
   * @param arg  The sequence of values to be summed.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
-  * @param zero  The value to return as zero if the input sequence is the empty sequence.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param zero  The value to return as zero if the input sequence is the empty sequence. This parameter is not available in the 0.9-ml XQuery dialect.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
   public ServerExpression sum(ServerExpression arg, ServerExpression zero);

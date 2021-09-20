@@ -314,6 +314,24 @@ public interface PlanBuilderBase {
     PlanSearchOptions searchOptions();
 
     /**
+     * Provides a sample-by option object to configure the execution of the
+     * {@link PlanBuilder#sample(PlanColumn, PlanExprCol)}
+     * modifier for sampling a view, triples, or lexicon index.  Use the fluent methods of the sample-by option object
+     * to set the configuration.
+     * @return  the configuration object
+     */
+    PlanSampleByOptions sampleByOptions();
+
+    /**
+     * Provides a SPARQL option object to configure the execution of the
+     * {@link PlanBuilder#fromSparql(XsStringVal, XsStringVal, PlanSparqlOptions)}
+     * accessor.  Use the fluent methods of the sample-by option object
+     * to set the configuration.
+     * @return  the configuration object
+     */
+    PlanSparqlOptions sparqlOptions();
+
+    /**
      * Specifies a JavaScript or XQuery function installed on the server for use
      * in post-processing in a map() or reduce() operation.
      * @param functionName  the name of the function installed on the server

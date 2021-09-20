@@ -66,7 +66,7 @@ public interface MathExpr {
   */
   public ServerExpression atan(ServerExpression x);
 /**
-  * Returns the arc tangent of y/x, in radians, in the range from -pi/2 to +pi/2 (inclusive), using the signs of y and x to determine the apropriate quadrant.
+  * Returns the arc tangent of y/x, in radians, in the range from -pi/2 to +pi/2 (inclusive), using the signs of y and x to determine the appropriate quadrant.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/math:atan2" target="mlserverdoc">math:atan2</a> server function.
   * @param y  The floating point dividend.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
@@ -75,7 +75,7 @@ public interface MathExpr {
   */
   public ServerExpression atan2(ServerExpression y, double x);
 /**
-  * Returns the arc tangent of y/x, in radians, in the range from -pi/2 to +pi/2 (inclusive), using the signs of y and x to determine the apropriate quadrant.
+  * Returns the arc tangent of y/x, in radians, in the range from -pi/2 to +pi/2 (inclusive), using the signs of y and x to determine the appropriate quadrant.
   *
   * <a name="ml-server-type-atan2"></a>
   
