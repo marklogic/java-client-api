@@ -118,10 +118,11 @@ public class BulkIOEndpointTest {
                 InputOutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle(), new InputStreamHandle()
                 );
 
+        IOEndpoint.CallContext callContext = endpoint.newCallContext()
+                .withEndpointStateAs(endpointState)
+                .withEndpointConstantsAs(endpointConstants);
         InputOutputCaller.BulkInputOutputCaller<InputStream, InputStream> bulkCaller =
-                endpoint.bulkCaller(endpoint.newCallContext()
-                        .withEndpointStateAs(endpointState)
-                        .withEndpointConstantsAs(endpointConstants));
+                endpoint.bulkCaller(callContext);
         bulkCaller.setOutputListener(value -> {
             String v = NodeConverter.InputStreamToString(value);
             // System.out.println("received: "+v);
@@ -134,7 +135,7 @@ public class BulkIOEndpointTest {
         });
         bulkCaller.awaitCompletion();
 
-        ObjectNode finalState = mapper.readValue(bulkCaller.getEndpointState(), ObjectNode.class);
+        ObjectNode finalState = mapper.readValue(callContext.getEndpointState().get(), ObjectNode.class);
 
         assertEquals("mismatch between input and output size", input.size(), output.size());
         assertEquals("mismatch between input and output elements", input, output);
@@ -187,25 +188,25 @@ public class BulkIOEndpointTest {
         Set<String> output = new HashSet<>();
         InputOutputCaller<StringHandle, StringHandle> endpoint =
                 InputOutputCaller.onHandles(IOTestUtil.db, new JacksonHandle(apiObj), new StringHandle(), new StringHandle());
-
+        IOEndpoint.CallContext callContext = endpoint.newCallContext()
+                .withEndpointStateAs(endpointState)
+                .withEndpointConstantsAs(endpointConstants);
         InputOutputCaller.BulkInputOutputCaller<StringHandle, StringHandle> bulkCaller =
-                endpoint.bulkCaller(endpoint.newCallContext()
-                        .withEndpointStateAs(endpointState)
-                        .withEndpointConstantsAs(endpointConstants));
+                endpoint.bulkCaller(callContext);
         bulkCaller.setOutputListener(value -> {
             String v = value.toString();
-            System.out.println("received: "+v);
+            //System.out.println("received: "+v);
             output.add(v);
         });
 
         input.stream().forEach(value -> {
-            System.out.println("adding "+value);
+            //System.out.println("adding "+value);
             bulkCaller.accept(new StringHandle(value).withFormat(Format.JSON));
         });
 
         bulkCaller.awaitCompletion();
 
-        ObjectNode finalState = mapper.readValue(bulkCaller.getEndpointState(), ObjectNode.class);
+        ObjectNode finalState = mapper.readValue(callContext.getEndpointState().get(), ObjectNode.class);
 
         assertEquals("mismatch between input and output size", input.size(), output.size());
         assertEquals("mismatch between input and output elements", input, output);
@@ -223,10 +224,10 @@ public class BulkIOEndpointTest {
         assertTrue("final max not number", finalMax.isNumber());
         assertEquals("mismatch on final max", workMax, finalMax.asInt());
 
-//        JsonNode sessionCounter = finalState.get("sessionCounter");
-//        assertNotNull("null final sessionCounter", sessionCounter);
-//        assertTrue("final sessionCounter not number", sessionCounter.isNumber());
-//        assertEquals("mismatch on final sessionCounter", callCount - 1, sessionCounter.asInt());
+        JsonNode sessionCounter = finalState.get("sessionCounter");
+        assertNotNull("null final sessionCounter", sessionCounter);
+        assertTrue("final sessionCounter not number", sessionCounter.isNumber());
+        assertEquals("mismatch on final sessionCounter", callCount - 1, sessionCounter.asInt());
 
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
