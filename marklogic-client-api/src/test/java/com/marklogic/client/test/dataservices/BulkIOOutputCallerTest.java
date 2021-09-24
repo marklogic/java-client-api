@@ -26,8 +26,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class BulkIOOutputCallerTest {
-    static ObjectNode apiObj;
-    static String apiName = "bulkIOOutputCaller.api";
+    static ObjectNode[] apiObj = new ObjectNode[2];
+    static String[] apiNames = new String[]{"bulkIOOutputCaller.api", "bulkIOAnyDocumentOutputCaller.api"};
     static String scriptPath;
     static String apiPath;
     static JSONDocumentManager docMgr;
@@ -42,10 +42,13 @@ public class BulkIOOutputCallerTest {
     @BeforeClass
     public static void setup() throws Exception {
         docMgr = IOTestUtil.db.newJSONDocumentManager();
-        apiObj = IOTestUtil.readApi(apiName);
-        scriptPath = IOTestUtil.getScriptPath(apiObj);
-        apiPath = IOTestUtil.getApiPath(scriptPath);
-        IOTestUtil.load(apiName, apiObj, scriptPath, apiPath);
+        for (int i = 0; i < apiNames.length; i++) {
+            String apiName = apiNames[i];
+            apiObj[i] = IOTestUtil.readApi(apiName);
+            scriptPath = IOTestUtil.getScriptPath(apiObj[i]);
+            apiPath = IOTestUtil.getApiPath(scriptPath);
+            IOTestUtil.load(apiName, apiObj[i], scriptPath, apiPath);
+        }
         writeDocuments(10,20, collectionName_1);
         writeDocuments(30,40, collectionName_2);
     }
@@ -58,7 +61,7 @@ public class BulkIOOutputCallerTest {
 
         String endpointState2 = "{\"next\":"+1+"}";
         String endpointConstants2      =  "{\"max\":6,\"limit\":5,\"collection\":\"bulkOutputTest_2\"}";
-        OutputCaller<InputStream> endpoint = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
+        OutputCaller<InputStream> endpoint = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj[0]), new InputStreamHandle());
         IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
                 .withEndpointStateAs(endpointState2)
                 .withEndpointConstantsAs(endpointConstants2), endpoint.newCallContext()
@@ -87,6 +90,44 @@ public class BulkIOOutputCallerTest {
         assertEquals("duplicate output", false, duplicated.get());
         assertEquals("unexpected output count", expected.size(), actual.size());
         assertEquals("unexpected output values", expected, actual);
+    }
+
+    @Test
+    public void bulkOutputCallerTestWithAnyDocuments() {
+
+        String endpointState1 = "{\"next\":"+1+"}";
+        String endpointConstants1      = "{\"max\":6,\"limit\":5,\"collection\":\"bulkOutputTest_1\"}";
+
+        String endpointState2 = "{\"next\":"+1+"}";
+        String endpointConstants2      =  "{\"max\":6,\"limit\":5,\"collection\":\"bulkOutputTest_2\"}";
+        OutputCaller<StringHandle> endpoint = OutputCaller.onHandles(IOTestUtil.db, new JacksonHandle(apiObj[1]), new StringHandle());
+        IOEndpoint.CallContext[] callContextArray = {endpoint.newCallContext()
+                .withEndpointStateAs(endpointState2)
+                .withEndpointConstantsAs(endpointConstants2), endpoint.newCallContext()
+                .withEndpointStateAs(endpointState1)
+                .withEndpointConstantsAs(endpointConstants1)};
+        OutputCaller.BulkOutputCaller<StringHandle> bulkCaller = endpoint.bulkCaller(callContextArray);
+        Set<String> actual = new ConcurrentSkipListSet<>();
+        final AtomicBoolean duplicated = new AtomicBoolean(false);
+        final AtomicBoolean exceptional = new AtomicBoolean(false);
+        bulkCaller.setOutputListener(output -> {
+            try {
+                String serialized = output.toString();
+                if (actual.contains(serialized)) {
+                    duplicated.compareAndSet(false, true);
+                } else {
+                    actual.add(serialized);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                exceptional.compareAndSet(false, true);
+            }
+        });
+
+        bulkCaller.awaitCompletion();
+        assertEquals("exceptions on calls", false, exceptional.get());
+        assertEquals("duplicate output", false, duplicated.get());
+        assertEquals("unexpected output count", expected.size(), actual.size());
     }
 
     @AfterClass

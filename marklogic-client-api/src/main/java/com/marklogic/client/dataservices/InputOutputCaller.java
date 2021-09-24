@@ -51,6 +51,28 @@ public interface InputOutputCaller<I,O> extends IOEndpoint {
     }
 
     /**
+     * Constructs an instance of the InputOutputCaller interface.
+     * This factory is useful primarily for parameters or return values of the anyDocument type.
+     * @param client the database client to use for making calls
+     * @param apiDecl the JSON api declaration specifying how to call the endpoint
+     * @param inputHandle the handles that provides the input content (such as StringHandle)
+     * @param outputHandle the handles that provides the output content (such as BytesHandle)
+     * @param <IC> the content type of the input handle
+     * @param <IR> the type for the data received by the input handle
+     * @param <OC> the content type of the output handle
+     * @param <OR> the type for the data received by the output handle
+     * @param <I> the input handle
+     * @param <O> the output handle
+     * @return the InputOutputCaller instance for calling the endpoint.
+     */
+    static <IC,IR,OC,OR,I extends BufferableContentHandle<IC,IR>,O extends BufferableContentHandle<OC,OR>> InputOutputCaller<I,O> onHandles(
+            DatabaseClient client, JSONWriteHandle apiDecl,
+            I inputHandle, O outputHandle
+    ) {
+        return new InputOutputEndpointImpl<I, O>(client, apiDecl, (HandleProvider<I, O>) new HandleProvider.DirectHandleProvider<IC,IR,OC,OR>(inputHandle, outputHandle));
+    }
+
+    /**
      * Makes one call to an endpoint that doesn't take endpoint constants, endpoint state, or a session.
      * @param input  the request data sent to the endpoint
      * @return  the response data from the endpoint
