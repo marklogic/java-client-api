@@ -164,7 +164,7 @@ abstract class IOCallerImpl<I,O> extends BaseCallerImpl {
                 throw new IllegalArgumentException(
                         "endpointState parameter requires return in endpoint: "+getEndpointPath()
                 );
-            } else if (this.endpointStateParamdef.getFormat() != this.returndef.getFormat()) {
+            } else if (this.endpointStateParamdef.getFormat() != this.returndef.getFormat() && !"anyDocument".equals(this.returndef.getDataType())) {
                 throw new IllegalArgumentException(
                         "endpointState format must match return format in endpoint: "+getEndpointPath()
                 );
