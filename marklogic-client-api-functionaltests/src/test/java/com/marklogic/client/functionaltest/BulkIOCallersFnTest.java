@@ -1,14 +1,24 @@
+/*
+ * Copyright (c) 2021 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.marklogic.client.functionaltest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.TreeSet;
@@ -73,6 +83,10 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
     private static String TextIngestConfigName = "DynamicIngestServicesForText";
     private static String BinIngestConfigName = "DynamicIngestServicesForBin";
 
+    // AnyDocument endpoint Ingest and Egress Config Names
+    private static String AnyDocumentIngestConfigName = "DynamicIngestServicesAnyDocument";
+    private static String AnyDocumentEgressConfigName = "DynamicEgressServicesAnyDocument";
+
     // Egress endpoint ConfigName
     private static String JsonEgressConfigName = "DynamicEgressServicesForJson";
 
@@ -97,6 +111,9 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
     private static String IngestServicesTextURI = "/dynamic/fntest/DynamicIngestServices/text/";
     private static String IngestServicesBinURI = "/dynamic/fntest/DynamicIngestServices/bin/";
     private static String IngestServicesJsonErrorURI = "/dynamic/fntest/DynamicIngestServicesError/json/";
+    // Any Document URIs
+    private static String IngestServicesAnyDocumentURI = "/dynamic/fntest/DynamicIngestServices/any/";
+    private static String EgressServicesAnyDocumentURI = "/dynamic/fntest/DynamicEgressServices/any/";
     //Output URI
     private static String EgressServicesJsonURI = "/dynamic/fntest/DynamicEgressServices/json/";
     private static String EgressServicesJsonErrorURI = "/dynamic/fntest/DynamicEgressServicesError/json/";
@@ -181,6 +198,30 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
         file = new File(ApiConfigDirPath + JsonIngestConfigName + ".api");
         handle = new FileHandle(file);
         docMgr.write(IngestServicesJsonURI + JsonIngestConfigName +".api", metadataHandle, handle);
+        file = null;
+        handle = null;
+
+        file = new File(ApiConfigDirPath + AnyDocumentIngestConfigName + ".sjs");
+        handle = new FileHandle(file);
+        docMgr.write(IngestServicesAnyDocumentURI + AnyDocumentIngestConfigName +".sjs", metadataHandle, handle);
+        file = null;
+        handle = null;
+
+        file = new File(ApiConfigDirPath + AnyDocumentIngestConfigName + ".api");
+        handle = new FileHandle(file);
+        docMgr.write(IngestServicesAnyDocumentURI + AnyDocumentIngestConfigName +".api", metadataHandle, handle);
+        file = null;
+        handle = null;
+
+        file = new File(ApiConfigDirPath + AnyDocumentEgressConfigName + ".sjs");
+        handle = new FileHandle(file);
+        docMgr.write(EgressServicesAnyDocumentURI + AnyDocumentEgressConfigName +".sjs", metadataHandle, handle);
+        file = null;
+        handle = null;
+
+        file = new File(ApiConfigDirPath + AnyDocumentEgressConfigName + ".api");
+        handle = new FileHandle(file);
+        docMgr.write( EgressServicesAnyDocumentURI+ AnyDocumentEgressConfigName +".api", metadataHandle, handle);
         file = null;
         handle = null;
 
@@ -1001,4 +1042,189 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
         }
     }
 
+    /* Use /dynamic/fntest/DynamicIngestServicesAnyDocument/any/DynamicIngestServicesAnyDocument.sjs endpoint to test any documents ingestion
+    SJS module groups documents in different collections on ingest.
+    Test uses same egress endpoint with anyDocument data types to retrieve different doc types (json and xml)
+    Was able to retrieve multiple doc types in a single call with all doc types being in one collection.
+    We would need to inspect each retrieved doc content to know what doc type will be. Refer to readline used.
+    */
+    @Test
+    public void TestIngestEgressOnAnyDocument() throws Exception {
+        System.out.println("Running TestIngestEgressOnAnyDocument");
+        StringBuilder batchResultsJson = new StringBuilder();
+        StringBuilder batchResultsXml = new StringBuilder();
+        StringBuilder err = new StringBuilder();
+
+        String binFileName = "Pandakarlino.jpg";
+
+        try {
+            int startBatchIdx = 0;
+            int maxDocSize = 10;
+            StringBuilder retryBuf = new StringBuilder();
+
+            ObjectMapper om = new ObjectMapper();
+            File apiFile = new File(ApiConfigDirPath + AnyDocumentIngestConfigName + ".api");
+
+            JsonNode api = om.readTree(new FileReader(apiFile));
+            JacksonHandle jhAPI = new JacksonHandle(api);
+
+            String state = "{\"next\":"+startBatchIdx+"}";
+            String work = "{\"max\":"+maxDocSize+"}";
+
+            InputCaller<InputStream> ingressEndpt = InputCaller.on(dbclient, jhAPI, new InputStreamHandle());
+            InputCaller.BulkInputCaller<InputStream> inputbulkCaller = ingressEndpt.bulkCaller(ingressEndpt.newCallContext()
+                    .withEndpointConstantsAs(work.getBytes())
+                    .withEndpointStateAs(state));
+
+            InputCaller.BulkInputCaller.ErrorListener InerrorListener =
+                    (retryCount, throwable, callContext, inputHandles)
+                            -> {
+                        for(BufferableHandle h:inputHandles) {
+                            retryBuf.append(h.toString());
+                        }
+                        return IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.RETRY;
+                    };
+
+            File file1 = new File(DataConfigDirPath + "constraint1.json");
+            InputStream s1 = new FileInputStream(file1);
+            File file2 = new File(DataConfigDirPath + "constraint2.json");
+            InputStream s2 = new FileInputStream(file2);
+            File file3 = new File(DataConfigDirPath + "constraint3.json");
+            InputStream s3 = new FileInputStream(file3);
+            File file4 = new File(DataConfigDirPath + "constraint4.json");
+            InputStream s4 = new FileInputStream(file4);
+            File file5 = new File(DataConfigDirPath + "constraint5.json");
+            InputStream s5 = new FileInputStream(file5);
+            File file6 = new File(DataConfigDirPath + "cardinal1.xml");
+            InputStream s6 = new FileInputStream(file6);
+            File file7 = new File(DataConfigDirPath + "cardinal3.xml");
+            InputStream s7 = new FileInputStream(file7);
+
+            FileInputStream s8 = new FileInputStream(DataConfigDirPath + binFileName);
+
+            String[] strContent = { "This is first test document",
+                                    "This is second test document"
+            };
+            InputStream s9 = new ByteArrayInputStream(strContent[0].getBytes(StandardCharsets.UTF_8));
+            InputStream s10 = new ByteArrayInputStream(strContent[1].getBytes(StandardCharsets.UTF_8));
+
+            Stream<InputStream> input = Stream.of(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10);
+            input.forEach(inputbulkCaller::accept);
+            inputbulkCaller.awaitCompletion();
+
+            // Test Egress on Json docs and do the assert
+            int batchStartIdx = 1;
+            int retry = 1;
+
+            String collName = "AnyDocumentJSONCollection"; // See Ingress module SJS doc insert()
+            String returnIndex = "{\"returnIndex\":" + batchStartIdx + "}";
+            String workParamsJson = "{\"collectionName\":\""+collName +"\", \"max\" :10}";
+
+            OutputCaller<InputStream> unloadEndpt = OutputCaller.on(dbclient, new FileHandle(new File(ApiConfigDirPath + AnyDocumentEgressConfigName + ".api")), new InputStreamHandle());
+
+            // Handle JSON doc egress using endpoint
+            IOEndpoint.CallContext callContextArrayJson = unloadEndpt.newCallContext()
+                    .withEndpointStateAs(returnIndex)
+                    .withEndpointConstantsAs(workParamsJson);
+
+            OutputCaller.BulkOutputCaller<InputStream> outputBulkCallerJson = unloadEndpt.bulkCaller(callContextArrayJson);
+            OutputCaller.BulkOutputCaller.ErrorListener errorListenerJson =
+                    (retryCount, throwable, callContext)
+                            -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.SKIP_CALL;
+
+            outputBulkCallerJson.setOutputListener(record -> {
+                try {
+                    //To determine what is in the stream, is it json, xml, txt or binary
+                    BufferedReader bufRdr = new BufferedReader(new InputStreamReader(record, StandardCharsets.UTF_8));
+                    String chkContent = bufRdr.readLine();
+                    if (chkContent.startsWith("{") || chkContent.startsWith("[")) {
+                        // JSON content
+                        System.out.println("JSON Content start line is " + chkContent);
+                        batchResultsJson.append(chkContent);
+                        String line;
+                        while ((line = bufRdr.readLine()) != null) {
+                            batchResultsJson.append(line);
+                        }
+                    }
+                } catch (Exception ex) {
+                    // Might be binary file stream
+                    System.out.println("Exceptions from stream read back" + ex.getMessage());
+                }
+                batchResultsJson.append("|");
+            }
+            );
+            outputBulkCallerJson.setErrorListener(errorListenerJson);
+            outputBulkCallerJson.awaitCompletion();
+
+            // Handle XML doc egress using same endpoint
+            collName = "AnyDocumentXMLCollection";
+            String workParamsXml = "{\"collectionName\":\""+collName +"\", \"max\" :10}";
+            IOEndpoint.CallContext callContextArrayXml = unloadEndpt.newCallContext()
+                    .withEndpointStateAs(returnIndex)
+                    .withEndpointConstantsAs(workParamsXml);
+
+            OutputCaller.BulkOutputCaller<InputStream> outputBulkCallerXml = unloadEndpt.bulkCaller(callContextArrayXml);
+            OutputCaller.BulkOutputCaller.ErrorListener errorListenerXml =
+                    (retryCount, throwable, callContext)
+                            -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.SKIP_CALL;
+
+            outputBulkCallerXml.setOutputListener(record -> {
+                        try {
+                            //To determine what is in the stream, is it json, xml, txt or binary
+                            BufferedReader bufRdr = new BufferedReader(new InputStreamReader(record, StandardCharsets.UTF_8));
+                            String chkContent = bufRdr.readLine();
+                            if (chkContent.startsWith("<")) {
+                                // XML content
+                                System.out.println("XML Content start line is " + chkContent);
+                                batchResultsXml.append(chkContent);
+                                String line;
+                                while ((line = bufRdr.readLine()) != null) {
+                                    batchResultsXml.append(line);
+                                }
+                            }
+                        } catch (Exception ex) {
+                            // Might be binary file stream
+                            System.out.println("Exceptions from stream read back" + ex.getMessage());
+                        }
+                        batchResultsXml.append("|");
+                    }
+            );
+            outputBulkCallerXml.setErrorListener(errorListenerXml);
+            outputBulkCallerXml.awaitCompletion();
+        } catch (Exception e) {
+            e.printStackTrace();
+            err.append(e.getMessage());
+        }
+        finally {
+            String resJson = batchResultsJson.toString();
+            String resXml = batchResultsXml.toString();
+            // # of root elements should be 5.
+            System.out.println("Json Batch results from TestIngestEgressOnAnyDocument " + resJson);
+            System.out.println("Xml Batch results from TestIngestEgressOnAnyDocument " + resXml);
+            // Verify using QueryManager
+            QueryManager queryMgr = dbclient.newQueryManager();
+            StructuredQueryBuilder qb =  new StructuredQueryBuilder();
+            StructuredQueryDefinition qd = qb.collection("AnyDocumentJSONCollection");
+            // create handle
+            JacksonHandle resultsHandle = new JacksonHandle();
+            queryMgr.search(qd, resultsHandle);
+
+            // get the result
+            JsonNode resultDoc = resultsHandle.get();
+            int total = resultDoc.get("total").asInt();
+            assertTrue("No of Documents returned from egressed collection incorrect.", total == 5);
+
+            assertTrue("No of Json docs egressed incorrect. Expected 5.", (resJson.split("\\btitle\\b").length -1) == 5);
+            assertTrue("No of Json docs egressed incorrect. Expected only 1 wrote word.", (resJson.split("\\bwrote\\b").length - 1) == 1);
+            assertTrue("No of Json docs egressed incorrect. Expected only 1 described word.", (resJson.split("\\bdescribed\\b").length - 1) == 1);
+            assertTrue("No of Json docs egressed incorrect. Expected only 1 groundbreaking word.", (resJson.split("\\bgroundbreaking\\b").length - 1) == 1);
+            assertTrue("No of Json docs egressed incorrect. Expected only 1 intellectual word.", (resJson.split("\\bintellectual\\b").length - 1) == 1);
+            assertTrue("No of Json docs egressed incorrect. Expected only 1 unfortunately word.", (resJson.split("\\bunfortunately\\b").length - 1) == 1);
+
+            assertTrue("Xml docs egressed incorrect.", resXml.contains("baz"));
+            assertTrue("Xml docs egressed incorrect.", resXml.contains("three"));
+            assertTrue("Unexpected Errors during egress. Should not have any errors.", err.toString().isEmpty());
+            System.out.println("End of TestIngestEgressOnAnyDocument");
+        }
+    }
 }

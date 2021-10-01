@@ -1,0 +1,24 @@
+{
+  "endpoint": "/dynamic/fntest/DynamicEgressServices/any/DynamicEgressServicesAnyDocument.sjs",
+  "params": [ {
+    "name":     "endpointState",
+    "datatype": "jsonDocument",
+    "multiple": false,
+    "nullable": true
+    }, {
+    "name":     "session",
+    "datatype": "session",
+    "multiple": false,
+    "nullable": true
+    }, {
+    "name":     "endpointConstants",
+    "datatype": "jsonDocument",
+    "multiple": false,
+    "nullable": true
+    } ],
+  "return": {
+    "datatype": "anyDocument",
+    "multiple": true,
+    "nullable": true
+  }
+}
