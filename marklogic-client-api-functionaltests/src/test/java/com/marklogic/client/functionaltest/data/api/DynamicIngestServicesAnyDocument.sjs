@@ -67,7 +67,6 @@ var binFlag = false;
    } else if (typeof docCont === 'string') {
         console.log("Inserting : TXT " + i );
         console.log("Inserting : " + docCont);
-        if (docCont.includes("digitalCopies") return fn.error("Invalid docs received");
         xdmp.documentInsert(
                '/marklogic/ds/test/anyDocument/' +uriCnt+'.txt',
                inputs[i],
