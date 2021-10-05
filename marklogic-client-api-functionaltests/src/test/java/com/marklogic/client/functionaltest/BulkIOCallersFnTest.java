@@ -1109,6 +1109,8 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
             InputStream s10 = new ByteArrayInputStream(strContent[1].getBytes(StandardCharsets.UTF_8));
 
             Stream<InputStream> input = Stream.of(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10);
+            inputbulkCaller.setErrorListener(InerrorListener);
+
             input.forEach(inputbulkCaller::accept);
             inputbulkCaller.awaitCompletion();
 
@@ -1211,6 +1213,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
 
             // get the result
             JsonNode resultDoc = resultsHandle.get();
+            System.out.println(resultDoc.asText());
             int total = resultDoc.get("total").asInt();
             assertTrue("No of Documents returned from egressed collection incorrect.", total == 5);
 
