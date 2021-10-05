@@ -1324,17 +1324,15 @@ public class RowManagerTest {
 
     RowManager rowMgr = Common.client.newRowManager();
     PlanBuilder pb = rowMgr.newPlanBuilder();
-    PlanSparqlOptions options = pb.sparqlOptions().withDeduplicated(true).withBase("http://marklogicsparql.com/id#");
-//System.out.println(options.getDeduplicated());
+    PlanSparqlOptions options = pb.sparqlOptions().withDeduplicated(false).withBase("http://marklogicsparql.com/id#");
     PlanBuilder.ModifyPlan plan = pb.fromSparql(selectStmt, "sparql", options);
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
     rowMgr.resultDoc(plan, jacksonHandle);
-//System.out.println(jacksonHandle.toString());
 
     JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
     JsonNode node = jsonBindingsNodes.path(0);
-    assertEquals(" nodes not returned from fromSparql method", 1, jsonBindingsNodes.size());
+    assertEquals(" nodes not returned from fromSparql method", 6, jsonBindingsNodes.size());
     assertEquals("Row 1  value incorrect", "Jim", node.path("sparql.firstName").path("value").asText());
   }
   @Test
