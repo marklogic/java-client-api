@@ -69,6 +69,7 @@ public class RowManagerTest {
   private static String[]             docs           = null;
   private static Map<String,Object>[] litRows        = null;
   private static Map<String,Object>[] groupableRows  = null;
+  private static Map<String,Object>[] numberRows  = null;
   private static String[][]           triples        = null;
   private static RowStructure[]       rowstructs     = null;
   private static RowSetPart[]         datatypeStyles = null;
@@ -76,11 +77,24 @@ public class RowManagerTest {
   @SuppressWarnings("unchecked")
   @BeforeClass
   public static void beforeClass() throws IOException, InterruptedException {
-    uris = new String[]{"/rowtest/docJoin1.json", "/rowtest/docJoin1.xml", "/rowtest/docJoin1.txt"};
+    uris = new String[]{"/rowtest/docJoin1.json", "/rowtest/docJoin1.xml", "/rowtest/docJoin1.txt", "/rowtest/embedded.xml"};
     docs = new String[]{
       "{\"a\":{\"b\":[\"c\", 4]}}",
       "<a><b>c</b>4</a>",
-      "a b c 4"
+      "a b c 4",
+      "<doc xmlns:sem=\"http://marklogic.com/semantics\">\n" +
+              "    <hello>world</hello>\n" +
+              "    <sem:triple>\n" +
+              "    <sem:subject>http://marklogicsparql.com/id#5555</sem:subject>\n" +
+              "    <sem:predicate>http://marklogicsparql.com/addressbook#firstName</sem:predicate>\n" +
+              "    <sem:object datatype=\"http://www.w3.org/2001/XMLSchema#string\">Jim</sem:object>\n" +
+              "    </sem:triple>\n" +
+              "    <sem:triple>\n" +
+              "    <sem:subject>http://marklogicsparql.com/id#5555</sem:subject>\n" +
+              "    <sem:predicate>http://marklogicsparql.com/addressbook#firstName</sem:predicate>\n" +
+              "    <sem:object datatype=\"http://www.w3.org/2001/XMLSchema#string\">Jim</sem:object>\n" +
+              "    </sem:triple>\n" +
+              "    </doc>"
     };
 
     litRows = new Map[3];
@@ -126,6 +140,24 @@ public class RowManagerTest {
     row.put("v",  "2");
     groupableRows[2] = row;
 
+    numberRows = new Map[3];
+    row = new HashMap<>();
+    row.put("r", 3);
+    row.put("c1", "a");
+    row.put("c2",  "x");
+    numberRows[0] = row;
+
+    row = new HashMap<>();
+    row.put("r", 5);
+    row.put("c1", "b");
+    row.put("c2",  "x");
+    numberRows[1] = row;
+
+    row = new HashMap<>();
+    row.put("r", 7);
+    row.put("c1", "a");
+    numberRows[2] = row;
+
     triples = new String[][]{
       new String[]{"http://example.org/rowgraph/s1", "http://example.org/rowgraph/p1", "http://example.org/rowgraph/o1"},
       new String[]{"http://example.org/rowgraph/s1", "http://example.org/rowgraph/p2", "http://example.org/rowgraph/o2"},
@@ -158,6 +190,7 @@ public class RowManagerTest {
         .add(uris[0], new StringHandle(docs[0]).withFormat(Format.JSON))
         .add(uris[1], new StringHandle(docs[1]).withFormat(Format.XML))
         .add(uris[2], new StringHandle(docs[2]).withFormat(Format.TEXT))
+        .add(uris[3], new StringHandle(docs[3]).withFormat(Format.XML))
         .add("/rowtest/triples1.xml", new StringHandle(triplesXML).withFormat(Format.TEXT))
     );
 
@@ -1282,6 +1315,70 @@ public class RowManagerTest {
 
     String stringRoot = rowMgr.explain(builtPlan, new StringHandle()).get();
     assertNotNull(new ObjectMapper().readTree(stringRoot));
+  }
+  @Test
+  public void testSparqlOptions() throws IOException {
+    String selectStmt = "PREFIX ad: <http://marklogicsparql.com/addressbook#> " +
+            "SELECT ?firstName " +
+            "WHERE {<#5555> ad:firstName ?firstName .}";
+
+    RowManager rowMgr = Common.client.newRowManager();
+    PlanBuilder pb = rowMgr.newPlanBuilder();
+    PlanSparqlOptions options = pb.sparqlOptions().withDeduplicated(true).withBase("http://marklogicsparql.com/id#");
+//System.out.println(options.getDeduplicated());
+    PlanBuilder.ModifyPlan plan = pb.fromSparql(selectStmt, "sparql", options);
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+    rowMgr.resultDoc(plan, jacksonHandle);
+//System.out.println(jacksonHandle.toString());
+
+    JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
+    JsonNode node = jsonBindingsNodes.path(0);
+    assertEquals(" nodes not returned from fromSparql method", 1, jsonBindingsNodes.size());
+    assertEquals("Row 1  value incorrect", "Jim", node.path("sparql.firstName").path("value").asText());
+  }
+  @Test
+  public void testSampleBy() throws IOException {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    PlanSampleByOptions options = p.sampleByOptions().withLimit(2);
+
+    PlanBuilder.ExportablePlan builtPlan =
+            p.fromView("opticUnitTest", "musician")
+                    .sampleBy(options);
+
+    RowSet<RowRecord> rows = rowMgr.resultRows(builtPlan);
+    long count = rows.stream().count();
+    assertEquals("count doesn't match", 2, count);
+  }
+  @Test
+  public void testBucketGroup() {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    PlanBuilder.ExportablePlan builtPlan =
+            p.fromLiterals(numberRows)
+                    .groupToArrays(
+                            p.bucketGroup(p.xs.string("r"), p.col("r"), p.xs.integerSeq(2,4)),
+                            p.count("numRows")
+            );
+
+    Iterator<RowRecord> rows = rowMgr.resultRows(builtPlan).iterator();
+    assertTrue("no rows", rows.hasNext());
+    RowRecord row = rows.next();
+    assertFalse("too many rows", rows.hasNext());
+
+    ObjectMapper mapper = new ObjectMapper();
+
+    JsonNode expect =
+            mapper.createArrayNode()
+                    .add(mapper.createObjectNode()
+                            .put("r_bucket", 1).put("numRows", 1))
+                    .add(mapper.createObjectNode()
+                            .put("r_bucket", 2).put("numRows", 2));
+    JsonNode actual = row.getContainer("r");
+    assertEquals("group unequal", expect, actual);
   }
   private void checkSingleRow(NodeList row, RowSetPart datatypeStyle) {
     assertEquals("unexpected column count in XML", 2, row.getLength());

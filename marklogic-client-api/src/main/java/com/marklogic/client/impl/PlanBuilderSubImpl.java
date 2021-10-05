@@ -560,13 +560,13 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
 
     return mapdef;
   }
-  static Map<String,String> makeMap(PlanSampleByOptions options) {
+  static Map<String,XsIntVal> makeMap(PlanSampleByOptions options) {
     if (options == null) {
       return null;
     }
 
     XsIntVal limit = options.getLimit();
-    return (limit == null) ? null : makeMap("limit", limit.toString());
+    return (limit == null) ? null : makeMap("limit", limit);
   }
   static Map<String,String> makeMap(PlanSparqlOptions options) {
     if (options == null) {
@@ -599,7 +599,15 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     return map;
   }
 
-  static BaseTypeImpl.BaseMapImpl asArg(Map<String,String> arg) {
+  static Map<String, XsIntVal> makeMap(String key, XsIntVal value) {
+    Map<String, XsIntVal> map = new HashMap<String, XsIntVal>();
+    if (key != null) {
+      map.put(key, value);
+    }
+    return map;
+  }
+
+  static BaseTypeImpl.BaseMapImpl asArg(Map<String, ?> arg) {
     if (arg == null) {
       return null;
     }
