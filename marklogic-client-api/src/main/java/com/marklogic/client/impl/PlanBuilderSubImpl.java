@@ -799,6 +799,25 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
 
     @Override
+    public ModifyPlan facetBy(PlanNamedGroupSeq keys) {
+      if (keys == null) {
+        throw new IllegalArgumentException("keys parameter for facetBy() cannot be null");
+      }
+      return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "facet-by", new Object[]{ keys });
+    }
+    @Override
+    public ModifyPlan facetBy(PlanNamedGroupSeq keys, String countCol) {
+      return facetBy(keys, (countCol == null) ? (PlanExprCol) null : exprCol(countCol));
+    }
+    @Override
+    public ModifyPlan facetBy(PlanNamedGroupSeq keys, PlanExprCol countCol) {
+      if (keys == null) {
+        throw new IllegalArgumentException("keys parameter for facetBy() cannot be null");
+      }
+      return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "facet-by", new Object[]{ keys, countCol });
+    }
+
+    @Override
     public ModifyPlan limit(long length) {
       return limit(xs.longVal(length));
     }

@@ -664,6 +664,49 @@ public interface PlanBuilderBase {
          * @return  a ModifyPlan object
          */
         PlanBuilder.ModifyPlan groupToArrays(PlanNamedGroupSeq keys, PlanAggregateColSeq aggregates);
+        /**
+         * This method counts values for multiple grouping key columns.
+         * @param keys  This parameter specifies the list of column keys or group keys for performing counts. For each
+         *              column/group, the operation determines the unique values of that column/group and produces a
+         *              separate count for the rows with that value.  A column can be named with a string or a column
+         *              parameter function such as op:col or constructed from an expression with the op:as function.
+         *              See {@link PlanBuilder#colSeq(String...)}.  A group can be a namedGroup or bucketGroup. see
+         *              {@link PlanBuilder#namedGroupSeq(PlanNamedGroup...)} , {@link PlanBuilder#namedGroup(String, PlanExprColSeq)}
+         *              and {@link PlanBuilder#bucketGroup(String, String, XsAnyAtomicTypeSeqVal)}
+         * @return  a ModifyPlan object
+         */
+        PlanBuilder.ModifyPlan facetBy(PlanNamedGroupSeq keys);
+        /**
+         * This method counts values for multiple grouping key columns.
+         * @param keys  This parameter specifies the list of column keys or group keys for performing counts. For each
+         *              column, the operation determines the unique values of that column/group and produces a separate
+         *              count for the rows with that value.  A column can be named with a string or a column parameter
+         *              function such as op:col or constructed from an expression with the op:as function.
+         *              See {@link PlanBuilder#colSeq(String...)}. A group can be a namedGroup or bucketGroup. see
+         *              {@link PlanBuilder#namedGroupSeq(PlanNamedGroup...)}, {@link PlanBuilder#namedGroup(String, PlanExprColSeq)}
+         *              and {@link PlanBuilder#bucketGroup(String, String, XsAnyAtomicTypeSeqVal)}.
+         * @param countCol  Specifies what to count over the rows for each unique value of each key column.  By default,
+         *                  the operation counts the rows. To count the values of a column instead, specify the column
+         *                  to count with this parameter. To count documents, specify a fragment id column with
+         *                  op:fragment-id-col.
+         * @return  a ModifyPlan object
+         */
+        PlanBuilder.ModifyPlan facetBy(PlanNamedGroupSeq keys, String countCol);
+        /**
+         * This method counts values for multiple grouping key columns.
+         * @param keys  This parameter specifies the list of column keys or group keys for performing counts. For each
+         *              column, the operation determines the unique values of that column/group and produces a separate
+         *              count for the rows with that value.  A column can be named with a string or a column parameter
+         *              function such as op:col or constructed from an expression with the op:as function.
+         *              See {@link PlanBuilder#colSeq(String...)}, {@link PlanBuilder#namedGroup(String, PlanExprColSeq)}
+         *              and {@link PlanBuilder#bucketGroup(String, String, XsAnyAtomicTypeSeqVal)}.
+         * @param countCol  Specifies what to count over the rows for each unique value of each key column.  By default,
+         *                  the operation counts the rows. To count the values of a column instead, specify the column
+         *                  to count with this parameter. To count documents, specify a fragment id column with
+         *                  op:fragment-id-col.
+         * @return  a ModifyPlan object
+         */
+        PlanBuilder.ModifyPlan facetBy(PlanNamedGroupSeq keys, PlanExprCol countCol);
 
         /**
          * This method returns a subset of the rows in the result set by returning the specified number of rows.

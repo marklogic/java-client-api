@@ -1411,26 +1411,6 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan existsJoin(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
 /**
-  * This method counts values for multiple grouping key columns. 
-  * @param keys  This parameter specifies the list of column keys for performing counts. For each column, the operation determines the unique values of that column and produces a separate count for the rows with that value.  A column can be named with a string or a column parameter function such as op:col or constructed from an expression with the op:as function. See {@link PlanBuilder#colSeq(String...)}
-  * @return  a ModifyPlan object
-  */
-  public abstract ModifyPlan facetBy(PlanExprColSeq keys);
-/**
-  * This method counts values for multiple grouping key columns. 
-  * @param keys  This parameter specifies the list of column keys for performing counts. For each column, the operation determines the unique values of that column and produces a separate count for the rows with that value.  A column can be named with a string or a column parameter function such as op:col or constructed from an expression with the op:as function.  See {@link PlanBuilder#colSeq(String...)}
-  * @param countCol  Specifies what to count over the rows for each unique value of each key column.  By default, the operation counts the rows. To count the values of a column instead, specify the column to count with this parameter. To count documents, specify a fragment id column with op:fragment-id-col. 
-  * @return  a ModifyPlan object
-  */
-  public abstract ModifyPlan facetBy(PlanExprColSeq keys, String countCol);
-/**
-  * This method counts values for multiple grouping key columns. 
-  * @param keys  This parameter specifies the list of column keys for performing counts. For each column, the operation determines the unique values of that column and produces a separate count for the rows with that value.  A column can be named with a string or a column parameter function such as op:col or constructed from an expression with the op:as function.  See {@link PlanBuilder#colSeq(String...)}
-  * @param countCol  Specifies what to count over the rows for each unique value of each key column.  By default, the operation counts the rows. To count the values of a column instead, specify the column to count with this parameter. To count documents, specify a fragment id column with op:fragment-id-col. 
-  * @return  a ModifyPlan object
-  */
-  public abstract ModifyPlan facetBy(PlanExprColSeq keys, PlanExprCol countCol);
-/**
   * This method collapses a group of rows into a single row. 
   * @param keys  This parameter specifies the columns used to determine the groups. Rows with the same values in these columns are consolidated into a single group. The columns can be existing columns or new columns created by an expression specified with op:as. The rows produced by the group by operation include the key columns. Specify an empty sequence to create a single group for all of the rows in the row set. See {@link PlanBuilder#colSeq(String...)}
   * @return  a ModifyPlan object
