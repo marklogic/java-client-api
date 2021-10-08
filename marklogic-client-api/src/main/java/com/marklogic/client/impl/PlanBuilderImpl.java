@@ -1652,31 +1652,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
     return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "exists-join", new Object[]{ right, keys, condition });
   }
 
-    
-  @Override
-  public ModifyPlan facetBy(PlanExprColSeq keys) {
-    if (keys == null) {
-      throw new IllegalArgumentException("keys parameter for facetBy() cannot be null");
-    }
-    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "facet-by", new Object[]{ keys });
-  }
 
-    
-  @Override
-  public ModifyPlan facetBy(PlanExprColSeq keys, String countCol) {
-    return facetBy(keys, (countCol == null) ? (PlanExprCol) null : exprCol(countCol));
-  }
-
-    
-  @Override
-  public ModifyPlan facetBy(PlanExprColSeq keys, PlanExprCol countCol) {
-    if (keys == null) {
-      throw new IllegalArgumentException("keys parameter for facetBy() cannot be null");
-    }
-    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "facet-by", new Object[]{ keys, countCol });
-  }
-
-    
   @Override
   public ModifyPlan groupBy(PlanExprColSeq keys) {
     return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "group-by", new Object[]{ keys });
