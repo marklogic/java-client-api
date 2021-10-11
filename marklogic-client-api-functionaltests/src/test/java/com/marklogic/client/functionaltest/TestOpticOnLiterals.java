@@ -1955,11 +1955,9 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     } catch (Exception ex) {
       assertTrue("Incorrect error/exception message", ex.getMessage().contains("failed to apply resource at rows: Internal Server Error"));
     }
-
-    System.out.println("End");
   }
 
-   // @AfterClass
+  @AfterClass
   public static void tearDownAfterClass() throws Exception
   {
     System.out.println("In tear down");
