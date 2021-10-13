@@ -63,6 +63,16 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   @Override
+  public ModifyPlan fromSparql(XsStringVal select, XsStringVal qualifierName, PlanSparqlOptions option) {
+    if (select == null) {
+      throw new IllegalArgumentException("select parameter for fromSparql() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(
+            "op", "from-sparql", new Object[]{ select, qualifierName, asArg(makeMap(option)) }
+    );
+  }
+
+  @Override
   public AccessPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, String graphIris, PlanTripleOption option) {
     return fromTriples(patterns,
       (qualifierName == null) ? null : xs.string(qualifierName),
@@ -287,6 +297,76 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     return namedGroup(xs.string(name), keys);
   }
 
+  @Override
+  public PlanSampleByOptions sampleByOptions() {
+    return new PlanSampleByOptionsImpl(this);
+  }
+  static class PlanSampleByOptionsImpl implements PlanSampleByOptions {
+    private PlanBuilderBaseImpl pb;
+    private XsIntVal limit;
+    PlanSampleByOptionsImpl(PlanBuilderBaseImpl pb) {
+      this.pb = pb;
+    }
+    PlanSampleByOptionsImpl(PlanBuilderBaseImpl pb, XsIntVal limit) {
+      this(pb);
+      this.limit = limit;
+    }
+    @Override
+    public XsIntVal getLimit() {
+      return limit;
+    }
+    @Override
+    public PlanSampleByOptions withLimit(int limit) {
+      return withLimit(pb.xs.intVal(limit));
+    }
+    @Override
+    public PlanSampleByOptions withLimit(XsIntVal limit) {
+      return new PlanSampleByOptionsImpl(this.pb, limit);
+    }
+  }
+
+  @Override
+  public PlanSparqlOptions sparqlOptions() {
+    return new PlanSparqlOptionsImpl(this);
+  }
+  static class PlanSparqlOptionsImpl implements PlanSparqlOptions {
+    private PlanBuilderBaseImpl pb;
+    private XsBooleanVal deduplicate;
+    private XsStringVal base;
+    PlanSparqlOptionsImpl(PlanBuilderBaseImpl pb) {
+      this.pb = pb;
+    }
+    PlanSparqlOptionsImpl(PlanBuilderBaseImpl pb, XsBooleanVal deduplicate, XsStringVal base) {
+      this(pb);
+      this.deduplicate = deduplicate;
+      this.base = base;
+    }
+
+    @Override
+    public XsStringVal getBase() {
+      return base;
+    }
+    @Override
+    public PlanSparqlOptions withBase(String base) {
+      return withBase(pb.xs.string(base));
+    }
+    @Override
+    public PlanSparqlOptions withBase(XsStringVal base) {
+      return new PlanSparqlOptionsImpl(this.pb, this.deduplicate, base);
+    }
+    @Override
+    public XsBooleanVal getDeduplicated() {
+      return deduplicate;
+    }
+    @Override
+    public PlanSparqlOptions withDeduplicated(boolean deduplicate) {
+      return withDeduplicated(pb.xs.booleanVal(deduplicate));
+    }
+    @Override
+    public PlanSparqlOptions withDeduplicated(XsBooleanVal deduplicate) {
+      return new PlanSparqlOptionsImpl(this.pb, deduplicate, this.base);
+    }
+  }
 
   @Override
   public ServerExpression caseExpr(PlanCase... cases) {
@@ -372,14 +452,6 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   public ServerExpression jsonArray(ServerExpression... items) {
     return new JsonArrayCallImpl(new Object[]{ new BaseTypeImpl.ItemSeqListImpl(items) });
   }
-
-/* TODO: DELETE
-  // TODO: move xmlElement() into generated code
-  @Override
-  public ElementNodeExpr xmlElement(ServerExpression name, ServerExpression attributes, ServerExpression... content) {
-    return new XmlElementCallImpl(new Object[]{ name, attributes, new BaseTypeImpl.ItemSeqListImpl(content)});
-  }
- */
 
   @Override
   public ServerExpression xmlAttributeSeq(ServerExpression... attributes) {
@@ -488,6 +560,37 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
 
     return mapdef;
   }
+  static Map<String,XsIntVal> makeMap(PlanSampleByOptions options) {
+    if (options == null) {
+      return null;
+    }
+
+    XsIntVal limit = options.getLimit();
+    return (limit == null) ? null : makeMap("limit", limit);
+  }
+  static Map<String,String> makeMap(PlanSparqlOptions options) {
+    if (options == null) {
+      return null;
+    }
+
+    Map<String,String> mapdef = null;
+
+    XsBooleanVal dedup = options.getDeduplicated();
+    if (dedup != null) {
+      mapdef = makeMap("dedup", dedup.getBoolean() ? "on" : "off");
+    }
+
+    XsStringVal base = options.getBase();
+    if (base != null) {
+      if (mapdef == null) {
+        mapdef = makeMap("base", base.getString());
+      } else {
+        mapdef.put("base", base.getString());
+      }
+    }
+
+    return mapdef;
+  }
   static Map<String,String> makeMap(String key, String value) {
     Map<String, String> map = new HashMap<String, String>();
     if (key != null) {
@@ -496,7 +599,15 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     return map;
   }
 
-  static BaseTypeImpl.BaseMapImpl asArg(Map<String,String> arg) {
+  static Map<String, XsIntVal> makeMap(String key, XsIntVal value) {
+    Map<String, XsIntVal> map = new HashMap<String, XsIntVal>();
+    if (key != null) {
+      map.put(key, value);
+    }
+    return map;
+  }
+
+  static BaseTypeImpl.BaseMapImpl asArg(Map<String, ?> arg) {
     if (arg == null) {
       return null;
     }
@@ -688,6 +799,25 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
 
     @Override
+    public ModifyPlan facetBy(PlanNamedGroupSeq keys) {
+      if (keys == null) {
+        throw new IllegalArgumentException("keys parameter for facetBy() cannot be null");
+      }
+      return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "facet-by", new Object[]{ keys });
+    }
+    @Override
+    public ModifyPlan facetBy(PlanNamedGroupSeq keys, String countCol) {
+      return facetBy(keys, (countCol == null) ? (PlanExprCol) null : exprCol(countCol));
+    }
+    @Override
+    public ModifyPlan facetBy(PlanNamedGroupSeq keys, PlanExprCol countCol) {
+      if (keys == null) {
+        throw new IllegalArgumentException("keys parameter for facetBy() cannot be null");
+      }
+      return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "facet-by", new Object[]{ keys, countCol });
+    }
+
+    @Override
     public ModifyPlan limit(long length) {
       return limit(xs.longVal(length));
     }
@@ -804,6 +934,12 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
         return pb.viewCol(qualifier, name);
       }
       return pb.col(name);
+    }
+    @Override
+    public ModifyPlan sampleBy(PlanSampleByOptions option) {
+      return new PlanBuilderSubImpl.ModifyPlanSubImpl(
+              this, "op", "sample-by", new Object[]{ asArg(makeMap(option)) }
+      );
     }
   }
 

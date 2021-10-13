@@ -17,45 +17,9 @@ package com.marklogic.client.impl;
 
 import java.util.Arrays;
 
-import com.marklogic.client.type.XsAnyAtomicTypeVal;
-import com.marklogic.client.type.XsIntVal;
-import com.marklogic.client.type.XsQNameVal;
-import com.marklogic.client.type.XsStringSeqVal;
-import com.marklogic.client.type.XsStringVal;
+import com.marklogic.client.type.*;
 
-import com.marklogic.client.type.ServerExpression;
-import com.marklogic.client.type.PlanAggregateCol;
-import com.marklogic.client.type.PlanAggregateColSeq;
-import com.marklogic.client.type.PlanCase;
-import com.marklogic.client.type.PlanCaseSeq;
-import com.marklogic.client.type.PlanColumn;
-import com.marklogic.client.type.PlanColumnSeq;
-import com.marklogic.client.type.PlanCondition;
-import com.marklogic.client.type.PlanConditionSeq;
-import com.marklogic.client.type.PlanExprCol;
-import com.marklogic.client.type.PlanExprColSeq;
-import com.marklogic.client.type.PlanFunction;
-import com.marklogic.client.type.PlanFunctionSeq;
-import com.marklogic.client.type.PlanGroup;
-import com.marklogic.client.type.PlanGroupSeq;
-import com.marklogic.client.type.PlanJoinKey;
-import com.marklogic.client.type.PlanJoinKeySeq;
-import com.marklogic.client.type.PlanJsonProperty;
-import com.marklogic.client.type.PlanJsonPropertySeq;
-import com.marklogic.client.type.PlanNamedGroup;
-import com.marklogic.client.type.PlanNamedGroupSeq;
-import com.marklogic.client.type.PlanParamBindingSeqVal;
-import com.marklogic.client.type.PlanParamBindingVal;
-import com.marklogic.client.type.PlanSortKey;
-import com.marklogic.client.type.PlanSortKeySeq;
-import com.marklogic.client.type.PlanSystemColumn;
-import com.marklogic.client.type.PlanSystemColumnSeq;
-import com.marklogic.client.type.PlanTriplePattern;
-import com.marklogic.client.type.PlanTriplePatternSeq;
-import com.marklogic.client.type.PlanTriplePosition;
-import com.marklogic.client.type.PlanTriplePositionSeq;
-
-// IMPORTANT: Do not edit. This file is generated. 
+// IMPORTANT: Do not edit. This file is generated.
 abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
   PlanBuilderImpl() {
   }
@@ -152,6 +116,48 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
       throw new IllegalArgumentException("column parameter for avg() cannot be null");
     }
     return new AggregateColCallImpl("op", "avg", new Object[]{ name, column });
+  }
+
+  
+  @Override
+  public PlanNamedGroup bucketGroup(String name, String keys, XsAnyAtomicTypeSeqVal boundaries) {
+    return bucketGroup((name == null) ? (XsStringVal) null : xs.string(name), (keys == null) ? (PlanExprCol) null : exprCol(keys), (boundaries == null) ? (XsAnyAtomicTypeSeqVal) null : boundaries);
+  }
+
+  
+  @Override
+  public PlanNamedGroup bucketGroup(XsStringVal name, PlanExprCol keys, XsAnyAtomicTypeSeqVal boundaries) {
+    if (name == null) {
+      throw new IllegalArgumentException("name parameter for bucketGroup() cannot be null");
+    }
+    if (keys == null) {
+      throw new IllegalArgumentException("keys parameter for bucketGroup() cannot be null");
+    }
+    if (boundaries == null) {
+      throw new IllegalArgumentException("boundaries parameter for bucketGroup() cannot be null");
+    }
+    return new NamedGroupCallImpl("op", "bucket-group", new Object[]{ name, keys, boundaries });
+  }
+
+  
+  @Override
+  public PlanNamedGroup bucketGroup(String name, String keys, XsAnyAtomicTypeSeqVal boundaries, String collation) {
+    return bucketGroup((name == null) ? (XsStringVal) null : xs.string(name), (keys == null) ? (PlanExprCol) null : exprCol(keys), (boundaries == null) ? (XsAnyAtomicTypeSeqVal) null : boundaries, (collation == null) ? (XsStringVal) null : xs.string(collation));
+  }
+
+  
+  @Override
+  public PlanNamedGroup bucketGroup(XsStringVal name, PlanExprCol keys, XsAnyAtomicTypeSeqVal boundaries, XsStringVal collation) {
+    if (name == null) {
+      throw new IllegalArgumentException("name parameter for bucketGroup() cannot be null");
+    }
+    if (keys == null) {
+      throw new IllegalArgumentException("keys parameter for bucketGroup() cannot be null");
+    }
+    if (boundaries == null) {
+      throw new IllegalArgumentException("boundaries parameter for bucketGroup() cannot be null");
+    }
+    return new NamedGroupCallImpl("op", "bucket-group", new Object[]{ name, keys, boundaries, collation });
   }
 
   
@@ -306,6 +312,21 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
       throw new IllegalArgumentException("select parameter for fromSparql() cannot be null");
     }
     return new PlanBuilderSubImpl.ModifyPlanSubImpl("op", "from-sparql", new Object[]{ select, qualifierName });
+  }
+
+  
+  @Override
+  public ModifyPlan fromSparql(String select, String qualifierName, PlanSparqlOptions option) {
+    return fromSparql((select == null) ? (XsStringVal) null : xs.string(select), (qualifierName == null) ? (XsStringVal) null : xs.string(qualifierName), option);
+  }
+
+  
+  @Override
+  public ModifyPlan fromSparql(XsStringVal select, XsStringVal qualifierName, PlanSparqlOptions option) {
+    if (select == null) {
+      throw new IllegalArgumentException("select parameter for fromSparql() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl("op", "from-sparql", new Object[]{ select, qualifierName, option });
   }
 
   
@@ -684,6 +705,21 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
       throw new IllegalArgumentException("left parameter for multiply() cannot be null");
     }
     return new XsExprImpl.NumericCallImpl("op", "multiply", left);
+  }
+
+  
+  @Override
+  public PlanNamedGroup namedGroup(String name) {
+    return namedGroup((name == null) ? (XsStringVal) null : xs.string(name));
+  }
+
+  
+  @Override
+  public PlanNamedGroup namedGroup(XsStringVal name) {
+    if (name == null) {
+      throw new IllegalArgumentException("name parameter for namedGroup() cannot be null");
+    }
+    return new NamedGroupCallImpl("op", "named-group", new Object[]{ name });
   }
 
   
@@ -1521,6 +1557,12 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
     return new ColumnCallImpl("op", "col", new Object[]{ column });
   }
 
+    
+  @Override
+  public ModifyPlan sampleBy(PlanSampleByOptions option) {
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "sample-by", new Object[]{ option });
+  }
+
   }
 
   
@@ -1610,31 +1652,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
     return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "exists-join", new Object[]{ right, keys, condition });
   }
 
-    
-  @Override
-  public ModifyPlan facetBy(PlanExprColSeq keys) {
-    if (keys == null) {
-      throw new IllegalArgumentException("keys parameter for facetBy() cannot be null");
-    }
-    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "facet-by", new Object[]{ keys });
-  }
 
-    
-  @Override
-  public ModifyPlan facetBy(PlanExprColSeq keys, String countCol) {
-    return facetBy(keys, (countCol == null) ? (PlanExprCol) null : exprCol(countCol));
-  }
-
-    
-  @Override
-  public ModifyPlan facetBy(PlanExprColSeq keys, PlanExprCol countCol) {
-    if (keys == null) {
-      throw new IllegalArgumentException("keys parameter for facetBy() cannot be null");
-    }
-    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "facet-by", new Object[]{ keys, countCol });
-  }
-
-    
   @Override
   public ModifyPlan groupBy(PlanExprColSeq keys) {
     return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "group-by", new Object[]{ keys });

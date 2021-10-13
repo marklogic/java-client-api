@@ -159,6 +159,11 @@ public class XMLStreamReaderHandle
     return new XMLStreamReaderHandle().withMimetype(getMimetype());
   }
   @Override
+  public XMLStreamReaderHandle[] newHandleArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new XMLStreamReaderHandle[length];
+  }
+  @Override
   public XMLStreamReader[] newArray(int length) {
     if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
     return new XMLStreamReader[length];

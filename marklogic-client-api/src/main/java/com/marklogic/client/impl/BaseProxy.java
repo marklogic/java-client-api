@@ -789,13 +789,15 @@ public class BaseProxy {
    static public MultipleAtomicCallField atomicParam(String paramName, boolean isNullable, Stream<String> values) {
       return isParamNull(paramName, isNullable, values) ? null : new UnbufferedMultipleAtomicCallField(paramName, values);
    }
-   static public SingleNodeCallField documentParam(String paramName, boolean isNullable, BufferableHandle value) {
+   static public SingleNodeCallField documentParam(String paramName, boolean isNullable, BufferableContentHandle<?,?> value) {
       return isParamNull(paramName, isNullable, value)  ? null : new SingleNodeCallField(paramName, value);
    }
-   static public MultipleNodeCallField documentParam(String paramName, boolean isNullable, Stream<? extends BufferableHandle> values) {
+   static public MultipleNodeCallField documentParam(
+           String paramName, boolean isNullable, Stream<? extends BufferableContentHandle<?,?>> values
+   ) {
       return isParamNull(paramName, isNullable, values) ? null : new UnbufferedMultipleNodeCallField(paramName, values);
    }
-   static public MultipleNodeCallField documentParam(String paramName, boolean isNullable, BufferableHandle[] values) {
+   static public MultipleNodeCallField documentParam(String paramName, boolean isNullable, BufferableContentHandle<?,?>[] values) {
       return isParamNull(paramName, isNullable, values) ? null : new BufferedMultipleNodeCallField(paramName, values);
    }
    static protected boolean isParamNull(String paramName, boolean isNullable, Object value) {

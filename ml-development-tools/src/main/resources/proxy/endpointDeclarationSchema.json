@@ -12,7 +12,7 @@
         "boolean", "date", "dateTime", "dayTimeDuration", "decimal", "double", "float",
         "int", "long", "string", "time", "unsignedInt", "unsignedLong",
         "array", "object",
-        "binaryDocument", "jsonDocument", "textDocument", "xmlDocument",
+        "anyDocument", "binaryDocument", "jsonDocument", "textDocument", "xmlDocument",
         "session"
       ]
     },

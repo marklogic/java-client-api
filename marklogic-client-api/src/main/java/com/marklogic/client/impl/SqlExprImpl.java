@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 import com.marklogic.client.type.XsBooleanVal;
 import com.marklogic.client.type.XsDecimalVal;
@@ -43,6 +44,39 @@ class SqlExprImpl implements SqlExpr {
   @Override
   public ServerExpression bitLength(ServerExpression str) {
     return new XsExprImpl.IntegerCallImpl("sql", "bit-length", new Object[]{ str });
+  }
+
+  
+  @Override
+  public ServerExpression bucket(ServerExpression bucketEdgesParam, String srchParam) {
+    return bucket(bucketEdgesParam, (srchParam == null) ? (ServerExpression) null : xs.string(srchParam));
+  }
+
+  
+  @Override
+  public ServerExpression bucket(ServerExpression bucketEdgesParam, ServerExpression srchParam) {
+    if (srchParam == null) {
+      throw new IllegalArgumentException("srchParam parameter for bucket() cannot be null");
+    }
+    return new XsExprImpl.UnsignedLongCallImpl("sql", "bucket", new Object[]{ bucketEdgesParam, srchParam });
+  }
+
+  
+  @Override
+  public ServerExpression bucket(ServerExpression bucketEdgesParam, String srchParam, String collationLiteral) {
+    return bucket(bucketEdgesParam, (srchParam == null) ? (ServerExpression) null : xs.string(srchParam), (collationLiteral == null) ? (ServerExpression) null : xs.string(collationLiteral));
+  }
+
+  
+  @Override
+  public ServerExpression bucket(ServerExpression bucketEdgesParam, ServerExpression srchParam, ServerExpression collationLiteral) {
+    if (srchParam == null) {
+      throw new IllegalArgumentException("srchParam parameter for bucket() cannot be null");
+    }
+    if (collationLiteral == null) {
+      throw new IllegalArgumentException("collationLiteral parameter for bucket() cannot be null");
+    }
+    return new XsExprImpl.UnsignedLongCallImpl("sql", "bucket", new Object[]{ bucketEdgesParam, srchParam, collationLiteral });
   }
 
   

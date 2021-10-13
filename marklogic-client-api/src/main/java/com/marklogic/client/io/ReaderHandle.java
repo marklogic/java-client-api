@@ -134,6 +134,11 @@ public class ReaderHandle
     return new ReaderHandle().withFormat(getFormat()).withMimetype(getMimetype());
   }
   @Override
+  public ReaderHandle[] newHandleArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new ReaderHandle[length];
+  }
+  @Override
   public Reader[] newArray(int length) {
     if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
     return new Reader[length];

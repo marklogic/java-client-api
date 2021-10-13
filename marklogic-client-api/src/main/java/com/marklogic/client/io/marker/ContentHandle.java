@@ -110,6 +110,7 @@ public interface ContentHandle<C>
    * @param length the size of the array (zero or more)
    * @return the constructed array
    */
+  @SuppressWarnings("unchecked")
   default C[] newArray(int length) {
     if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
     return (C[]) Array.newInstance(getContentClass(), length);

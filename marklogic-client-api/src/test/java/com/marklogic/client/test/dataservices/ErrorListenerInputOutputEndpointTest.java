@@ -91,13 +91,17 @@ public class ErrorListenerInputOutputEndpointTest {
 
 
         InputOutputCaller.BulkInputOutputCaller.ErrorListener errorListener =
-                (retryCount, throwable, callContext, inputHandles)
-                        -> IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.RETRY;
+                (retryCount, throwable, callContext, inputHandles) -> {
+            // System.out.println("retry count is "+retryCount);
+            return IOEndpoint.BulkIOEndpointCaller.ErrorDisposition.RETRY;
+                };
         bulkCaller.setErrorListener(errorListener);
 
 
-        bulkCaller.setOutputListener(value -> {output.add(NodeConverter.InputStreamToString(value));
-            //System.out.println("value is "+value);
+        bulkCaller.setOutputListener(value -> {
+            String v = NodeConverter.InputStreamToString(value);
+            output.add(v);
+            // System.out.println("value is "+v);
         });
 
         input.stream().forEach(value -> bulkCaller.accept(IOTestUtil.asInputStream(value)));

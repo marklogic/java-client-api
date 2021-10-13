@@ -23,10 +23,7 @@ import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
-import com.marklogic.client.type.PlanColumn;
-import com.marklogic.client.type.PlanParamExpr;
-import com.marklogic.client.type.PlanSearchOptions;
-import com.marklogic.client.type.XsDoubleVal;
+import com.marklogic.client.type.*;
 
 abstract class PlanBuilderBaseImpl extends PlanBuilder {
   final static PlanBuilderSubImpl pb = new PlanBuilderSubImpl();
@@ -56,6 +53,7 @@ abstract class PlanBuilderBaseImpl extends PlanBuilder {
     return new BaseTypeImpl.Literal(value);
   }
 
+  @Override
   public PlanSearchOptions searchOptions() {
     return new PlanSearchOptionsImpl(this);
   }

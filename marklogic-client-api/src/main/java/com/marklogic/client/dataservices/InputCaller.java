@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2021 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.marklogic.client.dataservices;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.dataservices.impl.HandleProvider;
 import com.marklogic.client.dataservices.impl.InputEndpointImpl;
 import com.marklogic.client.io.marker.BufferableContentHandle;
 import com.marklogic.client.io.marker.BufferableHandle;
@@ -37,7 +38,24 @@ public interface InputCaller<I> extends IOEndpoint {
 	 * @return  the InputCaller instance for calling the endpoint.
 	 */
 	static <I> InputCaller<I> on(DatabaseClient client, JSONWriteHandle apiDecl, BufferableContentHandle<I,?> inputHandle) {
-		return new InputEndpointImpl(client, apiDecl, inputHandle);
+		return new InputEndpointImpl(client, apiDecl, new HandleProvider.ContentHandleProvider<>(inputHandle,null));
+	}
+
+	/**
+	 * Constructs an instance of the InputCaller interface.
+	 * This factory is useful primarily for parameters or return values of the anyDocument type.
+	 * @param client the database client to use for making calls
+	 * @param apiDecl the JSON api declaration specifying how to call the endpoint
+	 * @param inputHandle the handles that provides the input content (such as StringHandle)
+	 * @param <IC> the content type of the input handle
+	 * @param <IR> the type for the data received by the input handle
+	 * @param <I> the input handle
+	 * @return the InputOutputCaller instance for calling the endpoint.
+	 */
+	static <IC,IR,I extends BufferableContentHandle<IC,IR>> InputCaller<I> onHandles(
+			DatabaseClient client, JSONWriteHandle apiDecl, I inputHandle
+	) {
+		return new InputEndpointImpl(client, apiDecl, new HandleProvider.DirectHandleProvider<>(inputHandle, null));
 	}
 
 	/**

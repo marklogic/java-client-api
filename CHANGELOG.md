@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 5.5.1
+#### New Functionality
+- [#1296](https://github.com/marklogic/java-client-api/issues/1296) - Type anyDocument support for data service - Server release 10.0-7 or above required
+- #1314, #1315 - Support for Optic features Bucket group and sample by - Server release 10.0-8 or above required
+
+#### Improvements and Bug Fixes
+- [#1309](https://github.com/marklogic/java-client-api/issues/1309) - Upgrade to Jackson 2.12.4
+- [#1316](https://github.com/marklogic/java-client-api/issues/1316) - Optic fromSPARQL method support options parameter - Server release 10.0-8 or above required
+- [#1322](https://github.com/marklogic/java-client-api/issues/1322) - Method facetBy doesn't work with namedGroup
+
 ## 5.5.0
 #### New Functionality
 - [#1294](https://github.com/marklogic/java-client-api/issues/1294) - New Optic features Redaction, generate views  - Server release 10.0-7 or above required

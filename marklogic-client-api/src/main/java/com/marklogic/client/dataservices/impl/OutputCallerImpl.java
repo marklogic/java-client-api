@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2021 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,12 @@
  */
 package com.marklogic.client.dataservices.impl;
 
-import java.util.stream.Stream;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.io.marker.BufferableContentHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
 final public class OutputCallerImpl<I,O> extends IOCallerImpl<I,O> {
-    public OutputCallerImpl(JSONWriteHandle apiDeclaration, BufferableContentHandle<O,?> outputHandle) {
-        super(apiDeclaration, null, outputHandle);
+    public OutputCallerImpl(JSONWriteHandle apiDeclaration, HandleProvider<I,O> handleProvider) {
+        super(apiDeclaration, handleProvider);
 
         if (getInputParamdef() != null) {
             throw new IllegalArgumentException("input parameter not supported in endpoint: "+ getEndpointPath());

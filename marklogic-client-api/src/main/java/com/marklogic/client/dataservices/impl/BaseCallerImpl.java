@@ -54,7 +54,7 @@ abstract class BaseCallerImpl {
 
             if (!"session".equals(datatype)) {
                 this.format = Format.getFromDataType(datatype);
-                if (this.format == Format.UNKNOWN) {
+                if (this.format == Format.UNKNOWN && !"anyDocument".equals(datatype)) {
                     throw new IllegalArgumentException(
                             "datatype must specify a document format: " + datatype
                     );

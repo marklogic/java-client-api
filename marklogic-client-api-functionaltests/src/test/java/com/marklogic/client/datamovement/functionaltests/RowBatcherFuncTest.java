@@ -407,7 +407,7 @@ public class RowBatcherFuncTest extends BasicJavaClientREST {
         // plan2 - fromLexicons
         PlanBuilder.ModifyPlan plan2 = p.fromLexicons(indexes, "myCity");
 
-        PlanBuilder.ModifyPlan output = plan1.joinFullOuter(plan2);
+        PlanBuilder.ModifyPlan output = plan1.joinFullOuter(plan2).orderBy(p.col("id")).offsetLimit(0, 2);
         rowsBatcherOfJsonObj.withBatchView(output);
 
         ArrayList<String> exptdCity = new ArrayList(Arrays.asList("beijing", "cape town"));

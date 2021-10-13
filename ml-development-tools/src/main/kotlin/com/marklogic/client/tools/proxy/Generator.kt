@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2021 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.marklogic.client.io.marker.BufferableContentHandle
 import java.io.File
 import com.networknt.schema.*
 
@@ -115,6 +116,7 @@ class Generator {
     return mapOf(
         "array"             to "Reader",
         "object"            to "Reader",
+        "anyDocument"       to "com.marklogic.client.io.InputStreamHandle",
         "binaryDocument"    to "InputStream",
         "jsonDocument"      to "Reader",
         "textDocument"      to "Reader",
@@ -172,6 +174,8 @@ class Generator {
             "java.lang.String",
             "com.fasterxml.jackson.databind.node.ArrayNode",
             "com.fasterxml.jackson.core.JsonParser"),
+        "anyDocument"       to setOf(
+            "com.marklogic.client.io.InputStreamHandle"),
         "binaryDocument"    to setOf(
             "java.io.InputStream"),
         "jsonDocument"      to setOf(
@@ -205,7 +209,7 @@ class Generator {
     return getAtomicDataTypes() + getDocumentDataTypes()
   }
   fun getAllMappings(): Map<String,Set<String>> {
-    return getAtomicMappings() + getDocumentMappings()
+    return getAtomicMappings() + getDocumentMappings().filterNot{entry -> (entry.key == "anyDocument")}
   }
   fun getJavaDataType(
       dataType: String, mapping: String?, dataKind: String, isMultiple: Boolean
@@ -230,12 +234,22 @@ class Generator {
 
     val allMappings  = getAllMappings()
     val typeMappings = allMappings[dataType]
-    if (typeMappings === null) {
+    if (typeMappings?.contains(mapping) == true) {
+      return mapping
+    } else if (dataType == "anyDocument") {
+      try {
+        val mappingClass = Class.forName(mapping)
+        if (!BufferableContentHandle::class.java.isAssignableFrom(mappingClass)) {
+          throw IllegalArgumentException("""mapped class ${mapping} for anyDocument data type must extend BufferableContentHandle""")
+        }
+        return mapping
+      } catch(e: ClassNotFoundException) {
+        throw IllegalArgumentException("""could not load mapped class ${mapping} for anyDocument data type""")
+      }
+    } else if (typeMappings === null) {
       throw IllegalArgumentException("""no mappings for data type ${dataType}""")
-    } else if (!typeMappings.contains(mapping)) {
-      throw IllegalArgumentException("""no mapping to ${mapping} for data type ${dataType}""")
     }
-    return mapping
+    throw IllegalArgumentException("""no mapping to ${mapping} for data type ${dataType}""")
   }
   fun getSigDataType(mappedType: String, isMultiple: Boolean): String {
     val sigType =
@@ -642,26 +656,36 @@ ${funcDecls}
                           """)}
                           )"""
 
-    val returnConverter =
-        if (returnType === null || returnMapped === null)
-          ""
-        else
+    val returnFormat  =
+        if (returnType === null || returnKind != "document") "null"
+        else typeFormat(returnType)
+    val returnChained =
+        if (returnKind === null)         """.responseNone()"""
+        else if (returnMultiple == true) """.responseMultiple(${returnNullable}, ${returnFormat})"""
+        else                             """.responseSingle(${returnNullable}, ${returnFormat})"""
+
+    val callImpl = """request${sessionFluent}${paramsFluent}${returnChained}"""
+
+// TODO: also array support?
+    val bodyImpl =
+        if (returnType === null || returnMapped === null) {
+          """${callImpl};"""
+        } else if (returnType == "anyDocument") {
+          """return ${callImpl}
+                      ${
+          if (returnMultiple) """.asStreamOfHandles(null, new ${returnMapped}())"""
+          else """.asHandle(new ${returnMapped}())"""
+          };"""
+        } else {
           """return BaseProxy.${typeConverter(returnType)}.to${
           if (returnMapped.contains("."))
             returnMapped.substringAfterLast(".").capitalize()
           else
             returnMapped.capitalize()
           }(
-                """
-    val returnFormat  =
-        if (returnType === null || returnKind != "document") "null"
-        else typeFormat(returnType)
-    val returnChained =
-        if (returnKind === null)         """.responseNone()"""
-        else if (returnMultiple == true) """.responseMultiple(${returnNullable}, ${returnFormat})
-                )"""
-        else                             """.responseSingle(${returnNullable}, ${returnFormat})
-                )"""
+                ${callImpl}
+                );"""
+          }
 
     val fieldReturn    =
         if (returnType === null) ""
@@ -707,8 +731,7 @@ ${funcDecls}
                     );
             }
             private ${sigImpl} {
-              ${returnConverter
-                }request${sessionFluent}${paramsFluent}${returnChained};
+              ${bodyImpl}
             }"""
     return defSource
   }
@@ -794,13 +817,16 @@ ${funcDecls}
     return methods
   }
   fun paramConverter(paramName: String, paramKind: String, paramType: String, mappedType: String, isNullable: Boolean) : String {
-    val converter =
-          """BaseProxy.${paramKind}Param("${paramName}", ${isNullable}, BaseProxy.${typeConverter(paramType)}.from${
+    val convertExpr =
+        if (paramType == "anyDocument") paramName
+        else """BaseProxy.${typeConverter(paramType)}.from${
           if (mappedType.contains("."))
             mappedType.substringAfterLast(".").capitalize()
           else
             mappedType.capitalize()
-          }(${paramName}))"""
+          }(${paramName})"""
+    val converter =
+          """BaseProxy.${paramKind}Param("${paramName}", ${isNullable}, ${convertExpr})"""
     return converter
   }
   fun typeConverter(datatype: String) : String {
@@ -813,6 +839,7 @@ ${funcDecls}
   fun typeFormat(documentType: String) : String {
     val format =
         if (documentType == "array" || documentType == "object") "Format.JSON"
+        else if (documentType == "anyDocument")                  "Format.UNKNOWN"
         else "Format."+documentType.substringBefore("Document").toUpperCase()
     return format
   }

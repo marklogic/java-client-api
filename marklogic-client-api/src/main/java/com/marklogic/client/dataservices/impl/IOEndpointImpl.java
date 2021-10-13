@@ -323,7 +323,7 @@ abstract class IOEndpointImpl<I,O> implements IOEndpoint {
         I[] getInputBatch(BlockingQueue<I> queue, int batchSize) {
             List<I> inputStreamList = new ArrayList<>();
             queue.drainTo(inputStreamList, batchSize);
-            return inputStreamList.toArray(endpoint.getCaller().getInputHandle().newArray(inputStreamList.size()));
+            return inputStreamList.toArray(endpoint.getCaller().newContentInputArray(inputStreamList.size()));
         }
         void processOutputBatch(O[] output, Consumer<O> outputListener) {
             if (output == null || output.length == 0) return;

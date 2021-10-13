@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2021 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,7 +72,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
   private static String schemadbName = "TestOpticOnLiteralsSchemaDB";
   private static String[] fNames = { "TestOpticOnLiteralsDB-1" };
   private static String[] schemafNames = { "TestOpticOnLiteralsSchemaDB-1" };
- 
+
   private static DatabaseClient client;
   private static DatabaseClient clientRes;
 
@@ -142,8 +144,8 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     setDatabaseProperties(dbName, "schema-database", schemadbName);
 
     createUserRolesWithPrevilages("opticRole", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
-    createRESTUser("opticUser", "0pt1c", "tde-admin", "tde-view", "opticRole", "rest-admin", "rest-writer", 
-    		                             "rest-reader", "rest-extension-user", "manage-user");    
+    createRESTUser("opticUser", "0pt1c", "tde-admin", "tde-view", "opticRole", "rest-admin", "rest-writer",
+    		                             "rest-reader", "rest-extension-user", "manage-user");
 
     if (IsSecurityEnabled()) {
         schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", getConnType());
@@ -286,10 +288,10 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     // Map and Reduce tests.
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
-    
-    
-    clientRes = getDatabaseClient("eval-user", "x", getConnType()); 
-    
+
+
+    clientRes = getDatabaseClient("eval-user", "x", getConnType());
+
     resourceMgr = clientRes.newServerConfigManager().newResourceExtensionsManager();
     ExtensionMetadata resextMetadata = new ExtensionMetadata();
     resextMetadata.setTitle("BasicJSTest");
@@ -305,12 +307,12 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     handle.set(myStream);
     resourceMgr.writeServices(resourceName, handle, resextMetadata, getParams);
     Thread.sleep(10000);
-    schemaDBclient.release();    
+    schemaDBclient.release();
   }
 
   /**
    * Write document using DOMHandle
-   * 
+   *
    * @param client
    * @param filename
    * @param uri
@@ -348,7 +350,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 
   /**
    * Function to select and create document manager based on the type
-   * 
+   *
    * @param client
    * @param docMgr
    * @param type
@@ -565,16 +567,16 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     rowMgr.resultDoc(output, fh);
     File file = fh.get();
     String fileContents = convertFileToString(file);
-    
+
     ObjectMapper mapper = new ObjectMapper();
     JsonNode fromFile = mapper.readTree(file).path("rows");
     System.out.println(fileContents);
-    
+
     assertEquals("Five nodes not returned from testJoinLeftOuter method", 5, fromFile.size());
     JsonNode nodeFile = fromFile.path(0);
     assertEquals("Row 1 rowId value incorrect", "1", nodeFile.path("rowId").path("value").asText());
     assertEquals("Row 1 desc value incorrect", "ball", nodeFile.path("desc").path("value").asText());
-    assertEquals("Row 1 colorDesc value incorrect", "red", nodeFile.path("colorDesc").path("value").asText());    
+    assertEquals("Row 1 colorDesc value incorrect", "red", nodeFile.path("colorDesc").path("value").asText());
   }
 
   /*
@@ -890,7 +892,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     assertEquals("Row 2 val value incorrect", "6", node19.path("val").path("value").asText());
     assertEquals("Row 2 uri value incorrect", "/optic/lexicon/test/doc3.json", node19.path("uri").path("value").asText());
     assertEquals("Row 2 nodes value incorrect", "new jersey", node19.path("nodes").path("value").asText());
-    
+
     node19 = jsonBindingsNodes19.path(2);
     assertEquals("Row 2 id value incorrect", "4", node19.path("id").path("value").asText());
     assertEquals("Row 2 val value incorrect", "8", node19.path("val").path("value").asText());
@@ -1313,7 +1315,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
      * XsDateExpr curDate = p.fn.currentDate(); XsTimeExpr curTime =
      * p.fn.currentTime(); SqlGenericDateTimeExpr sqlcurTime =
      * (SqlGenericDateTimeExpr) curTime; double sqlHr = p.sql.hours(sqlcurTime);
-     * 
+     *
      * PlanColumn log10 = p.math.log10(sqlHr); ModifyPlan output =
      * plan1.joinInner(plan2, p.on(itemColorIdCol, colorIdCol)) .select(
      * p.as("currentDate", p.fn.currentDate()), p.as("curDate", curDate),
@@ -1648,6 +1650,311 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     assertEquals("Row 3 rowId value incorrect", "4", jsonBindingsNodes.path(3).path("myRowId").path("value").asText());
     assertEquals("Row 3 myColorId value incorrect", "3", jsonBindingsNodes.path(3).path("i").path("value").asText());
     assertEquals("Row 3 description value incorrect", "2", jsonBindingsNodes.path(3).path("fib").path("value").asText());
+  }
+
+  /*
+   * Test existJoin with literals
+   */
+  @Test
+  public void testExistJoin() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testExistJoin method");
+
+    Map<String, Object>[] colLiteral = new HashMap[7];
+    Map<String, Object>[] invLiteral = new HashMap[6];
+
+    Map<String, Object> row = new HashMap<>();
+
+    row.put("rowId", 1);
+    row.put("colorId", 1);
+    row.put("desc", "ball");
+    row.put("colorDesc", "red");
+    invLiteral[0] = row;
+
+    row = new HashMap<>();
+    row.put("rowId", 2);
+    row.put("colorId", 2);
+    row.put("desc", "square");
+    row.put("colorDesc", "blue");
+    invLiteral[1] = row;
+
+    row = new HashMap<>();
+    row.put("rowId", 3);
+    row.put("colorId", 1);
+    row.put("desc", "box");
+    row.put("colorDesc", "red");
+    invLiteral[2] = row;
+
+    row = new HashMap<>();
+    row.put("rowId", 4);
+    row.put("colorId", 3);
+    row.put("desc", "hoop");
+    row.put("colorDesc", "black");
+    invLiteral[3] = row;
+
+    row = new HashMap<>();
+    row.put("rowId", 5);
+    row.put("colorId", 4);
+    row.put("desc", "circle");
+    row.put("colorDesc", "yellow");
+    invLiteral[4] = row;
+
+    row = new HashMap<>();
+    row.put("rowId", 6);
+    row.put("colorId", 5);
+    row.put("desc", "car");
+    row.put("colorDesc", "YELLOW");
+    invLiteral[5] = row;
+
+    row = new HashMap<>();
+    row.put("colorId", 1);
+    row.put("colorDesc", "red");
+    colLiteral[0] = row;
+
+    row = new HashMap<>();
+    row.put("colorId", 2);
+    row.put("colorDesc", "blue");
+    colLiteral[1] = row;
+
+    row = new HashMap<>();
+    row.put("colorId", 3);
+    row.put("colorDesc", "black");
+    colLiteral[2] = row;
+
+    row = new HashMap<>();
+    row.put("colorId", 4);
+    row.put("colorDesc", "yellow");
+    colLiteral[3] = row;
+
+    row = new HashMap<>();
+    row.put("colorId", 5);
+    row.put("colorDesc", "YELLOW");
+    colLiteral[4] = row;
+
+    row = new HashMap<>();
+    row.put("colorId", 6);
+    row.put("colorDesc", "Yellow");
+    colLiteral[5] = row;
+
+    row = new HashMap<>();
+    row.put("colorId", 7);
+    row.put("colorDesc", "yellowish");
+    colLiteral[6] = row;
+
+    ArrayList<String> exptdExists = new ArrayList<String>();
+    exptdExists.add("red");
+    exptdExists.add("black");
+    exptdExists.add("blue");
+    exptdExists.add("yellow");
+    exptdExists.add("YELLOW");
+    Collections.sort(exptdExists);
+
+    // Create a new Plan.
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    // plans from literals
+    ModifyPlan plan1 = p.fromLiterals(colLiteral, "table1");
+    ModifyPlan plan2 = p.fromLiterals(invLiteral, "table2");
+
+    ModifyPlan existsOutput = plan1.existsJoin(plan2, p.on(p.viewCol("table1", "colorDesc"), p.viewCol("table2", "colorDesc")));
+
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(existsOutput, jacksonHandle);
+    JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
+    ArrayList<String> existColorList = new ArrayList<String>();
+    existColorList.add(jsonBindingsNodes.path(0).path("table1.colorDesc").path("value").asText());
+    existColorList.add(jsonBindingsNodes.path(1).path("table1.colorDesc").path("value").asText());
+    existColorList.add(jsonBindingsNodes.path(2).path("table1.colorDesc").path("value").asText());
+    existColorList.add(jsonBindingsNodes.path(3).path("table1.colorDesc").path("value").asText());
+    existColorList.add(jsonBindingsNodes.path(4).path("table1.colorDesc").path("value").asText());
+
+    Collections.sort(existColorList);
+
+    assertTrue("Error while return from existsJoin", existColorList.equals(exptdExists));
+
+    // existJoin with literals - without on parameters
+    ModifyPlan existsNoOptionsOutput = plan2.existsJoin(plan1).orderBy(p.desc(p.col("desc")));
+    jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(existsNoOptionsOutput, jacksonHandle);
+    jsonBindingsNodes = jacksonHandle.get().path("rows");
+    assertEquals("Element 1 desc value incorrect", "square", jsonBindingsNodes.path(0).path("table2.desc").path("value").asText());
+    assertEquals("Element 3 desc value incorrect", "circle", jsonBindingsNodes.path(2).path("table2.desc").path("value").asText());
+    assertEquals("Element 6 desc value incorrect", "ball", jsonBindingsNodes.path(5).path("table2.desc").path("value").asText());
+
+    // not exists join
+    ModifyPlan notExistsOutput = plan1.notExistsJoin(plan2, p.on(p.viewCol("table1", "colorDesc"), p.viewCol("table2", "colorDesc")));
+
+    jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(notExistsOutput, jacksonHandle);
+    jsonBindingsNodes = jacksonHandle.get().path("rows");
+
+    ArrayList<String> exptdNotExists = new ArrayList<String>();
+    exptdNotExists.add("Yellow");
+    exptdNotExists.add("yellowish");
+    Collections.sort(exptdNotExists);
+
+    ArrayList<String> notExistColorList = new ArrayList<String>();
+    notExistColorList.add(jsonBindingsNodes.path(0).path("table1.colorDesc").path("value").asText());
+    notExistColorList.add(jsonBindingsNodes.path(1).path("table1.colorDesc").path("value").asText());
+
+    Collections.sort(notExistColorList);
+    assertTrue("Error while return from notExistsJoin", notExistColorList.equals(exptdNotExists));
+  }
+
+  /*
+   * Test facetBy and bucketGroups
+   */
+  @Test
+  public void testFacetByWithBucketGroups() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testFacetByWithBucketGroups method");
+
+    Map<String, Object>[] invLiteral = new HashMap[17];
+    Map<String, Object>[] colLiteral = new HashMap[6];
+    Map<String, Object> row = new HashMap<>();
+
+    row = new HashMap<>();
+    row.put("rowId", 1); row.put("colorId", 1); row.put("desc", "ball");
+    invLiteral[0] = row;
+    row = new HashMap<>();
+    row.put("rowId", 2); row.put("colorId", 2); row.put("desc", "square");
+    invLiteral[1] = row;
+    row = new HashMap<>();
+    row.put("rowId", 3); row.put("colorId", 1); row.put("desc", "box");
+    invLiteral[2] = row;
+    row = new HashMap<>();
+    row.put("rowId", 4); row.put("colorId", 1); row.put("desc", "hoop");
+    invLiteral[3] = row;
+    row = new HashMap<>();
+    row.put("rowId", 5); row.put("colorId", 5); row.put("desc", "circle");
+    invLiteral[4] = row;
+    row = new HashMap<>();
+    row.put("rowId", 6); row.put("colorId", 1); row.put("desc", "key");
+    invLiteral[5] = row;
+    row = new HashMap<>();
+    row.put("rowId", 7); row.put("colorId", 1); row.put("desc", "cup");
+    invLiteral[6] = row;
+    row = new HashMap<>();
+    row.put("rowId", 8); row.put("colorId", 1); row.put("desc", "bike");
+    invLiteral[7] = row;
+    row = new HashMap<>();
+    row.put("rowId", 9); row.put("colorId", 3); row.put("desc", "car");
+    invLiteral[8] = row;
+    row = new HashMap<>();
+    row.put("rowId", 10); row.put("colorId", 3); row.put("desc", "cart");
+    invLiteral[9] = row;
+    row = new HashMap<>();
+    row.put("rowId", 11); row.put("colorId", 4); row.put("desc", "cupholder");
+    invLiteral[10] = row;
+    row = new HashMap<>();
+    row.put("rowId", 12); row.put("colorId", 2); row.put("desc", "scooter");
+    invLiteral[11] = row;
+    row = new HashMap<>();
+    row.put("rowId", 13); row.put("colorId", 5); row.put("desc", "hat");
+    invLiteral[12] = row;
+    row = new HashMap<>();
+    row.put("rowId", 14); row.put("colorId", 3); row.put("desc", "booster");
+    invLiteral[13] = row;
+    row = new HashMap<>();
+    row.put("rowId", 15); row.put("colorId", 3); row.put("desc", "knapsack");
+    invLiteral[14] = row;
+    row = new HashMap<>();
+    row.put("rowId", 16); row.put("colorId", 1); row.put("desc", "hovercraft");
+    invLiteral[15] = row;
+    row = new HashMap<>();
+    row.put("rowId", 17); row.put("colorId", 6); row.put("desc", "dice");
+    invLiteral[16] = row;
+
+    row = new HashMap<>();
+    row.put("colorId", 1);
+    row.put("colorDesc", "red");
+    colLiteral[0] = row;
+
+    row = new HashMap<>();
+    row.put("colorId", 2);
+    row.put("colorDesc", "blue");
+    colLiteral[1] = row;
+
+    row = new HashMap<>();
+    row.put("colorId", 3);
+    row.put("colorDesc", "black");
+    colLiteral[2] = row;
+
+    row = new HashMap<>();
+    row.put("colorId", 4);
+    row.put("colorDesc", "yellow");
+    colLiteral[3] = row;
+
+    row = new HashMap<>();
+    row.put("colorId", 5);
+    row.put("colorDesc", "white");
+    colLiteral[4] = row;
+
+    row = new HashMap<>();
+    row.put("colorId", 6);
+    row.put("colorDesc", "grey");
+    colLiteral[5] = row;
+    // Create a new Plan.
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    // plans from literals
+    ModifyPlan plan1 = p.fromLiterals(invLiteral, "table1");
+    ModifyPlan plan2 = p.fromLiterals(colLiteral, "table2");
+    ModifyPlan output1 = plan1.joinInner(plan2)
+            .where(p.eq(p.viewCol("table1","colorId"), p.viewCol("table2","colorId")))
+            .facetBy(p.namedGroupSeq(p.bucketGroup(p.xs.string("colorBucket"), p.viewCol("table1","colorId"), p.xs.integerSeq(2, 4) )));
+
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(output1, jacksonHandle);
+    JsonNode colorBucketNodes = jacksonHandle.get().path("rows");
+    assertEquals("Bucket group 1 count value incorrect", "9", colorBucketNodes.path(0).path("colorBucket").path("value").path(0).path("count").asText());
+    assertEquals("Bucket group 2 count value incorrect", "5", colorBucketNodes.path(0).path("colorBucket").path("value").path(1).path("count").asText());
+    assertEquals("Bucket group 3 count value incorrect", "3", colorBucketNodes.path(0).path("colorBucket").path("value").path(2).path("count").asText());
+
+    // outside range
+    ModifyPlan output2 = plan1.joinInner(plan2)
+            .where(p.eq(p.viewCol("table1","colorId"), p.viewCol("table2","colorId")))
+            .facetBy(p.namedGroupSeq(p.bucketGroup(p.xs.string("colorBucket"), p.viewCol("table1","colorId"), p.xs.integerSeq(-1, 0) )));
+    jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(output2, jacksonHandle);
+    JsonNode colorBucketNodesNoRange = jacksonHandle.get().path("rows");
+    assertEquals("Bucket group 1 count value incorrect", "17", colorBucketNodesNoRange.path(0).path("colorBucket").path("value").path(0).path("count").asText());
+
+    // string range
+    ModifyPlan output3 = plan1.joinInner(plan2)
+            .where(p.eq(p.viewCol("table1","colorId"), p.viewCol("table2","colorId")))
+            .facetBy(p.namedGroupSeq(p.bucketGroup(p.xs.string("descBucket"), p.col("desc"), p.xs.stringSeq("ball", "dice"))));
+    jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(output3, jacksonHandle);
+    JsonNode descBucketNodesStringRange = jacksonHandle.get().path("rows");
+    assertEquals("Bucket group 1 count value incorrect", "1", descBucketNodesStringRange.path(0).path("descBucket").path("value").path(0).path("count").asText());
+    assertEquals("Bucket group 2 count value incorrect", "9", descBucketNodesStringRange.path(0).path("descBucket").path("value").path(1).path("count").asText());
+    assertEquals("Bucket group 3 count value incorrect", "7", descBucketNodesStringRange.path(0).path("descBucket").path("value").path(2).path("count").asText());
+
+    //bucket group negative test
+    ModifyPlan output4 = plan1.joinInner(plan2)
+            .where(p.eq(p.viewCol("table1","colorId"), p.viewCol("table2","colorId")))
+            .facetBy(p.namedGroupSeq(p.bucketGroup(p.xs.string("colorBucket"), p.viewCol("table1","colorId"), p.xs.integerSeq(1, 0) )));
+    jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    try {
+      rowMgr.resultDoc(output4, jacksonHandle);
+    } catch (Exception ex) {
+      assertTrue("Incorrect error/exception message", ex.getMessage().contains("failed to apply resource at rows: Internal Server Error"));
+    }
   }
 
   @AfterClass

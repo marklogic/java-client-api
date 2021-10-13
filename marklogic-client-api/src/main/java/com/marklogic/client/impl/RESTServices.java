@@ -596,6 +596,7 @@ public interface RESTServices {
   interface SingleCallResponse extends CallResponse {
     byte[]            asBytes();
     <C,R> C           asContent(BufferableContentHandle<C,R> outputHandle);
+    <T extends BufferableContentHandle<?,?>> T asHandle(T outputHandle);
     InputStream       asInputStream();
     InputStreamHandle asInputStreamHandle();
     Reader            asReader();
@@ -607,6 +608,8 @@ public interface RESTServices {
   interface MultipleCallResponse extends CallResponse {
     Stream<byte[]>            asStreamOfBytes();
     <C,R> Stream<C>           asStreamOfContent(BytesHandle endpointStateHandle, BufferableContentHandle<C,R> outputHandle);
+    <T extends BufferableContentHandle<?,?>> Stream<T>
+        asStreamOfHandles(BytesHandle endpointStateHandle, T outputHandle);
     Stream<InputStream>       asStreamOfInputStream();
     Stream<InputStreamHandle> asStreamOfInputStreamHandle();
     Stream<Reader>            asStreamOfReader();
@@ -614,6 +617,8 @@ public interface RESTServices {
     Stream<String>            asStreamOfString();
     byte[][]            asArrayOfBytes();
     <C,R> C[]           asArrayOfContent(BytesHandle endpointStateHandle, BufferableContentHandle<C,R> outputHandle);
+    <C,R> BufferableContentHandle<C,R>[]
+        asArrayOfHandles(BytesHandle endpointStateHandle, BufferableContentHandle<C,R> outputHandle);
     InputStream[]       asArrayOfInputStream();
     InputStreamHandle[] asArrayOfInputStreamHandle();
     Reader[]            asArrayOfReader();

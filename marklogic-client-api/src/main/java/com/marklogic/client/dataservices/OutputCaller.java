@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2021 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.marklogic.client.dataservices;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.dataservices.impl.HandleProvider;
 import com.marklogic.client.dataservices.impl.OutputEndpointImpl;
 import com.marklogic.client.io.marker.BufferableContentHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
@@ -40,7 +41,24 @@ public interface OutputCaller<O> extends IOEndpoint {
     static <O> OutputCaller<O> on(
             DatabaseClient client, JSONWriteHandle apiDecl, BufferableContentHandle<O,?> outputHandle
     ) {
-        return new OutputEndpointImpl(client, apiDecl, outputHandle);
+        return new OutputEndpointImpl(client, apiDecl, new HandleProvider.ContentHandleProvider<>(null, outputHandle));
+    }
+
+    /**
+     * Constructs an instance of the OutputCaller interface.
+     * This factory is useful primarily for parameters or return values of the anyDocument type.
+     * @param client the database client to use for making calls
+     * @param apiDecl the JSON api declaration specifying how to call the endpoint
+     * @param outputHandle the handles that provides the output content (such as BytesHandle)
+     * @param <OC> the content type of the output handle
+     * @param <OR> the type for the data received by the output handle
+     * @param <O> the output handle
+     * @return the InputOutputCaller instance for calling the endpoint.
+     */
+    static <OC,OR,O extends BufferableContentHandle<OC,OR>> OutputCaller<O> onHandles(
+            DatabaseClient client, JSONWriteHandle apiDecl, O outputHandle
+    ) {
+        return new OutputEndpointImpl(client, apiDecl, new HandleProvider.DirectHandleProvider<>(null, outputHandle));
     }
 
     /**

@@ -291,6 +291,109 @@ public interface CtsExpr {
   */
   public CtsReferenceExpr collectionReference(ServerExpression options);
 /**
+  * Returns a cts:query matching documents matching a TDE-view column equals to an value. Searches with the cts:column-range-query constructor require the triple index; if the triple index is not configured, then an exception is thrown.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:column-range-query" target="mlserverdoc">cts:column-range-query</a> server function.
+  * @param schema  The TDE schema name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param view  The TDE view name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param column  The TDE column name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  One or more values used for querying.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a> server data type
+  */
+  public CtsQueryExpr columnRangeQuery(String schema, String view, String column, String value);
+/**
+  * Returns a cts:query matching documents matching a TDE-view column equals to an value. Searches with the cts:column-range-query constructor require the triple index; if the triple index is not configured, then an exception is thrown.
+  *
+  * <a name="ml-server-type-column-range-query"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:column-range-query" target="mlserverdoc">cts:column-range-query</a> server function.
+  * @param schema  The TDE schema name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param view  The TDE view name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param column  The TDE column name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  One or more values used for querying.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a> server data type
+  */
+  public CtsQueryExpr columnRangeQuery(ServerExpression schema, ServerExpression view, ServerExpression column, ServerExpression value);
+/**
+  * Returns a cts:query matching documents matching a TDE-view column equals to an value. Searches with the cts:column-range-query constructor require the triple index; if the triple index is not configured, then an exception is thrown.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:column-range-query" target="mlserverdoc">cts:column-range-query</a> server function.
+  * @param schema  The TDE schema name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param view  The TDE view name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param column  The TDE column name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  One or more values used for querying.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param operator  Operator for the $value values. The default operator is "=".  Operators include:  "&lt;" Match range index values less than $value. "&lt;=" Match range index values less than or equal to $value. "&gt;" Match range index values greater than $value. "&gt;=" Match range index values greater than or equal to $value. "=" Match range index values equal to $value. "!=" Match range index values not equal to $value.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a> server data type
+  */
+  public CtsQueryExpr columnRangeQuery(String schema, String view, String column, String value, String operator);
+/**
+  * Returns a cts:query matching documents matching a TDE-view column equals to an value. Searches with the cts:column-range-query constructor require the triple index; if the triple index is not configured, then an exception is thrown.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:column-range-query" target="mlserverdoc">cts:column-range-query</a> server function.
+  * @param schema  The TDE schema name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param view  The TDE view name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param column  The TDE column name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  One or more values used for querying.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param operator  Operator for the $value values. The default operator is "=".  Operators include:  "&lt;" Match range index values less than $value. "&lt;=" Match range index values less than or equal to $value. "&gt;" Match range index values greater than $value. "&gt;=" Match range index values greater than or equal to $value. "=" Match range index values equal to $value. "!=" Match range index values not equal to $value.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a> server data type
+  */
+  public CtsQueryExpr columnRangeQuery(ServerExpression schema, ServerExpression view, ServerExpression column, ServerExpression value, ServerExpression operator);
+/**
+  * Returns a cts:query matching documents matching a TDE-view column equals to an value. Searches with the cts:column-range-query constructor require the triple index; if the triple index is not configured, then an exception is thrown.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:column-range-query" target="mlserverdoc">cts:column-range-query</a> server function.
+  * @param schema  The TDE schema name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param view  The TDE view name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param column  The TDE column name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  One or more values used for querying.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param operator  Operator for the $value values. The default operator is "=".  Operators include:  "&lt;" Match range index values less than $value. "&lt;=" Match range index values less than or equal to $value. "&gt;" Match range index values greater than $value. "&gt;=" Match range index values greater than or equal to $value. "=" Match range index values equal to $value. "!=" Match range index values not equal to $value.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param options  Options to this query. The default is ().  Options include:  "cached" Cache the results of this query in the list cache. "uncached" Do not cache the results of this query in the list cache. "score-function=function" Use the selected scoring function. The score function may be:  linearUse a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query. reciprocalUse a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query. zeroThis range query does not contribute to the score. This is the default.   "slope-factor=number" Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a> server data type
+  */
+  public CtsQueryExpr columnRangeQuery(String schema, String view, String column, String value, String operator, String... options);
+/**
+  * Returns a cts:query matching documents matching a TDE-view column equals to an value. Searches with the cts:column-range-query constructor require the triple index; if the triple index is not configured, then an exception is thrown.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:column-range-query" target="mlserverdoc">cts:column-range-query</a> server function.
+  * @param schema  The TDE schema name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param view  The TDE view name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param column  The TDE column name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  One or more values used for querying.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param operator  Operator for the $value values. The default operator is "=".  Operators include:  "&lt;" Match range index values less than $value. "&lt;=" Match range index values less than or equal to $value. "&gt;" Match range index values greater than $value. "&gt;=" Match range index values greater than or equal to $value. "=" Match range index values equal to $value. "!=" Match range index values not equal to $value.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param options  Options to this query. The default is ().  Options include:  "cached" Cache the results of this query in the list cache. "uncached" Do not cache the results of this query in the list cache. "score-function=function" Use the selected scoring function. The score function may be:  linearUse a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query. reciprocalUse a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query. zeroThis range query does not contribute to the score. This is the default.   "slope-factor=number" Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a> server data type
+  */
+  public CtsQueryExpr columnRangeQuery(ServerExpression schema, ServerExpression view, ServerExpression column, ServerExpression value, ServerExpression operator, ServerExpression options);
+/**
+  * Returns a cts:query matching documents matching a TDE-view column equals to an value. Searches with the cts:column-range-query constructor require the triple index; if the triple index is not configured, then an exception is thrown.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:column-range-query" target="mlserverdoc">cts:column-range-query</a> server function.
+  * @param schema  The TDE schema name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param view  The TDE view name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param column  The TDE column name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  One or more values used for querying.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param operator  Operator for the $value values. The default operator is "=".  Operators include:  "&lt;" Match range index values less than $value. "&lt;=" Match range index values less than or equal to $value. "&gt;" Match range index values greater than $value. "&gt;=" Match range index values greater than or equal to $value. "=" Match range index values equal to $value. "!=" Match range index values not equal to $value.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param options  Options to this query. The default is ().  Options include:  "cached" Cache the results of this query in the list cache. "uncached" Do not cache the results of this query in the list cache. "score-function=function" Use the selected scoring function. The score function may be:  linearUse a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query. reciprocalUse a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query. zeroThis range query does not contribute to the score. This is the default.   "slope-factor=number" Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param weight  A weight for this query. The default is 1.0.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a> server data type
+  */
+  public CtsQueryExpr columnRangeQuery(String schema, String view, String column, String value, String operator, String options, double weight);
+/**
+  * Returns a cts:query matching documents matching a TDE-view column equals to an value. Searches with the cts:column-range-query constructor require the triple index; if the triple index is not configured, then an exception is thrown.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:column-range-query" target="mlserverdoc">cts:column-range-query</a> server function.
+  * @param schema  The TDE schema name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param view  The TDE view name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param column  The TDE column name.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  One or more values used for querying.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param operator  Operator for the $value values. The default operator is "=".  Operators include:  "&lt;" Match range index values less than $value. "&lt;=" Match range index values less than or equal to $value. "&gt;" Match range index values greater than $value. "&gt;=" Match range index values greater than or equal to $value. "=" Match range index values equal to $value. "!=" Match range index values not equal to $value.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param options  Options to this query. The default is ().  Options include:  "cached" Cache the results of this query in the list cache. "uncached" Do not cache the results of this query in the list cache. "score-function=function" Use the selected scoring function. The score function may be:  linearUse a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query. reciprocalUse a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query. zeroThis range query does not contribute to the score. This is the default.   "slope-factor=number" Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param weight  A weight for this query. The default is 1.0.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_query.html">cts:query</a> server data type
+  */
+  public CtsQueryExpr columnRangeQuery(ServerExpression schema, ServerExpression view, ServerExpression column, ServerExpression value, ServerExpression operator, ServerExpression options, ServerExpression weight);
+/**
   * Returns a geospatial complex polygon value.
   *
   * <a name="ml-server-type-complex-polygon"></a>
@@ -1112,7 +1215,7 @@ public interface CtsExpr {
   */
   public CtsQueryExpr elementValueQuery(ServerExpression elementName, ServerExpression text, ServerExpression options, ServerExpression weight);
 /**
-  * Returns a query matching elements by name with text content containing a given phrase. Searches only through immediate text node children of the specified element as well as any text node children of child elements defined in the Admin Interface as element-word-query-throughs or phrase-throughs; does not search through any other children of the specified element.
+  * Returns a query matching elements by name with text content containing a given phrase. Searches only through immediate text node children of the specified element as well as any text node children of child elements defined in the Admin Interface as element-word-query-throughs or phrase-throughs; does not search through any other children of the specified element. If neither word searches nor stemmed word searches is enabled for the target database, an XDMP-SEARCH error is thrown.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:element-word-query" target="mlserverdoc">cts:element-word-query</a> server function.
   * @param elementName  One or more element QNames to match. When multiple QNames are specified, the query matches if any QName matches.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -1121,7 +1224,7 @@ public interface CtsExpr {
   */
   public CtsQueryExpr elementWordQuery(String elementName, String text);
 /**
-  * Returns a query matching elements by name with text content containing a given phrase. Searches only through immediate text node children of the specified element as well as any text node children of child elements defined in the Admin Interface as element-word-query-throughs or phrase-throughs; does not search through any other children of the specified element.
+  * Returns a query matching elements by name with text content containing a given phrase. Searches only through immediate text node children of the specified element as well as any text node children of child elements defined in the Admin Interface as element-word-query-throughs or phrase-throughs; does not search through any other children of the specified element. If neither word searches nor stemmed word searches is enabled for the target database, an XDMP-SEARCH error is thrown.
   *
   * <a name="ml-server-type-element-word-query"></a>
   
@@ -1133,7 +1236,7 @@ public interface CtsExpr {
   */
   public CtsQueryExpr elementWordQuery(ServerExpression elementName, ServerExpression text);
 /**
-  * Returns a query matching elements by name with text content containing a given phrase. Searches only through immediate text node children of the specified element as well as any text node children of child elements defined in the Admin Interface as element-word-query-throughs or phrase-throughs; does not search through any other children of the specified element.
+  * Returns a query matching elements by name with text content containing a given phrase. Searches only through immediate text node children of the specified element as well as any text node children of child elements defined in the Admin Interface as element-word-query-throughs or phrase-throughs; does not search through any other children of the specified element. If neither word searches nor stemmed word searches is enabled for the target database, an XDMP-SEARCH error is thrown.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:element-word-query" target="mlserverdoc">cts:element-word-query</a> server function.
   * @param elementName  One or more element QNames to match. When multiple QNames are specified, the query matches if any QName matches.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -1143,7 +1246,7 @@ public interface CtsExpr {
   */
   public CtsQueryExpr elementWordQuery(String elementName, String text, String... options);
 /**
-  * Returns a query matching elements by name with text content containing a given phrase. Searches only through immediate text node children of the specified element as well as any text node children of child elements defined in the Admin Interface as element-word-query-throughs or phrase-throughs; does not search through any other children of the specified element.
+  * Returns a query matching elements by name with text content containing a given phrase. Searches only through immediate text node children of the specified element as well as any text node children of child elements defined in the Admin Interface as element-word-query-throughs or phrase-throughs; does not search through any other children of the specified element. If neither word searches nor stemmed word searches is enabled for the target database, an XDMP-SEARCH error is thrown.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:element-word-query" target="mlserverdoc">cts:element-word-query</a> server function.
   * @param elementName  One or more element QNames to match. When multiple QNames are specified, the query matches if any QName matches.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -1153,7 +1256,7 @@ public interface CtsExpr {
   */
   public CtsQueryExpr elementWordQuery(ServerExpression elementName, ServerExpression text, ServerExpression options);
 /**
-  * Returns a query matching elements by name with text content containing a given phrase. Searches only through immediate text node children of the specified element as well as any text node children of child elements defined in the Admin Interface as element-word-query-throughs or phrase-throughs; does not search through any other children of the specified element.
+  * Returns a query matching elements by name with text content containing a given phrase. Searches only through immediate text node children of the specified element as well as any text node children of child elements defined in the Admin Interface as element-word-query-throughs or phrase-throughs; does not search through any other children of the specified element. If neither word searches nor stemmed word searches is enabled for the target database, an XDMP-SEARCH error is thrown.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:element-word-query" target="mlserverdoc">cts:element-word-query</a> server function.
   * @param elementName  One or more element QNames to match. When multiple QNames are specified, the query matches if any QName matches.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
@@ -1164,7 +1267,7 @@ public interface CtsExpr {
   */
   public CtsQueryExpr elementWordQuery(String elementName, String text, String options, double weight);
 /**
-  * Returns a query matching elements by name with text content containing a given phrase. Searches only through immediate text node children of the specified element as well as any text node children of child elements defined in the Admin Interface as element-word-query-throughs or phrase-throughs; does not search through any other children of the specified element.
+  * Returns a query matching elements by name with text content containing a given phrase. Searches only through immediate text node children of the specified element as well as any text node children of child elements defined in the Admin Interface as element-word-query-throughs or phrase-throughs; does not search through any other children of the specified element. If neither word searches nor stemmed word searches is enabled for the target database, an XDMP-SEARCH error is thrown.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:element-word-query" target="mlserverdoc">cts:element-word-query</a> server function.
   * @param elementName  One or more element QNames to match. When multiple QNames are specified, the query matches if any QName matches.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)

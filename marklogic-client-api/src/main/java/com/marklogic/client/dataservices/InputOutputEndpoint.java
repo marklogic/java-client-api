@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2021 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.marklogic.client.dataservices;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.SessionState;
+import com.marklogic.client.dataservices.impl.HandleProvider;
 import com.marklogic.client.dataservices.impl.InputOutputEndpointImpl;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
@@ -40,7 +41,7 @@ public interface InputOutputEndpoint extends InputOutputCaller<InputStream,Input
         final class EndpointLocal extends InputOutputEndpointImpl<InputStream,InputStream>
                 implements InputOutputEndpoint {
             private EndpointLocal(DatabaseClient client, JSONWriteHandle apiDecl) {
-                super(client, apiDecl, new InputStreamHandle(), new InputStreamHandle());
+                super(client, apiDecl, new HandleProvider.ContentHandleProvider<>(new InputStreamHandle(), new InputStreamHandle()));
             }
             public InputOutputEndpoint.BulkInputOutputCaller bulkCaller() {
                 return new BulkLocal(this);

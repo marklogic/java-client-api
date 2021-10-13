@@ -132,6 +132,11 @@ public class StringHandle
     return new StringHandle().withFormat(getFormat()).withMimetype(getMimetype());
   }
   @Override
+  public StringHandle[] newHandleArray(int length) {
+    if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
+    return new StringHandle[length];
+  }
+  @Override
   public String[] newArray(int length) {
     if (length < 0) throw new IllegalArgumentException("array length less than zero: "+length);
     return new String[length];
