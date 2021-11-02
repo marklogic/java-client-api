@@ -795,7 +795,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function counts the rows where the specified input column has a value. If the input column is omitted, all rows in the group or row set are counted. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the column values.
   * @param column  The columns to be counted.
-  * @param option  The options can take a values key with a 'distinct' value to average the distinct values of the column.
+  * @param option  The options can take a values key with a 'distinct' value to count the distinct values of the column.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol count(String name, String column, PlanValueOption option);
@@ -803,7 +803,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function counts the rows where the specified input column has a value. If the input column is omitted, all rows in the group or row set are counted. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the column values.
   * @param column  The columns to be counted.
-  * @param option  The options can take a values key with a 'distinct' value to average the distinct values of the column.
+  * @param option  The options can take a values key with a 'distinct' value to count the distinct values of the column.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol count(PlanColumn name, PlanExprCol column, PlanValueOption option);
