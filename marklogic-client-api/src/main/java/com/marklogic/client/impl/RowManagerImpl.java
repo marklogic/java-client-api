@@ -285,6 +285,30 @@ public class RowManagerImpl
     return handle.get();
   }
 
+  @Override
+  public <T extends JSONReadHandle> T columnInfo(Plan plan, T resultsHandle) {
+    if (resultsHandle == null) {
+      throw new IllegalArgumentException("Must specify a handle to generate a view for the plan");
+    }
+
+    PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
+    AbstractWriteHandle astHandle = requestPlan.getHandle();
+
+    RequestParameters params = new RequestParameters();
+    params.add("output",     "columnInfo");
+
+    return services.postResource(requestLogger, "rows", null, params, astHandle, resultsHandle);
+  }
+  @Override
+  public <T> T columnInfoAs(Plan plan, Class<T> as) {
+    ContentHandle<T> handle = handleFor(as);
+    if (columnInfo(plan, (JSONReadHandle) handle) == null) {
+      return null;
+    }
+
+    return handle.get();
+  }
+
   private void addDatatypeStyleParam(RequestParameters params, RowSetPart datatypeStyle) {
     if (datatypeStyle != null) {
       switch (datatypeStyle) {

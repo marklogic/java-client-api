@@ -39,6 +39,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPathExpressionException;
 
+import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.row.*;
 import com.marklogic.client.type.*;
 import org.junit.AfterClass;
@@ -1203,6 +1204,27 @@ public class RowManagerTest {
       assertTrue("unexpected seconds value in row record "+rowNum,  0 <= seconds && seconds < 60);
       rowNum++;
     }
+  }
+  @Test
+  public void testColumnInfo() throws IOException {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    PlanBuilder.ExportablePlan builtPlan =
+            p.fromView("opticUnitTest", "musician")
+                    .where(
+                            p.cts.andQuery(
+                                    p.cts.jsonPropertyWordQuery("instrument", "trumpet"),
+                                    p.cts.jsonPropertyWordQuery(p.xs.string("lastName"), p.xs.stringSeq("Armstrong", "Davis"))
+                            )
+                    )
+                    .orderBy(p.col("lastName"));
+
+    String result = rowMgr.columnInfo(builtPlan, new StringHandle()).get();
+    assertNotNull(result);
+    result = rowMgr.columnInfoAs(builtPlan, String.class);
+    assertNotNull(result);
   }
   @Test
   public void testGenerateView() throws IOException {
