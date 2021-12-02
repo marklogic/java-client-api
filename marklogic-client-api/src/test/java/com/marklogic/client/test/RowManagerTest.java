@@ -1207,6 +1207,13 @@ public class RowManagerTest {
   }
   @Test
   public void testColumnInfo() throws IOException {
+    String expected =
+            "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"lastName\", \"type\":\"string\", \"nullable\":false}\n" +
+            "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"firstName\", \"type\":\"string\", \"nullable\":false}\n" +
+            "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"dob\", \"type\":\"date\", \"nullable\":false}\n" +
+            "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"rowid\", \"type\":\"rowid\", \"nullable\":false}\n" +
+            "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"__docid\", \"type\":\"fraghint\", \"nullable\":false}\n" +
+            "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"__content\", \"type\":\"value\", \"nullable\":false}";
     RowManager rowMgr = Common.client.newRowManager();
 
     PlanBuilder p = rowMgr.newPlanBuilder();
@@ -1223,8 +1230,10 @@ public class RowManagerTest {
 
     String result = rowMgr.columnInfo(builtPlan, new StringHandle()).get();
     assertNotNull(result);
+    assertEquals(result, expected);
     result = rowMgr.columnInfoAs(builtPlan, String.class);
     assertNotNull(result);
+    assertEquals(result, expected);
   }
   @Test
   public void testGenerateView() throws IOException {

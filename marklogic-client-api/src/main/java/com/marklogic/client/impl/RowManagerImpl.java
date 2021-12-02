@@ -302,6 +302,8 @@ public class RowManagerImpl
   @Override
   public <T> T columnInfoAs(Plan plan, Class<T> as) {
     ContentHandle<T> handle = handleFor(as);
+    if (!(handle instanceof JSONReadHandle))
+      throw new IllegalArgumentException("The handle is not an instance of JSONReadHandle.");
     if (columnInfo(plan, (JSONReadHandle) handle) == null) {
       return null;
     }
