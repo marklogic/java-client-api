@@ -273,7 +273,7 @@ public interface RowManager {
      * @param <T> the type of the handle for the generated view
      * @return	the handle with the content of the generated view for the plan
      */
-    <T extends XMLReadHandle> T generateView(Plan plan, String schema, String view, T handle);
+    <T extends XMLReadHandle> T generateView(PlanBuilder.PreparePlan plan, String schema, String view, T handle);
     /**
      * Generates generates a view that encapsulates a plan.
      *
@@ -294,7 +294,7 @@ public interface RowManager {
      * @param <T> the type of the IO object for reading the generated view
      * @return	an object of the IO class with the content of the generated view for the plan
      */
-    <T> T generateViewAs(Plan plan, String schema, String view, Class<T> as);
+    <T> T generateViewAs(PlanBuilder.PreparePlan plan, String schema, String view, Class<T> as);
 
     /**
      * This function can be used to inspect the state of a plan before execution. It returns the information about each
@@ -306,7 +306,7 @@ public interface RowManager {
      * @param <T> the type of the handle for the column information
      * @return	the handle with the content of the column information for the plan
      */
-    <T extends JSONReadHandle> T columnInfo(Plan plan, T handle);
+    <T extends JSONReadHandle> T columnInfo(PlanBuilder.PreparePlan plan, T handle);
     /**This function can be used to inspect the state of a plan before execution. It returns the information about each
      * column in the plan, including schema name, view name, column name, data type and nullability. It also returns the
      * information about system columns.Generates generates a view that encapsulates a plan.
@@ -322,5 +322,5 @@ public interface RowManager {
      * @param <T> the type of the IO object for reading the column information
      * @return	an object of the IO class with the content of the column information for the plan
      */
-    <T> T columnInfoAs(Plan plan, Class<T> as);
+    <T> T columnInfoAs(PlanBuilder.PreparePlan plan, Class<T> as);
 }
