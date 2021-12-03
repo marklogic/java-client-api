@@ -256,7 +256,7 @@ public class RowManagerImpl
   }
 
   @Override
-  public <T extends XMLReadHandle> T generateView(Plan plan, String schema, String view, T resultsHandle) {
+  public <T extends XMLReadHandle> T generateView(PlanBuilder.PreparePlan plan, String schema, String view, T resultsHandle) {
     if (resultsHandle == null) {
       throw new IllegalArgumentException("Must specify a handle to generate a view for the plan");
     } else if (schema == null || schema.length() == 0) {
@@ -276,7 +276,7 @@ public class RowManagerImpl
     return services.postResource(requestLogger, "rows", null, params, astHandle, resultsHandle);
   }
   @Override
-  public <T> T generateViewAs(Plan plan, String schema, String view, Class<T> as) {
+  public <T> T generateViewAs(PlanBuilder.PreparePlan plan, String schema, String view, Class<T> as) {
     ContentHandle<T> handle = handleFor(as);
     if (generateView(plan, schema, view, (XMLReadHandle) handle) == null) {
       return null;
@@ -286,7 +286,7 @@ public class RowManagerImpl
   }
 
   @Override
-  public <T extends JSONReadHandle> T columnInfo(Plan plan, T resultsHandle) {
+  public <T extends JSONReadHandle> T columnInfo(PlanBuilder.PreparePlan plan, T resultsHandle) {
     if (resultsHandle == null) {
       throw new IllegalArgumentException("Must specify a handle to generate a view for the plan");
     }
@@ -300,7 +300,7 @@ public class RowManagerImpl
     return services.postResource(requestLogger, "rows", null, params, astHandle, resultsHandle);
   }
   @Override
-  public <T> T columnInfoAs(Plan plan, Class<T> as) {
+  public <T> T columnInfoAs(PlanBuilder.PreparePlan plan, Class<T> as) {
     ContentHandle<T> handle = handleFor(as);
     if (!(handle instanceof JSONReadHandle))
       throw new IllegalArgumentException("The handle is not an instance of JSONReadHandle.");

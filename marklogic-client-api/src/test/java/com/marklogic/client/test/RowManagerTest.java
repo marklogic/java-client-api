@@ -1218,7 +1218,7 @@ public class RowManagerTest {
 
     PlanBuilder p = rowMgr.newPlanBuilder();
 
-    PlanBuilder.ExportablePlan builtPlan =
+    PlanBuilder.PreparePlan builtPlan =
             p.fromView("opticUnitTest", "musician")
                     .where(
                             p.cts.andQuery(
@@ -1241,7 +1241,7 @@ public class RowManagerTest {
 
     PlanBuilder p = rowMgr.newPlanBuilder();
 
-    PlanBuilder.ExportablePlan builtPlan =
+    PlanBuilder.PreparePlan builtPlan =
           p.fromView("opticUnitTest", "musician")
            .where(
               p.cts.andQuery(
