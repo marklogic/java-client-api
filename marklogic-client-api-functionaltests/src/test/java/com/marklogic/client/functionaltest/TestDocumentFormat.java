@@ -26,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.marklogic.client.Transaction;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -51,8 +52,9 @@ public class TestDocumentFormat extends BasicJavaClientREST {
   public static void setUp() throws Exception
   {
     System.out.println("In setup");
-
     configureRESTServer(dbName, fNames);
+    // Create a user with minimal privs and test doc exists in a transaction.
+    createRESTUser("userInTrans", "x", "rest-writer");
   }
 
   @Test
@@ -692,10 +694,57 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     client.release();
   }
 
+  @Test
+  public void testDocExistsWithTransaction() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
+  {
+    System.out.println("Running testDocExistsWithTransaction");
+
+    String filename = "json-original.json";
+    String uri1 = "/DocExistsInTransMinimalPriv/";
+    String uri2 = "/DocExistsTransWithPrivs/";
+
+    // user with minimal privs.
+    DatabaseClient client1 = getDatabaseClient("userInTrans", "x", getConnType());
+    // user with privs.
+    DatabaseClient client2 = getDatabaseClient("rest-writer", "x", getConnType());
+
+    // create doc manager
+    DocumentManager docMgr1 = client1.newDocumentManager();
+    DocumentManager docMgr2 = client2.newDocumentManager();
+    Transaction t1 = client1.openTransaction();
+    Transaction t2 = client2.openTransaction();
+
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
+
+    // create a handle on the content
+    FileHandle handle = new FileHandle(file);
+    handle.set(file);
+
+    handle.setFormat(Format.JSON);
+
+    // create docIds
+    String docId1 = uri1 + filename;
+    String docId2 = uri2 + filename;
+    docMgr1.write(docId1, handle);
+    docMgr2.write(docId2, handle);
+
+    String expectedUri1 = uri1 + filename;
+    String expectedUri2 = uri2 + filename;
+    String docUri1 = docMgr1.exists(expectedUri1, t1).getUri();
+    String docUri2 = docMgr2.exists(expectedUri2, t2).getUri();
+    assertEquals("URI is not found", expectedUri1, docUri1);
+    assertEquals("URI is not found", expectedUri2, docUri2);
+    // release the clients
+    client1.release();
+    client2.release();
+  }
+
   @AfterClass
   public static void tearDown() throws Exception
   {
     System.out.println("In tear down");
+    //Delete user userInTrans
+    deleteRESTUser("userInTrans");
     cleanupRESTServer(dbName, fNames);
   }
 }
