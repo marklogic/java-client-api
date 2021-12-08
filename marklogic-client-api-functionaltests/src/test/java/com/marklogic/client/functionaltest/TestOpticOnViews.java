@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2021 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1463,7 +1463,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
   }
 
   /*
-   * This test checks plan builder with invlid Schema and view names.
+   * This test checks plan builder with invalid Schema and view names.
    */
   @Test
   public void testinValidNamedSchemaView() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
@@ -3082,11 +3082,86 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
     rowMgr.resultDoc(output, jacksonHandleFrg);
     JsonNode jsonResultsFrag = jacksonHandleFrg.get();
-    System.out.println("Results are " + jsonResultsFrag);
+    //System.out.println("Results are " + jsonResultsFrag);
 
     JsonNode jsonColumnsResults = jsonResultsFrag.get("columns");
     assertEquals("Facet Nodes group name value incorrect ", "group0", jsonColumnsResults.get(0).get("name").asText());
     assertEquals("Facet Nodes group name value incorrect ", "group1", jsonColumnsResults.get(1).get("name").asText());
+  }
+
+  // Testing columnInfo - similar to testgroupBy
+
+  @Test
+  public void testColumnInfo() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testColumnInfo method");
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
+            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+
+    ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+    ModifyPlan plan3 = plan1.union(plan2)
+            .select(p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
+                    p.schemaCol("opticFunctionalTest", "master", "date"),
+                    p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
+                    p.col("amount"),
+                    p.col("color")
+            )
+            .orderBy(p.desc(p.col("MasterName")));
+    String colInfo = rowMgr.columnInfoAs(plan3, String.class);
+    //System.out.println("In testColumnInfo method" + colInfo);
+    // Should have 5 nodes returned.
+    assertTrue("Element 1 MasterName value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"MasterName\", \"type\":\"string\", \"nullable\":true}"));
+    assertTrue("Element 2 master value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"master\", \"column\":\"date\", \"type\":\"date\", \"nullable\":true}"));
+    assertTrue("Element 3 DetailName value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"DetailName\", \"type\":\"string\", \"nullable\":true}"));
+    assertTrue("Element 4 amount value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"detail\", \"column\":\"amount\", \"type\":\"double\", \"nullable\":true}"));
+    assertTrue("Element 5 color value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"detail\", \"column\":\"color\", \"type\":\"string\", \"nullable\":true}"));
+  }
+
+  // Test for fragment Id types. Similar to testExplainPlan
+  @Test
+  public void testColInfoWithSysCols() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testColInfoWithSysCols method");
+
+    // Create a new Plan.
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    PlanSystemColumn fIdCol1 = p.fragmentIdCol("fragIdCol1");
+    PlanSystemColumn fIdCol2 = p.fragmentIdCol("fragIdCol2");
+
+    ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail", null, fIdCol1)
+            .orderBy(p.col("id"));
+    ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master", null, fIdCol2)
+            .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
+
+    ModifyPlan output = plan1.joinInner(plan2).where(
+                    p.eq(
+                            p.schemaCol("opticFunctionalTest", "master", "id"),
+                            p.col("masterId")
+                    )
+            )
+            .select(
+                    p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
+                    p.schemaCol("opticFunctionalTest", "master", "date"),
+                    p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
+                    p.col("amount"),
+                    p.col("color"),
+                    fIdCol1,
+                    fIdCol2
+            )
+            .orderBy(p.desc(p.col("DetailName")));
+    String colInfo = rowMgr.columnInfoAs(output, String.class);
+    // Should have 7 nodes returned.
+    assertTrue("Element 1 MasterName value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"MasterName\", \"type\":\"string\", \"nullable\":false}"));
+    assertTrue("Element 2 master value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"master\", \"column\":\"date\", \"type\":\"date\", \"nullable\":false}"));
+    assertTrue("Element 3 DetailName value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"DetailName\", \"type\":\"string\", \"nullable\":false}"));
+    assertTrue("Element 4 detail-double value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"detail\", \"column\":\"amount\", \"type\":\"double\", \"nullable\":false}"));
+    assertTrue("Element 5 detail-string value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"detail\", \"column\":\"color\", \"type\":\"string\", \"nullable\":false}"));
+    assertTrue("Element 6 detail-unknown value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"detail\", \"column\":\"fragIdCol1\", \"type\":\"unknown\", \"nullable\":false}"));
+    assertTrue("Element 7 master-unknown value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"master\", \"column\":\"fragIdCol2\", \"type\":\"unknown\", \"nullable\":false}"));
   }
 
   @AfterClass

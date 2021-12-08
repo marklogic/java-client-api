@@ -1957,7 +1957,28 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     }
   }
 
-  @AfterClass
+  @Test
+  public void testLiteralsWithColumnInfo() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testLiteralsWithColumnInfo method");
+
+    // Create a new Plan.
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    // plans from literals
+    ModifyPlan plan1 = p.fromLiterals(literals1);
+    ModifyPlan plan2 = p.fromLiterals(literals2);
+    ModifyPlan output = plan1.joinInner(plan2).orderBy(p.asc(p.col("rowId")));
+
+    String colInfo = rowMgr.columnInfoAs(output, String.class);
+    //System.out.println("In testLiteralsWithColumnInfo method" + colInfo);
+    assertTrue("Element 1 desc value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"desc\", \"type\":\"unknown\", \"nullable\":false"));
+    assertTrue("Element 2 colorId value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"colorId\", \"type\":\"unknown\", \"nullable\":false}"));
+    assertTrue("Element 3 rowId value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"rowId\", \"type\":\"unknown\", \"nullable\":false}"));
+    assertTrue("Element 4 colorDesc value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"colorDesc\", \"type\":\"unknown\", \"nullable\":false}"));
+  }
+
+    @AfterClass
   public static void tearDownAfterClass() throws Exception
   {
     System.out.println("In tear down");
