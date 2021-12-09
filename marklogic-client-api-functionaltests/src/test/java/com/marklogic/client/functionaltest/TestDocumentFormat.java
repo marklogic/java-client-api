@@ -744,7 +744,5 @@ public class TestDocumentFormat extends BasicJavaClientREST {
   {
     System.out.println("In tear down");
     cleanupRESTServer(dbName, fNames);
-    //Delete user userInTrans
-    deleteRESTUser("userInTrans");
   }
 }
