@@ -743,8 +743,8 @@ public class TestDocumentFormat extends BasicJavaClientREST {
   public static void tearDown() throws Exception
   {
     System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
     //Delete user userInTrans
     deleteRESTUser("userInTrans");
-    cleanupRESTServer(dbName, fNames);
   }
 }
