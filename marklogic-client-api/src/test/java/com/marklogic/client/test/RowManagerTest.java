@@ -1211,9 +1211,7 @@ public class RowManagerTest {
             "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"lastName\", \"type\":\"string\", \"nullable\":false}\n" +
             "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"firstName\", \"type\":\"string\", \"nullable\":false}\n" +
             "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"dob\", \"type\":\"date\", \"nullable\":false}\n" +
-            "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"rowid\", \"type\":\"rowid\", \"nullable\":false}\n" +
-            "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"__docid\", \"type\":\"fraghint\", \"nullable\":false}\n" +
-            "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"__content\", \"type\":\"value\", \"nullable\":false}";
+            "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"rowid\", \"type\":\"rowid\", \"nullable\":false}";
     RowManager rowMgr = Common.client.newRowManager();
 
     PlanBuilder p = rowMgr.newPlanBuilder();
