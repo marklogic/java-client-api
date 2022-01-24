@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.marklogic.client.expression;
 
 import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 import com.marklogic.client.type.XsDateTimeVal;
 import com.marklogic.client.type.XsDoubleVal;
+import com.marklogic.client.type.XsIntegerVal;
 import com.marklogic.client.type.XsQNameSeqVal;
 import com.marklogic.client.type.XsQNameVal;
 import com.marklogic.client.type.XsStringSeqVal;
@@ -1634,6 +1636,78 @@ public interface CtsExpr {
   */
   public CtsReferenceExpr geospatialRegionPathReference(ServerExpression pathExpression, ServerExpression options, ServerExpression namespaces);
 /**
+  * Create a reference to a geospatial region path index, for use as a parameter to cts:geospatial-region-query and other query operations on geospatial region indexes. This function throws an exception if the specified region path index does not exist.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:geospatial-region-path-reference" target="mlserverdoc">cts:geospatial-region-path-reference</a> server function.
+  * @param pathExpression  The XPath expression specified in the index configuration.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param options  Index configuration options. The default is (). These options should match the configuration used when creating the index. Available options:  "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float (default) and double. "unchecked" Read the coordinate-system info only from the input. Do not check the definition against the context database.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param namespaces  A map of namespace bindings. The keys should be namespace prefixes and the values should be namespace URIs. These namespace bindings will be added to the in-scope namespace bindings in the interpretation of the path.  (of <a href="{@docRoot}/doc-files/types/map_map.html">map:map</a>)
+  * @param geohashPrecision  The geohash precision specified in the index configuration. Values between 1 and 12 inclusive are possible.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_reference.html">cts:reference</a> server data type
+  */
+  public CtsReferenceExpr geospatialRegionPathReference(String pathExpression, String options, ServerExpression namespaces, long geohashPrecision);
+/**
+  * Create a reference to a geospatial region path index, for use as a parameter to cts:geospatial-region-query and other query operations on geospatial region indexes. This function throws an exception if the specified region path index does not exist.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:geospatial-region-path-reference" target="mlserverdoc">cts:geospatial-region-path-reference</a> server function.
+  * @param pathExpression  The XPath expression specified in the index configuration.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param options  Index configuration options. The default is (). These options should match the configuration used when creating the index. Available options:  "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float (default) and double. "unchecked" Read the coordinate-system info only from the input. Do not check the definition against the context database.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param namespaces  A map of namespace bindings. The keys should be namespace prefixes and the values should be namespace URIs. These namespace bindings will be added to the in-scope namespace bindings in the interpretation of the path.  (of <a href="{@docRoot}/doc-files/types/map_map.html">map:map</a>)
+  * @param geohashPrecision  The geohash precision specified in the index configuration. Values between 1 and 12 inclusive are possible.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_reference.html">cts:reference</a> server data type
+  */
+  public CtsReferenceExpr geospatialRegionPathReference(ServerExpression pathExpression, ServerExpression options, ServerExpression namespaces, ServerExpression geohashPrecision);
+/**
+  * Create a reference to a geospatial region path index, for use as a parameter to cts:geospatial-region-query and other query operations on geospatial region indexes. This function throws an exception if the specified region path index does not exist.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:geospatial-region-path-reference" target="mlserverdoc">cts:geospatial-region-path-reference</a> server function.
+  * @param pathExpression  The XPath expression specified in the index configuration.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param options  Index configuration options. The default is (). These options should match the configuration used when creating the index. Available options:  "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float (default) and double. "unchecked" Read the coordinate-system info only from the input. Do not check the definition against the context database.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param namespaces  A map of namespace bindings. The keys should be namespace prefixes and the values should be namespace URIs. These namespace bindings will be added to the in-scope namespace bindings in the interpretation of the path.  (of <a href="{@docRoot}/doc-files/types/map_map.html">map:map</a>)
+  * @param geohashPrecision  The geohash precision specified in the index configuration. Values between 1 and 12 inclusive are possible.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
+  * @param units  The units specified in the index configuration. 'miles', 'km', 'feet', and 'meters' are valid.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_reference.html">cts:reference</a> server data type
+  */
+  public CtsReferenceExpr geospatialRegionPathReference(String pathExpression, String options, ServerExpression namespaces, long geohashPrecision, String units);
+/**
+  * Create a reference to a geospatial region path index, for use as a parameter to cts:geospatial-region-query and other query operations on geospatial region indexes. This function throws an exception if the specified region path index does not exist.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:geospatial-region-path-reference" target="mlserverdoc">cts:geospatial-region-path-reference</a> server function.
+  * @param pathExpression  The XPath expression specified in the index configuration.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param options  Index configuration options. The default is (). These options should match the configuration used when creating the index. Available options:  "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float (default) and double. "unchecked" Read the coordinate-system info only from the input. Do not check the definition against the context database.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param namespaces  A map of namespace bindings. The keys should be namespace prefixes and the values should be namespace URIs. These namespace bindings will be added to the in-scope namespace bindings in the interpretation of the path.  (of <a href="{@docRoot}/doc-files/types/map_map.html">map:map</a>)
+  * @param geohashPrecision  The geohash precision specified in the index configuration. Values between 1 and 12 inclusive are possible.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
+  * @param units  The units specified in the index configuration. 'miles', 'km', 'feet', and 'meters' are valid.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_reference.html">cts:reference</a> server data type
+  */
+  public CtsReferenceExpr geospatialRegionPathReference(ServerExpression pathExpression, ServerExpression options, ServerExpression namespaces, ServerExpression geohashPrecision, ServerExpression units);
+/**
+  * Create a reference to a geospatial region path index, for use as a parameter to cts:geospatial-region-query and other query operations on geospatial region indexes. This function throws an exception if the specified region path index does not exist.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:geospatial-region-path-reference" target="mlserverdoc">cts:geospatial-region-path-reference</a> server function.
+  * @param pathExpression  The XPath expression specified in the index configuration.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param options  Index configuration options. The default is (). These options should match the configuration used when creating the index. Available options:  "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float (default) and double. "unchecked" Read the coordinate-system info only from the input. Do not check the definition against the context database.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param namespaces  A map of namespace bindings. The keys should be namespace prefixes and the values should be namespace URIs. These namespace bindings will be added to the in-scope namespace bindings in the interpretation of the path.  (of <a href="{@docRoot}/doc-files/types/map_map.html">map:map</a>)
+  * @param geohashPrecision  The geohash precision specified in the index configuration. Values between 1 and 12 inclusive are possible.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
+  * @param units  The units specified in the index configuration. 'miles', 'km', 'feet', and 'meters' are valid.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param invalidValues  The invalid values setting specified in the index configuration. 'reject' and 'ignore' are valid.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_reference.html">cts:reference</a> server data type
+  */
+  public CtsReferenceExpr geospatialRegionPathReference(String pathExpression, String options, ServerExpression namespaces, long geohashPrecision, String units, String invalidValues);
+/**
+  * Create a reference to a geospatial region path index, for use as a parameter to cts:geospatial-region-query and other query operations on geospatial region indexes. This function throws an exception if the specified region path index does not exist.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/cts:geospatial-region-path-reference" target="mlserverdoc">cts:geospatial-region-path-reference</a> server function.
+  * @param pathExpression  The XPath expression specified in the index configuration.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param options  Index configuration options. The default is (). These options should match the configuration used when creating the index. Available options:  "coordinate-system=string" Use the given coordinate system. Valid values are:  wgs84The WGS84 coordinate system. wgs84/doubleThe WGS84 coordinate system at double precision. etrs89The ETRS89 coordinate system. etrs89/doubleThe ETRS89 coordinate system at double precision. rawThe raw (unmapped) coordinate system. raw/doubleThe raw coordinate system at double precision.   "precision=value" Use the coordinate system at the given precision. Allowed values: float (default) and double. "unchecked" Read the coordinate-system info only from the input. Do not check the definition against the context database.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param namespaces  A map of namespace bindings. The keys should be namespace prefixes and the values should be namespace URIs. These namespace bindings will be added to the in-scope namespace bindings in the interpretation of the path.  (of <a href="{@docRoot}/doc-files/types/map_map.html">map:map</a>)
+  * @param geohashPrecision  The geohash precision specified in the index configuration. Values between 1 and 12 inclusive are possible.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
+  * @param units  The units specified in the index configuration. 'miles', 'km', 'feet', and 'meters' are valid.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param invalidValues  The invalid values setting specified in the index configuration. 'reject' and 'ignore' are valid.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_reference.html">cts:reference</a> server data type
+  */
+  public CtsReferenceExpr geospatialRegionPathReference(ServerExpression pathExpression, ServerExpression options, ServerExpression namespaces, ServerExpression geohashPrecision, ServerExpression units, ServerExpression invalidValues);
+/**
   * Construct a query to match regions in documents that satisfy a specified relationship relative to other regions. For example, regions in documents that intersect with regions specified in the search criteria.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:geospatial-region-query" target="mlserverdoc">cts:geospatial-region-query</a> server function.
@@ -2789,7 +2863,7 @@ public interface CtsExpr {
   
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/cts:polygon" target="mlserverdoc">cts:polygon</a> server function.
-  * @param vertices  The vertices of the polygon, given in order. No edge may cover more than 180 degrees of either latitude or longitude. The polygon as a whole may not encompass both poles. These constraints are necessary to ensure an unambiguous interpretation of the polygon. There must be at least three vertices. The first vertex should be identical to the last vertex to close the polygon. vertexes.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param vertices  The vertices of the polygon, given in order. No edge may cover more than 180 degrees of either latitude or longitude. The polygon as a whole may not encompass both poles. These constraints are necessary to ensure an unambiguous interpretation of the polygon. There must be at least three vertices. The first vertex should be identical to the last vertex to close the polygon. vertexes.  (of <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_polygon.html">cts:polygon</a> server data type
   */
   public CtsPolygonExpr polygon(ServerExpression vertices);

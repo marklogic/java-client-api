@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.marklogic.client.expression;
 
 import com.marklogic.client.type.XsBooleanVal;
@@ -123,4 +124,22 @@ public interface MapExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/map_map.html">map:map</a> server data type
   */
   public ServerExpression map(ServerExpression map);
+/**
+  * Constructs a new map by combining the keys from the maps given as an argument. If a given key exists in more than one argument map, the value from the last such map is used.
+  *
+  * <a name="ml-server-type-new"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/map:new" target="mlserverdoc">map:new</a> server function.
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/map_map.html">map:map</a> server data type
+  */
+  public ServerExpression newExpr();
+/**
+  * Constructs a new map by combining the keys from the maps given as an argument. If a given key exists in more than one argument map, the value from the last such map is used.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/map:new" target="mlserverdoc">map:new</a> server function.
+  * @param maps  The argument maps.  (of <a href="{@docRoot}/doc-files/types/map_map.html">map:map</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/map_map.html">map:map</a> server data type
+  */
+  public ServerExpression newExpr(ServerExpression maps);
 }

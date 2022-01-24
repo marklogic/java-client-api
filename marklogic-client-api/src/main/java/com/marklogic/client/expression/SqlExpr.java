@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.marklogic.client.expression;
 
 import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
@@ -46,7 +47,7 @@ public interface SqlExpr {
   */
   public ServerExpression bitLength(ServerExpression str);
 /**
-  * Returns an unsignedLong specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the lesser index.
+  * Returns an unsignedLong specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the greater index.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:bucket" target="mlserverdoc">sql:bucket</a> server function.
   * @param bucketEdgesParam  A sequence of ordered values indicating the edges of a collection of buckets. If the sequence is out of order or has duplicates, SQL-UNORDERED is thrown.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
@@ -55,7 +56,7 @@ public interface SqlExpr {
   */
   public ServerExpression bucket(ServerExpression bucketEdgesParam, String srchParam);
 /**
-  * Returns an unsignedLong specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the lesser index.
+  * Returns an unsignedLong specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the greater index.
   *
   * <a name="ml-server-type-bucket"></a>
   
@@ -67,7 +68,7 @@ public interface SqlExpr {
   */
   public ServerExpression bucket(ServerExpression bucketEdgesParam, ServerExpression srchParam);
 /**
-  * Returns an unsignedLong specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the lesser index.
+  * Returns an unsignedLong specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the greater index.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:bucket" target="mlserverdoc">sql:bucket</a> server function.
   * @param bucketEdgesParam  A sequence of ordered values indicating the edges of a collection of buckets. If the sequence is out of order or has duplicates, SQL-UNORDERED is thrown.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
@@ -77,7 +78,7 @@ public interface SqlExpr {
   */
   public ServerExpression bucket(ServerExpression bucketEdgesParam, String srchParam, String collationLiteral);
 /**
-  * Returns an unsignedLong specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the lesser index.
+  * Returns an unsignedLong specifying the index of the bucket the second parameter belongs to in buckets formed by the first parameter. Values that lie on the edge of a bucket fall to the greater index.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:bucket" target="mlserverdoc">sql:bucket</a> server function.
   * @param bucketEdgesParam  A sequence of ordered values indicating the edges of a collection of buckets. If the sequence is out of order or has duplicates, SQL-UNORDERED is thrown.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
@@ -315,7 +316,7 @@ public interface SqlExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:like" target="mlserverdoc">sql:like</a> server function.
   * @param input  The input from which to match.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param pattern  The expression to match. '_' matches one character and '%' matches any number of characters.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param escape  If a '_' ann '%' are preceeded by an escape character then it will be match as the char '-'/'%' themselves.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param escape  If a '_' or '%' are preceeded by an escape character then it will be match as the char '_'/'%' themselves.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
   public ServerExpression like(ServerExpression input, String pattern, String escape);
@@ -325,7 +326,7 @@ public interface SqlExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:like" target="mlserverdoc">sql:like</a> server function.
   * @param input  The input from which to match.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param pattern  The expression to match. '_' matches one character and '%' matches any number of characters.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param escape  If a '_' ann '%' are preceeded by an escape character then it will be match as the char '-'/'%' themselves.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param escape  If a '_' or '%' are preceeded by an escape character then it will be match as the char '_'/'%' themselves.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
   public ServerExpression like(ServerExpression input, ServerExpression pattern, ServerExpression escape);

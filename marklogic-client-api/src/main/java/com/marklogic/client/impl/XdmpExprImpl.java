@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.marklogic.client.impl;
 
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
@@ -1076,6 +1077,24 @@ class XdmpExprImpl implements XdmpExpr {
       throw new IllegalArgumentException("value parameter for type() cannot be null");
     }
     return new XsExprImpl.QNameCallImpl("xdmp", "type", new Object[]{ value });
+  }
+
+  
+  @Override
+  public ServerExpression uriContentType(ServerExpression uri) {
+    if (uri == null) {
+      throw new IllegalArgumentException("uri parameter for uriContentType() cannot be null");
+    }
+    return new XsExprImpl.StringCallImpl("xdmp", "uri-content-type", new Object[]{ uri });
+  }
+
+  
+  @Override
+  public ServerExpression uriFormat(ServerExpression uri) {
+    if (uri == null) {
+      throw new IllegalArgumentException("uri parameter for uriFormat() cannot be null");
+    }
+    return new XsExprImpl.StringCallImpl("xdmp", "uri-format", new Object[]{ uri });
   }
 
   

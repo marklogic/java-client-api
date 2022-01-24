@@ -63,6 +63,11 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   @Override
+  public ModifyPlan fromSparql(String select, String qualifierName, PlanSparqlOptions option) {
+    return fromSparql((select == null) ? (XsStringVal) null : xs.string(select), (qualifierName == null) ? (XsStringVal) null : xs.string(qualifierName), option);
+  }
+
+  @Override
   public ModifyPlan fromSparql(XsStringVal select, XsStringVal qualifierName, PlanSparqlOptions option) {
     if (select == null) {
       throw new IllegalArgumentException("select parameter for fromSparql() cannot be null");
