@@ -253,12 +253,6 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
   
   @Override
   public ServerExpression sameTerm(ServerExpression a, ServerExpression b) {
-    if (a == null) {
-      throw new IllegalArgumentException("a parameter for sameTerm() cannot be null");
-    }
-    if (b == null) {
-      throw new IllegalArgumentException("b parameter for sameTerm() cannot be null");
-    }
     return new XsExprImpl.BooleanCallImpl("sem", "sameTerm", new Object[]{ a, b });
   }
 
