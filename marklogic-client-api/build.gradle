@@ -80,9 +80,9 @@ task javadocJar (type: Jar, dependsOn: javadoc) {
 }
 
 Node pomCustomizations = new NodeBuilder(). project {
-    name '$rootProject.describedName'
+    name "$rootProject.describedName"
     packaging 'jar'
-    textdescription '$project.description'
+    textdescription "$project.description"
     url 'https://github.com/marklogic/java-client-api'
 
     scm {
