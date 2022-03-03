@@ -416,7 +416,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     assertEquals("Element 3 (myCity) in date incorrect", "1999-04-22", jsonInnerDocNodes.get(2).path("myCity.date").path("value").asText());
     assertEquals("Element 4 (myCity) in date incorrect", "2006-06-23", jsonInnerDocNodes.get(3).path("myCity.date").path("value").asText());
 
-    // Verify lasst result, since records are ordered.
+    // Verify last result, since records are ordered.
     assertEquals("Element 5 (myCity) in date incorrect", "2007-01-01", jsonInnerDocNodes.get(4).path("myCity.date").path("value").asText());
     assertEquals("Element 5 (myCity) in URI1 incorrect", "/optic/lexicon/test/doc1.json", jsonInnerDocNodes.get(4).path("myCity.uri1").path("value").asText());
     assertEquals("Element 5 (myCity) in distance incorrect", "50.4", jsonInnerDocNodes.get(4).path("myCity.distance").path("value").asText());
