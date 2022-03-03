@@ -1806,7 +1806,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
             .select(
                     p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
                     p.schemaCol("opticFunctionalTest", "master", "date"),
-                    p.as("DetailName", p.col("name")),
+                    p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
                     p.col("amount"),
                     p.col("color"),
                     fIdCol1,
@@ -1825,18 +1825,18 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     ModifyPlan plan3 = p.fromView("opticFunctionalTest", "master")
             .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan4 = p.fromView("opticFunctionalTest", "detail")
-            .orderBy(p.col("id"));
+            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
     // intersect with different number of columns
     JsonNode explainNodeInv = null;
     try {
       ModifyPlan outputInv = plan3.select(p.schemaCol("opticFunctionalTest", "master", "id"))
               .intersect(
                       plan4.select(
-                              p.col("id"),
+                              p.schemaCol("opticFunctionalTest", "detail", "id"),
                               p.col("masterId")
                       )
               )
-              .orderBy(p.asc(p.col("id")));
+              .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")));
 
       explainNodeInv = rowMgr.explain(outputInv, new JacksonHandle()).get();
       assertEquals("Explain of Invalid plan incorrect", explainNodeInv.path("node").asText(), "plan");
@@ -3160,8 +3160,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     assertTrue("Element 3 DetailName value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"DetailName\", \"type\":\"string\", \"nullable\":false}"));
     assertTrue("Element 4 detail-double value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"detail\", \"column\":\"amount\", \"type\":\"double\", \"nullable\":false}"));
     assertTrue("Element 5 detail-string value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"detail\", \"column\":\"color\", \"type\":\"string\", \"nullable\":false}"));
-    assertTrue("Element 6 detail-unknown value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"detail\", \"column\":\"fragIdCol1\", \"type\":\"unknown\", \"nullable\":false}"));
-    assertTrue("Element 7 master-unknown value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"master\", \"column\":\"fragIdCol2\", \"type\":\"unknown\", \"nullable\":false}"));
+    assertTrue("Element 6 detail-unknown value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"detail\", \"column\":\"fragIdCol1\", \"type\":\"fraghint\", \"nullable\":false}"));
+    assertTrue("Element 7 master-unknown value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"master\", \"column\":\"fragIdCol2\", \"type\":\"fraghint\", \"nullable\":false}"));
   }
 
   @AfterClass
