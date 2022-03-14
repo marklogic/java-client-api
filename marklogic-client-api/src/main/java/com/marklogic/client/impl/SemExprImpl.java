@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.marklogic.client.impl;
 
 import com.marklogic.client.type.CtsQueryExpr;
+import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 import com.marklogic.client.type.XsBooleanVal;
 import com.marklogic.client.type.XsDateTimeVal;
@@ -251,12 +253,6 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
   
   @Override
   public ServerExpression sameTerm(ServerExpression a, ServerExpression b) {
-    if (a == null) {
-      throw new IllegalArgumentException("a parameter for sameTerm() cannot be null");
-    }
-    if (b == null) {
-      throw new IllegalArgumentException("b parameter for sameTerm() cannot be null");
-    }
     return new XsExprImpl.BooleanCallImpl("sem", "sameTerm", new Object[]{ a, b });
   }
 

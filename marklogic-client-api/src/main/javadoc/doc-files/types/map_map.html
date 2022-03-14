@@ -35,7 +35,7 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	  </tr>
 <tr class="rowColor">
 	    <td class="colFirst"><a href="cts_reference.html">cts:reference</a></td>
-	    <td class="colLast"><span class="memberNameLink">cts:geospatial-region-path-reference</span>(<span><a href="xs_string.html">xs:string</a> <i>path-expression</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>, <span>map:map <i>namespaces</i>?</span>)</td>
+	    <td class="colLast"><span class="memberNameLink">cts:geospatial-region-path-reference</span>(<span><a href="xs_string.html">xs:string</a> <i>path-expression</i></span>, <span><a href="xs_string.html">xs:string</a> <i>options</i>*</span>, <span>map:map <i>namespaces</i>?</span>, <span><a href="xs_integer.html">xs:integer</a> <i>geohash-precision</i>?</span>, <span><a href="xs_string.html">xs:string</a> <i>units</i>*</span>, <span><a href="xs_string.html">xs:string</a> <i>invalid-values</i>*</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-geospatial-region-path-reference">java</a></td>
 	    <td><a href="http://docs.marklogic.com/cts:geospatial-region-path-reference" target="mlserverdoc">server</a></td>
 	  </tr>
@@ -69,6 +69,12 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td><a href="../../com/marklogic/client/expression/MapExpr.html#ml-server-type-keys">java</a></td>
 	    <td><a href="http://docs.marklogic.com/map:keys" target="mlserverdoc">server</a></td>
 	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">map:map</td>
+	    <td class="colLast"><span class="memberNameLink">map:new</span>(<span>map:map <i>maps</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/MapExpr.html#ml-server-type-new">java</a></td>
+	    <td><a href="http://docs.marklogic.com/map:new" target="mlserverdoc">server</a></td>
+	  </tr>
 </table></div><br/><div class="summary"><h3>Return Value Of</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr>
 	    <th class="colFirst" scope="col">Server Return Type</th>
 	    <th class="colLast" scope="col">Server Function</th>
@@ -88,6 +94,12 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td><a href="http://docs.marklogic.com/map:entry" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="altColor">
+	    <td class="colFirst">map:map</td>
+	    <td class="colLast"><span class="memberNameLink">map:new</span>(<span>map:map <i>maps</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/MapExpr.html#ml-server-type-new">java</a></td>
+	    <td><a href="http://docs.marklogic.com/map:new" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
 	    <td class="colFirst">map:map?</td>
 	    <td class="colLast"><span class="memberNameLink">xdmp:node-metadata</span>(<span><a href="node.html">node</a> <i>node</i></span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-node-metadata">java</a></td>

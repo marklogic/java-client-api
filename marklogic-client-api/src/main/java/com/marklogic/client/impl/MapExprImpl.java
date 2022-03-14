@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.marklogic.client.impl;
 
 import com.marklogic.client.type.XsBooleanVal;
@@ -111,6 +112,18 @@ class MapExprImpl implements MapExpr {
       throw new IllegalArgumentException("map parameter for map() cannot be null");
     }
     return new MapCallImpl("map", "map", new Object[]{ map });
+  }
+
+  
+  @Override
+  public ServerExpression newExpr() {
+    return new MapCallImpl("map", "new", new Object[]{  });
+  }
+
+  
+  @Override
+  public ServerExpression newExpr(ServerExpression maps) {
+    return new MapCallImpl("map", "new", new Object[]{ maps });
   }
 
   static class MapSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {

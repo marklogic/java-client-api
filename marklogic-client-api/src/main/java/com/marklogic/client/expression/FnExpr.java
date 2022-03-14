@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.marklogic.client.expression;
 
 import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
@@ -408,6 +409,27 @@ public interface FnExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_time.html">xs:time</a> server data type
   */
   public ServerExpression currentTime();
+/**
+  * Returns an xs:dateTime value created by combining an xs:date and an xs:time. 
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/fn:dateTime" target="mlserverdoc">fn:dateTime</a> server function.
+  * @param arg1  The date to be combined with the time argument.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
+  * @param arg2  The time to be combined with the date argument.  (of <a href="{@docRoot}/doc-files/types/xs_time.html">xs:time</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
+  */
+  public ServerExpression dateTime(ServerExpression arg1, String arg2);
+/**
+  * Returns an xs:dateTime value created by combining an xs:date and an xs:time. 
+  *
+  * <a name="ml-server-type-dateTime"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/fn:dateTime" target="mlserverdoc">fn:dateTime</a> server function.
+  * @param arg1  The date to be combined with the time argument.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
+  * @param arg2  The time to be combined with the date argument.  (of <a href="{@docRoot}/doc-files/types/xs_time.html">xs:time</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
+  */
+  public ServerExpression dateTime(ServerExpression arg1, ServerExpression arg2);
 /**
   * Returns an xs:integer between 1 and 31, both inclusive, representing the day component in the localized value of arg. 
   *

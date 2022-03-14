@@ -22,6 +22,7 @@ import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.io.marker.JSONReadHandle;
 
 /**
  * A Row Manager provides database operations on rows projected from documents.
@@ -272,7 +273,7 @@ public interface RowManager {
      * @param <T> the type of the handle for the generated view
      * @return	the handle with the content of the generated view for the plan
      */
-    <T extends XMLReadHandle> T generateView(Plan plan, String schema, String view, T handle);
+    <T extends XMLReadHandle> T generateView(PlanBuilder.PreparePlan plan, String schema, String view, T handle);
     /**
      * Generates generates a view that encapsulates a plan.
      *
@@ -293,5 +294,33 @@ public interface RowManager {
      * @param <T> the type of the IO object for reading the generated view
      * @return	an object of the IO class with the content of the generated view for the plan
      */
-    <T> T generateViewAs(Plan plan, String schema, String view, Class<T> as);
+    <T> T generateViewAs(PlanBuilder.PreparePlan plan, String schema, String view, Class<T> as);
+
+    /**
+     * This function can be used to inspect the state of a plan before execution. It returns the information about each
+     * column in the plan, including schema name, view name, column name, data type and nullability. It also returns the
+     * information about system columns.
+     *
+     * @param plan	the definition of a plan for database rows
+     * @param handle	the Json handle on the column information for the plan
+     * @param <T> the type of the handle for the column information
+     * @return	the handle with the content of the column information for the plan
+     */
+    <T extends JSONReadHandle> T columnInfo(PlanBuilder.PreparePlan plan, T handle);
+    /**This function can be used to inspect the state of a plan before execution. It returns the information about each
+     * column in the plan, including schema name, view name, column name, data type and nullability. It also returns the
+     * information about system columns.Generates generates a view that encapsulates a plan.
+     *
+     * The IO class must have been registered before creating the database client.
+     * By default, the provided handles that implement
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     *
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
+     *
+     * @param plan	the definition of a plan for database rows
+     * @param as	the IO class for reading the column information for the plan
+     * @param <T> the type of the IO object for reading the column information
+     * @return	an object of the IO class with the content of the column information for the plan
+     */
+    <T> T columnInfoAs(PlanBuilder.PreparePlan plan, Class<T> as);
 }

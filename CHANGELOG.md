@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 5.5.2
+#### New Functionality
+- [#1329](https://github.com/marklogic/java-client-api/issues/1329) - Inspect information about columns in the plan before execution - Server release 10.0-9 or above required
+
+#### Improvements and Bug Fixes
+- [#1335](https://github.com/marklogic/java-client-api/issues/1335) - Project description on Maven Central corrected
+
 ## 5.5.1
 #### New Functionality
 - [#1296](https://github.com/marklogic/java-client-api/issues/1296) - Type anyDocument support for data service - Server release 10.0-7 or above required

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.marklogic.client.impl;
 
 import java.util.Arrays;
 
 import com.marklogic.client.type.*;
 
-// IMPORTANT: Do not edit. This file is generated.
+// IMPORTANT: Do not edit. This file is generated. 
 abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
   PlanBuilderImpl() {
   }
@@ -120,44 +121,44 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public PlanNamedGroup bucketGroup(String name, String keys, XsAnyAtomicTypeSeqVal boundaries) {
-    return bucketGroup((name == null) ? (XsStringVal) null : xs.string(name), (keys == null) ? (PlanExprCol) null : exprCol(keys), (boundaries == null) ? (XsAnyAtomicTypeSeqVal) null : boundaries);
+  public PlanNamedGroup bucketGroup(String name, String key, String boundaries) {
+    return bucketGroup((name == null) ? (XsStringVal) null : xs.string(name), (key == null) ? (PlanExprCol) null : exprCol(key), (boundaries == null) ? (XsAnyAtomicTypeVal) null : xs.string(boundaries));
   }
 
   
   @Override
-  public PlanNamedGroup bucketGroup(XsStringVal name, PlanExprCol keys, XsAnyAtomicTypeSeqVal boundaries) {
+  public PlanNamedGroup bucketGroup(XsStringVal name, PlanExprCol key, XsAnyAtomicTypeSeqVal boundaries) {
     if (name == null) {
       throw new IllegalArgumentException("name parameter for bucketGroup() cannot be null");
     }
-    if (keys == null) {
-      throw new IllegalArgumentException("keys parameter for bucketGroup() cannot be null");
+    if (key == null) {
+      throw new IllegalArgumentException("key parameter for bucketGroup() cannot be null");
     }
     if (boundaries == null) {
       throw new IllegalArgumentException("boundaries parameter for bucketGroup() cannot be null");
     }
-    return new NamedGroupCallImpl("op", "bucket-group", new Object[]{ name, keys, boundaries });
+    return new NamedGroupCallImpl("op", "bucket-group", new Object[]{ name, key, boundaries });
   }
 
   
   @Override
-  public PlanNamedGroup bucketGroup(String name, String keys, XsAnyAtomicTypeSeqVal boundaries, String collation) {
-    return bucketGroup((name == null) ? (XsStringVal) null : xs.string(name), (keys == null) ? (PlanExprCol) null : exprCol(keys), (boundaries == null) ? (XsAnyAtomicTypeSeqVal) null : boundaries, (collation == null) ? (XsStringVal) null : xs.string(collation));
+  public PlanNamedGroup bucketGroup(String name, String key, String boundaries, String collation) {
+    return bucketGroup((name == null) ? (XsStringVal) null : xs.string(name), (key == null) ? (PlanExprCol) null : exprCol(key), (boundaries == null) ? (XsAnyAtomicTypeVal) null : xs.string(boundaries), (collation == null) ? (XsStringVal) null : xs.string(collation));
   }
 
   
   @Override
-  public PlanNamedGroup bucketGroup(XsStringVal name, PlanExprCol keys, XsAnyAtomicTypeSeqVal boundaries, XsStringVal collation) {
+  public PlanNamedGroup bucketGroup(XsStringVal name, PlanExprCol key, XsAnyAtomicTypeSeqVal boundaries, XsStringVal collation) {
     if (name == null) {
       throw new IllegalArgumentException("name parameter for bucketGroup() cannot be null");
     }
-    if (keys == null) {
-      throw new IllegalArgumentException("keys parameter for bucketGroup() cannot be null");
+    if (key == null) {
+      throw new IllegalArgumentException("key parameter for bucketGroup() cannot be null");
     }
     if (boundaries == null) {
       throw new IllegalArgumentException("boundaries parameter for bucketGroup() cannot be null");
     }
-    return new NamedGroupCallImpl("op", "bucket-group", new Object[]{ name, keys, boundaries, collation });
+    return new NamedGroupCallImpl("op", "bucket-group", new Object[]{ name, key, boundaries, collation });
   }
 
   
@@ -312,21 +313,6 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
       throw new IllegalArgumentException("select parameter for fromSparql() cannot be null");
     }
     return new PlanBuilderSubImpl.ModifyPlanSubImpl("op", "from-sparql", new Object[]{ select, qualifierName });
-  }
-
-  
-  @Override
-  public ModifyPlan fromSparql(String select, String qualifierName, PlanSparqlOptions option) {
-    return fromSparql((select == null) ? (XsStringVal) null : xs.string(select), (qualifierName == null) ? (XsStringVal) null : xs.string(qualifierName), option);
-  }
-
-  
-  @Override
-  public ModifyPlan fromSparql(XsStringVal select, XsStringVal qualifierName, PlanSparqlOptions option) {
-    if (select == null) {
-      throw new IllegalArgumentException("select parameter for fromSparql() cannot be null");
-    }
-    return new PlanBuilderSubImpl.ModifyPlanSubImpl("op", "from-sparql", new Object[]{ select, qualifierName, option });
   }
 
   
@@ -1557,12 +1543,6 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
     return new ColumnCallImpl("op", "col", new Object[]{ column });
   }
 
-    
-  @Override
-  public ModifyPlan sampleBy(PlanSampleByOptions option) {
-    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "sample-by", new Object[]{ option });
-  }
-
   }
 
   
@@ -1652,7 +1632,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
     return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "exists-join", new Object[]{ right, keys, condition });
   }
 
-
+    
   @Override
   public ModifyPlan groupBy(PlanExprColSeq keys) {
     return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "group-by", new Object[]{ keys });

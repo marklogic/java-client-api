@@ -39,6 +39,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPathExpressionException;
 
+import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.row.*;
 import com.marklogic.client.type.*;
 import org.junit.AfterClass;
@@ -1205,12 +1206,40 @@ public class RowManagerTest {
     }
   }
   @Test
+  public void testColumnInfo() throws IOException {
+    String expected =
+            "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"lastName\", \"type\":\"string\", \"nullable\":false}\n" +
+            "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"firstName\", \"type\":\"string\", \"nullable\":false}\n" +
+            "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"dob\", \"type\":\"date\", \"nullable\":false}\n" +
+            "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"rowid\", \"type\":\"rowid\", \"nullable\":false}";
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    PlanBuilder.PreparePlan builtPlan =
+            p.fromView("opticUnitTest", "musician")
+                    .where(
+                            p.cts.andQuery(
+                                    p.cts.jsonPropertyWordQuery("instrument", "trumpet"),
+                                    p.cts.jsonPropertyWordQuery(p.xs.string("lastName"), p.xs.stringSeq("Armstrong", "Davis"))
+                            )
+                    )
+                    .orderBy(p.col("lastName"));
+
+    String result = rowMgr.columnInfo(builtPlan, new StringHandle()).get();
+    assertNotNull(result);
+    assertEquals(result, expected);
+    result = rowMgr.columnInfoAs(builtPlan, String.class);
+    assertNotNull(result);
+    assertEquals(result, expected);
+  }
+  @Test
   public void testGenerateView() throws IOException {
     RowManager rowMgr = Common.client.newRowManager();
 
     PlanBuilder p = rowMgr.newPlanBuilder();
 
-    PlanBuilder.ExportablePlan builtPlan =
+    PlanBuilder.PreparePlan builtPlan =
           p.fromView("opticUnitTest", "musician")
            .where(
               p.cts.andQuery(

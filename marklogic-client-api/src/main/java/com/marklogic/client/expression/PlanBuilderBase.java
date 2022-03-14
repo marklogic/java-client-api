@@ -672,7 +672,7 @@ public interface PlanBuilderBase {
          *              parameter function such as op:col or constructed from an expression with the op:as function.
          *              See {@link PlanBuilder#colSeq(String...)}.  A group can be a namedGroup or bucketGroup. see
          *              {@link PlanBuilder#namedGroupSeq(PlanNamedGroup...)} , {@link PlanBuilder#namedGroup(String, PlanExprColSeq)}
-         *              and {@link PlanBuilder#bucketGroup(String, String, XsAnyAtomicTypeSeqVal)}
+         *              and {@link PlanBuilder#bucketGroup(XsStringVal, PlanExprCol, XsAnyAtomicTypeSeqVal)}
          * @return  a ModifyPlan object
          */
         PlanBuilder.ModifyPlan facetBy(PlanNamedGroupSeq keys);
@@ -684,7 +684,7 @@ public interface PlanBuilderBase {
          *              function such as op:col or constructed from an expression with the op:as function.
          *              See {@link PlanBuilder#colSeq(String...)}. A group can be a namedGroup or bucketGroup. see
          *              {@link PlanBuilder#namedGroupSeq(PlanNamedGroup...)}, {@link PlanBuilder#namedGroup(String, PlanExprColSeq)}
-         *              and {@link PlanBuilder#bucketGroup(String, String, XsAnyAtomicTypeSeqVal)}.
+         *              and {@link PlanBuilder#bucketGroup(XsStringVal, PlanExprCol, XsAnyAtomicTypeSeqVal)}.
          * @param countCol  Specifies what to count over the rows for each unique value of each key column.  By default,
          *                  the operation counts the rows. To count the values of a column instead, specify the column
          *                  to count with this parameter. To count documents, specify a fragment id column with
@@ -699,7 +699,7 @@ public interface PlanBuilderBase {
          *              count for the rows with that value.  A column can be named with a string or a column parameter
          *              function such as op:col or constructed from an expression with the op:as function.
          *              See {@link PlanBuilder#colSeq(String...)}, {@link PlanBuilder#namedGroup(String, PlanExprColSeq)}
-         *              and {@link PlanBuilder#bucketGroup(String, String, XsAnyAtomicTypeSeqVal)}.
+         *              and {@link PlanBuilder#bucketGroup(XsStringVal, PlanExprCol, XsAnyAtomicTypeSeqVal)}.
          * @param countCol  Specifies what to count over the rows for each unique value of each key column.  By default,
          *                  the operation counts the rows. To count the values of a column instead, specify the column
          *                  to count with this parameter. To count documents, specify a fragment id column with

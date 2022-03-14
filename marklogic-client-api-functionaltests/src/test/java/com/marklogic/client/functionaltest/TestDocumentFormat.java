@@ -26,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.marklogic.client.Transaction;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -48,11 +49,95 @@ public class TestDocumentFormat extends BasicJavaClientREST {
   private static String[] fNames = { "TestDocumentFormat-1" };
 
   @BeforeClass
-  public static void setUp() throws Exception
-  {
+  public static void setUp() throws Exception {
     System.out.println("In setup");
-
     configureRESTServer(dbName, fNames);
+    // Create a user with minimal privs and test doc exists in a transaction.
+    createRESTUser("userInTrans", "x", "rest-writer");
+  }
+
+  @Test
+  public void testExistsInTransMinPrivs() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
+  {
+    System.out.println("Running testExistsInTransMinPrivs");
+    DatabaseClient client1 = null;
+    try {
+      String filename = "json-original.json";
+      String uri1 = "/DocExistsInTransMinimalPriv/";
+
+      // user with minimal privs.
+      client1 = getDatabaseClient("userInTrans", "x", getConnType());
+
+      // create doc manager
+      DocumentManager docMgr1 = client1.newDocumentManager();
+      Transaction t1 = client1.openTransaction();
+
+      File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
+
+      // create a handle on the content
+      FileHandle handle = new FileHandle(file);
+      handle.set(file);
+
+      handle.setFormat(Format.JSON);
+
+      // create docIds
+      String docId1 = uri1 + filename;
+      docMgr1.write(docId1, handle);
+      String expectedUri1 = uri1 + filename;
+
+      String docUri1 = docMgr1.exists(expectedUri1, t1).getUri();
+      assertEquals("URI is not found", expectedUri1, docUri1);
+      t1.rollback();
+    }
+    catch(Exception ex) {
+      System.out.println(ex.getMessage());
+    } finally {
+      // release the clients
+      if (client1 != null)
+        client1.release();
+    }
+  }
+
+  @Test
+  public void testExistsInTransWithPrivs() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
+  {
+    System.out.println("Running testExistsInTransWithPrivs");
+    DatabaseClient client2 = null;
+    try {
+      String filename = "json-original.json";
+      String uri2 = "/DocExistsTransWithPrivs/";
+
+      // user with privs.
+      client2 = getDatabaseClient("rest-writer", "x", getConnType());
+
+      // create doc manager
+      DocumentManager docMgr2 = client2.newDocumentManager();
+      Transaction t2 = client2.openTransaction();
+
+      File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
+
+      // create a handle on the content
+      FileHandle handle = new FileHandle(file);
+      handle.set(file);
+
+      handle.setFormat(Format.JSON);
+
+      // create docIds
+      String docId2 = uri2 + filename;
+      docMgr2.write(docId2, handle);
+
+      String expectedUri2 = uri2 + filename;
+      String docUri2 = docMgr2.exists(expectedUri2, t2).getUri();
+      assertEquals("URI is not found", expectedUri2, docUri2);
+      t2.rollback();
+    }
+    catch(Exception ex) {
+      System.out.println(ex.getMessage());
+    } finally {
+      // release the clients
+      if (client2 != null)
+        client2.release();
+    }
   }
 
   @Test
@@ -118,8 +203,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String exception = "";
     String expectedException = "";
 
-    try
-    {
+    try {
       docMgr.write(docId, handle);
     } catch (Exception e) {
       exception = e.toString();
@@ -405,13 +489,11 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String exception = "";
     String expectedException = "";
 
-    try
-    {
+    try {
       docMgr.write(docId, handle);
     } catch (Exception e) {
       exception = e.toString();
     }
-
     boolean isExceptionThrown = exception.contains(expectedException);
     assertTrue("Exception is not thrown", isExceptionThrown);
 
@@ -447,8 +529,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String exception = "";
     String expectedException = "";
 
-    try
-    {
+    try {
       docMgr.write(docId, handle);
     } catch (Exception e) {
       exception = e.toString();
@@ -489,8 +570,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String exception = "";
     String expectedException = "";
 
-    try
-    {
+    try {
       docMgr.write(docId, handle);
     } catch (Exception e) {
       exception = e.toString();
@@ -601,8 +681,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String exception = "";
     String expectedException = "";
 
-    try
-    {
+    try {
       docMgr.write(docId, handle);
     } catch (Exception e) {
       exception = e.toString();
@@ -667,10 +746,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 
     Document readDoc = expectedXMLDocument(filename);
 
-    // File file = new
-    // File("src/test/java/com/marklogic/client/functionaltest/data/" +
-    // filename);
-
     // create a handle on the content
     DOMHandle handle = new DOMHandle();
     handle.set(readDoc);
@@ -678,8 +753,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
     String exception = "";
     String expectedException = "java.lang.IllegalArgumentException: DOMHandle supports the XML format only";
 
-    try
-    {
+    try {
       handle.setFormat(Format.JSON);
     } catch (IllegalArgumentException e) {
       exception = e.toString();
@@ -697,5 +771,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
   {
     System.out.println("In tear down");
     cleanupRESTServer(dbName, fNames);
+    deleteRESTUser("userInTrans");
   }
 }

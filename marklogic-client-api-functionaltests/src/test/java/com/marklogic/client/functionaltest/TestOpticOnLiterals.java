@@ -1915,9 +1915,9 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 
     rowMgr.resultDoc(output1, jacksonHandle);
     JsonNode colorBucketNodes = jacksonHandle.get().path("rows");
-    assertEquals("Bucket group 1 count value incorrect", "9", colorBucketNodes.path(0).path("colorBucket").path("value").path(0).path("count").asText());
-    assertEquals("Bucket group 2 count value incorrect", "5", colorBucketNodes.path(0).path("colorBucket").path("value").path(1).path("count").asText());
-    assertEquals("Bucket group 3 count value incorrect", "3", colorBucketNodes.path(0).path("colorBucket").path("value").path(2).path("count").asText());
+    assertEquals("Bucket group 1 count value incorrect", "7", colorBucketNodes.path(0).path("colorBucket").path("value").path(0).path("count").asText());
+    assertEquals("Bucket group 2 count value incorrect", "6", colorBucketNodes.path(0).path("colorBucket").path("value").path(1).path("count").asText());
+    assertEquals("Bucket group 3 count value incorrect", "4", colorBucketNodes.path(0).path("colorBucket").path("value").path(2).path("count").asText());
 
     // outside range
     ModifyPlan output2 = plan1.joinInner(plan2)
@@ -1939,9 +1939,8 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 
     rowMgr.resultDoc(output3, jacksonHandle);
     JsonNode descBucketNodesStringRange = jacksonHandle.get().path("rows");
-    assertEquals("Bucket group 1 count value incorrect", "1", descBucketNodesStringRange.path(0).path("descBucket").path("value").path(0).path("count").asText());
-    assertEquals("Bucket group 2 count value incorrect", "9", descBucketNodesStringRange.path(0).path("descBucket").path("value").path(1).path("count").asText());
-    assertEquals("Bucket group 3 count value incorrect", "7", descBucketNodesStringRange.path(0).path("descBucket").path("value").path(2).path("count").asText());
+    assertEquals("Bucket group 1 count value incorrect", "9", descBucketNodesStringRange.path(0).path("descBucket").path("value").path(0).path("count").asText());
+    assertEquals("Bucket group 2 count value incorrect", "8", descBucketNodesStringRange.path(0).path("descBucket").path("value").path(1).path("count").asText());
 
     //bucket group negative test
     ModifyPlan output4 = plan1.joinInner(plan2)
@@ -1957,7 +1956,28 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     }
   }
 
-  @AfterClass
+  @Test
+  public void testLiteralsWithColumnInfo() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    System.out.println("In testLiteralsWithColumnInfo method");
+
+    // Create a new Plan.
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    // plans from literals
+    ModifyPlan plan1 = p.fromLiterals(literals1);
+    ModifyPlan plan2 = p.fromLiterals(literals2);
+    ModifyPlan output = plan1.joinInner(plan2).orderBy(p.asc(p.col("rowId")));
+
+    String colInfo = rowMgr.columnInfoAs(output, String.class);
+    //System.out.println("In testLiteralsWithColumnInfo method" + colInfo);
+    assertTrue("Element 1 desc value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"desc\", \"type\":\"string\", \"nullable\":false"));
+    assertTrue("Element 2 colorId value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"colorId\", \"type\":\"integer\", \"nullable\":false}"));
+    assertTrue("Element 3 rowId value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"rowId\", \"type\":\"integer\", \"nullable\":false}"));
+    assertTrue("Element 4 colorDesc value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"colorDesc\", \"type\":\"string\", \"nullable\":false}"));
+  }
+
+    @AfterClass
   public static void tearDownAfterClass() throws Exception
   {
     System.out.println("In tear down");

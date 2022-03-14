@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.marklogic.client.expression;
 
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
@@ -1337,6 +1338,28 @@ public interface XdmpExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a> server data type
   */
   public ServerExpression type(ServerExpression value);
+/**
+  * Returns the content type of the given URI as matched in the mimetypes configuration. xdmp:content-type continues to work too.
+  *
+  * <a name="ml-server-type-uri-content-type"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:uri-content-type" target="mlserverdoc">xdmp:uri-content-type</a> server function.
+  * @param uri  The document URI.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
+  */
+  public ServerExpression uriContentType(ServerExpression uri);
+/**
+  * Returns the format of the given URI as matched in the mimetypes configuration.
+  *
+  * <a name="ml-server-type-uri-format"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:uri-format" target="mlserverdoc">xdmp:uri-format</a> server function.
+  * @param uri  The document URI.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
+  */
+  public ServerExpression uriFormat(ServerExpression uri);
 /**
   * Converts URL-encoded string to plaintext. This decodes the string created with xdmp:url-encode.
   *
