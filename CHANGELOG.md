@@ -1,4 +1,8 @@
 # CHANGELOG
+## 5.5.3
+
+#### Improvements and Bug Fixes
+- [#1340](https://github.com/marklogic/java-client-api/issues/1340) - Spring library upgrade for Spring4Shell security vulnerability
 
 ## 5.5.2
 #### New Functionality
