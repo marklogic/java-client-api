@@ -33,7 +33,7 @@ dependencies {
     compileOnly group: 'net.sourceforge.htmlcleaner', name: 'htmlcleaner', version:'2.24'
     compileOnly group: 'com.opencsv', name: 'opencsv', version: '4.6'
     compileOnly group: 'org.geonames', name: 'geonames', version:'1.0'
-    compileOnly group: 'org.springframework', name: 'spring-jdbc', version: '5.2.7.RELEASE'
+    compileOnly group: 'org.springframework', name: 'spring-jdbc', version: '5.3.18'
 }
 
 jar {
