@@ -3975,6 +3975,11 @@ public class OkHttpServices implements RESTServices {
     requestBldr = addTransactionScopedCookies(requestBldr, transaction);
     requestBldr = addTelemetryAgentId(requestBldr);
 
+    if ("rows".equals(path)) {
+        requestBldr.addHeader("ML-Check-ML11-Headers", "true");
+        requestBldr.addHeader("TE", "trailers");
+    }
+
     Consumer<Boolean> resendableConsumer = new Consumer<Boolean>() {
       public void accept(Boolean resendable) {
         if (!isResendable) {
@@ -4501,6 +4506,19 @@ public class OkHttpServices implements RESTServices {
       getEntity(body, MimeMultipart.class) : null;
 
     List<BodyPart> partList = getPartList(entity);
+      try {
+          Headers trailer = response.trailers();
+
+          String code = trailer.get("ml-error-code");
+          String msg = trailer.get("ml-error-message");
+          String sha = trailer.get("ml-content-sha256");
+
+          if (!"N/A".equals(code)) {
+              throw new RuntimeException("code = " + code + ", msg = " + msg + ", sha256 = " + sha);
+          }
+      } catch (IOException e) {
+          e.printStackTrace();
+      }
     Closeable closeable = response;
     return makeResults(constructor, reqlog, operation, entityType, partList, response, closeable);
   }
