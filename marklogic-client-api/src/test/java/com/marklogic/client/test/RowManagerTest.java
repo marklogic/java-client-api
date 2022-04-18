@@ -465,6 +465,24 @@ public class RowManagerTest {
 
     testViewRows(rowMgr.resultRows(builtPlan));
   }
+
+  @Test
+  public void testSQLException() {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    PlanBuilder.ExportablePlan builtPlan =
+            p.fromSql("select case when lastName = 'Davis' then fn_error(fn_qname('ERROR','test')) end, opticUnitTest.musician.* from (select * from opticUnitTest.musician order by lastName)");
+    String exception = "";
+    try {
+      rowMgr.resultRows(builtPlan);
+    } catch (Exception e) {
+      int index = e.getMessage().indexOf("sha256");
+      exception = e.getMessage().substring(0, index-2);
+    }
+    assertEquals("code = test, msg = error", exception);
+  }
   private void testViewRows(RowSet<RowRecord> rows) {
     String[] lastName  = {"Armstrong",  "Davis"};
     String[] firstName = {"Louis",      "Miles"};
