@@ -465,24 +465,6 @@ public class RowManagerTest {
 
     testViewRows(rowMgr.resultRows(builtPlan));
   }
-
-  @Test
-  public void testSQLException() {
-    RowManager rowMgr = Common.client.newRowManager();
-
-    PlanBuilder p = rowMgr.newPlanBuilder();
-
-    PlanBuilder.ExportablePlan builtPlan =
-            p.fromSql("select case when lastName = 'Davis' then fn_error(fn_qname('ERROR','test')) end, opticUnitTest.musician.* from (select * from opticUnitTest.musician order by lastName)");
-    String exception = "";
-    try {
-      rowMgr.resultRows(builtPlan);
-    } catch (Exception e) {
-      int index = e.getMessage().indexOf("sha256");
-      exception = e.getMessage().substring(0, index-2);
-    }
-    assertEquals("code = test, msg = error", exception);
-  }
   private void testViewRows(RowSet<RowRecord> rows) {
     String[] lastName  = {"Armstrong",  "Davis"};
     String[] firstName = {"Louis",      "Miles"};
@@ -497,6 +479,64 @@ public class RowManagerTest {
     }
     assertEquals("unexpected count of result records", 2, rowNum);
   }
+
+  @Test
+  public void testSQL() {
+    RowManager rowMgr = Common.client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    PlanBuilder.ExportablePlan builtPlan =
+            p.fromSql("select * from opticUnitTest.musician");
+    int rowNum = 0;
+    String exception = "";
+    try {
+      for (RowRecord row: rowMgr.resultRows(builtPlan)) {
+        rowNum++;
+      }
+    } catch (Exception e) {
+      exception = e.toString();
+    }
+    assertEquals(4, rowNum);
+    assertEquals("", exception);
+  }
+
+  @Test
+  public void testSQL0Result() {
+    RowManager rowMgr = Common.client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    PlanBuilder.ExportablePlan builtPlan =
+            p.fromSql("select * from opticUnitTest.musician where lastName = 'x'");
+    int rowNum = 0;
+    String exception = "";
+    try {
+      for (RowRecord row: rowMgr.resultRows(builtPlan)) {
+        rowNum++;
+      }
+    } catch (Exception e) {
+      exception = e.toString();
+    }
+    assertEquals(0, rowNum);
+    assertEquals("", exception);
+  }
+
+  @Test
+  public void testSQLException() {
+    RowManager rowMgr = Common.client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    PlanBuilder.ExportablePlan builtPlan =
+        p.fromSql("select case when lastName = 'Davis' then fn_error(fn_qname('', 'SQL-TABLENOTFOUND'), 'Internal Server Error') end, opticUnitTest.musician.* from (select * from opticUnitTest.musician order by lastName)");
+    String exception = "";
+    int rowNum = 0;
+    try {
+      for (RowRecord row: rowMgr.resultRows(builtPlan)) {
+        rowNum++;
+      }
+    } catch (Exception e) {
+      exception = e.toString();
+    }
+    assertEquals(0, rowNum);
+    assertEquals("com.marklogic.client.FailedRequestException: failed to apply resource at rows: SQL-TABLENOTFOUND, Internal Server Error", exception);
+  }
+
   @Test
   public void testSearch() {
     RowManager rowMgr = Common.client.newRowManager();
