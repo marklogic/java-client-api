@@ -4502,22 +4502,33 @@ public class OkHttpServices implements RESTServices {
     String operation, String entityType, Response response) {
     if ( response == null ) return null;
     ResponseBody body = response.body();
-    MimeMultipart entity = body.contentLength() != 0 ?
+    long length = body.contentLength();
+    MimeMultipart entity = length != 0 ?
       getEntity(body, MimeMultipart.class) : null;
 
+    try {
+        if (length == -1 && entity != null) entity.getCount();
+    } catch (MessagingException e) {
+        entity = null;
+    }
     List<BodyPart> partList = getPartList(entity);
-      try {
-          Headers trailer = response.trailers();
-          String code = trailer.get("ml-error-code");
-          String msg = trailer.get("ml-error-message");
-          String sha = trailer.get("ml-content-sha256");
 
-          if (code != null && !"N/A".equals(code)) {
-              throw new RuntimeException("code = " + code + ", msg = " + msg + ", sha256 = " + sha);
-          }
-      } catch (IOException e) {
-          e.printStackTrace();
-      }
+    try {
+        Headers trailer = response.trailers();
+        String code = trailer.get("ml-error-code");
+        String msg = trailer.get("ml-error-message");
+        String sha = trailer.get("ml-content-sha256");
+
+        if (code != null && !"N/A".equals(code)) {
+            FailedRequest failure = new FailedRequest();
+            failure.setMessageString(code);
+            failure.setStatusString(msg);
+            throw new FailedRequestException("failed to " + operation + " "
+                    + entityType + " at rows" + ": " + code + ", " + msg);
+        }
+    } catch (IOException e) {
+        throw new RuntimeException("No trailer header in repsonse");
+    }
     Closeable closeable = response;
     return makeResults(constructor, reqlog, operation, entityType, partList, response, closeable);
   }

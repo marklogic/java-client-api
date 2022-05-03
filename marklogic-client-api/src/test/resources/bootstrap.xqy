@@ -578,8 +578,6 @@ declare function bootstrap:security-config() {
         ) else (
             if ($user eq "valid") then (
                 bootstrap:security-eval('sec:create-user("valid", "valid unprivileged user", "x", (), (), (), ())')
-            ) else if ($user eq "rest-reader") then (
-                bootstrap:security-eval('sec:create-user("rest-reader", "rest-reader user", "x", ("rest-reader", "rest-reader-internal"), (), (), ())')
             ) else (
                 bootstrap:security-eval('sec:create-user("'||$user||'", "'||$user||' user", "x", ("'||$user||'"), (), (), () )')
             )
