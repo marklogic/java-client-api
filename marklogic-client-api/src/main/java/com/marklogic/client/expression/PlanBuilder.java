@@ -1006,25 +1006,25 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanAggregateColSeq aggregateSeq(PlanAggregateCol... aggregate);
   /**
-  * This function sorts the specified columndef in ascending order. The results are used by the op:order-by function.
+  * This function sorts the rows by the values of the specified column in ascending order. The results are used by the op:order-by function.
   * @param column  The column by which order the output. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanSortKey object
   */
   public abstract PlanSortKey asc(String column);
   /**
-  * This function sorts the specified columndef in ascending order. The results are used by the op:order-by function.
+  * This function sorts the rows by the values of the specified column in ascending order. The results are used by the op:order-by function.
   * @param column  The column by which order the output. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanSortKey object
   */
   public abstract PlanSortKey asc(PlanExprCol column);
   /**
-  * This function sorts the specified columndef in descending order. The results are used by the op:order-by function.
+  * This function sorts the rows by the values of the specified column in descending order. The results are used by the op:order-by function.
   * @param column  The column by which order the output. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanSortKey object
   */
   public abstract PlanSortKey desc(String column);
   /**
-  * This function sorts the specified columndef in descending order. The results are used by the op:order-by function.
+  * This function sorts the rows by the values of the specified column in descending order. The results are used by the op:order-by function.
   * @param column  The column by which order the output. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanSortKey object
   */

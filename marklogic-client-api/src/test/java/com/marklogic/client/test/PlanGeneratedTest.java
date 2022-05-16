@@ -101,7 +101,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testFnAdjustDateTimeToTimezone1Exec() {
-        executeTester("testFnAdjustDateTimeToTimezone1", p.fn.adjustDateTimeToTimezone(p.col("1")), true, "xs:dateTime", null, null, "2016-01-02T02:09:08-08:00", new ServerExpression[]{ p.xs.dateTime("2016-01-02T10:09:08Z") });
+        executeTester("testFnAdjustDateTimeToTimezone1", p.fn.adjustDateTimeToTimezone(p.col("1")), true, "xs:dateTime", null, null, "2016-01-02T03:09:08-07:00", new ServerExpression[]{ p.xs.dateTime("2016-01-02T10:09:08Z") });
     }
 
     @Test
@@ -111,7 +111,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testFnAdjustDateToTimezone1Exec() {
-        executeTester("testFnAdjustDateToTimezone1", p.fn.adjustDateToTimezone(p.col("1")), true, "xs:date", null, null, "2016-01-02-08:00", new ServerExpression[]{ p.xs.date("2016-01-02") });
+        executeTester("testFnAdjustDateToTimezone1", p.fn.adjustDateToTimezone(p.col("1")), true, "xs:date", null, null, "2016-01-02-07:00", new ServerExpression[]{ p.xs.date("2016-01-02") });
     }
 
     @Test
@@ -121,7 +121,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testFnAdjustTimeToTimezone1Exec() {
-        executeTester("testFnAdjustTimeToTimezone1", p.fn.adjustTimeToTimezone(p.col("1")), true, "xs:time", null, null, "02:09:08-08:00", new ServerExpression[]{ p.xs.time("10:09:08Z") });
+        executeTester("testFnAdjustTimeToTimezone1", p.fn.adjustTimeToTimezone(p.col("1")), true, "xs:time", null, null, "03:09:08-07:00", new ServerExpression[]{ p.xs.time("10:09:08Z") });
     }
 
     @Test
@@ -206,17 +206,17 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testFnCurrentDate0Exec() {
-        executeTester("testFnCurrentDate0", p.fn.currentDate(), true, "xs:date", null, null, "2022-01-24-08:00", new ServerExpression[]{  });
+        executeTester("testFnCurrentDate0", p.fn.currentDate(), true, "xs:date", null, null, "2022-05-16-07:00", new ServerExpression[]{  });
     }
 
     @Test
     public void testFnCurrentDateTime0Exec() {
-        executeTester("testFnCurrentDateTime0", p.fn.currentDateTime(), true, "xs:dateTime", null, null, "2022-01-24T11:06:53.335048-08:00", new ServerExpression[]{  });
+        executeTester("testFnCurrentDateTime0", p.fn.currentDateTime(), true, "xs:dateTime", null, null, "2022-05-16T16:41:15.179375-07:00", new ServerExpression[]{  });
     }
 
     @Test
     public void testFnCurrentTime0Exec() {
-        executeTester("testFnCurrentTime0", p.fn.currentTime(), true, "xs:time", null, null, "11:06:53-08:00", new ServerExpression[]{  });
+        executeTester("testFnCurrentTime0", p.fn.currentTime(), true, "xs:time", null, null, "16:41:15-07:00", new ServerExpression[]{  });
     }
 
     @Test
@@ -346,7 +346,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testFnImplicitTimezone0Exec() {
-        executeTester("testFnImplicitTimezone0", p.fn.implicitTimezone(), true, "xs:dayTimeDuration", null, null, "-PT8H", new ServerExpression[]{  });
+        executeTester("testFnImplicitTimezone0", p.fn.implicitTimezone(), true, "xs:dayTimeDuration", null, null, "-PT7H", new ServerExpression[]{  });
     }
 
     @Test
@@ -996,7 +996,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemBnode0Exec() {
-        executeTester("testSemBnode0", p.sem.bnode(), true, "sem:blank", null, null, "_:bnode8859652367759070291", new ServerExpression[]{  });
+        executeTester("testSemBnode0", p.sem.bnode(), true, "sem:blank", null, null, "_:bnode5357729350593275904", new ServerExpression[]{  });
     }
 
     @Test
@@ -1076,7 +1076,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemRandom0Exec() {
-        executeTester("testSemRandom0", p.sem.random(), true, null, null, null, "0.777894850902498", new ServerExpression[]{  });
+        executeTester("testSemRandom0", p.sem.random(), true, null, null, null, "0.786186742811904", new ServerExpression[]{  });
     }
 
     @Test
@@ -1101,12 +1101,12 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemUuid0Exec() {
-        executeTester("testSemUuid0", p.sem.uuid(), true, "sem:iri", null, null, "urn:uuid:edf58826-68e8-4526-8714-6cf9df2bb43d", new ServerExpression[]{  });
+        executeTester("testSemUuid0", p.sem.uuid(), true, "sem:iri", null, null, "urn:uuid:b0a86974-fbbd-4326-ac17-8accda79f34d", new ServerExpression[]{  });
     }
 
     @Test
     public void testSemUuidString0Exec() {
-        executeTester("testSemUuidString0", p.sem.uuidString(), true, null, null, null, "fb230a93-f041-4c2e-a9cb-63bd3ce6abe7", new ServerExpression[]{  });
+        executeTester("testSemUuidString0", p.sem.uuidString(), true, null, null, null, "ad47fc1c-84a3-4d39-a63f-45e8fbef700e", new ServerExpression[]{  });
     }
 
     @Test
@@ -1241,7 +1241,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSqlRand1Exec() {
-        executeTester("testSqlRand1", p.sql.rand(p.col("1")), true, "xs:unsignedLong", null, null, "16157935940800182344", new ServerExpression[]{ p.xs.unsignedLong(1) });
+        executeTester("testSqlRand1", p.sql.rand(p.col("1")), true, "xs:unsignedLong", null, null, "4057052368336387163", new ServerExpression[]{ p.xs.unsignedLong(1) });
     }
 
     @Test
@@ -1346,7 +1346,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpCrypt21Exec() {
-        executeTester("testXdmpCrypt21", p.xdmp.crypt2(p.col("1")), true, null, null, null, "$256$vMw7plCt8Thj4.sh8Kkm4.$256$Q21TCUjgd0JF1kRb", new ServerExpression[]{ p.xs.string("abc") });
+        executeTester("testXdmpCrypt21", p.xdmp.crypt2(p.col("1")), true, null, null, null, "$256$6qCW6PD18y52heinkLU5V1$256$S/lBfdqGPlxE2.XB", new ServerExpression[]{ p.xs.string("abc") });
     }
 
     @Test
@@ -1546,12 +1546,12 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpParseDateTime2Exec() {
-        executeTester("testXdmpParseDateTime2", p.xdmp.parseDateTime(p.col("1"), p.col("2")), true, "xs:dateTime", null, null, "2016-01-06T17:13:50.873-08:00", new ServerExpression[]{ p.xs.string("[Y0001]-[M01]-[D01]T[h01]:[m01]:[s01].[f1][Z]"), p.xs.string("2016-01-06T17:13:50.873594-08:00") });
+        executeTester("testXdmpParseDateTime2", p.xdmp.parseDateTime(p.col("1"), p.col("2")), true, "xs:dateTime", null, null, "2016-01-06T18:13:50.873-07:00", new ServerExpression[]{ p.xs.string("[Y0001]-[M01]-[D01]T[h01]:[m01]:[s01].[f1][Z]"), p.xs.string("2016-01-06T17:13:50.873594-08:00") });
     }
 
     @Test
     public void testXdmpParseYymmdd2Exec() {
-        executeTester("testXdmpParseYymmdd2", p.xdmp.parseYymmdd(p.col("1"), p.col("2")), true, "xs:dateTime", null, null, "2016-01-06T17:13:50.873-08:00", new ServerExpression[]{ p.xs.string("yyyy-MM-ddThh:mm:ss.Sz"), p.xs.string("2016-01-06T17:13:50.873594-8.00") });
+        executeTester("testXdmpParseYymmdd2", p.xdmp.parseYymmdd(p.col("1"), p.col("2")), true, "xs:dateTime", null, null, "2016-01-06T18:13:50.873-07:00", new ServerExpression[]{ p.xs.string("yyyy-MM-ddThh:mm:ss.Sz"), p.xs.string("2016-01-06T17:13:50.873594-8.00") });
     }
 
     @Test
@@ -1576,7 +1576,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpRandom0Exec() {
-        executeTester("testXdmpRandom0", p.xdmp.random(), true, "xs:unsignedLong", null, null, "16993548811865669193", new ServerExpression[]{  });
+        executeTester("testXdmpRandom0", p.xdmp.random(), true, "xs:unsignedLong", null, null, "10115846079099782904", new ServerExpression[]{  });
     }
 
     @Test
