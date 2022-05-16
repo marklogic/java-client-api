@@ -1334,6 +1334,11 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public abstract PlanColumn col(XsStringVal column);
 /**
   * This function samples rows from a view or from a pattern match on the triple index.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan sampleBy();
+/**
+  * This function samples rows from a view or from a pattern match on the triple index.
   * @param option  the option  value.
   * @return  a ModifyPlan object
   */
