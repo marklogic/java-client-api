@@ -1543,6 +1543,12 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
     return new ColumnCallImpl("op", "col", new Object[]{ column });
   }
 
+    
+  @Override
+  public ModifyPlan sampleBy() {
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "sample-by", new Object[]{  });
+  }
+
   }
 
   
