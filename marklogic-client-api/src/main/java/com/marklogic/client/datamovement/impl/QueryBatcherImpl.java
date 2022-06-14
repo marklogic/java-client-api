@@ -510,13 +510,20 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     Forest[] forests = forests(forestConfig);
     Set<Forest> oldForests = new HashSet<>(forestResults.keySet());
     Map<String,Forest> hosts = new HashMap<>();
+    Map<Forest,AtomicLong> newForestResults = new HashMap<>();
+    Map<Forest,AtomicBoolean> newForestIsDone = new HashMap<>();
+    Map<Forest, AtomicInteger> newRetryForestMap = new HashMap<>();
     for ( Forest forest : forests ) {
       if ( forest.getPreferredHost() == null ) throw new IllegalStateException("Hostname must not be null for any forest");
       hosts.put(forest.getPreferredHost(), forest);
-      if ( forestResults.get(forest) == null ) forestResults.put(forest, new AtomicLong());
-      if ( forestIsDone.get(forest) == null  ) forestIsDone.put(forest, new AtomicBoolean(false));
-      if ( retryForestMap.get(forest) == null ) retryForestMap.put(forest, new AtomicInteger(0));
+      if ( newForestResults.get(forest) == null ) newForestResults.put(forest, new AtomicLong());
+      if ( newForestIsDone.get(forest) == null  ) newForestIsDone.put(forest, new AtomicBoolean(false));
+      if ( newRetryForestMap.get(forest) == null ) newRetryForestMap.put(forest, new AtomicInteger(0));
     }
+    forestResults = newForestResults;
+    forestIsDone = newForestIsDone;
+    retryForestMap = newRetryForestMap;
+
     Set<String> hostNames = hosts.keySet();
     logger.info("(withForestConfig) Using forests on {} hosts for \"{}\"", hostNames, forests[0].getDatabaseName());
     List<DatabaseClient> newClientList = clients(hostNames);
