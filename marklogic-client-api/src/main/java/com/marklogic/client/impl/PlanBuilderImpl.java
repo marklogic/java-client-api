@@ -287,6 +287,24 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
+  public AccessPlan fromParam(String paramName, String qualifier, PlanDocColsIdentifierSeq colTypes) {
+    return fromParam((paramName == null) ? (XsStringVal) null : xs.string(paramName), (qualifier == null) ? (XsStringVal) null : xs.string(qualifier), colTypes);
+  }
+
+  
+  @Override
+  public AccessPlan fromParam(XsStringVal paramName, XsStringVal qualifier, PlanDocColsIdentifierSeq colTypes) {
+    if (paramName == null) {
+      throw new IllegalArgumentException("paramName parameter for fromParam() cannot be null");
+    }
+    if (colTypes == null) {
+      throw new IllegalArgumentException("colTypes parameter for fromParam() cannot be null");
+    }
+    return new PlanBuilderSubImpl.AccessPlanSubImpl("op", "from-param", new Object[]{ paramName, qualifier, colTypes });
+  }
+
+  
+  @Override
   public ModifyPlan fromSparql(String select) {
     return fromSparql((select == null) ? (XsStringVal) null : xs.string(select));
   }
@@ -1290,6 +1308,27 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
   }
 
   
+  static class DocColsIdentifierSeqListImpl extends PlanSeqListImpl implements PlanDocColsIdentifierSeq {
+    DocColsIdentifierSeqListImpl(Object[] items) {
+      super(items);
+    }
+  }
+
+  
+  static class DocColsIdentifierSeqCallImpl extends PlanCallImpl implements PlanDocColsIdentifierSeq {
+    DocColsIdentifierSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+
+  
+  static class DocColsIdentifierCallImpl extends PlanCallImpl implements PlanDocColsIdentifier {
+    DocColsIdentifierCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+
+  
   static class ExprColSeqListImpl extends PlanSeqListImpl implements PlanExprColSeq {
     ExprColSeqListImpl(Object[] items) {
       super(items);
@@ -1474,6 +1513,27 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
   
   static class SystemColumnCallImpl extends ColumnCallImpl implements PlanSystemColumn {
     SystemColumnCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+
+  
+  static class TransformDefSeqListImpl extends PlanSeqListImpl implements PlanTransformDefSeq {
+    TransformDefSeqListImpl(Object[] items) {
+      super(items);
+    }
+  }
+
+  
+  static class TransformDefSeqCallImpl extends PlanCallImpl implements PlanTransformDefSeq {
+    TransformDefSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+
+  
+  static class TransformDefCallImpl extends PlanCallImpl implements PlanTransformDef {
+    TransformDefCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
@@ -1934,8 +1994,92 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
   @Override
+  public ModifyPlan unnestInner(String inputColumn, String valueColumn) {
+    return unnestInner((inputColumn == null) ? (PlanExprCol) null : exprCol(inputColumn), (valueColumn == null) ? (PlanExprCol) null : exprCol(valueColumn));
+  }
+
+    
+  @Override
+  public ModifyPlan unnestInner(PlanExprCol inputColumn, PlanExprCol valueColumn) {
+    if (inputColumn == null) {
+      throw new IllegalArgumentException("inputColumn parameter for unnestInner() cannot be null");
+    }
+    if (valueColumn == null) {
+      throw new IllegalArgumentException("valueColumn parameter for unnestInner() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "unnest-inner", new Object[]{ inputColumn, valueColumn });
+  }
+
+    
+  @Override
+  public ModifyPlan unnestInner(String inputColumn, String valueColumn, String ordinalColumn) {
+    return unnestInner((inputColumn == null) ? (PlanExprCol) null : exprCol(inputColumn), (valueColumn == null) ? (PlanExprCol) null : exprCol(valueColumn), (ordinalColumn == null) ? (PlanExprCol) null : exprCol(ordinalColumn));
+  }
+
+    
+  @Override
+  public ModifyPlan unnestInner(PlanExprCol inputColumn, PlanExprCol valueColumn, PlanExprCol ordinalColumn) {
+    if (inputColumn == null) {
+      throw new IllegalArgumentException("inputColumn parameter for unnestInner() cannot be null");
+    }
+    if (valueColumn == null) {
+      throw new IllegalArgumentException("valueColumn parameter for unnestInner() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "unnest-inner", new Object[]{ inputColumn, valueColumn, ordinalColumn });
+  }
+
+    
+  @Override
+  public ModifyPlan unnestLeftOuter(String inputColumn, String valueColumn) {
+    return unnestLeftOuter((inputColumn == null) ? (PlanExprCol) null : exprCol(inputColumn), (valueColumn == null) ? (PlanExprCol) null : exprCol(valueColumn));
+  }
+
+    
+  @Override
+  public ModifyPlan unnestLeftOuter(PlanExprCol inputColumn, PlanExprCol valueColumn) {
+    if (inputColumn == null) {
+      throw new IllegalArgumentException("inputColumn parameter for unnestLeftOuter() cannot be null");
+    }
+    if (valueColumn == null) {
+      throw new IllegalArgumentException("valueColumn parameter for unnestLeftOuter() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "unnest-left-outer", new Object[]{ inputColumn, valueColumn });
+  }
+
+    
+  @Override
+  public ModifyPlan unnestLeftOuter(String inputColumn, String valueColumn, String ordinalColumn) {
+    return unnestLeftOuter((inputColumn == null) ? (PlanExprCol) null : exprCol(inputColumn), (valueColumn == null) ? (PlanExprCol) null : exprCol(valueColumn), (ordinalColumn == null) ? (PlanExprCol) null : exprCol(ordinalColumn));
+  }
+
+    
+  @Override
+  public ModifyPlan unnestLeftOuter(PlanExprCol inputColumn, PlanExprCol valueColumn, PlanExprCol ordinalColumn) {
+    if (inputColumn == null) {
+      throw new IllegalArgumentException("inputColumn parameter for unnestLeftOuter() cannot be null");
+    }
+    if (valueColumn == null) {
+      throw new IllegalArgumentException("valueColumn parameter for unnestLeftOuter() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "unnest-left-outer", new Object[]{ inputColumn, valueColumn, ordinalColumn });
+  }
+
+    
+  @Override
   public ModifyPlan whereDistinct() {
     return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "where-distinct", new Object[]{  });
+  }
+
+    
+  @Override
+  public ModifyPlan write() {
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "write", new Object[]{  });
+  }
+
+    
+  @Override
+  public ModifyPlan write(PlanDocColsIdentifier docCols) {
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "write", new Object[]{ docCols });
   }
 
   }

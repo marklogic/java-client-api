@@ -1006,25 +1006,25 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanAggregateColSeq aggregateSeq(PlanAggregateCol... aggregate);
   /**
-  * This function sorts the rows by the values of the specified column in ascending order. The results are used by the op:order-by function.
+  * This function sorts the specified columndef in ascending order. The results are used by the op:order-by function.
   * @param column  The column by which order the output. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanSortKey object
   */
   public abstract PlanSortKey asc(String column);
   /**
-  * This function sorts the rows by the values of the specified column in ascending order. The results are used by the op:order-by function.
+  * This function sorts the specified columndef in ascending order. The results are used by the op:order-by function.
   * @param column  The column by which order the output. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanSortKey object
   */
   public abstract PlanSortKey asc(PlanExprCol column);
   /**
-  * This function sorts the rows by the values of the specified column in descending order. The results are used by the op:order-by function.
+  * This function sorts the specified columndef in descending order. The results are used by the op:order-by function.
   * @param column  The column by which order the output. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanSortKey object
   */
   public abstract PlanSortKey desc(String column);
   /**
-  * This function sorts the rows by the values of the specified column in descending order. The results are used by the op:order-by function.
+  * This function sorts the specified columndef in descending order. The results are used by the op:order-by function.
   * @param column  The column by which order the output. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanSortKey object
   */
@@ -1315,6 +1315,8 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a PlanFunction object
   */
   public abstract PlanFunction resolveFunction(XsQNameVal functionName, XsStringVal modulePath);
+  public abstract AccessPlan fromParam(String paramName, String qualifier, PlanDocColsIdentifierSeq colTypes);
+  public abstract AccessPlan fromParam(XsStringVal paramName, XsStringVal qualifier, PlanDocColsIdentifierSeq colTypes);
 /**
  * Provides functions and operations in the access phase
  * of the plan for executing a row pipeline on the server.
@@ -1688,6 +1690,16 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan whereDistinct();
+public abstract ModifyPlan write();
+public abstract ModifyPlan write(PlanDocColsIdentifier docCols);
+public abstract ModifyPlan unnestInner(String inputColumn, String valueColumn);
+public abstract ModifyPlan unnestInner(PlanExprCol inputColumn, PlanExprCol valueColumn);
+public abstract ModifyPlan unnestInner(String inputColumn, String valueColumn, String ordinalColumn);
+public abstract ModifyPlan unnestInner(PlanExprCol inputColumn, PlanExprCol valueColumn, PlanExprCol ordinalColumn);
+public abstract ModifyPlan unnestLeftOuter(String inputColumn, String valueColumn);
+public abstract ModifyPlan unnestLeftOuter(PlanExprCol inputColumn, PlanExprCol valueColumn);
+public abstract ModifyPlan unnestLeftOuter(String inputColumn, String valueColumn, String ordinalColumn);
+public abstract ModifyPlan unnestLeftOuter(PlanExprCol inputColumn, PlanExprCol valueColumn, PlanExprCol ordinalColumn);
   }
 
   
