@@ -23,8 +23,8 @@ task testSandbox(type:Test) {
 /* The code repositories to consult for dependencies */
 
 repositories {
-  maven {url "http://distro.marklogic.com/nexus/repository/maven-snapshots" }
-  maven { url "http://developer.marklogic.com/maven2" }
+  maven {url "https://distro.marklogic.com/nexus/repository/maven-snapshots" }
+  maven { url "https://developer.marklogic.com/maven2" }
 }
 
 dependencies {
