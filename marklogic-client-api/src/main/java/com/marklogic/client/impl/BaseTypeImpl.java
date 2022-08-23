@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.marklogic.client.type.*;
 
 public class BaseTypeImpl {
@@ -33,6 +34,11 @@ public class BaseTypeImpl {
     public String getParamQualifier();
     public String getParamValue();
   }
+
+  public static interface RowParamBinder {
+    public ArrayNode getArrayNode();
+  }
+  // add row Binder returning a Jackson Array Node-  rowParamBinder
 
   static class BaseMapImpl implements BaseArgImpl {
     private Map<String, ?> arg;

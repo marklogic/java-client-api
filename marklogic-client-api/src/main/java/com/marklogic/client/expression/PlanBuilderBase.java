@@ -17,6 +17,7 @@ package com.marklogic.client.expression;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.marklogic.client.io.marker.JSONReadHandle;
 
 import com.marklogic.client.type.*;
@@ -544,6 +545,11 @@ public interface PlanBuilderBase {
          * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(PlanParamExpr param, String  literal);
+
+        // Jackson array node that has jackson object nodes
+        PlanBuilder.Plan bindParam(String paramName, ArrayNode rows); // calls the second function
+
+        PlanBuilder.Plan bindParam(PlanParamExpr param, ArrayNode rows); // similar to
     }
     /**
      * Defines base methods for AccessPlan. This interface is an implementation detail.

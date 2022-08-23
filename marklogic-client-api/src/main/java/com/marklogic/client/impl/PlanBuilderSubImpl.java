@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.SemExpr;
 import com.marklogic.client.io.marker.ContentHandle;
@@ -627,6 +628,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     private Object[]                         fnArgs   = null;
 
     private Map<PlanParamBase,BaseTypeImpl.ParamBinder> params = null;
+    private Map<PlanParamBase,BaseTypeImpl.RowParamBinder> nextParams = null;
 
     PlanSubImpl(PlanBuilderBaseImpl.PlanBaseImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
       super(prior, fnPrefix, fnName, fnArgs);
@@ -637,10 +639,14 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
     private PlanSubImpl(
       PlanBuilderBaseImpl.PlanBaseImpl prior, String fnPrefix, String fnName, Object[] fnArgs,
-      Map<PlanParamBase,BaseTypeImpl.ParamBinder> params) {
+      Map<PlanParamBase,BaseTypeImpl.ParamBinder> params, Map<PlanParamBase,BaseTypeImpl.RowParamBinder> nextParams) {
       this(prior, fnPrefix, fnName, fnArgs);
-      this.params = params;
+      if(params != null)
+        this.params = params;
+      if(nextParams!=null)
+        this.nextParams = nextParams;
     }
+    // new constructor using the new map field
 
     @Override
     public Map<PlanParamBase,BaseTypeImpl.ParamBinder> getParams() {
@@ -732,8 +738,21 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
         throw new IllegalArgumentException("cannot set value with unknown implementation");
       }
 
-      return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, nextParams);
+      return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, nextParams, null);
     }
+
+    @Override
+    public Plan bindParam(String paramName, ArrayNode rows) {
+      return bindParam(new PlanParamBase(paramName), rows);
+    }
+
+    @Override
+    public Plan bindParam(PlanParamExpr param, ArrayNode rows) {
+      Map<PlanParamBase,BaseTypeImpl.RowParamBinder> nextParams = new HashMap<>();
+      return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, null, nextParams);
+    }
+// Map<PlanParamBase,BaseTypeImpl.rowParamBinder> nextParams = new HashMap<>();
+    // return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, nextParams);
 
   }
 
