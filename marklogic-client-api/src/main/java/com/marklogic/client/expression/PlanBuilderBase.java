@@ -151,7 +151,15 @@ public interface PlanBuilderBase {
      * @return  an AccessPlan object
      */
     PlanBuilder.AccessPlan fromLiterals(Map<String,Object>[] rows, XsStringVal qualifierName);
-
+    /**
+     * Provides a convenience equivalent that is equivalent to chaining
+     * {@link PlanBuilder.AccessPlan#fromLexicons(Map, String)},
+     * and {@link PlanBuilder.ModifyPlan#where(CtsQueryExpr)}.
+     * @param querydef This parameter is a cts query.
+     * @param qualifierName  Specifies a name for qualifying the column names similar to a view name.
+     * @return  an AccessPlan object
+     */
+    PlanBuilder.AccessPlan fromDocUris(CtsQueryExpr querydef, String qualifierName);
     /**
      * This function constructs a JSON object with the specified properties. The object can be used as the value of a column in a row or passed to a builtin function.
      * <p>
