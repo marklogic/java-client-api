@@ -163,6 +163,14 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   @Override
+  public AccessPlan fromDocUris(CtsQueryExpr querydef, String qualifierName) {
+    return new AccessPlanSubImpl(
+            this, "op", "from-doc-uris", new Object[]{querydef, (qualifierName == null) ?
+            null : xs.string(qualifierName)}
+    );
+  }
+
+  @Override
   public PlanAggregateCol avg(String name, String column, PlanValueOption option) {
     return avg(col(name), col(column), option);
   }
@@ -918,6 +926,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
         case "from-search":
         case "from-search-docs":
         case "from-triples":
+        case "from-doc-uris":
           if (fnArgs.length < 1) {
             throw new IllegalArgumentException("accessor constructor without parameters: "+fnArgs.length);
           }

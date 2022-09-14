@@ -39,7 +39,12 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPathExpressionException;
 
+import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.JSONReadHandle;
+import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.row.*;
 import com.marklogic.client.type.*;
 import org.junit.AfterClass;
@@ -55,11 +60,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.ReaderHandle;
-import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowManager.RowSetPart;
 import com.marklogic.client.row.RowManager.RowStructure;
 import com.marklogic.client.row.RowRecord.ColumnKind;
@@ -197,6 +197,13 @@ public class RowManagerTest {
 
     rowstructs     = new RowStructure[]{ RowStructure.OBJECT, RowStructure.ARRAY };
     datatypeStyles = new RowSetPart[]{   RowSetPart.ROWS,     RowSetPart.HEADER  };
+
+    QueryManager queryMgr = Common.client.newQueryManager();
+    DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
+    deleteQuery.setDirectory("/testFromDocUrisWithDirectoryQuery/");
+    queryMgr.delete(deleteQuery);
+    deleteQuery.setDirectory("/testFromDocUrisWithDirectoryQueryNew/");
+    queryMgr.delete(deleteQuery);
   }
   @AfterClass
   public static void afterClass() {
@@ -1479,6 +1486,55 @@ public class RowManagerTest {
     JsonNode actual = row.getContainer("r");
     assertEquals("group unequal", expect, actual);
   }
+
+  @Test
+  public void testFromDocUrisWithWordQuery() {
+    RowManager rowMgr = Common.client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    PlanBuilder.ExportablePlan builtPlan = p.fromDocUris(p.cts.wordQuery("trumpet"), "");
+
+    RowSet<RowRecord> recordRowSet = rowMgr.resultRows(builtPlan);
+    Set<String> uriSet = new HashSet<>();
+    uriSet.add("/optic/test/musician4.json");
+    uriSet.add("/optic/test/musician1.json");
+    Iterator<RowRecord> rows = rowMgr.resultRows(builtPlan).iterator();
+    while (rows.hasNext()){
+      String temp = rows.next().get("uri").toString().replaceAll("^\"|\"$", "");
+      assertTrue(uriSet.contains(temp));
+      uriSet.remove(temp);
+    }
+    assertTrue(uriSet.size() == 0);
+  }
+
+  @Test
+  public void testFromDocUrisWithDirectoryQuery() throws Exception {
+    RowManager rowMgr = Common.client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+    PlanBuilder.ExportablePlan builtPlan = p.fromDocUris(p.cts.directoryQuery("/testFromDocUrisWithDirectoryQuery/"), "");
+    DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections("testcollection");
+    DataMovementManager moveMgr = Common.client.newDataMovementManager();
+    WriteBatcher batcher = moveMgr.newWriteBatcher();
+    batcher.addAs("/testFromDocUrisWithDirectoryQuery/doc1.txt", meta,"This is doc1");
+    batcher.addAs("/testFromDocUrisWithDirectoryQuery/doc2.txt", meta, "This is doc2");
+    batcher.addAs("/testFromDocUrisWithDirectoryQuery/doc3.txt", meta, "This is doc3");
+    batcher.addAs("/testFromDocUrisWithDirectoryQueryNew/doc4.txt", meta, "This is doc4");
+    batcher.flushAndWait();
+
+    RowSet<RowRecord> recordRowSet = rowMgr.resultRows(builtPlan);
+    Set<String> uriSet = new HashSet<>();
+    uriSet.add("/testFromDocUrisWithDirectoryQuery/doc1.txt");
+    uriSet.add("/testFromDocUrisWithDirectoryQuery/doc2.txt");
+    uriSet.add("/testFromDocUrisWithDirectoryQuery/doc3.txt");
+    uriSet.add("/testFromDocUrisWithDirectoryQueryNew/doc4.txt");
+    Iterator<RowRecord> rows = rowMgr.resultRows(builtPlan).iterator();
+    while (rows.hasNext()){
+      String temp = rows.next().get("uri").toString().replaceAll("^\"|\"$", "");
+      assertTrue(uriSet.contains(temp));
+      uriSet.remove(temp);
+    }
+    assertTrue(uriSet.size() == 1 && uriSet.contains("/testFromDocUrisWithDirectoryQueryNew/doc4.txt"));
+  }
+
   private void checkSingleRow(NodeList row, RowSetPart datatypeStyle) {
     assertEquals("unexpected column count in XML", 2, row.getLength());
     Element testElement = (Element) row.item(0);
