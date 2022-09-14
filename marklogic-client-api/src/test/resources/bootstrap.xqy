@@ -387,7 +387,7 @@ declare function bootstrap:create-geospatial-region-path-indexes(
         let $curr       := $curr-idx[
             string(dbx:path-expression) eq $path and
             string(dbx:coordinate-system) eq $coordsys and
-            string(dbx:geohash-precision) eq $precision and
+            string(dbx:geohash-precision) eq fn:string($precision) and
             string(dbx:invalid-values) eq $invalidval
             ]
         return
@@ -580,7 +580,17 @@ declare function bootstrap:security-config() {
                 bootstrap:security-eval('sec:create-user("valid", "valid unprivileged user", "x", (), (), (), ())')
             ) else (
                 bootstrap:security-eval('sec:create-user("'||$user||'", "'||$user||' user", "x", ("'||$user||'"), (), (), () )')
-            )
+            ),
+            if ($user eq "rest-writer") then (
+                (:
+                The bug in JAVA-245 occurs with at least ML 10.0-8.3 to 10.0-9.2 where the endpoint for deleting a graph
+                requires the user to have the term-query privilege. This appears fixed in ML 10.0-9.4. This is being
+                retained for now though in case these tests are run on a version of ML earlier than 10.0-9.4. 
+                :)
+                bootstrap:security-eval('sec:create-role("rest-delete-graph", "rest-delete-graph", (), (), ())'),
+                bootstrap:security-eval('sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/term-query", "execute", "rest-delete-graph")'),
+                bootstrap:security-eval('sec:user-add-roles("rest-writer", "rest-delete-graph")')
+            ) else ()
         )
     )
 };

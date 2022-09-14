@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 
 import com.marklogic.client.datamovement.*;
+import com.marklogic.client.test.Common;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,8 +51,8 @@ public class JacksonCSVSplitterTest {
     private DataMovementManager moveMgr;
     
     @Before
-    public void setUp() throws Exception {
-        client = DatabaseClientFactory.newClient("localhost", 8012,
+    public void setUp() {
+        client = DatabaseClientFactory.newClient(Common.HOST, 8012,
                 new DatabaseClientFactory.DigestAuthContext("rest-admin", "x"));
         moveMgr = client.newDataMovementManager();
     }

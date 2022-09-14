@@ -46,7 +46,7 @@ public class Common {
   final public static String REST_ADMIN_USER= "rest-admin";
   final public static String REST_ADMIN_PASS= "x";
   final public static String SERVER_ADMIN_USER= "admin";
-  final public static String SERVER_ADMIN_PASS= "admin";
+  final public static String SERVER_ADMIN_PASS = System.getProperty("TEST_ADMIN_PASSWORD", "admin");
   final public static String EVAL_USER= "rest-evaluator";
   final public static String EVAL_PASS= "x";
   final public static String READ_ONLY_USER= "rest-reader";
@@ -104,6 +104,7 @@ public class Common {
     return newClient(null);
   }
   public static DatabaseClient newClient(String databaseName) {
+    System.out.println("Connecting to: " + Common.HOST);
     return DatabaseClientFactory.newClient(Common.HOST, Common.PORT, databaseName,
         new DatabaseClientFactory.DigestAuthContext(Common.USER, Common.PASS),
           CONNECTION_TYPE);
