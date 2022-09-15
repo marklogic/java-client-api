@@ -66,14 +66,11 @@ public class Common {
   final public static DatabaseClient.ConnectionType CONNECTION_TYPE =
       DatabaseClient.ConnectionType.valueOf(System.getProperty("TEST_CONNECT_TYPE", "DIRECT"));
 
-  final public static boolean BALANCED = Boolean.parseBoolean(System.getProperty("TEST_BALANCED", "false"));
-
   public static DatabaseClient client;
   public static DatabaseClient adminClient;
   public static DatabaseClient serverAdminClient;
   public static DatabaseClient evalClient;
   public static DatabaseClient readOnlyClient;
-  public static DatabaseClient dataServiceClient;
 
   public static DatabaseClient connect() {
     if (client == null)

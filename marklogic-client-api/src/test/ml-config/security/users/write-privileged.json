@@ -1,0 +1,8 @@
+{
+  "user-name": "write-privileged",
+  "description": "write-privileged user",
+  "role": [
+    "write-privileged"
+  ],
+  "password": "x"
+}

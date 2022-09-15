@@ -1,5 +1,10 @@
-apply plugin: 'maven-publish'
-apply plugin: 'distribution'
+plugins {
+    id 'maven-publish'
+    id 'distribution'
+
+    id "net.saliman.properties" version "1.5.1"
+    id 'com.marklogic.ml-gradle' version '4.3.5'
+}
 
 group = 'com.marklogic'
 
@@ -34,6 +39,15 @@ dependencies {
     compileOnly group: 'com.opencsv', name: 'opencsv', version: '4.6'
     compileOnly group: 'org.geonames', name: 'geonames', version:'1.0'
     compileOnly group: 'org.springframework', name: 'spring-jdbc', version: '5.3.18'
+}
+
+// Ensure that mlHost and mlPassword can override the defaults of localhost/admin if they've been modified
+test {
+    systemProperty "TEST_HOST", mlHost
+    systemProperty "TEST_ADMIN_PASSWORD", mlPassword
+    // Needed by the tests for the example programs
+    systemProperty "EXAMPLE_HOST", mlHost
+    systemProperty "EXAMPLE_ADMIN_PASSWORD", mlPassword
 }
 
 jar {
@@ -190,15 +204,4 @@ task printClassPath() {
     doLast {
         println sourceSets.main.runtimeClasspath.asPath+':'+sourceSets.test.runtimeClasspath.asPath
     }
-}
-
-task testServerInit(type: JavaExec) {
-    classpath = sourceSets.test.runtimeClasspath
-    main = 'com.marklogic.client.test.util.TestServerBootstrapper'
-}
-
-task testServerTeardown(type: JavaExec) {
-    classpath = sourceSets.test.runtimeClasspath
-    main = 'com.marklogic.client.test.util.TestServerBootstrapper'
-    args = ["teardown"]
 }

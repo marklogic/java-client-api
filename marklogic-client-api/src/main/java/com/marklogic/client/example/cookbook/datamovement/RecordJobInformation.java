@@ -5,10 +5,12 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.StructuredQueryBuilder;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,9 +18,11 @@ import java.util.Map;
 public class RecordJobInformation {
   static int threadCount = 3;
   static int batchSize = 10;
-  public static void main( String args[] ) {
-    DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8012,
-        new DatabaseClientFactory.DigestAuthContext("admin", "admin"));
+  public static void main( String args[] ) throws IOException {
+    Util.ExampleProperties props = Util.loadProperties();
+
+    DatabaseClient client = DatabaseClientFactory.newClient(props.host, props.port,
+        new DatabaseClientFactory.DigestAuthContext(props.adminUser, props.adminPassword));
     DataMovementManager dm = client.newDataMovementManager();
 
     // Create a WriteBatcher for which job information needs to be recorded

@@ -28,3 +28,4 @@ buildSrc/build
 */gradle/wrapper/gradle-wrapper.properties
 out
 uriCache.txt
+gradle-local.properties

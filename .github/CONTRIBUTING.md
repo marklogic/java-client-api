@@ -131,15 +131,7 @@ Use `git rebase` (not `git merge`) to sync your work from time to time.
 #### Test your code
 
 Be sure to run the tests before submitting your pull request. PRs with failing
-tests won't be accepted.
-
-First verify that you have valid server and admin auth info in
-`SERVER_ADMIN_USER` and `SERVER_ADMIN_PASS` fields in
-src/test/java/com/marklogic/client/test/Common.java
-
-    $ ./gradlew clean
-    $ ./gradlew testServerInit
-    $ ./gradlew test
+tests won't be accepted. See the instructions in this repository's README.md file for running the tests.
 
 
 #### If your server is not on localhost

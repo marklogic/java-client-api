@@ -134,9 +134,31 @@ See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for more on contributing to this 
 
 ### Running JUnit Tests
 
-    $ ./gradlew marklogic-client-api:compileTestJava
-    $ ./gradlew testServerInit
-    $ ./gradlew marklogic-client-api:test
+The JUnit tests depend on an [ml-gradle](https://github.com/marklogic-community/ml-gradle) application being deployed. 
+This application contains a number of database and security settings that the tests depend on. 
+The `./marklogic-client-api/gradle.properties` file defines the connection properties for this application; these default 
+to `localhost` and an admin password of `admin`. To override these, create the file `./marklogic-client-api/gradle-local.properties`
+and add the following (you can override additional properties as necessary):
+
+    mlHost=changeme
+    mlPassword=changeme
+
+The application is then deployed via the following command:
+
+    ./gradlew mlDeploy -i
+
+You can then run the tests, which will use the values of `mlHost` and `mlPassword` for connecting to MarkLogic as an 
+admin user:
+
+    ./gradlew marklogic-client-api:test
+
+Individual tests can be run in the following manner (replace `GraphsTest` with the name of the test class you wish to run):
+
+    ./gradlew marklogic-client-api:test --tests GraphsTest
+
+You can also undeploy the test application if you do not wish to keep it around on your MarkLogic instance:
+
+    ./gradlew mlUndeploy -i -Pconfirm=true
 
 ## Support
 The MarkLogic Java Client API is maintained by [MarkLogic](https://www.marklogic.com/) Engineering and is made available under the [Apache 2.0 license](https://github.com/marklogic/java-client-api/blob/master/LICENSE). It is designed for use in production applications with MarkLogic Server. Everyone is encouraged to file bug reports, feature requests, and pull requests through [GitHub](https://github.com/marklogic/java-client-api/issues). This input is critical and will be carefully considered. However, we can’t promise a specific resolution or timeframe for any request. In addition, MarkLogic provides technical support for [release tags](https://github.com/marklogic/java-client-api/releases) of the Java Client API to licensed customers under the terms outlined in the [MarkLogic Technical Support Handbook](http://www.marklogic.com/files/Mark_Logic_Support_Handbook.pdf). Customers with an active maintenance contract can sign up for MarkLogic Technical Support on our [support portal](https://help.marklogic.com/).

@@ -1,0 +1,4 @@
+{
+  "server-name": "java-unittest",
+  "distribute-timestamps": "cluster"
+}

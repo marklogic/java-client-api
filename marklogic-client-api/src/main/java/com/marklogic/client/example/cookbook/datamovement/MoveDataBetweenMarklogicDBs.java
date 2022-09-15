@@ -1,5 +1,6 @@
 package com.marklogic.client.example.cookbook.datamovement;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -18,6 +19,7 @@ import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
@@ -42,10 +44,6 @@ public class MoveDataBetweenMarklogicDBs {
   private static DataMovementManager destMoveMgr;
   private int batchSize = 3;
   private int threadCount  = 3;
-  private String destHost = "localhost";
-  private int destPort = 8012;
-  private String destUser = "admin";
-  private String destPassword = "admin";
   private String transformName = "moveDataBetweenMLDBs";
   private String ctsQuery = "<cts:and-query/>";
   
@@ -125,8 +123,13 @@ public class MoveDataBetweenMarklogicDBs {
   private void setup() {
     sourceClient = DatabaseClientSingleton.getAdmin("Documents");
     sourceMoveMgr = sourceClient.newDataMovementManager();
-    destMoveMgr = DatabaseClientFactory.newClient(destHost, destPort, new DigestAuthContext(destUser, destPassword))
-        .newDataMovementManager();
+    try {
+      Util.ExampleProperties props = Util.loadProperties();
+      destMoveMgr = DatabaseClientFactory.newClient(props.host, props.port, new DigestAuthContext(props.adminUser, props.adminPassword))
+              .newDataMovementManager();
+    } catch (IOException ex) {
+      throw new RuntimeException(ex);
+    }
   }
 
   /*

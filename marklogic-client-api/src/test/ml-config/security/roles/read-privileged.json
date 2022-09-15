@@ -1,0 +1,11 @@
+{
+  "role-name": "read-privileged",
+  "description": "read-privileged",
+  "privilege": [
+    {
+      "privilege-name": "rest-reader",
+      "action": "http://marklogic.com/xdmp/privileges/rest-reader",
+      "kind": "execute"
+    }
+  ]
+}

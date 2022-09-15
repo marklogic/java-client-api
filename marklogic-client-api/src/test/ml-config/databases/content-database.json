@@ -1,0 +1,303 @@
+{
+  "database-name": "java-unittest",
+  "schema-database": "java-unittest-schemas",
+  "triple-index": true,
+  "uri-lexicon": true,
+  "collection-lexicon": true,
+  "maintain-last-modified": true,
+  "range-element-index": [
+    {
+      "scalar-type": "dateTime",
+      "namespace-uri": "",
+      "localname": "lastModified",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "dateTime",
+      "namespace-uri": "http://marklogic.com/xdmp/property",
+      "localname": "last-modified",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "string",
+      "namespace-uri": "http://nwalsh.com/ns/photolib",
+      "localname": "tag",
+      "collation": "http://marklogic.com/collation/",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "date",
+      "namespace-uri": "http://nwalsh.com/ns/photolib",
+      "localname": "date",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "double",
+      "namespace-uri": "",
+      "localname": "double",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "int",
+      "namespace-uri": "",
+      "localname": "int",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "string",
+      "namespace-uri": "",
+      "localname": "grandchild",
+      "collation": "http://marklogic.com/collation/",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "string",
+      "namespace-uri": "",
+      "localname": "string",
+      "collation": "http://marklogic.com/collation/",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "dateTime",
+      "namespace-uri": "",
+      "localname": "system-start",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "dateTime",
+      "namespace-uri": "",
+      "localname": "system-end",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "dateTime",
+      "namespace-uri": "",
+      "localname": "valid-start",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "dateTime",
+      "namespace-uri": "",
+      "localname": "valid-end",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    }
+  ],
+  "range-element-attribute-index": [
+    {
+      "scalar-type": "date",
+      "parent-namespace-uri": "http://nwalsh.com/ns/photolib",
+      "parent-localname": "view",
+      "namespace-uri": "",
+      "localname": "date",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    }
+  ],
+  "element-word-lexicon": [
+    {
+      "namespace-uri": "",
+      "localname": "suggest",
+      "collation": "http://marklogic.com/collation/"
+    }
+  ],
+  "path-namespace": [
+    {
+      "prefix": "rootOrg",
+      "namespace-uri": "root.org"
+    },
+    {
+      "prefix": "targetOrg",
+      "namespace-uri": "target.org"
+    }
+  ],
+  "range-path-index": [
+    {
+      "scalar-type": "long",
+      "path-expression": "com.marklogic.client.test.City/population",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "ignore"
+    },
+    {
+      "scalar-type": "string",
+      "path-expression": "com.marklogic.client.test.City/alternateNames",
+      "collation": "http://marklogic.com/collation/",
+      "range-value-positions": false,
+      "invalid-values": "ignore"
+    },
+    {
+      "scalar-type": "string",
+      "path-expression": "com.marklogic.client.test.Country/continent",
+      "collation": "http://marklogic.com/collation/",
+      "range-value-positions": false,
+      "invalid-values": "ignore"
+    },
+    {
+      "scalar-type": "dateTime",
+      "path-expression": "com.marklogic.client.test.TimeTest/calendarTest",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "ignore"
+    },
+    {
+      "scalar-type": "dateTime",
+      "path-expression": "com.marklogic.client.test.TimeTest/calendarTestCet",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "ignore"
+    },
+    {
+      "scalar-type": "dateTime",
+      "path-expression": "com.marklogic.client.test.TimeTest/dateTest",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "ignore"
+    }
+  ],
+  "field": [
+    {
+      "field-name": "",
+      "include-root": true
+    },
+    {
+      "field-name": "int1",
+      "include-root": false
+    },
+    {
+      "field-name": "int2",
+      "include-root": false
+    }
+  ],
+  "range-field-index": [
+    {
+      "scalar-type": "int",
+      "field-name": "int1",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "int",
+      "field-name": "int2",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    }
+  ],
+  "geospatial-element-index": [
+    {
+      "namespace-uri": "",
+      "localname": "latLong",
+      "coordinate-system": "wgs84",
+      "point-format": "point",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    }
+  ],
+  "geospatial-element-child-index": [
+    {
+      "parent-namespace-uri": "",
+      "parent-localname": "com.marklogic.client.test.City",
+      "namespace-uri": "",
+      "localname": "latLong",
+      "coordinate-system": "wgs84",
+      "point-format": "point",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    }
+  ],
+  "geospatial-element-pair-index": [
+    {
+      "parent-namespace-uri": "http://marklogic.com/ns/test/places",
+      "parent-localname": "place",
+      "latitude-namespace-uri": "http://marklogic.com/ns/test/places",
+      "latitude-localname": "lat",
+      "longitude-namespace-uri": "http://marklogic.com/ns/test/places",
+      "longitude-localname": "long",
+      "coordinate-system": "wgs84",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "parent-namespace-uri": "",
+      "parent-localname": "com.marklogic.client.test.City",
+      "latitude-namespace-uri": "",
+      "latitude-localname": "latitude",
+      "longitude-namespace-uri": "",
+      "longitude-localname": "longitude",
+      "coordinate-system": "wgs84",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "parent-namespace-uri": "",
+      "parent-localname": "point",
+      "latitude-namespace-uri": "",
+      "latitude-localname": "lat",
+      "longitude-namespace-uri": "",
+      "longitude-localname": "lon",
+      "coordinate-system": "wgs84/double",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    }
+  ],
+  "geospatial-path-index": [
+    {
+      "path-expression": "com.marklogic.client.test.City/latLong",
+      "coordinate-system": "wgs84",
+      "point-format": "point",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "path-expression": "/rootOrg:geo/targetOrg:path",
+      "coordinate-system": "wgs84",
+      "point-format": "point",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    }
+  ],
+  "geospatial-region-path-index": [
+    {
+      "path-expression": "/country/region",
+      "coordinate-system": "wgs84",
+      "units": "miles",
+      "geohash-precision": 3,
+      "invalid-values": "ignore"
+    },
+    {
+      "path-expression": "/country/region",
+      "coordinate-system": "wgs84/double",
+      "units": "miles",
+      "geohash-precision": 3,
+      "invalid-values": "ignore"
+    }
+  ],
+  "default-ruleset": [
+    {
+      "location": "rdfs.rules"
+    }
+  ]
+}
