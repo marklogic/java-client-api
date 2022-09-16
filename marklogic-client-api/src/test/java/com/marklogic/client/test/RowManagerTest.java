@@ -42,7 +42,6 @@ import javax.xml.xpath.XPathExpressionException;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.io.*;
-import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.row.*;
@@ -527,6 +526,10 @@ public class RowManagerTest {
 
   @Test
   public void testSQLException() {
+    if (!markLogicIsVersion11OrHigher()) {
+      return;
+    }
+
     RowManager rowMgr = Common.client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     PlanBuilder.ExportablePlan builtPlan =
@@ -1489,11 +1492,14 @@ public class RowManagerTest {
 
   @Test
   public void testFromDocUrisWithWordQuery() {
+    if (!markLogicIsVersion11OrHigher()) {
+      return;
+    }
+
     RowManager rowMgr = Common.client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     PlanBuilder.ExportablePlan builtPlan = p.fromDocUris(p.cts.wordQuery("trumpet"), "");
 
-    RowSet<RowRecord> recordRowSet = rowMgr.resultRows(builtPlan);
     Set<String> uriSet = new HashSet<>();
     uriSet.add("/optic/test/musician4.json");
     uriSet.add("/optic/test/musician1.json");
@@ -1507,7 +1513,10 @@ public class RowManagerTest {
   }
 
   @Test
-  public void testFromDocUrisWithDirectoryQuery() throws Exception {
+  public void testFromDocUrisWithDirectoryQuery() {
+    if (!markLogicIsVersion11OrHigher()) {
+      return;
+    }
     RowManager rowMgr = Common.client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     PlanBuilder.ExportablePlan builtPlan = p.fromDocUris(p.cts.directoryQuery("/testFromDocUrisWithDirectoryQuery/"), "");
@@ -1520,7 +1529,6 @@ public class RowManagerTest {
     batcher.addAs("/testFromDocUrisWithDirectoryQueryNew/doc4.txt", meta, "This is doc4");
     batcher.flushAndWait();
 
-    RowSet<RowRecord> recordRowSet = rowMgr.resultRows(builtPlan);
     Set<String> uriSet = new HashSet<>();
     uriSet.add("/testFromDocUrisWithDirectoryQuery/doc1.txt");
     uriSet.add("/testFromDocUrisWithDirectoryQuery/doc2.txt");
@@ -1753,8 +1761,7 @@ public class RowManagerTest {
     }
     assertEquals("row count for record document join", 3, rowCount);
   }
-  private String nodeToString(Node node)
-    throws TransformerConfigurationException, TransformerException, TransformerFactoryConfigurationError
+  private String nodeToString(Node node) throws TransformerException, TransformerFactoryConfigurationError
   {
     StringWriter sw = new StringWriter();
     Transformer  tf = TransformerFactory.newInstance().newTransformer();
@@ -1763,5 +1770,14 @@ public class RowManagerTest {
       new DOMSource(node), new StreamResult(sw)
     );
     return sw.toString();
+  }
+
+  private boolean markLogicIsVersion11OrHigher() {
+    MarkLogicVersion version = Common.getMarkLogicVersion();
+    boolean val = version.getMajor() >= 11;
+    if (!val) {
+      System.out.println("Will not run test because the MarkLogic server is not at least major version 11");
+    }
+    return val;
   }
 }
