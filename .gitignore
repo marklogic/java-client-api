@@ -26,3 +26,5 @@ buildSrc/build
 .idea
 
 */gradle/wrapper/gradle-wrapper.properties
+out
+uriCache.txt

@@ -942,7 +942,7 @@ public class QueryBatcherTest {
 		try {
 			defaultClient = new DefaultHttpClient();
 			defaultClient.getCredentialsProvider().setCredentials(new AuthScope(client.getHost(), 8002),
-					new UsernamePasswordCredentials("admin", "admin"));
+					new UsernamePasswordCredentials(Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS));
 			HttpGet getrequest = new HttpGet("http://" + client.getHost() + ":" + 8002 + "/manage/v2/databases/"
 					+ dbName + "/properties?format=json");
 			HttpResponse getResponse = defaultClient.execute(getrequest);
