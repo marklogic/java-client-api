@@ -80,22 +80,11 @@ To use the API in your maven project, include the following in your pom.xml:
         <version>5.2.0</version>
     </dependency>
 
-And add this repository to your pom.xml repositories section:
-
-    <repository>
-        <id>jcenter</id>
-        <url>https://jcenter.bintray.com</url>
-    </repository>
-
-For gradle projects, include the following:
+For gradle projects, use gradle 4.x+ and include the following:
 
     dependencies {
         compile group: 'com.marklogic', name: 'marklogic-client-api', version: '5.3.0'
     }
-
-Use gradle 4.x+ and add this to your build.gradle repositories section:
-
-    jcenter()
 
 Read [The Java API in Five Minutes](http://developer.marklogic.com/try/java/index)
 
