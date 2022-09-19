@@ -78,7 +78,7 @@ public class RowBatcherTest {
     private static void setupIndex() {
         final String tdeUri = TEST_COLLECTION+".tdex";
 
-        DatabaseClient schemasDB = Common.newServerAdminClient("Schemas");
+        DatabaseClient schemasDB = Common.newServerAdminClient("java-unittest-schemas");
         XMLDocumentManager schemaMgr = schemasDB.newXMLDocumentManager();
 
         if (schemaMgr.exists(tdeUri) == null) {

@@ -1,0 +1,39 @@
+{
+  "role-name": "rest-evaluator",
+  "description": "rest-evaluator",
+  "role": [
+    "rest-writer"
+  ],
+  "privilege": [
+    {
+      "privilege-name": "xdmp:eval-in",
+      "action": "http://marklogic.com/xdmp/privileges/xdmp-eval-in",
+      "kind": "execute"
+    },
+    {
+      "privilege-name": "xdmp:eval",
+      "action": "http://marklogic.com/xdmp/privileges/xdmp-eval",
+      "kind": "execute"
+    },
+    {
+      "privilege-name": "xdbc:invoke-in",
+      "action": "http://marklogic.com/xdmp/privileges/xdbc-invoke-in",
+      "kind": "execute"
+    },
+    {
+      "privilege-name": "xdbc:invoke",
+      "action": "http://marklogic.com/xdmp/privileges/xdbc-invoke",
+      "kind": "execute"
+    },
+    {
+      "privilege-name": "xdbc:eval",
+      "action": "http://marklogic.com/xdmp/privileges/xdbc-eval",
+      "kind": "execute"
+    },
+    {
+      "privilege-name": "xdbc:eval-in",
+      "action": "http://marklogic.com/xdmp/privileges/xdbc-eval-in",
+      "kind": "execute"
+    }
+  ]
+}

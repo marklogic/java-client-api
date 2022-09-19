@@ -1,0 +1,7 @@
+<root name="second">
+    <child id="3">
+        <double>1.2</double>
+        <int>3</int>
+        <string>Alaska</string>
+    </child>
+</root>

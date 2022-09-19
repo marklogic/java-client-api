@@ -43,10 +43,11 @@ public class Util {
     public String         jdbcPassword;
     public ExampleProperties(Properties props) {
       super();
-      host           = props.getProperty("example.host");
+      host           = System.getProperty("EXAMPLE_HOST", props.getProperty("example.host"));
+      System.out.println("Example program will connect to host: " + host);
       port           = Integer.parseInt(props.getProperty("example.port"));
       adminUser      = props.getProperty("example.admin_user");
-      adminPassword  = props.getProperty("example.admin_password");
+      adminPassword  = System.getProperty("EXAMPLE_ADMIN_PASSWORD", props.getProperty("example.admin_password"));
       readerUser     = props.getProperty("example.reader_user");
       readerPassword = props.getProperty("example.reader_password");
       writerUser     = props.getProperty("example.writer_user");

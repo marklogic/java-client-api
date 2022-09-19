@@ -1,0 +1,6 @@
+{
+	"collection-name": "temporal-collection",
+	"system-axis": "system-axis",
+	"valid-axis": "valid-axis",
+	"option": ["updates-admin-override"]
+}

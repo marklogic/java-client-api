@@ -1,0 +1,9 @@
+{
+  "user-name": "rest-admin",
+  "description": "rest-admin user",
+  "role": [
+    "rest-admin",
+    "rest-delete-temporal"
+  ],
+  "password": "x"
+}

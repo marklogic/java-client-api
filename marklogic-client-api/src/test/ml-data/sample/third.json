@@ -1,0 +1,12 @@
+{
+  "firstKey": "first value",
+  "secondKey": [
+    "first item",
+    "second item",
+    "third item"
+  ],
+  "thirdKey": 3,
+  "fourthKey": {
+    "subKey": "sub value"
+  }
+}

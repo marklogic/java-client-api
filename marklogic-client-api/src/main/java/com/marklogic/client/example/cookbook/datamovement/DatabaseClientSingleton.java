@@ -85,7 +85,7 @@ public class DatabaseClientSingleton {
     if (dbSpecificClients.get("admin" + database) == null) {
       registerHandlers();
       dbSpecificClients.put("admin" + database, DatabaseClientFactory.newClient(properties.host, properties.port, database,
-              new DigestAuthContext("admin", "admin")));
+              new DigestAuthContext(properties.adminUser, properties.adminPassword)));
     }
     return dbSpecificClients.get("admin" + database);
   }
