@@ -136,6 +136,11 @@ public class Common {
           CONNECTION_TYPE);
   }
 
+  public static MarkLogicVersion getMarkLogicVersion() {
+    String version = newServerAdminClient().newServerEval().javascript("xdmp.version()").evalAs(String.class);
+    return new MarkLogicVersion(version);
+  }
+
   public static byte[] streamToBytes(InputStream is) throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     byte[] b = new byte[1000];
