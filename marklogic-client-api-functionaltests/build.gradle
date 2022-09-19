@@ -20,20 +20,13 @@ task testSandbox(type:Test) {
   include 'com/marklogic/client/functionaltest/TestSandBox.class'
 }
 
-/* The code repositories to consult for dependencies */
-
-repositories {
-  maven {url "http://distro.marklogic.com/nexus/repository/maven-snapshots" }
-  maven { url "http://developer.marklogic.com/maven2" }
-}
-
 dependencies {
   implementation project (':marklogic-client-api')
   implementation group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0'
-  implementation group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
-  testImplementation group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+  implementation group: 'org.slf4j', name: 'slf4j-api', version:'1.7.36'
+  testImplementation group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.11'
   implementation group: 'commons-io', name: 'commons-io', version: '2.6'
-  implementation group: 'com.squareup.okhttp3', name: 'okhttp', version:'4.7.2'
-  implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version:'2.11.1'
-  implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.11.1'
+  implementation group: 'com.squareup.okhttp3', name: 'okhttp', version:'4.10.0'
+  implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version:'2.12.4'
+  implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.12.4'
 }
