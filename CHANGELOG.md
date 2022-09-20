@@ -1,4 +1,9 @@
 # CHANGELOG
+## 5.5.4
+
+#### Improvements and Bug Fixes
+- [#1337](https://github.com/marklogic/java-client-api/issues/1337) - Gradle breaks my build marklogic-client-api is missing the Gradle .module file in Maven Central
+
 ## 5.5.3
 
 #### Improvements and Bug Fixes
