@@ -2,25 +2,19 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'eclipse'
 
-    configure(allprojects){
-        ext.slf4jVersion = '1.7.30'
-        ext.logbackVersion = '1.2.3'
-    }
  	tasks.withType(JavaCompile) {
     	options.encoding = 'UTF-8'
   	}
     sourceCompatibility = "1.8"
     targetCompatibility = "1.8"
 
-    sourceSets {
-        test.compileClasspath += configurations.compileOnly
-        test.runtimeClasspath += configurations.compileOnly
+    configurations {
+        testImplementation.extendsFrom compileOnly
     }
 
     repositories {
         mavenLocal()
         mavenCentral()
-        maven { url "http://repo.maven.apache.org/maven2" }
     }
 
     dependencies {
