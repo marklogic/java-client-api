@@ -6,11 +6,6 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'  version '1.6.20'
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
 dependencies {
     compileOnly gradleApi()
     implementation project(':marklogic-client-api')
@@ -19,7 +14,7 @@ dependencies {
     implementation 'com.networknt:json-schema-validator:1.0.42'
 
     testCompileOnly gradleTestKit()
-    testImplementation 'com.square.okhttp3:okhttp:4.10.0'
+    testImplementation 'com.squareup.okhttp3:okhttp:4.10.0'
 }
 
 task mlDevelopmentToolsJar(type: Jar, dependsOn: classes) {
