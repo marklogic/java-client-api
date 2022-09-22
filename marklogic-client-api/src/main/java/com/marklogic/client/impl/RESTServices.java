@@ -90,6 +90,7 @@ public interface RESTServices {
   String MIMETYPE_APPLICATION_JSON = "application/json";
   String MIMETYPE_APPLICATION_XML = "application/xml";
   String MIMETYPE_MULTIPART_MIXED = "multipart/mixed";
+  String MIMETYPE_MULTIPART_FORM = "multipart/form-data";
 
   int STATUS_OK = 200;
   int STATUS_CREATED = 201;
@@ -264,6 +265,11 @@ public interface RESTServices {
     AbstractWriteHandle input, String... outputMimetypes)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
     FailedRequestException;
+  RESTServiceResultIterator postMultipartForm(
+          RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
+          Map<String, AbstractWriteHandle> contentParams)
+          throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
+          FailedRequestException;
   <W extends AbstractWriteHandle> RESTServiceResultIterator postIteratedResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
     W[] input, String... outputMimetypes)

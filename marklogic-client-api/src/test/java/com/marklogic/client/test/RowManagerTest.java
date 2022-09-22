@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.StringWriter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 import javax.xml.transform.OutputKeys;
@@ -39,6 +40,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPathExpressionException;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.io.*;
@@ -1541,6 +1543,33 @@ public class RowManagerTest {
       uriSet.remove(temp);
     }
     assertTrue(uriSet.size() == 1 && uriSet.contains("/testFromDocUrisWithDirectoryQueryNew/doc4.txt"));
+  }
+
+  @Test
+  public void testFromParamWithJsonDocs() {
+    if (!markLogicIsVersion11OrHigher()) {
+      return;
+    }
+
+    RowManager rowMgr = Common.client.newRowManager();
+    PlanBuilder planBuilder = rowMgr.newPlanBuilder();
+
+    PlanBuilder.AccessPlan plan = planBuilder.fromParam("myDocs", "", planBuilder.colTypes(
+            planBuilder.colType("lastName", "string"),
+            planBuilder.colType("firstName", "string", "", "", null)
+    ));
+
+    ArrayNode array = new ObjectMapper().createArrayNode();
+    array.addObject().put("lastName", "Smith").put("firstName", "Jane");
+    array.addObject().put("lastName", "Jones").put("firstName", "Jack");
+    PlanBuilder.Plan boundPlan = plan.bindParam("myDocs", new JacksonHandle(array));
+
+    List<RowRecord> rows = rowMgr.resultRows(boundPlan).stream().collect(Collectors.toList());
+    assertEquals(2, rows.size());
+    assertEquals("Jane", rows.get(0).getString("firstName"));
+    assertEquals("Smith", rows.get(0).getString("lastName"));
+    assertEquals("Jack", rows.get(1).getString("firstName"));
+    assertEquals("Jones", rows.get(1).getString("lastName"));
   }
 
   private void checkSingleRow(NodeList row, RowSetPart datatypeStyle) {

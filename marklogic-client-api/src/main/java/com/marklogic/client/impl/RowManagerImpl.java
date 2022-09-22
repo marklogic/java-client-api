@@ -47,6 +47,7 @@ import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
+import com.marklogic.client.expression.PlanBuilderBase;
 import com.marklogic.client.impl.RESTServices.RESTServiceResult;
 import com.marklogic.client.impl.RESTServices.RESTServiceResultIterator;
 import com.marklogic.client.io.*;
@@ -377,7 +378,13 @@ public class RowManagerImpl
     addDatatypeStyleParam(params,     datatypeStyle);
     addRowStructureStyleParam(params, rowStructureStyle);
 
-// QUESTION: outputMimetypes a noop?
+    if (requestPlan instanceof PlanBuilderBase.AccessPlanBase) {
+      Map<String, AbstractWriteHandle> contentParams = ((PlanBuilderBase.AccessPlanBase)requestPlan).getContentParams();
+      if (contentParams != null && !contentParams.isEmpty()) {
+        contentParams.put("query", astHandle);
+        return services.postMultipartForm(requestLogger, "rows", transaction, params, contentParams);
+      }
+    }
     return services.postIteratedResource(requestLogger, "rows", transaction, params, astHandle);
   }
   private PlanBuilderBaseImpl.RequestPlan checkPlan(Plan plan) {

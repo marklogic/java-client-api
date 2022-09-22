@@ -3957,6 +3957,51 @@ public class OkHttpServices implements RESTServices {
       reqlog, path, transaction, params, input, outputMimetypes);
   }
 
+    public RESTServiceResultIterator postMultipartForm(
+            RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
+            Map<String, AbstractWriteHandle> contentParams)
+            throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
+    {
+      if ( transaction != null ) {
+          params.add("txid", transaction.getTransactionId());
+      }
+
+      // Don't include incoming request params, those all have to be form-data inputs
+      Request.Builder requestBldr = makePostWebResource(path, new RequestParameters());
+
+      MultipartBody.Builder multiBuilder = new MultipartBody.Builder().setType(MediaType.parse("multipart/form-data"));
+      for ( String key : params.keySet() ) {
+          for ( String value : params.get(key) ) {
+              multiBuilder.addFormDataPart(key, value);
+          }
+      }
+
+      contentParams.forEach((name, content) -> {
+          multiBuilder.addFormDataPart(name, name, makeRequestBodyForContent(content));
+      });
+
+      requestBldr = setupRequest(requestBldr, multiBuilder, null);
+      requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+      requestBldr = addTelemetryAgentId(requestBldr);
+
+      if ("rows".equals(path)) {
+          requestBldr.addHeader("ML-Check-ML11-Headers", "true");
+          requestBldr.addHeader("TE", "trailers");
+      }
+
+      Function<Request.Builder, Response> doPostFunction = funcBuilder ->
+              doPost(reqlog, funcBuilder.header(HEADER_ACCEPT, multipartMixedWithBoundary()), multiBuilder.build());
+
+      // The construction of this was based on whether the primary input was resendable or not. We don't have a primary
+      // input with a multipart request. So keeping this as null for now.
+      Consumer<Boolean> resendableConsumer = null;
+
+      Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPostFunction, resendableConsumer);
+      int status = response.code();
+      checkStatus(response, status, "apply", "resource", path, ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
+      return makeResults(OkHttpServiceResultIterator::new, reqlog, "apply", "resource", response);
+  }
+
   private <U extends OkHttpResultIterator> U postIteratedResourceImpl(
     ResultIteratorConstructor<U> constructor, final RequestLogger reqlog,
     final String path, Transaction transaction, RequestParameters params,
@@ -4199,6 +4244,8 @@ public class OkHttpServices implements RESTServices {
     MediaType mediaType = makeType(requestBldr.build().header(HEADER_CONTENT_TYPE));
     if(value == null) {
       requestBldr = requestBldr.post(new ObjectRequestBody(null, null));
+    } else if (value instanceof MultipartBody) {
+        requestBldr = requestBldr.post((MultipartBody)value);
     } else if (value instanceof OutputStreamSender) {
       requestBldr = requestBldr
         .post(new StreamingOutputImpl((OutputStreamSender) value, reqlog, mediaType));
@@ -5645,6 +5692,21 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
+  public static RequestBody makeRequestBodyForContent(AbstractWriteHandle content) {
+      if (content == null) {
+          return new EmptyRequestBody();
+      }
+      HandleImplementation handleBase = HandleAccessor.as(content);
+      Format format = handleBase.getFormat();
+      String mimetype = (format == Format.BINARY) ? null : handleBase.getMimetype();
+      MediaType mediaType = MediaType.parse(
+              (mimetype != null) ? mimetype : "application/x-unknown-content-type"
+      );
+      return (content instanceof OutputStreamSender) ?
+              new StreamingOutputImpl((OutputStreamSender) content, null, mediaType) :
+              new ObjectRequestBody(HandleAccessor.sendContent(content), mediaType);
+  }
+
   class CallRequestImpl implements CallRequest {
     private SessionStateImpl session;
     private Request.Builder requestBldr;
@@ -5897,7 +5959,7 @@ public class OkHttpServices implements RESTServices {
                     paramValue = bytesHandle;
                 }
             hasValue.set();
-            multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue));
+            multiBldr.addFormDataPart(paramName, null, makeRequestBodyForContent(paramValue));
           }
         } else if (param instanceof UnbufferedMultipleNodeCallField) {
           Stream<? extends BufferableHandle> paramValues = ((UnbufferedMultipleNodeCallField) param).getParamValues();
