@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.*;
 import com.marklogic.client.DatabaseClient.ConnectionResult;
 import com.marklogic.client.DatabaseClientFactory.BasicAuthContext;
@@ -3959,7 +3960,7 @@ public class OkHttpServices implements RESTServices {
 
     public RESTServiceResultIterator postMultipartForm(
             RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
-            Map<String, AbstractWriteHandle> contentParams)
+            Map<String, AbstractWriteHandle> contentParams, List<PlanBuilderSubImpl.ParamAttachments> contentParamAttachments)
             throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
     {
       if ( transaction != null ) {
@@ -3979,6 +3980,9 @@ public class OkHttpServices implements RESTServices {
       contentParams.forEach((name, content) -> {
           multiBuilder.addFormDataPart(name, name, makeRequestBodyForContent(content));
       });
+      if (contentParamAttachments != null) {
+          this.addContentParamAttachments(multiBuilder, contentParamAttachments);
+      }
 
       requestBldr = setupRequest(requestBldr, multiBuilder, null);
       requestBldr = addTransactionScopedCookies(requestBldr, transaction);
@@ -4001,6 +4005,34 @@ public class OkHttpServices implements RESTServices {
       checkStatus(response, status, "apply", "resource", path, ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
       return makeResults(OkHttpServiceResultIterator::new, reqlog, "apply", "resource", response);
   }
+
+    /**
+     * The REST endpoint checks for a 'metadata' parameter that, if it exists, is expected to be a JSON object with
+     * an 'attachment/docs' array. Each object in the array is expected to have two fields - 'rowsField' and 'column'.
+     * The expectation is that 'rowsField' identifies a bound parameter name that is associated with a JSON array, and
+     * 'column' identifies a particular column in each object in the JSON array.
+     * <p>
+     * To provide support for this parameter, each object in the given {@code contentParamAttachments} array results in
+     * a new object in the 'rowsField' array. Then, each entry in the map of attachments in each such object is added
+     * as a new multipart form data part, with the map key being used as the form data part's filename. The value of
+     * the 'column' name in each row is then expected to be one of these map keys.
+     *
+     * @param multiBuilder
+     * @param contentParamAttachments
+     */
+    private void addContentParamAttachments(MultipartBody.Builder multiBuilder, List<PlanBuilderSubImpl.ParamAttachments> contentParamAttachments) {
+        ObjectNode metadata = new ObjectMapper().createObjectNode();
+        ArrayNode docsArray = metadata.putObject("attachments").putArray("docs");
+        for (PlanBuilderSubImpl.ParamAttachments paramAttachments : contentParamAttachments) {
+            final String columnName = paramAttachments.getColumnName();
+            docsArray.addObject().put("rowsField", paramAttachments.getParamName()).put("column", columnName);
+            Map<String, AbstractWriteHandle> attachments = paramAttachments.getAttachments();
+            attachments.keySet().forEach(filename -> {
+                multiBuilder.addFormDataPart(columnName, filename, makeRequestBodyForContent(attachments.get(filename)));
+            });
+        }
+        multiBuilder.addFormDataPart("metadata", "metadata", makeRequestBodyForContent(new JacksonHandle(metadata)));
+    }
 
   private <U extends OkHttpResultIterator> U postIteratedResourceImpl(
     ResultIteratorConstructor<U> constructor, final RequestLogger reqlog,

@@ -15,10 +15,9 @@
  */
 package com.marklogic.client.expression;
 
+import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 
@@ -590,8 +589,29 @@ public interface PlanBuilderBase {
      * Use AccessPlan as the type for instances of AccessPlan.
      */
     interface AccessPlanBase {
-        PlanBuilder.Plan bindParam(String param, AbstractWriteHandle content);
-        Map<String, AbstractWriteHandle> getContentParams();
+        /**
+         * Specifies a content handle to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * <p>Contrary to other `bindParam` methods, this mutates the existence of the plan rather than constructing
+         * a new instance.</p>
+         * @param param the name of a placeholder parameter
+         * @param content the content to replace the parameter
+         * @return the same instance that this was invoked on
+         */
+        PlanBuilder.AccessPlan bindParam(String param, AbstractWriteHandle content);
+
+        /**
+         * Binds attachments to the content parameter identified by {@code param} that had content bound to it via
+         * {@code bindParam(String, AbstractWriteHandle)}.
+         *
+         * @param param the name of the param that was passed to {@code bindParam(String, AbstractWriteHandle)}
+         * @param columnName the name of the column in the plan whose values match the names of attachments
+         * @param attachments a map of attachment names to content handles. When the plan is executed, the attachment
+         *                    name in the column identified by {@code columnName} in each row will be replaced with the
+         *                    associated content handle
+         * @return
+         */
+        PlanBuilder.AccessPlan bindParamAttachments(String param, String columnName, Map<String, AbstractWriteHandle> attachments);
     }
     /**
      * Defines base methods for ExportablePlan. This interface is an implementation detail.

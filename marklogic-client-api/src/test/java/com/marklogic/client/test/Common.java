@@ -141,6 +141,16 @@ public class Common {
     return new MarkLogicVersion(version);
   }
 
+  public static boolean markLogicIsVersion11OrHigher() {
+    MarkLogicVersion version = getMarkLogicVersion();
+    boolean val = version.getMajor() >= 11;
+    if (!val) {
+      System.out.println("Will not run test because the MarkLogic server is not at least major version 11; " +
+              "major version: " + version.getMajor());
+    }
+    return val;
+  }
+
   public static byte[] streamToBytes(InputStream is) throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     byte[] b = new byte[1000];

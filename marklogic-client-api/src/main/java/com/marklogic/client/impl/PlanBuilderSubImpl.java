@@ -15,9 +15,7 @@
  */
 package com.marklogic.client.impl;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.marklogic.client.expression.PlanBuilder;
@@ -907,11 +905,41 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
 
   }
 
+  /**
+   * Captures attachments associated with a parameter name in an {@code AccessPlan} along with the column that the
+   * client uses to refer to attachments. The {@code attachments} map associates attachment names and attachment
+   * content. It is expected that the values in the given {@code columnName} match the attachment names.
+   */
+  static class ParamAttachments {
+    private String paramName;
+    private String columnName;
+    private Map<String, AbstractWriteHandle> attachments;
+
+    public ParamAttachments(String paramName, String columnName, Map<String, AbstractWriteHandle> attachments) {
+      this.paramName = paramName;
+      this.columnName = columnName;
+      this.attachments = attachments;
+    }
+
+    public String getParamName() {
+      return paramName;
+    }
+
+    public String getColumnName() {
+      return columnName;
+    }
+
+    public Map<String, AbstractWriteHandle> getAttachments() {
+      return attachments;
+    }
+  }
+
   static class AccessPlanSubImpl
     extends PlanBuilderImpl.AccessPlanImpl {
     XsStringVal schema    = null;
     XsStringVal qualifier = null;
     private Map<String, AbstractWriteHandle> contentParams;
+    private List<ParamAttachments> contentParamAttachments;
 
     // TODO: delete overload constructor once generated PlanBuilderImpl arities pass builder reference
     AccessPlanSubImpl(String fnPrefix, String fnName, Object[] fnArgs) {
@@ -975,7 +1003,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
 
     @Override
-    public Plan bindParam(String param, AbstractWriteHandle content) {
+    public AccessPlan bindParam(String param, AbstractWriteHandle content) {
       if (this.contentParams == null) {
         this.contentParams = new HashMap<>();
       }
@@ -984,8 +1012,20 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
 
     @Override
+    public AccessPlan bindParamAttachments(String param, String columnName, Map<String, AbstractWriteHandle> attachments) {
+      if (this.contentParamAttachments == null) {
+        this.contentParamAttachments = new ArrayList<>();
+      }
+      this.contentParamAttachments.add(new ParamAttachments(param, columnName, attachments));
+      return this;
+    }
+
     public Map<String, AbstractWriteHandle> getContentParams() {
       return contentParams;
+    }
+
+    public List<ParamAttachments> getContentParamAttachments() {
+      return this.contentParamAttachments;
     }
   }
 
