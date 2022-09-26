@@ -17,6 +17,9 @@ package com.marklogic.client.expression;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 
 import com.marklogic.client.type.*;
@@ -372,6 +375,35 @@ public interface PlanBuilderBase {
     ServerExpression seq(ServerExpression... expression);
 
     /**
+     * Build a new column identifier based on the minimum required inputs.
+     *
+     * @param column name of the column
+     * @param type type of the column, e.g. "string"
+     * @return a new column identifier
+     */
+    PlanDocColsIdentifier colType(String column, String type);
+
+    /**
+     * Build a new column identifier based on all possible inputs.
+     *
+     * @param column name of the column
+     * @param type type of the column, e.g. "string"
+     * @param schema name of the MarkLogic schema
+     * @param view name of the MarkLogic view
+     * @param nullable whether a column value is required or not; will default to {@code true}
+     * @return a new column identifier
+     */
+    PlanDocColsIdentifier colType(String column, String type, String schema, String view, Boolean nullable);
+
+    /**
+     * Build a sequence of column identifiers that can be used with {@code fromParam}.
+     *
+     * @param colTypes the column identifiers to associate with the plan
+     * @return a sequence of column identifiers
+     */
+    PlanDocColsIdentifierSeq colTypes(PlanDocColsIdentifier... colTypes);
+
+    /**
      * Defines base methods for Plan. This interface is an implementation detail.
      * Use Plan as the type for instances of Plan.
      */
@@ -558,6 +590,8 @@ public interface PlanBuilderBase {
      * Use AccessPlan as the type for instances of AccessPlan.
      */
     interface AccessPlanBase {
+        PlanBuilder.Plan bindParam(String param, AbstractWriteHandle content);
+        Map<String, AbstractWriteHandle> getContentParams();
     }
     /**
      * Defines base methods for ExportablePlan. This interface is an implementation detail.

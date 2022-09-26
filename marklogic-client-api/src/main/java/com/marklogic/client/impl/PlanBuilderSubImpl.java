@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.SemExpr;
+import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.type.*;
@@ -168,6 +169,21 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
             this, "op", "from-doc-uris", new Object[]{querydef, (qualifierName == null) ?
             null : xs.string(qualifierName)}
     );
+  }
+
+  @Override
+  public PlanDocColsIdentifierSeq colTypes(PlanDocColsIdentifier... colTypes) {
+    return new PlanDocColsIdentifierSeqImpl(colTypes);
+  }
+
+  @Override
+  public PlanDocColsIdentifier colType(String column, String type) {
+    return new PlanDocColsIdentifierImpl(null, null, column, type, true);
+  }
+
+  @Override
+  public PlanDocColsIdentifier colType(String column, String type, String schema, String view, Boolean nullable) {
+    return new PlanDocColsIdentifierImpl(schema, view, column, type, nullable);
   }
 
   @Override
@@ -742,7 +758,6 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
 
       return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, nextParams);
     }
-
   }
 
   static class ExportablePlanSubImpl
@@ -896,6 +911,8 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     extends PlanBuilderImpl.AccessPlanImpl {
     XsStringVal schema    = null;
     XsStringVal qualifier = null;
+    private Map<String, AbstractWriteHandle> contentParams;
+
     // TODO: delete overload constructor once generated PlanBuilderImpl arities pass builder reference
     AccessPlanSubImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       this(null, fnPrefix, fnName, fnArgs);
@@ -927,6 +944,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
         case "from-search-docs":
         case "from-triples":
         case "from-doc-uris":
+        case "from-param":
           if (fnArgs.length < 1) {
             throw new IllegalArgumentException("accessor constructor without parameters: "+fnArgs.length);
           }
@@ -954,6 +972,20 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
       return new PlanBuilderSubImpl.ModifyPlanSubImpl(
               this, "op", "sample-by", new Object[]{ asArg(makeMap(option)) }
       );
+    }
+
+    @Override
+    public Plan bindParam(String param, AbstractWriteHandle content) {
+      if (this.contentParams == null) {
+        this.contentParams = new HashMap<>();
+      }
+      this.contentParams.put(param, content);
+      return this;
+    }
+
+    @Override
+    public Map<String, AbstractWriteHandle> getContentParams() {
+      return contentParams;
     }
   }
 
