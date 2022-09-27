@@ -3960,7 +3960,8 @@ public class OkHttpServices implements RESTServices {
 
     public RESTServiceResultIterator postMultipartForm(
             RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
-            Map<String, AbstractWriteHandle> contentParams, List<PlanBuilderSubImpl.ParamAttachments> contentParamAttachments)
+            Map<PlanBuilderBaseImpl.PlanParamBase, AbstractWriteHandle> contentParams,
+            List<PlanBuilderSubImpl.ParamAttachments> contentParamAttachments)
             throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
     {
       if ( transaction != null ) {
@@ -3977,8 +3978,8 @@ public class OkHttpServices implements RESTServices {
           }
       }
 
-      contentParams.forEach((name, content) -> {
-          multiBuilder.addFormDataPart(name, name, makeRequestBodyForContent(content));
+      contentParams.forEach((planParam, content) -> {
+          multiBuilder.addFormDataPart(planParam.getName(), planParam.getName(), makeRequestBodyForContent(content));
       });
       if (contentParamAttachments != null) {
           this.addContentParamAttachments(multiBuilder, contentParamAttachments);
@@ -4025,7 +4026,7 @@ public class OkHttpServices implements RESTServices {
         ArrayNode docsArray = metadata.putObject("attachments").putArray("docs");
         for (PlanBuilderSubImpl.ParamAttachments paramAttachments : contentParamAttachments) {
             final String columnName = paramAttachments.getColumnName();
-            docsArray.addObject().put("rowsField", paramAttachments.getParamName()).put("column", columnName);
+            docsArray.addObject().put("rowsField", paramAttachments.getPlanParam().getName()).put("column", columnName);
             Map<String, AbstractWriteHandle> attachments = paramAttachments.getAttachments();
             attachments.keySet().forEach(filename -> {
                 multiBuilder.addFormDataPart(columnName, filename, makeRequestBodyForContent(attachments.get(filename)));

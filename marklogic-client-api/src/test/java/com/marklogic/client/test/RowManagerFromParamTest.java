@@ -10,6 +10,7 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
+import com.marklogic.client.type.PlanParamExpr;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -40,11 +41,13 @@ public class RowManagerFromParamTest {
         RowManager rowMgr = Common.client.newRowManager();
         PlanBuilder planBuilder = rowMgr.newPlanBuilder();
 
+        // Specify the columns that describe the rows that will be passed in
         PlanBuilder.AccessPlan plan = planBuilder.fromParam("myDocs", "", planBuilder.colTypes(
                 planBuilder.colType("lastName", "string"),
                 planBuilder.colType("firstName", "string", "", "", null)
         ));
 
+        // Build the rows to bind to the plan
         ArrayNode array = new ObjectMapper().createArrayNode();
         array.addObject().put("lastName", "Smith").put("firstName", "Jane");
         array.addObject().put("lastName", "Jones").put("firstName", "Jack");
@@ -72,15 +75,17 @@ public class RowManagerFromParamTest {
                 planBuilder.colType("doc", "none")
         ));
 
+        final PlanParamExpr param = planBuilder.param("bindingParam");
+
         ArrayNode array = new ObjectMapper().createArrayNode();
         array.addObject().put("rowId", 1).put("doc", "doc1.xml");
         array.addObject().put("rowId", 2).put("doc", "doc2.xml");
-        plan = plan.bindParam("bindingParam", new JacksonHandle(array));
+        plan = plan.bindParam(param, new JacksonHandle(array));
 
         Map<String, AbstractWriteHandle> attachments = new HashMap<>();
         attachments.put("doc1.xml", new StringHandle("<doc>1</doc>").withFormat(Format.XML));
         attachments.put("doc2.xml", new StringHandle("<doc>2</doc>").withFormat(Format.XML));
-        plan = plan.bindParamAttachments("bindingParam", "doc", attachments);
+        plan = plan.bindParamAttachments(param, "doc", attachments);
 
         List<RowRecord> rows = rowMgr.resultRows(plan).stream().collect(Collectors.toList());
         assertEquals(2, rows.size());

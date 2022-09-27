@@ -600,6 +600,17 @@ public interface PlanBuilderBase {
         PlanBuilder.AccessPlan bindParam(String param, AbstractWriteHandle content);
 
         /**
+         * Specifies a content handle to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * <p>Contrary to other `bindParam` methods, this mutates the existence of the plan rather than constructing
+         * a new instance.</p>
+         * @param param a placeholder parameter as constructed by the param() method
+         * @param content the content to replace the parameter
+         * @return the same instance that this was invoked on
+         */
+        PlanBuilder.AccessPlan bindParam(PlanParamExpr param, AbstractWriteHandle content);
+
+        /**
          * Binds attachments to the content parameter identified by {@code param} that had content bound to it via
          * {@code bindParam(String, AbstractWriteHandle)}.
          *
@@ -611,6 +622,19 @@ public interface PlanBuilderBase {
          * @return
          */
         PlanBuilder.AccessPlan bindParamAttachments(String param, String columnName, Map<String, AbstractWriteHandle> attachments);
+
+        /**
+         * Binds attachments to the content parameter identified by {@code param} that had content bound to it via
+         * {@code bindParam(PlanParamExpr, AbstractWriteHandle)}.
+         *
+         * @param param a placeholder parameter as constructed by the param() method that was passed to {@code bindParam(PlanParamExpr, AbstractWriteHandle)}
+         * @param columnName the name of the column in the plan whose values match the names of attachments
+         * @param attachments a map of attachment names to content handles. When the plan is executed, the attachment
+         *                    name in the column identified by {@code columnName} in each row will be replaced with the
+         *                    associated content handle.
+         * @return
+         */
+        PlanBuilder.AccessPlan bindParamAttachments(PlanParamExpr param, String columnName, Map<String, AbstractWriteHandle> attachments);
     }
     /**
      * Defines base methods for ExportablePlan. This interface is an implementation detail.
