@@ -267,7 +267,7 @@ public interface RESTServices {
     FailedRequestException;
   RESTServiceResultIterator postMultipartForm(
           RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
-          Map<String, AbstractWriteHandle> contentParams)
+          Map<String, AbstractWriteHandle> contentParams, List<PlanBuilderSubImpl.ParamAttachments> contentParamAttachments)
           throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
           FailedRequestException;
   <W extends AbstractWriteHandle> RESTServiceResultIterator postIteratedResource(

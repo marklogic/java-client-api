@@ -378,11 +378,12 @@ public class RowManagerImpl
     addDatatypeStyleParam(params,     datatypeStyle);
     addRowStructureStyleParam(params, rowStructureStyle);
 
-    if (requestPlan instanceof PlanBuilderBase.AccessPlanBase) {
-      Map<String, AbstractWriteHandle> contentParams = ((PlanBuilderBase.AccessPlanBase)requestPlan).getContentParams();
+    if (requestPlan instanceof PlanBuilderSubImpl.AccessPlanSubImpl) {
+      PlanBuilderSubImpl.AccessPlanSubImpl accessPlan = (PlanBuilderSubImpl.AccessPlanSubImpl) requestPlan;
+      Map<String, AbstractWriteHandle> contentParams = accessPlan.getContentParams();
       if (contentParams != null && !contentParams.isEmpty()) {
         contentParams.put("query", astHandle);
-        return services.postMultipartForm(requestLogger, "rows", transaction, params, contentParams);
+        return services.postMultipartForm(requestLogger, "rows", transaction, params, contentParams, accessPlan.getContentParamAttachments());
       }
     }
     return services.postIteratedResource(requestLogger, "rows", transaction, params, astHandle);
