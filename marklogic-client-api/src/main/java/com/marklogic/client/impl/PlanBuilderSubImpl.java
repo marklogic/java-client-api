@@ -911,18 +911,18 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
    * content. It is expected that the values in the given {@code columnName} match the attachment names.
    */
   static class ParamAttachments {
-    private String paramName;
+    private PlanParamBase planParam;
     private String columnName;
     private Map<String, AbstractWriteHandle> attachments;
 
-    public ParamAttachments(String paramName, String columnName, Map<String, AbstractWriteHandle> attachments) {
-      this.paramName = paramName;
+    public ParamAttachments(PlanParamBase planParam, String columnName, Map<String, AbstractWriteHandle> attachments) {
+      this.planParam = planParam;
       this.columnName = columnName;
       this.attachments = attachments;
     }
 
-    public String getParamName() {
-      return paramName;
+    public PlanParamBase getPlanParam() {
+      return planParam;
     }
 
     public String getColumnName() {
@@ -938,7 +938,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     extends PlanBuilderImpl.AccessPlanImpl {
     XsStringVal schema    = null;
     XsStringVal qualifier = null;
-    private Map<String, AbstractWriteHandle> contentParams;
+    private Map<PlanParamBase, AbstractWriteHandle> contentParams;
     private List<ParamAttachments> contentParamAttachments;
 
     // TODO: delete overload constructor once generated PlanBuilderImpl arities pass builder reference
@@ -1004,23 +1004,33 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
 
     @Override
     public AccessPlan bindParam(String param, AbstractWriteHandle content) {
+      return bindParam(new PlanParamBase(param), content);
+    }
+
+    @Override
+    public AccessPlan bindParam(PlanParamExpr param, AbstractWriteHandle content) {
       if (this.contentParams == null) {
         this.contentParams = new HashMap<>();
       }
-      this.contentParams.put(param, content);
+      this.contentParams.put((PlanParamBase) param, content);
       return this;
     }
 
     @Override
     public AccessPlan bindParamAttachments(String param, String columnName, Map<String, AbstractWriteHandle> attachments) {
+      return bindParamAttachments(new PlanParamBase(param), columnName, attachments);
+    }
+
+    @Override
+    public AccessPlan bindParamAttachments(PlanParamExpr param, String columnName, Map<String, AbstractWriteHandle> attachments) {
       if (this.contentParamAttachments == null) {
         this.contentParamAttachments = new ArrayList<>();
       }
-      this.contentParamAttachments.add(new ParamAttachments(param, columnName, attachments));
+      this.contentParamAttachments.add(new ParamAttachments((PlanParamBase)param, columnName, attachments));
       return this;
     }
 
-    public Map<String, AbstractWriteHandle> getContentParams() {
+    public Map<PlanParamBase, AbstractWriteHandle> getContentParams() {
       return contentParams;
     }
 

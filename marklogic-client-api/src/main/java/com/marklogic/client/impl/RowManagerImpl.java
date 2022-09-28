@@ -380,9 +380,9 @@ public class RowManagerImpl
 
     if (requestPlan instanceof PlanBuilderSubImpl.AccessPlanSubImpl) {
       PlanBuilderSubImpl.AccessPlanSubImpl accessPlan = (PlanBuilderSubImpl.AccessPlanSubImpl) requestPlan;
-      Map<String, AbstractWriteHandle> contentParams = accessPlan.getContentParams();
+      Map<PlanBuilderBaseImpl.PlanParamBase, AbstractWriteHandle> contentParams = accessPlan.getContentParams();
       if (contentParams != null && !contentParams.isEmpty()) {
-        contentParams.put("query", astHandle);
+        contentParams.put(new PlanBuilderBaseImpl.PlanParamBase("query"), astHandle);
         return services.postMultipartForm(requestLogger, "rows", transaction, params, contentParams, accessPlan.getContentParamAttachments());
       }
     }
