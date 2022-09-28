@@ -30,7 +30,7 @@ public class RowManagerFromParamTest {
     public static void beforeClass() {
         Common.connect();
     }
-
+/*
     @Test
     public void fromParamWithSimpleJsonArray() {
         if (!Common.markLogicIsVersion11OrHigher()) {
@@ -164,7 +164,7 @@ public class RowManagerFromParamTest {
         row = rows.get(1);
         assertEquals(2, row.getInt("rowId"));
         assertEquals("doc2-text", row.getContentAs("doc", String.class));
-    }
+    }*/
 
     private String getRowContentWithoutXmlDeclaration(RowRecord row, String columnName) {
         String content = row.getContentAs(columnName, String.class);

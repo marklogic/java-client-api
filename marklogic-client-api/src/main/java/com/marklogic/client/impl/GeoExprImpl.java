@@ -252,6 +252,36 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
+  public ServerExpression contains(ServerExpression arg1, ServerExpression arg2) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for contains() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for contains() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "contains", new Object[]{ arg1, arg2 });
+  }
+
+  
+  @Override
+  public ServerExpression contains(ServerExpression arg1, ServerExpression arg2, String arg3) {
+    return contains(arg1, arg2, (arg3 == null) ? (ServerExpression) null : xs.string(arg3));
+  }
+
+  
+  @Override
+  public ServerExpression contains(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for contains() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for contains() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "contains", new Object[]{ arg1, arg2, arg3 });
+  }
+
+  
+  @Override
   public ServerExpression countDistinctVertices(ServerExpression region) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for countDistinctVertices() cannot be null");
@@ -281,6 +311,36 @@ class GeoExprImpl implements GeoExpr {
       throw new IllegalArgumentException("region parameter for countVertices() cannot be null");
     }
     return new XsExprImpl.IntegerCallImpl("geo", "count-vertices", new Object[]{ region });
+  }
+
+  
+  @Override
+  public ServerExpression crosses(ServerExpression arg1, ServerExpression arg2) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for crosses() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for crosses() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "crosses", new Object[]{ arg1, arg2 });
+  }
+
+  
+  @Override
+  public ServerExpression crosses(ServerExpression arg1, ServerExpression arg2, String arg3) {
+    return crosses(arg1, arg2, (arg3 == null) ? (ServerExpression) null : xs.string(arg3));
+  }
+
+  
+  @Override
+  public ServerExpression crosses(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for crosses() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for crosses() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "crosses", new Object[]{ arg1, arg2, arg3 });
   }
 
   
@@ -323,6 +383,36 @@ class GeoExprImpl implements GeoExpr {
       throw new IllegalArgumentException("distance parameter for destination() cannot be null");
     }
     return new CtsExprImpl.RegionCallImpl("geo", "destination", new Object[]{ p, bearing, distance, options });
+  }
+
+  
+  @Override
+  public ServerExpression disjoint(ServerExpression arg1, ServerExpression arg2) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for disjoint() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for disjoint() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "disjoint", new Object[]{ arg1, arg2 });
+  }
+
+  
+  @Override
+  public ServerExpression disjoint(ServerExpression arg1, ServerExpression arg2, String arg3) {
+    return disjoint(arg1, arg2, (arg3 == null) ? (ServerExpression) null : xs.string(arg3));
+  }
+
+  
+  @Override
+  public ServerExpression disjoint(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for disjoint() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for disjoint() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "disjoint", new Object[]{ arg1, arg2, arg3 });
   }
 
   
@@ -416,6 +506,36 @@ class GeoExprImpl implements GeoExpr {
       throw new IllegalArgumentException("arcTolerance parameter for ellipsePolygon() cannot be null");
     }
     return new CtsExprImpl.RegionCallImpl("geo", "ellipse-polygon", new Object[]{ center, semiMajorAxis, semiMinorAxis, azimuth, arcTolerance, options });
+  }
+
+  
+  @Override
+  public ServerExpression equals(ServerExpression arg1, ServerExpression arg2) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for equals() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for equals() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "equals", new Object[]{ arg1, arg2 });
+  }
+
+  
+  @Override
+  public ServerExpression equals(ServerExpression arg1, ServerExpression arg2, String arg3) {
+    return equals(arg1, arg2, (arg3 == null) ? (ServerExpression) null : xs.string(arg3));
+  }
+
+  
+  @Override
+  public ServerExpression equals(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for equals() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for equals() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "equals", new Object[]{ arg1, arg2, arg3 });
   }
 
   
@@ -545,6 +665,66 @@ class GeoExprImpl implements GeoExpr {
       throw new IllegalArgumentException("region parameter for interiorPoint() cannot be null");
     }
     return new CtsExprImpl.RegionCallImpl("geo", "interior-point", new Object[]{ region, options });
+  }
+
+  
+  @Override
+  public ServerExpression intersects(ServerExpression arg1, ServerExpression arg2) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for intersects() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for intersects() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "intersects", new Object[]{ arg1, arg2 });
+  }
+
+  
+  @Override
+  public ServerExpression intersects(ServerExpression arg1, ServerExpression arg2, String arg3) {
+    return intersects(arg1, arg2, (arg3 == null) ? (ServerExpression) null : xs.string(arg3));
+  }
+
+  
+  @Override
+  public ServerExpression intersects(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for intersects() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for intersects() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "intersects", new Object[]{ arg1, arg2, arg3 });
+  }
+
+  
+  @Override
+  public ServerExpression overlaps(ServerExpression arg1, ServerExpression arg2) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for overlaps() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for overlaps() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "overlaps", new Object[]{ arg1, arg2 });
+  }
+
+  
+  @Override
+  public ServerExpression overlaps(ServerExpression arg1, ServerExpression arg2, String arg3) {
+    return overlaps(arg1, arg2, (arg3 == null) ? (ServerExpression) null : xs.string(arg3));
+  }
+
+  
+  @Override
+  public ServerExpression overlaps(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for overlaps() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for overlaps() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "overlaps", new Object[]{ arg1, arg2, arg3 });
   }
 
   
@@ -795,11 +975,71 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
+  public ServerExpression touches(ServerExpression arg1, ServerExpression arg2) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for touches() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for touches() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "touches", new Object[]{ arg1, arg2 });
+  }
+
+  
+  @Override
+  public ServerExpression touches(ServerExpression arg1, ServerExpression arg2, String arg3) {
+    return touches(arg1, arg2, (arg3 == null) ? (ServerExpression) null : xs.string(arg3));
+  }
+
+  
+  @Override
+  public ServerExpression touches(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for touches() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for touches() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "touches", new Object[]{ arg1, arg2, arg3 });
+  }
+
+  
+  @Override
   public ServerExpression validateWkt(ServerExpression wkt) {
     if (wkt == null) {
       throw new IllegalArgumentException("wkt parameter for validateWkt() cannot be null");
     }
     return new XsExprImpl.BooleanCallImpl("geo", "validate-wkt", new Object[]{ wkt });
+  }
+
+  
+  @Override
+  public ServerExpression within(ServerExpression arg1, ServerExpression arg2) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for within() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for within() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "within", new Object[]{ arg1, arg2 });
+  }
+
+  
+  @Override
+  public ServerExpression within(ServerExpression arg1, ServerExpression arg2, String arg3) {
+    return within(arg1, arg2, (arg3 == null) ? (ServerExpression) null : xs.string(arg3));
+  }
+
+  
+  @Override
+  public ServerExpression within(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for within() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for within() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "within", new Object[]{ arg1, arg2, arg3 });
   }
 
   }

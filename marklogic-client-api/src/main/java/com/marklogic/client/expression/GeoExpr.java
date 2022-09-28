@@ -273,6 +273,9 @@ public interface GeoExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_polygon.html">cts:polygon</a> server data type
   */
   public ServerExpression circlePolygon(ServerExpression circle, ServerExpression arcTolerance, ServerExpression options);
+public ServerExpression contains(ServerExpression arg1, ServerExpression arg2);
+public ServerExpression contains(ServerExpression arg1, ServerExpression arg2, String arg3);
+public ServerExpression contains(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3);
 /**
   * Return a count of the distinct number of vertices in a region, taking tolerance into account.
   *
@@ -313,6 +316,9 @@ public interface GeoExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
   public ServerExpression countVertices(ServerExpression region);
+public ServerExpression crosses(ServerExpression arg1, ServerExpression arg2);
+public ServerExpression crosses(ServerExpression arg1, ServerExpression arg2, String arg3);
+public ServerExpression crosses(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3);
 /**
   * Returns the point at the given distance (in units) along the given bearing (in radians) from the starting point.
   * <p>
@@ -358,6 +364,9 @@ public interface GeoExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a> server data type
   */
   public ServerExpression destination(ServerExpression p, ServerExpression bearing, ServerExpression distance, ServerExpression options);
+public ServerExpression disjoint(ServerExpression arg1, ServerExpression arg2);
+public ServerExpression disjoint(ServerExpression arg1, ServerExpression arg2, String arg3);
+public ServerExpression disjoint(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3);
 /**
   * Returns the distance (in units) between two points.
   *
@@ -466,6 +475,9 @@ public interface GeoExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_polygon.html">cts:polygon</a> server data type
   */
   public ServerExpression ellipsePolygon(ServerExpression center, ServerExpression semiMajorAxis, ServerExpression semiMinorAxis, ServerExpression azimuth, ServerExpression arcTolerance, ServerExpression options);
+public ServerExpression equals(ServerExpression arg1, ServerExpression arg2);
+public ServerExpression equals(ServerExpression arg1, ServerExpression arg2, String arg3);
+public ServerExpression equals(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3);
 /**
   * Given a geohash string, return the bounding box for that hash.
   * <p>
@@ -625,6 +637,12 @@ public interface GeoExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/cts_point.html">cts:point</a> server data type
   */
   public ServerExpression interiorPoint(ServerExpression region, ServerExpression options);
+public ServerExpression intersects(ServerExpression arg1, ServerExpression arg2);
+public ServerExpression intersects(ServerExpression arg1, ServerExpression arg2, String arg3);
+public ServerExpression intersects(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3);
+public ServerExpression overlaps(ServerExpression arg1, ServerExpression arg2);
+public ServerExpression overlaps(ServerExpression arg1, ServerExpression arg2, String arg3);
+public ServerExpression overlaps(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3);
 /**
   * Returns a sequence of geospatial regions parsed from Well-Known Text format.
   * <p>
@@ -927,6 +945,9 @@ public interface GeoExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
   public ServerExpression toWkt(ServerExpression wkt);
+public ServerExpression touches(ServerExpression arg1, ServerExpression arg2);
+public ServerExpression touches(ServerExpression arg1, ServerExpression arg2, String arg3);
+public ServerExpression touches(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3);
 /**
   * Returns true if the string is valid Well-Known Text for a supported region type.
   *
@@ -938,4 +959,7 @@ public interface GeoExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
   public ServerExpression validateWkt(ServerExpression wkt);
+public ServerExpression within(ServerExpression arg1, ServerExpression arg2);
+public ServerExpression within(ServerExpression arg1, ServerExpression arg2, String arg3);
+public ServerExpression within(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3);
 }
