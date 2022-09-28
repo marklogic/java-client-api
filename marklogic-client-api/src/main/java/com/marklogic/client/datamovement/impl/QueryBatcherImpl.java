@@ -381,6 +381,12 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
   @Override
+  public Long getServerTimestamp() {
+    long val = this.serverTimestamp.get();
+    return val > -1 ? val : null;
+  }
+
+  @Override
   public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
     requireJobStarted();
     return threadPool.awaitTermination(timeout, unit);

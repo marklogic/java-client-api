@@ -317,6 +317,11 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         requireStarted("Must start job before getting ticket");
         return super.getJobTicket();
     }
+    @Override
+    public Long getServerTimestamp() {
+        long val = this.serverTimestamp.get();
+        return val > -1 ? val : null;
+    }
     private void requireNotStarted(String msg) {
         if (this.isStarted()) {
             throw new IllegalStateException(msg);
