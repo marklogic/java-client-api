@@ -5,13 +5,13 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class PlanDocColsIdentifierSeqImplTest extends Assert {
+public class PlanRowColTypesSeqImplTest extends Assert {
 
     @Test
     public void twoColumns() throws Exception {
-        String expression = new PlanDocColsIdentifierSeqImpl(
-                new PlanDocColsIdentifierImpl("", "", "myColumn", "string", null),
-                new PlanDocColsIdentifierImpl(null, null, "myNumber", "integer", null)
+        String expression = new PlanRowColTypesSeqImpl(
+                new PlanRowColTypesImpl("", "", "myColumn", "string", null),
+                new PlanRowColTypesImpl(null, null, "myNumber", "integer", null)
         ).exportAst(new StringBuilder()).toString();
 
         ArrayNode array = (ArrayNode) new ObjectMapper().readTree(expression);

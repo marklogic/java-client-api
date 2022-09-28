@@ -5,11 +5,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class PlanDocColsIdentifierImplTest extends Assert {
+public class PlanRowColTypesImplTest extends Assert {
 
     @Test
     public void columnAndType() {
-        ObjectNode node = toJson(new PlanDocColsIdentifierImpl(null, null, "myColumn", "string", null));
+        ObjectNode node = toJson(new PlanRowColTypesImpl(null, null, "myColumn", "string", null));
         assertEquals("myColumn", node.get("column").asText());
         assertEquals("string", node.get("type").asText());
         assertEquals("", node.get("schema").asText());
@@ -20,7 +20,7 @@ public class PlanDocColsIdentifierImplTest extends Assert {
 
     @Test
     public void allFields() {
-        ObjectNode node = toJson(new PlanDocColsIdentifierImpl("mySchema", "myView", "someNumber", "integer", false));
+        ObjectNode node = toJson(new PlanRowColTypesImpl("mySchema", "myView", "someNumber", "integer", false));
         assertEquals("someNumber", node.get("column").asText());
         assertEquals("integer", node.get("type").asText());
         assertEquals("mySchema", node.get("schema").asText());
@@ -28,7 +28,7 @@ public class PlanDocColsIdentifierImplTest extends Assert {
         assertEquals(false, node.get("nullable").asBoolean());
     }
 
-    private ObjectNode toJson(PlanDocColsIdentifierImpl identifier) {
+    private ObjectNode toJson(PlanRowColTypesImpl identifier) {
         try {
             return (ObjectNode) new ObjectMapper().readTree(identifier.exportAst(new StringBuilder()).toString());
         } catch (Exception e) {

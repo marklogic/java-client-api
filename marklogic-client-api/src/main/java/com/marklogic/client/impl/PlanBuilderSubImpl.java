@@ -170,18 +170,18 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   @Override
-  public PlanDocColsIdentifierSeq colTypes(PlanDocColsIdentifier... colTypes) {
-    return new PlanDocColsIdentifierSeqImpl(colTypes);
+  public PlanRowColTypesSeq colTypes(PlanRowColTypes... colTypes) {
+    return new PlanRowColTypesSeqImpl(colTypes);
   }
 
   @Override
-  public PlanDocColsIdentifier colType(String column, String type) {
-    return new PlanDocColsIdentifierImpl(null, null, column, type, true);
+  public PlanRowColTypes colType(String column, String type) {
+    return new PlanRowColTypesImpl(null, null, column, type, true);
   }
 
   @Override
-  public PlanDocColsIdentifier colType(String column, String type, String schema, String view, Boolean nullable) {
-    return new PlanDocColsIdentifierImpl(schema, view, column, type, nullable);
+  public PlanRowColTypes colType(String column, String type, String schema, String view, Boolean nullable) {
+    return new PlanRowColTypesImpl(schema, view, column, type, nullable);
   }
 
   @Override
