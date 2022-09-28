@@ -419,4 +419,12 @@ public interface QueryBatcher extends Batcher {
    * @return the maximum number of Batches that can be collected.
    */
   long getMaxBatches();
+
+  /**
+   * If {@code withConsistentSnapshot} was used before starting the job, will return the MarkLogic server timestamp
+   * associated with the snapshot. Returns null otherwise.
+   *
+   * @return the timestamp or null
+   */
+  Long getServerTimestamp();
 }

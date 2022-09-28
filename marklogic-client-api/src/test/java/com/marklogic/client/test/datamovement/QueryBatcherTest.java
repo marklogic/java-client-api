@@ -15,11 +15,6 @@
  */
 package com.marklogic.client.test.datamovement;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -74,6 +69,7 @@ import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import static com.marklogic.client.io.Format.JSON;
 import static com.marklogic.client.io.Format.XML;
+import static org.junit.Assert.*;
 
 import com.marklogic.client.datamovement.ApplyTransformListener;
 import com.marklogic.client.datamovement.DataMovementManager;
@@ -848,7 +844,8 @@ public class QueryBatcherTest {
     System.out.println("Failure event: "+moveMgr.getJobReport(queryTicket.get()).getFailureEventsCount());
     System.out.println("Failure batch: "+moveMgr.getJobReport(queryTicket.get()).getFailureBatchesCount());
 
-
+    assertNull("withConsistentSnapshot was not used, so the server timestamp should be null",
+            batcher.getServerTimestamp());
     assertTrue(successCount.get() < 200);
     assertTrue(batchCount.get() == moveMgr.getJobReport(queryTicket.get()).getSuccessBatchesCount());
   }
