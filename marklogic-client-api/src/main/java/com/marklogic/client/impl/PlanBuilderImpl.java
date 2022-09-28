@@ -263,6 +263,42 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
+  public PlanRowColTypesSeq docColTypes() {
+    return new RowColTypesSeqCallImpl("op", "doc-col-types", new Object[]{  });
+  }
+
+  
+  @Override
+  public PlanDocColsIdentifier docCols() {
+    return new DocColsIdentifierCallImpl("op", "doc-cols", new Object[]{  });
+  }
+
+  
+  @Override
+  public PlanDocColsIdentifier docCols(String qualifier) {
+    return docCols((qualifier == null) ? (XsStringVal) null : xs.string(qualifier));
+  }
+
+  
+  @Override
+  public PlanDocColsIdentifier docCols(XsStringVal qualifier) {
+    return new DocColsIdentifierCallImpl("op", "doc-cols", new Object[]{ qualifier });
+  }
+
+  
+  @Override
+  public PlanDocColsIdentifier docCols(String qualifier, String names) {
+    return docCols((qualifier == null) ? (XsStringVal) null : xs.string(qualifier), (names == null) ? (XsStringVal) null : xs.string(names));
+  }
+
+  
+  @Override
+  public PlanDocColsIdentifier docCols(XsStringVal qualifier, XsStringSeqVal names) {
+    return new DocColsIdentifierCallImpl("op", "doc-cols", new Object[]{ qualifier, names });
+  }
+
+  
+  @Override
   public ServerExpression eq(ServerExpression... operand) {
     if (operand == null) {
       throw new IllegalArgumentException("operand parameter for eq() cannot be null");
@@ -287,13 +323,13 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public AccessPlan fromParam(String paramName, String qualifier, PlanDocColsIdentifierSeq colTypes) {
+  public AccessPlan fromParam(String paramName, String qualifier, PlanRowColTypesSeq colTypes) {
     return fromParam((paramName == null) ? (XsStringVal) null : xs.string(paramName), (qualifier == null) ? (XsStringVal) null : xs.string(qualifier), colTypes);
   }
 
   
   @Override
-  public AccessPlan fromParam(XsStringVal paramName, XsStringVal qualifier, PlanDocColsIdentifierSeq colTypes) {
+  public AccessPlan fromParam(XsStringVal paramName, XsStringVal qualifier, PlanRowColTypesSeq colTypes) {
     if (paramName == null) {
       throw new IllegalArgumentException("paramName parameter for fromParam() cannot be null");
     }
@@ -1329,6 +1365,27 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
   }
 
   
+  static class ErrorDispositionSeqListImpl extends PlanSeqListImpl implements PlanErrorDispositionSeq {
+    ErrorDispositionSeqListImpl(Object[] items) {
+      super(items);
+    }
+  }
+
+  
+  static class ErrorDispositionSeqCallImpl extends PlanCallImpl implements PlanErrorDispositionSeq {
+    ErrorDispositionSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+
+  
+  static class ErrorDispositionCallImpl extends PlanCallImpl implements PlanErrorDisposition {
+    ErrorDispositionCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+
+  
   static class ExprColSeqListImpl extends PlanSeqListImpl implements PlanExprColSeq {
     ExprColSeqListImpl(Object[] items) {
       super(items);
@@ -1471,6 +1528,48 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
   
   static class ParamBindingCallImpl extends PlanCallImpl implements PlanParamBindingVal {
     ParamBindingCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+
+  
+  static class RowColTypesSeqListImpl extends PlanSeqListImpl implements PlanRowColTypesSeq {
+    RowColTypesSeqListImpl(Object[] items) {
+      super(items);
+    }
+  }
+
+  
+  static class RowColTypesSeqCallImpl extends PlanCallImpl implements PlanRowColTypesSeq {
+    RowColTypesSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+
+  
+  static class RowColTypesCallImpl extends PlanCallImpl implements PlanRowColTypes {
+    RowColTypesCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+
+  
+  static class SchemaDefSeqListImpl extends PlanSeqListImpl implements PlanSchemaDefSeq {
+    SchemaDefSeqListImpl(Object[] items) {
+      super(items);
+    }
+  }
+
+  
+  static class SchemaDefSeqCallImpl extends PlanCallImpl implements PlanSchemaDefSeq {
+    SchemaDefSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+
+  
+  static class SchemaDefCallImpl extends PlanCallImpl implements PlanSchemaDef {
+    SchemaDefCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }
@@ -1759,6 +1858,21 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
       throw new IllegalArgumentException("sourceCol parameter for joinDoc() cannot be null");
     }
     return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "join-doc", new Object[]{ docCol, sourceCol });
+  }
+
+    
+  @Override
+  public ModifyPlan joinDocCols(PlanDocColsIdentifier docCols, String docIdCol) {
+    return joinDocCols(docCols, (docIdCol == null) ? (PlanColumn) null : col(docIdCol));
+  }
+
+    
+  @Override
+  public ModifyPlan joinDocCols(PlanDocColsIdentifier docCols, PlanColumn docIdCol) {
+    if (docIdCol == null) {
+      throw new IllegalArgumentException("docIdCol parameter for joinDocCols() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "join-doc-cols", new Object[]{ docCols, docIdCol });
   }
 
     
@@ -2062,6 +2176,27 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
       throw new IllegalArgumentException("valueColumn parameter for unnestLeftOuter() cannot be null");
     }
     return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "unnest-left-outer", new Object[]{ inputColumn, valueColumn, ordinalColumn });
+  }
+
+    
+  @Override
+  public ModifyPlan validateDoc(String validated, PlanSchemaDef schemaDef, PlanErrorDisposition errorDisposition) {
+    return validateDoc((validated == null) ? (PlanColumn) null : col(validated), schemaDef, errorDisposition);
+  }
+
+    
+  @Override
+  public ModifyPlan validateDoc(PlanColumn validated, PlanSchemaDef schemaDef, PlanErrorDisposition errorDisposition) {
+    if (validated == null) {
+      throw new IllegalArgumentException("validated parameter for validateDoc() cannot be null");
+    }
+    if (schemaDef == null) {
+      throw new IllegalArgumentException("schemaDef parameter for validateDoc() cannot be null");
+    }
+    if (errorDisposition == null) {
+      throw new IllegalArgumentException("errorDisposition parameter for validateDoc() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "validate-doc", new Object[]{ validated, schemaDef, errorDisposition });
   }
 
     

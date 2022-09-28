@@ -316,7 +316,7 @@ public interface SqlExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:like" target="mlserverdoc">sql:like</a> server function.
   * @param input  The input from which to match.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param pattern  The expression to match. '_' matches one character and '%' matches any number of characters.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param escape  If a '_' or '%' are preceeded by an escape character then it will be match as the char '_'/'%' themselves.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param escape  If a '_' or '%' are preceeded by an escape character then it will be match as the char '-'/'%' themselves.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
   public ServerExpression like(ServerExpression input, String pattern, String escape);
@@ -326,7 +326,7 @@ public interface SqlExpr {
   * Provides a client interface to the <a href="http://docs.marklogic.com/sql:like" target="mlserverdoc">sql:like</a> server function.
   * @param input  The input from which to match.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @param pattern  The expression to match. '_' matches one character and '%' matches any number of characters.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
-  * @param escape  If a '_' or '%' are preceeded by an escape character then it will be match as the char '_'/'%' themselves.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param escape  If a '_' or '%' are preceeded by an escape character then it will be match as the char '-'/'%' themselves.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
   public ServerExpression like(ServerExpression input, ServerExpression pattern, ServerExpression escape);
@@ -602,7 +602,7 @@ public interface SqlExpr {
   */
   public ServerExpression timestampdiff(ServerExpression dateTimeType, ServerExpression timestamp1, ServerExpression timestamp2);
 /**
-  * Return a string that removes leading and trailing empty spaces in the input string.
+  * Return a string that removes leading empty spaces in the input string.
   *
   * <a name="ml-server-type-trim"></a>
   

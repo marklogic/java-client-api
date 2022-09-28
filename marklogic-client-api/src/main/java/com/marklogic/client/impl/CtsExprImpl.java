@@ -20,7 +20,6 @@ import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 import com.marklogic.client.type.XsDateTimeVal;
 import com.marklogic.client.type.XsDoubleVal;
-import com.marklogic.client.type.XsIntegerVal;
 import com.marklogic.client.type.XsQNameSeqVal;
 import com.marklogic.client.type.XsQNameVal;
 import com.marklogic.client.type.XsStringSeqVal;
@@ -1100,51 +1099,6 @@ class CtsExprImpl implements CtsExpr {
       throw new IllegalArgumentException("pathExpression parameter for geospatialRegionPathReference() cannot be null");
     }
     return new ReferenceCallImpl("cts", "geospatial-region-path-reference", new Object[]{ pathExpression, options, namespaces });
-  }
-
-  
-  @Override
-  public CtsReferenceExpr geospatialRegionPathReference(String pathExpression, String options, ServerExpression namespaces, long geohashPrecision) {
-    return geospatialRegionPathReference((pathExpression == null) ? (XsStringVal) null : xs.string(pathExpression), (options == null) ? (XsStringVal) null : xs.string(options), namespaces, xs.integer(geohashPrecision));
-  }
-
-  
-  @Override
-  public CtsReferenceExpr geospatialRegionPathReference(ServerExpression pathExpression, ServerExpression options, ServerExpression namespaces, ServerExpression geohashPrecision) {
-    if (pathExpression == null) {
-      throw new IllegalArgumentException("pathExpression parameter for geospatialRegionPathReference() cannot be null");
-    }
-    return new ReferenceCallImpl("cts", "geospatial-region-path-reference", new Object[]{ pathExpression, options, namespaces, geohashPrecision });
-  }
-
-  
-  @Override
-  public CtsReferenceExpr geospatialRegionPathReference(String pathExpression, String options, ServerExpression namespaces, long geohashPrecision, String units) {
-    return geospatialRegionPathReference((pathExpression == null) ? (XsStringVal) null : xs.string(pathExpression), (options == null) ? (XsStringVal) null : xs.string(options), namespaces, xs.integer(geohashPrecision), (units == null) ? (XsStringVal) null : xs.string(units));
-  }
-
-  
-  @Override
-  public CtsReferenceExpr geospatialRegionPathReference(ServerExpression pathExpression, ServerExpression options, ServerExpression namespaces, ServerExpression geohashPrecision, ServerExpression units) {
-    if (pathExpression == null) {
-      throw new IllegalArgumentException("pathExpression parameter for geospatialRegionPathReference() cannot be null");
-    }
-    return new ReferenceCallImpl("cts", "geospatial-region-path-reference", new Object[]{ pathExpression, options, namespaces, geohashPrecision, units });
-  }
-
-  
-  @Override
-  public CtsReferenceExpr geospatialRegionPathReference(String pathExpression, String options, ServerExpression namespaces, long geohashPrecision, String units, String invalidValues) {
-    return geospatialRegionPathReference((pathExpression == null) ? (XsStringVal) null : xs.string(pathExpression), (options == null) ? (XsStringVal) null : xs.string(options), namespaces, xs.integer(geohashPrecision), (units == null) ? (XsStringVal) null : xs.string(units), (invalidValues == null) ? (XsStringVal) null : xs.string(invalidValues));
-  }
-
-  
-  @Override
-  public CtsReferenceExpr geospatialRegionPathReference(ServerExpression pathExpression, ServerExpression options, ServerExpression namespaces, ServerExpression geohashPrecision, ServerExpression units, ServerExpression invalidValues) {
-    if (pathExpression == null) {
-      throw new IllegalArgumentException("pathExpression parameter for geospatialRegionPathReference() cannot be null");
-    }
-    return new ReferenceCallImpl("cts", "geospatial-region-path-reference", new Object[]{ pathExpression, options, namespaces, geohashPrecision, units, invalidValues });
   }
 
   
