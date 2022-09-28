@@ -1,12 +1,12 @@
 package com.marklogic.client.impl;
 
-import com.marklogic.client.type.PlanDocColsIdentifier;
+import com.marklogic.client.type.PlanRowColTypes;
 
-class PlanDocColsIdentifierImpl implements PlanDocColsIdentifier, BaseTypeImpl.BaseArgImpl {
+class PlanRowColTypesImpl implements PlanRowColTypes, BaseTypeImpl.BaseArgImpl {
 
     private String expression;
 
-    public PlanDocColsIdentifierImpl(String schema, String view, String column, String type, Boolean nullable) {
+    public PlanRowColTypesImpl(String schema, String view, String column, String type, Boolean nullable) {
         String template = "{\"schema\":\"%s\", \"view\":\"%s\", \"column\":\"%s\", \"type\":\"%s\", \"nullable\":%s}";
         this.expression = String.format(template,
                 schema != null ? schema : "",

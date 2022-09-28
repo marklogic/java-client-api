@@ -15,7 +15,6 @@
  */
 package com.marklogic.client.expression;
 
-import java.util.List;
 import java.util.Map;
 
 import com.marklogic.client.io.marker.AbstractWriteHandle;
@@ -380,7 +379,7 @@ public interface PlanBuilderBase {
      * @param type type of the column, e.g. "string"
      * @return a new column identifier
      */
-    PlanDocColsIdentifier colType(String column, String type);
+    PlanRowColTypes colType(String column, String type);
 
     /**
      * Build a new column identifier based on all possible inputs.
@@ -392,7 +391,7 @@ public interface PlanBuilderBase {
      * @param nullable whether a column value is required or not; will default to {@code true}
      * @return a new column identifier
      */
-    PlanDocColsIdentifier colType(String column, String type, String schema, String view, Boolean nullable);
+    PlanRowColTypes colType(String column, String type, String schema, String view, Boolean nullable);
 
     /**
      * Build a sequence of column identifiers that can be used with {@code fromParam}.
@@ -400,7 +399,7 @@ public interface PlanBuilderBase {
      * @param colTypes the column identifiers to associate with the plan
      * @return a sequence of column identifiers
      */
-    PlanDocColsIdentifierSeq colTypes(PlanDocColsIdentifier... colTypes);
+    PlanRowColTypesSeq colTypes(PlanRowColTypes... colTypes);
 
     /**
      * Defines base methods for Plan. This interface is an implementation detail.
