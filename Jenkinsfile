@@ -20,9 +20,9 @@ pipeline{
   stages{
     stage('tests'){
       steps{
-        copyRPM 'Release','10.0-9.4'
+        copyRPM 'Latest','11.0'
         setUpML '$WORKSPACE/xdmp/src/Mark*.rpm'
-        copyConvertersRPM 'Release','10.0-9.4'
+        copyConvertersRPM 'Latest','11.0'
         setUpMLConverters '$WORKSPACE/xdmp/src/Mark*Converters*.rpm'
         sh label:'deploy project', script: '''#!/bin/bash
           export JAVA_HOME=$JAVA_HOME_DIR
@@ -53,9 +53,9 @@ pipeline{
     stage('functional-tests'){
         when { branch 'develop'}
         steps{
-        copyRPM 'Release','10.0-9.4'
+        copyRPM 'Latest','11.0'
         setUpML '$WORKSPACE/xdmp/src/Mark*.rpm'
-        copyConvertersRPM 'Release','10.0-9.4'
+        copyConvertersRPM 'Latest','11.0'
         setUpMLConverters '$WORKSPACE/xdmp/src/Mark*Converters*.rpm'
         sh label:'test', script: '''#!/bin/bash
           export JAVA_HOME=$JAVA_HOME_DIR
@@ -67,7 +67,7 @@ pipeline{
         junit '**/build/**/TEST*.xml'
         }
     }
-    stage('regressions-nightly'){
+    stage('regressions-10.0-9'){
         when{
             allOf{
                 branch 'develop'
@@ -75,9 +75,9 @@ pipeline{
             }
         }
         steps{
-            copyRPM 'Latest','11.0'
+            copyRPM 'Release','10.0-9.5'
             setUpML '$WORKSPACE/xdmp/src/Mark*.rpm'
-            copyConvertersRPM 'Latest','11.0'
+            copyConvertersRPM 'Release','10.0-9.5'
             setUpMLConverters '$WORKSPACE/xdmp/src/Mark*Converters*.rpm'
             sh label:'deploy project', script: '''#!/bin/bash
                 export JAVA_HOME=$JAVA_HOME_DIR
