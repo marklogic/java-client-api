@@ -3959,9 +3959,7 @@ public class OkHttpServices implements RESTServices {
   }
 
     public RESTServiceResultIterator postMultipartForm(
-            RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
-            Map<PlanBuilderBaseImpl.PlanParamBase, AbstractWriteHandle> contentParams,
-            List<ParamAttachments> contentParamAttachments)
+            RequestLogger reqlog, String path, Transaction transaction, RequestParameters params, List<ContentParam> contentParams)
             throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
     {
       if ( transaction != null ) {
@@ -3978,12 +3976,11 @@ public class OkHttpServices implements RESTServices {
           }
       }
 
-      contentParams.forEach((planParam, content) -> {
-          multiBuilder.addFormDataPart(planParam.getName(), planParam.getName(), makeRequestBodyForContent(content));
+      contentParams.forEach(contentParam -> {
+          String name = contentParam.getPlanParam().getName();
+          multiBuilder.addFormDataPart(name, name, makeRequestBodyForContent(contentParam.getContent()));
       });
-      if (contentParamAttachments != null) {
-          this.addContentParamAttachments(multiBuilder, contentParamAttachments);
-      }
+      this.addContentParamAttachments(multiBuilder, contentParams);
 
       requestBldr = setupRequest(requestBldr, multiBuilder, null);
       requestBldr = addTransactionScopedCookies(requestBldr, transaction);
@@ -4019,20 +4016,23 @@ public class OkHttpServices implements RESTServices {
      * the 'column' name in each row is then expected to be one of these map keys.
      *
      * @param multiBuilder
-     * @param contentParamAttachments
+     * @param contentParams
      */
-    private void addContentParamAttachments(MultipartBody.Builder multiBuilder, List<ParamAttachments> contentParamAttachments) {
+    private void addContentParamAttachments(MultipartBody.Builder multiBuilder, List<ContentParam> contentParams) {
         ObjectNode metadata = new ObjectMapper().createObjectNode();
         ArrayNode docsArray = metadata.putObject("attachments").putArray("docs");
-        for (ParamAttachments paramAttachments : contentParamAttachments) {
-            final String columnName = paramAttachments.getColumnName();
-            docsArray.addObject().put("rowsField", paramAttachments.getPlanParam().getName()).put("column", columnName);
-            Map<String, AbstractWriteHandle> attachments = paramAttachments.getAttachments();
-            attachments.keySet().forEach(filename -> {
-                multiBuilder.addFormDataPart(columnName, filename, makeRequestBodyForContent(attachments.get(filename)));
+        contentParams.stream().filter(contentParam -> contentParam.getColumnAttachments() != null).forEach(contentParam -> {
+            Map<String, Map<String, AbstractWriteHandle>> attachments = contentParam.getColumnAttachments();
+            attachments.keySet().forEach(columnName -> {
+                docsArray.addObject().put("rowsField", contentParam.getPlanParam().getName()).put("column", columnName);
+                attachments.get(columnName).keySet().forEach(filename -> {
+                    multiBuilder.addFormDataPart(columnName, filename, makeRequestBodyForContent(attachments.get(columnName).get(filename)));
+                });
             });
+        });
+        if (docsArray.size() > 0) {
+            multiBuilder.addFormDataPart("metadata", "metadata", makeRequestBodyForContent(new JacksonHandle(metadata)));
         }
-        multiBuilder.addFormDataPart("metadata", "metadata", makeRequestBodyForContent(new JacksonHandle(metadata)));
     }
 
   private <U extends OkHttpResultIterator> U postIteratedResourceImpl(
