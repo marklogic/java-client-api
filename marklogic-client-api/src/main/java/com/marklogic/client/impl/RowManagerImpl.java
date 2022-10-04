@@ -47,7 +47,6 @@ import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
-import com.marklogic.client.expression.PlanBuilderBase;
 import com.marklogic.client.impl.RESTServices.RESTServiceResult;
 import com.marklogic.client.impl.RESTServices.RESTServiceResultIterator;
 import com.marklogic.client.io.*;
@@ -378,12 +377,23 @@ public class RowManagerImpl
     addDatatypeStyleParam(params,     datatypeStyle);
     addRowStructureStyleParam(params, rowStructureStyle);
 
-    if (requestPlan instanceof PlanBuilderSubImpl.AccessPlanSubImpl) {
-      PlanBuilderSubImpl.AccessPlanSubImpl accessPlan = (PlanBuilderSubImpl.AccessPlanSubImpl) requestPlan;
-      Map<PlanBuilderBaseImpl.PlanParamBase, AbstractWriteHandle> contentParams = accessPlan.getContentParams();
+    // TODO Have to check for both Plan subclasses that can contain content parameters. A future refactor should improve
+    // this such that this code can simply check for an instanceof a particular interface - e.g. ContentParameterPlan.
+    if (requestPlan instanceof PlanBuilderSubImpl.PlanSubImpl || requestPlan instanceof RawPlanImpl) {
+      Map<PlanBuilderBaseImpl.PlanParamBase, AbstractWriteHandle> contentParams;
+      List<ParamAttachments> contentParamAttachments;
+      if (requestPlan instanceof PlanBuilderSubImpl.PlanSubImpl) {
+        PlanBuilderSubImpl.PlanSubImpl subPlan = (PlanBuilderSubImpl.PlanSubImpl)requestPlan;
+        contentParams = subPlan.getContentParams();
+        contentParamAttachments = subPlan.getContentParamAttachments();
+      } else {
+        RawPlanImpl rawPlan = (RawPlanImpl)requestPlan;
+        contentParams = rawPlan.getContentParams();
+        contentParamAttachments = rawPlan.getContentParamAttachments();
+      }
       if (contentParams != null && !contentParams.isEmpty()) {
         contentParams.put(new PlanBuilderBaseImpl.PlanParamBase("query"), astHandle);
-        return services.postMultipartForm(requestLogger, "rows", transaction, params, contentParams, accessPlan.getContentParamAttachments());
+        return services.postMultipartForm(requestLogger, "rows", transaction, params, contentParams, contentParamAttachments);
       }
     }
     return services.postIteratedResource(requestLogger, "rows", transaction, params, astHandle);
@@ -1599,19 +1609,29 @@ public class RowManagerImpl
   }
 
   static abstract class RawPlanImpl<W extends AbstractWriteHandle> implements RawPlan, PlanBuilderBaseImpl.RequestPlan {
+    // TODO There's some significant duplication here with PlanSubImpl that ideally can be factored out
     private Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params = null;
+    private Map<PlanBuilderBaseImpl.PlanParamBase, AbstractWriteHandle> contentParams;
+    private List<ParamAttachments> contentParamAttachments;
     private W handle;
     private RawPlanImpl(W handle) {
       setHandle(handle);
     }
     private RawPlanImpl(
             W handle,
-            Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params) {
+            Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+            Map<PlanBuilderBaseImpl.PlanParamBase, AbstractWriteHandle> contentParams,
+            List<ParamAttachments> contentParamAttachments) {
       this(handle);
       this.params = params;
+      this.contentParams = contentParams;
+      this.contentParamAttachments = contentParamAttachments;
     }
 
-    abstract RawPlanImpl<W> parameterize(W handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params);
+    abstract RawPlanImpl<W> parameterize(W handle,
+                                         Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+                                         Map<PlanBuilderBaseImpl.PlanParamBase, AbstractWriteHandle> contentParams,
+                                         List<ParamAttachments> contentParamAttachments);
     abstract void configHandle(BaseHandle handle);
 
     @Override
@@ -1716,7 +1736,45 @@ public class RowManagerImpl
 
       nextParams.put((PlanBuilderBaseImpl.PlanParamBase) param, (XsValueImpl.AnyAtomicTypeValImpl) literal);
 
-      return parameterize(getHandle(), nextParams);
+      return parameterize(getHandle(), nextParams, this.contentParams, this.contentParamAttachments);
+    }
+    @Override
+    public Plan bindParam(String param, AbstractWriteHandle content) {
+      return bindParam(new PlanBuilderBaseImpl.PlanParamBase(param), content);
+    }
+    @Override
+    public Plan bindParam(PlanParamExpr param, AbstractWriteHandle content) {
+      if (!(param instanceof PlanBuilderBaseImpl.PlanParamBase)) {
+        throw new IllegalArgumentException("param must be an instance of PlanParamBase");
+      }
+      Map<PlanBuilderBaseImpl.PlanParamBase,AbstractWriteHandle> nextContentParams = new HashMap<>();
+      if (this.contentParams != null) {
+        nextContentParams.putAll(this.contentParams);
+      }
+      nextContentParams.put((PlanBuilderBaseImpl.PlanParamBase) param, content);
+      return parameterize(getHandle(), this.params, nextContentParams, this.contentParamAttachments);
+    }
+    @Override
+    public Plan bindParamAttachments(String param, String columnName, Map<String, AbstractWriteHandle> attachments) {
+      return bindParamAttachments(new PlanBuilderBaseImpl.PlanParamBase(param), columnName, attachments);
+    }
+    @Override
+    public Plan bindParamAttachments(PlanParamExpr param, String columnName, Map<String, AbstractWriteHandle> attachments) {
+      if (!(param instanceof PlanBuilderBaseImpl.PlanParamBase)) {
+        throw new IllegalArgumentException("param must be an instance of PlanParamBase");
+      }
+      List<ParamAttachments> nextAttachments = new ArrayList<>();
+      if (this.contentParamAttachments != null) {
+        nextAttachments.addAll(this.contentParamAttachments);
+      }
+      nextAttachments.add(new ParamAttachments((PlanBuilderBaseImpl.PlanParamBase)param, columnName, attachments));
+      return parameterize(getHandle(), this.params, this.contentParams, nextAttachments);
+    }
+    public Map<PlanBuilderBaseImpl.PlanParamBase, AbstractWriteHandle> getContentParams() {
+      return contentParams;
+    }
+    public List<ParamAttachments> getContentParamAttachments() {
+      return contentParamAttachments;
     }
   }
   static class RawSQLPlanImpl extends RawPlanImpl<TextWriteHandle> implements RawSQLPlan {
@@ -1724,16 +1782,20 @@ public class RowManagerImpl
       super(handle);
     }
     RawSQLPlanImpl(
-            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+            Map<PlanBuilderBaseImpl.PlanParamBase, AbstractWriteHandle> contentParams,
+            List<ParamAttachments> contentParamAttachments
     ) {
-      super(handle, params);
+      super(handle, params, contentParams, contentParamAttachments);
     }
 
     @Override
     RawSQLPlanImpl parameterize(
-            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+            Map<PlanBuilderBaseImpl.PlanParamBase, AbstractWriteHandle> contentParams,
+            List<ParamAttachments> contentParamAttachments
     ) {
-      return new RawSQLPlanImpl(handle, params);
+      return new RawSQLPlanImpl(handle, params, contentParams, contentParamAttachments);
     }
     @Override
     void configHandle(BaseHandle handle) {
@@ -1752,16 +1814,20 @@ public class RowManagerImpl
       super(handle);
     }
     RawSPARQLSelectPlanImpl(
-            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+            Map<PlanBuilderBaseImpl.PlanParamBase, AbstractWriteHandle> contentParams,
+            List<ParamAttachments> contentParamAttachments
     ) {
-      super(handle, params);
+      super(handle, params, contentParams, contentParamAttachments);
     }
 
     @Override
     RawSPARQLSelectPlanImpl parameterize(
-            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+            Map<PlanBuilderBaseImpl.PlanParamBase, AbstractWriteHandle> contentParams,
+            List<ParamAttachments> contentParamAttachments
     ) {
-      return new RawSPARQLSelectPlanImpl(handle, params);
+      return new RawSPARQLSelectPlanImpl(handle, params, contentParams, contentParamAttachments);
     }
     @Override
     void configHandle(BaseHandle handle) {
@@ -1780,16 +1846,20 @@ public class RowManagerImpl
       super(handle);
     }
     RawQueryDSLPlanImpl(
-            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+            Map<PlanBuilderBaseImpl.PlanParamBase, AbstractWriteHandle> contentParams,
+            List<ParamAttachments> contentParamAttachments
     ) {
-      super(handle, params);
+      super(handle, params, contentParams, contentParamAttachments);
     }
 
     @Override
     RawQueryDSLPlanImpl parameterize(
-            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+            Map<PlanBuilderBaseImpl.PlanParamBase, AbstractWriteHandle> contentParams,
+            List<ParamAttachments> contentParamAttachments
     ) {
-      return new RawQueryDSLPlanImpl(handle, params);
+      return new RawQueryDSLPlanImpl(handle, params, contentParams, contentParamAttachments);
     }
     @Override
     void configHandle(BaseHandle handle) {
@@ -1809,15 +1879,19 @@ public class RowManagerImpl
     }
     private RawPlanDefinitionImpl(
       JSONWriteHandle handle,
-      Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params) {
-      super(handle, params);
+      Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+      Map<PlanBuilderBaseImpl.PlanParamBase, AbstractWriteHandle> contentParams,
+      List<ParamAttachments> contentParamAttachments) {
+      super(handle, params, contentParams, contentParamAttachments);
     }
 
     @Override
     RawPlanDefinitionImpl parameterize(
-            JSONWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+            JSONWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+            Map<PlanBuilderBaseImpl.PlanParamBase, AbstractWriteHandle> contentParams,
+            List<ParamAttachments> contentParamAttachments
     ) {
-      return new RawPlanDefinitionImpl(handle, params);
+      return new RawPlanDefinitionImpl(handle, params, contentParams, contentParamAttachments);
     }
     @Override
     void configHandle(BaseHandle handle) {

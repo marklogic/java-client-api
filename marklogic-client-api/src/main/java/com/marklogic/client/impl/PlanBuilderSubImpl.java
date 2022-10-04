@@ -649,6 +649,8 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     private Object[]                         fnArgs   = null;
 
     private Map<PlanParamBase,BaseTypeImpl.ParamBinder> params = null;
+    private Map<PlanParamBase, AbstractWriteHandle> contentParams;
+    private List<ParamAttachments> contentParamAttachments;
 
     PlanSubImpl(PlanBuilderBaseImpl.PlanBaseImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
       super(prior, fnPrefix, fnName, fnArgs);
@@ -659,9 +661,13 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
     private PlanSubImpl(
       PlanBuilderBaseImpl.PlanBaseImpl prior, String fnPrefix, String fnName, Object[] fnArgs,
-      Map<PlanParamBase,BaseTypeImpl.ParamBinder> params) {
+      Map<PlanParamBase,BaseTypeImpl.ParamBinder> params,
+      Map<PlanParamBase, AbstractWriteHandle> contentParams,
+      List<ParamAttachments> contentParamAttachments) {
       this(prior, fnPrefix, fnName, fnArgs);
       this.params = params;
+      this.contentParams = contentParams;
+      this.contentParamAttachments = contentParamAttachments;
     }
 
     @Override
@@ -736,7 +742,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     @Override
     public Plan bindParam(PlanParamExpr param, PlanParamBindingVal literal) {
       if (!(param instanceof PlanParamBase)) {
-        throw new IllegalArgumentException("cannot set parameter that doesn't extend base");
+        throw new IllegalArgumentException("param must be an instance of PlanParamBase");
       }
 
       Map<PlanParamBase,BaseTypeImpl.ParamBinder> nextParams = new HashMap<>();
@@ -754,7 +760,54 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
         throw new IllegalArgumentException("cannot set value with unknown implementation");
       }
 
-      return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, nextParams);
+      return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, nextParams,
+              this.contentParams, this.contentParamAttachments);
+    }
+
+    @Override
+    public Plan bindParam(String param, AbstractWriteHandle content) {
+      return bindParam(new PlanParamBase(param), content);
+    }
+
+    @Override
+    public Plan bindParam(PlanParamExpr param, AbstractWriteHandle content) {
+      if (!(param instanceof PlanParamBase)) {
+        throw new IllegalArgumentException("param must be an instance of PlanParamBase");
+      }
+      Map<PlanParamBase,AbstractWriteHandle> nextContentParams = new HashMap<>();
+      if (this.contentParams != null) {
+        nextContentParams.putAll(this.contentParams);
+      }
+      nextContentParams.put((PlanParamBase) param, content);
+      return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, this.params,
+              nextContentParams, this.contentParamAttachments);
+    }
+
+    @Override
+    public Plan bindParamAttachments(String param, String columnName, Map<String, AbstractWriteHandle> attachments) {
+      return bindParamAttachments(new PlanParamBase(param), columnName, attachments);
+    }
+
+    @Override
+    public Plan bindParamAttachments(PlanParamExpr param, String columnName, Map<String, AbstractWriteHandle> attachments) {
+      if (!(param instanceof PlanParamBase)) {
+        throw new IllegalArgumentException("param must be an instance of PlanParamBase");
+      }
+      List<ParamAttachments> nextAttachments = new ArrayList<>();
+      if (this.contentParamAttachments != null) {
+        nextAttachments.addAll(this.contentParamAttachments);
+      }
+      nextAttachments.add(new ParamAttachments((PlanParamBase)param, columnName, attachments));
+      return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, this.params,
+              this.contentParams, nextAttachments);
+    }
+
+    public Map<PlanParamBase, AbstractWriteHandle> getContentParams() {
+      return contentParams;
+    }
+
+    public List<ParamAttachments> getContentParamAttachments() {
+      return this.contentParamAttachments;
     }
   }
 
@@ -905,41 +958,10 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
 
   }
 
-  /**
-   * Captures attachments associated with a parameter name in an {@code AccessPlan} along with the column that the
-   * client uses to refer to attachments. The {@code attachments} map associates attachment names and attachment
-   * content. It is expected that the values in the given {@code columnName} match the attachment names.
-   */
-  static class ParamAttachments {
-    private PlanParamBase planParam;
-    private String columnName;
-    private Map<String, AbstractWriteHandle> attachments;
-
-    public ParamAttachments(PlanParamBase planParam, String columnName, Map<String, AbstractWriteHandle> attachments) {
-      this.planParam = planParam;
-      this.columnName = columnName;
-      this.attachments = attachments;
-    }
-
-    public PlanParamBase getPlanParam() {
-      return planParam;
-    }
-
-    public String getColumnName() {
-      return columnName;
-    }
-
-    public Map<String, AbstractWriteHandle> getAttachments() {
-      return attachments;
-    }
-  }
-
   static class AccessPlanSubImpl
     extends PlanBuilderImpl.AccessPlanImpl {
     XsStringVal schema    = null;
     XsStringVal qualifier = null;
-    private Map<PlanParamBase, AbstractWriteHandle> contentParams;
-    private List<ParamAttachments> contentParamAttachments;
 
     // TODO: delete overload constructor once generated PlanBuilderImpl arities pass builder reference
     AccessPlanSubImpl(String fnPrefix, String fnName, Object[] fnArgs) {
@@ -1000,42 +1022,6 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
       return new PlanBuilderSubImpl.ModifyPlanSubImpl(
               this, "op", "sample-by", new Object[]{ asArg(makeMap(option)) }
       );
-    }
-
-    @Override
-    public AccessPlan bindParam(String param, AbstractWriteHandle content) {
-      return bindParam(new PlanParamBase(param), content);
-    }
-
-    @Override
-    public AccessPlan bindParam(PlanParamExpr param, AbstractWriteHandle content) {
-      if (this.contentParams == null) {
-        this.contentParams = new HashMap<>();
-      }
-      this.contentParams.put((PlanParamBase) param, content);
-      return this;
-    }
-
-    @Override
-    public AccessPlan bindParamAttachments(String param, String columnName, Map<String, AbstractWriteHandle> attachments) {
-      return bindParamAttachments(new PlanParamBase(param), columnName, attachments);
-    }
-
-    @Override
-    public AccessPlan bindParamAttachments(PlanParamExpr param, String columnName, Map<String, AbstractWriteHandle> attachments) {
-      if (this.contentParamAttachments == null) {
-        this.contentParamAttachments = new ArrayList<>();
-      }
-      this.contentParamAttachments.add(new ParamAttachments((PlanParamBase)param, columnName, attachments));
-      return this;
-    }
-
-    public Map<PlanParamBase, AbstractWriteHandle> getContentParams() {
-      return contentParams;
-    }
-
-    public List<ParamAttachments> getContentParamAttachments() {
-      return this.contentParamAttachments;
     }
   }
 
