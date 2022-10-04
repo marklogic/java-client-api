@@ -3961,7 +3961,7 @@ public class OkHttpServices implements RESTServices {
     public RESTServiceResultIterator postMultipartForm(
             RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
             Map<PlanBuilderBaseImpl.PlanParamBase, AbstractWriteHandle> contentParams,
-            List<PlanBuilderSubImpl.ParamAttachments> contentParamAttachments)
+            List<ParamAttachments> contentParamAttachments)
             throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
     {
       if ( transaction != null ) {
@@ -4021,10 +4021,10 @@ public class OkHttpServices implements RESTServices {
      * @param multiBuilder
      * @param contentParamAttachments
      */
-    private void addContentParamAttachments(MultipartBody.Builder multiBuilder, List<PlanBuilderSubImpl.ParamAttachments> contentParamAttachments) {
+    private void addContentParamAttachments(MultipartBody.Builder multiBuilder, List<ParamAttachments> contentParamAttachments) {
         ObjectNode metadata = new ObjectMapper().createObjectNode();
         ArrayNode docsArray = metadata.putObject("attachments").putArray("docs");
-        for (PlanBuilderSubImpl.ParamAttachments paramAttachments : contentParamAttachments) {
+        for (ParamAttachments paramAttachments : contentParamAttachments) {
             final String columnName = paramAttachments.getColumnName();
             docsArray.addObject().put("rowsField", paramAttachments.getPlanParam().getName()).put("column", columnName);
             Map<String, AbstractWriteHandle> attachments = paramAttachments.getAttachments();

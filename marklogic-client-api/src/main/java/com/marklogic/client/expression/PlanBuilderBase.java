@@ -582,12 +582,6 @@ public interface PlanBuilderBase {
          * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(PlanParamExpr param, String  literal);
-    }
-    /**
-     * Defines base methods for AccessPlan. This interface is an implementation detail.
-     * Use AccessPlan as the type for instances of AccessPlan.
-     */
-    interface AccessPlanBase {
         /**
          * Specifies a content handle to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
@@ -597,8 +591,7 @@ public interface PlanBuilderBase {
          * @param content the content to replace the parameter
          * @return the same instance that this was invoked on
          */
-        PlanBuilder.AccessPlan bindParam(String param, AbstractWriteHandle content);
-
+        PlanBuilder.Plan bindParam(String param, AbstractWriteHandle content);
         /**
          * Specifies a content handle to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
@@ -608,8 +601,7 @@ public interface PlanBuilderBase {
          * @param content the content to replace the parameter
          * @return the same instance that this was invoked on
          */
-        PlanBuilder.AccessPlan bindParam(PlanParamExpr param, AbstractWriteHandle content);
-
+        PlanBuilder.Plan bindParam(PlanParamExpr param, AbstractWriteHandle content);
         /**
          * Binds attachments to the content parameter identified by {@code param} that had content bound to it via
          * {@code bindParam(String, AbstractWriteHandle)}.
@@ -621,8 +613,7 @@ public interface PlanBuilderBase {
          *                    associated content handle
          * @return
          */
-        PlanBuilder.AccessPlan bindParamAttachments(String param, String columnName, Map<String, AbstractWriteHandle> attachments);
-
+        PlanBuilder.Plan bindParamAttachments(String param, String columnName, Map<String, AbstractWriteHandle> attachments);
         /**
          * Binds attachments to the content parameter identified by {@code param} that had content bound to it via
          * {@code bindParam(PlanParamExpr, AbstractWriteHandle)}.
@@ -634,7 +625,14 @@ public interface PlanBuilderBase {
          *                    associated content handle.
          * @return
          */
-        PlanBuilder.AccessPlan bindParamAttachments(PlanParamExpr param, String columnName, Map<String, AbstractWriteHandle> attachments);
+        PlanBuilder.Plan bindParamAttachments(PlanParamExpr param, String columnName, Map<String, AbstractWriteHandle> attachments);
+    }
+    /**
+     * Defines base methods for AccessPlan. This interface is an implementation detail.
+     * Use AccessPlan as the type for instances of AccessPlan.
+     */
+    interface AccessPlanBase {
+
     }
     /**
      * Defines base methods for ExportablePlan. This interface is an implementation detail.

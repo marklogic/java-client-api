@@ -8,6 +8,7 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.type.PlanParamExpr;
@@ -42,7 +43,7 @@ public class RowManagerFromParamTest {
         PlanBuilder planBuilder = rowMgr.newPlanBuilder();
 
         // Specify the columns that describe the rows that will be passed in
-        PlanBuilder.AccessPlan plan = planBuilder.fromParam("myDocs", "", planBuilder.colTypes(
+        PlanBuilder.Plan plan = planBuilder.fromParam("myDocs", "", planBuilder.colTypes(
                 planBuilder.colType("lastName", "string"),
                 planBuilder.colType("firstName", "string", "", "", null)
         ));
@@ -51,7 +52,7 @@ public class RowManagerFromParamTest {
         ArrayNode array = new ObjectMapper().createArrayNode();
         array.addObject().put("lastName", "Smith").put("firstName", "Jane");
         array.addObject().put("lastName", "Jones").put("firstName", "Jack");
-        plan.bindParam("myDocs", new JacksonHandle(array));
+        plan = plan.bindParam("myDocs", new JacksonHandle(array));
 
         List<RowRecord> rows = rowMgr.resultRows(plan).stream().collect(Collectors.toList());
         assertEquals(2, rows.size());
@@ -70,7 +71,7 @@ public class RowManagerFromParamTest {
         RowManager rowMgr = Common.client.newRowManager();
         PlanBuilder planBuilder = rowMgr.newPlanBuilder();
 
-        PlanBuilder.AccessPlan plan = planBuilder.fromParam("bindingParam", "", planBuilder.colTypes(
+        PlanBuilder.Plan plan = planBuilder.fromParam("bindingParam", "", planBuilder.colTypes(
                 planBuilder.colType("rowId", "integer"),
                 planBuilder.colType("doc", "none")
         ));
@@ -108,7 +109,7 @@ public class RowManagerFromParamTest {
         RowManager rowMgr = Common.client.newRowManager();
         PlanBuilder planBuilder = rowMgr.newPlanBuilder();
 
-        PlanBuilder.AccessPlan plan = planBuilder.fromParam("bindingParam", "", planBuilder.colTypes(
+        PlanBuilder.Plan plan = planBuilder.fromParam("bindingParam", "", planBuilder.colTypes(
                 planBuilder.colType("rowId", "integer"),
                 planBuilder.colType("doc", "none")
         ));
@@ -144,7 +145,7 @@ public class RowManagerFromParamTest {
         RowManager rowMgr = Common.client.newRowManager();
         PlanBuilder planBuilder = rowMgr.newPlanBuilder();
 
-        PlanBuilder.AccessPlan plan = planBuilder.fromParam("bindingParam", "", planBuilder.colTypes(
+        PlanBuilder.Plan plan = planBuilder.fromParam("bindingParam", "", planBuilder.colTypes(
                 planBuilder.colType("rowId", "integer"),
                 planBuilder.colType("doc", "none")
         ));
@@ -169,6 +170,90 @@ public class RowManagerFromParamTest {
         row = rows.get(1);
         assertEquals(2, row.getInt("rowId"));
         assertEquals("doc2-text", row.getContentAs("doc", String.class));
+    }
+
+    /**
+     * This tests ensures that the bindParam(param, AbstractWriteHandle) methods in RawPlanImpl work correctly.
+     * Those methods are currently duplicated between RowPlanImpl and PlanSubImpl because the two classes do not have
+     * a common parent class. So we need at least one test that covers the RawPlanImpl methods, which is this test.
+     */
+    @Test
+    public void fromParamWithRawPlan() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        RowManager rowMgr = Common.client.newRowManager();
+        PlanBuilder planBuilder = rowMgr.newPlanBuilder();
+
+        // The raw plan is the serialized representation of the plan in fromParamWithTextAttachments
+        RawPlanDefinition rawPlan = rowMgr.newRawPlanDefinition(new StringHandle("{\n" +
+                "    \"$optic\": {\n" +
+                "        \"ns\": \"op\",\n" +
+                "        \"fn\": \"operators\",\n" +
+                "        \"args\": [\n" +
+                "            {\n" +
+                "                \"ns\": \"op\",\n" +
+                "                \"fn\": \"from-param\",\n" +
+                "                \"args\": [\n" +
+                "                    {\n" +
+                "                        \"ns\": \"xs\",\n" +
+                "                        \"fn\": \"string\",\n" +
+                "                        \"args\": [\n" +
+                "                            \"bindingParam\"\n" +
+                "                        ]\n" +
+                "                    },\n" +
+                "                    {\n" +
+                "                        \"ns\": \"xs\",\n" +
+                "                        \"fn\": \"string\",\n" +
+                "                        \"args\": [\n" +
+                "                            \"\"\n" +
+                "                        ]\n" +
+                "                    },\n" +
+                "                    [\n" +
+                "                        {\n" +
+                "                            \"schema\": \"\",\n" +
+                "                            \"view\": \"\",\n" +
+                "                            \"column\": \"rowId\",\n" +
+                "                            \"type\": \"integer\",\n" +
+                "                            \"nullable\": true\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"schema\": \"\",\n" +
+                "                            \"view\": \"\",\n" +
+                "                            \"column\": \"doc\",\n" +
+                "                            \"type\": \"none\",\n" +
+                "                            \"nullable\": true\n" +
+                "                        }\n" +
+                "                    ]\n" +
+                "                ]\n" +
+                "            }\n" +
+                "        ]\n" +
+                "    }\n" +
+                "}").withFormat(Format.JSON));
+
+        final PlanParamExpr param = planBuilder.param("bindingParam");
+
+        ArrayNode array = new ObjectMapper().createArrayNode();
+        array.addObject().put("rowId", 1).put("doc", "doc1.xml");
+        array.addObject().put("rowId", 2).put("doc", "doc2.xml");
+        PlanBuilder.Plan plan = rawPlan.bindParam(param, new JacksonHandle(array));
+
+        Map<String, AbstractWriteHandle> attachments = new HashMap<>();
+        attachments.put("doc1.xml", new StringHandle("<doc>1</doc>").withFormat(Format.XML));
+        attachments.put("doc2.xml", new StringHandle("<doc>2</doc>").withFormat(Format.XML));
+        plan = plan.bindParamAttachments(param, "doc", attachments);
+
+        List<RowRecord> rows = rowMgr.resultRows(plan).stream().collect(Collectors.toList());
+        assertEquals(2, rows.size());
+
+        RowRecord row = rows.get(0);
+        assertEquals(1, row.getInt("rowId"));
+        assertEquals("<doc>1</doc>", getRowContentWithoutXmlDeclaration(row, "doc"));
+
+        row = rows.get(1);
+        assertEquals(2, row.getInt("rowId"));
+        assertEquals("<doc>2</doc>", getRowContentWithoutXmlDeclaration(row, "doc"));
     }
 
     private String getRowContentWithoutXmlDeclaration(RowRecord row, String columnName) {
