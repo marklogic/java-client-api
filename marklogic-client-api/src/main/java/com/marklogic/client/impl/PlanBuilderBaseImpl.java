@@ -16,6 +16,7 @@
 package com.marklogic.client.impl;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
@@ -119,9 +120,10 @@ abstract class PlanBuilderBaseImpl extends PlanBuilder {
     }
   }
 
-  static interface RequestPlan {
-    public Map<PlanParamBase,BaseTypeImpl.ParamBinder> getParams();
-    public AbstractWriteHandle getHandle();
+  interface RequestPlan {
+    Map<PlanParamBase,BaseTypeImpl.ParamBinder> getParams();
+    AbstractWriteHandle getHandle();
+    List<ContentParam> getContentParams();
   }
 
   static abstract class PlanBaseImpl

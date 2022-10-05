@@ -17,6 +17,7 @@ package com.marklogic.client.expression;
 
 import java.util.Map;
 
+import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 
@@ -382,13 +383,23 @@ public interface PlanBuilderBase {
     PlanRowColTypes colType(String column, String type);
 
     /**
+     * Build a new column identifier based on the minimum required inputs and whether the column is nullable.
+     *
+     * @param column name of the column
+     * @param type type of the column, e.g. "string"
+     * @param nullable whether a column value is required
+     * @return a new column identifier
+     */
+    PlanRowColTypes colType(String column, String type, Boolean nullable);
+
+    /**
      * Build a new column identifier based on all possible inputs.
      *
      * @param column name of the column
      * @param type type of the column, e.g. "string"
      * @param schema name of the MarkLogic schema
      * @param view name of the MarkLogic view
-     * @param nullable whether a column value is required or not; will default to {@code true}
+     * @param nullable whether a column value is required; defaults to {@code false}
      * @return a new column identifier
      */
     PlanRowColTypes colType(String column, String type, String schema, String view, Boolean nullable);
@@ -583,49 +594,63 @@ public interface PlanBuilderBase {
          */
         PlanBuilder.Plan bindParam(PlanParamExpr param, String  literal);
         /**
+         * Specifies a set of documents to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
+         * @param param the name of a placeholder parameter
+         * @param writeSet the set of documents to bind; the URI, content, and metadata in each document will be
+         *                 honored except for the properties fragment config in the metadata
+         * @return
+         */
+        PlanBuilder.Plan bindParam(String param, DocumentWriteSet writeSet);
+        /**
+         * Specifies a set of documents to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
+         * @param param a placeholder parameter as constructed by the param() method
+         * @param writeSet the set of documents to bind; the URI, content, and metadata in each document will be
+         *                 honored except for the properties fragment config in the metadata
+         * @return
+         */
+        PlanBuilder.Plan bindParam(PlanParamExpr param, DocumentWriteSet writeSet);
+        /**
          * Specifies a content handle to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
-         * <p>Contrary to other `bindParam` methods, this mutates the existence of the plan rather than constructing
-         * a new instance.</p>
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
          * @param param the name of a placeholder parameter
          * @param content the content to replace the parameter
-         * @return the same instance that this was invoked on
+         * @param columnAttachments optional (can be null) map that associates column names with maps of attachments,
+         *                          which map filenames to content handles. For each column name in the map, the
+         *                          expectation is that the associated column in the content object will contain values
+         *                          matching the filenames in the map of filenames to content handles. When the plan is
+         *                          executed, those filenames will then be replaced with the associated attachment
+         *                          content objects.
+         * @return a new instance of the Plan object with the parameter binding
          */
-        PlanBuilder.Plan bindParam(String param, AbstractWriteHandle content);
+        PlanBuilder.Plan bindParam(String param, AbstractWriteHandle content, Map<String, Map<String, AbstractWriteHandle>> columnAttachments);
         /**
          * Specifies a content handle to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
-         * <p>Contrary to other `bindParam` methods, this mutates the existence of the plan rather than constructing
-         * a new instance.</p>
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
          * @param param a placeholder parameter as constructed by the param() method
          * @param content the content to replace the parameter
-         * @return the same instance that this was invoked on
+         * @param columnAttachments optional (can be null) map that associates column names with maps of attachments,
+         *                          which map filenames to content handles. For each column name in the map, the
+         *                          expectation is that the associated column in the content object will contain values
+         *                          matching the filenames in the map of filenames to content handles. When the plan is
+         *                          executed, those filenames will then be replaced with the associated attachment
+         *                          content objects.
+         * @return a new instance of the Plan object with the parameter binding
          */
-        PlanBuilder.Plan bindParam(PlanParamExpr param, AbstractWriteHandle content);
-        /**
-         * Binds attachments to the content parameter identified by {@code param} that had content bound to it via
-         * {@code bindParam(String, AbstractWriteHandle)}.
-         *
-         * @param param the name of the param that was passed to {@code bindParam(String, AbstractWriteHandle)}
-         * @param columnName the name of the column in the plan whose values match the names of attachments
-         * @param attachments a map of attachment names to content handles. When the plan is executed, the attachment
-         *                    name in the column identified by {@code columnName} in each row will be replaced with the
-         *                    associated content handle
-         * @return
-         */
-        PlanBuilder.Plan bindParamAttachments(String param, String columnName, Map<String, AbstractWriteHandle> attachments);
-        /**
-         * Binds attachments to the content parameter identified by {@code param} that had content bound to it via
-         * {@code bindParam(PlanParamExpr, AbstractWriteHandle)}.
-         *
-         * @param param a placeholder parameter as constructed by the param() method that was passed to {@code bindParam(PlanParamExpr, AbstractWriteHandle)}
-         * @param columnName the name of the column in the plan whose values match the names of attachments
-         * @param attachments a map of attachment names to content handles. When the plan is executed, the attachment
-         *                    name in the column identified by {@code columnName} in each row will be replaced with the
-         *                    associated content handle.
-         * @return
-         */
-        PlanBuilder.Plan bindParamAttachments(PlanParamExpr param, String columnName, Map<String, AbstractWriteHandle> attachments);
+        PlanBuilder.Plan bindParam(PlanParamExpr param, AbstractWriteHandle content, Map<String, Map<String, AbstractWriteHandle>> columnAttachments);
     }
     /**
      * Defines base methods for AccessPlan. This interface is an implementation detail.
