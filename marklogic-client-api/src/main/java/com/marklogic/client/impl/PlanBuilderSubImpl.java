@@ -176,18 +176,18 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   @Override
+  public PlanRowColTypes colType(String column) {
+    return colType(column, null);
+  }
+
+  @Override
   public PlanRowColTypes colType(String column, String type) {
-    return colType(column, type, true);
+    return colType(column, type, null);
   }
 
   @Override
   public PlanRowColTypes colType(String column, String type, Boolean nullable) {
-    return new PlanRowColTypesImpl(null, null, column, type, nullable);
-  }
-
-  @Override
-  public PlanRowColTypes colType(String column, String type, String schema, String view, Boolean nullable) {
-    return new PlanRowColTypesImpl(schema, view, column, type, nullable);
+    return new PlanRowColTypesImpl(column, type, nullable);
   }
 
   @Override
