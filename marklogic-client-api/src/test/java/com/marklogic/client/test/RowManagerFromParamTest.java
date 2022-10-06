@@ -2,11 +2,9 @@ package com.marklogic.client.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
@@ -207,15 +205,11 @@ public class RowManagerFromParamTest {
                 "                    },\n" +
                 "                    [\n" +
                 "                        {\n" +
-                "                            \"schema\": \"\",\n" +
-                "                            \"view\": \"\",\n" +
                 "                            \"column\": \"rowId\",\n" +
                 "                            \"type\": \"integer\",\n" +
                 "                            \"nullable\": true\n" +
                 "                        },\n" +
                 "                        {\n" +
-                "                            \"schema\": \"\",\n" +
-                "                            \"view\": \"\",\n" +
                 "                            \"column\": \"doc\",\n" +
                 "                            \"type\": \"none\",\n" +
                 "                            \"nullable\": true\n" +
@@ -296,6 +290,29 @@ public class RowManagerFromParamTest {
         assertEquals("<doc>2</doc>", getRowContentWithoutXmlDeclaration(row, "doc"));
         assertEquals("<otherDoc>2</otherDoc>", getRowContentWithoutXmlDeclaration(row, "otherDoc"));
     }
+
+    @Test
+    public void xmlDocumentWriteSetSingleDocBug57894() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        RowManager rowMgr = Common.client.newRowManager();
+        PlanBuilder planBuilder = rowMgr.newPlanBuilder();
+        PlanBuilder.Plan plan = planBuilder.fromParam("myDocs", "", planBuilder.docColTypes());
+
+        DocumentMetadataHandle metadata = new DocumentMetadataHandle();
+        DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
+        writeSet.add("/fromParam/doc1.xml", metadata, new StringHandle("<doc>1</doc>").withFormat(Format.XML));
+        plan = plan.bindParam("myDocs", writeSet);
+
+        List<RowRecord> rows = rowMgr.resultRows(plan).stream().collect(Collectors.toList());
+        assertEquals(1, rows.size());
+        RowRecord row = rows.get(0);
+        assertEquals("/fromParam/doc1.xml", row.getString("uri"));
+        assertEquals("<doc>1</doc>", getRowContentWithoutXmlDeclaration(row, "doc"));
+    }
+
 
     private String getRowContentWithoutXmlDeclaration(RowRecord row, String columnName) {
         String content = row.getContentAs(columnName, String.class);

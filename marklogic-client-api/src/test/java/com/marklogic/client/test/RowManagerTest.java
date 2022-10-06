@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.StringWriter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 import javax.xml.transform.OutputKeys;
@@ -1379,7 +1380,8 @@ public class RowManagerTest {
     RowManager rowMgr = Common.client.newRowManager();
 
     RawPlan builtPlan = rowMgr.newRawSPARQLSelectPlan(new StringHandle(plan));
-    RowSet<RowRecord> rows = rowMgr.resultRows(builtPlan);
+    List<RowRecord> rows = rowMgr.resultRows(builtPlan).stream().collect(Collectors.toList());
+    assertEquals("unexpected count of result records", 2, rows.size());
 
     int rowNum = 0;
     for (RowRecord row: rows) {
@@ -1388,7 +1390,6 @@ public class RowManagerTest {
       assertEquals("unexpected object2 value in row record "+rowNum, object2[rowNum], row.getString("object2"));
       rowNum++;
     }
-    assertEquals("unexpected count of result records", 2, rowNum);
 
     String stringRoot = rowMgr.explain(builtPlan, new StringHandle()).get();
     assertNotNull(new ObjectMapper().readTree(stringRoot));
