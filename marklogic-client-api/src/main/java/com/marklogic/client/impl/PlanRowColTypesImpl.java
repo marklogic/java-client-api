@@ -6,13 +6,12 @@ class PlanRowColTypesImpl implements PlanRowColTypes, BaseTypeImpl.BaseArgImpl {
 
     private String expression;
 
-    public PlanRowColTypesImpl(String schema, String view, String column, String type, Boolean nullable) {
-        String template = "{\"schema\":\"%s\", \"view\":\"%s\", \"column\":\"%s\", \"type\":\"%s\", \"nullable\":%s}";
+    public PlanRowColTypesImpl(String column, String type, Boolean nullable) {
+        String template = "{\"column\":\"%s\", \"type\":\"%s\", \"nullable\":%s}";
         this.expression = String.format(template,
-                schema != null ? schema : "",
-                view != null ? view : "",
-                column, type,
-                nullable != null ? nullable : true
+                column,
+                type != null ? type : "none",
+                nullable != null ? nullable : false
         );
     }
 

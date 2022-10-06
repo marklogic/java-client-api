@@ -374,7 +374,15 @@ public interface PlanBuilderBase {
     ServerExpression seq(ServerExpression... expression);
 
     /**
-     * Build a new column identifier based on the minimum required inputs.
+     * Build a new column identifier; the type will default to "none" and nullable will default to "false".
+     *
+     * @param column name of the column
+     * @return a new column identifier
+     */
+    PlanRowColTypes colType(String column);
+
+    /**
+     * Build a new column identifier; nullable will default to "false".
      *
      * @param column name of the column
      * @param type type of the column, e.g. "string"
@@ -383,7 +391,7 @@ public interface PlanBuilderBase {
     PlanRowColTypes colType(String column, String type);
 
     /**
-     * Build a new column identifier based on the minimum required inputs and whether the column is nullable.
+     * Build a new column identifier.
      *
      * @param column name of the column
      * @param type type of the column, e.g. "string"
@@ -391,18 +399,6 @@ public interface PlanBuilderBase {
      * @return a new column identifier
      */
     PlanRowColTypes colType(String column, String type, Boolean nullable);
-
-    /**
-     * Build a new column identifier based on all possible inputs.
-     *
-     * @param column name of the column
-     * @param type type of the column, e.g. "string"
-     * @param schema name of the MarkLogic schema
-     * @param view name of the MarkLogic view
-     * @param nullable whether a column value is required; defaults to {@code false}
-     * @return a new column identifier
-     */
-    PlanRowColTypes colType(String column, String type, String schema, String view, Boolean nullable);
 
     /**
      * Build a sequence of column identifiers that can be used with {@code fromParam}.

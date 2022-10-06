@@ -46,7 +46,7 @@ public class RowManagerFromParamTest {
         // Specify the columns that describe the rows that will be passed in
         PlanBuilder.Plan plan = planBuilder.fromParam("myDocs", "", planBuilder.colTypes(
                 planBuilder.colType("lastName", "string"),
-                planBuilder.colType("firstName", "string", "", "", null)
+                planBuilder.colType("firstName", "string")
         ));
 
         // Build the rows to bind to the plan
@@ -74,7 +74,7 @@ public class RowManagerFromParamTest {
 
         PlanBuilder.Plan plan = planBuilder.fromParam("bindingParam", "", planBuilder.colTypes(
                 planBuilder.colType("rowId", "integer"),
-                planBuilder.colType("doc", "none")
+                planBuilder.colType("doc")
         ));
 
         final PlanParamExpr param = planBuilder.param("bindingParam");
@@ -110,7 +110,7 @@ public class RowManagerFromParamTest {
 
         PlanBuilder.Plan plan = planBuilder.fromParam("bindingParam", "", planBuilder.colTypes(
                 planBuilder.colType("rowId", "integer"),
-                planBuilder.colType("doc", "none")
+                planBuilder.colType("doc")
         ));
 
         ArrayNode array = new ObjectMapper().createArrayNode();
@@ -144,7 +144,7 @@ public class RowManagerFromParamTest {
 
         PlanBuilder.Plan plan = planBuilder.fromParam("bindingParam", "", planBuilder.colTypes(
                 planBuilder.colType("rowId", "integer"),
-                planBuilder.colType("doc", "none")
+                planBuilder.colType("doc")
         ));
 
         ArrayNode array = new ObjectMapper().createArrayNode();
@@ -263,8 +263,8 @@ public class RowManagerFromParamTest {
 
         PlanBuilder.Plan plan = planBuilder.fromParam("bindingParam", "", planBuilder.colTypes(
                 planBuilder.colType("rowId", "integer"),
-                planBuilder.colType("doc", "none"),
-                planBuilder.colType("otherDoc", "none")
+                planBuilder.colType("doc"),
+                planBuilder.colType("otherDoc")
         ));
 
         final PlanParamExpr param = planBuilder.param("bindingParam");
