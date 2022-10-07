@@ -90,7 +90,7 @@ public class BulkIOInputCallerTest {
         loader.awaitCompletion();
         checkDocuments("bulkInputTest_1");
         checkDocuments("bulkInputTest_2");
-        assertTrue("Number of documents written not as expected.", counter == 4);
+        assertEquals("Expected 4 documents written, was instead: " + counter, 4, counter);
         assertTrue("No documents written by first callContext in - bulkInputTest_1 collection.",
                 map.get("bulkInputTest_1") >= 1);
         assertTrue("No documents written by second callContext in - bulkInputTest_2 collection.",
