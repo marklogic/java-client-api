@@ -1378,17 +1378,13 @@ public class RowManagerTest {
     String[] object2 = {"http://example.org/rowgraph/o2", "http://example.org/rowgraph/o4"};
 
     RowManager rowMgr = Common.client.newRowManager();
-
     RawPlan builtPlan = rowMgr.newRawSPARQLSelectPlan(new StringHandle(plan));
     List<RowRecord> rows = rowMgr.resultRows(builtPlan).stream().collect(Collectors.toList());
-    assertEquals("unexpected count of result records", 2, rows.size());
 
-    int rowNum = 0;
-    for (RowRecord row: rows) {
-      assertEquals("unexpected graph value in row record "+rowNum,   graph[rowNum],   row.getString("graph"));
-      assertEquals("unexpected object1 value in row record "+rowNum, object1[rowNum], row.getString("object1"));
-      assertEquals("unexpected object2 value in row record "+rowNum, object2[rowNum], row.getString("object2"));
-      rowNum++;
+    if (Common.markLogicIsVersion11OrHigher()) {
+      assertEquals("Starting in ML 11, dedup is off by default, so 18 rows are expected", 18, rows.size());
+    } else {
+      assertEquals("In ML 10, dedup is on by default, so only 2 rows are expected", 2, rows.size());
     }
 
     String stringRoot = rowMgr.explain(builtPlan, new StringHandle()).get();

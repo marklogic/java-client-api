@@ -108,9 +108,13 @@ public class RowManagerFromParamWriteTest {
         writeSet.add("/fromParam/doc2.json", metadata, new StringHandle("{\"doc\":2}").withFormat(Format.JSON));
         PlanBuilder.Plan finalPlan = plan.bindParam("myDocs", writeSet);
 
+        // Example of expected error message:
+        // Local message: failed to apply resource at rows: Bad Request. Server Message: XDMP-ARGTYPE: xdmp.documentInsert("/fromParam/doc2.json",
+        // Sequence(), {collections:Sequence(), permissions:[{roleId:"7089338530631756591", capability:"read"},
+        // {roleId:"7089338530631756591", capability:"update"}], metadata:[], ...}) -- arg2 is not of type Node
         FailedRequestException ex = assertThrows(FailedRequestException.class, () -> rowMgr.resultRows(finalPlan));
-        assertTrue("Unexpected error: " + ex.getMessage(),
-                ex.getMessage().contains("'binding for '+bindingName+' is not in correct format.'"));
+        assertTrue("Unexpected error: " + ex.getMessage() + "; the write should have failed because JSON and XML " +
+                        "documents can't yet be written together", ex.getMessage().contains("arg2 is not of type Node"));
     }
 
     /**
