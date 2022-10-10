@@ -72,9 +72,11 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     if (select == null) {
       throw new IllegalArgumentException("select parameter for fromSparql() cannot be null");
     }
-    return new PlanBuilderSubImpl.ModifyPlanSubImpl(
+    ModifyPlanSubImpl plan = new PlanBuilderSubImpl.ModifyPlanSubImpl(
             "op", "from-sparql", new Object[]{ select, qualifierName, asArg(makeMap(option)) }
     );
+    plan.setHandleRegistry(this.getHandleRegistry());
+    return plan;
   }
 
   @Override
@@ -160,6 +162,27 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   @Override
   public AccessPlan fromView(XsStringVal schema, XsStringVal view, XsStringVal qualifierName, PlanSystemColumn sysCols) {
     return new AccessPlanSubImpl(this, "op", "from-view", new Object[]{ schema, view, qualifierName, sysCols });
+  }
+  // TODO: delete override of fromParam() arity after code generation passes PlanBuilderBaseImpl this
+  @Override
+  public AccessPlan fromParam(XsStringVal paramName, XsStringVal qualifier, PlanRowColTypesSeq colTypes) {
+    if (paramName == null) {
+      throw new IllegalArgumentException("paramName parameter for fromParam() cannot be null");
+    }
+    if (colTypes == null) {
+      throw new IllegalArgumentException("colTypes parameter for fromParam() cannot be null");
+    }
+    return new PlanBuilderSubImpl.AccessPlanSubImpl(this, "op", "from-param", new Object[]{ paramName, qualifier, colTypes });
+  }
+  // TODO: delete override of fromSql() arity after code generation passes PlanBuilderBaseImpl this
+  @Override
+  public ModifyPlan fromSql(XsStringVal select) {
+    if (select == null) {
+      throw new IllegalArgumentException("select parameter for fromSql() cannot be null");
+    }
+    ModifyPlanSubImpl plan = new PlanBuilderSubImpl.ModifyPlanSubImpl("op", "from-sql", new Object[]{ select });
+    plan.setHandleRegistry(this.getHandleRegistry());
+    return plan;
   }
 
   @Override
