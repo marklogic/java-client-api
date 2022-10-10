@@ -599,6 +599,12 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan fromSql(XsStringVal select, XsStringVal qualifierName);
+  public abstract AccessPlan fromParam(String paramName, String qualifier, PlanRowColTypesSeq colTypes);
+  public abstract AccessPlan fromParam(XsStringVal paramName, XsStringVal qualifier, PlanRowColTypesSeq colTypes);
+  public abstract AccessPlan fromDocDescriptors(PlanDocDescriptor... docDescriptor);
+  public abstract AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor);
+  public abstract AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor, String qualifier);
+  public abstract AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor, XsStringVal qualifier);
   /**
   * This function returns a filter definition as input for a WHERE operation. As with a cts:query or sem:store, the filter definition cannot be used in an Optic Boolean expression but, instead, must be the only argument to the WHERE call. Add a separate WHERE call to filter based on an Optic Boolean expression. The condition must be a valid simple SQL Boolean expression expressed as a string. 
   * @param expression  A boolean expression, such as op:eq or op:not, that might be null.
@@ -1315,8 +1321,6 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a PlanFunction object
   */
   public abstract PlanFunction resolveFunction(XsQNameVal functionName, XsStringVal modulePath);
-  public abstract AccessPlan fromParam(String paramName, String qualifier, PlanRowColTypesSeq colTypes);
-  public abstract AccessPlan fromParam(XsStringVal paramName, XsStringVal qualifier, PlanRowColTypesSeq colTypes);
   public abstract PlanDocColsIdentifier docCols();
   public abstract PlanDocColsIdentifier docCols(String qualifier);
   public abstract PlanDocColsIdentifier docCols(XsStringVal qualifier);
