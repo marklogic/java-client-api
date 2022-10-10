@@ -315,6 +315,66 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
+  public ServerExpression coveredBy(ServerExpression arg1, ServerExpression arg2) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for coveredBy() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for coveredBy() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "covered-by", new Object[]{ arg1, arg2 });
+  }
+
+  
+  @Override
+  public ServerExpression coveredBy(ServerExpression arg1, ServerExpression arg2, String arg3) {
+    return coveredBy(arg1, arg2, (arg3 == null) ? (ServerExpression) null : xs.string(arg3));
+  }
+
+  
+  @Override
+  public ServerExpression coveredBy(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for coveredBy() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for coveredBy() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "covered-by", new Object[]{ arg1, arg2, arg3 });
+  }
+
+  
+  @Override
+  public ServerExpression covers(ServerExpression arg1, ServerExpression arg2) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for covers() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for covers() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "covers", new Object[]{ arg1, arg2 });
+  }
+
+  
+  @Override
+  public ServerExpression covers(ServerExpression arg1, ServerExpression arg2, String arg3) {
+    return covers(arg1, arg2, (arg3 == null) ? (ServerExpression) null : xs.string(arg3));
+  }
+
+  
+  @Override
+  public ServerExpression covers(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3) {
+    if (arg1 == null) {
+      throw new IllegalArgumentException("arg1 parameter for covers() cannot be null");
+    }
+    if (arg2 == null) {
+      throw new IllegalArgumentException("arg2 parameter for covers() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "covers", new Object[]{ arg1, arg2, arg3 });
+  }
+
+  
+  @Override
   public ServerExpression crosses(ServerExpression arg1, ServerExpression arg2) {
     if (arg1 == null) {
       throw new IllegalArgumentException("arg1 parameter for crosses() cannot be null");

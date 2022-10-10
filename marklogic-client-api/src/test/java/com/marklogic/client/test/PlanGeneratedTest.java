@@ -206,17 +206,17 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testFnCurrentDate0Exec() {
-        executeTester("testFnCurrentDate0", p.fn.currentDate(), true, "xs:date", null, null, "2022-09-28-07:00", new ServerExpression[]{  });
+        executeTester("testFnCurrentDate0", p.fn.currentDate(), true, "xs:date", null, null, "2022-10-10-07:00", new ServerExpression[]{  });
     }
 
     @Test
     public void testFnCurrentDateTime0Exec() {
-        executeTester("testFnCurrentDateTime0", p.fn.currentDateTime(), true, "xs:dateTime", null, null, "2022-09-28T10:52:50.734548-07:00", new ServerExpression[]{  });
+        executeTester("testFnCurrentDateTime0", p.fn.currentDateTime(), true, "xs:dateTime", null, null, "2022-10-10T15:17:15.652131-07:00", new ServerExpression[]{  });
     }
 
     @Test
     public void testFnCurrentTime0Exec() {
-        executeTester("testFnCurrentTime0", p.fn.currentTime(), true, "xs:time", null, null, "10:52:50-07:00", new ServerExpression[]{  });
+        executeTester("testFnCurrentTime0", p.fn.currentTime(), true, "xs:time", null, null, "15:17:15-07:00", new ServerExpression[]{  });
     }
 
     @Test
@@ -996,7 +996,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemBnode0Exec() {
-        executeTester("testSemBnode0", p.sem.bnode(), true, "sem:blank", null, null, "_:bnode4386048503410170707", new ServerExpression[]{  });
+        executeTester("testSemBnode0", p.sem.bnode(), true, "sem:blank", null, null, "_:bnode10362604407058379332", new ServerExpression[]{  });
     }
 
     @Test
@@ -1076,7 +1076,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemRandom0Exec() {
-        executeTester("testSemRandom0", p.sem.random(), true, null, null, null, "0.686640498111965", new ServerExpression[]{  });
+        executeTester("testSemRandom0", p.sem.random(), true, null, null, null, "0.969267446613025", new ServerExpression[]{  });
     }
 
     @Test
@@ -1101,12 +1101,12 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemUuid0Exec() {
-        executeTester("testSemUuid0", p.sem.uuid(), true, "sem:iri", null, null, "urn:uuid:4046615853-55037-20007-46992-121395709103013", new ServerExpression[]{  });
+        executeTester("testSemUuid0", p.sem.uuid(), true, "sem:iri", null, null, "urn:uuid:1212164040-35820-17118-49023-198955162849899", new ServerExpression[]{  });
     }
 
     @Test
     public void testSemUuidString0Exec() {
-        executeTester("testSemUuidString0", p.sem.uuidString(), true, null, null, null, "2717189734-42772-18382-37138-161930229275562", new ServerExpression[]{  });
+        executeTester("testSemUuidString0", p.sem.uuidString(), true, null, null, null, "914691171-60140-16538-38911-184980046329196", new ServerExpression[]{  });
     }
 
     @Test
@@ -1241,7 +1241,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSqlRand1Exec() {
-        executeTester("testSqlRand1", p.sql.rand(p.col("1")), true, "xs:unsignedLong", null, null, "16254558214897542298", new ServerExpression[]{ p.xs.unsignedLong(1) });
+        executeTester("testSqlRand1", p.sql.rand(p.col("1")), true, "xs:unsignedLong", null, null, "4649567328924641576", new ServerExpression[]{ p.xs.unsignedLong(1) });
     }
 
     @Test
@@ -1346,7 +1346,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpCrypt21Exec() {
-        executeTester("testXdmpCrypt21", p.xdmp.crypt2(p.col("1")), true, null, null, null, "$256$M0V1xDw4xl8eJRSeOiM8e0$256$W0y6UgRBeMhICM6d", new ServerExpression[]{ p.xs.string("abc") });
+        executeTester("testXdmpCrypt21", p.xdmp.crypt2(p.col("1")), true, null, null, null, "$256$ENekoBN6iKTLMe.1GJ2D41$256$trh5/HfI5nrODEvt", new ServerExpression[]{ p.xs.string("abc") });
     }
 
     @Test
@@ -1576,12 +1576,12 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpRandom0Exec() {
-        executeTester("testXdmpRandom0", p.xdmp.random(), true, "xs:unsignedLong", null, null, "14035581893026419719", new ServerExpression[]{  });
+        executeTester("testXdmpRandom0", p.xdmp.random(), true, "xs:unsignedLong", null, null, "11507601652366808043", new ServerExpression[]{  });
     }
 
     @Test
     public void testXdmpRandom1Exec() {
-        executeTester("testXdmpRandom1", p.xdmp.random(p.col("1")), true, null, null, null, "0", new ServerExpression[]{ p.xs.unsignedLong(1) });
+        executeTester("testXdmpRandom1", p.xdmp.random(p.col("1")), true, null, null, null, "1", new ServerExpression[]{ p.xs.unsignedLong(1) });
     }
 
     @Test

@@ -323,6 +323,36 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
+  public AccessPlan fromDocDescriptors(PlanDocDescriptor... docDescriptor) {
+    return fromDocDescriptors(new DocDescriptorSeqListImpl(docDescriptor));
+  }
+
+  
+  @Override
+  public AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor) {
+    if (docDescriptor == null) {
+      throw new IllegalArgumentException("docDescriptor parameter for fromDocDescriptors() cannot be null");
+    }
+    return new PlanBuilderSubImpl.AccessPlanSubImpl("op", "from-doc-descriptors", new Object[]{ docDescriptor });
+  }
+
+  
+  @Override
+  public AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor, String qualifier) {
+    return fromDocDescriptors(docDescriptor, (qualifier == null) ? (XsStringVal) null : xs.string(qualifier));
+  }
+
+  
+  @Override
+  public AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor, XsStringVal qualifier) {
+    if (docDescriptor == null) {
+      throw new IllegalArgumentException("docDescriptor parameter for fromDocDescriptors() cannot be null");
+    }
+    return new PlanBuilderSubImpl.AccessPlanSubImpl("op", "from-doc-descriptors", new Object[]{ docDescriptor, qualifier });
+  }
+
+  
+  @Override
   public AccessPlan fromParam(String paramName, String qualifier, PlanRowColTypesSeq colTypes) {
     return fromParam((paramName == null) ? (XsStringVal) null : xs.string(paramName), (qualifier == null) ? (XsStringVal) null : xs.string(qualifier), colTypes);
   }
@@ -1360,6 +1390,27 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
   
   static class DocColsIdentifierCallImpl extends PlanCallImpl implements PlanDocColsIdentifier {
     DocColsIdentifierCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+
+  
+  static class DocDescriptorSeqListImpl extends PlanSeqListImpl implements PlanDocDescriptorSeq {
+    DocDescriptorSeqListImpl(Object[] items) {
+      super(items);
+    }
+  }
+
+  
+  static class DocDescriptorSeqCallImpl extends PlanCallImpl implements PlanDocDescriptorSeq {
+    DocDescriptorSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+
+  
+  static class DocDescriptorCallImpl extends PlanCallImpl implements PlanDocDescriptor {
+    DocDescriptorCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }

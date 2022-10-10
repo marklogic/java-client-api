@@ -214,7 +214,7 @@ public interface XdmpExpr {
   */
   public ServerExpression elementContentType(ServerExpression element);
 /**
-  * Invertible function that escapes characters required to be part of an NCName. This is useful when translating names from other representations such as JSON to XML. Given any string, the result is always a valid NCName. Providing all names are passed through this function the result is distinct NCNames so the results can be used for searching as well as name generation. The inverse function is xdmp:decode-from-NCName.
+  * Invertible function that escapes characters required to be part of an NCName. This is useful when translating names from other representations such as JSON to XML. Given any string, the result is always a valid NCName. Providing all names are passed through this function the result is distinct NCNames so the results can be used for searching as well as name generation. The inverse function is xdmp:decode-for-NCName.
   *
   * <a name="ml-server-type-encode-for-NCName"></a>
   

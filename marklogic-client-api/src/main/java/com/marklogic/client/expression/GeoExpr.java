@@ -316,6 +316,12 @@ public ServerExpression contains(ServerExpression arg1, ServerExpression arg2, S
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
   public ServerExpression countVertices(ServerExpression region);
+public ServerExpression coveredBy(ServerExpression arg1, ServerExpression arg2);
+public ServerExpression coveredBy(ServerExpression arg1, ServerExpression arg2, String arg3);
+public ServerExpression coveredBy(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3);
+public ServerExpression covers(ServerExpression arg1, ServerExpression arg2);
+public ServerExpression covers(ServerExpression arg1, ServerExpression arg2, String arg3);
+public ServerExpression covers(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3);
 public ServerExpression crosses(ServerExpression arg1, ServerExpression arg2);
 public ServerExpression crosses(ServerExpression arg1, ServerExpression arg2, String arg3);
 public ServerExpression crosses(ServerExpression arg1, ServerExpression arg2, ServerExpression arg3);
