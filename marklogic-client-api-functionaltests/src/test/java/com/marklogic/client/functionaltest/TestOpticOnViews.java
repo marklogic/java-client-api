@@ -33,7 +33,6 @@ import java.util.Iterator;
 import javax.xml.parsers.ParserConfigurationException;
 
 import com.marklogic.client.row.*;
-import com.sun.org.apache.xerces.internal.util.SynchronizedSymbolTable;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
