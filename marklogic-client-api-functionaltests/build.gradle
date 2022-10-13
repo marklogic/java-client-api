@@ -25,8 +25,8 @@ dependencies {
   implementation group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0'
   implementation group: 'org.slf4j', name: 'slf4j-api', version:'1.7.36'
   testImplementation group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.11'
-  implementation group: 'commons-io', name: 'commons-io', version: '2.6'
+  implementation 'commons-io:commons-io:2.11.0'
   implementation group: 'com.squareup.okhttp3', name: 'okhttp', version:'4.10.0'
-  implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version:'2.12.4'
-  implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.12.4'
+  implementation 'com.fasterxml.jackson.core:jackson-core:2.13.4'
+  implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4'
 }

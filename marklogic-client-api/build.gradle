@@ -22,11 +22,11 @@ dependencies {
     implementation group: 'com.sun.mail', name: 'javax.mail', version:'1.6.2'
     implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version:'2.1.1'
     implementation group: 'org.slf4j', name: 'slf4j-api', version:'1.7.36'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version:'2.12.4'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version:'2.12.4'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.12.4'
-    implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-csv', version:'2.12.4'
-    testImplementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-xml', version:'2.12.4'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.13.4'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.13.4'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.13.4'
+    testImplementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.4'
     testImplementation group: 'org.mockito', name: 'mockito-all', version:'1.10.19'
     testImplementation group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.11'
     testImplementation group: 'org.hsqldb', name: 'hsqldb', version:'2.5.1'
@@ -38,7 +38,7 @@ dependencies {
     compileOnly group: 'net.sourceforge.htmlcleaner', name: 'htmlcleaner', version:'2.24'
     compileOnly group: 'com.opencsv', name: 'opencsv', version: '4.6'
     compileOnly group: 'org.geonames', name: 'geonames', version:'1.0'
-    compileOnly group: 'org.springframework', name: 'spring-jdbc', version: '5.3.18'
+    compileOnly 'org.springframework:spring-jdbc:5.3.23'
 }
 
 // Ensure that mlHost and mlPassword can override the defaults of localhost/admin if they've been modified
