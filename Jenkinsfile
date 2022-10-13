@@ -51,7 +51,12 @@ pipeline{
       }
     }
     stage('functional-tests'){
-        when { branch 'develop'}
+         when{
+            allOf{
+                branch 'develop'
+                expression {return params.regressions}
+            }
+        }
         steps{
         copyRPM 'Latest','11.0'
         setUpML '$WORKSPACE/xdmp/src/Mark*.rpm'
