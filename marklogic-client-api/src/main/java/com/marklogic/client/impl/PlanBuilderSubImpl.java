@@ -18,9 +18,13 @@ package com.marklogic.client.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.SemExpr;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -174,6 +178,21 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
     return new PlanBuilderSubImpl.AccessPlanSubImpl(this, "op", "from-param", new Object[]{ paramName, qualifier, colTypes });
   }
+  // TODO: delete override of fromDocDescriptors() arity after code generation passes PlanBuilderBaseImpl this
+  @Override
+  public AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor) {
+    if (docDescriptor == null) {
+      throw new IllegalArgumentException("docDescriptor parameter for fromDocDescriptors() cannot be null");
+    }
+    return new PlanBuilderSubImpl.AccessPlanSubImpl(this,"op", "from-doc-descriptors", new Object[]{ docDescriptor });
+  }
+  @Override
+  public AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor, XsStringVal qualifier) {
+    if (docDescriptor == null) {
+      throw new IllegalArgumentException("docDescriptor parameter for fromDocDescriptors() cannot be null");
+    }
+    return new PlanBuilderSubImpl.AccessPlanSubImpl(this, "op", "from-doc-descriptors", new Object[]{ docDescriptor, qualifier });
+  }
   // TODO: delete override of fromSql() arity after code generation passes PlanBuilderBaseImpl this
   @Override
   public ModifyPlan fromSql(XsStringVal select) {
@@ -191,6 +210,42 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
             this, "op", "from-doc-uris", new Object[]{querydef, (qualifierName == null) ?
             null : xs.string(qualifierName)}
     );
+  }
+
+  public static class PlanDocDescriptorImpl implements PlanDocDescriptor, BaseTypeImpl.BaseArgImpl {
+    private String template;
+    // Threadsafe, thus safe to reuse to avoid creating many instances
+    private static ObjectMapper mapper = new ObjectMapper();
+    public PlanDocDescriptorImpl(DocumentWriteOperation writeOp) {
+      ObjectNode node = mapper.createObjectNode();
+      DocDescriptorUtil.populateDocDescriptor(writeOp, node);
+      this.template = node.toString();
+    }
+    @Override
+    public StringBuilder exportAst(StringBuilder strb) {
+      return strb.append(template);
+    }
+  }
+
+  @Override
+  public PlanDocDescriptor docDescriptor(DocumentWriteOperation writeOp) {
+    return new PlanDocDescriptorImpl(writeOp);
+  }
+
+  static class PlanDocDescriptorSeqImpl implements PlanDocDescriptorSeq, BaseTypeImpl.BaseArgImpl {
+    private String template;
+    public PlanDocDescriptorSeqImpl(DocumentWriteSet writeSet) {
+      this.template = DocDescriptorUtil.buildDocDescriptors(writeSet).toString();
+    }
+    @Override
+    public StringBuilder exportAst(StringBuilder strb) {
+      return strb.append(template);
+    }
+  }
+
+  @Override
+  public PlanDocDescriptorSeq docDescriptors(DocumentWriteSet writeSet) {
+    return new PlanDocDescriptorSeqImpl(writeSet);
   }
 
   @Override
@@ -1015,6 +1070,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
         case "from-triples":
         case "from-doc-uris":
         case "from-param":
+        case "from-doc-descriptors":
           if (fnArgs.length < 1) {
             throw new IllegalArgumentException("accessor constructor without parameters: "+fnArgs.length);
           }
