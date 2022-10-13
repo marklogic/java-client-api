@@ -3970,10 +3970,12 @@ public class OkHttpServices implements RESTServices {
       Request.Builder requestBldr = makePostWebResource(path, new RequestParameters());
 
       MultipartBody.Builder multiBuilder = new MultipartBody.Builder().setType(MediaType.parse("multipart/form-data"));
-      for ( String key : params.keySet() ) {
-          for ( String value : params.get(key) ) {
-              multiBuilder.addFormDataPart(key, value);
+      for (String key : params.keySet()) {
+        for (String value : params.get(key)) {
+          if (value != null) {
+            multiBuilder.addFormDataPart(key, value);
           }
+        }
       }
 
       contentParams.forEach(contentParam -> {

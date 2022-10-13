@@ -106,6 +106,21 @@ public interface RowManager {
     RawSPARQLSelectPlan newRawSPARQLSelectPlan(TextWriteHandle handle);
 
     /**
+     * Execute the given plan without returning any result.
+     * 
+     * @param plan the definition of a plan
+     */
+    void execute(Plan plan);
+
+    /**
+     * Execute the given plan without returning any result.
+     * 
+     * @param plan the definition of a plan
+     * @param transaction a open transaction for the execute operation to run within
+     */
+    void execute(Plan plan, Transaction transaction);
+
+    /**
      * Constructs and retrieves a set of database rows based on a plan using
      * a map interface for the column values in each row.
      * @param plan	the definition of a plan for the database rows

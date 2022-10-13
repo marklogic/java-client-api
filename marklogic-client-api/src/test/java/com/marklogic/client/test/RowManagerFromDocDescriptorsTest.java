@@ -36,7 +36,7 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
         PlanBuilder.AccessPlan plan = op.fromDocDescriptors(op.docDescriptors(writeSet));
         verifyExportedPlanReturnsSameRowCount(plan);
 
-        rowManager.resultRows(plan.write());
+        rowManager.execute(plan.write());
 
         verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
         verifyMetadata(uri, docMetadata -> {
@@ -63,8 +63,7 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
         );
         verifyExportedPlanReturnsSameRowCount(plan);
 
-        rowManager.resultRows(plan.write());
-
+        rowManager.execute(plan.write());
         verifyJsonDoc("/fromParam/doc1.json", doc -> assertEquals("doc1", doc.get("hello").asText()));
         verifyJsonDoc("/fromParam/doc2.json", doc -> assertEquals("doc2", doc.get("hello").asText()));
     }
@@ -80,8 +79,7 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
         final String qualifier = "myQualifier";
         PlanBuilder.AccessPlan plan = op.fromDocDescriptors(op.docDescriptors(writeSet), qualifier);
         verifyExportedPlanReturnsSameRowCount(plan);
-        rowManager.resultRows(plan.write(op.docCols(qualifier)));
-        verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
+        rowManager.execute(plan.write(op.docCols(qualifier))); verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
     }
 
     @Test

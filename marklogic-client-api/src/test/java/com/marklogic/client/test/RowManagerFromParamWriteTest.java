@@ -68,7 +68,7 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
         writeSet.add("/fromParam/doc2.xml", metadata, new StringHandle("<doc>2</doc>").withFormat(Format.XML));
         plan = plan.bindParam("myDocs", writeSet);
 
-        rowManager.resultRows(plan);
+        rowManager.execute(plan);
 
         verifyXmlDoc("/fromParam/doc1.xml", "<doc>1</doc>");
         verifyXmlDoc("/fromParam/doc2.xml", "<doc>2</doc>");
@@ -95,7 +95,7 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
         // Local message: failed to apply resource at rows: Bad Request. Server Message: XDMP-ARGTYPE: xdmp.documentInsert("/fromParam/doc2.json",
         // Sequence(), {collections:Sequence(), permissions:[{roleId:"7089338530631756591", capability:"read"},
         // {roleId:"7089338530631756591", capability:"update"}], metadata:[], ...}) -- arg2 is not of type Node
-        FailedRequestException ex = assertThrows(FailedRequestException.class, () -> rowManager.resultRows(finalPlan));
+        FailedRequestException ex = assertThrows(FailedRequestException.class, () -> rowManager.execute(finalPlan));
         assertTrue("Unexpected error: " + ex.getMessage() + "; the write should have failed because JSON and XML " +
                 "documents can't yet be written together", ex.getMessage().contains("arg2 is not of type Node"));
     }
@@ -154,7 +154,7 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
         writeSet.add("/fromParam/doc2.xml", metadata, new StringHandle("<doc>2</doc>").withFormat(Format.XML));
         PlanBuilder.Plan plan = rawPlan.bindParam("myDocs", writeSet);
 
-        rowManager.resultRows(plan);
+        rowManager.execute(plan);
 
         verifyXmlDoc("/fromParam/doc1.xml", "<doc>1</doc>");
         verifyXmlDoc("/fromParam/doc2.xml", "<doc>2</doc>");
