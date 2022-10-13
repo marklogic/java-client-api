@@ -141,6 +141,7 @@ public interface RowManager {
      * @return	an iterable over the result rows
      */
     <T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction);
+    void execute( /*paramBindings as object?, traceFlags as xs.string*/);
 
     /**
      * Constructs and retrieves a set of database rows based on a plan using

@@ -199,6 +199,15 @@ public class RowManagerImpl
 
     return rowset;
   }
+
+  @Override
+  public void execute(/*paramBindings as object?, traceFlags as xs.string*/) {
+    /* (Below is just an example, the syntax can change :) )
+    * rowManager.newPlanBuilder().fromDocUris(cts.directoryQuery('/test/fromDocUris/')).remove().execute();
+    Removes the documents under the directory "/test/fromDocUris". No output returned.
+    * */
+  }
+
   @Override
   public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as) {
     return resultRowsAs(plan, as, (Transaction) null);
