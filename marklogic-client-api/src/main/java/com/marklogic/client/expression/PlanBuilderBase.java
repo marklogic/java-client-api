@@ -17,6 +17,7 @@ package com.marklogic.client.expression;
 
 import java.util.Map;
 
+import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -407,6 +408,22 @@ public interface PlanBuilderBase {
      * @return a sequence of column identifiers
      */
     PlanRowColTypesSeq colTypes(PlanRowColTypes... colTypes);
+
+    /**
+     * Build a single doc descriptor that can be used with {@code fromDocDescriptors}.
+     *
+     * @param writeOp contains the inputs for the doc descriptor
+     * @return a doc descriptor
+     */
+    PlanDocDescriptor docDescriptor(DocumentWriteOperation writeOp);
+
+    /**
+     * Build a sequence of doc descriptors that can be used with {@code fromDocDescriptors}.
+     *
+     * @param writeSet each {@code DocumentWriteOperation} in this will be converted into a doc descriptor
+     * @return a sequence of doc descriptors
+     */
+    PlanDocDescriptorSeq docDescriptors(DocumentWriteSet writeSet);
 
     /**
      * Defines base methods for Plan. This interface is an implementation detail.
