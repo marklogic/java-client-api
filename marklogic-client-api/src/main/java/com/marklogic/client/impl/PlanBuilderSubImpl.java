@@ -24,7 +24,6 @@ import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.SemExpr;
-import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -205,11 +204,21 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   @Override
+  public AccessPlan fromDocUris(CtsQueryExpr querydef) {
+    return fromDocUris(querydef, null);
+  }
+
+  @Override
   public AccessPlan fromDocUris(CtsQueryExpr querydef, String qualifierName) {
     return new AccessPlanSubImpl(
             this, "op", "from-doc-uris", new Object[]{querydef, (qualifierName == null) ?
             null : xs.string(qualifierName)}
     );
+  }
+
+  @Override
+  public PlanDocColsIdentifier docCols(Map<String, String> descriptorColumnMapping) {
+    return new PlanDocColsIdentifierImpl(descriptorColumnMapping);
   }
 
   public static class PlanDocDescriptorImpl implements PlanDocDescriptor, BaseTypeImpl.BaseArgImpl {
