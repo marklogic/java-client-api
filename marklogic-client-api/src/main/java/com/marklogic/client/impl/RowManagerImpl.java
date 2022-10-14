@@ -142,18 +142,15 @@ public class RowManagerImpl
   }
   @Override
   public <T extends StructureReadHandle> T resultDoc(Plan plan, T resultsHandle, Transaction transaction) {
-    PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
-
-    AbstractWriteHandle astHandle = requestPlan.getHandle();
-
     if (resultsHandle == null) {
       throw new IllegalArgumentException("Must specify a handle to read the row result document");
     }
-
-    RequestParameters params = getParamBindings(requestPlan);
-    addDatatypeStyleParam(params,     getDatatypeStyle());
-    addRowStructureStyleParam(params, getRowStructureStyle());
-
+    PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
+    AbstractWriteHandle astHandle = requestPlan.getHandle();
+    RequestParameters params = new RowsParamsBuilder(requestPlan)
+        .withColumnTypes(getDatatypeStyle())
+        .withOutput(getRowStructureStyle())
+        .getRequestParameters();
     return services.postResource(requestLogger, "rows", transaction, params, astHandle, resultsHandle);
   }
 
@@ -161,14 +158,21 @@ public class RowManagerImpl
   public RowSet<RowRecord> resultRows(Plan plan) {
     return resultRows(plan, (Transaction) null);
   }
+
   @Override
   public RowSet<RowRecord> resultRows(Plan plan, Transaction transaction) {
-    RowSetPart   datatypeStyle     = getDatatypeStyle();
+    RowSetPart datatypeStyle = getDatatypeStyle();
     RowStructure rowStructureStyle = getRowStructureStyle();
 
-    RESTServiceResultIterator iter = makeRequest(
-      plan, "json", datatypeStyle, rowStructureStyle, "reference", transaction
-    );
+    PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
+    RequestParameters params = new RowsParamsBuilder(requestPlan)
+        .withRowFormat("json")
+        .withNodeColumns("reference")
+        .withColumnTypes(datatypeStyle)
+        .withOutput(rowStructureStyle)
+        .getRequestParameters();
+
+    RESTServiceResultIterator iter = submitPlan(requestPlan, params, transaction);
 
     RowSetRecord rowset = new RowSetRecord(
       "json", datatypeStyle, rowStructureStyle, iter, handleRegistry
@@ -177,50 +181,70 @@ public class RowManagerImpl
 
     return rowset;
   }
+
+  @Override
+  public void execute(Plan plan) {
+    execute(plan, null);
+  }
+  
+  @Override
+  public void execute(Plan plan, Transaction transaction) {
+    PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
+    RequestParameters params = new RowsParamsBuilder(requestPlan).withOutput("execute").getRequestParameters();
+    RESTServiceResultIterator iter = submitPlan(requestPlan, params, transaction);
+    if (iter != null) {
+      iter.close();
+    }
+  }
+
   @Override
   public <T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle) {
     return resultRows(plan, rowHandle, (Transaction) null);
   }
+
   @Override
   public <T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction) {
-    RowSetPart   datatypeStyle     = getDatatypeStyle();
+    RowSetPart datatypeStyle = getDatatypeStyle();
     RowStructure rowStructureStyle = getRowStructureStyle();
-
     String rowFormat = getRowFormat(rowHandle);
 
-    RESTServiceResultIterator iter = makeRequest(
-      plan, rowFormat, datatypeStyle, rowStructureStyle, "inline", transaction
-    );
+    PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
+    RequestParameters params = new RowsParamsBuilder(requestPlan)
+        .withRowFormat(rowFormat)
+        .withNodeColumns("inline")
+        .withColumnTypes(datatypeStyle)
+        .withOutput(rowStructureStyle)
+        .getRequestParameters();
 
-    RowSetHandle<T> rowset = new RowSetHandle<>(
-      rowFormat, datatypeStyle, rowStructureStyle, iter, rowHandle
-    );
+    RESTServiceResultIterator iter = submitPlan(requestPlan, params, transaction);
+    RowSetHandle<T> rowset = new RowSetHandle<>(rowFormat, datatypeStyle, rowStructureStyle, iter, rowHandle);
     rowset.init();
-
     return rowset;
   }
+
   @Override
   public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as) {
     return resultRowsAs(plan, as, (Transaction) null);
   }
   @Override
   public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as, Transaction transaction) {
-    RowSetPart   datatypeStyle     = getDatatypeStyle();
-    RowStructure rowStructureStyle = getRowStructureStyle();
-
     ContentHandle<T> rowHandle = handleFor(as);
-
     String rowFormat = getRowFormat(rowHandle);
 
-    RESTServiceResultIterator iter = makeRequest(
-      plan, rowFormat, datatypeStyle, rowStructureStyle, "inline", transaction
-    );
+    RowSetPart datatypeStyle = getDatatypeStyle();
+    RowStructure rowStructureStyle = getRowStructureStyle();
 
-    RowSetObject<T> rowset = new RowSetObject<>(
-      rowFormat, datatypeStyle, rowStructureStyle, iter, rowHandle
-    );
+    PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
+    RequestParameters params = new RowsParamsBuilder(requestPlan)
+        .withRowFormat(rowFormat)
+        .withNodeColumns("inline")
+        .withColumnTypes(datatypeStyle)
+        .withOutput(rowStructureStyle)
+        .getRequestParameters();
+    
+    RESTServiceResultIterator iter = submitPlan(requestPlan, params, transaction);
+    RowSetObject<T> rowset = new RowSetObject<>(rowFormat, datatypeStyle, rowStructureStyle, iter, rowHandle);
     rowset.init();
-
     return rowset;
   }
 
@@ -305,35 +329,6 @@ public class RowManagerImpl
     return handle.get();
   }
 
-  private void addDatatypeStyleParam(RequestParameters params, RowSetPart datatypeStyle) {
-    if (datatypeStyle != null) {
-      switch (datatypeStyle) {
-        case HEADER:
-          params.add("column-types", "header");
-          break;
-        case ROWS:
-          params.add("column-types", "rows");
-          break;
-        default:
-          throw new IllegalStateException("unknown data type style: "+datatypeStyle);
-      }
-    }
-  }
-  private void addRowStructureStyleParam(RequestParameters params, RowStructure rowStructureStyle) {
-    if (rowStructureStyle != null) {
-      switch (rowStructureStyle) {
-        case ARRAY:
-          params.add("output", "array");
-          break;
-        case OBJECT:
-          params.add("output", "object");
-          break;
-        default:
-          throw new IllegalStateException("unknown row structure style: "+rowStructureStyle);
-      }
-    }
-  }
-
   private <T extends AbstractReadHandle> String getRowFormat(T rowHandle) {
     if (rowHandle == null) {
       throw new IllegalArgumentException("Must specify a handle to iterate over the rows");
@@ -356,21 +351,9 @@ public class RowManagerImpl
         throw new IllegalArgumentException("Must use JSON or XML format to iterate rows instead of "+handleFormat.name());
     }
   }
-  private RESTServiceResultIterator makeRequest(
-    Plan plan,
-    String rowFormat, RowSetPart datatypeStyle, RowStructure rowStructureStyle, String nodeCols,
-    Transaction transaction
-  ) {
-    PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
 
+  private RESTServiceResultIterator submitPlan(PlanBuilderBaseImpl.RequestPlan requestPlan, RequestParameters params, Transaction transaction) {
     AbstractWriteHandle astHandle = requestPlan.getHandle();
-
-    RequestParameters params = getParamBindings(requestPlan);
-    params.add("row-format",   rowFormat);
-    params.add("node-columns", nodeCols);
-    addDatatypeStyleParam(params,     datatypeStyle);
-    addRowStructureStyleParam(params, rowStructureStyle);
-
     List<ContentParam> contentParams = requestPlan.getContentParams();
     if (contentParams != null && !contentParams.isEmpty()) {
       contentParams.add(new ContentParam(new PlanBuilderBaseImpl.PlanParamBase("query"), astHandle, null));
@@ -378,6 +361,7 @@ public class RowManagerImpl
     }
     return services.postIteratedResource(requestLogger, "rows", transaction, params, astHandle);
   }
+
   private PlanBuilderBaseImpl.RequestPlan checkPlan(Plan plan) {
     if (plan == null) {
       throw new IllegalArgumentException("Must specify a plan to produce row results");
@@ -388,26 +372,6 @@ public class RowManagerImpl
     }
     return (PlanBuilderBaseImpl.RequestPlan) plan;
   }
-  private RequestParameters getParamBindings(PlanBuilderBaseImpl.RequestPlan requestPlan) {
-    RequestParameters params = new RequestParameters();
-    Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> planParams = requestPlan.getParams();
-    if (planParams != null) {
-      for (Map.Entry<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> entry: planParams.entrySet()) {
-        BaseTypeImpl.ParamBinder binder = entry.getValue();
-
-        StringBuilder nameBuf = new StringBuilder("bind:");
-        nameBuf.append(entry.getKey().getName());
-        String paramQual = binder.getParamQualifier();
-        if (paramQual != null) {
-          nameBuf.append(paramQual);
-        }
-
-        params.add(nameBuf.toString(), binder.getParamValue());
-      }
-    }
-    return params;
-  }
-
   <T> ContentHandle<T> handleFor(Class<T> as) {
     if (as == null) {
       throw new IllegalArgumentException("Must specify a class for content with a registered handle");
