@@ -893,6 +893,19 @@ public interface PlanBuilderBase {
          */
         PlanBuilder.ModifyPlan offsetLimit(XsLongVal start, XsLongVal length);
         /**
+         * Removes (deletes) any document with a URI matching the value of the "uri" column in at least one row in the 
+         * pipeline.
+         * @return a ModifyPlan object
+         */
+        PlanBuilder.ModifyPlan remove();
+        /**
+         * Removes (deletes) any document with a URI matching the value of the given column in at least one row in the
+         * pipeline.
+         * @param uriColumn the column containing URIs to be removed
+         * @return a ModifyPlan object
+         */
+        PlanBuilder.ModifyPlan remove(PlanColumn uriColumn);
+        /**
          * This method restricts the row set to rows matched by the boolean expression. Use boolean composers such as op.and and op.or to combine multiple expressions.
          * @param condition  The boolean expression on which to match. 
          * @return  a ModifyPlan object

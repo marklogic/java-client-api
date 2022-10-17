@@ -1021,6 +1021,16 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
 
     @Override
+    public ModifyPlan remove() {
+      return new ModifyPlanSubImpl(this, "op", "remove", new Object[]{});
+    }
+
+    @Override
+    public ModifyPlan remove(PlanColumn uriColumn) {
+      return new ModifyPlanSubImpl(this, "op", "remove", new Object[]{uriColumn});
+    }
+
+    @Override
     public ModifyPlan where(ServerExpression condition) {
       return new ModifyPlanSubImpl(this, "op", "where", new Object[]{ condition });
     }
