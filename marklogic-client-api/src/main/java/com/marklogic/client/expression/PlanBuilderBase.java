@@ -155,11 +155,15 @@ public interface PlanBuilderBase {
      */
     PlanBuilder.AccessPlan fromLiterals(Map<String,Object>[] rows, XsStringVal qualifierName);
     /**
-     * Provides a convenience equivalent that is equivalent to chaining
-     * {@link PlanBuilder.AccessPlan#fromLexicons(Map, String)},
-     * and {@link PlanBuilder.ModifyPlan#where(CtsQueryExpr)}.
-     * @param querydef This parameter is a cts query.
-     * @param qualifierName  Specifies a name for qualifying the column names similar to a view name.
+     * Construct an {@code AccessPlan} based on the URIs returned by the given query.
+     * @param querydef a CTS query
+     * @return  an AccessPlan object
+     */
+    PlanBuilder.AccessPlan fromDocUris(CtsQueryExpr querydef);
+    /**
+     * Construct an {@code AccessPlan} based on the URIs returned by the given query.
+     * @param querydef a CTS query
+     * @param qualifierName  Optional name for qualifying the column names similar to a view name
      * @return  an AccessPlan object
      */
     PlanBuilder.AccessPlan fromDocUris(CtsQueryExpr querydef, String qualifierName);
@@ -408,6 +412,15 @@ public interface PlanBuilderBase {
      * @return a sequence of column identifiers
      */
     PlanRowColTypesSeq colTypes(PlanRowColTypes... colTypes);
+
+    /**
+     * Construct a mapping of document descriptor column names to names of columns in the plan. The available set of 
+     * document descriptor names are: uri, doc, collections, permissions, metadata, quality, and temporalCollection. 
+     * 
+     * @param descriptorColumnMapping
+     * @return
+     */
+    PlanDocColsIdentifier docCols(Map<String, String> descriptorColumnMapping);
 
     /**
      * Build a single doc descriptor that can be used with {@code fromDocDescriptors}.
