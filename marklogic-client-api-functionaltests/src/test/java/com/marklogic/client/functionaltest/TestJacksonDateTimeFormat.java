@@ -393,7 +393,6 @@ public class TestJacksonDateTimeFormat extends BasicJavaClientREST {
       artifact = pojoReposProducts.read(calTime);
       assertFalse("Test Expecting exception", true);
     } catch (ResourceNotFoundException e) {
-      // TODO Auto-generated catch block
       assertTrue("expected exception", true);
     } catch (Exception e) {
       assertFalse("Test got unexpected", true);

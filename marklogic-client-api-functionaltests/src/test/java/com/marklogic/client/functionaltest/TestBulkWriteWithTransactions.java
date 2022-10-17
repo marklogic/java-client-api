@@ -215,7 +215,6 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 		  }
 		  assertEquals("document count", 102, count);
 	  } catch (Exception e) {
-		  // TODO Auto-generated catch block
 		  e.printStackTrace();
 	  }
 	  finally {
@@ -292,7 +291,6 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 			  }
 		  }
 	  } catch (Exception e) {
-		  // TODO Auto-generated catch block
 		  e.printStackTrace();
 	  }
 	  finally {
@@ -387,7 +385,6 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 			  }
 		  }
 	  } catch (Exception e) {
-		  // TODO Auto-generated catch block
 		  e.printStackTrace();
 	  }
 	  finally {

@@ -321,7 +321,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			try {
 				Thread.currentThread().sleep(7000L);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			throwable.getBatcher().retry(throwable);
@@ -369,7 +368,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			try {
 				Thread.currentThread().sleep(5000L);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -642,7 +640,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 					try {
 						Thread.currentThread().sleep(15000L);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					Set<Thread> threads = Thread.getAllStackTraces().keySet();
@@ -696,7 +693,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 					try {
 						Thread.currentThread().sleep(3000);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					dmManager.stopJob(qb);			

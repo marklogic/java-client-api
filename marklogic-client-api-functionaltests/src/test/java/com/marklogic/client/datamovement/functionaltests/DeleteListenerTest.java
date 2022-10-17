@@ -476,7 +476,6 @@ public class DeleteListenerTest extends BasicJavaClientREST {
             try {
               Thread.currentThread().sleep(50L);
             } catch (InterruptedException e) {
-              // TODO Auto-generated catch block
               e.printStackTrace();
             }
 
@@ -497,7 +496,6 @@ public class DeleteListenerTest extends BasicJavaClientREST {
             try {
               Thread.currentThread().sleep(30L);
             } catch (InterruptedException e) {
-              // TODO Auto-generated catch block
               e.printStackTrace();
             }
 
@@ -575,7 +573,6 @@ public class DeleteListenerTest extends BasicJavaClientREST {
             try {
               Thread.currentThread().sleep(100L);
             } catch (InterruptedException e) {
-              // TODO Auto-generated catch block
               e.printStackTrace();
             }
 

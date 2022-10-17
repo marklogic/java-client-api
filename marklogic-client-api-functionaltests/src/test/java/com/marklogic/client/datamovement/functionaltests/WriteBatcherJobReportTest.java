@@ -656,7 +656,6 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 			try {
 				Thread.currentThread().sleep(20000L);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			ihbMT.retry(batch);
