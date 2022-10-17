@@ -128,10 +128,8 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
         setbCompleted(true);
 
       } catch (ForbiddenUserException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       } catch (FailedRequestException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       } finally {
         if (t2 != null) {
@@ -184,10 +182,8 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
         setbCompleted(true);
 
       } catch (ForbiddenUserException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       } catch (FailedRequestException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
       if (t2 != null) {
@@ -2048,7 +2044,6 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
     try {
       Thread.sleep(3000);
     } catch (InterruptedException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
     qdef = null;

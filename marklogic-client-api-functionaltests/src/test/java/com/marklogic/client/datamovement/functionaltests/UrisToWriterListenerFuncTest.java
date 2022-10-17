@@ -278,7 +278,6 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
         File file = new File(uriFile);
         file.deleteOnExit();
       } catch (Exception e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     }
@@ -411,7 +410,6 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
         File file = new File(uriFile);
         file.deleteOnExit();
       } catch (Exception e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     }
@@ -728,7 +726,6 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
         File file = new File(uriFile);
         file.deleteOnExit();
       } catch (Exception e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     }
@@ -889,7 +886,6 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
         File file = new File(uriFile);
         file.deleteOnExit();
       } catch (Exception e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     }
@@ -1007,7 +1003,6 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
         File file2 = new File(uriFile2);
         file2.deleteOnExit();
       } catch (Exception e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     }
@@ -1120,7 +1115,6 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
         File file = new File(uriFile);
         file.deleteOnExit();
       } catch (Exception e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     }
@@ -1202,7 +1196,6 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
                 try {
                   Thread.sleep(5000);
                 } catch (Exception e) {
-                  // TODO Auto-generated catch block
                   e.printStackTrace();
                 }
                 return "";

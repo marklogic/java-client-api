@@ -225,19 +225,14 @@ public class TestSSLConnection extends BasicJavaClientREST {
 
 		@Override
 		public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public X509Certificate[] getAcceptedIssuers() {
-			// TODO Auto-generated method stub
 			return null;
 		}}).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8033, secContext, getConnType());
@@ -294,19 +289,14 @@ public class TestSSLConnection extends BasicJavaClientREST {
 
 		@Override
 		public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public X509Certificate[] getAcceptedIssuers() {
-			// TODO Auto-generated method stub
 			return null;
 		}}).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8011, secContext, getConnType());
@@ -363,19 +353,14 @@ public class TestSSLConnection extends BasicJavaClientREST {
 
 		@Override
 		public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public X509Certificate[] getAcceptedIssuers() {
-			// TODO Auto-generated method stub
 			return null;
 		}}).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8012, secContext, getConnType());
@@ -436,19 +421,14 @@ public class TestSSLConnection extends BasicJavaClientREST {
 
 		@Override
 		public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public X509Certificate[] getAcceptedIssuers() {
-			// TODO Auto-generated method stub
 			return null;
 		}}).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8012, secContext, getConnType());

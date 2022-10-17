@@ -626,7 +626,6 @@ public class TestMetadata extends BasicJavaClientREST {
       try {
         Thread.sleep(5000);
       } catch (InterruptedException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
 
@@ -704,7 +703,6 @@ public class TestMetadata extends BasicJavaClientREST {
       try {
         Thread.sleep(5000);
       } catch (InterruptedException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
       // Validate the meta-data.

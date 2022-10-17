@@ -347,7 +347,6 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
     assertTrue("Did not find expected content after inserting the triples:: Found: " + readContent,
         readContent.contains("/publications/journals/Journal1/1940"));
 	} catch (Exception e) {
-		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
 	finally {
@@ -1124,7 +1123,6 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 			while ((line = br.readLine()) != null)
 				readContentSB.append(line);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		finally {

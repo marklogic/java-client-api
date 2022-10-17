@@ -2259,7 +2259,6 @@ public abstract class ConnectedRESTQA {
 		try {
 			Thread.sleep(2000);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -2372,13 +2371,10 @@ public abstract class ConnectedRESTQA {
 				client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), user, password,
 						authType);
 		} catch (CertificateException certEx) {
-			// TODO Auto-generated catch block
 			certEx.printStackTrace();
 		} catch (KeyStoreException ksEx) {
-			// TODO Auto-generated catch block
 			ksEx.printStackTrace();
 		} catch (UnrecoverableKeyException unReovkeyEx) {
-			// TODO Auto-generated catch block
 			unReovkeyEx.printStackTrace();
 		}
 		return client;
@@ -2416,13 +2412,10 @@ public abstract class ConnectedRESTQA {
 				client = DatabaseClientFactory.newClient(hostName, port, databaseName, secContext, connType);
 			}
 		} catch (CertificateException certEx) {
-			// TODO Auto-generated catch block
 			certEx.printStackTrace();
 		} catch (KeyStoreException ksEx) {
-			// TODO Auto-generated catch block
 			ksEx.printStackTrace();
 		} catch (UnrecoverableKeyException unReovkeyEx) {
-			// TODO Auto-generated catch block
 			unReovkeyEx.printStackTrace();
 		}
 		return client;

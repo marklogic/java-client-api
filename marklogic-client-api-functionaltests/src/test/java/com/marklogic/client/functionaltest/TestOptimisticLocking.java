@@ -722,7 +722,6 @@ public class TestOptimisticLocking extends BasicJavaClientREST {
 	  try {
 		  Thread.sleep(40000L);
 	  } catch (InterruptedException e) {
-		  // TODO Auto-generated catch block
 		  e.printStackTrace();
 	  }
 	  for (String filename : filenames2) {
@@ -732,7 +731,6 @@ public class TestOptimisticLocking extends BasicJavaClientREST {
 	  try {
 		  Thread.sleep(35000L);
 	  } catch (InterruptedException e) {
-		  // TODO Auto-generated catch block
 		  e.printStackTrace();
 	  }
 	  for (String filename : filenames3) {
@@ -741,7 +739,6 @@ public class TestOptimisticLocking extends BasicJavaClientREST {
 	  try {
 		  Thread.sleep(35000L);
 	  } catch (InterruptedException e) {
-		  // TODO Auto-generated catch block
 		  e.printStackTrace();
 	  }
 	  

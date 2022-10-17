@@ -128,7 +128,6 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
 		System.out.println("Document count test1ReadMultipleTextDoc " + count);
 		assertEquals("document count", 102, count);
 	} catch (Exception e) {
-		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
     finally {
@@ -181,7 +180,6 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
 		System.out.println("Document count test2ReadMultipleXMLDoc " + count);
 		assertEquals("document count", 102, count);
 	} catch (Exception e) {
-		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
     finally {
@@ -249,7 +247,6 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
 		System.out.println("Document count test3ReadMultipleBinaryDoc " + count);
 		assertEquals("document count", 1, count);
 	} catch (Exception e) {
-		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
     finally {
@@ -311,7 +308,6 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
 		System.out.println("Document count test4WriteMultipleJSONDocs " + count);
 		assertEquals("document count", 102, count);
 	} catch (Exception e) {
-		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
     finally {
@@ -410,7 +406,6 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
 		assertEquals("binary document count", isLBHost()?1:10, countJpg);
 		assertEquals("Json document count", 10, countJson);
 	} catch (Exception e) {
-		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
     finally {
@@ -467,7 +462,6 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
 		System.out.println("Document count test6CloseMethodforReadMultipleDoc " + count);
 		assertEquals("document count", 10, count);
 	} catch (Exception e) {
-		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
     finally {

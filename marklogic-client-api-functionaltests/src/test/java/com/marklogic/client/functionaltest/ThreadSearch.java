@@ -74,9 +74,7 @@ public class ThreadSearch extends BasicJavaClientREST implements Runnable {
 
       // release client
       client.release();
-    } catch (KeyManagementException | NoSuchAlgorithmException
-        | IOException e1) {
-      // TODO Auto-generated catch block
+    } catch (KeyManagementException | NoSuchAlgorithmException | IOException e1) {
       e1.printStackTrace();
     }
   }

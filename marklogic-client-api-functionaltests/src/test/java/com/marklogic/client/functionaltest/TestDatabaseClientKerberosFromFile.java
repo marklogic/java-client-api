@@ -1066,7 +1066,6 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
 
       associateRESTServerWithKerberosExtSecurity(UberrestServerName, extSecurityName);
     } catch (Exception e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
 
@@ -1095,7 +1094,6 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
       // Associate database to Documentst on App-Services.
       associateRESTServerWithDB(UberrestServerName, "Documents");
     } catch (Exception e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
 

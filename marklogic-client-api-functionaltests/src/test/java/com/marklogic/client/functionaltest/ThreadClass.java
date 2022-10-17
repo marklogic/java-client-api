@@ -52,9 +52,7 @@ public class ThreadClass extends BasicJavaClientREST implements Runnable {
 
       // release client
       client.release();
-    } catch (KeyManagementException | NoSuchAlgorithmException
-        | IOException e) {
-      // TODO Auto-generated catch block
+    } catch (KeyManagementException | NoSuchAlgorithmException | IOException e) {
       e.printStackTrace();
     }
 
