@@ -1,4 +1,4 @@
-package com.marklogic.client.test;
+package com.marklogic.client.test.rows;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.FailedRequestException;
@@ -10,6 +10,8 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowRecord;
+import com.marklogic.client.test.Common;
+
 import org.junit.Test;
 
 import java.util.List;

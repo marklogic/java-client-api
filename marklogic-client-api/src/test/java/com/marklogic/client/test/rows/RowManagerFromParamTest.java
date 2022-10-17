@@ -1,4 +1,4 @@
-package com.marklogic.client.test;
+package com.marklogic.client.test.rows;
 
 import static org.junit.Assert.assertEquals;
 
@@ -21,6 +21,7 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowRecord;
+import com.marklogic.client.test.Common;
 import com.marklogic.client.type.PlanParamExpr;
 
 /**

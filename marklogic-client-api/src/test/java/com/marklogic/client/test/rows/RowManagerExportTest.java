@@ -1,4 +1,4 @@
-package com.marklogic.client.test;
+package com.marklogic.client.test.rows;
 
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.io.DocumentMetadataHandle;

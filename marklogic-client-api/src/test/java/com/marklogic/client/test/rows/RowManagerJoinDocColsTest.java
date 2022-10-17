@@ -1,4 +1,4 @@
-package com.marklogic.client.test;
+package com.marklogic.client.test.rows;
 
 import static org.junit.Assert.assertEquals;
 

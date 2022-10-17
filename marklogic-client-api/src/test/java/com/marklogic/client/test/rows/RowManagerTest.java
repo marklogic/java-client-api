@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.test;
+package com.marklogic.client.test.rows;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.assertArrayEquals;
@@ -48,6 +48,7 @@ import com.marklogic.client.row.*;
 import com.marklogic.client.type.*;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -62,6 +63,7 @@ import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.row.RowManager.RowSetPart;
 import com.marklogic.client.row.RowManager.RowStructure;
 import com.marklogic.client.row.RowRecord.ColumnKind;
+import com.marklogic.client.test.Common;
 import com.marklogic.client.util.EditableNamespaceContext;
 
 public class RowManagerTest {
@@ -209,6 +211,8 @@ public class RowManagerTest {
   }
 
   @Test
+  @Ignore("Causing eventual segfaults, see https://bugtrack.marklogic.com/57916")
+
   public void testResultDoc() throws IOException, XPathExpressionException {
     RowManager rowMgr = Common.client.newRowManager();
 
@@ -330,6 +334,7 @@ public class RowManagerTest {
     }
   }
   @Test
+  @Ignore("Causing eventual segfaults, see https://bugtrack.marklogic.com/57916")
   public void testResultRows() throws IOException, XPathExpressionException {
     RowManager rowMgr = Common.client.newRowManager();
 
@@ -418,6 +423,7 @@ public class RowManagerTest {
     }
   }
   @Test
+  @Ignore("Causing eventual segfaults, see https://bugtrack.marklogic.com/57916")
   public void testResultRowDocs()
     throws IOException, XPathExpressionException, TransformerConfigurationException, TransformerException, TransformerFactoryConfigurationError, SAXException
   {

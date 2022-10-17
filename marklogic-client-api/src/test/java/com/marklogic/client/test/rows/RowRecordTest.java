@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.test;
+package com.marklogic.client.test.rows;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -38,6 +38,7 @@ import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
+import com.marklogic.client.test.Common;
 import com.marklogic.client.type.ItemVal;
 import com.marklogic.client.type.PlanExprCol;
 import com.marklogic.client.type.PlanPrefixer;
