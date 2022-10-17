@@ -43,9 +43,7 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
         plan = plan.bindParam("myDocs", writeSet);
 
         List<RowRecord> rows = rowManager.resultRows(plan).stream().collect(Collectors.toList());
-        // TODO Is this expected - that we don't get any rows back?
-        // See - https://bugtrack.marklogic.com/57902
-        assertEquals(0, rows.size());
+        assertEquals(1, rows.size());
 
         verifyMetadata("/fromParam/doc1.json", docMetadata -> {
             assertEquals(2, docMetadata.getQuality());
@@ -68,7 +66,8 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
         writeSet.add("/fromParam/doc2.xml", metadata, new StringHandle("<doc>2</doc>").withFormat(Format.XML));
         plan = plan.bindParam("myDocs", writeSet);
 
-        rowManager.execute(plan);
+        List<RowRecord> rows = rowManager.resultRows(plan).stream().collect(Collectors.toList());
+        assertEquals(2, rows.size());
 
         verifyXmlDoc("/fromParam/doc1.xml", "<doc>1</doc>");
         verifyXmlDoc("/fromParam/doc2.xml", "<doc>2</doc>");
