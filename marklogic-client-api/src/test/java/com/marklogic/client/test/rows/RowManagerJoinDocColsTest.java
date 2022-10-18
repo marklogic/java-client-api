@@ -12,6 +12,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.row.RowRecord;
+import com.marklogic.client.test.Common;
 
 public class RowManagerJoinDocColsTest extends AbstractRowManagerTest {
 
@@ -20,12 +21,16 @@ public class RowManagerJoinDocColsTest extends AbstractRowManagerTest {
 
     @Test
     public void defaultColumns() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
         PlanBuilder.Plan plan = op
                 .fromDocUris(op.cts.directoryQuery(MUSICIAN_DIRECTORY))
                 .joinDocCols(op.docCols(), op.col("uri"))
                 .orderBy(op.col("uri"));
 
-        List<RowRecord> rows = rowManager.resultRows(plan).stream().collect(Collectors.toList());
+        List<RowRecord> rows = resultRows(plan);
         assertEquals(4, rows.size());
 
         RowRecord firstRow = rows.get(0);
@@ -37,6 +42,10 @@ public class RowManagerJoinDocColsTest extends AbstractRowManagerTest {
 
     @Test
     public void customColumns() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+        
         Map<String, String> columns = new HashMap<>();
         columns.put("doc", "doc2");
         columns.put("quality", "myQuality");
@@ -46,7 +55,7 @@ public class RowManagerJoinDocColsTest extends AbstractRowManagerTest {
                 .joinDocCols(op.docCols(columns), op.col("uri"))
                 .orderBy(op.col("uri"));
 
-        List<RowRecord> rows = rowManager.resultRows(plan).stream().collect(Collectors.toList());
+        List<RowRecord> rows = resultRows(plan);
         assertEquals(4, rows.size());
 
         RowRecord firstRow = rows.get(0);

@@ -46,7 +46,7 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
                 new JacksonHandle(new ObjectMapper().createObjectNode().put("value", 1)));
         plan = plan.bindParam("myDocs", writeSet);
 
-        List<RowRecord> rows = rowManager.resultRows(plan).stream().collect(Collectors.toList());
+        List<RowRecord> rows = resultRows(plan);
         assertEquals(1, rows.size());
 
         verifyMetadata("/fromParam/doc1.json", docMetadata -> {
@@ -70,7 +70,7 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
         writeSet.add("/fromParam/doc2.xml", metadata, new StringHandle("<doc>2</doc>").withFormat(Format.XML));
         plan = plan.bindParam("myDocs", writeSet);
 
-        List<RowRecord> rows = rowManager.resultRows(plan).stream().collect(Collectors.toList());
+        List<RowRecord> rows = resultRows(plan);
         assertEquals(2, rows.size());
 
         verifyXmlDoc("/fromParam/doc1.xml", "<doc>1</doc>");

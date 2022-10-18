@@ -24,6 +24,10 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
 
     @Test
     public void writeWithAllMetadata() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
         DocumentMetadataHandle metadata = new DocumentMetadataHandle();
         metadata.getCollections().addAll("docDescriptors1", "docDescriptors2");
         metadata.setQuality(2);
@@ -50,6 +54,10 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
 
     @Test
     public void writeIndividualDocDescriptors() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
         DocumentMetadataHandle metadata = new DocumentMetadataHandle();
         ObjectNode doc1 = mapper.createObjectNode().put("hello", "doc1");
         ObjectNode doc2 = mapper.createObjectNode().put("hello", "doc2");
@@ -72,6 +80,10 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
     @Test
     @Ignore("Known issue, erroneously does a temporal.documentInsert - see https://bugtrack.marklogic.com/57850")
     public void documentWriteSetWithQualifier() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
         final String uri = "/fromParam/doc1.json";
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
         ObjectNode content = mapper.createObjectNode().put("hello", "world");
@@ -85,6 +97,10 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
 
     @Test
     public void writingNonJsonContentShouldFail() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
         writeSet.add("/fromParam/doc1.xml", new DocumentMetadataHandle(),
                 new StringHandle("<doc>1</doc>").withFormat(Format.XML));
@@ -102,6 +118,10 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
 
     @Test
     public void testExport() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+        
         DocumentMetadataHandle metadata = new DocumentMetadataHandle();
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
         writeSet.add("/fromParam/doc1.json", metadata, new JacksonHandle(mapper.createObjectNode().put("hello", "doc1")));

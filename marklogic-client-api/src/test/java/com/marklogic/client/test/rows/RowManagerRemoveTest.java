@@ -26,14 +26,9 @@ public class RowManagerRemoveTest extends AbstractRowManagerTest {
 
         writeThreeXmlDocuments();
 
-        ModifyPlan plan = op
-                .fromDocUris(
-                        op.cts.orQuery(
-                                op.cts.documentQuery("/fromParam/doc1.xml"),
-                                op.cts.documentQuery("/fromParam/doc3.xml")))
-                .remove();
-
-        rowManager.execute(plan);
+        rowManager.execute(op
+                .fromDocUris("/fromParam/doc1.xml", "/fromParam/doc3.xml")
+                .remove());
         verifyDocsDeleted();
     }
 
@@ -46,14 +41,9 @@ public class RowManagerRemoveTest extends AbstractRowManagerTest {
 
         writeThreeXmlDocuments();
 
-        ModifyPlan plan = op
-                .fromDocUris(
-                        op.cts.orQuery(
-                                op.cts.documentQuery("/fromParam/doc1.xml"),
-                                op.cts.documentQuery("/fromParam/doc3.xml")))
-                .remove(op.col("uri"));
-
-        rowManager.execute(plan);
+        rowManager.execute(op
+                .fromDocUris("/fromParam/doc1.xml", "/fromParam/doc3.xml")
+                .remove(op.col("uri")));
         verifyDocsDeleted();
     }
 
