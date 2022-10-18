@@ -13,6 +13,7 @@ import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
