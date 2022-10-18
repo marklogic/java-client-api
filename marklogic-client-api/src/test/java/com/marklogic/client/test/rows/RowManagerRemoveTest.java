@@ -1,4 +1,4 @@
-package com.marklogic.client.test;
+package com.marklogic.client.test.rows;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -14,6 +14,7 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.test.Common;
 
 public class RowManagerRemoveTest extends AbstractRowManagerTest {
 
