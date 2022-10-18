@@ -48,7 +48,6 @@ import com.marklogic.client.row.*;
 import com.marklogic.client.type.*;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -211,8 +210,6 @@ public class RowManagerTest {
   }
 
   @Test
-  @Ignore("Causing eventual segfaults, see https://bugtrack.marklogic.com/57916")
-
   public void testResultDoc() throws IOException, XPathExpressionException {
     RowManager rowMgr = Common.client.newRowManager();
 
@@ -334,7 +331,6 @@ public class RowManagerTest {
     }
   }
   @Test
-  @Ignore("Causing eventual segfaults, see https://bugtrack.marklogic.com/57916")
   public void testResultRows() throws IOException, XPathExpressionException {
     RowManager rowMgr = Common.client.newRowManager();
 
@@ -423,7 +419,6 @@ public class RowManagerTest {
     }
   }
   @Test
-  @Ignore("Causing eventual segfaults, see https://bugtrack.marklogic.com/57916")
   public void testResultRowDocs()
     throws IOException, XPathExpressionException, TransformerConfigurationException, TransformerException, TransformerFactoryConfigurationError, SAXException
   {
