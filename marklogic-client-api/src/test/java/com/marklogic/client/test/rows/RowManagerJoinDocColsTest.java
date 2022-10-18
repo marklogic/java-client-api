@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.row.RowRecord;
 
-// Relevant bug - https://bugtrack.marklogic.com/57924 
 public class RowManagerJoinDocColsTest extends AbstractRowManagerTest {
 
     // 4 musician documents are expected to be in this directory via mlDeploy

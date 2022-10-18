@@ -3,6 +3,7 @@ package com.marklogic.client.test.rows;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
@@ -161,6 +162,41 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
         verifyXmlDoc("/fromParam/doc2.xml", "<doc>2</doc>");
     }
 
+    @Test
+    @Ignore("See https://bugtrack.marklogic.com/57895")
+    public void temporalTest() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        String contents = "<test>" +
+                "<system-start>2014-08-10T00:00:00Z</system-start>" +
+                "<system-end>2014-08-20T00:00:00Z</system-end>" +
+                "<valid-start>2014-08-15T00:00:00Z</valid-start>" +
+                "<valid-end>2014-08-17T00:00:01Z</valid-end>" +
+                "</test>";
+
+        PlanBuilder.Plan plan = op.fromParam("myDocs", "", op.docColTypes()).write();
+
+        final String temporalCollection = "temporal-collection";
+        DocumentMetadataHandle metadata = new DocumentMetadataHandle();
+        DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
+        writeSet.add("/fromParam/doc1-temporal.xml", metadata, new StringHandle(contents).withFormat(Format.XML), temporalCollection);
+        writeSet.add("/fromParam/doc2-temporal.xml", metadata, new StringHandle(contents).withFormat(Format.XML), temporalCollection);
+        plan = plan.bindParam("myDocs", writeSet);
+
+        rowManager.resultRows(plan);
+
+        verifyXmlDoc("/fromParam/doc1-temporal.xml", contents);
+        verifyXmlDoc("/fromParam/doc2-temporal.xml", contents);
+
+        XMLDocumentManager mgr = Common.client.newXMLDocumentManager();
+        metadata = mgr.readMetadata("/fromParam/doc1-temporal.xml", new DocumentMetadataHandle());
+        assertTrue("The document should be in the 'latest' collection if it was correctly inserted via " +
+                "temporal.documentInsert", metadata.getCollections().contains("latest"));
+        assertTrue(metadata.getCollections().contains(temporalCollection));
+    }
+    
     private void verifyXmlDoc(String uri, String expectedContent) {
         StringHandle doc = Common.client.newXMLDocumentManager().read(uri, new StringHandle());
         assertEquals(Format.XML, doc.getFormat());
