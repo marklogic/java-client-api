@@ -3,6 +3,7 @@ package com.marklogic.client.test.rows;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.expression.PlanBuilder;
+import com.marklogic.client.expression.PlanBuilder.Plan;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
@@ -46,17 +47,13 @@ public abstract class AbstractRowManagerTest {
     protected final void verifyExportedPlanReturnsSameRowCount(PlanBuilder.ExportablePlan plan,
                                                                Function<PlanBuilder.Plan, PlanBuilder.Plan> bindingFunction) {
         PlanBuilder.Plan planToExecute = bindingFunction != null ? bindingFunction.apply(plan) : plan;
-        List<RowRecord> rowsFromPlan = rowManager
-                .resultRows(planToExecute)
-                .stream().collect(Collectors.toList());
+        List<RowRecord> rowsFromPlan = resultRows(planToExecute);
 
         String exportedPlan = plan.exportAs(String.class);
         RawPlanDefinition rawPlan = rowManager.newRawPlanDefinition(new StringHandle(exportedPlan));
         PlanBuilder.Plan rawPlanToExecute = bindingFunction != null ? bindingFunction.apply(rawPlan) : rawPlan;
 
-        List<RowRecord> rowsFromExportedPlan = rowManager
-                .resultRows(rawPlanToExecute)
-                .stream().collect(Collectors.toList());
+        List<RowRecord> rowsFromExportedPlan = resultRows(rawPlanToExecute);
         assertEquals("The row count from the exported list should match that of the rows from the original plan",
                 rowsFromPlan.size(), rowsFromExportedPlan.size());
     }
@@ -72,5 +69,15 @@ public abstract class AbstractRowManagerTest {
     protected final String getRowContentWithoutXmlDeclaration(RowRecord row, String columnName) {
         String content = row.getContentAs(columnName, String.class);
         return content.replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n", "");
+    }
+
+    /**
+     * Convenience method for executing a plan and getting the rows back as a list.
+     * 
+     * @param plan
+     * @return
+     */
+    protected final List<RowRecord> resultRows(Plan plan) {
+        return rowManager.resultRows(plan).stream().collect(Collectors.toList());
     }
 }

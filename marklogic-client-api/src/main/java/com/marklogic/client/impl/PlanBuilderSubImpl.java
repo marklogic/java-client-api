@@ -204,6 +204,11 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   @Override
+  public AccessPlan fromDocUris(String... uris) {
+    return fromDocUris(this.cts.documentQuery(xs.stringSeq(uris)));
+  }
+
+  @Override
   public AccessPlan fromDocUris(CtsQueryExpr querydef) {
     return fromDocUris(querydef, null);
   }
@@ -993,6 +998,16 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     @Override
     public ModifyPlan limit(PlanParamExpr length) {
       return new ModifyPlanSubImpl(this, "op", "limit", new Object[]{ length });
+    }
+    
+    @Override
+    public ModifyPlan lockForUpdate() {
+      return new ModifyPlanSubImpl(this, "op", "lockForUpdate", new Object[]{});
+    }
+
+    @Override
+    public ModifyPlan lockForUpdate(PlanColumn uriColumn) {
+      return new ModifyPlanSubImpl(this, "op", "lockForUpdate", new Object[]{uriColumn});
     }
 
     @Override

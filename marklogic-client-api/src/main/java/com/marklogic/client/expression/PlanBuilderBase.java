@@ -168,6 +168,13 @@ public interface PlanBuilderBase {
      */
     PlanBuilder.AccessPlan fromDocUris(CtsQueryExpr querydef, String qualifierName);
     /**
+     * Convenience method for constructing an {@code AccessPlan} based on a given set of URIs.
+     * 
+     * @param uris one or more URIs to pass into a {@code cts.documentQuery}
+     * @return an AccessPlanObject
+     */
+    PlanBuilder.AccessPlan fromDocUris(String... uris);
+    /**
      * This function constructs a JSON object with the specified properties. The object can be used as the value of a column in a row or passed to a builtin function.
      * <p>
      * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-object" target="mlserverdoc">op:json-object</a>
@@ -860,6 +867,17 @@ public interface PlanBuilderBase {
          * @return  a ModifyPlan object
          */
         PlanBuilder.ModifyPlan limit(PlanParamExpr length);
+        /**
+         * Acquires exclusive locks on the URI in the "uri" column of each row in the pipeline.
+         * @return a ModifyPlan object
+         */
+        PlanBuilder.ModifyPlan lockForUpdate();
+        /**
+         * Acquires exclusive locks on the URI in the given column of each row in the pipeline.
+         * @param uriColumn the column containing URIs to be locked
+         * @return a ModifyPlan object
+         */
+        PlanBuilder.ModifyPlan lockForUpdate(PlanColumn uriColumn);
         /**
          * This method returns a subset of the rows in the result set by skipping the number of rows specified by start and returning the remaining rows up to the number specified by the prototype.limit method.
          * @param start  The number of rows to skip. 

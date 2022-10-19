@@ -48,7 +48,7 @@ public class RowManagerFromParamTest extends AbstractRowManagerTest {
         array.addObject().put("lastName", "Jones").put("firstName", "Jack");
         plan = plan.bindParam("myDocs", new JacksonHandle(array), null);
 
-        List<RowRecord> rows = rowManager.resultRows(plan).stream().collect(Collectors.toList());
+        List<RowRecord> rows = resultRows(plan);
         assertEquals(2, rows.size());
         assertEquals("Jane", rows.get(0).getString("firstName"));
         assertEquals("Smith", rows.get(0).getString("lastName"));
@@ -77,7 +77,7 @@ public class RowManagerFromParamTest extends AbstractRowManagerTest {
         attachments.put("doc2.xml", new StringHandle("<doc>2</doc>").withFormat(Format.XML));
         plan = plan.bindParam(param, new JacksonHandle(array), Collections.singletonMap("doc", attachments));
 
-        List<RowRecord> rows = rowManager.resultRows(plan).stream().collect(Collectors.toList());
+        List<RowRecord> rows = resultRows(plan);
         assertEquals(2, rows.size());
 
         RowRecord row = rows.get(0);
@@ -108,7 +108,7 @@ public class RowManagerFromParamTest extends AbstractRowManagerTest {
         attachments.put("doc2.bin", new BytesHandle("<doc>2</doc>".getBytes()).withFormat(Format.BINARY));
         plan = plan.bindParam("bindingParam", new JacksonHandle(array), Collections.singletonMap("doc", attachments));
 
-        List<RowRecord> rows = rowManager.resultRows(plan).stream().collect(Collectors.toList());
+        List<RowRecord> rows = resultRows(plan);
         assertEquals(2, rows.size());
 
         RowRecord row = rows.get(0);
@@ -139,7 +139,7 @@ public class RowManagerFromParamTest extends AbstractRowManagerTest {
         attachments.put("doc2.txt", new StringHandle("doc2-text").withFormat(Format.TEXT));
         plan = plan.bindParam("bindingParam", new JacksonHandle(array), Collections.singletonMap("doc", attachments));
 
-        List<RowRecord> rows = rowManager.resultRows(plan).stream().collect(Collectors.toList());
+        List<RowRecord> rows = resultRows(plan);
         assertEquals(2, rows.size());
 
         RowRecord row = rows.get(0);
@@ -214,7 +214,7 @@ public class RowManagerFromParamTest extends AbstractRowManagerTest {
         attachments.put("doc2.xml", new StringHandle("<doc>2</doc>").withFormat(Format.XML));
         PlanBuilder.Plan plan = rawPlan.bindParam(param, new JacksonHandle(array), Collections.singletonMap("doc", attachments));
 
-        List<RowRecord> rows = rowManager.resultRows(plan).stream().collect(Collectors.toList());
+        List<RowRecord> rows = resultRows(plan);
         assertEquals(2, rows.size());
 
         RowRecord row = rows.get(0);
@@ -257,7 +257,7 @@ public class RowManagerFromParamTest extends AbstractRowManagerTest {
         columnAttachments.put("otherDoc", attachments);
         plan = plan.bindParam(param, new JacksonHandle(array), columnAttachments);
 
-        List<RowRecord> rows = rowManager.resultRows(plan).stream().collect(Collectors.toList());
+        List<RowRecord> rows = resultRows(plan);
         assertEquals(2, rows.size());
 
         RowRecord row = rows.get(0);
@@ -284,7 +284,7 @@ public class RowManagerFromParamTest extends AbstractRowManagerTest {
         writeSet.add("/fromParam/doc1.xml", metadata, new StringHandle("<doc>1</doc>").withFormat(Format.XML));
         plan = plan.bindParam("myDocs", writeSet);
 
-        List<RowRecord> rows = rowManager.resultRows(plan).stream().collect(Collectors.toList());
+        List<RowRecord> rows = resultRows(plan);
         assertEquals(1, rows.size());
         RowRecord row = rows.get(0);
         assertEquals("/fromParam/doc1.xml", row.getString("uri"));
