@@ -1698,6 +1698,11 @@ public class RowManagerImpl
     }
 
     @Override
+    public Plan bindParam(String param, AbstractWriteHandle content) {
+      return bindParam(new PlanBuilderBaseImpl.PlanParamBase(param), content, null);
+    }
+
+    @Override
     public Plan bindParam(String param, AbstractWriteHandle content, Map<String, Map<String, AbstractWriteHandle>> columnAttachments) {
       return bindParam(new PlanBuilderBaseImpl.PlanParamBase(param), content, columnAttachments);
     }
