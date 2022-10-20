@@ -23,12 +23,10 @@ public class RowManagerLockForUpdateTest extends AbstractRowManagerTest {
         }
 
         final String uri = "/fromParam/doc1.json";
-        DocumentMetadataHandle metadata = new DocumentMetadataHandle();
 
         // Write a document
         rowManager.execute(op.fromDocDescriptors(
-                op.docDescriptor(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE, uri, metadata,
-                        new JacksonHandle(mapper.createObjectNode().put("hello", "world")))))
+                op.docDescriptor(newWriteOp(uri, new JacksonHandle(mapper.createObjectNode().put("hello", "world")))))
                 .write());
         verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
 
@@ -43,8 +41,7 @@ public class RowManagerLockForUpdateTest extends AbstractRowManagerTest {
 
         // Verify it can be updated - i.e. the lock was released in the previous call
         rowManager.execute(op.fromDocDescriptors(
-                op.docDescriptor(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE, uri, metadata,
-                        new JacksonHandle(mapper.createObjectNode().put("hello", "modified")))))
+                op.docDescriptor(newWriteOp(uri, new JacksonHandle(mapper.createObjectNode().put("hello", "modified")))))
                 .write());
         verifyJsonDoc(uri, doc -> assertEquals("modified", doc.get("hello").asText()));
     }

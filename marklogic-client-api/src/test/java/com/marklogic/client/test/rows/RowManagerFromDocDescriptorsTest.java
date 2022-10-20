@@ -10,9 +10,9 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
+import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
@@ -50,6 +50,22 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
             assertTrue(docMetadata.getCollections().contains("docDescriptors1"));
             assertTrue(docMetadata.getCollections().contains("docDescriptors2"));
         });
+
+        // Now update only the collections
+        metadata = new DocumentMetadataHandle().withCollections("updatedColl1", "updatedColl2");
+        ModifyPlan updatePlan = op
+                .fromDocDescriptors(op.docDescriptor(new DocumentWriteOperationImpl(uri, metadata, null)))
+                .write(op.docCols(new String[] { "uri", "collections" }));
+        rowManager.execute(updatePlan);
+
+        // Verify only collections were updated
+        verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
+        verifyMetadata(uri, docMetadata -> {
+            assertEquals(2, docMetadata.getQuality());
+            assertEquals(2, docMetadata.getCollections().size());
+            assertTrue(docMetadata.getCollections().contains("updatedColl1"));
+            assertTrue(docMetadata.getCollections().contains("updatedColl2"));
+        });
     }
 
     @Test
@@ -63,13 +79,10 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
         ObjectNode doc2 = mapper.createObjectNode().put("hello", "doc2");
 
         PlanBuilder.AccessPlan plan = op.fromDocDescriptors(
-                op.docDescriptor(new DocumentWriteOperationImpl(DocumentWriteOperation.OperationType.DOCUMENT_WRITE,
-                        "/fromParam/doc1.json", metadata, new JacksonHandle(doc1))
-                ),
-                op.docDescriptor(new DocumentWriteOperationImpl(DocumentWriteOperation.OperationType.DOCUMENT_WRITE,
-                        "/fromParam/doc2.json", metadata, new JacksonHandle(doc2))
-                )
-        );
+                op.docDescriptor(
+                        new DocumentWriteOperationImpl("/fromParam/doc1.json", metadata, new JacksonHandle(doc1))),
+                op.docDescriptor(
+                        new DocumentWriteOperationImpl("/fromParam/doc2.json", metadata, new JacksonHandle(doc2))));
         verifyExportedPlanReturnsSameRowCount(plan);
 
         rowManager.execute(plan.write());
@@ -92,7 +105,8 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
         final String qualifier = "myQualifier";
         PlanBuilder.AccessPlan plan = op.fromDocDescriptors(op.docDescriptors(writeSet), qualifier);
         verifyExportedPlanReturnsSameRowCount(plan);
-        rowManager.execute(plan.write(op.docCols(qualifier))); verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
+        rowManager.execute(plan.write(op.docCols(qualifier)));
+        verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
     }
 
     @Test
@@ -108,12 +122,10 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
         IllegalArgumentException ex = assertThrows(
                 "Only JSON content is supported for the 5.6.0 release and 11.0 release of MarkLogic",
                 IllegalArgumentException.class,
-                () -> op.docDescriptors(writeSet)
-        );
+                () -> op.docDescriptors(writeSet));
         assertEquals("Unexpected exception: " + ex.getMessage(),
                 "Only JSON content can be used with fromDocDescriptors; non-JSON content found for document with URI: /fromParam/doc1.xml",
-                ex.getMessage()
-        );
+                ex.getMessage());
     }
 
     @Test
@@ -121,11 +133,10 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
         }
-        
-        DocumentMetadataHandle metadata = new DocumentMetadataHandle();
+
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
-        writeSet.add("/fromParam/doc1.json", metadata, new JacksonHandle(mapper.createObjectNode().put("hello", "doc1")));
-        writeSet.add("/fromParam/doc2.json", metadata, new JacksonHandle(mapper.createObjectNode().put("hello", "doc2")));
+        writeSet.add(newWriteOp("/fromParam/doc1.json", mapper.createObjectNode().put("hello", "doc1")));
+        writeSet.add(newWriteOp("/fromParam/doc2.json", mapper.createObjectNode().put("hello", "doc2")));
 
         PlanBuilder.AccessPlan accessPlan = op.fromDocDescriptors(op.docDescriptors(writeSet));
         ObjectNode plan = exportPlan(accessPlan);
