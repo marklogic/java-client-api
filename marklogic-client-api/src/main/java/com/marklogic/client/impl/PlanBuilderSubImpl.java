@@ -24,6 +24,7 @@ import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.SemExpr;
+import com.marklogic.client.expression.TransformDefinition;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -280,6 +281,12 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   @Override
   public PlanRowColTypes colType(String column, String type, Boolean nullable) {
     return new PlanRowColTypesImpl(column, type, nullable);
+  }
+
+  
+  @Override
+  public TransformDefinition transformDefinition(String path) {
+    return new TransformDefinitionImpl(path);
   }
 
   @Override
@@ -877,6 +884,11 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
 
     @Override
+    public Plan bindParam(String param, AbstractWriteHandle content) {
+      return bindParam(new PlanParamBase(param), content, null);
+    }
+
+    @Override
     public Plan bindParam(String param, AbstractWriteHandle content, Map<String, Map<String, AbstractWriteHandle>> columnAttachments) {
       return bindParam(new PlanParamBase(param), content, columnAttachments);
     }
@@ -1043,6 +1055,11 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     @Override
     public ModifyPlan remove(PlanColumn uriColumn) {
       return new ModifyPlanSubImpl(this, "op", "remove", new Object[]{uriColumn});
+    }
+
+    @Override
+    public ModifyPlan transformDoc(PlanColumn docColumn, TransformDefinition transformDefinition) {
+      return new ModifyPlanSubImpl(this, "op", "transformDoc", new Object[]{docColumn, transformDefinition});
     }
 
     @Override

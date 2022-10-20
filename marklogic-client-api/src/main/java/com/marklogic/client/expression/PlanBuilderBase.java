@@ -446,6 +446,14 @@ public interface PlanBuilderBase {
     PlanDocDescriptorSeq docDescriptors(DocumentWriteSet writeSet);
 
     /**
+     * Build a transform definition for use with {@code transformDoc}.
+     * 
+     * @param path the path (URI) of either a *.mjs or *.xslt module in a modules database
+     * @return a new {@code TransformDefinition}
+     */
+    TransformDefinition transformDefinition(String path);
+
+    /**
      * Defines base methods for Plan. This interface is an implementation detail.
      * Use Plan as the type for instances of Plan.
      */
@@ -650,6 +658,17 @@ public interface PlanBuilderBase {
          * @return
          */
         PlanBuilder.Plan bindParam(PlanParamExpr param, DocumentWriteSet writeSet);
+        /**
+         * Specifies a content handle to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
+         * @param param the name of a placeholder parameter
+         * @param content the content to replace the parameter
+         * @return a new instance of the Plan object with the parameter binding
+         */
+        PlanBuilder.Plan bindParam(String param, AbstractWriteHandle content);
         /**
          * Specifies a content handle to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
@@ -923,6 +942,15 @@ public interface PlanBuilderBase {
          * @return a ModifyPlan object
          */
         PlanBuilder.ModifyPlan remove(PlanColumn uriColumn);
+        /**
+         * Applies the given transformation to the content in the given column in each row. A {@code TransformDefinition}
+         * can be constructed via {@code PlanBuilder#transformDefinition(String)}.
+         * 
+         * @param docColumn the column containing content to be transformed
+         * @param transformDefinition
+         * @return a ModifyPlan object
+         */
+        PlanBuilder.ModifyPlan transformDoc(PlanColumn docColumn, TransformDefinition transformDefinition);
         /**
          * This method restricts the row set to rows matched by the boolean expression. Use boolean composers such as op.and and op.or to combine multiple expressions.
          * @param condition  The boolean expression on which to match. 
