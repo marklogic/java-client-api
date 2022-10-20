@@ -430,6 +430,17 @@ public interface PlanBuilderBase {
     PlanDocColsIdentifier docCols(Map<String, String> descriptorColumnMapping);
 
     /**
+     * Construct a {@code PlanDocColsIdentifier} that consists only of the given descriptor column names, each of which
+     * must be one of the following: uri, doc, collections, permissions, metadata, quality, and temporalCollection. Use
+     * this when constructing a plan for only writing certain parts of a document - e.g. when only updating the 
+     * collections on a set of URIs. 
+     * 
+     * @param descriptorColumnNames
+     * @return
+     */
+    PlanDocColsIdentifier docCols(String[] descriptorColumnNames);
+
+    /**
      * Build a single doc descriptor that can be used with {@code fromDocDescriptors}.
      *
      * @param writeOp contains the inputs for the doc descriptor

@@ -1,25 +1,29 @@
 package com.marklogic.client.test.rows;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.expression.PlanBuilder.Plan;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.row.RawPlanDefinition;
-import com.marklogic.client.row.RowManager;
-import com.marklogic.client.row.RowRecord;
-import com.marklogic.client.test.Common;
-
-import org.junit.Before;
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.marklogic.client.document.DocumentWriteOperation;
+import com.marklogic.client.expression.PlanBuilder;
+import com.marklogic.client.expression.PlanBuilder.Plan;
+import com.marklogic.client.impl.DocumentWriteOperationImpl;
+import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.row.RawPlanDefinition;
+import com.marklogic.client.row.RowManager;
+import com.marklogic.client.row.RowRecord;
+import com.marklogic.client.test.Common;
 
 public abstract class AbstractRowManagerTest {
 
@@ -79,5 +83,13 @@ public abstract class AbstractRowManagerTest {
      */
     protected final List<RowRecord> resultRows(Plan plan) {
         return rowManager.resultRows(plan).stream().collect(Collectors.toList());
+    }
+
+    protected DocumentWriteOperation newWriteOp(String uri, JsonNode json) {
+        return newWriteOp(uri, new JacksonHandle(json));
+    }
+    
+    protected DocumentWriteOperation newWriteOp(String uri, AbstractWriteHandle content) {
+        return new DocumentWriteOperationImpl(uri, new DocumentMetadataHandle(), content);
     }
 }

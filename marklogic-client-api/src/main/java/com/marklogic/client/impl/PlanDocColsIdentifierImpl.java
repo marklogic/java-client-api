@@ -19,6 +19,14 @@ public class PlanDocColsIdentifierImpl implements PlanDocColsIdentifier, BaseArg
         this.template = descriptor.toString();
     }
 
+    public PlanDocColsIdentifierImpl(String[] columnNames) {
+        ObjectNode descriptor = new ObjectMapper().createObjectNode();
+        for (String name : columnNames) {
+            descriptor.put(name, name);
+        }
+        this.template = descriptor.toString();
+    }
+
     @Override
     public StringBuilder exportAst(StringBuilder strb) {
         return strb.append(this.template);

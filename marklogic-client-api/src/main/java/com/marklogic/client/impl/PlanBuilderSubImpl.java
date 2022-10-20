@@ -227,6 +227,11 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     return new PlanDocColsIdentifierImpl(descriptorColumnMapping);
   }
 
+  @Override
+  public PlanDocColsIdentifier docCols(String[] descriptorColumnNames) {
+    return new PlanDocColsIdentifierImpl(descriptorColumnNames);
+  }
+
   public static class PlanDocDescriptorImpl implements PlanDocDescriptor, BaseTypeImpl.BaseArgImpl {
     private String template;
     // Threadsafe, thus safe to reuse to avoid creating many instances

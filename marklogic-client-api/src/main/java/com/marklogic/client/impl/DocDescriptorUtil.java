@@ -50,19 +50,22 @@ class DocDescriptorUtil {
         }
 
         AbstractWriteHandle content = writeOp.getContent();
-        JsonNode jsonContent = getJsonNodeFromContent(content);
-        if (jsonContent != null) {
-            // JSON attachments aren't yet supported by the REST endpoint, so they are always inlined, regardless
-            // of whether client provided an attachments map or not
-            docDescriptor.set("doc", jsonContent);
-        } else if (attachments != null) {
-            docDescriptor.put("doc", "attachment-" + uri);
-            attachments.put("attachment-" + uri, content);
-        } else {
-            // As of the 5.6.0 release, an assumption is made here that if no attachments map is provided, then
-            // fromDocDescriptors is being used, which only supports JSON content
-            throw new IllegalArgumentException("Only JSON content can be used with fromDocDescriptors; " +
-                    "non-JSON content found for document with URI: " + uri);
+        // content can be null for when user only wants to populate metadata
+        if (content != null) {
+            JsonNode jsonContent = getJsonNodeFromContent(content);
+            if (jsonContent != null) {
+                // JSON attachments aren't yet supported by the REST endpoint, so they are always inlined, regardless
+                // of whether client provided an attachments map or not
+                docDescriptor.set("doc", jsonContent);
+            } else if (attachments != null) {
+                docDescriptor.put("doc", "attachment-" + uri);
+                attachments.put("attachment-" + uri, content);
+            } else {
+                // As of the 5.6.0 release, an assumption is made here that if no attachments map is provided, then
+                // fromDocDescriptors is being used, which only supports JSON content
+                throw new IllegalArgumentException("Only JSON content can be used with fromDocDescriptors; " +
+                        "non-JSON content found for document with URI: " + uri);
+            }    
         }
 
         if (writeOp.getMetadata() instanceof DocumentMetadataHandle) {
