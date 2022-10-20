@@ -24,6 +24,9 @@ public class RowManagerExportTest extends AbstractRowManagerTest {
 
     @Test
     public void fromDocUris() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+                return;
+        }
         verifyExportedPlanReturnsSameRowCount(
                 op.fromDocUris(op.cts.wordQuery("trumpet"), "")
         );
@@ -42,6 +45,10 @@ public class RowManagerExportTest extends AbstractRowManagerTest {
 
     @Test
     public void fromParam() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+                return;
+        }
+
         DocumentMetadataHandle metadata = new DocumentMetadataHandle();
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
         writeSet.add("/fromParam/doc1.xml", metadata, new StringHandle("<doc>1</doc>").withFormat(Format.XML));

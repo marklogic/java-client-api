@@ -17,7 +17,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -35,10 +34,10 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
 
         DocumentMetadataHandle metadata = new DocumentMetadataHandle()
                 .withQuality(2)
-//                // TODO Metadata and permissions not supported by server yet
-//                .withMetadataValue("meta1", "value1")
-//                .withMetadataValue("meta2", "value2")
-                .withPermission("rest-reader", DocumentMetadataHandle.Capability.READ, DocumentMetadataHandle.Capability.UPDATE)
+                .withMetadataValue("meta1", "value1")
+                .withMetadataValue("meta2", "value2")
+                // Permissions not yet supported by server - see https://bugtrack.marklogic.com/57883
+                //.withPermission("rest-reader", DocumentMetadataHandle.Capability.READ, DocumentMetadataHandle.Capability.UPDATE)
                 .withCollections("common-coll", "other-coll-1");
 
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
@@ -53,6 +52,8 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
             assertEquals(2, docMetadata.getQuality());
             assertTrue(docMetadata.getCollections().contains("common-coll"));
             assertTrue(docMetadata.getCollections().contains("other-coll-1"));
+            assertEquals("value1", docMetadata.getMetadataValues().get("meta1"));
+            assertEquals("value2", docMetadata.getMetadataValues().get("meta2"));
         });
     }
 

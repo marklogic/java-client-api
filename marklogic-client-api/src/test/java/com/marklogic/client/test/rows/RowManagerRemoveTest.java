@@ -3,7 +3,6 @@ package com.marklogic.client.test.rows;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -33,7 +32,6 @@ public class RowManagerRemoveTest extends AbstractRowManagerTest {
     }
 
     @Test
-    @Ignore("See https://bugtrack.marklogic.com/57963")
     public void uriColumnSpecified() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
@@ -48,7 +46,6 @@ public class RowManagerRemoveTest extends AbstractRowManagerTest {
     }
 
     @Test
-    @Ignore("See https://bugtrack.marklogic.com/57964")
     public void fromParamWithCustomUriColumn() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
@@ -69,7 +66,6 @@ public class RowManagerRemoveTest extends AbstractRowManagerTest {
     }
 
     @Test
-    @Ignore("See https://bugtrack.marklogic.com/57964")
     public void fromParamWithQualifiedUriColumn() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;

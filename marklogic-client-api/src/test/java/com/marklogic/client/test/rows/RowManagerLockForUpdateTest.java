@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -51,7 +50,6 @@ public class RowManagerLockForUpdateTest extends AbstractRowManagerTest {
     }
 
     @Test
-    @Ignore("See https://bugtrack.marklogic.com/57963")
     public void uriColumnSpecified() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
@@ -64,7 +62,6 @@ public class RowManagerLockForUpdateTest extends AbstractRowManagerTest {
     }
 
     @Test
-    @Ignore("See https://bugtrack.marklogic.com/57964")
     public void fromParamWithCustomUriColumn() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
@@ -75,13 +72,12 @@ public class RowManagerLockForUpdateTest extends AbstractRowManagerTest {
 
         List<RowRecord> rows = resultRows(op
                 .fromParam("bindingParam", "", op.colTypes(op.colType("myUri", "string")))
-                .lockForUpdate(op.col("uri"))
-                .bindParam("bindParam", new JacksonHandle(paramValue), null));
+                .lockForUpdate(op.col("myUri"))
+                .bindParam("bindingParam", new JacksonHandle(paramValue), null));
         assertEquals(1, rows.size());
     }
 
     @Test
-    @Ignore("See https://bugtrack.marklogic.com/57964")
     public void fromParamWithQualifiedUriColumn() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
@@ -92,8 +88,8 @@ public class RowManagerLockForUpdateTest extends AbstractRowManagerTest {
 
         List<RowRecord> rows = resultRows(op
                 .fromParam("bindingParam", "myQualifier", op.colTypes(op.colType("myUri", "string")))
-                .lockForUpdate(op.viewCol("myQualifier", "uri"))
-                .bindParam("bindParam", new JacksonHandle(paramValue), null));
+                .lockForUpdate(op.viewCol("myQualifier", "myUri"))
+                .bindParam("bindingParam", new JacksonHandle(paramValue), null));
         assertEquals(1, rows.size());
     }
 }
