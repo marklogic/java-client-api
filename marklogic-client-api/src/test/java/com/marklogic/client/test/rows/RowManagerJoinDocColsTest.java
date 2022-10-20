@@ -5,8 +5,8 @@ import static org.junit.Assert.assertEquals;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -20,6 +20,7 @@ public class RowManagerJoinDocColsTest extends AbstractRowManagerTest {
     private final static String MUSICIAN_DIRECTORY = "/optic/test/";
 
     @Test
+    @Ignore("See https://bugtrack.marklogic.com/57988")
     public void defaultColumns() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
@@ -41,6 +42,7 @@ public class RowManagerJoinDocColsTest extends AbstractRowManagerTest {
     }
 
     @Test
+    @Ignore("See https://bugtrack.marklogic.com/57988")
     public void customColumns() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
