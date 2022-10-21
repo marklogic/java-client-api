@@ -1,7 +1,9 @@
 package com.marklogic.client.test.rows;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -83,6 +85,41 @@ public class RowManagerRemoveTest extends AbstractRowManagerTest {
 
         rowManager.execute(plan.bindParam("bindingParam", new JacksonHandle(paramValue), null));
         verifyDocsDeleted();
+    }
+
+    @Test
+    public void removeTemporal() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        final String uri = "/fromParam/temporal-remove.json";
+        final String temporalCollection = "temporal-collection";
+        DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
+        writeSet.add(uri, new DocumentMetadataHandle(), new JacksonHandle(newTemporalContent()), temporalCollection);
+
+        // Write the temporal doc
+        rowManager.resultRows(op
+                .fromDocDescriptors(op.docDescriptors(writeSet))
+                .write(op.docCols(new String[] { "uri", "doc", "temporalCollection", "permissions" })));
+
+        verifyMetadata(uri, metadata -> {
+            assertTrue("The document should be in the 'latest' collection if it was correctly inserted via " +
+                    "temporal.documentInsert", metadata.getCollections().contains("latest"));
+            assertTrue(metadata.getCollections().contains(temporalCollection));
+        });
+
+        // Remove the temporal doc
+        rowManager.execute(op
+                .fromDocUris(uri)
+                .remove(temporalCollection, op.col("uri")));
+
+        verifyMetadata(uri, metadata -> {
+            assertFalse("The doc should still exist but no longer be in the 'latest' collection, as " +
+                    "temporal.documentDelete should have removed it from that collection",
+                    metadata.getCollections().contains("latest"));
+            assertTrue(metadata.getCollections().contains(temporalCollection));
+        });
     }
 
     private void writeThreeXmlDocuments() {

@@ -17,6 +17,7 @@ import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
@@ -26,6 +27,8 @@ import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
 
 public abstract class AbstractRowManagerTest {
+
+    private final static String XML_PREAMBLE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
     protected RowManager rowManager;
     protected PlanBuilder op;
@@ -66,13 +69,18 @@ public abstract class AbstractRowManagerTest {
         verifier.accept((ObjectNode) Common.client.newJSONDocumentManager().read(uri, new JacksonHandle()).get());
     }
 
+    protected final void verifyXmlDoc(String uri, Consumer<String> verifier) {
+        String content = Common.client.newXMLDocumentManager().read(uri, new StringHandle().withFormat(Format.XML)).get();
+        verifier.accept(content.replace(XML_PREAMBLE, ""));
+    }
+
     protected final void verifyMetadata(String uri, Consumer<DocumentMetadataHandle> verifier) {
         verifier.accept(Common.client.newJSONDocumentManager().readMetadata(uri, new DocumentMetadataHandle()));
     }
 
     protected final String getRowContentWithoutXmlDeclaration(RowRecord row, String columnName) {
         String content = row.getContentAs(columnName, String.class);
-        return content.replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n", "");
+        return content.replace(XML_PREAMBLE, "");
     }
 
     /**
@@ -91,5 +99,18 @@ public abstract class AbstractRowManagerTest {
     
     protected DocumentWriteOperation newWriteOp(String uri, AbstractWriteHandle content) {
         return new DocumentWriteOperationImpl(uri, new DocumentMetadataHandle(), content);
+    }
+
+    /**
+     * Defines the required fields for the temporal axes configured for the test project.
+     * 
+     * @return
+     */
+    protected final ObjectNode newTemporalContent() {
+        return mapper.createObjectNode()
+                .put("system-start", "")
+                .put("system-end", "")
+                .put("valid-start", "2015-01-01T00:00:00")
+                .put("valid-end", "2017-01-01T00:00:00");
     }
 }

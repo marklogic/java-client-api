@@ -1,9 +1,17 @@
 package com.marklogic.client.test.rows;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
@@ -12,13 +20,6 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
-
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.util.List;
-
-import static org.junit.Assert.*;
 
 public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
 
@@ -74,8 +75,8 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
         List<RowRecord> rows = resultRows(plan);
         assertEquals(2, rows.size());
 
-        verifyXmlDoc("/fromParam/doc1.xml", "<doc>1</doc>");
-        verifyXmlDoc("/fromParam/doc2.xml", "<doc>2</doc>");
+        verifyXmlDocContent("/fromParam/doc1.xml", "<doc>1</doc>");
+        verifyXmlDocContent("/fromParam/doc2.xml", "<doc>2</doc>");
     }
 
     /**
@@ -160,48 +161,46 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
 
         rowManager.execute(plan);
 
-        verifyXmlDoc("/fromParam/doc1.xml", "<doc>1</doc>");
-        verifyXmlDoc("/fromParam/doc2.xml", "<doc>2</doc>");
+        verifyXmlDocContent("/fromParam/doc1.xml", "<doc>1</doc>");
+        verifyXmlDocContent("/fromParam/doc2.xml", "<doc>2</doc>");
     }
 
     @Test
-    @Ignore("See https://bugtrack.marklogic.com/57895")
-    public void temporalTest() {
+    public void temporalWrite() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
         }
 
-        String contents = "<test>" +
-                "<system-start>2014-08-10T00:00:00Z</system-start>" +
-                "<system-end>2014-08-20T00:00:00Z</system-end>" +
-                "<valid-start>2014-08-15T00:00:00Z</valid-start>" +
-                "<valid-end>2014-08-17T00:00:01Z</valid-end>" +
-                "</test>";
-
-        PlanBuilder.Plan plan = op.fromParam("myDocs", "", op.docColTypes()).write();
-
+        final String uri = "/fromParam/doc1-temporal.json";
         final String temporalCollection = "temporal-collection";
-        DocumentMetadataHandle metadata = new DocumentMetadataHandle();
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
-        writeSet.add("/fromParam/doc1-temporal.xml", metadata, new StringHandle(contents).withFormat(Format.XML), temporalCollection);
-        writeSet.add("/fromParam/doc2-temporal.xml", metadata, new StringHandle(contents).withFormat(Format.XML), temporalCollection);
-        plan = plan.bindParam("myDocs", writeSet);
+        writeSet.add(uri, new DocumentMetadataHandle(), new JacksonHandle(newTemporalContent()), temporalCollection);
+
+        PlanBuilder.Plan plan = op
+                .fromDocDescriptors(op.docDescriptors(writeSet))
+                // Must include "temporalCollection"; this seems like a UX issue that could be improved via e.g. 
+                // a new op.temporalDocCols() function
+                .write(op.docCols(new String[] { "uri", "doc", "temporalCollection", "permissions" }));
 
         rowManager.resultRows(plan);
 
-        verifyXmlDoc("/fromParam/doc1-temporal.xml", contents);
-        verifyXmlDoc("/fromParam/doc2-temporal.xml", contents);
+        verifyJsonDoc(uri, doc -> {
+            String systemEnd = doc.get("system-end").asText();
+            assertTrue("system-end should have been populated by ML: " + doc, systemEnd.startsWith("9999"));
+            assertTrue("system-start should have been populated by ML: " + doc,
+                    StringUtils.isNotEmpty(doc.get("system-start").asText()));
+        });
 
-        XMLDocumentManager mgr = Common.client.newXMLDocumentManager();
-        metadata = mgr.readMetadata("/fromParam/doc1-temporal.xml", new DocumentMetadataHandle());
-        assertTrue("The document should be in the 'latest' collection if it was correctly inserted via " +
-                "temporal.documentInsert", metadata.getCollections().contains("latest"));
-        assertTrue(metadata.getCollections().contains(temporalCollection));
+        verifyMetadata(uri, metadata -> {
+            assertTrue("The document should be in the 'latest' collection if it was correctly inserted via " +
+                    "temporal.documentInsert", metadata.getCollections().contains("latest"));
+            assertTrue(metadata.getCollections().contains(temporalCollection));
+        });
     }
-    
-    private void verifyXmlDoc(String uri, String expectedContent) {
-        StringHandle doc = Common.client.newXMLDocumentManager().read(uri, new StringHandle());
-        assertEquals(Format.XML, doc.getFormat());
-        assertTrue("Unexpected content: " + doc.get(), doc.get().contains(expectedContent));
+
+    private void verifyXmlDocContent(String uri, String expectedContent) {
+        verifyXmlDoc(uri, content -> {
+            assertTrue("Unexpected content: " + content, content.contains(expectedContent));
+        });
     }
 }

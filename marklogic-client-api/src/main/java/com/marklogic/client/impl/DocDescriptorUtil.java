@@ -93,7 +93,7 @@ class DocDescriptorUtil {
 //            }
 //          }
 
-        // Hack until the REST endpoint supports a JSON serialization of permissions
+        // TODO Hack until the REST endpoint supports a JSON serialization of permissions
         ArrayNode permissions = docDescriptor.putArray("permissions");
         permissions.addObject().put("roleId", "7089338530631756591").put("capability", "read");
         permissions.addObject().put("roleId", "7089338530631756591").put("capability", "update");

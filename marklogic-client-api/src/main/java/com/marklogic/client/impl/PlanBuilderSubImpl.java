@@ -25,6 +25,7 @@ import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.SemExpr;
 import com.marklogic.client.expression.TransformDefinition;
+import com.marklogic.client.impl.BaseTypeImpl.BaseArgImpl;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -1060,6 +1061,25 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     @Override
     public ModifyPlan remove(PlanColumn uriColumn) {
       return new ModifyPlanSubImpl(this, "op", "remove", new Object[]{uriColumn});
+    }
+
+    static class TemporalRemoval implements BaseArgImpl {
+        private String template;
+
+        public TemporalRemoval(String temporalCollection, PlanColumn uriColumn) {
+            this.template = String.format("{\"temporalCollection\":\"%s\", \"uri\": %s}", temporalCollection,
+                    ((BaseArgImpl) uriColumn).exportAst(new StringBuilder()));
+        }
+
+        @Override
+        public StringBuilder exportAst(StringBuilder strb) {
+            return strb.append(template);
+        }
+    }
+
+    @Override
+    public ModifyPlan remove(String temporalCollection, PlanColumn uriColumn) {
+        return new ModifyPlanSubImpl(this, "op", "remove", new Object[]{new TemporalRemoval(temporalCollection, uriColumn)});
     }
 
     @Override
