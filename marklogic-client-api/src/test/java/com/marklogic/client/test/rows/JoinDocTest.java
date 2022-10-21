@@ -15,6 +15,10 @@ public class JoinDocTest extends AbstractOpticUpdateTest {
 
     @Test
     public void propertiesFragmentsShouldNotBeReturned() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
         final int docCount = 50;
 
         JSONDocumentManager mgr = Common.client.newJSONDocumentManager();

@@ -1,19 +1,18 @@
 package com.marklogic.client.test.rows;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-import org.junit.Test;
-
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
+import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.test.Common;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class RemoveTest extends AbstractOpticUpdateTest {
 
@@ -26,8 +25,8 @@ public class RemoveTest extends AbstractOpticUpdateTest {
         writeThreeXmlDocuments();
 
         rowManager.execute(op
-                .fromDocUris("/acme/doc1.xml", "/acme/doc3.xml")
-                .remove());
+            .fromDocUris("/acme/doc1.xml", "/acme/doc3.xml")
+            .remove());
         verifyDocsDeleted();
     }
 
@@ -40,8 +39,8 @@ public class RemoveTest extends AbstractOpticUpdateTest {
         writeThreeXmlDocuments();
 
         rowManager.execute(op
-                .fromDocUris("/acme/doc1.xml", "/acme/doc3.xml")
-                .remove(op.col("uri")));
+            .fromDocUris("/acme/doc1.xml", "/acme/doc3.xml")
+            .remove(op.col("uri")));
         verifyDocsDeleted();
     }
 
@@ -58,8 +57,8 @@ public class RemoveTest extends AbstractOpticUpdateTest {
         paramValue.addObject().put("myUri", "/acme/doc3.xml");
 
         ModifyPlan plan = op
-                .fromParam("bindingParam", "", op.colTypes(op.colType("myUri", "string")))
-                .remove(op.col("myUri"));
+            .fromParam("bindingParam", "", op.colTypes(op.colType("myUri", "string")))
+            .remove(op.col("myUri"));
 
         rowManager.execute(plan.bindParam("bindingParam", new JacksonHandle(paramValue), null));
         verifyDocsDeleted();
@@ -78,24 +77,60 @@ public class RemoveTest extends AbstractOpticUpdateTest {
         paramValue.addObject().put("uri", "/acme/doc3.xml");
 
         ModifyPlan plan = op
-                .fromParam("bindingParam", "myQualifier", op.colTypes(op.colType("uri", "string")))
-                .remove(op.viewCol("myQualifier", "uri"));
+            .fromParam("bindingParam", "myQualifier", op.colTypes(op.colType("uri", "string")))
+            .remove(op.viewCol("myQualifier", "uri"));
 
         rowManager.execute(plan.bindParam("bindingParam", new JacksonHandle(paramValue), null));
         verifyDocsDeleted();
     }
 
+    @Test
+    public void removeTemporal() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        final String uri = "/acme/temporal-remove.json";
+        final String temporalCollection = "temporal-collection";
+
+        // Write the temporal doc
+        rowManager.execute(op
+            .fromDocDescriptors(op.docDescriptor(
+                new DocumentWriteOperationImpl(uri, newDefaultMetadata(), new JacksonHandle(newTemporalContent()), temporalCollection)
+            ))
+            .write(op.docCols(null, op.xs.stringSeq("uri", "doc", "temporalCollection", "permissions"))));
+
+        verifyMetadata(uri, metadata -> {
+            assertTrue("The document should be in the 'latest' collection if it was correctly inserted via " +
+                "temporal.documentInsert", metadata.getCollections().contains("latest"));
+            assertTrue(metadata.getCollections().contains(temporalCollection));
+        });
+
+        // Remove the temporal doc
+        rowManager.execute(op
+            .fromDocUris(uri)
+            .bind(op.as(op.col("tempColl"), op.xs.string(temporalCollection)))
+            .remove(op.col("tempColl"), op.col("uri")));
+
+        verifyMetadata(uri, metadata -> {
+            assertFalse("The doc should still exist but no longer be in the 'latest' collection, as " +
+                    "temporal.documentDelete should have removed it from that collection",
+                metadata.getCollections().contains("latest"));
+            assertTrue(metadata.getCollections().contains(temporalCollection));
+        });
+    }
+
     private void writeThreeXmlDocuments() {
         DocumentMetadataHandle metadata = newDefaultMetadata();
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet()
-                .add("/acme/doc1.xml", metadata, new StringHandle("<doc>1</doc>").withFormat(Format.XML))
-                .add("/acme/doc2.xml", metadata, new StringHandle("<doc>2</doc>").withFormat(Format.XML))
-                .add("/acme/doc3.xml", metadata, new StringHandle("<doc>3</doc>").withFormat(Format.XML));
+            .add("/acme/doc1.xml", metadata, new StringHandle("<doc>1</doc>").withFormat(Format.XML))
+            .add("/acme/doc2.xml", metadata, new StringHandle("<doc>2</doc>").withFormat(Format.XML))
+            .add("/acme/doc3.xml", metadata, new StringHandle("<doc>3</doc>").withFormat(Format.XML));
 
         rowManager.execute(op
-                .fromParam("myDocs", null, op.docColTypes())
-                .write()
-                .bindParam("myDocs", writeSet));
+            .fromParam("myDocs", null, op.docColTypes())
+            .write()
+            .bindParam("myDocs", writeSet));
     }
 
     private void verifyDocsDeleted() {

@@ -44,6 +44,18 @@ public class DocumentWriteOperationImpl implements DocumentWriteOperation {
     this(type, uri, metadata, content, null);
   }
 
+  /**
+   * Defaults the type of operation to {@code OperationType.DOCUMENT_WRITE}.
+   *
+   * @param uri
+   * @param metadata
+   * @param content
+   * @param temporalDocumentURI
+   */
+  public DocumentWriteOperationImpl(String uri, DocumentMetadataWriteHandle metadata, AbstractWriteHandle content, String temporalDocumentURI) {
+    this(OperationType.DOCUMENT_WRITE, uri, metadata, content, temporalDocumentURI);
+  }
+
   public DocumentWriteOperationImpl(OperationType type, String uri,
                                     DocumentMetadataWriteHandle metadata, AbstractWriteHandle content, String temporalDocumentURI) {
     if(type == OperationType.DOCUMENT_WRITE && uri == null) {

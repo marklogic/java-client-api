@@ -960,6 +960,15 @@ public interface PlanBuilderBase {
          */
         PlanBuilder.ModifyPlan remove(PlanColumn uriColumn);
         /**
+         * Removes (deletes) any temporal document with a URI matching the value of the given column in at least one 
+         * row in the pipeline. Results in each temporal document being marked as deleted. 
+         * 
+         * @param temporalCollection the name of the temporal collection containing URIs to remove
+         * @param uriColumn the column containing URIs to be removed
+         * @return a ModifyPlan object
+         */
+        PlanBuilder.ModifyPlan remove(PlanColumn temporalCollection, PlanColumn uriColumn);
+        /**
          * Applies the given transformation to the content in the given column in each row. A {@code TransformDef}
          * can be constructed via {@code PlanBuilder#transformDef(String)}.
          * 

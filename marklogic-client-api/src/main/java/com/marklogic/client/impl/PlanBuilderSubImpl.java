@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.*;
+import com.marklogic.client.impl.BaseTypeImpl.BaseArgImpl;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -1065,6 +1066,26 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     @Override
     public ModifyPlan remove(PlanColumn uriColumn) {
       return new ModifyPlanSubImpl(this, "op", "remove", new Object[]{uriColumn});
+    }
+
+    static class TemporalRemoval implements BaseArgImpl {
+        private String template;
+
+        public TemporalRemoval(PlanColumn temporalCollection, PlanColumn uriColumn) {
+            this.template = String.format("{\"temporalCollection\":%s, \"uri\": %s}",
+                ((BaseArgImpl)temporalCollection).exportAst(new StringBuilder()),
+                    ((BaseArgImpl) uriColumn).exportAst(new StringBuilder()));
+        }
+
+        @Override
+        public StringBuilder exportAst(StringBuilder strb) {
+            return strb.append(template);
+        }
+    }
+
+    @Override
+    public ModifyPlan remove(PlanColumn temporalCollection, PlanColumn uriColumn) {
+        return new ModifyPlanSubImpl(this, "op", "remove", new Object[]{new TemporalRemoval(temporalCollection, uriColumn)});
     }
 
     @Override
