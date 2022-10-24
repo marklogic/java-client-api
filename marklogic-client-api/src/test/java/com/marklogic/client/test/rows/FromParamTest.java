@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.junit.Test;
 
@@ -28,7 +27,7 @@ import com.marklogic.client.type.PlanParamExpr;
  * Tests various scenarios involving the {@code fromParam} accessor and the need to bind a content handle as a parameter
  * to the plan.
  */
-public class RowManagerFromParamTest extends AbstractRowManagerTest {
+public class FromParamTest extends AbstractOpticUpdateTest {
 
     @Test
     public void fromParamWithSimpleJsonArray() {

@@ -1,26 +1,23 @@
 package com.marklogic.client.test.rows;
 
-import static org.junit.Assert.assertEquals;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.marklogic.client.expression.PlanBuilder;
+import com.marklogic.client.row.RowRecord;
+import com.marklogic.client.test.Common;
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.row.RowRecord;
-import com.marklogic.client.test.Common;
-
-public class RowManagerJoinDocColsTest extends AbstractRowManagerTest {
+public class JoinDocColsTest extends AbstractOpticUpdateTest {
 
     // 4 musician documents are expected to be in this directory via mlDeploy
     private final static String MUSICIAN_DIRECTORY = "/optic/test/";
 
     @Test
-    @Ignore("See https://bugtrack.marklogic.com/57988")
     public void defaultColumns() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
@@ -42,7 +39,6 @@ public class RowManagerJoinDocColsTest extends AbstractRowManagerTest {
     }
 
     @Test
-    @Ignore("See https://bugtrack.marklogic.com/57988")
     public void customColumns() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;

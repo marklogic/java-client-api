@@ -101,10 +101,13 @@ public class Common {
     return newClient(null);
   }
   public static DatabaseClient newClient(String databaseName) {
+    return newClientAsUser(Common.USER, databaseName);
+  }
+  public static DatabaseClient newClientAsUser(String username, String databaseName) {
     System.out.println("Connecting to: " + Common.HOST);
     return DatabaseClientFactory.newClient(Common.HOST, Common.PORT, databaseName,
-        new DatabaseClientFactory.DigestAuthContext(Common.USER, Common.PASS),
-          CONNECTION_TYPE);
+            new DatabaseClientFactory.DigestAuthContext(username, Common.PASS),
+            CONNECTION_TYPE);
   }
   public static DatabaseClient newAdminClient() {
     return newAdminClient(null);

@@ -20,7 +20,7 @@ import java.util.Map;
  * <p>
  * fromLiterals is not tested here because RowManagerTest already verifies export/import for it.
  */
-public class RowManagerExportTest extends AbstractRowManagerTest {
+public class ExportTest extends AbstractOpticUpdateTest {
 
     @Test
     public void fromDocUris() {

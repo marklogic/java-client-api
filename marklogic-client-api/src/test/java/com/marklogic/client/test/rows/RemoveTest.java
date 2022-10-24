@@ -15,7 +15,7 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.test.Common;
 
-public class RowManagerRemoveTest extends AbstractRowManagerTest {
+public class RemoveTest extends AbstractOpticUpdateTest {
 
     @Test
     public void removeTwoOfThreeDocs() {
@@ -86,7 +86,7 @@ public class RowManagerRemoveTest extends AbstractRowManagerTest {
     }
 
     private void writeThreeXmlDocuments() {
-        DocumentMetadataHandle metadata = new DocumentMetadataHandle();
+        DocumentMetadataHandle metadata = newDefaultMetadata();
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet()
                 .add("/acme/doc1.xml", metadata, new StringHandle("<doc>1</doc>").withFormat(Format.XML))
                 .add("/acme/doc2.xml", metadata, new StringHandle("<doc>2</doc>").withFormat(Format.XML))

@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.junit.After;
 import org.junit.Before;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,15 +26,14 @@ import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
 
-public abstract class AbstractRowManagerTest {
+public abstract class AbstractOpticUpdateTest {
 
     protected RowManager rowManager;
     protected PlanBuilder op;
     protected ObjectMapper mapper = new ObjectMapper();
 
     @Before
-    public void beforeClass() {
-        Common.connect();
+    public void setup() {
         // Subclasses of this test are expected to only write URIs starting with /acme/ (which is used so that test
         // URIs show up near the top when exploring the database in qconsole), so delete all of them before running the
         // test to ensure a document doesn't already exist.
@@ -41,8 +41,15 @@ public abstract class AbstractRowManagerTest {
                 .xquery("cts:uri-match('/acme/*') ! xdmp:document-delete(.)")
                 .evalAs(String.class);
 
+        Common.client = Common.newClientAsUser("writer-no-default-permissions", null);
         rowManager = Common.client.newRowManager();
         op = rowManager.newPlanBuilder();
+    }
+
+    @After
+    public void teardown() {
+        // Reset back to the default client that non-OpticUpdate tests expect
+        Common.client = Common.newClient();
     }
 
     protected void verifyExportedPlanReturnsSameRowCount(PlanBuilder.ExportablePlan plan) {
@@ -91,6 +98,18 @@ public abstract class AbstractRowManagerTest {
     }
 
     protected DocumentWriteOperation newWriteOp(String uri, AbstractWriteHandle content) {
-        return new DocumentWriteOperationImpl(uri, new DocumentMetadataHandle(), content);
+        return new DocumentWriteOperationImpl(uri, newDefaultMetadata(), content);
+    }
+
+    /**
+     * Convenience method for constructing metadata with a default set of permissions that the test user - "rest-writer"
+     * - can both read and update.
+     *
+     * @return
+     */
+    protected DocumentMetadataHandle newDefaultMetadata() {
+        return new DocumentMetadataHandle()
+                .withPermission("rest-reader", DocumentMetadataHandle.Capability.READ)
+                .withPermission("test-rest-writer", DocumentMetadataHandle.Capability.UPDATE);
     }
 }

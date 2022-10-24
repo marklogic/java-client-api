@@ -12,7 +12,6 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +64,7 @@ class DocDescriptorUtil {
                 // fromDocDescriptors is being used, which only supports JSON content
                 throw new IllegalArgumentException("Only JSON content can be used with fromDocDescriptors; " +
                         "non-JSON content found for document with URI: " + uri);
-            }    
+            }
         }
 
         if (writeOp.getMetadata() instanceof DocumentMetadataHandle) {
@@ -84,19 +83,14 @@ class DocDescriptorUtil {
             metadata.getCollections().forEach(c -> collections.add(c));
         }
 
-//          if (!metadata.getPermissions().isEmpty()) {
-//            ArrayNode permissions = row.putArray("permissions");
-//            for (String roleName : metadata.getPermissions().keySet()) {
-//              for (DocumentMetadataHandle.Capability c : metadata.getPermissions().get(roleName)) {
-//                permissions.addObject().put("roleId", "7089338530631756591").put("capability", c.toString().toLowerCase());
-//              }
-//            }
-//          }
-
-        // Hack until the REST endpoint supports a JSON serialization of permissions
-        ArrayNode permissions = docDescriptor.putArray("permissions");
-        permissions.addObject().put("roleId", "7089338530631756591").put("capability", "read");
-        permissions.addObject().put("roleId", "7089338530631756591").put("capability", "update");
+        if (!metadata.getPermissions().isEmpty()) {
+            ArrayNode permissions = docDescriptor.putArray("permissions");
+            for (String roleName : metadata.getPermissions().keySet()) {
+                for (DocumentMetadataHandle.Capability c : metadata.getPermissions().get(roleName)) {
+                    permissions.addObject().put("roleName", roleName).put("capability", c.toString().toLowerCase());
+                }
+            }
+        }
 
         if (!metadata.getMetadataValues().isEmpty()) {
             ObjectNode values = docDescriptor.putObject("metadata");

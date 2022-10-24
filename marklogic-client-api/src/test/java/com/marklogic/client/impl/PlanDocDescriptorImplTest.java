@@ -44,9 +44,7 @@ public class PlanDocDescriptorImplTest extends Assert {
         assertEquals(2, plan.get("quality").asInt());
         assertEquals("c1", plan.get("collections").get(0).asText());
         assertEquals("c2", plan.get("collections").get(1).asText());
-        // TODO Test permissions for real, not these hardcoded ones
-        // Should really be 3 permissions
-        assertEquals(2, plan.get("permissions").size());
+        assertEquals(3, plan.get("permissions").size());
         assertEquals("value1", plan.get("metadata").get("key1").asText());
         assertEquals("value2", plan.get("metadata").get("key2").asText());
 
