@@ -34,10 +34,11 @@ public abstract class AbstractRowManagerTest {
     @Before
     public void beforeClass() {
         Common.connect();
-        // Subclasses of this test are expected to only write URIs starting with /fromParam/, so delete all of them
-        // before running the test to ensure a document doesn't already exist.
+        // Subclasses of this test are expected to only write URIs starting with /acme/ (which is used so that test
+        // URIs show up near the top when exploring the database in qconsole), so delete all of them before running the
+        // test to ensure a document doesn't already exist.
         Common.connectServerAdmin().newServerEval()
-                .xquery("cts:uri-match('/fromParam/*') ! xdmp:document-delete(.)")
+                .xquery("cts:uri-match('/acme/*') ! xdmp:document-delete(.)")
                 .evalAs(String.class);
 
         rowManager = Common.client.newRowManager();
@@ -77,7 +78,7 @@ public abstract class AbstractRowManagerTest {
 
     /**
      * Convenience method for executing a plan and getting the rows back as a list.
-     * 
+     *
      * @param plan
      * @return
      */
@@ -88,7 +89,7 @@ public abstract class AbstractRowManagerTest {
     protected DocumentWriteOperation newWriteOp(String uri, JsonNode json) {
         return newWriteOp(uri, new JacksonHandle(json));
     }
-    
+
     protected DocumentWriteOperation newWriteOp(String uri, AbstractWriteHandle content) {
         return new DocumentWriteOperationImpl(uri, new DocumentMetadataHandle(), content);
     }

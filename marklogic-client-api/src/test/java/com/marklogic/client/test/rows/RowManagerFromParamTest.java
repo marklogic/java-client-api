@@ -281,13 +281,13 @@ public class RowManagerFromParamTest extends AbstractRowManagerTest {
 
         DocumentMetadataHandle metadata = new DocumentMetadataHandle();
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
-        writeSet.add("/fromParam/doc1.xml", metadata, new StringHandle("<doc>1</doc>").withFormat(Format.XML));
+        writeSet.add("/acme/doc1.xml", metadata, new StringHandle("<doc>1</doc>").withFormat(Format.XML));
         plan = plan.bindParam("myDocs", writeSet);
 
         List<RowRecord> rows = resultRows(plan);
         assertEquals(1, rows.size());
         RowRecord row = rows.get(0);
-        assertEquals("/fromParam/doc1.xml", row.getString("uri"));
+        assertEquals("/acme/doc1.xml", row.getString("uri"));
         assertEquals("<doc>1</doc>", getRowContentWithoutXmlDeclaration(row, "doc"));
     }
 }

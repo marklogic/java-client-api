@@ -22,7 +22,7 @@ public class RowManagerLockForUpdateTest extends AbstractRowManagerTest {
             return;
         }
 
-        final String uri = "/fromParam/doc1.json";
+        final String uri = "/acme/doc1.json";
 
         // Write a document
         rowManager.execute(op.fromDocDescriptors(

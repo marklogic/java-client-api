@@ -26,7 +26,7 @@ public class RowManagerRemoveTest extends AbstractRowManagerTest {
         writeThreeXmlDocuments();
 
         rowManager.execute(op
-                .fromDocUris("/fromParam/doc1.xml", "/fromParam/doc3.xml")
+                .fromDocUris("/acme/doc1.xml", "/acme/doc3.xml")
                 .remove());
         verifyDocsDeleted();
     }
@@ -40,7 +40,7 @@ public class RowManagerRemoveTest extends AbstractRowManagerTest {
         writeThreeXmlDocuments();
 
         rowManager.execute(op
-                .fromDocUris("/fromParam/doc1.xml", "/fromParam/doc3.xml")
+                .fromDocUris("/acme/doc1.xml", "/acme/doc3.xml")
                 .remove(op.col("uri")));
         verifyDocsDeleted();
     }
@@ -54,8 +54,8 @@ public class RowManagerRemoveTest extends AbstractRowManagerTest {
         writeThreeXmlDocuments();
 
         ArrayNode paramValue = mapper.createArrayNode();
-        paramValue.addObject().put("myUri", "/fromParam/doc1.xml");
-        paramValue.addObject().put("myUri", "/fromParam/doc3.xml");
+        paramValue.addObject().put("myUri", "/acme/doc1.xml");
+        paramValue.addObject().put("myUri", "/acme/doc3.xml");
 
         ModifyPlan plan = op
                 .fromParam("bindingParam", "", op.colTypes(op.colType("myUri", "string")))
@@ -74,8 +74,8 @@ public class RowManagerRemoveTest extends AbstractRowManagerTest {
         writeThreeXmlDocuments();
 
         ArrayNode paramValue = mapper.createArrayNode();
-        paramValue.addObject().put("uri", "/fromParam/doc1.xml");
-        paramValue.addObject().put("uri", "/fromParam/doc3.xml");
+        paramValue.addObject().put("uri", "/acme/doc1.xml");
+        paramValue.addObject().put("uri", "/acme/doc3.xml");
 
         ModifyPlan plan = op
                 .fromParam("bindingParam", "myQualifier", op.colTypes(op.colType("uri", "string")))
@@ -88,9 +88,9 @@ public class RowManagerRemoveTest extends AbstractRowManagerTest {
     private void writeThreeXmlDocuments() {
         DocumentMetadataHandle metadata = new DocumentMetadataHandle();
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet()
-                .add("/fromParam/doc1.xml", metadata, new StringHandle("<doc>1</doc>").withFormat(Format.XML))
-                .add("/fromParam/doc2.xml", metadata, new StringHandle("<doc>2</doc>").withFormat(Format.XML))
-                .add("/fromParam/doc3.xml", metadata, new StringHandle("<doc>3</doc>").withFormat(Format.XML));
+                .add("/acme/doc1.xml", metadata, new StringHandle("<doc>1</doc>").withFormat(Format.XML))
+                .add("/acme/doc2.xml", metadata, new StringHandle("<doc>2</doc>").withFormat(Format.XML))
+                .add("/acme/doc3.xml", metadata, new StringHandle("<doc>3</doc>").withFormat(Format.XML));
 
         rowManager.execute(op
                 .fromParam("myDocs", null, op.docColTypes())
@@ -101,8 +101,8 @@ public class RowManagerRemoveTest extends AbstractRowManagerTest {
     private void verifyDocsDeleted() {
         // Assumes that the test deleted doc1 and doc3
         GenericDocumentManager mgr = Common.client.newDocumentManager();
-        assertNull(mgr.exists("/fromParam/doc1.xml"));
-        assertNull(mgr.exists("/fromParam/doc3.xml"));
-        assertNotNull(mgr.exists("/fromParam/doc2.xml"));
+        assertNull(mgr.exists("/acme/doc1.xml"));
+        assertNull(mgr.exists("/acme/doc3.xml"));
+        assertNotNull(mgr.exists("/acme/doc2.xml"));
     }
 }
