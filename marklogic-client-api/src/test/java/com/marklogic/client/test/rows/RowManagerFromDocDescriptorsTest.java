@@ -33,7 +33,7 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
         metadata.setQuality(2);
         // TODO Test permissions and metadata values once they're supported by the server
 
-        final String uri = "/fromParam/doc1.json";
+        final String uri = "/acme/doc1.json";
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
         ObjectNode content = mapper.createObjectNode().put("hello", "world");
         writeSet.add(uri, metadata, new JacksonHandle(content));
@@ -80,14 +80,14 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
 
         PlanBuilder.AccessPlan plan = op.fromDocDescriptors(
                 op.docDescriptor(
-                        new DocumentWriteOperationImpl("/fromParam/doc1.json", metadata, new JacksonHandle(doc1))),
+                        new DocumentWriteOperationImpl("/acme/doc1.json", metadata, new JacksonHandle(doc1))),
                 op.docDescriptor(
-                        new DocumentWriteOperationImpl("/fromParam/doc2.json", metadata, new JacksonHandle(doc2))));
+                        new DocumentWriteOperationImpl("/acme/doc2.json", metadata, new JacksonHandle(doc2))));
         verifyExportedPlanReturnsSameRowCount(plan);
 
         rowManager.execute(plan.write());
-        verifyJsonDoc("/fromParam/doc1.json", doc -> assertEquals("doc1", doc.get("hello").asText()));
-        verifyJsonDoc("/fromParam/doc2.json", doc -> assertEquals("doc2", doc.get("hello").asText()));
+        verifyJsonDoc("/acme/doc1.json", doc -> assertEquals("doc1", doc.get("hello").asText()));
+        verifyJsonDoc("/acme/doc2.json", doc -> assertEquals("doc2", doc.get("hello").asText()));
     }
 
     @Test
@@ -97,7 +97,7 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
             return;
         }
 
-        final String uri = "/fromParam/doc1.json";
+        final String uri = "/acme/doc1.json";
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
         ObjectNode content = mapper.createObjectNode().put("hello", "world");
         writeSet.add(uri, new DocumentMetadataHandle(), new JacksonHandle(content));
@@ -116,7 +116,7 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
         }
 
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
-        writeSet.add("/fromParam/doc1.xml", new DocumentMetadataHandle(),
+        writeSet.add("/acme/doc1.xml", new DocumentMetadataHandle(),
                 new StringHandle("<doc>1</doc>").withFormat(Format.XML));
 
         IllegalArgumentException ex = assertThrows(
@@ -124,7 +124,7 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
                 IllegalArgumentException.class,
                 () -> op.docDescriptors(writeSet));
         assertEquals("Unexpected exception: " + ex.getMessage(),
-                "Only JSON content can be used with fromDocDescriptors; non-JSON content found for document with URI: /fromParam/doc1.xml",
+                "Only JSON content can be used with fromDocDescriptors; non-JSON content found for document with URI: /acme/doc1.xml",
                 ex.getMessage());
     }
 
@@ -135,8 +135,8 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
         }
 
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
-        writeSet.add(newWriteOp("/fromParam/doc1.json", mapper.createObjectNode().put("hello", "doc1")));
-        writeSet.add(newWriteOp("/fromParam/doc2.json", mapper.createObjectNode().put("hello", "doc2")));
+        writeSet.add(newWriteOp("/acme/doc1.json", mapper.createObjectNode().put("hello", "doc1")));
+        writeSet.add(newWriteOp("/acme/doc2.json", mapper.createObjectNode().put("hello", "doc2")));
 
         PlanBuilder.AccessPlan accessPlan = op.fromDocDescriptors(op.docDescriptors(writeSet));
         ObjectNode plan = exportPlan(accessPlan);

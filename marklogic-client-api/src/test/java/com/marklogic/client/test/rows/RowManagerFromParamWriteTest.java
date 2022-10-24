@@ -41,14 +41,14 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
                 .withCollections("common-coll", "other-coll-1");
 
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
-        writeSet.add("/fromParam/doc1.json", metadata,
+        writeSet.add("/acme/doc1.json", metadata,
                 new JacksonHandle(new ObjectMapper().createObjectNode().put("value", 1)));
         plan = plan.bindParam("myDocs", writeSet);
 
         List<RowRecord> rows = resultRows(plan);
         assertEquals(1, rows.size());
 
-        verifyMetadata("/fromParam/doc1.json", docMetadata -> {
+        verifyMetadata("/acme/doc1.json", docMetadata -> {
             assertEquals(2, docMetadata.getQuality());
             assertTrue(docMetadata.getCollections().contains("common-coll"));
             assertTrue(docMetadata.getCollections().contains("other-coll-1"));
@@ -67,15 +67,15 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
 
         DocumentMetadataHandle metadata = new DocumentMetadataHandle();
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
-        writeSet.add("/fromParam/doc1.xml", metadata, new StringHandle("<doc>1</doc>").withFormat(Format.XML));
-        writeSet.add("/fromParam/doc2.xml", metadata, new StringHandle("<doc>2</doc>").withFormat(Format.XML));
+        writeSet.add("/acme/doc1.xml", metadata, new StringHandle("<doc>1</doc>").withFormat(Format.XML));
+        writeSet.add("/acme/doc2.xml", metadata, new StringHandle("<doc>2</doc>").withFormat(Format.XML));
         plan = plan.bindParam("myDocs", writeSet);
 
         List<RowRecord> rows = resultRows(plan);
         assertEquals(2, rows.size());
 
-        verifyXmlDoc("/fromParam/doc1.xml", "<doc>1</doc>");
-        verifyXmlDoc("/fromParam/doc2.xml", "<doc>2</doc>");
+        verifyXmlDoc("/acme/doc1.xml", "<doc>1</doc>");
+        verifyXmlDoc("/acme/doc2.xml", "<doc>2</doc>");
     }
 
     /**
@@ -91,12 +91,12 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
 
         DocumentMetadataHandle metadata = new DocumentMetadataHandle();
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
-        writeSet.add("/fromParam/doc1.xml", metadata, new StringHandle("<doc>1</doc>"));
-        writeSet.add("/fromParam/doc2.json", metadata, new StringHandle("{\"doc\":2}").withFormat(Format.JSON));
+        writeSet.add("/acme/doc1.xml", metadata, new StringHandle("<doc>1</doc>"));
+        writeSet.add("/acme/doc2.json", metadata, new StringHandle("{\"doc\":2}").withFormat(Format.JSON));
         PlanBuilder.Plan finalPlan = plan.bindParam("myDocs", writeSet);
 
         // Example of expected error message:
-        // Local message: failed to apply resource at rows: Bad Request. Server Message: XDMP-ARGTYPE: xdmp.documentInsert("/fromParam/doc2.json",
+        // Local message: failed to apply resource at rows: Bad Request. Server Message: XDMP-ARGTYPE: xdmp.documentInsert("/acme/doc2.json",
         // Sequence(), {collections:Sequence(), permissions:[{roleId:"7089338530631756591", capability:"read"},
         // {roleId:"7089338530631756591", capability:"update"}], metadata:[], ...}) -- arg2 is not of type Node
         FailedRequestException ex = assertThrows(FailedRequestException.class, () -> rowManager.execute(finalPlan));
@@ -154,14 +154,14 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
 
         DocumentMetadataHandle metadata = new DocumentMetadataHandle();
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
-        writeSet.add("/fromParam/doc1.xml", metadata, new StringHandle("<doc>1</doc>").withFormat(Format.XML));
-        writeSet.add("/fromParam/doc2.xml", metadata, new StringHandle("<doc>2</doc>").withFormat(Format.XML));
+        writeSet.add("/acme/doc1.xml", metadata, new StringHandle("<doc>1</doc>").withFormat(Format.XML));
+        writeSet.add("/acme/doc2.xml", metadata, new StringHandle("<doc>2</doc>").withFormat(Format.XML));
         PlanBuilder.Plan plan = rawPlan.bindParam("myDocs", writeSet);
 
         rowManager.execute(plan);
 
-        verifyXmlDoc("/fromParam/doc1.xml", "<doc>1</doc>");
-        verifyXmlDoc("/fromParam/doc2.xml", "<doc>2</doc>");
+        verifyXmlDoc("/acme/doc1.xml", "<doc>1</doc>");
+        verifyXmlDoc("/acme/doc2.xml", "<doc>2</doc>");
     }
 
     @Test
@@ -183,17 +183,17 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
         final String temporalCollection = "temporal-collection";
         DocumentMetadataHandle metadata = new DocumentMetadataHandle();
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
-        writeSet.add("/fromParam/doc1-temporal.xml", metadata, new StringHandle(contents).withFormat(Format.XML), temporalCollection);
-        writeSet.add("/fromParam/doc2-temporal.xml", metadata, new StringHandle(contents).withFormat(Format.XML), temporalCollection);
+        writeSet.add("/acme/doc1-temporal.xml", metadata, new StringHandle(contents).withFormat(Format.XML), temporalCollection);
+        writeSet.add("/acme/doc2-temporal.xml", metadata, new StringHandle(contents).withFormat(Format.XML), temporalCollection);
         plan = plan.bindParam("myDocs", writeSet);
 
         rowManager.resultRows(plan);
 
-        verifyXmlDoc("/fromParam/doc1-temporal.xml", contents);
-        verifyXmlDoc("/fromParam/doc2-temporal.xml", contents);
+        verifyXmlDoc("/acme/doc1-temporal.xml", contents);
+        verifyXmlDoc("/acme/doc2-temporal.xml", contents);
 
         XMLDocumentManager mgr = Common.client.newXMLDocumentManager();
-        metadata = mgr.readMetadata("/fromParam/doc1-temporal.xml", new DocumentMetadataHandle());
+        metadata = mgr.readMetadata("/acme/doc1-temporal.xml", new DocumentMetadataHandle());
         assertTrue("The document should be in the 'latest' collection if it was correctly inserted via " +
                 "temporal.documentInsert", metadata.getCollections().contains("latest"));
         assertTrue(metadata.getCollections().contains(temporalCollection));

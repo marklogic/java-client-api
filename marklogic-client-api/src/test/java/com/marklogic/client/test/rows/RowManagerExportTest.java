@@ -51,8 +51,8 @@ public class RowManagerExportTest extends AbstractRowManagerTest {
 
         DocumentMetadataHandle metadata = new DocumentMetadataHandle();
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
-        writeSet.add("/fromParam/doc1.xml", metadata, new StringHandle("<doc>1</doc>").withFormat(Format.XML));
-        writeSet.add("/fromParam/doc2.xml", metadata, new StringHandle("<doc>2</doc>").withFormat(Format.XML));
+        writeSet.add("/acme/doc1.xml", metadata, new StringHandle("<doc>1</doc>").withFormat(Format.XML));
+        writeSet.add("/acme/doc2.xml", metadata, new StringHandle("<doc>2</doc>").withFormat(Format.XML));
 
         verifyExportedPlanReturnsSameRowCount(
                 op.fromParam("myDocs", "", op.docColTypes()),
