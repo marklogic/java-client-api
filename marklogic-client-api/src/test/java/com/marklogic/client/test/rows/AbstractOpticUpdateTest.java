@@ -1,15 +1,5 @@
 package com.marklogic.client.test.rows;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.junit.After;
-import org.junit.Before;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -25,6 +15,16 @@ import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
+import org.junit.After;
+import org.junit.Before;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertEquals;
 
 public abstract class AbstractOpticUpdateTest {
 
@@ -97,6 +97,10 @@ public abstract class AbstractOpticUpdateTest {
         return newWriteOp(uri, new JacksonHandle(json));
     }
 
+    protected DocumentWriteOperation newWriteOp(String uri, DocumentMetadataHandle metadata, JsonNode json) {
+        return new DocumentWriteOperationImpl(uri, metadata, new JacksonHandle(json));
+    }
+
     protected DocumentWriteOperation newWriteOp(String uri, AbstractWriteHandle content) {
         return new DocumentWriteOperationImpl(uri, newDefaultMetadata(), content);
     }
@@ -111,5 +115,21 @@ public abstract class AbstractOpticUpdateTest {
         return new DocumentMetadataHandle()
                 .withPermission("rest-reader", DocumentMetadataHandle.Capability.READ)
                 .withPermission("test-rest-writer", DocumentMetadataHandle.Capability.UPDATE);
+    }
+
+    protected int getCollectionSize(String collection) {
+        String result = Common.newEvalClient().newServerEval()
+            .xquery(String.format("xdmp:estimate(fn:collection('%s'))", collection))
+            .evalAs(String.class);
+        return Integer.parseInt(result);
+    }
+
+    protected List<String> getUrisInCollection(String collection) {
+        List<String> uris = new ArrayList<>();
+        Common.newEvalClient().newServerEval()
+            .xquery(String.format("cts:uris((), (), cts:collection-query('%s'))", collection))
+            .eval()
+            .forEachRemaining(result -> uris.add(result.getString()));
+        return uris;
     }
 }

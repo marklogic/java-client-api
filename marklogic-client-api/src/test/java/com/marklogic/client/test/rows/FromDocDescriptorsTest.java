@@ -56,6 +56,8 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
         metadata = new DocumentMetadataHandle().withCollections("updatedColl1", "updatedColl2");
         ModifyPlan updatePlan = op
                 .fromDocDescriptors(op.docDescriptor(new DocumentWriteOperationImpl(uri, metadata, null)))
+                // This lock call isn't necessary, but including it to further test it
+                .lockForUpdate()
                 .write(op.docCols(new String[] { "uri", "collections" }));
         rowManager.execute(updatePlan);
 
