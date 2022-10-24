@@ -20,7 +20,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
+public class FromParamWriteTest extends AbstractOpticUpdateTest {
 
     @Test
     public void jsonDocumentWithAllMetadata() {
@@ -32,12 +32,10 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
                 .fromParam("myDocs", "", op.docColTypes())
                 .write();
 
-        DocumentMetadataHandle metadata = new DocumentMetadataHandle()
+        DocumentMetadataHandle metadata = newDefaultMetadata()
                 .withQuality(2)
                 .withMetadataValue("meta1", "value1")
                 .withMetadataValue("meta2", "value2")
-                // Permissions not yet supported by server - see https://bugtrack.marklogic.com/57883
-                //.withPermission("rest-reader", DocumentMetadataHandle.Capability.READ, DocumentMetadataHandle.Capability.UPDATE)
                 .withCollections("common-coll", "other-coll-1");
 
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
@@ -50,6 +48,8 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
 
         verifyMetadata("/acme/doc1.json", docMetadata -> {
             assertEquals(2, docMetadata.getQuality());
+            assertEquals(DocumentMetadataHandle.Capability.READ, docMetadata.getPermissions().get("rest-reader").iterator().next());
+            assertEquals(DocumentMetadataHandle.Capability.UPDATE, docMetadata.getPermissions().get("test-rest-writer").iterator().next());
             assertTrue(docMetadata.getCollections().contains("common-coll"));
             assertTrue(docMetadata.getCollections().contains("other-coll-1"));
             assertEquals("value1", docMetadata.getMetadataValues().get("meta1"));
@@ -65,7 +65,7 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
 
         PlanBuilder.Plan plan = op.fromParam("myDocs", "", op.docColTypes()).write();
 
-        DocumentMetadataHandle metadata = new DocumentMetadataHandle();
+        DocumentMetadataHandle metadata = newDefaultMetadata();
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
         writeSet.add("/acme/doc1.xml", metadata, new StringHandle("<doc>1</doc>").withFormat(Format.XML));
         writeSet.add("/acme/doc2.xml", metadata, new StringHandle("<doc>2</doc>").withFormat(Format.XML));
@@ -152,7 +152,7 @@ public class RowManagerFromParamWriteTest extends AbstractRowManagerTest {
                 "    }\n" +
                 "}"));
 
-        DocumentMetadataHandle metadata = new DocumentMetadataHandle();
+        DocumentMetadataHandle metadata = newDefaultMetadata();
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
         writeSet.add("/acme/doc1.xml", metadata, new StringHandle("<doc>1</doc>").withFormat(Format.XML));
         writeSet.add("/acme/doc2.xml", metadata, new StringHandle("<doc>2</doc>").withFormat(Format.XML));

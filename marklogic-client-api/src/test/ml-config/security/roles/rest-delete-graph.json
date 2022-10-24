@@ -1,15 +1,10 @@
 {
   "role-name": "rest-delete-graph",
-  "description": "Addresses a bug found in ML 10.0-8.3 and ML 10.0-9.2 where term-query is needed to delete a graph; temporarily adding xdmp:invoke until /v1/rows uses an amp to grant these for transformDoc",
+  "description": "Addresses a bug found in ML 10.0-8.3 and ML 10.0-9.2 where term-query is needed to delete a graph",
   "privilege": [
     {
       "privilege-name": "term-query",
       "action": "http://marklogic.com/xdmp/privileges/term-query",
-      "kind": "execute"
-    },
-    {
-      "privilege-name": "xdmp:invoke",
-      "action": "http://marklogic.com/xdmp/privileges/xdmp-invoke",
       "kind": "execute"
     }
   ]

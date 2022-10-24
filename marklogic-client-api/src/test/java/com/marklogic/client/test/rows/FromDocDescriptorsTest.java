@@ -1,15 +1,9 @@
 package com.marklogic.client.test.rows;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Ignore;
-import org.junit.Test;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
@@ -18,9 +12,15 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
+import org.junit.Test;
 
-public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
+import java.util.List;
+
+import static org.junit.Assert.*;
+
+public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
 
     @Test
     public void writeWithAllMetadata() {
@@ -28,10 +28,9 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
             return;
         }
 
-        DocumentMetadataHandle metadata = new DocumentMetadataHandle();
+        DocumentMetadataHandle metadata = newDefaultMetadata();
         metadata.getCollections().addAll("docDescriptors1", "docDescriptors2");
         metadata.setQuality(2);
-        // TODO Test permissions and metadata values once they're supported by the server
 
         final String uri = "/acme/doc1.json";
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
@@ -45,6 +44,8 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
 
         verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
         verifyMetadata(uri, docMetadata -> {
+            assertEquals(DocumentMetadataHandle.Capability.READ, docMetadata.getPermissions().get("rest-reader").iterator().next());
+            assertEquals(DocumentMetadataHandle.Capability.UPDATE, docMetadata.getPermissions().get("test-rest-writer").iterator().next());
             assertEquals(2, docMetadata.getQuality());
             assertEquals(2, docMetadata.getCollections().size());
             assertTrue(docMetadata.getCollections().contains("docDescriptors1"));
@@ -61,6 +62,8 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
         // Verify only collections were updated
         verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
         verifyMetadata(uri, docMetadata -> {
+            assertEquals(DocumentMetadataHandle.Capability.READ, docMetadata.getPermissions().get("rest-reader").iterator().next());
+            assertEquals(DocumentMetadataHandle.Capability.UPDATE, docMetadata.getPermissions().get("test-rest-writer").iterator().next());
             assertEquals(2, docMetadata.getQuality());
             assertEquals(2, docMetadata.getCollections().size());
             assertTrue(docMetadata.getCollections().contains("updatedColl1"));
@@ -69,12 +72,46 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
     }
 
     @Test
+    public void jsonDocumentWithUserWithDefaultPermissions() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        final String uri = "/acme/doc1.json";
+
+        PlanBuilder.AccessPlan plan = op.fromDocDescriptors(op.docDescriptor(
+                new DocumentWriteOperationImpl(uri, new DocumentMetadataHandle(),
+                        new JacksonHandle(mapper.createObjectNode().put("hello", "world")))
+        ));
+
+        // Use a new RowManager with a user that has default permissions
+        DatabaseClient originalClient = Common.client;
+        try {
+            Common.client = Common.newClientAsUser("rest-writer", null);
+            rowManager = Common.client.newRowManager();
+            rowManager.execute(plan.write());
+
+            verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
+            verifyMetadata(uri, docMetadata -> {
+                // Since this user has the "rest-writer" role, we expect there to be default doc permissions
+                assertEquals(DocumentMetadataHandle.Capability.READ, docMetadata.getPermissions().get("harmonized-reader").iterator().next());
+                assertEquals(DocumentMetadataHandle.Capability.UPDATE, docMetadata.getPermissions().get("harmonized-updater").iterator().next());
+                assertEquals(DocumentMetadataHandle.Capability.READ, docMetadata.getPermissions().get("rest-reader").iterator().next());
+                assertEquals(DocumentMetadataHandle.Capability.UPDATE, docMetadata.getPermissions().get("rest-writer").iterator().next());
+            });
+        } finally {
+            Common.client = originalClient;
+        }
+    }
+
+
+    @Test
     public void writeIndividualDocDescriptors() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
         }
 
-        DocumentMetadataHandle metadata = new DocumentMetadataHandle();
+        DocumentMetadataHandle metadata = newDefaultMetadata();
         ObjectNode doc1 = mapper.createObjectNode().put("hello", "doc1");
         ObjectNode doc2 = mapper.createObjectNode().put("hello", "doc2");
 
@@ -91,7 +128,6 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
     }
 
     @Test
-    @Ignore("Known issue, erroneously does a temporal.documentInsert - see https://bugtrack.marklogic.com/57850")
     public void documentWriteSetWithQualifier() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
@@ -100,12 +136,16 @@ public class RowManagerFromDocDescriptorsTest extends AbstractRowManagerTest {
         final String uri = "/acme/doc1.json";
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
         ObjectNode content = mapper.createObjectNode().put("hello", "world");
-        writeSet.add(uri, new DocumentMetadataHandle(), new JacksonHandle(content));
+        writeSet.add(uri, newDefaultMetadata(), new JacksonHandle(content));
 
         final String qualifier = "myQualifier";
         PlanBuilder.AccessPlan plan = op.fromDocDescriptors(op.docDescriptors(writeSet), qualifier);
+
         verifyExportedPlanReturnsSameRowCount(plan);
-        rowManager.execute(plan.write(op.docCols(qualifier)));
+
+        List<RowRecord> rows = resultRows(plan.write(op.docCols(qualifier)));
+        assertEquals("/acme/doc1.json", rows.get(0).getString("myQualifier.uri"));
+
         verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
     }
 

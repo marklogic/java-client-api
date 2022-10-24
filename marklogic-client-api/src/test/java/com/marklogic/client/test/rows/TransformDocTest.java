@@ -24,7 +24,7 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
 
-public class RowManagerTransformDocTest extends AbstractRowManagerTest {
+public class TransformDocTest extends AbstractOpticUpdateTest {
 
     @Test
     public void mjsTransformWithParam() {

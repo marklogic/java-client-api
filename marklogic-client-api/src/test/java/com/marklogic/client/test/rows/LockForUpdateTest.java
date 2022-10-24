@@ -7,14 +7,11 @@ import java.util.List;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.marklogic.client.document.DocumentWriteOperation.OperationType;
-import com.marklogic.client.impl.DocumentWriteOperationImpl;
-import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
 
-public class RowManagerLockForUpdateTest extends AbstractRowManagerTest {
+public class LockForUpdateTest extends AbstractOpticUpdateTest {
 
     @Test
     public void basicTest() {
