@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class BatcherImpl implements Batcher {
   private String jobName = "unnamed";
   private String jobId = null;
-  private int batchSize = 100;
+  private int batchSize = 0;
   private int threadCount = 1;
   private ForestConfiguration forestConfig;
   private DataMovementManagerImpl moveMgr;

@@ -68,6 +68,7 @@ import com.marklogic.client.datamovement.WriteBatcher;
 
 import com.marklogic.client.test.Common;
 
+import static com.marklogic.client.io.Format.JSON;
 import static org.junit.Assert.*;
 
 public class WriteBatcherTest {
@@ -1186,5 +1187,24 @@ public class WriteBatcherTest {
 
     client.newDocumentManager().delete("/CXXXX_Ü_9999.json");
     client.newDocumentManager().delete("Ä_9999.json");
+  }
+
+  @Test
+  public void testWithDocumentsLessThanBatchSize(){
+    DataMovementManager moveMgr = client.newDataMovementManager();
+    WriteBatcher writeBatcher = moveMgr.newWriteBatcher();
+    DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(whbTestCollection);
+    moveMgr.startJob(writeBatcher);
+    Set<String> set = new HashSet<>();
+    for(int i=0; i<99; i++){
+      writeBatcher.addAs("/testing/"+i,  meta, new StringHandle("{key:"+i+", value:\"value"+i+"\"}").withFormat(JSON));
+      set.add("/testing/"+i);
+    }
+    writeBatcher.awaitCompletion();
+    moveMgr.stopJob(writeBatcher);
+    DocumentManager docMgr = client.newDocumentManager();
+    for(String uri:set){
+      assertTrue(docMgr.exists(uri)!=null);
+    }
   }
 }
