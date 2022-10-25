@@ -295,6 +295,14 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   @Override
+  public ServerExpression permission(String roleName, String capability) {
+    return jsonObject(
+        prop(xs.string("roleName"), xs.string(roleName)),
+        prop(xs.string("capability"), xs.string(capability))
+    );
+  }
+
+  @Override
   public PlanAggregateCol avg(String name, String column, PlanValueOption option) {
     return avg(col(name), col(column), option);
   }

@@ -465,6 +465,16 @@ public interface PlanBuilderBase {
     TransformDefinition transformDefinition(String path);
 
     /**
+     * Convenience method for constructing a permission that can then be used e.g. with {@code jsonArray} when binding
+     * an array of permissions to a column.
+     *
+     * @param roleName name of the role for the permission
+     * @param capability lower-cased capability; e.g. "read", "update", "execute"
+     * @return
+     */
+    ServerExpression permission(String roleName, String capability);
+
+    /**
      * Defines base methods for Plan. This interface is an implementation detail.
      * Use Plan as the type for instances of Plan.
      */
