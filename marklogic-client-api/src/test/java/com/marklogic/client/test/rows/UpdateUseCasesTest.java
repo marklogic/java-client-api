@@ -1,7 +1,11 @@
 package com.marklogic.client.test.rows;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonHandle;
@@ -15,15 +19,59 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Intended to capture interesting use cases, particularly those called out in the functional spec.
  */
 public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
 
-    // TODO Try out existsJoin
+    /**
+     * Use case: Given a set of doc descriptors, add a collection to each document with a URI matching one of the
+     * descriptors. Any descriptor that has a URI for a document that no longer exists will be ignored.
+     */
+    @Test
+    @Ignore("Waiting for fixes for joinDocCols with qualifier")
+    public void updateAndIgnoreNonExistentURIs() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        // First, write a document that can then be updated
+        final String firstUri = "/acme/1.json";
+        rowManager.execute(op
+            .fromDocDescriptors(op.docDescriptor(
+                newWriteOp(firstUri, newDefaultMetadata().withCollections("test1"), mapper.createObjectNode().put("hello", "world"))
+            ))
+            .write());
+        verifyJsonDoc(firstUri, doc -> assertEquals("world", doc.get("hello").asText()));
+
+        // Now submit two documents for updating, but ignore the one that doesn't match an existing URI
+        final String missingUri = "/acme/doesnt-exist.json";
+        DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
+        writeSet.add(newWriteOp(firstUri, mapper.createObjectNode().put("hello", "modified")));
+        writeSet.add(newWriteOp(missingUri, mapper.createObjectNode().put("should be", "ignored")));
+
+        ModifyPlan plan = op
+            .fromDocDescriptors(op.docDescriptors(writeSet), "input")
+            .existsJoin(
+                op.fromDocUris(op.cts.documentQuery(op.xs.stringSeq(firstUri, missingUri)), "lexicon"),
+                op.on(op.viewCol("input", "uri"), op.viewCol("lexicon", "uri"))
+            )
+            // TODO Think we're waiting on server fixes in order for joinDocCols to work
+            .select(op.viewCol("input", "uri"), op.viewCol("input", "doc"), op.viewCol("input", "permissions"))
+            .write(op.docCols("input"));
+
+        List<RowRecord> rows = resultRows(plan);
+        assertEquals(1, rows.size());
+
+        verifyJsonDoc(firstUri, doc -> assertEquals("modified", doc.get("hello").asText()));
+        verifyMetadata(firstUri, metadata -> {
+            assertTrue("The collection in the initial insert should have been retained",
+                metadata.getCollections().contains("test1"));
+        });
+        assertNull(Common.client.newDocumentManager().exists(missingUri));
+    }
 
     /**
      * Fails with ML error message of:
@@ -90,9 +138,11 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
                 // The column to group by
                 op.col("uri"),
                 // The columns to retain in the result
-                op.aggregateSeq(op.col("doc"), op.col("permissions")));
+                op.aggregateSeq(op.col("doc"), op.col("permissions"))
+            )
+            .write();
 
-        rowManager.execute(plan.write());
+        rowManager.execute(plan);
 
         verifyJsonDoc(duplicateUri, doc -> assertEquals(
             "The first writeOp with the duplicate URI should have been retained via groupBy and written",
@@ -116,7 +166,9 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
                 op.col("doc"),
                 op.jsonObject(
                     op.prop("header", op.jsonObject(op.prop("user", op.xdmp.getCurrentUser()))),
-                    op.prop("body", op.col("doc")))));
+                    op.prop("body", op.col("doc"))
+                )
+            ));
 
         rowManager.execute(plan.write());
 
@@ -142,7 +194,7 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
         ModifyPlan plan = op.fromView("opticUnitTest", "musician", null, idColumn)
             .where(op.sqlCondition("dob > '1901-01-01'"))
             .orderBy(op.asc(op.col("lastName")))
-            .offset(2)
+            .offset(op.param("offset"))
             .limit(2)
             .joinDoc(op.col("doc"), idColumn)
             .bind(op.as("uri", op.fn.concat(
@@ -150,10 +202,7 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
                 op.fn.string(op.col("lastName")),
                 op.xs.string(".json"))
             ))
-            .bind(op.as("permissions", op.jsonArray(
-                op.permission("rest-reader", "read"),
-                op.permission("rest-extension-user", "update")
-            )))
+            .bind(op.as("permissions", op.param("perms")))
             .lockForUpdate()
             .transformDoc(
                 op.col("doc"),
@@ -161,7 +210,15 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
                     .withParam("myParam", "my value"))
             .write();
 
-        List<RowRecord> rows = resultRows(plan);
+        // Example of using Jackson to define permissions and then binding them to the plan
+        ArrayNode permissions = mapper.createArrayNode();
+        permissions.addObject().put("roleName", "rest-reader").put("capability", "read");
+        permissions.addObject().put("roleName", "rest-extension-user").put("capability", "update");
+
+        List<RowRecord> rows = resultRows(plan
+            .bindParam("offset", 2)
+            .bindParam("perms", new JacksonHandle(permissions))
+        );
 
         assertEquals(2, rows.size());
         assertEquals("/acme/Coltrane.json", rows.get(0).getString("uri"));
@@ -194,7 +251,9 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
         ModifyPlan plan = op
             .fromDocDescriptors(op.docDescriptors(writeSet), "input")
             .write(op.docCols("input"))
+            // Results in a single row with a single column of "uris"
             .groupBy(null, op.arrayAggregate(op.col("uris"), op.viewCol("input", "uri")))
+            // Construct the descriptor columns to use when writing
             .select(
                 op.as("uri", op.fn.concat(op.xs.string("/acme/audit-"), op.xdmp.random(), op.xs.string(".log"))),
                 op.as("doc", op.jsonObject(
@@ -238,6 +297,69 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
             DocumentMetadataHandle.DocumentPermissions perms = auditMetadata.getPermissions();
             assertEquals(DocumentMetadataHandle.Capability.READ, perms.get("rest-reader").iterator().next());
             assertEquals(DocumentMetadataHandle.Capability.UPDATE, perms.get("test-rest-writer").iterator().next());
+        });
+    }
+
+    /**
+     * Use case: we have a set of rows (perhaps from a CSV, or Kafka, etc), and we want to insert new documents for
+     * them, but also join in some reference data from an existing view as part of the new documents. In this use case,
+     * we're denormalizing "city" into the new documents based on the zip code in each document.
+     */
+    @Test
+    public void writeWithReferenceDataFromViewJoinedIn() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        // Define some incoming rows from which to create new documents
+        ArrayNode incomingData = mapper.createArrayNode();
+        incomingData.addObject().put("lastName", "Smith").put("firstName", "Jane").put("zipCode", 22201);
+        incomingData.addObject().put("lastName", "Jones").put("firstName", "John");
+
+        ModifyPlan plan = op.fromParam("incomingData", "input", op.colTypes(
+                op.colType("lastName", "string"),
+                op.colType("firstName", "string"),
+                op.colType("zipCode", "integer", true)
+            ))
+            .joinLeftOuter(
+                op.fromView("opticUnitTest", "zipcode"),
+                op.on(
+                    op.viewCol("input", "zipCode"),
+                    op.viewCol("zipcode", "zip")
+                )
+            )
+            .select(
+                op.as("doc", op.jsonObject(
+                    op.prop("lastName", op.viewCol("input", "lastName")),
+                    op.prop("firstName", op.viewCol("input", "firstName")),
+                    op.prop("zipCode", op.viewCol("input", "zipCode")),
+                    op.prop("cityOfResidence", op.viewCol("zipcode", "city"))
+                )),
+                op.as("uri", op.fn.concat(
+                    op.xs.string("/acme/person/"), op.viewCol("input", "lastName"), op.xs.string(".json"))
+                ),
+                op.as("permissions", op.jsonArray(
+                    op.permission("rest-reader", "read"),
+                    op.permission("rest-reader", "update")
+                ))
+            )
+            .write();
+
+        List<RowRecord> rows = resultRows(plan.bindParam("incomingData", new JacksonHandle(incomingData)));
+        assertEquals(2, rows.size());
+
+        verifyJsonDoc("/acme/person/Smith.json", doc -> {
+            assertEquals("Smith", doc.get("lastName").asText());
+            assertEquals("Jane", doc.get("firstName").asText());
+            assertEquals(22201, doc.get("zipCode").asInt());
+            assertEquals("Arlington", doc.get("cityOfResidence").asText());
+        });
+
+        verifyJsonDoc("/acme/person/Jones.json", doc -> {
+            assertEquals("Jones", doc.get("lastName").asText());
+            assertEquals("John", doc.get("firstName").asText());
+            assertTrue(doc.get("zipCode") instanceof NullNode);
+            assertTrue(doc.get("cityOfResidence") instanceof NullNode);
         });
     }
 }
