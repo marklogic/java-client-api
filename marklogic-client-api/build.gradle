@@ -219,3 +219,8 @@ task generatePomForDependencyGraph(dependsOn: "generatePomFileForMainJavaPublica
         file("../pom.xml").setText(fileText.replace(preamble, preamble + comment))
     }
 }
+
+task testRows(type: Test) {
+    description = "Run all 'rows' tests; i.e. those exercising Optic and Optic Update functionality"
+    include "com/marklogic/client/test/rows/**"
+}
