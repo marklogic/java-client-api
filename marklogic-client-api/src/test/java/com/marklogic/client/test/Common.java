@@ -103,6 +103,9 @@ public class Common {
   public static DatabaseClient newClient(String databaseName) {
     return newClientAsUser(Common.USER, databaseName);
   }
+  public static DatabaseClient newClientAsUser(String username) {
+    return newClientAsUser(username, null);
+  }
   public static DatabaseClient newClientAsUser(String username, String databaseName) {
     System.out.println("Connecting to: " + Common.HOST);
     return DatabaseClientFactory.newClient(Common.HOST, Common.PORT, databaseName,

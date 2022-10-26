@@ -41,7 +41,7 @@ public abstract class AbstractOpticUpdateTest {
                 .xquery("cts:uri-match('/acme/*') ! xdmp:document-delete(.)")
                 .evalAs(String.class);
 
-        Common.client = Common.newClientAsUser("writer-no-default-permissions", null);
+        Common.client = Common.newClientAsUser("writer-no-default-permissions");
         rowManager = Common.client.newRowManager();
         op = rowManager.newPlanBuilder();
     }

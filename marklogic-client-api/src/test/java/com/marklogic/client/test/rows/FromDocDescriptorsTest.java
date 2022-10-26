@@ -3,7 +3,6 @@ package com.marklogic.client.test.rows;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
@@ -21,6 +20,8 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
+
+    private final static String USER_WITH_DEFAULT_COLLECTIONS = "writer-default-collections";
 
     @Test
     public void writeWithAllMetadata() {
@@ -55,10 +56,10 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
         // Now update only the collections
         metadata = new DocumentMetadataHandle().withCollections("updatedColl1", "updatedColl2");
         ModifyPlan updatePlan = op
-                .fromDocDescriptors(op.docDescriptor(new DocumentWriteOperationImpl(uri, metadata, null)))
-                // This lock call isn't necessary, but including it to further test it
-                .lockForUpdate()
-                .write(op.docCols(new String[] { "uri", "collections" }));
+            .fromDocDescriptors(op.docDescriptor(new DocumentWriteOperationImpl(uri, metadata, null)))
+            // This lock call isn't necessary, but including it to further test it
+            .lockForUpdate()
+            .write(op.docCols(new String[]{"uri", "collections"}));
         rowManager.execute(updatePlan);
 
         // Verify only collections were updated
@@ -82,30 +83,22 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
         final String uri = "/acme/doc1.json";
 
         PlanBuilder.AccessPlan plan = op.fromDocDescriptors(op.docDescriptor(
-                new DocumentWriteOperationImpl(uri, new DocumentMetadataHandle(),
-                        new JacksonHandle(mapper.createObjectNode().put("hello", "world")))
+            new DocumentWriteOperationImpl(uri, new DocumentMetadataHandle(),
+                new JacksonHandle(mapper.createObjectNode().put("hello", "world")))
         ));
 
         // Use a new RowManager with a user that has default permissions
-        DatabaseClient originalClient = Common.client;
-        try {
-            Common.client = Common.newClientAsUser("rest-writer", null);
-            rowManager = Common.client.newRowManager();
-            rowManager.execute(plan.write());
+        Common.newClientAsUser("rest-writer").newRowManager().execute(plan.write());
 
-            verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
-            verifyMetadata(uri, docMetadata -> {
-                // Since this user has the "rest-writer" role, we expect there to be default doc permissions
-                assertEquals(DocumentMetadataHandle.Capability.READ, docMetadata.getPermissions().get("harmonized-reader").iterator().next());
-                assertEquals(DocumentMetadataHandle.Capability.UPDATE, docMetadata.getPermissions().get("harmonized-updater").iterator().next());
-                assertEquals(DocumentMetadataHandle.Capability.READ, docMetadata.getPermissions().get("rest-reader").iterator().next());
-                assertEquals(DocumentMetadataHandle.Capability.UPDATE, docMetadata.getPermissions().get("rest-writer").iterator().next());
-            });
-        } finally {
-            Common.client = originalClient;
-        }
+        verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
+        verifyMetadata(uri, docMetadata -> {
+            // Since this user has the "rest-writer" role, we expect there to be default doc permissions
+            assertEquals(DocumentMetadataHandle.Capability.READ, docMetadata.getPermissions().get("harmonized-reader").iterator().next());
+            assertEquals(DocumentMetadataHandle.Capability.UPDATE, docMetadata.getPermissions().get("harmonized-updater").iterator().next());
+            assertEquals(DocumentMetadataHandle.Capability.READ, docMetadata.getPermissions().get("rest-reader").iterator().next());
+            assertEquals(DocumentMetadataHandle.Capability.UPDATE, docMetadata.getPermissions().get("rest-writer").iterator().next());
+        });
     }
-
 
     @Test
     public void writeIndividualDocDescriptors() {
@@ -113,15 +106,13 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
             return;
         }
 
-        DocumentMetadataHandle metadata = newDefaultMetadata();
         ObjectNode doc1 = mapper.createObjectNode().put("hello", "doc1");
         ObjectNode doc2 = mapper.createObjectNode().put("hello", "doc2");
 
         PlanBuilder.AccessPlan plan = op.fromDocDescriptors(
-                op.docDescriptor(
-                        new DocumentWriteOperationImpl("/acme/doc1.json", metadata, new JacksonHandle(doc1))),
-                op.docDescriptor(
-                        new DocumentWriteOperationImpl("/acme/doc2.json", metadata, new JacksonHandle(doc2))));
+            op.docDescriptor(newWriteOp("/acme/doc1.json", doc1)),
+            op.docDescriptor(newWriteOp("/acme/doc2.json", doc2))
+        );
         verifyExportedPlanReturnsSameRowCount(plan);
 
         rowManager.execute(plan.write());
@@ -137,8 +128,7 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
 
         final String uri = "/acme/doc1.json";
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
-        ObjectNode content = mapper.createObjectNode().put("hello", "world");
-        writeSet.add(uri, newDefaultMetadata(), new JacksonHandle(content));
+        writeSet.add(newWriteOp(uri, mapper.createObjectNode().put("hello", "world")));
 
         final String qualifier = "myQualifier";
         PlanBuilder.AccessPlan plan = op.fromDocDescriptors(op.docDescriptors(writeSet), qualifier);
@@ -159,15 +149,15 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
 
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
         writeSet.add("/acme/doc1.xml", new DocumentMetadataHandle(),
-                new StringHandle("<doc>1</doc>").withFormat(Format.XML));
+            new StringHandle("<doc>1</doc>").withFormat(Format.XML));
 
         IllegalArgumentException ex = assertThrows(
-                "Only JSON content is supported for the 5.6.0 release and 11.0 release of MarkLogic",
-                IllegalArgumentException.class,
-                () -> op.docDescriptors(writeSet));
+            "Only JSON content is supported for the 5.6.0 release and 11.0 release of MarkLogic",
+            IllegalArgumentException.class,
+            () -> op.docDescriptors(writeSet));
         assertEquals("Unexpected exception: " + ex.getMessage(),
-                "Only JSON content can be used with fromDocDescriptors; non-JSON content found for document with URI: /acme/doc1.xml",
-                ex.getMessage());
+            "Only JSON content can be used with fromDocDescriptors; non-JSON content found for document with URI: /acme/doc1.xml",
+            ex.getMessage());
     }
 
     @Test
@@ -187,6 +177,46 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
         assertEquals("doc2", docDescriptorArgs.get(1).get("doc").get("hello").asText());
 
         verifyExportedPlanReturnsSameRowCount(accessPlan);
+    }
+
+    @Test
+    public void ignoreDefaultCollectionsWhenCollectionsAreSpecified() {
+        final String uri = "/acme/doc1.json";
+
+        ModifyPlan plan = op.fromDocDescriptors(op.docDescriptor(
+            newWriteOp(
+                uri,
+                newDefaultMetadata().withCollections("custom-coll1"),
+                mapper.createObjectNode().put("hello", "world"))
+        )).write();
+
+        Common.newClientAsUser(USER_WITH_DEFAULT_COLLECTIONS).newRowManager().execute(plan);
+
+        verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
+        verifyMetadata(uri, metadata -> {
+            DocumentMetadataHandle.DocumentCollections colls = metadata.getCollections();
+            assertEquals("Should only contain the 1 collection specified by the user", 1, colls.size());
+            assertTrue(colls.contains("custom-coll1"));
+        });
+    }
+
+    @Test
+    public void useDefaultCollectionsWhenNoneAreSpecified() {
+        final String uri = "/acme/doc1.json";
+
+        ModifyPlan plan = op.fromDocDescriptors(op.docDescriptor(
+            newWriteOp(uri, mapper.createObjectNode().put("hello", "world"))
+        )).write();
+
+        Common.newClientAsUser(USER_WITH_DEFAULT_COLLECTIONS).newRowManager().execute(plan);
+
+        verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
+        verifyMetadata(uri, metadata -> {
+            DocumentMetadataHandle.DocumentCollections colls = metadata.getCollections();
+            assertEquals("Expecting the 2 default collections that the user writer-default-collections has", 2, colls.size());
+            assertTrue(colls.contains("default1"));
+            assertTrue(colls.contains("default2"));
+        });
     }
 
     private ObjectNode exportPlan(PlanBuilder.ExportablePlan plan) {
