@@ -34,7 +34,7 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
         ModifyPlan plan = op
             .fromParam("myDocs", "", op.colTypes(op.colType("doc", "none")))
             .transformDoc(op.col("doc"),
-                op.transformDefinition("/etc/optic/test/transformDoc-test.mjs")
+                op.transformDef("/etc/optic/test/transformDoc-test.mjs")
                     .withParam("myParam", "my value"));
 
         List<RowRecord> results = resultRows(plan.bindParam("myDocs", new JacksonHandle(rows)));
@@ -61,7 +61,7 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
         ModifyPlan plan = op
             .fromParam("myDocs", "", op.colTypes(op.colType("doc", "none")))
             .transformDoc(op.col("doc"),
-                op.transformDefinition("/etc/optic/test/transformDoc-test.mjs").withKind("mjs"));
+                op.transformDef("/etc/optic/test/transformDoc-test.mjs").withKind("mjs"));
 
         List<RowRecord> results = resultRows(plan.bindParam("myDocs", new JacksonHandle(rows)));
         assertEquals(1, results.size());
@@ -81,7 +81,7 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
         ModifyPlan plan = op
             .fromDocUris("/optic/test/musician1.json")
             .joinDoc(op.col("doc"), op.col("uri"))
-            .transformDoc(op.col("doc"), op.transformDefinition("/etc/optic/test/transformDoc-throwsError.mjs"));
+            .transformDoc(op.col("doc"), op.transformDef("/etc/optic/test/transformDoc-throwsError.mjs"));
 
         FailedRequestException ex = assertThrows(FailedRequestException.class, () -> rowManager.execute(plan));
         assertTrue("Unexpected message: " + ex.getMessage(), ex.getMessage().contains("throw Error(\"This is intentional\")"));
@@ -98,7 +98,7 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
             .fromDocUris("/optic/test/musician1.json", "/optic/test/musician2.json")
             .joinDoc(op.col("doc"), op.col("uri"))
             .transformDoc(op.col("doc"),
-                op.transformDefinition("/etc/optic/test/transformDoc-test.mjs").withParam("myParam",
+                op.transformDef("/etc/optic/test/transformDoc-test.mjs").withParam("myParam",
                     "my value"));
 
         List<RowRecord> results = resultRows(plan);
@@ -130,7 +130,7 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
         ModifyPlan plan = op
             .fromParam("myDocs", "", op.colTypes(op.colType("rowId", "integer"), op.colType("doc", "none")))
             .transformDoc(op.col("doc"),
-                op.transformDefinition("/etc/optic/test/transformDoc-test.xslt")
+                op.transformDef("/etc/optic/test/transformDoc-test.xslt")
                     .withKind("xslt")
                     .withParam("myParam", "my value"));
 
@@ -164,7 +164,7 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
         ModifyPlan plan = op
             .fromParam("myDocs", "", op.colTypes(op.colType("doc", "none")))
             .transformDoc(op.col("doc"),
-                op.transformDefinition("/etc/optic/test/transformDoc-test.xslt").withKind("xslt"));
+                op.transformDef("/etc/optic/test/transformDoc-test.xslt").withKind("xslt"));
 
         List<RowRecord> results = resultRows(
             plan.bindParam("myDocs", new JacksonHandle(rows), Collections.singletonMap("doc", attachments)));

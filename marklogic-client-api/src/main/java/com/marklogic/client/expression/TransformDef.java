@@ -7,14 +7,14 @@ import java.util.Map;
  * assumption is that a factory method will be used to instantiate this which
  * requires the path of the transform module.
  */
-public interface TransformDefinition {
+public interface TransformDef {
     /**
      * Define the kind of transform; either "mjs" (the default) or "xslt".
      * 
      * @param kind
      * @return
      */
-    TransformDefinition withKind(String kind);
+    TransformDef withKind(String kind);
 
     /**
      * Define a set of parameters to pass to the transform.
@@ -22,7 +22,7 @@ public interface TransformDefinition {
      * @param params
      * @return
      */
-    TransformDefinition withParams(Map<String, Object> params);
+    TransformDef withParams(Map<String, Object> params);
 
     /**
      * Convenience method for adding a single parameter to the transform definition. If a map of params has already been
@@ -32,5 +32,5 @@ public interface TransformDefinition {
      * @param value
      * @return
      */
-    TransformDefinition withParam(String name, Object value);
+    TransformDef withParam(String name, Object value);
 }

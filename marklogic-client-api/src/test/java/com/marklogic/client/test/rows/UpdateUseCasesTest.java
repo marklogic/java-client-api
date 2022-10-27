@@ -2,10 +2,8 @@ package com.marklogic.client.test.rows;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonHandle;
@@ -206,7 +204,7 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
             .lockForUpdate()
             .transformDoc(
                 op.col("doc"),
-                op.transformDefinition("/etc/optic/test/transformDoc-test.mjs")
+                op.transformDef("/etc/optic/test/transformDoc-test.mjs")
                     .withParam("myParam", "my value"))
             .write();
 
