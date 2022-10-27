@@ -460,9 +460,9 @@ public interface PlanBuilderBase {
      * Build a transform definition for use with {@code transformDoc}.
      * 
      * @param path the path (URI) of either a *.mjs or *.xslt module in a modules database
-     * @return a new {@code TransformDefinition}
+     * @return a new {@code TransformDef}
      */
-    TransformDefinition transformDefinition(String path);
+    TransformDef transformDef(String path);
 
     /**
      * Convenience method for constructing a permission that can then be used e.g. with {@code jsonArray} when binding
@@ -964,14 +964,14 @@ public interface PlanBuilderBase {
          */
         PlanBuilder.ModifyPlan remove(PlanColumn uriColumn);
         /**
-         * Applies the given transformation to the content in the given column in each row. A {@code TransformDefinition}
-         * can be constructed via {@code PlanBuilder#transformDefinition(String)}.
+         * Applies the given transformation to the content in the given column in each row. A {@code TransformDef}
+         * can be constructed via {@code PlanBuilder#transformDef(String)}.
          * 
          * @param docColumn the column containing content to be transformed
-         * @param transformDefinition
+         * @param transformDef
          * @return a ModifyPlan object
          */
-        PlanBuilder.ModifyPlan transformDoc(PlanColumn docColumn, TransformDefinition transformDefinition);
+        PlanBuilder.ModifyPlan transformDoc(PlanColumn docColumn, TransformDef transformDef);
         /**
          * This method restricts the row set to rows matched by the boolean expression. Use boolean composers such as op.and and op.or to combine multiple expressions.
          * @param condition  The boolean expression on which to match. 

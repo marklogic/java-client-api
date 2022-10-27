@@ -24,7 +24,7 @@ import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.SemExpr;
-import com.marklogic.client.expression.TransformDefinition;
+import com.marklogic.client.expression.TransformDef;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -290,8 +290,8 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
 
   
   @Override
-  public TransformDefinition transformDefinition(String path) {
-    return new TransformDefinitionImpl(path);
+  public TransformDef transformDef(String path) {
+    return new TransformDefImpl(path);
   }
 
   @Override
@@ -1071,8 +1071,8 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
 
     @Override
-    public ModifyPlan transformDoc(PlanColumn docColumn, TransformDefinition transformDefinition) {
-      return new ModifyPlanSubImpl(this, "op", "transformDoc", new Object[]{docColumn, transformDefinition});
+    public ModifyPlan transformDoc(PlanColumn docColumn, TransformDef transformDef) {
+      return new ModifyPlanSubImpl(this, "op", "transformDoc", new Object[]{docColumn, transformDef});
     }
 
     @Override

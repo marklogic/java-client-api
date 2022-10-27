@@ -5,16 +5,16 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.expression.TransformDefinition;
+import com.marklogic.client.expression.TransformDef;
 import com.marklogic.client.impl.BaseTypeImpl.BaseArgImpl;
 
-public class TransformDefinitionImpl implements TransformDefinition, BaseArgImpl {
+public class TransformDefImpl implements TransformDef, BaseArgImpl {
 
     private String path;
     private String kind = "mjs";
     private Map<String, Object> params;
 
-    public TransformDefinitionImpl(String path) {
+    public TransformDefImpl(String path) {
         this.path = path;
     }
 
@@ -26,23 +26,23 @@ public class TransformDefinitionImpl implements TransformDefinition, BaseArgImpl
         if (params != null) {
             node.putPOJO("params", params);
         }
-        return strb.append(node.toString());
+        return strb.append(node);
     }
 
     @Override
-    public TransformDefinition withKind(String kind) {
+    public TransformDef withKind(String kind) {
         this.kind = kind;
         return this;
     }
 
     @Override
-    public TransformDefinition withParams(Map<String, Object> params) {
+    public TransformDef withParams(Map<String, Object> params) {
         this.params = params;
         return this;
     }
 
     @Override
-    public TransformDefinition withParam(String name, Object value) {
+    public TransformDef withParam(String name, Object value) {
         if (this.params == null) {
             this.params = new HashMap<>();
         }
