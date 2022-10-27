@@ -465,6 +465,18 @@ public interface PlanBuilderBase {
     TransformDef transformDef(String path);
 
     /**
+     * Build a schema definition for use with {@code validateDoc}.
+     *
+     * @return a new {@code SchemaDefExpr}
+     */
+    SchemaDefExpr schemaDefinition(String kind);
+    /**
+     * Build a error definition for use with {@code validateDoc}.
+     *
+     * @return a new {@code PlanErrorDisposition}
+     */
+    PlanErrorDisposition errorDispositionDef(int logSize, String logLevel);
+    /**
      * Convenience method for constructing a permission that can then be used e.g. with {@code jsonArray} when binding
      * an array of permissions to a column.
      *

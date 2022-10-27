@@ -22,9 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.expression.SemExpr;
-import com.marklogic.client.expression.TransformDef;
+import com.marklogic.client.expression.*;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -292,6 +290,15 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   @Override
   public TransformDef transformDef(String path) {
     return new TransformDefImpl(path);
+  }
+  @Override
+  public SchemaDefExpr schemaDefinition(String kind) {
+    return new SchemaDefImpl(kind);
+  }
+
+  @Override
+  public PlanErrorDisposition errorDispositionDef(int logSize, String logLevel) {
+    return new ErrorDispositionDefImpl(logSize, logLevel);
   }
 
   @Override
