@@ -221,13 +221,8 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   @Override
-  public PlanDocColsIdentifier docCols(Map<String, String> descriptorColumnMapping) {
+  public PlanDocColsIdentifier docCols(Map<String, PlanColumn> descriptorColumnMapping) {
     return new PlanDocColsIdentifierImpl(descriptorColumnMapping);
-  }
-
-  @Override
-  public PlanDocColsIdentifier docCols(String[] descriptorColumnNames) {
-    return new PlanDocColsIdentifierImpl(descriptorColumnNames);
   }
 
   public static class PlanDocDescriptorImpl implements PlanDocDescriptor, BaseTypeImpl.BaseArgImpl {

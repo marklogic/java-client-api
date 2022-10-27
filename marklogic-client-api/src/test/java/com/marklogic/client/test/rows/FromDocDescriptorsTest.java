@@ -24,7 +24,7 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
     private final static String USER_WITH_DEFAULT_COLLECTIONS = "writer-default-collections";
 
     @Test
-    public void writeWithAllMetadata() {
+    public void writeWithAllMetadataThenUpdateOnlyCollections() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
         }
@@ -59,8 +59,14 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
             .fromDocDescriptors(op.docDescriptor(new DocumentWriteOperationImpl(uri, metadata, null)))
             // This lock call isn't necessary, but including it to further test it
             .lockForUpdate()
-            .write(op.docCols(new String[]{"uri", "collections"}));
-        rowManager.execute(updatePlan);
+            .write(op.docCols(null, op.xs.stringSeq("uri", "collections")));
+        List<RowRecord> rows = resultRows(updatePlan);
+        assertEquals(1, rows.size());
+        assertEquals(uri, rows.get(0).getString("uri"));
+        assertEquals("Quality still exists as a column because there's no way for fromDocDescriptors to know if the " +
+            "user intentionally set quality to zero or not; however, the assertions below verify that 'quality' is " +
+            "not passed to the 'write' col because the original quality of 2 still exists", 0, rows.get(0).getInt("quality"));
+        assertTrue(rows.get(0).containsKey("collections"));
 
         // Verify only collections were updated
         verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
