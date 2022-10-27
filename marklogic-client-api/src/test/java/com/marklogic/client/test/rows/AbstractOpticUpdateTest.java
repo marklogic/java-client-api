@@ -132,4 +132,8 @@ public abstract class AbstractOpticUpdateTest {
             .forEachRemaining(result -> uris.add(result.getString()));
         return uris;
     }
+
+    protected void printExport(PlanBuilder.ExportablePlan plan) {
+        System.out.println(plan.exportAs(ObjectNode.class).toPrettyString());
+    }
 }

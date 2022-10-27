@@ -421,24 +421,14 @@ public interface PlanBuilderBase {
     PlanRowColTypesSeq colTypes(PlanRowColTypes... colTypes);
 
     /**
-     * Construct a mapping of document descriptor column names to names of columns in the plan. The available set of 
+     * Construct a mapping of document descriptor column names to columns in the plan. The available set of
      * document descriptor names are: uri, doc, collections, permissions, metadata, quality, and temporalCollection. 
-     * 
+     * Use this when mapping to non-standard column names.
+     *
      * @param descriptorColumnMapping
      * @return
      */
-    PlanDocColsIdentifier docCols(Map<String, String> descriptorColumnMapping);
-
-    /**
-     * Construct a {@code PlanDocColsIdentifier} that consists only of the given descriptor column names, each of which
-     * must be one of the following: uri, doc, collections, permissions, metadata, quality, and temporalCollection. Use
-     * this when constructing a plan for only writing certain parts of a document - e.g. when only updating the 
-     * collections on a set of URIs. 
-     * 
-     * @param descriptorColumnNames
-     * @return
-     */
-    PlanDocColsIdentifier docCols(String[] descriptorColumnNames);
+    PlanDocColsIdentifier docCols(Map<String, PlanColumn> descriptorColumnMapping);
 
     /**
      * Build a single doc descriptor that can be used with {@code fromDocDescriptors}.
