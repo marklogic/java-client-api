@@ -116,7 +116,6 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
     }
 
     @Test
-    @Ignore("See https://bugtrack.marklogic.com/57978#2; this works fine as a privileged user though")
     public void xsltTransformWithParam() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
@@ -150,7 +149,6 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
     }
 
     @Test
-    @Ignore("See https://bugtrack.marklogic.com/57978#2; this works fine as a privileged user though")
     public void xsltTransformWithoutParam() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
