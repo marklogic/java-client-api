@@ -1416,27 +1416,6 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
   }
 
   
-  static class ErrorDispositionSeqListImpl extends PlanSeqListImpl implements PlanErrorDispositionSeq {
-    ErrorDispositionSeqListImpl(Object[] items) {
-      super(items);
-    }
-  }
-
-  
-  static class ErrorDispositionSeqCallImpl extends PlanCallImpl implements PlanErrorDispositionSeq {
-    ErrorDispositionSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, fnArgs);
-    }
-  }
-
-  
-  static class ErrorDispositionCallImpl extends PlanCallImpl implements PlanErrorDisposition {
-    ErrorDispositionCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, fnArgs);
-    }
-  }
-
-  
   static class ExprColSeqListImpl extends PlanSeqListImpl implements PlanExprColSeq {
     ExprColSeqListImpl(Object[] items) {
       super(items);
@@ -2231,23 +2210,20 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
   @Override
-  public ModifyPlan validateDoc(String validated, PlanSchemaDef schemaDef, PlanErrorDisposition errorDisposition) {
-    return validateDoc((validated == null) ? (PlanColumn) null : col(validated), schemaDef, errorDisposition);
+  public ModifyPlan validateDoc(String validated, PlanSchemaDef schemaDef) {
+    return validateDoc((validated == null) ? (PlanColumn) null : col(validated), schemaDef);
   }
 
     
   @Override
-  public ModifyPlan validateDoc(PlanColumn validated, PlanSchemaDef schemaDef, PlanErrorDisposition errorDisposition) {
+  public ModifyPlan validateDoc(PlanColumn validated, PlanSchemaDef schemaDef) {
     if (validated == null) {
       throw new IllegalArgumentException("validated parameter for validateDoc() cannot be null");
     }
     if (schemaDef == null) {
       throw new IllegalArgumentException("schemaDef parameter for validateDoc() cannot be null");
     }
-    if (errorDisposition == null) {
-      throw new IllegalArgumentException("errorDisposition parameter for validateDoc() cannot be null");
-    }
-    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "validate-doc", new Object[]{ validated, schemaDef, errorDisposition });
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "validate-doc", new Object[]{ validated, schemaDef });
   }
 
     

@@ -68,8 +68,7 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
             .fromDocUris(op.cts.directoryQuery("/acme/"))
             .joinDoc(op.col("doc"), op.col("uri"))
             .validateDoc(op.col("doc"),
-                op.schemaDefinition("xmlSchema").withMode("lax"),
-                op.errorDispositionDef(100, "summary")
+                op.schemaDefinition("xmlSchema").withMode("lax")
             );
         XMLDocumentManager mgr = Common.client.newXMLDocumentManager();
         expectedUris.forEach(uri -> assertNotNull("URI was not written: " + uri, mgr.exists(uri)));
@@ -96,8 +95,7 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
                 op.colType("doc")
         ))
         .validateDoc(op.col("doc"),
-                op.schemaDefinition("schematron").withSchemaUri("/validateDoc/schematron.sch"),
-                op.errorDispositionDef(100, "detail")
+                op.schemaDefinition("schematron").withSchemaUri("/validateDoc/schematron.sch")
         );
 
         final PlanParamExpr param = op.param("bindingParam");
@@ -157,8 +155,7 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
                         op.docDescriptor(newWriteOp("/acme/doc2.json", mapper.createObjectNode().put("count", 2).put("total",3)))
                 )
                 .validateDoc(op.col("doc"),
-                        op.schemaDefinition("jsonSchema").withSchemaUri("/validateDoc/jsonSchema.json"),
-                        op.errorDispositionDef(100, "summary")
+                        op.schemaDefinition("jsonSchema").withSchemaUri("/validateDoc/jsonSchema.json")
                 );
 
         // TODO : uncomment below block after https://bugtrack.marklogic.com/58025 is fixed
