@@ -292,11 +292,6 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   @Override
-  public PlanErrorDisposition errorDispositionDef(int logSize, String logLevel) {
-    return new ErrorDispositionDefImpl(logSize, logLevel);
-  }
-
-  @Override
   public ServerExpression permission(String roleName, String capability) {
     return jsonObject(
         prop(xs.string("roleName"), xs.string(roleName)),
