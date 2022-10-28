@@ -29,7 +29,6 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
      * descriptors. Any descriptor that has a URI for a document that no longer exists will be ignored.
      */
     @Test
-    @Ignore("Waiting for fixes for joinDocCols with qualifier")
     public void updateAndIgnoreNonExistentURIs() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
@@ -56,9 +55,8 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
                 op.fromDocUris(op.cts.documentQuery(op.xs.stringSeq(firstUri, missingUri)), "lexicon"),
                 op.on(op.viewCol("input", "uri"), op.viewCol("lexicon", "uri"))
             )
-            // TODO Think we're waiting on server fixes in order for joinDocCols to work
-            .select(op.viewCol("input", "uri"), op.viewCol("input", "doc"), op.viewCol("input", "permissions"))
-            .write(op.docCols("input"));
+            .select(op.viewCol("input", "uri"), op.viewCol("input", "doc"))
+            .write(op.docCols(op.xs.string("input"), op.xs.stringSeq("uri", "doc")));
 
         List<RowRecord> rows = resultRows(plan);
         assertEquals(1, rows.size());
