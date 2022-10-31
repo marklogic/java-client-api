@@ -6,124 +6,188 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
-import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
+/**
+ * In addition to testing fromDocDescriptors, this class contains tests to verify that default collections and
+ * permissions are honored correctly.
+ */
 public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
 
-    private final static String USER_WITH_DEFAULT_COLLECTIONS = "writer-default-collections";
+    private final static String USER_WITH_DEFAULT_COLLECTIONS_AND_PERMISSIONS = "writer-default-collections-and-permissions";
 
+    /**
+     * Verify that default collections and permissions are honored when inserting docs, where one doc should use
+     * the defaults and the other should not because the user explicitly specifies collections and permissions.
+     */
     @Test
-    public void writeWithAllMetadataThenUpdateOnlyCollections() {
+    public void insertDocsWithUserWithDefaultCollectionsAndPermissions() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
         }
 
-        DocumentMetadataHandle metadata = newDefaultMetadata();
-        metadata.getCollections().addAll("docDescriptors1", "docDescriptors2");
-        metadata.setQuality(2);
+        final String firstUri = "/acme/doc1.json";
+        final String secondUri = "/acme/doc2.json";
 
-        final String uri = "/acme/doc1.json";
+        // Create a couple documents to insert
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
-        ObjectNode content = mapper.createObjectNode().put("hello", "world");
-        writeSet.add(uri, metadata, new JacksonHandle(content));
+        writeSet.add(newWriteOp(firstUri, null, mapper.createObjectNode().put("hello", "world")));
+        writeSet.add(newWriteOp(secondUri, newDefaultMetadata().withCollections("custom1", "custom2"),
+            mapper.createObjectNode().put("hello", "two")));
 
-        PlanBuilder.AccessPlan plan = op.fromDocDescriptors(op.docDescriptors(writeSet));
-        verifyExportedPlanReturnsSameRowCount(plan);
+        Common.client = Common.newClientAsUser(USER_WITH_DEFAULT_COLLECTIONS_AND_PERMISSIONS);
+        Common.client.newRowManager().execute(op
+            .fromDocDescriptors(op.docDescriptors(writeSet))
+            .write());
 
-        rowManager.execute(plan.write());
-
-        verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
-        verifyMetadata(uri, docMetadata -> {
-            assertEquals(DocumentMetadataHandle.Capability.READ, docMetadata.getPermissions().get("rest-reader").iterator().next());
-            assertEquals(DocumentMetadataHandle.Capability.UPDATE, docMetadata.getPermissions().get("test-rest-writer").iterator().next());
-            assertEquals(2, docMetadata.getQuality());
-            assertEquals(2, docMetadata.getCollections().size());
-            assertTrue(docMetadata.getCollections().contains("docDescriptors1"));
-            assertTrue(docMetadata.getCollections().contains("docDescriptors2"));
+        // Verify first doc inherits the default collections and permissions
+        verifyJsonDoc(firstUri, doc -> assertEquals("world", doc.get("hello").asText()));
+        verifyMetadata(firstUri, metadata -> {
+            DocumentMetadataHandle.DocumentPermissions perms = metadata.getPermissions();
+            assertPermissionExists(perms, "qconsole-user", DocumentMetadataHandle.Capability.READ);
+            assertPermissionExists(perms, "qconsole-user", DocumentMetadataHandle.Capability.UPDATE);
+            assertEquals(1, perms.size());
+            DocumentMetadataHandle.DocumentCollections colls = metadata.getCollections();
+            assertTrue(colls.contains("default1"));
+            assertTrue(colls.contains("default2"));
+            assertEquals(2, colls.size());
         });
 
-        // Now update only the collections
-        metadata = new DocumentMetadataHandle().withCollections("updatedColl1", "updatedColl2");
-        ModifyPlan updatePlan = op
-            .fromDocDescriptors(op.docDescriptor(new DocumentWriteOperationImpl(uri, metadata, null)))
+        // Verify second doc uses the custom collections and permissions
+        verifyJsonDoc(secondUri, doc -> assertEquals("two", doc.get("hello").asText()));
+        verifyMetadata(secondUri, metadata -> {
+            DocumentMetadataHandle.DocumentPermissions perms = metadata.getPermissions();
+            assertPermissionExists(perms, "rest-reader", DocumentMetadataHandle.Capability.READ);
+            assertPermissionExists(perms, "test-rest-writer", DocumentMetadataHandle.Capability.UPDATE);
+            assertEquals(2, perms.size());
+            DocumentMetadataHandle.DocumentCollections colls = metadata.getCollections();
+            assertTrue(colls.contains("custom1"));
+            assertTrue(colls.contains("custom2"));
+            assertEquals(2, colls.size());
+        });
+    }
+
+    @Test
+    public void updateOnlyDocAsUserWithNoDefaults() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        // Default test user does not have any default collections or permissions, so no need to switch to
+        // a different user
+        verifyOnlyDocCanBeUpdatedWithoutLosingAnyMetadata();
+    }
+
+    @Test
+    public void updateOnlyDocWithUserWithDefaultCollectionsAndPermissions() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        // Set up client as user with default collections and permissions
+        Common.client = Common.newClientAsUser(USER_WITH_DEFAULT_COLLECTIONS_AND_PERMISSIONS);
+        rowManager = Common.client.newRowManager();
+        op = rowManager.newPlanBuilder();
+
+        verifyOnlyDocCanBeUpdatedWithoutLosingAnyMetadata();
+    }
+
+    /**
+     * Verifies that the doc is not modified when only updating metadata, and that any non-modified metadata is not
+     * updated either.
+     */
+    @Test
+    public void updateOnlyCollection() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        // Create a doc with one collection
+        final String uri = "/acme/doc1.json";
+        DocumentMetadataHandle metadata = newDefaultMetadata().withCollections("custom1");
+        metadata.setQuality(10);
+        metadata.getMetadataValues().add("key1", "value1");
+        rowManager.execute(op
+            .fromDocDescriptors(op.docDescriptor(newWriteOp(uri, metadata, mapper.createObjectNode().put("hello", "world"))))
+            .write());
+
+        // Update the collections on the doc
+        List<RowRecord> rows = resultRows(op
+            .fromDocDescriptors(op.docDescriptor(newWriteOp(uri, new DocumentMetadataHandle().withCollections("custom2"), null)))
             // This lock call isn't necessary, but including it to further test it
             .lockForUpdate()
-            .write(op.docCols(null, op.xs.stringSeq("uri", "collections")));
-        List<RowRecord> rows = resultRows(updatePlan);
+            .write(op.docCols(null, op.xs.stringSeq("uri", "collections"))));
+
         assertEquals(1, rows.size());
-        assertEquals(uri, rows.get(0).getString("uri"));
+        RowRecord row = rows.get(0);
+        assertEquals(uri, row.getString("uri"));
         assertEquals("Quality still exists as a column because there's no way for fromDocDescriptors to know if the " +
             "user intentionally set quality to zero or not; however, the assertions below verify that 'quality' is " +
-            "not passed to the 'write' col because the original quality of 2 still exists", 0, rows.get(0).getInt("quality"));
-        assertTrue(rows.get(0).containsKey("collections"));
+            "not passed to the 'write' col because the original quality still exists", 0, rows.get(0).getInt("quality"));
+        assertTrue(row.containsKey("collections"));
+        assertEquals("Row is expected to contain uri, collections, and quality: " + row, 3, row.size());
 
         // Verify only collections were updated
         verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
         verifyMetadata(uri, docMetadata -> {
-            assertEquals(DocumentMetadataHandle.Capability.READ, docMetadata.getPermissions().get("rest-reader").iterator().next());
-            assertEquals(DocumentMetadataHandle.Capability.UPDATE, docMetadata.getPermissions().get("test-rest-writer").iterator().next());
-            assertEquals(2, docMetadata.getQuality());
-            assertEquals(2, docMetadata.getCollections().size());
-            assertTrue(docMetadata.getCollections().contains("updatedColl1"));
-            assertTrue(docMetadata.getCollections().contains("updatedColl2"));
+            DocumentMetadataHandle.DocumentPermissions perms = docMetadata.getPermissions();
+            assertEquals(2, perms.size());
+            assertPermissionExists(perms, "rest-reader", DocumentMetadataHandle.Capability.READ);
+            assertPermissionExists(perms, "test-rest-writer", DocumentMetadataHandle.Capability.UPDATE);
+            assertEquals(10, docMetadata.getQuality());
+            assertEquals(1, docMetadata.getCollections().size());
+            assertTrue(docMetadata.getCollections().contains("custom2"));
+            assertEquals(1, docMetadata.getMetadataValues().size());
+            assertEquals("value1", docMetadata.getMetadataValues().get("key1"));
         });
     }
 
-    @Test
-    public void jsonDocumentWithUserWithDefaultPermissions() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
-        final String uri = "/acme/doc1.json";
-
-        PlanBuilder.AccessPlan plan = op.fromDocDescriptors(op.docDescriptor(
-            new DocumentWriteOperationImpl(uri, new DocumentMetadataHandle(),
-                new JacksonHandle(mapper.createObjectNode().put("hello", "world")))
-        ));
-
-        // Use a new RowManager with a user that has default permissions
-        Common.newClientAsUser("rest-writer").newRowManager().execute(plan.write());
-
-        verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
-        verifyMetadata(uri, docMetadata -> {
-            // Since this user has the "rest-writer" role, we expect there to be default doc permissions
-            assertEquals(DocumentMetadataHandle.Capability.READ, docMetadata.getPermissions().get("harmonized-reader").iterator().next());
-            assertEquals(DocumentMetadataHandle.Capability.UPDATE, docMetadata.getPermissions().get("harmonized-updater").iterator().next());
-            assertEquals(DocumentMetadataHandle.Capability.READ, docMetadata.getPermissions().get("rest-reader").iterator().next());
-            assertEquals(DocumentMetadataHandle.Capability.UPDATE, docMetadata.getPermissions().get("rest-writer").iterator().next());
-        });
-    }
-
+    /**
+     * Verifies that individual DocumentWriteOperations can be passed in without having to construct a
+     * DocumentWriteSet first.
+     */
     @Test
     public void writeIndividualDocDescriptors() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
         }
 
+        final String firstUri = "/acme/doc1.json";
+        final String secondUri = "/acme/doc2.json";
         ObjectNode doc1 = mapper.createObjectNode().put("hello", "doc1");
         ObjectNode doc2 = mapper.createObjectNode().put("hello", "doc2");
 
         PlanBuilder.AccessPlan plan = op.fromDocDescriptors(
-            op.docDescriptor(newWriteOp("/acme/doc1.json", doc1)),
-            op.docDescriptor(newWriteOp("/acme/doc2.json", doc2))
+            op.docDescriptor(newWriteOp(firstUri, doc1)),
+            op.docDescriptor(newWriteOp(secondUri, doc2))
         );
         verifyExportedPlanReturnsSameRowCount(plan);
 
         rowManager.execute(plan.write());
-        verifyJsonDoc("/acme/doc1.json", doc -> assertEquals("doc1", doc.get("hello").asText()));
-        verifyJsonDoc("/acme/doc2.json", doc -> assertEquals("doc2", doc.get("hello").asText()));
+        verifyJsonDoc(firstUri, doc -> assertEquals("doc1", doc.get("hello").asText()));
+        verifyJsonDoc(secondUri, doc -> assertEquals("doc2", doc.get("hello").asText()));
+
+        // Verify no metadata "snuck" in unexpectedly
+        Stream.of(firstUri, secondUri).forEach(uri -> verifyMetadata(uri, metadata -> {
+            assertEquals(0, metadata.getQuality());
+            assertEquals(0, metadata.getCollections().size());
+            assertEquals(0, metadata.getMetadataValues().size());
+            // Verify the perms used by the test exist
+            DocumentMetadataHandle.DocumentPermissions perms = metadata.getPermissions();
+            assertEquals(2, perms.size());
+            assertPermissionExists(perms, "rest-reader", DocumentMetadataHandle.Capability.READ);
+            assertPermissionExists(perms, "test-rest-writer", DocumentMetadataHandle.Capability.UPDATE);
+        }));
     }
 
     @Test
@@ -185,43 +249,46 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
         verifyExportedPlanReturnsSameRowCount(accessPlan);
     }
 
-    @Test
-    public void ignoreDefaultCollectionsWhenCollectionsAreSpecified() {
+    private void verifyOnlyDocCanBeUpdatedWithoutLosingAnyMetadata() {
+        // Create a doc with custom collections and permissions
         final String uri = "/acme/doc1.json";
+        final ObjectNode initialContent = mapper.createObjectNode().put("hello", "world");
+        DocumentMetadataHandle initialMetadata = new DocumentMetadataHandle();
+        initialMetadata.getPermissions().add("rest-reader", DocumentMetadataHandle.Capability.READ);
+        initialMetadata.getPermissions().add("test-rest-writer", DocumentMetadataHandle.Capability.UPDATE);
+        initialMetadata.getCollections().addAll("custom1", "custom2");
+        initialMetadata.setQuality(2);
+        initialMetadata.getMetadataValues().put("key1", "value1");
+        initialMetadata.getMetadataValues().put("key2", "value2");
 
-        ModifyPlan plan = op.fromDocDescriptors(op.docDescriptor(
-            newWriteOp(
-                uri,
-                newDefaultMetadata().withCollections("custom-coll1"),
-                mapper.createObjectNode().put("hello", "world"))
-        )).write();
+        rowManager.execute(op
+            .fromDocDescriptors(op.docDescriptor(newWriteOp(uri, initialMetadata, initialContent)))
+            .write());
 
-        Common.newClientAsUser(USER_WITH_DEFAULT_COLLECTIONS).newRowManager().execute(plan);
+        // Now update only the doc
+        ModifyPlan updatePlan = op
+            .fromDocDescriptors(op.docDescriptor(newWriteOp(uri, null, mapper.createObjectNode().put("hello", "modified!"))))
+            .write(op.docCols(null, op.xs.stringSeq("uri", "doc")));
 
-        verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
-        verifyMetadata(uri, metadata -> {
-            DocumentMetadataHandle.DocumentCollections colls = metadata.getCollections();
-            assertEquals("Should only contain the 1 collection specified by the user", 1, colls.size());
-            assertTrue(colls.contains("custom-coll1"));
-        });
-    }
+        List<RowRecord> rows = resultRows(updatePlan);
+        assertEquals(1, rows.size());
+        assertEquals(uri, rows.get(0).getString("uri"));
+        assertEquals("modified!", rows.get(0).getContentAs("doc", ObjectNode.class).get("hello").asText());
+        assertEquals("Should only have 'uri' and 'doc' since that's all that the user specified", 2, rows.get(0).size());
 
-    @Test
-    public void useDefaultCollectionsWhenNoneAreSpecified() {
-        final String uri = "/acme/doc1.json";
-
-        ModifyPlan plan = op.fromDocDescriptors(op.docDescriptor(
-            newWriteOp(uri, mapper.createObjectNode().put("hello", "world"))
-        )).write();
-
-        Common.newClientAsUser(USER_WITH_DEFAULT_COLLECTIONS).newRowManager().execute(plan);
-
-        verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
-        verifyMetadata(uri, metadata -> {
-            DocumentMetadataHandle.DocumentCollections colls = metadata.getCollections();
-            assertEquals("Expecting the 2 default collections that the user writer-default-collections has", 2, colls.size());
-            assertTrue(colls.contains("default1"));
-            assertTrue(colls.contains("default2"));
+        // Verify only the doc was updated
+        verifyJsonDoc(uri, doc -> assertEquals("modified!", doc.get("hello").asText()));
+        verifyMetadata(uri, docMetadata -> {
+            DocumentMetadataHandle.DocumentPermissions perms = docMetadata.getPermissions();
+            assertEquals(2, perms.size());
+            assertPermissionExists(perms, "rest-reader", DocumentMetadataHandle.Capability.READ);
+            assertPermissionExists(perms, "test-rest-writer", DocumentMetadataHandle.Capability.UPDATE);
+            assertEquals(2, docMetadata.getQuality());
+            assertEquals(2, docMetadata.getCollections().size());
+            assertTrue(docMetadata.getCollections().contains("custom1"));
+            assertTrue(docMetadata.getCollections().contains("custom2"));
+            assertEquals("value1", docMetadata.getMetadataValues().get("key1"));
+            assertEquals("value2", docMetadata.getMetadataValues().get("key2"));
         });
     }
 

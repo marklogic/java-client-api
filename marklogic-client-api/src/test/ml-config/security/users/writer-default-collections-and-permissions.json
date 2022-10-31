@@ -1,0 +1,25 @@
+{
+  "user-name": "writer-default-collections-and-permissions",
+  "description": "test user that has default collections and permissions",
+  "role": [
+    "rest-reader",
+    "test-rest-writer",
+    "rest-extension-user",
+    "qconsole-user"
+  ],
+  "collection": [
+    "default1",
+    "default2"
+  ],
+  "permission": [
+    {
+      "role-name": "qconsole-user",
+      "capability": "update"
+    },
+    {
+      "role-name": "qconsole-user",
+      "capability": "read"
+    }
+  ],
+  "password": "x"
+}
