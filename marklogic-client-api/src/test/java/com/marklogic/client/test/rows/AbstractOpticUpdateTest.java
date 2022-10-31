@@ -25,6 +25,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public abstract class AbstractOpticUpdateTest {
 
@@ -98,7 +99,7 @@ public abstract class AbstractOpticUpdateTest {
     }
 
     protected DocumentWriteOperation newWriteOp(String uri, DocumentMetadataHandle metadata, JsonNode json) {
-        return new DocumentWriteOperationImpl(uri, metadata, new JacksonHandle(json));
+        return new DocumentWriteOperationImpl(uri, metadata, json != null ? new JacksonHandle(json) : null);
     }
 
     protected DocumentWriteOperation newWriteOp(String uri, AbstractWriteHandle content) {
@@ -135,5 +136,11 @@ public abstract class AbstractOpticUpdateTest {
 
     protected void printExport(PlanBuilder.ExportablePlan plan) {
         System.out.println(plan.exportAs(ObjectNode.class).toPrettyString());
+    }
+
+    protected final void assertPermissionExists(DocumentMetadataHandle.DocumentPermissions perms, String role,
+                                                DocumentMetadataHandle.Capability capability) {
+        assertTrue("No permissions for role: " + role, perms.containsKey(role));
+        assertTrue("Capability " + capability + " for role " + role + " not found", perms.get(role).contains(capability));
     }
 }
