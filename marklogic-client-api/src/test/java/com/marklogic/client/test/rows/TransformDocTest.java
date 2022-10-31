@@ -23,30 +23,45 @@ import static org.junit.Assert.*;
 public class TransformDocTest extends AbstractOpticUpdateTest {
 
     @Test
-    public void mjsTransformWithParam() {
+    public void mjsTransformWithParamAndWrite() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
         }
 
-        ArrayNode rows = mapper.createArrayNode();
-        rows.addObject().putObject("doc").put("some", "content");
-
-        ModifyPlan plan = op
-            .fromParam("myDocs", "", op.colTypes(op.colType("doc", "none")))
+        List<RowRecord> rows = resultRows(op
+            .fromDocDescriptors(
+                op.docDescriptor(newWriteOp("/acme/1.json", mapper.createObjectNode().put("doc", 1))),
+                op.docDescriptor(newWriteOp("/acme/2.json", mapper.createObjectNode().put("doc", 2)))
+            )
             .transformDoc(op.col("doc"),
                 op.transformDef("/etc/optic/test/transformDoc-test.mjs")
-                    .withParam("myParam", "my value"));
+                    .withParam("myParam", "my value"))
+            .write()
+        );
 
-        List<RowRecord> results = resultRows(plan.bindParam("myDocs", new JacksonHandle(rows)));
-        assertEquals(1, results.size());
+        // Verify returned rows first
+        assertEquals(2, rows.size());
+        ObjectNode content = rows.get(0).getContentAs("doc", ObjectNode.class);
+        assertEquals("world", content.get("hello").asText());
+        assertEquals("my value", content.get("yourParam").asText());
+        assertEquals("The transform is expected to receive the incoming doc via the 'doc' param and then toss it into " +
+            "the response under the key 'thedoc'", 1, content.get("theDoc").get("doc").asInt());
+        content = rows.get(1).getContentAs("doc", ObjectNode.class);
+        assertEquals("world", content.get("hello").asText());
+        assertEquals("my value", content.get("yourParam").asText());
+        assertEquals(2, content.get("theDoc").get("doc").asInt());
 
-        ObjectNode transformedDoc = results.get(0).getContentAs("doc", ObjectNode.class);
-        assertEquals("world", transformedDoc.get("hello").asText());
-        assertEquals("my value", transformedDoc.get("yourParam").asText());
-        assertEquals(
-            "The transform is expected to receive the incoming doc via the 'doc' param and then toss it into the " +
-                "response under the key 'thedoc'",
-            "content", transformedDoc.get("theDoc").get("some").asText());
+        // Verify persisted docs
+        verifyJsonDoc("/acme/1.json", doc -> {
+            assertEquals("world", doc.get("hello").asText());
+            assertEquals("my value", doc.get("yourParam").asText());
+            assertEquals(1, doc.get("theDoc").get("doc").asInt());
+        });
+        verifyJsonDoc("/acme/2.json", doc -> {
+            assertEquals("world", doc.get("hello").asText());
+            assertEquals("my value", doc.get("yourParam").asText());
+            assertEquals(2, doc.get("theDoc").get("doc").asInt());
+        });
     }
 
     @Test
@@ -87,9 +102,11 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
         assertTrue("Unexpected message: " + ex.getMessage(), ex.getMessage().contains("throw Error(\"This is intentional\")"));
     }
 
+    /**
+     * See https://bugtrack.marklogic.com/57987
+     */
     @Test
-    @Ignore("See https://bugtrack.marklogic.com/57987")
-    public void multipleJsonDocs() {
+    public void multipleJsonDocsWithoutUpdateOperation() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
         }
@@ -97,19 +114,19 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
         ModifyPlan plan = op
             .fromDocUris("/optic/test/musician1.json", "/optic/test/musician2.json")
             .joinDoc(op.col("doc"), op.col("uri"))
-            .transformDoc(op.col("doc"),
-                op.transformDef("/etc/optic/test/transformDoc-test.mjs").withParam("myParam",
-                    "my value"));
+            .transformDoc(op.col("doc"), op.transformDef("/etc/optic/test/transformDoc-test.mjs").withParam("myParam", "my value"));
 
-        List<RowRecord> results = resultRows(plan);
-        assertEquals(2, results.size());
+        List<RowRecord> rows = resultRows(plan);
+        assertEquals(2, rows.size());
+        System.out.println("ROWS: " + rows);
 
-        ObjectNode transformedDoc = results.get(0).getContentAs("doc", ObjectNode.class);
+        ObjectNode transformedDoc = rows.get(0).getContentAs("doc", ObjectNode.class);
         assertEquals("world", transformedDoc.get("hello").asText());
         assertEquals("my value", transformedDoc.get("yourParam").asText());
         assertEquals("Armstrong", transformedDoc.get("theDoc").get("musician").get("lastName").asText());
 
-        transformedDoc = results.get(1).getContentAs("doc", ObjectNode.class);
+        transformedDoc = rows.get(1).getContentAs("doc", ObjectNode.class);
+        assertNotNull("Received erroneous null row: " + rows.get(1), transformedDoc);
         assertEquals("world", transformedDoc.get("hello").asText());
         assertEquals("my value", transformedDoc.get("yourParam").asText());
         assertEquals("Byron", transformedDoc.get("theDoc").get("musician").get("lastName").asText());
