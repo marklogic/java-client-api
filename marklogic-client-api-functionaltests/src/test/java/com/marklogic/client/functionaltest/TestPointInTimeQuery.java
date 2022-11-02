@@ -16,9 +16,6 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyManagementException;
@@ -33,6 +30,10 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
+import org.jdom2.input.SAXBuilder;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -53,6 +54,8 @@ import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
+
+import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestPointInTimeQuery extends BasicJavaClientREST {
@@ -94,8 +97,7 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
    * Point In Time Stamp again Verify fragment counts second time
    */
   @Test
-  public void testAInsertAndUpdateJson() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
-      TransformerException
+  public void testAInsertAndUpdateJson() throws KeyManagementException, NoSuchAlgorithmException, IOException
   {
     System.out.println("Running testAInsertAndUpdateJson");
 
@@ -119,14 +121,10 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
 
     long insTimeStamp = jacksonHandle.getServerTimestamp();
     System.out.println("Point in Time Stamp after the initial insert " + insTimeStamp);
-    // Verify the counts
-    JsonNode jNode = getDBFragmentCount();
-    int activeFragCount = jNode.path("database-counts").path("count-properties").path("active-fragments").path("value").asInt();
-    int deletedFragCount = jNode.path("database-counts").path("count-properties").path("deleted-fragments").path("value").asInt();
-    System.out.println("Number of active Fragments after initial insert" + activeFragCount);
-    System.out.println("Number of deleted Fragments after initial insert" + deletedFragCount);
-    assertTrue("Number of active Fragments after initial insert is incorrect. Should be 1", activeFragCount == 1);
-    assertTrue("Number of deleted Fragments after initial insert is incorrect. Should be 0", deletedFragCount == 0);
+    DatabaseCounts dbCounts = getDBFragmentCount();
+    System.out.println("Fragment counts after initial insert: " + dbCounts);
+    assertEquals("Number of active Fragments after initial insert is incorrect", 1, dbCounts.activeFragments);
+    assertEquals("Number of deleted Fragments after initial insert is incorrect", 0, dbCounts.deletedFragments);
 
     // Update the doc. Insert a fragment.
     ObjectMapper mapper = new ObjectMapper();
@@ -187,13 +185,10 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
     System.out.println("Point in Time Stamp after the first update " + firstUpdTimeStamp);
 
     // Verify the counts
-    jNode = getDBFragmentCount();
-    activeFragCount = jNode.path("database-counts").path("count-properties").path("active-fragments").path("value").asInt();
-    deletedFragCount = jNode.path("database-counts").path("count-properties").path("deleted-fragments").path("value").asInt();
-    System.out.println("Number of active Fragments after first update " + activeFragCount);
-    System.out.println("Number of deleted Fragments after first update " + deletedFragCount);
-    assertTrue("Number of active Fragments after initial insert is incorrect. Should be 1", activeFragCount == 1);
-    assertTrue("Number of deleted Fragments after initial insert is incorrect. Should be 1", deletedFragCount == 1);
+    dbCounts = getDBFragmentCount();
+    System.out.println("Fragment counts after first update: " + dbCounts);
+    assertEquals("Number of active Fragments after initial insert is incorrect", 1, dbCounts.activeFragments);
+    assertEquals("Number of deleted Fragments after initial insert is incorrect", 1, dbCounts.deletedFragments);
 
     // Insert / update the document again
 
@@ -219,16 +214,11 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
     long secondUpdTimeStamp = jacksonHandle.getPointInTimeQueryTimestamp();
     System.out.println("Point in Time Stamp after the first update " + secondUpdTimeStamp);
 
-    // Verify the counts
-    jNode = getDBFragmentCount();
-    activeFragCount = jNode.path("database-counts").path("count-properties").path("active-fragments").path("value").asInt();
-    deletedFragCount = jNode.path("database-counts").path("count-properties").path("deleted-fragments").path("value").asInt();
-    System.out.println("Number of active Fragments after second update " + activeFragCount);
-    System.out.println("Number of deleted Fragments after second update " + deletedFragCount);
-    assertTrue("Number of active Fragments after initial insert is incorrect. Should be 1", activeFragCount == 1);
-    assertTrue("Number of deleted Fragments after initial insert is incorrect. Should be 2", deletedFragCount == 2);
+    dbCounts = getDBFragmentCount();
+    System.out.println("Fragment counts after second update: " + dbCounts);
+    assertEquals("Number of active Fragments after initial insert is incorrect", 1, dbCounts.activeFragments);
+    assertEquals("Number of deleted Fragments after initial insert is incorrect", 2, dbCounts.deletedFragments);
 
-    // release client
     client.release();
   }
 
@@ -361,27 +351,36 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
     // TODO THE TEST.
   }
 
-  public JsonNode getDBFragmentCount() {
-    InputStream jstream = null;
-    JsonNode jnode = null;
+  static class DatabaseCounts {
+    public int activeFragments;
+    public int deletedFragments;
+
+    @Override
+    public String toString() {
+      return "active=" + activeFragments + "; deleted=" + deletedFragments;
+    }
+  }
+
+  public DatabaseCounts getDBFragmentCount() {
     DefaultHttpClient client = null;
     try {
       client = new DefaultHttpClient();
       client.getCredentialsProvider().setCredentials(
           new AuthScope(appServerHostname, adminPort),
           new UsernamePasswordCredentials("admin", "admin"));
-      HttpGet getrequest = new HttpGet("http://" + appServerHostname + ":" + adminPort + "/manage/v2/databases/" + dbName + "?view=counts&format=json");
+      String url = "http://" + appServerHostname + ":" + adminPort + "/manage/v2/databases/" + dbName + "?view=counts&format=xml";
+      HttpGet getrequest = new HttpGet(url);
       HttpResponse resp = client.execute(getrequest);
-      jstream = resp.getEntity().getContent();
-      jnode = new ObjectMapper().readTree(jstream);
-      return jnode;
+      Document doc = new SAXBuilder().build(resp.getEntity().getContent());
+      Namespace ns = Namespace.getNamespace("db", "http://marklogic.com/manage/databases");
+      Element counts = doc.getRootElement().getChild("count-properties", ns);
+      DatabaseCounts dbCounts = new DatabaseCounts();
+      dbCounts.activeFragments = Integer.parseInt(counts.getChildText("active-fragments", ns));
+      dbCounts.deletedFragments = Integer.parseInt(counts.getChildText("deleted-fragments", ns));
+      return dbCounts;
     } catch (Exception e) {
-      // writing error to Log
-      e.printStackTrace();
-
-      return jnode;
+      throw new RuntimeException(e);
     } finally {
-      jstream = null;
       client.getConnectionManager().shutdown();
     }
   }
