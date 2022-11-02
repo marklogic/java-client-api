@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
+import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
@@ -112,20 +113,11 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
             return;
         }
 
-        // Create a doc with one collection
-        final String uri = "/acme/doc1.json";
-        DocumentMetadataHandle metadata = newDefaultMetadata().withCollections("custom1");
-        metadata.setQuality(10);
-        metadata.getMetadataValues().add("key1", "value1");
-        rowManager.execute(op
-            .fromDocDescriptors(op.docDescriptor(newWriteOp(uri, metadata, mapper.createObjectNode().put("hello", "world"))))
-            .write());
+        final String uri = writeDocWithAllMetadata();
 
         // Update the collections on the doc
         List<RowRecord> rows = resultRows(op
             .fromDocDescriptors(op.docDescriptor(newWriteOp(uri, new DocumentMetadataHandle().withCollections("custom2"), null)))
-            // This lock call isn't necessary, but including it to further test it
-            .lockForUpdate()
             .write(op.docCols(null, op.xs.stringSeq("uri", "collections"))));
 
         assertEquals(1, rows.size());
@@ -150,6 +142,102 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
             assertEquals(1, docMetadata.getMetadataValues().size());
             assertEquals("value1", docMetadata.getMetadataValues().get("key1"));
         });
+    }
+
+    @Test
+    public void updateOnlyMetadata() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        final String uri = writeDocWithAllMetadata();
+
+        // Update only metadata
+        rowManager.execute(op
+            .fromDocDescriptors(op.docDescriptor(newWriteOp(uri, new DocumentMetadataHandle().withMetadataValue("key2", "value2"), null)))
+            .write(op.docCols(null, op.xs.stringSeq("uri", "metadata"))));
+
+        verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
+        verifyMetadata(uri, docMetadata -> {
+            DocumentMetadataHandle.DocumentPermissions perms = docMetadata.getPermissions();
+            assertEquals(2, perms.size());
+            assertPermissionExists(perms, "rest-reader", DocumentMetadataHandle.Capability.READ);
+            assertPermissionExists(perms, "test-rest-writer", DocumentMetadataHandle.Capability.UPDATE);
+            assertEquals(10, docMetadata.getQuality());
+            assertEquals(1, docMetadata.getCollections().size());
+            assertTrue(docMetadata.getCollections().contains("custom1"));
+            assertEquals(1, docMetadata.getMetadataValues().size());
+            assertEquals("value2", docMetadata.getMetadataValues().get("key2"));
+        });
+    }
+
+    @Test
+    public void updateOnlyPermissions() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        final String uri = writeDocWithAllMetadata();
+
+        // Update only permissions
+        DocumentMetadataHandle metadata = new DocumentMetadataHandle()
+            .withPermission("rest-extension-user", DocumentMetadataHandle.Capability.READ)
+            .withPermission("rest-reader", DocumentMetadataHandle.Capability.UPDATE);
+        rowManager.execute(op
+            .fromDocDescriptors(op.docDescriptor(newWriteOp(uri, metadata, null)))
+            .write(op.docCols(null, op.xs.stringSeq("uri", "permissions"))));
+
+        verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
+        verifyMetadata(uri, docMetadata -> {
+            DocumentMetadataHandle.DocumentPermissions perms = docMetadata.getPermissions();
+            assertEquals(2, perms.size());
+            assertPermissionExists(perms, "rest-reader", DocumentMetadataHandle.Capability.UPDATE);
+            assertPermissionExists(perms, "rest-extension-user", DocumentMetadataHandle.Capability.READ);
+            assertEquals(10, docMetadata.getQuality());
+            assertEquals(1, docMetadata.getCollections().size());
+            assertTrue(docMetadata.getCollections().contains("custom1"));
+            assertEquals(1, docMetadata.getMetadataValues().size());
+            assertEquals("value1", docMetadata.getMetadataValues().get("key1"));
+        });
+    }
+
+    @Test
+    public void updateOnlyQuality() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        final String uri = writeDocWithAllMetadata();
+
+        // Update only quality
+        rowManager.execute(op
+            .fromDocDescriptors(op.docDescriptor(
+                new DocumentWriteOperationImpl(uri, new DocumentMetadataHandle().withQuality(17), null)))
+            .write(op.docCols(null, op.xs.stringSeq("uri", "quality"))));
+
+        verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
+        verifyMetadata(uri, docMetadata -> {
+            DocumentMetadataHandle.DocumentPermissions perms = docMetadata.getPermissions();
+            assertEquals(2, perms.size());
+            assertPermissionExists(perms, "rest-reader", DocumentMetadataHandle.Capability.READ);
+            assertPermissionExists(perms, "test-rest-writer", DocumentMetadataHandle.Capability.UPDATE);
+            assertEquals(17, docMetadata.getQuality());
+            assertEquals(1, docMetadata.getCollections().size());
+            assertTrue(docMetadata.getCollections().contains("custom1"));
+            assertEquals(1, docMetadata.getMetadataValues().size());
+            assertEquals("value1", docMetadata.getMetadataValues().get("key1"));
+        });
+    }
+    
+    private String writeDocWithAllMetadata() {
+        final String uri = "/acme/doc1.json";
+        DocumentMetadataHandle metadata = newDefaultMetadata().withCollections("custom1");
+        metadata.setQuality(10);
+        metadata.getMetadataValues().add("key1", "value1");
+        rowManager.execute(op
+            .fromDocDescriptors(op.docDescriptor(newWriteOp(uri, metadata, mapper.createObjectNode().put("hello", "world"))))
+            .write());
+        return uri;
     }
 
     /**
@@ -201,7 +289,7 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
         writeSet.add(newWriteOp(uri, mapper.createObjectNode().put("hello", "world")));
 
         final String qualifier = "myQualifier";
-        PlanBuilder.AccessPlan plan = op.fromDocDescriptors(op.docDescriptors(writeSet), qualifier);
+        PlanBuilder.AccessPlan plan = op.fromDocDescriptors(op.docDescriptors(writeSet), op.xs.string(qualifier));
 
         verifyExportedPlanReturnsSameRowCount(plan);
 
