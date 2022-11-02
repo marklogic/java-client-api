@@ -1,15 +1,17 @@
 package com.marklogic.client.test.rows;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.List;
-
-import org.junit.Test;
-
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.marklogic.client.expression.PlanBuilder;
+import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
+import org.junit.Test;
+
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class LockForUpdateTest extends AbstractOpticUpdateTest {
 
@@ -24,23 +26,44 @@ public class LockForUpdateTest extends AbstractOpticUpdateTest {
         // Write a document
         rowManager.execute(op.fromDocDescriptors(
                 op.docDescriptor(newWriteOp(uri, new JacksonHandle(mapper.createObjectNode().put("hello", "world")))))
-                .write());
+            .write());
         verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
 
-        // Verify it can be locked; we don't have any effective way to verify that it
-        // was locked as we'd need to cause
-        // the plan invocation to "sleep" for awhile, and then use a second thread to
-        // inspect the status of the
-        // documents. So we assume that the return of a row for the URI is a measure of
-        // success.
-        List<RowRecord> rows = resultRows(op.fromDocUris(uri).lockForUpdate());
-        assertEquals(1, rows.size());
+        // Construct a plan that will lock the URI and update its collection
+        PlanBuilder.ModifyPlan plan = op
+            .fromDocDescriptors(
+                op.docDescriptor(newWriteOp(uri, new DocumentMetadataHandle().withCollections("optic1"), null))
+            )
+            .lockForUpdate()
+            .write(op.docCols(null, op.xs.stringSeq("uri", "collections")));
 
-        // Verify it can be updated - i.e. the lock was released in the previous call
-        rowManager.execute(op.fromDocDescriptors(
-                op.docDescriptor(newWriteOp(uri, new JacksonHandle(mapper.createObjectNode().put("hello", "modified")))))
-                .write());
-        verifyJsonDoc(uri, doc -> assertEquals("modified", doc.get("hello").asText()));
+        // Run an eval that locks the URI and sleeps for 2 seconds, which will block the plan run below
+        new Thread(() -> {
+            Common.newServerAdminClient().newServerEval()
+                .javascript(String.format("declareUpdate(); " +
+                    "xdmp.lockForUpdate('%s'); " +
+                    "xdmp.sleep(2000); " +
+                    "xdmp.documentSetCollections('%s', ['eval1']);", uri, uri))
+                .evalAs(String.class);
+        }).start();
+
+        // Immediately run a plan that updates the collections as well; this should be blocked while the eval thread
+        // above completes
+        long start = System.currentTimeMillis();
+        rowManager.execute(plan);
+        long duration = System.currentTimeMillis() - start;
+        System.out.println("DUR: " + duration);
+
+        assertTrue("Because the eval call slept for 2 seconds, the duration of the plan execution should be at least " +
+            "1500ms, which is much longer than normal; it may not be at least 2 seconds due to the small delay in " +
+            "the Java layer of executing the plan; duration: " + duration, duration > 1500);
+
+        // Verify that the collections were set based on the plan, which should have run second
+        verifyMetadata(uri, metadata -> {
+            DocumentMetadataHandle.DocumentCollections colls = metadata.getCollections();
+            assertEquals(1, colls.size());
+            assertEquals("optic1", colls.iterator().next());
+        });
     }
 
     @Test
@@ -50,8 +73,8 @@ public class LockForUpdateTest extends AbstractOpticUpdateTest {
         }
 
         List<RowRecord> rows = resultRows(op
-                .fromDocUris("/optic/test/musician1.json")
-                .lockForUpdate(op.col("uri")));
+            .fromDocUris("/optic/test/musician1.json")
+            .lockForUpdate(op.col("uri")));
         assertEquals(1, rows.size());
     }
 
@@ -65,9 +88,9 @@ public class LockForUpdateTest extends AbstractOpticUpdateTest {
         paramValue.addObject().put("myUri", "/optic/test/musician1.json");
 
         List<RowRecord> rows = resultRows(op
-                .fromParam("bindingParam", "", op.colTypes(op.colType("myUri", "string")))
-                .lockForUpdate(op.col("myUri"))
-                .bindParam("bindingParam", new JacksonHandle(paramValue), null));
+            .fromParam("bindingParam", "", op.colTypes(op.colType("myUri", "string")))
+            .lockForUpdate(op.col("myUri"))
+            .bindParam("bindingParam", new JacksonHandle(paramValue), null));
         assertEquals(1, rows.size());
     }
 
@@ -81,9 +104,9 @@ public class LockForUpdateTest extends AbstractOpticUpdateTest {
         paramValue.addObject().put("myUri", "/optic/test/musician1.json");
 
         List<RowRecord> rows = resultRows(op
-                .fromParam("bindingParam", "myQualifier", op.colTypes(op.colType("myUri", "string")))
-                .lockForUpdate(op.viewCol("myQualifier", "myUri"))
-                .bindParam("bindingParam", new JacksonHandle(paramValue), null));
+            .fromParam("bindingParam", "myQualifier", op.colTypes(op.colType("myUri", "string")))
+            .lockForUpdate(op.viewCol("myQualifier", "myUri"))
+            .bindParam("bindingParam", new JacksonHandle(paramValue), null));
         assertEquals(1, rows.size());
     }
 }
