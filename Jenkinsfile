@@ -1,8 +1,43 @@
 @Library('shared-libraries') _
+
+def runtests(String type, String version){
+            copyRPM 'Release','10.0-9.5'
+            setUpML '$WORKSPACE/xdmp/src/Mark*.rpm'
+            copyConvertersRPM type,version
+            setUpMLConverters '$WORKSPACE/xdmp/src/Mark*Converters*.rpm'
+            sh label:'deploy project', script: '''#!/bin/bash
+                export JAVA_HOME=$JAVA_HOME_DIR
+                export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+                export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+                cd java-client-api
+                ./gradlew mlDeploy
+            '''
+            sh label:'marklogic client test', script: '''#!/bin/bash
+                export JAVA_HOME=$JAVA_HOME_DIR
+                export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+                export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+                cd java-client-api
+                ./gradlew marklogic-client-api:test  || true
+            '''
+            sh label:'ml development tool test', script: '''#!/bin/bash
+                export JAVA_HOME=$JAVA_HOME_DIR
+                export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+                export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+                cd java-client-api
+                ./gradlew ml-development-tools:setupTestServer || true
+                ./gradlew ml-development-tools:generateTests || true
+                ./gradlew ml-development-tools:test || true
+            '''
+            sh label:'test', script: '''#!/bin/bash
+                export JAVA_HOME=$JAVA_HOME_DIR
+                export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+                export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+                cd java-client-api
+                ./gradlew marklogic-client-api-functionaltests:test  || true
+            '''
+}
+
 pipeline{
-  triggers{
-    parameterizedCron(env.BRANCH_NAME == "develop" ? "00 02 * * * % regressions=true" : "")
-  }
   agent {label 'javaClientLinuxPool'}
   options {
     checkoutToSubdirectory 'java-client-api'
@@ -80,40 +115,19 @@ pipeline{
             }
         }
         steps{
-            copyRPM 'Release','10.0-9.5'
-            setUpML '$WORKSPACE/xdmp/src/Mark*.rpm'
-            copyConvertersRPM 'Release','10.0-9.5'
-            setUpMLConverters '$WORKSPACE/xdmp/src/Mark*Converters*.rpm'
-            sh label:'deploy project', script: '''#!/bin/bash
-                export JAVA_HOME=$JAVA_HOME_DIR
-                export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-                export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-                cd java-client-api
-                ./gradlew mlDeploy
-            '''
-            sh label:'marklogic client test', script: '''#!/bin/bash
-                export JAVA_HOME=$JAVA_HOME_DIR
-                export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-                export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-                cd java-client-api
-                ./gradlew marklogic-client-api:test  || true
-            '''
-            sh label:'ml development tool test', script: '''#!/bin/bash
-                export JAVA_HOME=$JAVA_HOME_DIR
-                export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-                export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-                cd java-client-api
-                ./gradlew ml-development-tools:setupTestServer || true
-                ./gradlew ml-development-tools:generateTests || true
-                ./gradlew ml-development-tools:test || true
-            '''
-            sh label:'test', script: '''#!/bin/bash
-                export JAVA_HOME=$JAVA_HOME_DIR
-                export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-                export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-                cd java-client-api
-                ./gradlew marklogic-client-api-functionaltests:test  || true
-            '''
+            runtests('Release','10.0-9.5')
+            junit '**/build/**/TEST*.xml'
+        }
+    }
+    stage('regressions-9.0-13'){
+        when{
+            allOf{
+                branch 'develop'
+                expression {return params.regressions}
+            }
+        }
+        steps{
+            runtests('Release','9.0-13.8')
             junit '**/build/**/TEST*.xml'
         }
     }
