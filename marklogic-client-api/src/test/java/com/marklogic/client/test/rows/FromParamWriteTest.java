@@ -1,6 +1,8 @@
 package com.marklogic.client.test.rows;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
@@ -167,10 +169,11 @@ public class FromParamWriteTest extends AbstractOpticUpdateTest {
 
         final String uri = "/acme/doc1-temporal.json";
         final String temporalCollection = "temporal-collection";
+        ObjectNode temporalContent = newTemporalContent();
 
         rowManager.execute(op
             .fromDocDescriptors(op.docDescriptor(
-                new DocumentWriteOperationImpl(uri, newDefaultMetadata(), new JacksonHandle(newTemporalContent()), temporalCollection)
+                new DocumentWriteOperationImpl(uri, newDefaultMetadata(), new JacksonHandle(temporalContent), temporalCollection)
             ))
             .write(op.docCols(null, op.xs.stringSeq("uri", "doc", "temporalCollection", "permissions"))));
 
@@ -186,6 +189,40 @@ public class FromParamWriteTest extends AbstractOpticUpdateTest {
                 "temporal.documentInsert", metadata.getCollections().contains("latest"));
             assertTrue(metadata.getCollections().contains(temporalCollection));
         });
+
+        // Update the doc to ensure that a new version is created
+        temporalContent.put("hello", "world");
+        rowManager.execute(op
+            .fromDocDescriptors(op.docDescriptor(
+                new DocumentWriteOperationImpl(uri, null, new JacksonHandle(temporalContent), temporalCollection)
+            ))
+            .write(op.docCols(null, op.xs.stringSeq("uri", "doc", "temporalCollection"))));
+
+        // Verify doc and that we now have 2 versions
+        verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
+        List<RowRecord> rows = resultRows(op.fromDocUris(op.cts.collectionQuery(temporalCollection)));
+        assertEquals("Should have 2 versions in the temporal collection", 2, rows.size());
+    }
+
+    @Test
+    public void invalidTemporalWrite() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        final String temporalCollection = "temporal-collection";
+        assertThrows(
+            // The error message is not of interest, as it's controlled by temporal.documentInsert and not by Optic.
+            // Just need to verify that this fails as expected.
+            FailedRequestException.class,
+            () -> rowManager.execute(op
+                .fromDocDescriptors(op.docDescriptor(
+                    new DocumentWriteOperationImpl("/acme/this-should-fail.json", newDefaultMetadata(),
+                        new JacksonHandle(mapper.createObjectNode().put("this is", "missing temporal fields")), temporalCollection
+                    )
+                ))
+                .write())
+        );
     }
 
     private void verifyXmlDocContent(String uri, String expectedContent) {
