@@ -9,8 +9,11 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -41,6 +44,30 @@ public class RemoveTest extends AbstractOpticUpdateTest {
         rowManager.execute(op
             .fromDocUris("/acme/doc1.xml", "/acme/doc3.xml")
             .remove(op.col("uri")));
+        verifyDocsDeleted();
+    }
+
+    @Test
+    public void multipleQualifiedUriColumns() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        writeThreeXmlDocuments();
+
+        ModifyPlan plan = op
+            .fromDocUris(op.cts.documentQuery(op.xs.stringSeq("/acme/doc1.xml", "/acme/doc3.xml")), "view1")
+            .joinLeftOuter(
+                op.fromDocUris(op.cts.documentQuery(op.xs.stringSeq("/acme/doc1.xml", "/acme/doc3.xml")), "view2"),
+                op.on(
+                    op.viewCol("view1", "uri"),
+                    op.viewCol("view2", "uri")
+                )
+            )
+            .remove(op.viewCol("view1", "uri"));
+
+        List<RowRecord> rows = resultRows(plan);
+        assertEquals(2, rows.size());
         verifyDocsDeleted();
     }
 
