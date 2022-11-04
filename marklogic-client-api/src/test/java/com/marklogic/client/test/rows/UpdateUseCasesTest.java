@@ -77,42 +77,43 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
      * AS \"persisted\" FILTER (input.uri eq persisted.uri)")) --  Found 6 binding(s)  and 4 static type(s)
      */
     @Test
-    @Ignore("Cannot get notExistsJoin to work; only result() works")
+    @Ignore("See https://bugtrack.marklogic.com/58143")
     public void notExistsJoin() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
         }
 
         // Insert doc1
-        DocumentWriteOperation insertDoc1 = newWriteOp("/acme/doc1.json",
-            new JacksonHandle(mapper.createObjectNode().put("hello", "world")));
         rowManager.execute(op
-            .fromDocDescriptors(op.docDescriptor(insertDoc1))
+            .fromDocDescriptors(op.docDescriptor(
+                newWriteOp("/acme/doc1.json", mapper.createObjectNode().put("hello", "world"))))
             .write());
 
         // Define an update for doc1 and an insert for doc2
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
-        DocumentWriteOperation updateDoc1 = newWriteOp("/acme/doc1.json",
-            mapper.createObjectNode().put("hello", "MODIFIED"));
-        DocumentWriteOperation insertDoc2 = newWriteOp("/acme/doc2.json",
-            mapper.createObjectNode().put("hello", "world2"));
+        DocumentWriteOperation updateDoc1 = newWriteOp("/acme/doc1.json", mapper.createObjectNode().put("hello", "MODIFIED"));
+        DocumentWriteOperation insertDoc2 = newWriteOp("/acme/doc2.json", mapper.createObjectNode().put("hello", "world2"));
         writeSet.add(updateDoc1);
         writeSet.add(insertDoc2);
 
-        // Define a plan that will exclude updateDoc1 via notExistsJoin against the URI lexicon
+        // Define a plan that will exclude insertDoc2 via notExistsJoin against the URI lexicon
         ModifyPlan plan = op
-            .fromDocDescriptors(op.docDescriptors(writeSet), "input")
+            .fromDocDescriptors(op.docDescriptors(writeSet))
             .notExistsJoin(
-                op.fromLexicons(Collections.singletonMap("uri", op.cts.uriReference()), "persisted"),
-                op.on(op.viewCol("input", "uri"), op.viewCol("persisted", "uri")));
+                op.fromLexicons(Collections.singletonMap("existingUri", op.cts.uriReference())),
+                op.on(op.col("uri"), op.col("existingUri"))
+            );
+        // As noted in the bugtrack ticket, adding a "select" will work, but that seems surprising and unnecessary
+        //.select(op.col("uri"), op.col("doc"), op.col("permissions"));
 
         // Note that result() works before write() is added, with only doc2 returned and the qualifier used correctly
         List<RowRecord> rows = resultRows(plan);
+        System.out.println(rows);
         assertEquals(1, rows.size());
-        assertEquals("/acme/doc2.json", rows.get(0).getString("input.uri"));
+        assertEquals("/acme/doc2.json", rows.get(0).getString("uri"));
 
         // But once write() is added, it fails, regardless of whether it's write() or write(docCols)
-        rowManager.execute(plan.write(op.docCols("input")));
+        rowManager.execute(plan.write());
     }
 
     @Test
