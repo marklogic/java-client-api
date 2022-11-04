@@ -624,11 +624,11 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
     assertTrue("Number of Elements after plan execution is incorrect. Should be 3", 3 == jsonBindingsNodes.size());
     assertEquals("Row 1 myCity.city value incorrect", "beijing", jsonBindingsNodes.path(0).path("myCity.city").path("value").asText());
-    assertEquals("Row 1 myCity.point value incorrect", "39.900002,116.4", jsonBindingsNodes.path(0).path("myCity.point").path("value").asText());
+    assertEquals("Row 1 myCity.point value incorrect", "POINT(116.4 39.900002)", jsonBindingsNodes.path(0).path("myCity.point").path("value").asText());
     assertEquals("Row 2 myCity.city value incorrect", "cape town", jsonBindingsNodes.path(1).path("myCity.city").path("value").asText());
-    assertEquals("Row 2 myCity.point value incorrect", "-33.91,18.42", jsonBindingsNodes.path(1).path("myCity.point").path("value").asText());
+    assertEquals("Row 2 myCity.point value incorrect", "POINT(18.42 -33.91)", jsonBindingsNodes.path(1).path("myCity.point").path("value").asText());
     assertEquals("Row 3 myCity.city value incorrect", "london", jsonBindingsNodes.path(2).path("myCity.city").path("value").asText());
-    assertEquals("Row 3 myCity.point value incorrect", "51.5,-0.12", jsonBindingsNodes.path(2).path("myCity.point").path("value").asText());
+    assertEquals("Row 3 myCity.point value incorrect", "POINT(-0.12 51.5)", jsonBindingsNodes.path(2).path("myCity.point").path("value").asText());
 
     // Verify exported string with QNAME - with random checks
     assertTrue("Function not available fromLexicons in exported plan", str.contains("\"fn\":\"from-lexicons\""));
@@ -642,7 +642,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
    * and 16 plan1 uses fromLexicon plan2 use fromLexicons
    */
   @Test
-  public void testEmptyAndInvalidResults() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testEmptyAndInvalidResults()
   {
      System.out.println("In testEmptyAndInvalidResults method");
 
@@ -691,7 +691,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
    * Test multiple queries linearly. plan1 uses fromView plan2 use fromView
    */
   @Test
-  public void testMultipleQuriesLinear() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testMultipleQuriesLinear()
   {
     System.out.println("In testMultipleQuriesLinear method");
 
@@ -743,7 +743,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
    * Test multiple queries nested. plan1 uses fromView
    */
   @Test
-  public void testMultipleQuriesNested() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testMultipleQuriesNested()
   {
     System.out.println("In testMultipleQuriesNested method");
 
@@ -784,7 +784,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
    * Sanity Checks for Plan Builder's fromSearch
    */
   @Test
-  public void testfromSearchDocs() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+  public void testfromSearchDocs() {
     System.out.println("In testfromSearchDocs method");
 
     // Create a new Plan.
@@ -829,7 +829,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
    * Sanity Checks for Plan Builder's fromSearch
    */
   @Test
-  public void testfromSearchScores() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+  public void testfromSearchScores() {
     System.out.println("In testfromSearchScores method");
 
     // Create a new Plan.

@@ -26,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.marklogic.client.io.*;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -43,10 +44,6 @@ import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResult.Type;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.eval.ServerEvaluationCall;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.InputStreamHandle;
 
 /*
  * This test is intended for 
@@ -89,7 +86,7 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 
   // loop the eval query more than 150 times and should not stuck
   @Test
-  public void test1MultipleEvalQueries() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+  public void test1MultipleEvalQueries() throws Exception {
 
     GenericDocumentManager docMgr = client.newDocumentManager();
     File file1 = null;
@@ -100,24 +97,22 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
       InputStreamHandle handle1 = new InputStreamHandle(fis);
       handle1.setFormat(Format.BINARY);
       docMgr.write("/binary4mbdoc", handle1);
+      final long binaryLength = file1.length();
       String query = "declare variable $myInteger as xs:integer external;"
           + "(fn:doc()/binary(),$myInteger,xdmp:database-name(xdmp:database()))";
-      long sizeOfBinary;
-      try ( InputStreamHandle doc =docMgr.read("/binary4mbdoc",new InputStreamHandle()) ) {
-        sizeOfBinary = doc.getByteLength();
-      }
-      for (int i = 0; i <= 330; i++) {
+      // This was previously 330, with no explanation as to why; given that the comment above says "more than 150",
+      // making this 160 instead so it's a bit faster
+      for (int i = 0; i <= 160; i++) {
         ServerEvaluationCall evl = client.newServerEval().xquery(query);
-        evl.addVariable("myInteger", (int) i);
+        evl.addVariable("myInteger", i);
         EvalResultIterator evr = evl.eval();
         while (evr.hasNext()) {
           EvalResult er = evr.next();
           if (er.getType().equals(Type.INTEGER)) {
             assertEquals("itration number", i, er.getNumber().intValue());
           } else if (er.getType().equals(Type.BINARY)) {
-            FileHandle readHandle1 = new FileHandle();
-            assertEquals("size of the binary ", er.get(readHandle1).get().length(), sizeOfBinary);
-
+            byte[] bytes = er.get(new BytesHandle()).get();
+            assertEquals(binaryLength, bytes.length);
           } else if (er.getType().equals(Type.STRING)) {
             assertEquals("database name ", "TestEvalXqueryWithTransDB", er.getString());
           } else {

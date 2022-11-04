@@ -176,7 +176,6 @@ public class TestOpticOnViews extends BasicJavaClientREST {
   loadFileToDB(client, "city3.json", "/optic/lexicon/test/city3.json", "JSON", new String[]{"/optic/lexicon/test"});
   loadFileToDB(client, "city4.json", "/optic/lexicon/test/city4.json", "JSON", new String[]{"/optic/lexicon/test"});
   loadFileToDB(client, "city5.json", "/optic/lexicon/test/city5.json", "JSON", new String[]{"/optic/lexicon/test"});
-  Thread.sleep(10000);
 
     schemaDBclient.release();
   }
@@ -1815,7 +1814,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     JsonNode explainNode = rowMgr.explain(output, new JacksonHandle()).get();
     // Making sure explain() does not blow up for a valid plan.
     assertEquals("Explain of plan incorrect", explainNode.path("node").asText(), "plan");
-    assertEquals("Explain of plan incorrect", explainNode.path("expr").path("columns").get(0).path("column").asText(), "DetailName");
+    assertEquals("Explain of plan incorrect", explainNode.path("expr").path("columns").get(0).path("name").asText(), "MasterName");
     // Invalid string - Use txt instead of json or xml
     String explainNodetxt = rowMgr.explain(output, new StringHandle()).get();
     System.out.println(explainNodetxt);
@@ -3121,7 +3120,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
   // Test for fragment Id types. Similar to testExplainPlan
   @Test
-  public void testColInfoWithSysCols() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+  public void testColInfoWithSysCols() throws IOException {
     System.out.println("In testColInfoWithSysCols method");
 
     // Create a new Plan.
@@ -3159,8 +3158,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     assertTrue("Element 3 DetailName value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"DetailName\", \"type\":\"string\", \"nullable\":false}"));
     assertTrue("Element 4 detail-double value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"detail\", \"column\":\"amount\", \"type\":\"double\", \"nullable\":false}"));
     assertTrue("Element 5 detail-string value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"detail\", \"column\":\"color\", \"type\":\"string\", \"nullable\":false}"));
-    assertTrue("Element 6 detail-unknown value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"detail\", \"column\":\"fragIdCol1\", \"type\":\"fraghint\", \"nullable\":false}"));
-    assertTrue("Element 7 master-unknown value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"master\", \"column\":\"fragIdCol2\", \"type\":\"fraghint\", \"nullable\":false}"));
+    assertTrue("Element 6 detail-unknown value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"detail\", \"column\":\"fragIdCol1\", \"type\":\"fragmentId\", \"nullable\":false}"));
+    assertTrue("Element 7 master-unknown value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"master\", \"column\":\"fragIdCol2\", \"type\":\"fragmentId\", \"nullable\":false}"));
   }
 
   @AfterClass
