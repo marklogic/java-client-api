@@ -50,6 +50,56 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
     }
 
     @Test
+    public void mjsTransformWithColParam() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        ModifyPlan plan = op
+            .fromDocUris(op.cts.documentQuery("/optic/test/musician1.json"))
+            .joinDoc(op.col("doc"), op.col("uri"))
+            .transformDoc(
+                op.col("doc"),
+                op.transformDef("/etc/optic/test/transformDoc-test.mjs")
+                    .withParam("myColumnParam", op.col("uri"))
+                    .withParam("myParam", "test value")
+            );
+
+        List<RowRecord> rows = resultRows(plan);
+        assertEquals(1, rows.size());
+
+        ObjectNode doc = rows.get(0).getContentAs("doc", ObjectNode.class);
+        assertEquals("/optic/test/musician1.json", doc.get("yourColumnValue").asText());
+        assertEquals("test value", doc.get("yourParam").asText());
+        assertEquals("world", doc.get("hello").asText());
+        assertEquals("Armstrong", doc.get("theDoc").get("musician").get("lastName").asText());
+    }
+
+    @Test
+    public void mjsTransformWithQualifiedColParam() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        final String qualifier = "source";
+        ModifyPlan plan = op
+            .fromDocUris(op.cts.documentQuery("/optic/test/musician1.json"), qualifier)
+            .joinDoc(op.col("doc"), op.viewCol(qualifier, "uri"))
+            .transformDoc(
+                op.col("doc"),
+                op.transformDef("/etc/optic/test/transformDoc-test.mjs").withParam("myParam", op.viewCol(qualifier, "uri"))
+            );
+
+        List<RowRecord> rows = resultRows(plan);
+        assertEquals(1, rows.size());
+
+        ObjectNode doc = rows.get(0).getContentAs("doc", ObjectNode.class);
+        assertEquals("/optic/test/musician1.json", doc.get("yourParam").asText());
+        assertEquals("world", doc.get("hello").asText());
+        assertEquals("Armstrong", doc.get("theDoc").get("musician").get("lastName").asText());
+    }
+
+    @Test
     public void mjsTransformWithoutParam() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
@@ -70,6 +120,36 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
         assertEquals("world", transformedDoc.get("hello").asText());
         assertFalse("myParam was not specified, so yourParam should not exist", transformedDoc.has("yourParam"));
         assertEquals("content", transformedDoc.get("theDoc").get("some").asText());
+    }
+
+    @Test
+    public void mjsTransformReturnsMultipleRows() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
+        ModifyPlan plan = op
+            .fromDocDescriptors(
+                op.docDescriptor(newWriteOp("will-be-replaced", mapper.createObjectNode().put("hello", "there")))
+            )
+            .transformDoc(op.col("doc"), op.transformDef("/etc/optic/test/transformDoc-multipleRows.mjs"))
+            .bind(op.as("uri", op.fn.concat(
+                op.xs.string("/acme/"),
+                op.xdmp.random(),
+                op.xs.string(".json"))
+            ))
+            .write();
+
+        List<RowRecord> rows = resultRows(plan);
+        assertEquals("Two docs should have been written because the transform returns an array of 2 objects", 2, rows.size());
+        rows.forEach(row -> {
+            final String uri = row.getString("uri");
+            final ObjectNode returnedDoc = row.getContentAs("doc", ObjectNode.class);
+            verifyJsonDoc(uri, doc -> {
+                assertEquals(returnedDoc.get("number").asInt(), doc.get("number").asInt());
+                assertEquals("there", doc.get("theDoc").get("hello").asText());
+            });
+        });
     }
 
     @Test

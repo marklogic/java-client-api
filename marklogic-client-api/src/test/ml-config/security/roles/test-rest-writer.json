@@ -11,6 +11,11 @@
       "privilege-name": "rest-reader",
       "action": "http://marklogic.com/xdmp/privileges/rest-reader",
       "kind": "execute"
+    },
+    {
+      "privilege-name": "rest-tracer",
+      "action": "http://marklogic.com/xdmp/privileges/rest-tracer",
+      "kind": "execute"
     }
   ]
 }
