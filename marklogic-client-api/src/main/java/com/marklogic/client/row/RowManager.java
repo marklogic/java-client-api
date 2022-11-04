@@ -81,6 +81,29 @@ public interface RowManager {
     void setRowStructureStyle(RowStructure style);
 
     /**
+     * Set an optional label and enable the "optic" trace event for the duration of each plan execution
+     *
+     * @param label
+     */
+    void setTraceLabel(String label);
+
+    /**
+     * @return the label that will be used for all log messages associated with the "optic" trace event
+     */
+    String getTraceLabel();
+
+    /**
+     * Set an optional optimization level. Must be zero or higher.
+     * @param value
+     */
+    void setOptimize(Integer value);
+
+    /**
+     * @return optional optimization level
+     */
+    Integer getOptimize();
+
+    /**
      * Defines a plan from a JSON serialization of the plan AST (Abstract Syntax Tree).
      * @param	handle a handle for a JSON serialization of a plan AST
      * @return	a plan for constructing and retrieving database rows
