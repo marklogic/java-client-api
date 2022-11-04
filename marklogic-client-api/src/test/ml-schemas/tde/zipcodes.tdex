@@ -2,7 +2,7 @@
     <context>/zipcode</context>
     <rows>
         <row>
-            <schema-name>opticUnitTest</schema-name>
+            <schema-name>cookbook</schema-name>
             <view-name>zipcode</view-name>
             <columns>
                 <column>

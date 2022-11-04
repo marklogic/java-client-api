@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.example.cookbook.OpticUpdateExample;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonHandle;
@@ -16,6 +17,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -301,6 +303,8 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
      * Use case: we have a set of rows (perhaps from a CSV, or Kafka, etc), and we want to insert new documents for
      * them, but also join in some reference data from an existing view as part of the new documents. In this use case,
      * we're denormalizing "city" into the new documents based on the zip code in each document.
+     * <p>
+     * This is now reusing OpticUpdateExample so that that class can act as a cookbook example.
      */
     @Test
     public void writeWithReferenceDataFromViewJoinedIn() {
@@ -308,41 +312,7 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
             return;
         }
 
-        // Define some incoming rows from which to create new documents
-        ArrayNode incomingData = mapper.createArrayNode();
-        incomingData.addObject().put("lastName", "Smith").put("firstName", "Jane").put("zipCode", 22201);
-        incomingData.addObject().put("lastName", "Jones").put("firstName", "John");
-
-        ModifyPlan plan = op.fromParam("incomingData", "input", op.colTypes(
-                op.colType("lastName", "string"),
-                op.colType("firstName", "string"),
-                op.colType("zipCode", "integer", true)
-            ))
-            .joinLeftOuter(
-                op.fromView("opticUnitTest", "zipcode"),
-                op.on(
-                    op.viewCol("input", "zipCode"),
-                    op.viewCol("zipcode", "zip")
-                )
-            )
-            .select(
-                op.as("doc", op.jsonObject(
-                    op.prop("lastName", op.viewCol("input", "lastName")),
-                    op.prop("firstName", op.viewCol("input", "firstName")),
-                    op.prop("zipCode", op.viewCol("input", "zipCode")),
-                    op.prop("cityOfResidence", op.viewCol("zipcode", "city"))
-                )),
-                op.as("uri", op.fn.concat(
-                    op.xs.string("/acme/person/"), op.viewCol("input", "lastName"), op.xs.string(".json"))
-                ),
-                op.as("permissions", op.jsonArray(
-                    op.permission("rest-reader", "read"),
-                    op.permission("rest-reader", "update")
-                ))
-            )
-            .write();
-
-        List<RowRecord> rows = resultRows(plan.bindParam("incomingData", new JacksonHandle(incomingData)));
+        List<RowRecord> rows = OpticUpdateExample.runPlanToWriteDocuments(rowManager).stream().collect(Collectors.toList());
         assertEquals(2, rows.size());
 
         verifyJsonDoc("/acme/person/Smith.json", doc -> {
