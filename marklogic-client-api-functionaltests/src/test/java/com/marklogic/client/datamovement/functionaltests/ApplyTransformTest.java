@@ -763,6 +763,8 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		System.out.println("stopTransformJobTest: Success: " + successBatch.size());
 		System.out.println("stopTransformJobTest: Skipped: " + skippedBatch.size());
 		System.out.println("stopTransformJobTest : count " + count);
+		// TODO This has been failing intermittently with the sum being 1999 instead of 2000. Interestingly, the
+		// stopJobTransform test in QueryBatcherJobReportTest sometimes fails because it's off by one as well.
 		Assert.assertEquals(2000, successBatch.size() + skippedBatch.size() + count.get());
 		Assert.assertEquals(2000 - count.get(), successBatch.size());
 

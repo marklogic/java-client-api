@@ -70,7 +70,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
   private static String datasource = "src/test/java/com/marklogic/client/functionaltest/data/optics/";
 
   @BeforeClass
-  public static void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception
+  public static void setUp() throws Exception
   {
     System.out.println("In TestOpticOnLexicons setup");
     DatabaseClient schemaDBclient = null;
@@ -169,7 +169,6 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     loadFileToDB(client, "city3.json", "/optic/lexicon/test/city3.json", "JSON", new String[] { "/optic/lexicon/test" });
     loadFileToDB(client, "city4.json", "/optic/lexicon/test/city4.json", "JSON", new String[] { "/optic/lexicon/test" });
     loadFileToDB(client, "city5.json", "/optic/lexicon/test/city5.json", "JSON", new String[] { "/optic/lexicon/test" });
-    Thread.sleep(10000);
     schemaDBclient.release();
   }
 
@@ -244,13 +243,18 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     return docMgr;
   }
 
+  private String toWKT(String latLon) {
+    String[] parts = latLon.split(",");
+    return "POINT(" + parts[1] + " " + parts[0] + ")";
+  }
+
   /*
    * Checks for Plan Builder's fromLexicon method. 1 plan1 uses strings as col
    * names, with date ordered and using intval 2 plan2 use colSeq() on select
    * method 3 plan3 use strings on select
    */
   @Test
-  public void testfromLexicons() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testfromLexicons()
   {
     System.out.println("In testfromLexicons method");
 
@@ -291,28 +295,28 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     assertEquals("Element 1 (popularity) in Column Strings incorrect", "5", jsonNameNode.path("popularity").path("value").asText());
     assertEquals("Element 1 (date) in Column Strings incorrect", "1981-11-09", jsonNameNode.path("date").path("value").asText());
     assertEquals("Element 1 (distance) in Column Strings incorrect", "134.5", jsonNameNode.path("distance").path("value").asText());
-    assertEquals("Element 1 (point) in Column Strings incorrect", "39.900002,116.4", jsonNameNode.path("point").path("value").asText());
+    assertEquals("Element 1 (point) in Column Strings incorrect", toWKT("39.900002,116.4"), jsonNameNode.path("point").path("value").asText());
 
     jsonNameNode = nameNodesItr.next();
     assertEquals("Element 2 (city) in Column Strings incorrect", "cape town", jsonNameNode.path("city").path("value").asText());
     assertEquals("Element 2 (popularity) in Column Strings incorrect", "3", jsonNameNode.path("popularity").path("value").asText());
     assertEquals("Element 2 (date) in Column Strings incorrect", "1999-04-22", jsonNameNode.path("date").path("value").asText());
     assertEquals("Element 2 (distance) in Column Strings incorrect", "377.9", jsonNameNode.path("distance").path("value").asText());
-    assertEquals("Element 2 (point) in Column Strings incorrect", "-33.91,18.42", jsonNameNode.path("point").path("value").asText());
+    assertEquals("Element 2 (point) in Column Strings incorrect", toWKT("-33.91,18.42"), jsonNameNode.path("point").path("value").asText());
 
     jsonNameNode = nameNodesItr.next();
     assertEquals("Element 3 (city) in Column Strings incorrect", "new york", jsonNameNode.path("city").path("value").asText());
     assertEquals("Element 3 (popularity) in Column Strings incorrect", "5", jsonNameNode.path("popularity").path("value").asText());
     assertEquals("Element 3 (date) in Column Strings incorrect", "2006-06-23", jsonNameNode.path("date").path("value").asText());
     assertEquals("Element 3 (distance) in Column Strings incorrect", "23.3", jsonNameNode.path("distance").path("value").asText());
-    assertEquals("Element 3 (point) in Column Strings incorrect", "40.709999,-74.009995", jsonNameNode.path("point").path("value").asText());
+    assertEquals("Element 3 (point) in Column Strings incorrect", toWKT("40.709999,-74.009995"), jsonNameNode.path("point").path("value").asText());
 
     jsonNameNode = nameNodesItr.next();
     assertEquals("Element 4 (city) in Column Strings incorrect", "london", jsonNameNode.path("city").path("value").asText());
     assertEquals("Element 4 (popularity) in Column Strings incorrect", "5", jsonNameNode.path("popularity").path("value").asText());
     assertEquals("Element 4 (date) in Column Strings incorrect", "2007-01-01", jsonNameNode.path("date").path("value").asText());
     assertEquals("Element 4 (distance) in Column Strings incorrect", "50.4", jsonNameNode.path("distance").path("value").asText());
-    assertEquals("Element 4 (point) in Column Strings incorrect", "51.5,-0.12", jsonNameNode.path("point").path("value").asText());
+    assertEquals("Element 4 (point) in Column Strings incorrect", toWKT("51.5,-0.12"), jsonNameNode.path("point").path("value").asText());
 
     System.out.println("Bindings after execution of Plan 1 is" + jsonBindingsNodes);
 
@@ -351,7 +355,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
    * Test join inner with joinInnerDoc
    */
   @Test
-  public void testJoinInnerWithInnerDocfromLexicons() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testJoinInnerWithInnerDocfromLexicons()
   {
     System.out.println("In testJoinInnerWithInnerDocfromLexicons method");
 
@@ -402,7 +406,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     assertEquals("Element 1 (myCity) in distance incorrect", "12.9", jsonInnerDocNodes.get(0).path("myCity.distance").path("value").asText());
     assertEquals("Element 1 (myCity) in city incorrect", "new jersey", jsonInnerDocNodes.get(0).path("myCity.city").path("value").asText());
     assertEquals("Element 1 (myCity) in popularity incorrect", "2", jsonInnerDocNodes.get(0).path("myCity.popularity").path("value").asText());
-    assertEquals("Element 1 (myCity) in point incorrect", "40.720001,-74.07", jsonInnerDocNodes.get(0).path("myCity.point").path("value").asText());
+    assertEquals("Element 1 (myCity) in point incorrect", toWKT("40.720001,-74.07"), jsonInnerDocNodes.get(0).path("myCity.point").path("value").asText());
 
     assertEquals("Element 1 (myTeam) in URI2 incorrect", "/optic/lexicon/test/city3.json", jsonInnerDocNodes.get(0).path("myTeam.uri2").path("value").asText());
     assertEquals("Element 1 (myTeam) in city incorrect", "new jersey", jsonInnerDocNodes.get(0).path("myTeam.cityName").path("value").asText());
@@ -422,7 +426,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     assertEquals("Element 5 (myCity) in distance incorrect", "50.4", jsonInnerDocNodes.get(4).path("myCity.distance").path("value").asText());
     assertEquals("Element 5 (myCity) in city incorrect", "london", jsonInnerDocNodes.get(4).path("myCity.city").path("value").asText());
     assertEquals("Element 5 (myCity) in popularity incorrect", "5", jsonInnerDocNodes.get(4).path("myCity.popularity").path("value").asText());
-    assertEquals("Element 5 (myCity) in point incorrect", "51.5,-0.12", jsonInnerDocNodes.get(4).path("myCity.point").path("value").asText());
+    assertEquals("Element 5 (myCity) in point incorrect", toWKT("51.5,-0.12"), jsonInnerDocNodes.get(4).path("myCity.point").path("value").asText());
 
     assertEquals("Element 5 (myTeam) in URI2 incorrect", "/optic/lexicon/test/city1.json", jsonInnerDocNodes.get(4).path("myTeam.uri2").path("value").asText());
     assertEquals("Element 5 (myTeam) in city incorrect", "london", jsonInnerDocNodes.get(4).path("myTeam.cityName").path("value").asText());
@@ -446,14 +450,14 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     assertTrue("Debug Info incorrect", debugRR.contains("myCity.date:{kind: \"ATOMIC_VALUE\", type: \"xs:date\", value: \"1971-12-23\"}"));
     assertTrue("Debug Info incorrect", debugRR.contains("myCity.uri1:{kind: \"ATOMIC_VALUE\", type: \"xs:string\", value: \"/optic/lexicon/test/doc3.json\""));
     assertTrue("Debug Info incorrect", debugRR.contains("myCity.distance:{kind: \"ATOMIC_VALUE\", type: \"xs:double\", value: 12.9}"));
-    assertTrue("Debug Info incorrect", debugRR.contains("myCity.point:{kind: \"ATOMIC_VALUE\", type: \"http://marklogic.com/cts#point\", value: \"40.720001,-74.07\"}"));
+    assertTrue("Debug Info incorrect", debugRR.contains("myCity.point:{kind: \"ATOMIC_VALUE\", type: \"http://marklogic.com/cts#point\", value: \"" + toWKT("40.720001,-74.07") + "\"}"));
 
     assertEquals("Element 1 (myCity) in date incorrect", "1971-12-23", recordRow.getString("myCity.date"));
     assertEquals("Element 1 (myCity) in URI1 incorrect", "/optic/lexicon/test/doc3.json", recordRow.getString("myCity.uri1"));
     assertEquals(12.9, recordRow.getFloat("myCity.distance"), 0.1);
     assertEquals("Element 1 (myCity) in city incorrect", "new jersey", recordRow.getString("myCity.city"));
     assertEquals("Element 1 (myCity) in popularity incorrect", 2, recordRow.getInt("myCity.popularity"));
-    assertEquals("Element 1 (myCity) in point incorrect", "40.720001,-74.07", recordRow.getString("myCity.point"));
+    assertEquals("Element 1 (myCity) in point incorrect", toWKT("40.720001,-74.07"), recordRow.getString("myCity.point"));
 
     // Use a handle different from Jackson.
     StringHandle strDocHandle = new StringHandle();
@@ -477,7 +481,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
    * Test join inner with keymatch, viewCol, and date sort
    */
   @Test
-  public void testJoinInnerKeymatchDateSort() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testJoinInnerKeymatchDateSort()
   {
     System.out.println("In testJoinInnerKeymatchDateSort method");
 
@@ -593,7 +597,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     assertEquals("Row 1 myTeam.cityName value incorrect", "beijing", node.path("myTeam.cityName").path("value").asText());
     assertEquals("Row 1 myTeam.cityTeam value incorrect", "ducks", node.path("myTeam.cityTeam").path("value").asText());
     assertEquals("Row 1 myCity.popularity value incorrect", "5", node.path("myCity.popularity").path("value").asText());
-    assertEquals("Row 1 myCity.point value incorrect", "39.900002,116.4", node.path("myCity.point").path("value").asText());
+    assertEquals("Row 1 myCity.point value incorrect", toWKT("39.900002,116.4"), node.path("myCity.point").path("value").asText());
     assertEquals("Row 1 nodes value incorrect", "39.9", node.path("nodes").path("value").asText());
 
     node = jsonBindingsNodes.path(3);
@@ -602,7 +606,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     assertEquals("Row 4 myTeam.cityName value incorrect", "new jersey", node.path("myTeam.cityName").path("value").asText());
     assertEquals("Row 4 myTeam.cityTeam value incorrect", "nets", node.path("myTeam.cityTeam").path("value").asText());
     assertEquals("Row 4 myCity.popularity value incorrect", "2", node.path("myCity.popularity").path("value").asText());
-    assertEquals("Row 4 myCity.point value incorrect", "40.720001,-74.07", node.path("myCity.point").path("value").asText());
+    assertEquals("Row 4 myCity.point value incorrect", toWKT("40.720001,-74.07"), node.path("myCity.point").path("value").asText());
     assertEquals("Row 4 nodes value incorrect", "40.72", node.path("nodes").path("value").asText());
 
     // TEST 20 - join inner with joinInnerDoc and xpath
@@ -635,7 +639,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     assertEquals("Row 1 myTeam.cityName value incorrect", "new jersey", node.path("myTeam.cityName").path("value").asText());
     assertEquals("Row 1 myTeam.cityTeam value incorrect", "nets", node.path("myTeam.cityTeam").path("value").asText());
     assertEquals("Row 1 myCity.popularity value incorrect", "2", node.path("myCity.popularity").path("value").asText());
-    assertEquals("Row 1 myCity.point value incorrect", "40.720001,-74.07", node.path("myCity.point").path("value").asText());
+    assertEquals("Row 1 myCity.point value incorrect", toWKT("40.720001,-74.07"), node.path("myCity.point").path("value").asText());
     assertEquals("Row 1 myCity.uri1 value incorrect", "/optic/lexicon/test/doc3.json", node.path("myCity.uri1").path("value").asText());
     assertEquals("Row 1 myTeam.uri2 value incorrect", "/optic/lexicon/test/city3.json", node.path("myTeam.uri2").path("value").asText());
 
@@ -645,7 +649,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     assertEquals("Row 5 myTeam.cityName value incorrect", "london", node.path("myTeam.cityName").path("value").asText());
     assertEquals("Row 5 myTeam.cityTeam value incorrect", "arsenal", node.path("myTeam.cityTeam").path("value").asText());
     assertEquals("Row 5 myCity.popularity value incorrect", "5", node.path("myCity.popularity").path("value").asText());
-    assertEquals("Row 5 myCity.point value incorrect", "51.5,-0.12", node.path("myCity.point").path("value").asText());
+    assertEquals("Row 5 myCity.point value incorrect", toWKT("51.5,-0.12"), node.path("myCity.point").path("value").asText());
     assertEquals("Row 5 myCity.uri1 value incorrect", "/optic/lexicon/test/doc1.json", node.path("myCity.uri1").path("value").asText());
     assertEquals("Row 5 myTeam.uri2 value incorrect", "/optic/lexicon/test/city1.json", node.path("myTeam.uri2").path("value").asText());
   }
@@ -654,7 +658,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
    * Test prepare plan
    */
   @Test
-  public void testPreparePlan() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testPreparePlan()
   {
     System.out.println("In testPreparePlan method");
 
@@ -687,10 +691,10 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     assertEquals("Four nodes not returned from testPreparePlan method ", 4, jsonBindingsNodes.size());
     JsonNode first = jsonBindingsNodes.path(0);
     assertEquals("Row 1 myCity.city value incorrect", "beijing", first.path("myCity.city").path("value").asText());
-    assertEquals("Row 1 myCity.point value incorrect", "39.900002,116.4", first.path("myCity.point").path("value").asText());
+    assertEquals("Row 1 myCity.point value incorrect", toWKT("39.900002,116.4"), first.path("myCity.point").path("value").asText());
     first = jsonBindingsNodes.path(3);
     assertEquals("Row 4 myCity.city value incorrect", "new york", first.path("myCity.city").path("value").asText());
-    assertEquals("Row 4 myCity.point value incorrect", "40.709999,-74.009995", first.path("myCity.point").path("value").asText());
+    assertEquals("Row 4 myCity.point value incorrect", toWKT("40.709999,-74.009995"), first.path("myCity.point").path("value").asText());
 
     // prepare = 2
     PreparePlan output2 = plan1.where(p.gt(popCol, p.xs.intVal(2)))
@@ -707,10 +711,10 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     assertEquals("Four nodes not returned from testPreparePlan method ", 4, jsonBindingsNodes.size());
     first = jsonBindingsNodes.path(0);
     assertEquals("Row 1 myCity.city value incorrect", "beijing", first.path("myCity.city").path("value").asText());
-    assertEquals("Row 1 myCity.point value incorrect", "39.900002,116.4", first.path("myCity.point").path("value").asText());
+    assertEquals("Row 1 myCity.point value incorrect", toWKT("39.900002,116.4"), first.path("myCity.point").path("value").asText());
     first = jsonBindingsNodes.path(3);
     assertEquals("Row 4 myCity.city value incorrect", "new york", first.path("myCity.city").path("value").asText());
-    assertEquals("Row 4 myCity.point value incorrect", "40.709999,-74.009995", first.path("myCity.point").path("value").asText());
+    assertEquals("Row 4 myCity.point value incorrect", toWKT("40.709999,-74.009995"), first.path("myCity.point").path("value").asText());
 
     // prepare = 5
     PreparePlan output3 = plan1.where(p.gt(popCol, p.xs.intVal(2)))
@@ -727,10 +731,10 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     assertEquals("Four nodes not returned from testPreparePlan method ", 4, jsonBindingsNodes.size());
     first = jsonBindingsNodes.path(0);
     assertEquals("Row 1 myCity.city value incorrect", "beijing", first.path("myCity.city").path("value").asText());
-    assertEquals("Row 1 myCity.point value incorrect", "39.900002,116.4", first.path("myCity.point").path("value").asText());
+    assertEquals("Row 1 myCity.point value incorrect", toWKT("39.900002,116.4"), first.path("myCity.point").path("value").asText());
     first = jsonBindingsNodes.path(3);
     assertEquals("Row 4 myCity.city value incorrect", "new york", first.path("myCity.city").path("value").asText());
-    assertEquals("Row 4 myCity.point value incorrect", "40.709999,-74.009995", first.path("myCity.point").path("value").asText());
+    assertEquals("Row 4 myCity.point value incorrect", toWKT("40.709999,-74.009995"), first.path("myCity.point").path("value").asText());
 
     // prepare = -3
     PreparePlan output4 = plan1.where(p.gt(popCol, p.xs.intVal(2)))
@@ -756,7 +760,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
    * Test join inner with system col
    */
   @Test
-  public void testJoinInnerWithSystemCol() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testJoinInnerWithSystemCol()
   {
     System.out.println("In testJoinInnerWithSystemCol method");
 
@@ -804,7 +808,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     assertEquals("Row 1 myTeam.cityName value incorrect", "new jersey", node.path("myTeam.cityName").path("value").asText());
     assertEquals("Row 1 myTeam.cityTeam value incorrect", "nets", node.path("myTeam.cityTeam").path("value").asText());
     assertEquals("Row 1 myCity.popularity value incorrect", "2", node.path("myCity.popularity").path("value").asText());
-    assertEquals("Row 1 myCity.point value incorrect", "40.720001,-74.07", node.path("myCity.point").path("value").asText());
+    assertEquals("Row 1 myCity.point value incorrect", toWKT("40.720001,-74.07"), node.path("myCity.point").path("value").asText());
     assertEquals("Row 1 myCity.uri1 value incorrect", "/optic/lexicon/test/doc3.json", node.path("myCity.uri1").path("value").asText());
     assertEquals("Row 1 myTeam.uri2 value incorrect", "/optic/lexicon/test/city3.json", node.path("myTeam.uri2").path("value").asText());
 
@@ -814,7 +818,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     assertEquals("Row 5 myTeam.cityName value incorrect", "london", node.path("myTeam.cityName").path("value").asText());
     assertEquals("Row 5 myTeam.cityTeam value incorrect", "arsenal", node.path("myTeam.cityTeam").path("value").asText());
     assertEquals("Row 5 myCity.popularity value incorrect", "5", node.path("myCity.popularity").path("value").asText());
-    assertEquals("Row 5 myCity.point value incorrect", "51.5,-0.12", node.path("myCity.point").path("value").asText());
+    assertEquals("Row 5 myCity.point value incorrect", toWKT("51.5,-0.12"), node.path("myCity.point").path("value").asText());
     assertEquals("Row 5 myCity.uri1 value incorrect", "/optic/lexicon/test/doc1.json", node.path("myCity.uri1").path("value").asText());
     assertEquals("Row 5 myTeam.uri2 value incorrect", "/optic/lexicon/test/city1.json", node.path("myTeam.uri2").path("value").asText());
   }
@@ -823,7 +827,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
    * Test prepared plan and multiple order by and export.
    */
   @Test
-  public void testPreparedPlanMultipleOrderBy() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testPreparedPlanMultipleOrderBy()
   {
     System.out.println("In testPreparedPlanMultipleOrderBy method");
 
@@ -875,7 +879,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
    * conditional from join doc - TEST31
    */
   @Test
-  public void testConditionalFromJoinDoc() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testConditionalFromJoinDoc()
   {
     System.out.println("In testConditionalFromJoinDoc method");
 
@@ -944,7 +948,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
    * TEST 28 - join doc uri with fragment id
    */
   @Test
-  public void testJoinDocURI() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testJoinDocURI()
   {
     System.out.println("In testJoinDocURI method");
 
@@ -1000,7 +1004,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
    * Test Invalid range index- date
    */
   @Test
-  public void testInvalidRangeIndexDate() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testInvalidRangeIndexDate()
   {
     System.out.println("In testInvalidRangeIndexDate method");
 
@@ -1041,7 +1045,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
    * Test Invalid refferance- city
    */
   @Test
-  public void testInvalidRefferance() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testInvalidRefferance()
   {
     System.out.println("In testInvalidRefferance method");
 
@@ -1082,7 +1086,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
    * Test Invalid refferance- qualifier
    */
   @Test
-  public void testInvalidRefferanceQualifier() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testInvalidRefferanceQualifier()
   {
     System.out.println("In testInvalidRefferanceQualifier method");
 
@@ -1129,7 +1133,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
    * Test Invalid viewCol
    */
   @Test
-  public void testInvalidViewCol() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testInvalidViewCol()
   {
     System.out.println("In testInvalidViewCol method");
 
@@ -1177,7 +1181,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
    * doc - TEST 11 3) invalid doc on join inner doc
    */
   @Test
-  public void testInvalidInnerDocElements() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testInvalidInnerDocElements()
   {
     System.out.println("In testInvalidInnerDocElements method");
 
@@ -1243,7 +1247,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
    * SJS TEST 34
    */
   @Test
-  public void testRestrictedXPathUnanamedNodes() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testRestrictedXPathUnanamedNodes()
   {
     System.out.println("In testRestrictedXPathUnanamedNodes method");
 
@@ -1308,7 +1312,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
    * SJS TEST 35
    */
   @Test
-  public void testRestrictedXPathPredicate() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testRestrictedXPathPredicate()
   {
     System.out.println("In testRestrictedXPathPredicate method");
 
@@ -1370,7 +1374,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
    * SJS TEST 40
    */
   @Test
-  public void testRestrictedXPathPredicateMath() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testRestrictedXPathPredicateMath()
   {
     System.out.println("In testRestrictedXPathPredicateMath method");
 

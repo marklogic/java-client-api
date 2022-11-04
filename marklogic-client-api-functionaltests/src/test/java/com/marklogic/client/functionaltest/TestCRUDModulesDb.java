@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
+import com.marklogic.client.io.BytesHandle;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -162,7 +163,8 @@ public class TestCRUDModulesDb extends BasicJavaClientREST {
 
     // read it back
     File f = new File("src/test/java/com/marklogic/client/functionaltest/data/binary.jpg");
-    assertEquals(f.length(), libsMgr.read(Path, new StringHandle()).getByteLength());
+    byte[] moduleContent = libsMgr.read(Path, new BytesHandle()).get();
+    assertEquals(f.length(), moduleContent.length);
 
     // get the list of descriptors
     ExtensionLibraryDescriptor[] descriptors = libsMgr.list();
@@ -236,7 +238,8 @@ public class TestCRUDModulesDb extends BasicJavaClientREST {
     libsMgr.write(Path, f);
 
     // read it back
-    assertEquals(209745, libsMgr.read(Path, new StringHandle()).getByteLength());
+    String moduleContent = libsMgr.read(Path, new StringHandle()).get();
+    assertTrue(moduleContent.contains("<TITLE>All's Well That Ends Well</TITLE>"));
 
     // get the list of descriptors
     ExtensionLibraryDescriptor[] descriptors = libsMgr.list();

@@ -574,7 +574,11 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		System.out.println("stopTransformJobTest : Applied Trans count " + appliedTranscount.get());
 		
 		System.out.println("stopTransformJobTest : successCount.get() " + successCount.get());
-		assertTrue("Number of docs transformed must be <= number of docs selected", appliedTranscount.get() <= successBatch.size());
+		// This fails intermittently when the successBatch size is one less than the appliedTranscount. Interestingly,
+		// a potentially similar off-by-one error occurs with the stopTransformJob test in ApplyTransformTest
+		assertTrue("Number of docs transformed must be <= number of docs selected; " +
+			"applied count: " + appliedTranscount.get() + "; success batch size: " + successBatch.size(),
+			appliedTranscount.get() <= successBatch.size());
 	}
 	
 	/* Test 1 setMaxBatches(2035) - maximum specified in advance
