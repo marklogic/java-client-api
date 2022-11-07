@@ -599,11 +599,47 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan fromSql(XsStringVal select, XsStringVal qualifierName);
+  /**
+  * Starts a pipeline with rows provided by a parameter when the pipeline is executed.
+  * @param paramName  Specifies the placeholder parameter supplying the rows.
+  * @param qualifier  Specifies a view name alias similar to op.fromLiterals() and other accessors.
+  * @param colTypes  Specifies the names and types of columns with an array of JavaScript objects.
+  * @return  a AccessPlan object
+  */
   public abstract AccessPlan fromParam(String paramName, String qualifier, PlanRowColTypesSeq colTypes);
+  /**
+  * Starts a pipeline with rows provided by a parameter when the pipeline is executed.
+  * @param paramName  Specifies the placeholder parameter supplying the rows.
+  * @param qualifier  Specifies a view name alias similar to op.fromLiterals() and other accessors.
+  * @param colTypes  Specifies the names and types of columns with an array of JavaScript objects.
+  * @return  a AccessPlan object
+  */
   public abstract AccessPlan fromParam(XsStringVal paramName, XsStringVal qualifier, PlanRowColTypesSeq colTypes);
+  /**
+  * Starts the pipeline with one or more docDescriptors.
+  * @param docDescriptor  Specifies a name for qualifying the column names.
+  * @return  a AccessPlan object
+  */
   public abstract AccessPlan fromDocDescriptors(PlanDocDescriptor... docDescriptor);
+  /**
+  * Starts the pipeline with one or more docDescriptors.
+  * @param docDescriptor  Specifies a name for qualifying the column names.
+  * @return  a AccessPlan object
+  */
   public abstract AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor);
+  /**
+  * Starts the pipeline with one or more docDescriptors.
+  * @param docDescriptor  Specifies a name for qualifying the column names.
+  * @param qualifier  Specifies a view name alias.
+  * @return  a AccessPlan object
+  */
   public abstract AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor, String qualifier);
+  /**
+  * Starts the pipeline with one or more docDescriptors.
+  * @param docDescriptor  Specifies a name for qualifying the column names.
+  * @param qualifier  Specifies a view name alias.
+  * @return  a AccessPlan object
+  */
   public abstract AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor, XsStringVal qualifier);
   /**
   * This function returns a filter definition as input for a WHERE operation. As with a cts:query or sem:store, the filter definition cannot be used in an Optic Boolean expression but, instead, must be the only argument to the WHERE call. Add a separate WHERE call to filter based on an Optic Boolean expression. The condition must be a valid simple SQL Boolean expression expressed as a string. 
@@ -1321,11 +1357,41 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a PlanFunction object
   */
   public abstract PlanFunction resolveFunction(XsQNameVal functionName, XsStringVal modulePath);
+  /**
+  * Constructs a document column identifier object for columns with the same names as document characteristics.
+  * @return  a PlanDocColsIdentifier object
+  */
   public abstract PlanDocColsIdentifier docCols();
+  /**
+  * Constructs a document column identifier object for columns with the same names as document characteristics.
+  * @param qualifier  the qualifier  value.
+  * @return  a PlanDocColsIdentifier object
+  */
   public abstract PlanDocColsIdentifier docCols(String qualifier);
+  /**
+  * Constructs a document column identifier object for columns with the same names as document characteristics.
+  * @param qualifier  the qualifier  value.
+  * @return  a PlanDocColsIdentifier object
+  */
   public abstract PlanDocColsIdentifier docCols(XsStringVal qualifier);
+  /**
+  * Constructs a document column identifier object for columns with the same names as document characteristics.
+  * @param qualifier  the qualifier  value.
+  * @param names  Specifies a subset of columns.
+  * @return  a PlanDocColsIdentifier object
+  */
   public abstract PlanDocColsIdentifier docCols(String qualifier, String names);
+  /**
+  * Constructs a document column identifier object for columns with the same names as document characteristics.
+  * @param qualifier  the qualifier  value.
+  * @param names  Specifies a subset of columns.
+  * @return  a PlanDocColsIdentifier object
+  */
   public abstract PlanDocColsIdentifier docCols(XsStringVal qualifier, XsStringSeqVal names);
+  /**
+  * Provides the third parameter for fromParam() for document descriptors. All columns should be nullable.
+  * @return  a PlanRowColTypesSeq object sequence
+  */
   public abstract PlanRowColTypesSeq docColTypes();
 /**
  * Provides functions and operations in the access phase
@@ -1700,20 +1766,105 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan whereDistinct();
-public abstract ModifyPlan write();
-public abstract ModifyPlan write(PlanDocColsIdentifier docCols);
-public abstract ModifyPlan joinDocCols(PlanDocColsIdentifier docCols, String docIdCol);
-public abstract ModifyPlan joinDocCols(PlanDocColsIdentifier docCols, PlanColumn docIdCol);
-public abstract ModifyPlan validateDoc(String validated, PlanSchemaDef schemaDef);
-public abstract ModifyPlan validateDoc(PlanColumn validated, PlanSchemaDef schemaDef);
-public abstract ModifyPlan unnestInner(String inputColumn, String valueColumn);
-public abstract ModifyPlan unnestInner(PlanExprCol inputColumn, PlanExprCol valueColumn);
-public abstract ModifyPlan unnestInner(String inputColumn, String valueColumn, String ordinalColumn);
-public abstract ModifyPlan unnestInner(PlanExprCol inputColumn, PlanExprCol valueColumn, PlanExprCol ordinalColumn);
-public abstract ModifyPlan unnestLeftOuter(String inputColumn, String valueColumn);
-public abstract ModifyPlan unnestLeftOuter(PlanExprCol inputColumn, PlanExprCol valueColumn);
-public abstract ModifyPlan unnestLeftOuter(String inputColumn, String valueColumn, String ordinalColumn);
-public abstract ModifyPlan unnestLeftOuter(PlanExprCol inputColumn, PlanExprCol valueColumn, PlanExprCol ordinalColumn);
+/**
+  * Inserts or overwrites the documents identified by the uri column with the data supplied by the other document descriptor columns.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan write();
+/**
+  * Inserts or overwrites the documents identified by the uri column with the data supplied by the other document descriptor columns.
+  * @param docCols  Supplies a document column identifier object to specify which document columns to use when writing.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan write(PlanDocColsIdentifier docCols);
+/**
+  * Populates view with uri, doc, collections, metadata, permissions, and/or quality document descriptor columns for database document values.
+  * @param docCols  Supplies a document column identifier object to specify which document columns to join and their names. The names cannot conflict with existing column names.
+  * @param docIdCol  Identifies the document. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan joinDocCols(PlanDocColsIdentifier docCols, String docIdCol);
+/**
+  * Populates view with uri, doc, collections, metadata, permissions, and/or quality document descriptor columns for database document values.
+  * @param docCols  Supplies a document column identifier object to specify which document columns to join and their names. The names cannot conflict with existing column names.
+  * @param docIdCol  Identifies the document. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan joinDocCols(PlanDocColsIdentifier docCols, PlanColumn docIdCol);
+/**
+  * Validates a column that has in-memory nodes as values against a schema.
+  * @param validated  Identifies a document content column. See {@link PlanBuilder#col(XsStringVal)}
+  * @param schemaDef  Defines the schema using keys - kind, schemaUri and mode.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan validateDoc(String validated, PlanSchemaDef schemaDef);
+/**
+  * Validates a column that has in-memory nodes as values against a schema.
+  * @param validated  Identifies a document content column. See {@link PlanBuilder#col(XsStringVal)}
+  * @param schemaDef  Defines the schema using keys - kind, schemaUri and mode.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan validateDoc(PlanColumn validated, PlanSchemaDef schemaDef);
+/**
+  * Creates sequence valued columns in SQL and SPARQL.
+  * @param inputColumn  Supplies the input. If the value is NULL the unnest-inner has no output. See {@link PlanBuilder#col(XsStringVal)}
+  * @param valueColumn  Specifies the output column. If the valueColumn is specified we use that as output, else we use 'unnest' as output. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan unnestInner(String inputColumn, String valueColumn);
+/**
+  * Creates sequence valued columns in SQL and SPARQL.
+  * @param inputColumn  Supplies the input. If the value is NULL the unnest-inner has no output. See {@link PlanBuilder#col(XsStringVal)}
+  * @param valueColumn  Specifies the output column. If the valueColumn is specified we use that as output, else we use 'unnest' as output. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan unnestInner(PlanExprCol inputColumn, PlanExprCol valueColumn);
+/**
+  * Creates sequence valued columns in SQL and SPARQL.
+  * @param inputColumn  Supplies the input. If the value is NULL the unnest-inner has no output. See {@link PlanBuilder#col(XsStringVal)}
+  * @param valueColumn  Specifies the output column. If the valueColumn is specified we use that as output, else we use 'unnest' as output. See {@link PlanBuilder#col(XsStringVal)}
+  * @param ordinalColumn   See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan unnestInner(String inputColumn, String valueColumn, String ordinalColumn);
+/**
+  * Creates sequence valued columns in SQL and SPARQL.
+  * @param inputColumn  Supplies the input. If the value is NULL the unnest-inner has no output. See {@link PlanBuilder#col(XsStringVal)}
+  * @param valueColumn  Specifies the output column. If the valueColumn is specified we use that as output, else we use 'unnest' as output. See {@link PlanBuilder#col(XsStringVal)}
+  * @param ordinalColumn   See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan unnestInner(PlanExprCol inputColumn, PlanExprCol valueColumn, PlanExprCol ordinalColumn);
+/**
+  * Creates sequence valued columns in SQL and SPARQL based on left outer join.
+  * @param inputColumn  Supplies the input. If inputColumn is NULL, the unnest-left-outer produces the unnest/ordinality columns, but with values NULL. See {@link PlanBuilder#col(XsStringVal)}
+  * @param valueColumn  Specifies the output column. If the valueColumn is specified we use that as output, else we use 'unnest' as output. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan unnestLeftOuter(String inputColumn, String valueColumn);
+/**
+  * Creates sequence valued columns in SQL and SPARQL based on left outer join.
+  * @param inputColumn  Supplies the input. If inputColumn is NULL, the unnest-left-outer produces the unnest/ordinality columns, but with values NULL. See {@link PlanBuilder#col(XsStringVal)}
+  * @param valueColumn  Specifies the output column. If the valueColumn is specified we use that as output, else we use 'unnest' as output. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan unnestLeftOuter(PlanExprCol inputColumn, PlanExprCol valueColumn);
+/**
+  * Creates sequence valued columns in SQL and SPARQL based on left outer join.
+  * @param inputColumn  Supplies the input. If inputColumn is NULL, the unnest-left-outer produces the unnest/ordinality columns, but with values NULL. See {@link PlanBuilder#col(XsStringVal)}
+  * @param valueColumn  Specifies the output column. If the valueColumn is specified we use that as output, else we use 'unnest' as output. See {@link PlanBuilder#col(XsStringVal)}
+  * @param ordinalColumn  the ordinalColumn  value. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan unnestLeftOuter(String inputColumn, String valueColumn, String ordinalColumn);
+/**
+  * Creates sequence valued columns in SQL and SPARQL based on left outer join.
+  * @param inputColumn  Supplies the input. If inputColumn is NULL, the unnest-left-outer produces the unnest/ordinality columns, but with values NULL. See {@link PlanBuilder#col(XsStringVal)}
+  * @param valueColumn  Specifies the output column. If the valueColumn is specified we use that as output, else we use 'unnest' as output. See {@link PlanBuilder#col(XsStringVal)}
+  * @param ordinalColumn  the ordinalColumn  value. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan unnestLeftOuter(PlanExprCol inputColumn, PlanExprCol valueColumn, PlanExprCol ordinalColumn);
   }
 
   
