@@ -26,6 +26,7 @@ import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.marklogic.client.MarkLogicVersion;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.*;
@@ -579,7 +580,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
    * fromLexicon plan2 use fromLexicons
    */
   @Test
-  public void testQNameExport() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testQNameExport()
   {
     System.out.println("In testQNameExport method");
 
@@ -622,19 +623,28 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
     rowMgr.resultDoc(output, jacksonHandle);
     JsonNode jsonResults = jacksonHandle.get();
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
+    boolean isML11OrHigher = MarkLogicVersion.getMarkLogicVersion(client).getMajor() >= 11;
     assertTrue("Number of Elements after plan execution is incorrect. Should be 3", 3 == jsonBindingsNodes.size());
     assertEquals("Row 1 myCity.city value incorrect", "beijing", jsonBindingsNodes.path(0).path("myCity.city").path("value").asText());
-    assertEquals("Row 1 myCity.point value incorrect", "POINT(116.4 39.900002)", jsonBindingsNodes.path(0).path("myCity.point").path("value").asText());
+    assertEquals("Row 1 myCity.point value incorrect", toWKT(isML11OrHigher, "39.900002,116.4"), jsonBindingsNodes.path(0).path("myCity.point").path("value").asText());
     assertEquals("Row 2 myCity.city value incorrect", "cape town", jsonBindingsNodes.path(1).path("myCity.city").path("value").asText());
-    assertEquals("Row 2 myCity.point value incorrect", "POINT(18.42 -33.91)", jsonBindingsNodes.path(1).path("myCity.point").path("value").asText());
+    assertEquals("Row 2 myCity.point value incorrect", toWKT(isML11OrHigher, "-33.91,18.42"), jsonBindingsNodes.path(1).path("myCity.point").path("value").asText());
     assertEquals("Row 3 myCity.city value incorrect", "london", jsonBindingsNodes.path(2).path("myCity.city").path("value").asText());
-    assertEquals("Row 3 myCity.point value incorrect", "POINT(-0.12 51.5)", jsonBindingsNodes.path(2).path("myCity.point").path("value").asText());
+    assertEquals("Row 3 myCity.point value incorrect", toWKT(isML11OrHigher, "51.5,-0.12"), jsonBindingsNodes.path(2).path("myCity.point").path("value").asText());
 
     // Verify exported string with QNAME - with random checks
     assertTrue("Function not available fromLexicons in exported plan", str.contains("\"fn\":\"from-lexicons\""));
     assertTrue("Function not available fromLexicons in exported plan",
         str.contains("\"fn\":\"fragment-id-col\", \"args\":[{\"ns\":\"xs\", \"fn\":\"string\", \"args\":[\"fragId1\"]"));
     assertTrue("Function not available fromLexicons in exported plan", str.contains("\"fn\":\"QName\", \"args\":[\"metro\"]"));
+  }
+
+  private String toWKT(boolean isML11OrHigher, String latLon) {
+    if (isML11OrHigher) {
+      String[] parts = latLon.split(",");
+      return "POINT(" + parts[1] + " " + parts[0] + ")";
+    }
+    return latLon;
   }
 
   /*
