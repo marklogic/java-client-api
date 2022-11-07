@@ -183,6 +183,7 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
     }
 
     @Test
+    @Ignore("See https://bugtrack.marklogic.com/58137")
     public void writeNewDocsFromView() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
