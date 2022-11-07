@@ -2470,6 +2470,7 @@ public abstract class ConnectedRESTQA {
 
 		// Machine names where ML Server runs
 		host_name = property.getProperty("restHost");
+		System.out.println("Will connect to: " + host_name);
 		ssl_host_name = property.getProperty("restSSLHost");
 
 		// Users

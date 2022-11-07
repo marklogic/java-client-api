@@ -16,12 +16,25 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marklogic.client.expression.PlanBuilder;
+import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
+import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
+import com.marklogic.client.io.FileHandle;
+import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.row.RowManager;
+import com.marklogic.client.type.PlanAggregateColSeq;
+import com.marklogic.client.type.PlanColumn;
+import com.marklogic.client.type.PlanExprColSeq;
+import com.marklogic.client.type.PlanValueOption;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -30,138 +43,24 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.parsers.ParserConfigurationException;
+import static org.junit.Assert.*;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.xml.sax.SAXException;
+public class TestOpticOnLiterals extends AbstractFunctionalTest {
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
-import com.marklogic.client.admin.ExtensionMetadata;
-import com.marklogic.client.admin.ExtensionMetadata.ScriptLanguage;
-import com.marklogic.client.admin.MethodType;
-import com.marklogic.client.admin.ResourceExtensionsManager;
-import com.marklogic.client.admin.ResourceExtensionsManager.MethodParameters;
-import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
-import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.row.RowManager;
-import com.marklogic.client.type.PlanAggregateColSeq;
-import com.marklogic.client.type.PlanColumn;
-import com.marklogic.client.type.PlanExprColSeq;
-import com.marklogic.client.type.PlanValueOption;
-
-public class TestOpticOnLiterals extends BasicJavaClientREST {
-
-  private static String dbName = "TestOpticOnLiteralsDB";
-  private static String schemadbName = "TestOpticOnLiteralsSchemaDB";
-  private static String[] fNames = { "TestOpticOnLiteralsDB-1" };
-  private static String[] schemafNames = { "TestOpticOnLiteralsSchemaDB-1" };
-
-  private static DatabaseClient client;
-  private static DatabaseClient clientRes;
-
-  private static String datasource = "src/test/java/com/marklogic/client/functionaltest/data/optics/";
   private static Map<String, Object>[] literals1 = new HashMap[5];
   private static Map<String, Object>[] literals2 = new HashMap[4];
   private static Map<String, Object>[] storeInformation = new HashMap[4];
   private static Map<String, Object>[] internetSales = new HashMap[4];
-  private static ResourceExtensionsManager resourceMgr;
-  private static String resourceName = "OpticsJSResourceModule";
 
   @BeforeClass
-  public static void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception
+  public static void setUp() throws Exception
   {
-    System.out.println("In TestOpticOnLiterals setup");
-    DatabaseClient schemaDBclient = null;
-
-    configureRESTServer(dbName, fNames);
-
-    // Add new range elements into this array
-    String[][] rangeElements = {
-        // { scalar-type, namespace-uri, localname, collation,
-        // range-value-positions, invalid-values }
-        // If there is a need to add additional fields, then add them to the end
-        // of each array
-        // and pass empty strings ("") into an array where the additional field
-        // does not have a value.
-        // For example : as in namespace, collections below.
-        // Add new RangeElementIndex as an array below.
-        { "string", "", "city", "http://marklogic.com/collation/", "false", "reject" },
-        { "int", "", "popularity", "", "false", "reject" },
-        { "double", "", "distance", "", "false", "reject" },
-        { "date", "", "date", "", "false", "reject" },
-        { "string", "", "cityName", "http://marklogic.com/collation/", "false", "reject" },
-        { "string", "", "cityTeam", "http://marklogic.com/collation/", "false", "reject" },
-        { "long", "", "cityPopulation", "", "false", "reject" }
-    };
-
-    // Insert the range indices
-    addRangeElementIndex(dbName, rangeElements);
-
-    // Insert word lexicon.
-    ObjectMapper mapper = new ObjectMapper();
-    ObjectNode mainNode = mapper.createObjectNode();
-    ArrayNode childArray = mapper.createArrayNode();
-    ObjectNode childNodeObject = mapper.createObjectNode();
-
-    childNodeObject.put("namespace-uri", "http://marklogic.com/collation/");
-    childNodeObject.put("localname", "city");
-    childNodeObject.put("collation", "http://marklogic.com/collation/");
-    childArray.add(childNodeObject);
-    mainNode.withArray("element-word-lexicon").add(childArray);
-
-    setDatabaseProperties(dbName, "element-word-lexicon", mainNode);
-
-    // Add geo element index.
-    addGeospatialElementIndexes(dbName, "latLonPoint", "", "wgs84", "point", false, "reject");
-    // Enable triple index.
-    enableTripleIndex(dbName);
-    waitForServerRestart();
-    // Enable collection lexicon.
-    enableCollectionLexicon(dbName);
-    // Enable uri lexicon.
-    setDatabaseProperties(dbName, "uri-lexicon", true);
-    // Create schema database
-    createDB(schemadbName);
-    createForest(schemafNames[0], schemadbName);
-    // Set the schemadbName database as the Schema database.
-    setDatabaseProperties(dbName, "schema-database", schemadbName);
-
-    createUserRolesWithPrevilages("opticRole", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
-    createRESTUser("opticUser", "0pt1c", "tde-admin", "tde-view", "opticRole", "rest-admin", "rest-writer",
-    		                             "rest-reader", "rest-extension-user", "manage-user");
-
-    if (IsSecurityEnabled()) {
-        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", getConnType());
-        client = getDatabaseClient("opticUser", "0pt1c", getConnType());
-    }
-    else {
-        schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("opticUser", "0pt1c"));
-        client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("opticUser", "0pt1c"));
-    }
-
     // Install the TDE templates
     // loadFileToDB(client, filename, docURI, collection, document format)
-    loadFileToDB(schemaDBclient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[] { "http://marklogic.com/xdmp/tde" });
-    loadFileToDB(schemaDBclient, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON", new String[] { "http://marklogic.com/xdmp/tde" });
-    loadFileToDB(schemaDBclient, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON", new String[] { "http://marklogic.com/xdmp/tde" });
-    loadFileToDB(schemaDBclient, "masterDetail4.tdej", "/optic/view/test/masterDetail4.tdej", "JSON", new String[] { "http://marklogic.com/xdmp/tde" });
+    loadFileToDB(schemasClient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[] { "http://marklogic.com/xdmp/tde" });
+    loadFileToDB(schemasClient, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON", new String[] { "http://marklogic.com/xdmp/tde" });
+    loadFileToDB(schemasClient, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON", new String[] { "http://marklogic.com/xdmp/tde" });
+    loadFileToDB(schemasClient, "masterDetail4.tdej", "/optic/view/test/masterDetail4.tdej", "JSON", new String[] { "http://marklogic.com/xdmp/tde" });
 
     // Load XML data files.
     loadFileToDB(client, "masterDetail.xml", "/optic/view/test/masterDetail.xml", "XML", new String[] { "/optic/view/test" });
@@ -283,102 +182,6 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     row.put("sales", 750);
     row.put("storeName", "Boston");
     internetSales[3] = row;
-
-    // Install JavaScript modules into REST Server module database to support
-    // Map and Reduce tests.
-    createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
-    createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
-
-
-    clientRes = getDatabaseClient("eval-user", "x", getConnType());
-
-    resourceMgr = clientRes.newServerConfigManager().newResourceExtensionsManager();
-    ExtensionMetadata resextMetadata = new ExtensionMetadata();
-    resextMetadata.setTitle("BasicJSTest");
-    resextMetadata.setDescription("Testing resource extension for java script");
-    System.out.println(resextMetadata.getScriptLanguage());
-    resextMetadata.setScriptLanguage(ScriptLanguage.JAVASCRIPT);
-    System.out.println(resextMetadata.getScriptLanguage());
-    resextMetadata.setVersion("1.0");
-    MethodParameters getParams = new MethodParameters(MethodType.GET);
-    getParams.add("row", "xs:string?");
-    FileInputStream myStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/OpticsTestJSResource.js");
-    InputStreamHandle handle = new InputStreamHandle(myStream);
-    handle.set(myStream);
-    resourceMgr.writeServices(resourceName, handle, resextMetadata, getParams);
-    Thread.sleep(10000);
-    schemaDBclient.release();
-  }
-
-  /**
-   * Write document using DOMHandle
-   *
-   * @param client
-   * @param filename
-   * @param uri
-   * @param type
-   * @throws IOException
-   * @throws ParserConfigurationException
-   * @throws SAXException
-   */
-
-  public static void loadFileToDB(DatabaseClient client, String filename, String uri, String type, String[] collections) throws IOException, ParserConfigurationException,
-      SAXException
-  {
-    // create doc manager
-    DocumentManager docMgr = null;
-    docMgr = documentMgrSelector(client, docMgr, type);
-
-    File file = new File(datasource + filename);
-    // create a handle on the content
-    FileHandle handle = new FileHandle(file);
-    handle.set(file);
-
-    DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
-    for (String coll : collections)
-      metadataHandle.getCollections().addAll(coll.toString());
-
-    // write the document content
-    DocumentWriteSet writeset = docMgr.newWriteSet();
-    writeset.addDefault(metadataHandle);
-    writeset.add(uri, handle);
-
-    docMgr.write(writeset);
-
-    System.out.println("Write " + uri + " to database");
-  }
-
-  /**
-   * Function to select and create document manager based on the type
-   *
-   * @param client
-   * @param docMgr
-   * @param type
-   * @return
-   */
-  public static DocumentManager documentMgrSelector(DatabaseClient client, DocumentManager docMgr, String type) {
-    // create doc manager
-    switch (type) {
-      case "XML":
-        docMgr = client.newXMLDocumentManager();
-        break;
-      case "Text":
-        docMgr = client.newTextDocumentManager();
-        break;
-      case "JSON":
-        docMgr = client.newJSONDocumentManager();
-        break;
-      case "Binary":
-        docMgr = client.newBinaryDocumentManager();
-        break;
-      case "JAXB":
-        docMgr = client.newXMLDocumentManager();
-        break;
-      default:
-        System.out.println("Invalid type");
-        break;
-    }
-    return docMgr;
   }
 
   /*
@@ -1957,7 +1760,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
   }
 
   @Test
-  public void testLiteralsWithColumnInfo() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+  public void testLiteralsWithColumnInfo() {
     System.out.println("In testLiteralsWithColumnInfo method");
 
     // Create a new Plan.
@@ -1970,32 +1773,11 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     ModifyPlan output = plan1.joinInner(plan2).orderBy(p.asc(p.col("rowId")));
 
     String colInfo = rowMgr.columnInfoAs(output, String.class);
+    System.out.println("COL: " + colInfo);
     //System.out.println("In testLiteralsWithColumnInfo method" + colInfo);
-    assertTrue("Element 1 desc value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"desc\", \"type\":\"string\", \"nullable\":false"));
+    assertTrue("Element 1 desc value incorrect: " + colInfo, colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"desc\", \"type\":\"string\", \"nullable\":false"));
     assertTrue("Element 2 colorId value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"colorId\", \"type\":\"integer\", \"nullable\":false}"));
     assertTrue("Element 3 rowId value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"rowId\", \"type\":\"integer\", \"nullable\":false}"));
     assertTrue("Element 4 colorDesc value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"colorDesc\", \"type\":\"string\", \"nullable\":false}"));
-  }
-
-    @AfterClass
-  public static void tearDownAfterClass() throws Exception
-  {
-    System.out.println("In tear down");
-    // Delete the services.
-    resourceMgr.deleteServices(resourceName);
-    
-    // Delete the temp schema DB after resetting the Schema DB on content DB.
-    // Else delete fails.
-    deleteUserRole("opticRole");
-    deleteRESTUser("opticUser");
-    setDatabaseProperties(dbName, "schema-database", dbName);
-    deleteDB(schemadbName);
-    deleteForest(schemafNames[0]);
-    // release client
-    clientRes.release();
-    client.release();
-    cleanupRESTServer(dbName, fNames);
-    deleteRESTUser("eval-user");
-    deleteUserRole("test-eval");
   }
 }

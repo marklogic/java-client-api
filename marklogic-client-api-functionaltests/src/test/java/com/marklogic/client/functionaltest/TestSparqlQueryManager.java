@@ -77,12 +77,10 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
   private static String dbName = "TestSparqlQueryManagerDB";
   private static String[] fNames = { "TestSparqlQueryManagerDB-1" };
 
-  private static int restPort = 8011;
   private static DatabaseClient client;
   private static DatabaseClient writeclient;
   private static DatabaseClient readclient;
 
-  private static String appServerHostname = null;
 
   private static String newline;
   private static String customGraph;
@@ -194,7 +192,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
   }
 
   @BeforeClass
-  public static void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception
+  public static void setUp() throws Exception
   {
     System.out.println("In SPARQL Query Manager Test setup");
 
@@ -214,8 +212,6 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
     enableCollectionLexicon(dbName);
     enableTripleIndex(dbName);
     waitForServerRestart();
-
-    appServerHostname = getRestAppServerHostName();
 
     // You can enable the triple positions index for faster near searches using
     // cts:triple-range-query.
