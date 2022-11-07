@@ -53,6 +53,7 @@ pipeline{
   }
   parameters{
     booleanParam(name: 'regressions', defaultValue: false, description: 'indicator if build is for regressions')
+    string(name: 'Email', defaultValue: '' ,description: 'Who should I say send the email to?')
   }
   environment{
     JAVA_HOME_DIR="/home/builder/java/openjdk-1.8.0-262"
@@ -99,6 +100,15 @@ pipeline{
         '''
         junit '**/build/**/TEST*.xml'
       }
+      post{
+        failure{
+            script{
+                if(params.regressions){
+                    sendMail params.Email,'<h3>Some Tests Failed on Released 11.0 ML Nightly Server Single Node </h3><h4><a href=${JENKINS_URL}/blue/organizations/jenkins/java-client-api-regression/detail/$JOB_BASE_NAME/$BUILD_ID/tests><font color=red>Check the Test Report</font></a></h4><h4><a href=${RUN_DISPLAY_URL}>Check the Pipeline View</a></h4><h4> <a href=${BUILD_URL}/console> Check Console Output Here</a></h4><h4>Please create bugs for the failed regressions and fix them</h4>',false,'${STAGE_NAME} on  develop against ML 11.0-nightly Failed'
+                }
+            }
+        }
+      }
     }
     stage('functional-tests'){
          when{
@@ -126,6 +136,11 @@ pipeline{
         '''
         junit '**/build/**/TEST*.xml'
         }
+        post{
+            failure{
+                sendMail params.Email,'<h3>Some Tests Failed on Released 11.0 ML Nightly Server Single Node </h3><h4><a href=${JENKINS_URL}/blue/organizations/jenkins/java-client-api-regression/detail/$JOB_BASE_NAME/$BUILD_ID/tests><font color=red>Check the Test Report</font></a></h4><h4><a href=${RUN_DISPLAY_URL}>Check the Pipeline View</a></h4><h4> <a href=${BUILD_URL}/console> Check Console Output Here</a></h4><h4>Please create bugs for the failed regressions and fix them</h4>',false,'${STAGE_NAME} on  develop against ML 11.0-nightly Failed'
+            }
+        }
     }
     stage('regressions-10.0-9'){
         when{
@@ -138,6 +153,11 @@ pipeline{
             runtests('Release','10.0-9.5')
             junit '**/build/**/TEST*.xml'
         }
+        post{
+            failure{
+                sendMail params.Email,'<h3>Some Tests Failed on Released 10.0-9.5 ML  Server Single Node </h3><h4><a href=${JENKINS_URL}/blue/organizations/jenkins/java-client-api-regression/detail/$JOB_BASE_NAME/$BUILD_ID/tests><font color=red>Check the Test Report</font></a></h4><h4><a href=${RUN_DISPLAY_URL}>Check the Pipeline View</a></h4><h4> <a href=${BUILD_URL}/console> Check Console Output Here</a></h4><h4>Please create bugs for the failed regressions and fix them</h4>',false,'${STAGE_NAME} on  develop against ML 10.0-9.5 Failed'
+            }
+        }
     }
     stage('regressions-9.0-13'){
         when{
@@ -149,6 +169,11 @@ pipeline{
         steps{
             runtests('Release','9.0-13.8')
             junit '**/build/**/TEST*.xml'
+        }
+        post{
+            failure{
+                sendMail params.Email,'<h3>Some Tests Failed on Released 9.0-13.8 ML  Server Single Node </h3><h4><a href=${JENKINS_URL}/blue/organizations/jenkins/java-client-api-regression/detail/$JOB_BASE_NAME/$BUILD_ID/tests><font color=red>Check the Test Report</font></a></h4><h4><a href=${RUN_DISPLAY_URL}>Check the Pipeline View</a></h4><h4> <a href=${BUILD_URL}/console> Check Console Output Here</a></h4><h4>Please create bugs for the failed regressions and fix them</h4>',false,'${STAGE_NAME} on  develop against ML 9.0-13.8 Failed'
+            }
         }
     }
   }
