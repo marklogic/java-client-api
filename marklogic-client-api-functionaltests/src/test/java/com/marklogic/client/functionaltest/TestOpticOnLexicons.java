@@ -28,6 +28,7 @@ import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.marklogic.client.MarkLogicVersion;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -68,6 +69,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
  
   private static DatabaseClient client;
   private static String datasource = "src/test/java/com/marklogic/client/functionaltest/data/optics/";
+  private static boolean isML11OrHigher;
 
   @BeforeClass
   public static void setUp() throws Exception
@@ -140,7 +142,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
         schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("opticUser", "0pt1c"));
         client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("opticUser", "0pt1c"));
     }
-
+    isML11OrHigher = MarkLogicVersion.getMarkLogicVersion(client).getMajor() >= 11;
 
     // Install the TDE templates
     // loadFileToDB(client, filename, docURI, collection, document format)
@@ -244,8 +246,11 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
   }
 
   private String toWKT(String latLon) {
-    String[] parts = latLon.split(",");
-    return "POINT(" + parts[1] + " " + parts[0] + ")";
+    if (isML11OrHigher) {
+      String[] parts = latLon.split(",");
+      return "POINT(" + parts[1] + " " + parts[0] + ")";
+    }
+    return latLon;
   }
 
   /*

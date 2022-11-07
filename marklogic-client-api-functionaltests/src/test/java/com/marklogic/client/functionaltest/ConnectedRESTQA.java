@@ -44,7 +44,7 @@ import java.security.cert.X509Certificate;
 import java.util.*;
 
 public abstract class ConnectedRESTQA {
-	private String serverName = "";
+
 	private static String restServerName = null;
 	private static String restSslServerName = null;
 	private static String ssl_enabled = null;
@@ -66,7 +66,6 @@ public abstract class ConnectedRESTQA {
 	private static String mlRestReadPassword = null;
 	private static String ml_certificate_password = null;
 	private static String ml_certificate_file = null;
-	private static String ml_certificate_path = null;
 	private static String mlDataConfigDirPath = null;
 	private static Boolean isLBHost = false;
 	
@@ -78,8 +77,6 @@ public abstract class ConnectedRESTQA {
 	private static final int ML_RES_BADREQT = 400;
 	private static final int ML_RES_NOTFND = 404;
 	private static final String ML_MANAGE_DB = "App-Services";
-
-	SSLContext sslContext = null;
 
 	// Using MarkLogic client API's OKHttpClient Impl to connect to App-Services DB and use REST Manage API calls.
 	private static OkHttpClient createManageAdminClient(String username, String password) {
@@ -2492,7 +2489,6 @@ public abstract class ConnectedRESTQA {
 		ssl_enabled = property.getProperty("restSSLset");
 		ml_certificate_password = property.getProperty("ml_certificate_password");
 		ml_certificate_file = property.getProperty("ml_certificate_file");
-		ml_certificate_path = property.getProperty("ml_certificate_path");
 		mlDataConfigDirPath = property.getProperty("mlDataConfigDirPath");
 		isLBHost = Boolean.parseBoolean(property.getProperty("lbHost"));
 		PROPERTY_WAIT = Integer.parseInt(isLBHost ? "15000" : "0");		
