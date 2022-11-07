@@ -1,11 +1,11 @@
 package com.marklogic.client.impl;
 
-import java.util.Map;
-
 import com.marklogic.client.impl.PlanBuilderBaseImpl.RequestPlan;
 import com.marklogic.client.row.RowManager.RowSetPart;
 import com.marklogic.client.row.RowManager.RowStructure;
 import com.marklogic.client.util.RequestParameters;
+
+import java.util.Map;
 
 /**
  * Helper for constructing request parameters for calls to /v1/rows.
@@ -40,16 +40,19 @@ class RowsParamsBuilder {
     public RowsParamsBuilder withOutput(RowStructure rowStructure) {
         if (rowStructure != null) {
             switch (rowStructure) {
-                case ARRAY: return withOutput("array");
-                case OBJECT: return withOutput("object");
+                case ARRAY:
+                    return withOutput("array");
+                case OBJECT:
+                    return withOutput("object");
             }
         }
         return this;
     }
+
     public RowsParamsBuilder withColumnTypes(RowSetPart columnTypes) {
         if (columnTypes != null) {
             switch (columnTypes) {
-                case HEADER:                
+                case HEADER:
                     params.add("column-types", "header");
                     break;
                 case ROWS:
@@ -70,6 +73,20 @@ class RowsParamsBuilder {
     public RowsParamsBuilder withNodeColumns(String nodeColumns) {
         if (nodeColumns != null) {
             params.add("node-columns", nodeColumns);
+        }
+        return this;
+    }
+
+    public RowsParamsBuilder withOptimize(Integer optimize) {
+        if (optimize != null) {
+            params.add("optimize", optimize.toString());
+        }
+        return this;
+    }
+
+    public RowsParamsBuilder withTraceLabel(String label) {
+        if (label != null) {
+            params.add("tracelabel", label);
         }
         return this;
     }

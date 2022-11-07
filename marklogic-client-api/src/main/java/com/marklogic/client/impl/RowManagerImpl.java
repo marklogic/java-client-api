@@ -60,6 +60,8 @@ public class RowManagerImpl
   private HandleFactoryRegistry handleRegistry;
   private RowSetPart   datatypeStyle     = null;
   private RowStructure rowStructureStyle = null;
+  private Integer optimize;
+  private String traceLabel;
 
   public RowManagerImpl(RESTServices services) {
     super();
@@ -106,6 +108,23 @@ public class RowManagerImpl
   }
 
   @Override
+  public String getTraceLabel() {
+    return traceLabel;
+  }
+  @Override
+  public void setTraceLabel(String label) {
+    this.traceLabel = label;
+  }
+  @Override
+  public Integer getOptimize() {
+    return this.optimize;
+  }
+  @Override
+  public void setOptimize(Integer value) {
+    this.optimize = value;
+  }
+
+  @Override
   public RawPlanDefinition newRawPlanDefinition(JSONWriteHandle handle) {
     return new RawPlanDefinitionImpl(handle);
   }
@@ -121,6 +140,12 @@ public class RowManagerImpl
   @Override
   public RawSPARQLSelectPlanImpl newRawSPARQLSelectPlan(TextWriteHandle handle) {
     return new RawSPARQLSelectPlanImpl(handle);
+  }
+
+  private RowsParamsBuilder newRowsParamsBuilder(PlanBuilderBaseImpl.RequestPlan plan) {
+    return new RowsParamsBuilder(plan)
+        .withOptimize(this.optimize)
+        .withTraceLabel(this.traceLabel);
   }
 
   @Override
@@ -147,7 +172,7 @@ public class RowManagerImpl
     }
     PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
     AbstractWriteHandle astHandle = requestPlan.getHandle();
-    RequestParameters params = new RowsParamsBuilder(requestPlan)
+    RequestParameters params = newRowsParamsBuilder(requestPlan)
         .withColumnTypes(getDatatypeStyle())
         .withOutput(getRowStructureStyle())
         .getRequestParameters();
@@ -165,7 +190,7 @@ public class RowManagerImpl
     RowStructure rowStructureStyle = getRowStructureStyle();
 
     PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
-    RequestParameters params = new RowsParamsBuilder(requestPlan)
+    RequestParameters params = newRowsParamsBuilder(requestPlan)
         .withRowFormat("json")
         .withNodeColumns("reference")
         .withColumnTypes(datatypeStyle)
@@ -190,7 +215,9 @@ public class RowManagerImpl
   @Override
   public void execute(Plan plan, Transaction transaction) {
     PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
-    RequestParameters params = new RowsParamsBuilder(requestPlan).withOutput("execute").getRequestParameters();
+    RequestParameters params = newRowsParamsBuilder(requestPlan)
+        .withOutput("execute")
+        .getRequestParameters();
     RESTServiceResultIterator iter = submitPlan(requestPlan, params, transaction);
     if (iter != null) {
       iter.close();
@@ -209,7 +236,7 @@ public class RowManagerImpl
     String rowFormat = getRowFormat(rowHandle);
 
     PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
-    RequestParameters params = new RowsParamsBuilder(requestPlan)
+    RequestParameters params = newRowsParamsBuilder(requestPlan)
         .withRowFormat(rowFormat)
         .withNodeColumns("inline")
         .withColumnTypes(datatypeStyle)
@@ -235,7 +262,7 @@ public class RowManagerImpl
     RowStructure rowStructureStyle = getRowStructureStyle();
 
     PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
-    RequestParameters params = new RowsParamsBuilder(requestPlan)
+    RequestParameters params = newRowsParamsBuilder(requestPlan)
         .withRowFormat(rowFormat)
         .withNodeColumns("inline")
         .withColumnTypes(datatypeStyle)
