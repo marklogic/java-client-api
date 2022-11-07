@@ -1,10 +1,11 @@
-package com.marklogic.client.functionaltest;
+package com.marklogic.client.fastfunctest;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.MarkLogicVersion;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import org.junit.AfterClass;
@@ -21,7 +22,7 @@ import java.util.stream.Stream;
  * deployed via ml-gradle. These tests are intended to be far faster than the other functional tests, as they do not
  * need to spend considerable time (usually over a minute) setting up and then tearing down a complete test app.
  */
-public class AbstractFunctionalTest extends BasicJavaClientREST {
+public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
 
     protected final static String OPTIC_USER = "opticUser";
     protected final static String OPTIC_USER_PASSWORD = "0pt1c";

@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.marklogic.client.functionaltest;
+package com.marklogic.client.fastfunctest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
+import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowManager;
@@ -1265,8 +1266,7 @@ public class TestOpticOnLiterals extends AbstractFunctionalTest {
    * server module database.
    */
   @Test
-  public void testMapFunction() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testMapFunction() {
     System.out.println("In testMapFunction method");
     Map<String, Object>[] literalsM1 = new HashMap[5];
     Map<String, Object>[] literalsM2 = new HashMap[4];
@@ -1336,7 +1336,7 @@ public class TestOpticOnLiterals extends AbstractFunctionalTest {
 
         )
         .orderBy(p.asc("rowId"))
-        .map(p.resolveFunction(p.xs.QName("colorIdMapper"), "/marklogic.rest.resource/OpticsJSResourceModule/assets/resource.sjs"));
+        .map(p.resolveFunction(p.xs.QName("colorIdMapper"), "/etc/optic/opticMappingFunctions.sjs"));
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -1364,8 +1364,7 @@ public class TestOpticOnLiterals extends AbstractFunctionalTest {
    * server module database.
    */
   @Test
-  public void testReduceFunction() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-  {
+  public void testReduceFunction() {
     System.out.println("In testReduceFunction method");
     Map<String, Object>[] literalsM1 = new HashMap[5];
     Map<String, Object>[] literalsM2 = new HashMap[4];
@@ -1432,7 +1431,7 @@ public class TestOpticOnLiterals extends AbstractFunctionalTest {
             p.as("myRowId", p.col("rowId"))
         )
         .orderBy(p.asc("myRowId"))
-        .reduce(p.resolveFunction(p.xs.QName("fibReducer"), "/marklogic.rest.resource/OpticsJSResourceModule/assets/resource.sjs"));
+        .reduce(p.resolveFunction(p.xs.QName("fibReducer"), "/etc/optic/opticMappingFunctions.sjs"));
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");

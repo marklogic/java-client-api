@@ -22,6 +22,7 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.type.ServerExpression;
 
 // IMPORTANT: Do not edit. This file is generated.
+// Exception - two of these tests cannot pass on ML <= 10. Those have been modified to not run unless ML is >= 11.
 public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
@@ -726,7 +727,9 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testGeoGeohashDecode1Exec() {
-        executeTester("testGeoGeohashDecode1", p.geo.geohashDecode(p.col("1")), false, "cts:box", null, null, "[0.9997558, 1.9995116, 1.005249, 2.010498]", new ServerExpression[]{ p.xs.string("s01mtw") });
+        if (Common.markLogicIsVersion11OrHigher()) {
+            executeTester("testGeoGeohashDecode1", p.geo.geohashDecode(p.col("1")), false, "cts:box", null, null, "[0.9997558, 1.9995116, 1.005249, 2.010498]", new ServerExpression[]{p.xs.string("s01mtw")});
+        }
     }
 
     @Test
@@ -751,7 +754,9 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testGeoParseWkt1Exec() {
-        executeTester("testGeoParseWkt1", p.geo.parseWkt(p.col("1")), false, "cts:linestring", null, null, "LINESTRING(-112.25 47.100002,-112.3 47.100002,-112.39999 47.199997)", new ServerExpression[]{ p.xs.string("LINESTRING(-112.25 47.1,-112.3 47.1,-112.4 47.2)") });
+        if (Common.markLogicIsVersion11OrHigher()) {
+            executeTester("testGeoParseWkt1", p.geo.parseWkt(p.col("1")), false, "cts:linestring", null, null, "LINESTRING(-112.25 47.100002,-112.3 47.100002,-112.39999 47.199997)", new ServerExpression[]{p.xs.string("LINESTRING(-112.25 47.1,-112.3 47.1,-112.4 47.2)")});
+        }
     }
 
     @Test
