@@ -35,6 +35,14 @@ def runtests(String type, String version){
                 cd java-client-api
                 ./gradlew marklogic-client-api-functionaltests:test  || true
             '''
+            sh label:'post-test-process', script: '''
+                cd $WORKSPACE/java-client-api/marklogic-client-api/build/test-results/test/
+                sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
+                cd $WORKSPACE/java-client-api/ml-development-tools/build/test-results/test/
+                sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
+                cd $WORKSPACE/java-client-api/marklogic-client-api-functionaltests/build/test-results/test/
+                sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
+            '''
 }
 
 pipeline{
@@ -83,6 +91,12 @@ pipeline{
           ./gradlew ml-development-tools:generateTests || true
           ./gradlew ml-development-tools:test || true
         '''
+        sh '''
+            cd $WORKSPACE/java-client-api/marklogic-client-api/build/test-results/test/
+            sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
+            cd $WORKSPACE/java-client-api/ml-development-tools/build/test-results/test/
+            sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
+        '''
         junit '**/build/**/TEST*.xml'
       }
     }
@@ -105,6 +119,10 @@ pipeline{
           cd java-client-api
           ./gradlew -i mlDeploy -PmlForestDataDirectory=/space
           ./gradlew marklogic-client-api-functionaltests:test  || true
+        '''
+        sh '''
+            cd $WORKSPACE/java-client-api/marklogic-client-api-functionaltests/build/test-results/test/
+            sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
         '''
         junit '**/build/**/TEST*.xml'
         }
