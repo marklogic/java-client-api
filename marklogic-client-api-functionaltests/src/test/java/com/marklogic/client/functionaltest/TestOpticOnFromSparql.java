@@ -16,25 +16,8 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.File;
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
 import com.marklogic.client.io.FileHandle;
@@ -42,17 +25,20 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.RDFMimeTypes;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.xml.sax.SAXException;
 
-public class TestOpticOnFromSparql extends BasicJavaClientREST {
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.IOException;
 
-  private static String dbName = "TestOpticOnFromSparqlDB";
-  private static String[] fNames = { "TestOpticOnFromSparqlDB-1" };
+import static org.junit.Assert.assertEquals;
 
-  private static DatabaseClient client;
+public class TestOpticOnFromSparql extends AbstractFunctionalTest {
 
-  private static String datasource = "src/test/java/com/marklogic/client/functionaltest/data/optics/";
-  
-  private String selectStmt; 
+  private String selectStmt;
   private RowManager rowMgr;
   private PlanBuilder p;
   private ModifyPlan plan1;
@@ -62,35 +48,19 @@ public class TestOpticOnFromSparql extends BasicJavaClientREST {
 
   
 @BeforeClass
-  public static void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception
+  public static void setUp() throws Exception
   {
-    System.out.println("In TestOpticOnFromSparql setup");
-
-    configureRESTServer(dbName, fNames);
-
-    if (IsSecurityEnabled()) {
-        client = getDatabaseClient("admin", "admin", getConnType());
-    }
-    else {
-        client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("admin", "admin"));
-    }
-    
-
-    createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
-    createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
-    
     loadGraphToDB(client, "people.ttl", "/optic/sparql/test/people.ttl");
     loadGraphToDB(client, "companies_100.ttl", "/optic/sparql/test/companies.ttl");
-    Thread.sleep(10000);
   }
   
   @Before
   public void setUpBeforTest() {
-	  
+
 	  rowMgr = client.newRowManager();
 	  p = rowMgr.newPlanBuilder();
 	  jacksonHandle.setMimetype("application/json");
-	  
+
   }
   
 
@@ -112,6 +82,7 @@ public class TestOpticOnFromSparql extends BasicJavaClientREST {
 	  GraphManager gmgr = client.newGraphManager();
 	  gmgr.setDefaultMimetype(RDFMimeTypes.TURTLE);
 
+      final String datasource = "src/test/java/com/marklogic/client/functionaltest/data/optics/";
     File file = new File(datasource + filename);
     // create a handle on the content
     FileHandle handle = new FileHandle(file).withMimetype(RDFMimeTypes.TURTLE);
@@ -626,19 +597,4 @@ public class TestOpticOnFromSparql extends BasicJavaClientREST {
     assertEquals("Row 1 rowId value incorrect", "1255159206", node.path("mySales").path("value").asText());
   }
 */
-  
-  
-  @AfterClass
-  public static void tearDownAfterClass() throws Exception
-  {
-    System.out.println("In tear down");
-    
-    // Else delete fails.
-    // release client
-    client.release();
-    cleanupRESTServer(dbName, fNames);
-    deleteRESTUser("eval-user");
-    deleteUserRole("test-eval");
-  }
-  
 }

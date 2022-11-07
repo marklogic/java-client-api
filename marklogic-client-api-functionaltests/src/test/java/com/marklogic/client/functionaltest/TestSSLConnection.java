@@ -299,7 +299,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
 		public X509Certificate[] getAcceptedIssuers() {
 			return null;
 		}}).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8011, secContext, getConnType());
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8014, secContext, getConnType());
 
     String expectedException = "com.sun.jersey.api.client.ClientHandlerException: javax.net.ssl.SSLPeerUnverifiedException: peer not authenticated";
     String exception = "";
