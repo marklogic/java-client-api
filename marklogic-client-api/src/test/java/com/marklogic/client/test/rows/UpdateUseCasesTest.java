@@ -71,15 +71,7 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
         assertNull(Common.client.newDocumentManager().exists(missingUri));
     }
 
-    /**
-     * Fails with ML error message of:
-     * <p>
-     * Status 500: SQL-MISMATCH: plan.inspectCols(plan.sparql("ExternalTable[ bindingName:docDescriptorsPlanBinding-3f3d2c0a-8794-401e-9176-0149120bbe17
-     * columns: .input.doc,.input.permissions,.input.quality,.input.uri ]  ( { __docid <http://marklogic.com/lexicon> uri . })
-     * AS \"persisted\" FILTER (input.uri eq persisted.uri)")) --  Found 6 binding(s)  and 4 static type(s)
-     */
     @Test
-    @Ignore("See https://bugtrack.marklogic.com/58143")
     public void notExistsJoin() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
@@ -87,8 +79,7 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
 
         // Insert doc1
         rowManager.execute(op
-            .fromDocDescriptors(op.docDescriptor(
-                newWriteOp("/acme/doc1.json", mapper.createObjectNode().put("hello", "world"))))
+            .fromDocDescriptors(op.docDescriptor(newWriteOp("/acme/doc1.json", mapper.createObjectNode().put("hello", "world"))))
             .write());
 
         // Define an update for doc1 and an insert for doc2
@@ -98,24 +89,23 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
         writeSet.add(updateDoc1);
         writeSet.add(insertDoc2);
 
-        // Define a plan that will exclude insertDoc2 via notExistsJoin against the URI lexicon
+        // Define a plan that will exclude updateDoc1 via notExistsJoin against the URI lexicon
         ModifyPlan plan = op
             .fromDocDescriptors(op.docDescriptors(writeSet))
             .notExistsJoin(
                 op.fromLexicons(Collections.singletonMap("existingUri", op.cts.uriReference())),
                 op.on(op.col("uri"), op.col("existingUri"))
-            );
-        // As noted in the bugtrack ticket, adding a "select" will work, but that seems surprising and unnecessary
-        //.select(op.col("uri"), op.col("doc"), op.col("permissions"));
+            )
+            .write();
 
-        // Note that result() works before write() is added, with only doc2 returned and the qualifier used correctly
         List<RowRecord> rows = resultRows(plan);
-        System.out.println(rows);
-        assertEquals(1, rows.size());
+        assertEquals("Only doc2 should be returned; doc1 should have been filtered out by the notExistsJoin " +
+                "since it already exists", 1, rows.size());
         assertEquals("/acme/doc2.json", rows.get(0).getString("uri"));
 
-        // But once write() is added, it fails, regardless of whether it's write() or write(docCols)
-        rowManager.execute(plan.write());
+        // doc1 should not have been modified since it was filtered out from the plan
+        verifyJsonDoc("/acme/doc1.json", doc -> assertEquals("world", doc.get("hello").asText()));
+        verifyJsonDoc("/acme/doc2.json", doc -> assertEquals("world2", doc.get("hello").asText()));
     }
 
     @Test
