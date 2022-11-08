@@ -29,37 +29,50 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
 
     protected static DatabaseClient client;
     protected static DatabaseClient schemasClient;
+    protected static DatabaseClient adminModulesClient;
+
     protected static boolean isML11OrHigher;
     private static String original_http_port;
 
     @BeforeClass
     public static void initializeClients() throws Exception {
         loadGradleProperties();
+
         // Until all the tests can use the same ml-gradle-deployed app server, we need to have separate ports - one
         // for "slow" tests that setup a new app server, and one for "fast" tests that use the deployed one
         original_http_port = http_port;
         http_port = fast_http_port;
+        isML11OrHigher = MarkLogicVersion.getMarkLogicVersion(connectAsAdmin()).getMajor() >= 11;
         final String schemasDbName = "java-functest-schemas";
+        final String modulesDbName = "java-unittest-modules";
         if (IsSecurityEnabled()) {
             schemasClient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemasDbName, OPTIC_USER, OPTIC_USER_PASSWORD, getConnType());
             client = getDatabaseClient(OPTIC_USER, OPTIC_USER_PASSWORD, getConnType());
+            adminModulesClient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), modulesDbName, getAdminUser(), getAdminPassword(), getConnType());
         } else {
             schemasClient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemasDbName,
                 new DatabaseClientFactory.DigestAuthContext(OPTIC_USER, OPTIC_USER_PASSWORD));
             client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(),
                 new DatabaseClientFactory.DigestAuthContext(OPTIC_USER, OPTIC_USER_PASSWORD));
+            adminModulesClient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), modulesDbName,
+                new DatabaseClientFactory.DigestAuthContext(getAdminUser(), getAdminPassword()));
         }
-        isML11OrHigher = MarkLogicVersion.getMarkLogicVersion(client).getMajor() >= 11;
+
+        // Required to ensure that tests using the "/ext/" prefix work reliably. Expand to other directories as needed.
+        adminModulesClient.newServerEval()
+            .xquery("cts:uris((), (), cts:directory-query('/ext/', 'infinity')) ! xdmp:document-delete(.)").evalAs(String.class);
 
         // Clear the content and schemas databases so that the subclass can start with a "fresh" setup without any
         // data leftover from a previous test
-        Stream.of(client, schemasClient).forEach(c -> {
-            c.newServerEval().xquery("cts:uris((), (), cts:true-query()) ! xdmp:document-delete(.)").evalAs(String.class);
-        });
+        Stream.of(client, schemasClient).forEach(c -> deleteDocuments(c));
+    }
+
+    protected static void deleteDocuments(DatabaseClient client) {
+        client.newServerEval().xquery("cts:uris((), (), cts:true-query()) ! xdmp:document-delete(.)").evalAs(String.class);
     }
 
     @AfterClass
-    public static void clearContentAndSchemaDatabases() {
+    public static void classTearDown() {
         http_port = original_http_port;
         client.release();
         schemasClient.release();
@@ -130,4 +143,13 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
         return latLon;
     }
 
+    protected static DatabaseClient connectAsRestWriter() {
+        return DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(),
+            new DatabaseClientFactory.DigestAuthContext("rest-writer", "x"), getConnType());
+    }
+
+    protected static DatabaseClient connectAsAdmin() {
+        return DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(),
+            new DatabaseClientFactory.DigestAuthContext(getAdminUser(), getAdminPassword()), getConnType());
+    }
 }
