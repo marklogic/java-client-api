@@ -30,10 +30,15 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
     protected static DatabaseClient client;
     protected static DatabaseClient schemasClient;
     protected static boolean isML11OrHigher;
+    private static String original_http_port;
 
     @BeforeClass
     public static void initializeClients() throws Exception {
         loadGradleProperties();
+        // Until all the tests can use the same ml-gradle-deployed app server, we need to have separate ports - one
+        // for "slow" tests that setup a new app server, and one for "fast" tests that use the deployed one
+        original_http_port = http_port;
+        http_port = fast_http_port;
         final String schemasDbName = "java-functest-schemas";
         if (IsSecurityEnabled()) {
             schemasClient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemasDbName, OPTIC_USER, OPTIC_USER_PASSWORD, getConnType());
@@ -55,6 +60,7 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
 
     @AfterClass
     public static void clearContentAndSchemaDatabases() {
+        http_port = original_http_port;
         client.release();
         schemasClient.release();
     }

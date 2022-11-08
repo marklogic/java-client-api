@@ -64,7 +64,7 @@ pipeline{
           export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
           export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
           cd java-client-api
-          ./gradlew mlDeploy
+          ./gradlew -i mlDeploy -PmlForestDataDirectory=/space
         '''
         sh label:'marklogic client test', script: '''#!/bin/bash
           export JAVA_HOME=$JAVA_HOME_DIR
@@ -103,6 +103,7 @@ pipeline{
           export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
           export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
           cd java-client-api
+          ./gradlew -i mlDeploy -PmlForestDataDirectory=/space
           ./gradlew marklogic-client-api-functionaltests:test  || true
         '''
         junit '**/build/**/TEST*.xml'
