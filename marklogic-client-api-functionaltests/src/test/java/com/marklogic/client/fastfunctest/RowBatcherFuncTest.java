@@ -1,139 +1,32 @@
-package com.marklogic.client.datamovement.functionaltests;
+package com.marklogic.client.fastfunctest;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.RowBatcher;
-import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.functionaltest.BasicJavaClientREST;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowManager;
-import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.type.CtsReferenceExpr;
-import com.marklogic.client.type.PlanParamExpr;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Stream;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class RowBatcherFuncTest extends BasicJavaClientREST {
-    private static String dbName = "RowBatcherFuncDB";
-    private static String[] fNames = { "RowBatcherFuncDB-1", "RowBatcherFuncDB-2", "RowBatcherFuncDB-3" };
-
-    private static String schemadbName = "RowBatcherFuncSchemaDB";
-    private static String[] schemafNames = { "RowBatcherFuncSchemaDB-1" };
-
-    private static String datasource = "src/test/java/com/marklogic/client/functionaltest/data/optics/";
+public class RowBatcherFuncTest extends AbstractFunctionalTest {
 
     private static DataMovementManager dmManager = null;
-    private static String restServerName = null;
-    private static int restServerPort = 0;
-    private static DatabaseClient client = null;
-    private static String dataConfigDirPath = null;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        loadGradleProperties();
-        restServerPort = getRestAppServerPort();
-
-        restServerName = getRestAppServerName();
-        // Points to top level of all QA data folder
-        dataConfigDirPath = getDataConfigDirPath();
-        DatabaseClient schemaDBclient = null;
-        configureRESTServer(dbName, fNames);
-
-        // Add new range elements into this array
-        String[][] rangeElements = {
-                // { scalar-type, namespace-uri, localname, collation,
-                // range-value-positions, invalid-values }
-                // If there is a need to add additional fields, then add them to the end
-                // of each array
-                // and pass empty strings ("") into an array where the additional field
-                // does not have a value.
-                // For example : as in namespace, collections below.
-                // Add new RangeElementIndex as an array below.
-                { "string", "", "city", "http://marklogic.com/collation/", "false", "reject" },
-                { "int", "", "popularity", "", "false", "reject" },
-                { "double", "", "distance", "", "false", "reject" },
-                { "date", "", "date", "", "false", "reject" },
-                { "string", "", "cityName", "http://marklogic.com/collation/", "false", "reject" },
-                { "string", "", "cityTeam", "http://marklogic.com/collation/", "false", "reject" },
-                { "long", "", "cityPopulation", "", "false", "reject" }
-        };
-
-        // Insert the range indices
-        addRangeElementIndex(dbName, rangeElements);
-
-        // Insert word lexicon.
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode mainNode = mapper.createObjectNode();
-        ObjectNode wordLexicon = mapper.createObjectNode();
-        ArrayNode childArray = mapper.createArrayNode();
-        ObjectNode childNodeObject = mapper.createObjectNode();
-
-        childNodeObject.put("namespace-uri", "http://marklogic.com/collation/");
-        childNodeObject.put("localname", "city");
-        childNodeObject.put("collation", "http://marklogic.com/collation/");
-        childArray.add(childNodeObject);
-        mainNode.withArray("element-word-lexicon").add(childArray);
-
-        setDatabaseProperties(dbName, "element-word-lexicon", mainNode);
-
-        // Add geo element index.
-        addGeospatialElementIndexes(dbName, "latLonPoint", "", "wgs84", "point", false, "reject");
-        // Enable triple index.
-        enableTripleIndex(dbName);
-        waitForServerRestart();
-        // Enable collection lexicon.
-        enableCollectionLexicon(dbName);
-        // Enable uri lexicon.
-        setDatabaseProperties(dbName, "uri-lexicon", true);
-
-        // Create schema database
-        createDB(schemadbName);
-        createForest(schemafNames[0], schemadbName);
-        // Set the schemadbName database as the Schema database.
-        setDatabaseProperties(dbName, "schema-database", schemadbName);
-
-        createUserRolesWithPrevilages("opticRole", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
-        createRESTUser("opticUser", "0pt1c", "tde-admin", "tde-view", "opticRole", "rest-admin", "rest-writer",
-                "rest-reader", "rest-extension-user", "manage-user");
-
-        if (IsSecurityEnabled()) {
-            schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", getConnType());
-            client = getDatabaseClient("opticUser", "0pt1c", getConnType());
-        }
-        else {
-            schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DatabaseClientFactory.DigestAuthContext("opticUser", "0pt1c"));
-            client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DatabaseClientFactory.DigestAuthContext("opticUser", "0pt1c"));
-        }
-
         // Install the TDE templates into schemadbName DB
         // loadFileToDB(client, filename, docURI, collection, document format)
-        loadFileToDB(schemaDBclient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[] { "http://marklogic.com/xdmp/tde" });
-        loadFileToDB(schemaDBclient, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON", new String[] { "http://marklogic.com/xdmp/tde" });
-        loadFileToDB(schemaDBclient, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON", new String[] { "http://marklogic.com/xdmp/tde" });
+        loadFileToDB(schemasClient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[] { "http://marklogic.com/xdmp/tde" });
+        loadFileToDB(schemasClient, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON", new String[] { "http://marklogic.com/xdmp/tde" });
+        loadFileToDB(schemasClient, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON", new String[] { "http://marklogic.com/xdmp/tde" });
 
         // Load XML data files.
         loadFileToDB(client, "masterDetail.xml", "/optic/view/test/masterDetail.xml", "XML", new String[] { "/optic/view/test" });
@@ -156,81 +49,13 @@ public class RowBatcherFuncTest extends BasicJavaClientREST {
         loadFileToDB(client, "city3.json", "/optic/lexicon/test/city3.json", "JSON", new String[] { "/optic/lexicon/test" });
         loadFileToDB(client, "city4.json", "/optic/lexicon/test/city4.json", "JSON", new String[] { "/optic/lexicon/test" });
         loadFileToDB(client, "city5.json", "/optic/lexicon/test/city5.json", "JSON", new String[] { "/optic/lexicon/test" });
-        Thread.sleep(10000);
-        schemaDBclient.release();
         dmManager = client.newDataMovementManager();
     }
 
-    public static void loadFileToDB(DatabaseClient client, String filename, String uri, String type, String[] collections) throws IOException, ParserConfigurationException,
-            SAXException
-    {
-        // create doc manager
-        DocumentManager docMgr = null;
-        docMgr = documentMgrSelector(client, docMgr, type);
-
-        File file = new File(datasource + filename);
-        // create a handle on the content
-        FileHandle handle = new FileHandle(file);
-        handle.set(file);
-
-        DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
-        for (String coll : collections)
-            metadataHandle.getCollections().addAll(coll.toString());
-
-        // write the document content
-        DocumentWriteSet writeset = docMgr.newWriteSet();
-        writeset.addDefault(metadataHandle);
-        writeset.add(uri, handle);
-
-        docMgr.write(writeset);
-
-        System.out.println("Write " + uri + " to database");
-    }
-
-    public static DocumentManager documentMgrSelector(DatabaseClient client, DocumentManager docMgr, String type) {
-        // create doc manager
-        switch (type) {
-            case "XML":
-                docMgr = client.newXMLDocumentManager();
-                break;
-            case "Text":
-                docMgr = client.newTextDocumentManager();
-                break;
-            case "JSON":
-                docMgr = client.newJSONDocumentManager();
-                break;
-            case "Binary":
-                docMgr = client.newBinaryDocumentManager();
-                break;
-            case "JAXB":
-                docMgr = client.newXMLDocumentManager();
-                break;
-            default:
-                System.out.println("Invalid type");
-                break;
-        }
-        return docMgr;
-    }
-
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-        System.out.println("In tearDownAfterClass");
-        // Release clients
-        client.release();
-        associateRESTServerWithDB(restServerName, "Documents");
-        deleteRESTUser("eval-user");
-        deleteUserRole("test-eval");
-        detachForest(dbName, fNames[0]);
-
-        deleteDB(dbName);
-        deleteForest(fNames[0]);
-    }
-
     @Test
-    public void testRowBatcherWithJackson() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    public void testRowBatcherWithJackson() {
         System.out.println("In testRowBatcherWithJackson method");
         StringBuilder failedBuf = null;
-        StringBuilder successBuf = null;
 
         RowBatcher<JsonNode> rowsBatcherOfJsonObj = dmManager.newRowBatcher(new JacksonHandle())
                                                        .withBatchSize(1)
@@ -270,10 +95,9 @@ public class RowBatcherFuncTest extends BasicJavaClientREST {
     }
 
     @Test
-    public void testJoinInner() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    public void testJoinInner() {
         System.out.println("In testJoinInner method");
         StringBuilder failedBuf = null;
-        StringBuilder successBuf = null;
 
         RowBatcher<JsonNode> rowsBatcherOfJsonObj = dmManager.newRowBatcher(new JacksonHandle())
                 .withBatchSize(1)
@@ -324,10 +148,9 @@ public class RowBatcherFuncTest extends BasicJavaClientREST {
     }
 
     @Test
-    public void testWithExpressioncolumns() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    public void testWithExpressioncolumns() {
         System.out.println("In testWithExpressioncolumns method");
         StringBuilder failedBuf = null;
-        StringBuilder successBuf = null;
 
         RowBatcher<JsonNode> rowsBatcherOfJsonObj = dmManager.newRowBatcher(new JacksonHandle())
                 .withBatchSize(1)
@@ -379,11 +202,15 @@ public class RowBatcherFuncTest extends BasicJavaClientREST {
         }
     }
 
+    /**
+     * This test previously applied an offsetLimit to only get 2 rows back, but that did not have consistent results
+     * between ML 10 and 11. The point of this test does not appear to be testing that offsetLimit works, but rather
+     * that a join between a view and lexicons returns all the expected rows.
+     */
     @Test
-    public void testJoinfromViewfronLexicons() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    public void testJoinFromViewFromLexicons() {
         System.out.println("In testJoinfromViewfronLexicons method");
         StringBuilder failedBuf = null;
-        StringBuilder successBuf = null;
 
         RowBatcher<JsonNode> rowsBatcherOfJsonObj = dmManager.newRowBatcher(new JacksonHandle())
                 .withBatchSize(1)
@@ -394,7 +221,7 @@ public class RowBatcherFuncTest extends BasicJavaClientREST {
 
         PlanBuilder p = rowMgr.newPlanBuilder();
 
-        Map<String, CtsReferenceExpr> indexes = new HashMap<String, CtsReferenceExpr>();
+        Map<String, CtsReferenceExpr> indexes = new HashMap<>();
         indexes.put("uri", p.cts.uriReference());
         indexes.put("city", p.cts.jsonPropertyReference("city"));
         indexes.put("popularity", p.cts.jsonPropertyReference("popularity"));
@@ -402,16 +229,13 @@ public class RowBatcherFuncTest extends BasicJavaClientREST {
         indexes.put("distance", p.cts.jsonPropertyReference("distance"));
         indexes.put("point", p.cts.jsonPropertyReference("latLonPoint"));
 
-        // plan1 - fromView
-        PlanBuilder.ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail", "myDetail");
-        // plan2 - fromLexicons
-        PlanBuilder.ModifyPlan plan2 = p.fromLexicons(indexes, "myCity");
+        PlanBuilder.ModifyPlan output = p
+            .fromView("opticFunctionalTest", "detail", "myDetail")
+            .joinFullOuter(p.fromLexicons(indexes, "myCity"));
 
-        PlanBuilder.ModifyPlan output = plan1.joinFullOuter(plan2).orderBy(p.col("id")).offsetLimit(0, 2);
         rowsBatcherOfJsonObj.withBatchView(output);
 
-        ArrayList<String> exptdCity = new ArrayList(Arrays.asList("beijing", "cape town"));
-        ArrayList<String> resultCity = new ArrayList<>();
+        Set<String> resultCity = new HashSet<>();
 
         rowsBatcherOfJsonObj.onSuccess(e -> {
             JsonNode resDoc = e.getRowsDoc().get("rows");
@@ -430,16 +254,17 @@ public class RowBatcherFuncTest extends BasicJavaClientREST {
             } );
         dmManager.startJob(rowsBatcherOfJsonObj);
         rowsBatcherOfJsonObj.awaitCompletion();
-        for (String s : resultCity) {
-            assertTrue(exptdCity.contains(s));
-        }
+
+        Stream.of("new jersey", "cape town", "beijing", "new york").forEach(city -> {
+            assertTrue("Did not find " + city + " in " + resultCity, resultCity.contains(city));
+        });
+        assertEquals(4, resultCity.size());
     }
 
     @Test
-    public void testMultipleSuccessListener() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    public void testMultipleSuccessListener() {
         System.out.println("In testMultipleSuccessListener method");
         StringBuilder failedBuf = null;
-        StringBuilder successBuf = null;
 
         RowBatcher<JsonNode> rowsBatcherOfJsonObj = dmManager.newRowBatcher(new JacksonHandle())
                 .withBatchSize(1)
@@ -495,7 +320,7 @@ public class RowBatcherFuncTest extends BasicJavaClientREST {
 
     // Negative - Plan that starts with a fromLexicons() - should be rejected
     @Test
-    public void testfromLexicons() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    public void testfromLexicons() {
         System.out.println("In fromLexicons method");
         StringBuilder failedBuf = null;
         String exBuf = null;
@@ -547,10 +372,9 @@ public class RowBatcherFuncTest extends BasicJavaClientREST {
     }
 
     @Test
-    public void testExceptionInSecondSuccessListener() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    public void testExceptionInSecondSuccessListener() {
         System.out.println("In testExceptionInSecondSuccessListener method");
         StringBuilder failedBuf = null;
-        StringBuilder successBuf = null;
         RowBatcher<JsonNode> rowsBatcherOfJsonObj = dmManager.newRowBatcher(new JacksonHandle())
                     .withBatchSize(1)
                     .withThreadCount(2)

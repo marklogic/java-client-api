@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.marklogic.client.functionaltest;
+package com.marklogic.client.fastfunctest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
 import com.marklogic.client.expression.PlanBuilder.PreparePlan;
+import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
@@ -1177,7 +1178,12 @@ public class TestOpticOnLexicons extends AbstractFunctionalTest {
               p.on(p.viewCol("myCity", "city"), p.viewCol("myTeam", "cityName")),
               p.ne(p.col("popularity"), p.xs.intVal(3)))
             .joinDoc(p.col("doc"), p.col("uri1"))
-            .select(uriCol1, cityCol, popCol, dateCol, distCol, pointCol, p.as("nodes", p.xpath("doc", "/description[fn:matches(., 'disc*')]")), uriCol2, cityNameCol, cityTeamCol)
+            .select(
+                uriCol1, cityCol, popCol, dateCol, distCol, pointCol,
+                // TODO This doesn't work with ML 10 any longer
+                //p.as("nodes", p.xpath("doc", "/description[fn:matches(., 'disc*')]")),
+                p.as(p.col("nodes"), p.xpath(p.col("doc"), p.xs.string("/description[fn:matches(., 'disc*')]"))),
+                uriCol2, cityNameCol, cityTeamCol)
             .where(p.isDefined(p.col("nodes")))
             .orderBy(p.desc(p.col("distance")));
 
@@ -1239,7 +1245,11 @@ public class TestOpticOnLexicons extends AbstractFunctionalTest {
               p.on(p.viewCol("myCity", "city"), p.viewCol("myTeam", "cityName")),
               p.ne(p.col("popularity"), p.xs.intVal(3)))
             .joinDoc(p.col("doc"), p.col("uri1"))
-            .select(uriCol1, cityCol, popCol, dateCol, distCol, pointCol, p.as("nodes", p.xpath("doc", "popularity[math:pow(., 2) eq 4]")), uriCol2, cityNameCol, cityTeamCol)
+            .select(
+                uriCol1, cityCol, popCol, dateCol, distCol, pointCol,
+                p.as(p.col("nodes"), p.xpath(p.col("doc"), p.xs.string("popularity[math:pow(., 2) eq 4]"))),
+                uriCol2, cityNameCol, cityTeamCol
+            )
             .where(p.isDefined(p.col("nodes")))
             .orderBy(p.desc(p.col("distance")));
 
