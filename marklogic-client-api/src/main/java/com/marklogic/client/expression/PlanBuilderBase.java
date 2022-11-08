@@ -425,8 +425,8 @@ public interface PlanBuilderBase {
      * document descriptor names are: uri, doc, collections, permissions, metadata, quality, and temporalCollection. 
      * Use this when mapping to non-standard column names.
      *
-     * @param descriptorColumnMapping
-     * @return
+     * @param descriptorColumnMapping contains the mapping for column names to String values.
+     * @return a new {@code PlanDocColsIdentifier}
      */
     PlanDocColsIdentifier docCols(Map<String, PlanColumn> descriptorColumnMapping);
 
@@ -456,7 +456,7 @@ public interface PlanBuilderBase {
 
     /**
      * Build a schema definition for use with {@code validateDoc}.
-     *
+     * @param kind the kind of schema - jsonSchema, xmlSchema or schematron.
      * @return a new {@code SchemaDefExpr}
      */
     SchemaDefExpr schemaDefinition(String kind);
@@ -466,7 +466,7 @@ public interface PlanBuilderBase {
      *
      * @param roleName name of the role for the permission
      * @param capability lower-cased capability; e.g. "read", "update", "execute"
-     * @return
+     * @return a new {@code ServerExpression}
      */
     ServerExpression permission(String roleName, String capability);
 
@@ -660,7 +660,7 @@ public interface PlanBuilderBase {
          * @param param the name of a placeholder parameter
          * @param writeSet the set of documents to bind; the URI, content, and metadata in each document will be
          *                 honored except for the properties fragment config in the metadata
-         * @return
+         * @return a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(String param, DocumentWriteSet writeSet);
         /**
@@ -672,7 +672,7 @@ public interface PlanBuilderBase {
          * @param param a placeholder parameter as constructed by the param() method
          * @param writeSet the set of documents to bind; the URI, content, and metadata in each document will be
          *                 honored except for the properties fragment config in the metadata
-         * @return
+         * @return a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(PlanParamExpr param, DocumentWriteSet writeSet);
         /**
@@ -972,8 +972,8 @@ public interface PlanBuilderBase {
          * Applies the given transformation to the content in the given column in each row. A {@code TransformDef}
          * can be constructed via {@code PlanBuilder#transformDef(String)}.
          * 
-         * @param docColumn the column containing content to be transformed
-         * @param transformDef
+         * @param docColumn the column containing content to be transformed.
+         * @param transformDef defines a transform for using with the {@code transformDoc} operator.
          * @return a ModifyPlan object
          */
         PlanBuilder.ModifyPlan transformDoc(PlanColumn docColumn, TransformDef transformDef);
