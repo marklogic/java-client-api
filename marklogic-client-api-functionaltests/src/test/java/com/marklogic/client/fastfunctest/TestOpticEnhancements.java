@@ -14,134 +14,39 @@
  * limitations under the License.
  */
 
-package com.marklogic.client.functionaltest;
+package com.marklogic.client.fastfunctest;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
-import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.expression.PlanBuilder.AccessPlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
-import com.marklogic.client.io.*;
-import com.marklogic.client.row.RawQueryDSLPlan;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowManager;
-import com.marklogic.client.row.RowRecord;
-import com.marklogic.client.row.RowSet;
-import com.marklogic.client.type.*;
-import org.junit.AfterClass;
+import com.marklogic.client.type.PlanColumn;
+import com.marklogic.client.type.PlanPrefixer;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.util.*;
-import java.util.regex.Matcher;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-public class TestOpticEnhancements extends BasicJavaClientREST {
+public class TestOpticEnhancements extends AbstractFunctionalTest {
 
-  private static String dbName = "TestOpticOnEnhanceDB";
-  private static String schemadbName = "TestOpticOnEnhanceSchemaDB";
-  private static String[] fNames = {"TestOpticOnEnhanceDB-1"};
-  private static String[] schemafNames = {"TestOpticOnEnhanceSchemaDB-1"};
-
-  private static DatabaseClient client;
-  private static String datasource = "src/test/java/com/marklogic/client/functionaltest/data/optics/";
   private static Map<String, Object>[] literals1 = new HashMap[10];
   private static Map<String, Object>[] literals2 = new HashMap[4];
   private static Map<String, Object>[] storeInformation = new HashMap[4];
   private static Map<String, Object>[] internetSales = new HashMap[4];
 
   @BeforeClass
-  public static void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-    System.out.println("In TestOpticEnhance setup");
-    DatabaseClient schemaDBclient = null;
-
-  configureRESTServer(dbName, fNames);
-
-  // Add new range elements into this array
-  String[][] rangeElements = {
-          // { scalar-type, namespace-uri, localname, collation,
-          // range-value-positions, invalid-values }
-          // If there is a need to add additional fields, then add them to the end
-          // of each array
-          // and pass empty strings ("") into an array where the additional field
-          // does not have a value.
-          // For example : as in namespace, collections below.
-          // Add new RangeElementIndex as an array below.
-          {"string", "", "city", "http://marklogic.com/collation/", "false", "reject"},
-          {"int", "", "popularity", "", "false", "reject"},
-          {"double", "", "distance", "", "false", "reject"},
-          {"date", "", "date", "", "false", "reject"},
-          {"string", "", "cityName", "http://marklogic.com/collation/", "false", "reject"},
-          {"string", "", "cityTeam", "http://marklogic.com/collation/", "false", "reject"},
-          {"long", "", "cityPopulation", "", "false", "reject"}
-  };
-
-  // Insert the range indices
-  addRangeElementIndex(dbName, rangeElements);
-
-  // Insert word lexicon.
-  ObjectMapper mapper = new ObjectMapper();
-  ObjectNode mainNode = mapper.createObjectNode();
-  ObjectNode wordLexicon = mapper.createObjectNode();
-  ArrayNode childArray = mapper.createArrayNode();
-  ObjectNode childNodeObject = mapper.createObjectNode();
-
-  childNodeObject.put("namespace-uri", "http://marklogic.com/collation/");
-  childNodeObject.put("localname", "city");
-  childNodeObject.put("collation", "http://marklogic.com/collation/");
-  childArray.add(childNodeObject);
-  mainNode.withArray("element-word-lexicon").add(childArray);
-
-  setDatabaseProperties(dbName, "element-word-lexicon", mainNode);
-
-  // Add geo element index.
-  addGeospatialElementIndexes(dbName, "latLonPoint", "", "wgs84", "point", false, "reject");
-  // Enable triple index.
-  enableTripleIndex(dbName);
-  waitForServerRestart();
-  // Enable collection lexicon.
-  enableCollectionLexicon(dbName);
-  // Enable uri lexicon.
-  setDatabaseProperties(dbName, "uri-lexicon", true);
-
-  // Create schema database
-  createDB(schemadbName);
-  createForest(schemafNames[0], schemadbName);
-  // Set the schemadbName database as the Schema database.
-  setDatabaseProperties(dbName, "schema-database", schemadbName);
-
-  createUserRolesWithPrevilages("opticRole", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
-  createRESTUser("opticUser", "0pt1c", "tde-admin", "tde-view", "opticRole", "rest-admin", "rest-writer",
-          "rest-reader", "rest-extension-user", "manage-user", "query-view-admin");
-
-    if (IsSecurityEnabled()) {
-      schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", getConnType());
-      client = getDatabaseClient("opticUser", "0pt1c", getConnType());
-    } else {
-      schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("opticUser", "0pt1c"));
-      client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("opticUser", "0pt1c"));
-    }
-
+  public static void setUp() throws Exception {
   // Install the TDE templates into schemadbName DB
   // loadFileToDB(client, filename, docURI, collection, document format)
-  loadFileToDB(schemaDBclient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[]{"http://marklogic.com/xdmp/tde"});
-  loadFileToDB(schemaDBclient, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON", new String[]{"http://marklogic.com/xdmp/tde"});
-  loadFileToDB(schemaDBclient, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON", new String[]{"http://marklogic.com/xdmp/tde"});
+  loadFileToDB(schemasClient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[]{"http://marklogic.com/xdmp/tde"});
+  loadFileToDB(schemasClient, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON", new String[]{"http://marklogic.com/xdmp/tde"});
+  loadFileToDB(schemasClient, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON", new String[]{"http://marklogic.com/xdmp/tde"});
 
   // Load XML data files.
   loadFileToDB(client, "masterDetail.xml", "/optic/view/test/masterDetail.xml", "XML", new String[]{"/optic/view/test"});
@@ -164,9 +69,6 @@ public class TestOpticEnhancements extends BasicJavaClientREST {
   loadFileToDB(client, "city3.json", "/optic/lexicon/test/city3.json", "JSON", new String[]{"/optic/lexicon/test"});
   loadFileToDB(client, "city4.json", "/optic/lexicon/test/city4.json", "JSON", new String[]{"/optic/lexicon/test"});
   loadFileToDB(client, "city5.json", "/optic/lexicon/test/city5.json", "JSON", new String[]{"/optic/lexicon/test"});
-  Thread.sleep(10000);
-
-    schemaDBclient.release();
 
     Map<String, Object> row = new HashMap<>();
 
@@ -291,77 +193,8 @@ public class TestOpticEnhancements extends BasicJavaClientREST {
     internetSales[3] = row;
   }
 
-  /**
-   * Write document using DOMHandle
-   *
-   * @param client
-   * @param filename
-   * @param uri
-   * @param type
-   * @throws IOException
-   * @throws ParserConfigurationException
-   * @throws SAXException
-   */
-
-  public static void loadFileToDB(DatabaseClient client, String filename, String uri, String type, String[] collections) throws IOException, ParserConfigurationException,
-          SAXException {
-    // create doc manager
-    DocumentManager docMgr = null;
-    docMgr = documentMgrSelector(client, docMgr, type);
-
-    File file = new File(datasource + filename);
-    // create a handle on the content
-    FileHandle handle = new FileHandle(file);
-    handle.set(file);
-
-    DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
-    for (String coll : collections)
-      metadataHandle.getCollections().addAll(coll.toString());
-
-    // write the document content
-    DocumentWriteSet writeset = docMgr.newWriteSet();
-    writeset.addDefault(metadataHandle);
-    writeset.add(uri, handle);
-
-    docMgr.write(writeset);
-
-    System.out.println("Write " + uri + " to database");
-  }
-
-  /**
-   * Function to select and create document manager based on the type
-   *
-   * @param client
-   * @param docMgr
-   * @param type
-   * @return
-   */
-  public static DocumentManager documentMgrSelector(DatabaseClient client, DocumentManager docMgr, String type) {
-    // create doc manager
-    switch (type) {
-      case "XML":
-        docMgr = client.newXMLDocumentManager();
-        break;
-      case "Text":
-        docMgr = client.newTextDocumentManager();
-        break;
-      case "JSON":
-        docMgr = client.newJSONDocumentManager();
-        break;
-      case "Binary":
-        docMgr = client.newBinaryDocumentManager();
-        break;
-      case "JAXB":
-        docMgr = client.newXMLDocumentManager();
-        break;
-      default:
-        System.out.println("Invalid type");
-        break;
-    }
-    return docMgr;
-  }
-    @Test
-    public void testRedactRegexJoinInner() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  @Test
+    public void testRedactRegexJoinInner()
     {
       System.out.println("In testRedactRegexJoinInner method");
 
@@ -414,7 +247,7 @@ public class TestOpticEnhancements extends BasicJavaClientREST {
     }
 
   @Test
-  public void testRedactDatetime() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+  public void testRedactDatetime() {
     System.out.println("In testRedactDatetime method");
 
     // Create a new Plan.
@@ -458,7 +291,7 @@ public class TestOpticEnhancements extends BasicJavaClientREST {
   }
 
   @Test
-  public void testMaskDeterministic() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+  public void testMaskDeterministic() {
     System.out.println("In testMaskDeterministic method");
 
     // Create a new Plan.
@@ -515,7 +348,7 @@ public class TestOpticEnhancements extends BasicJavaClientREST {
   }
 
   @Test
-  public void testMaskRandom() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+  public void testMaskRandom() {
     System.out.println("In testMaskRandom method");
 
     Map<String, Object> hoops = new HashMap<>();
@@ -556,7 +389,7 @@ public class TestOpticEnhancements extends BasicJavaClientREST {
   }
 
   @Test
-  public void testRedactNumber() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testRedactNumber()
   {
     System.out.println("In testRedactNumber method");
     // Create a new Plan.
@@ -635,20 +468,5 @@ public class TestOpticEnhancements extends BasicJavaClientREST {
     assertEquals("Row 2 PlayerName value incorrect", "John Doe", second.path("PlayerName").path("value").asText());
     assertTrue("Row 2  Team value mask value incorrect",  patternName.matcher(rowTwoTeamName).find());
     assertTrue("Row 2 PlayerAge mask incorrect", patternAge.matcher(rowTwoPlayerAge).find());
-  }
-
-  //@AfterClass
-  public static void tearDownAfterClass() throws Exception {
-    System.out.println("In tear down");
-    // Delete the temp schema DB after resetting the Schema DB on content DB.
-    // Else delete fails.
-    deleteUserRole("opticRole");
-    deleteRESTUser("opticUser");
-    setDatabaseProperties(dbName, "schema-database", dbName);
-    deleteDB(schemadbName);
-    deleteForest(schemafNames[0]);
-    // release client
-    client.release();
-    cleanupRESTServer(dbName, fNames);
   }
 }

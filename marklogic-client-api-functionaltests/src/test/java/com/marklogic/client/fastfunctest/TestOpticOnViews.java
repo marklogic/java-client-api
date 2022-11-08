@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.AccessPlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
-import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
@@ -2776,27 +2775,22 @@ public class TestOpticOnViews extends AbstractFunctionalTest {
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
 
-    ModifyPlan plan1 =
-            p.fromView("opticFunctionalTest", "detail")
-                    .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
-    ModifyPlan plan2 =
-            p.fromView("opticFunctionalTest", "master")
-                    .orderBy(p.schemaCol("opticFunctionalTest", "master" , "id"));
-    ModifyPlan plan3 =
-            plan1.joinInner(plan2)
-                    .where(
-                            p.eq(
-                                    p.schemaCol("opticFunctionalTest", "master" , "id"),
-                                    p.schemaCol("opticFunctionalTest", "detail", "masterId")
-                            )
-                    )
-                    .groupToArrays(p.namedGroupSeq(
-                                    p.namedGroup("DetColor", p.col("color")),
-                                    p.namedGroup("Amt", p.schemaCol("opticFunctionalTest", "detail" , "amount"))
-                                ),
-                                p.aggregateSeq(p.sum("sum", "amount"), p.count("CountofColors", "color"))
+    ModifyPlan detailPlan = p.fromView("opticFunctionalTest", "detail");
+    ModifyPlan masterPlan = p.fromView("opticFunctionalTest", "master");
 
-                    );
+    ModifyPlan plan3 = detailPlan
+        .joinInner(masterPlan)
+        .where(p.eq(
+            p.schemaCol("opticFunctionalTest", "master", "id"),
+            p.schemaCol("opticFunctionalTest", "detail", "masterId")
+        ))
+        .groupToArrays(
+            p.namedGroupSeq(
+                p.namedGroup("DetColor", p.col("color")),
+                p.namedGroup("Amt", p.schemaCol("opticFunctionalTest", "detail", "amount"))
+            ),
+            p.aggregateSeq(p.sum("sum", "amount"), p.count("CountofColors", "color"))
+        );
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -2810,20 +2804,28 @@ public class TestOpticOnViews extends AbstractFunctionalTest {
 
     JsonNode jsonDetColorNodes = jsonBindingsNodes.get(0).get("DetColor").get("value");
     assertEquals("2 nodes not returned from color nodes array ", 2, jsonDetColorNodes.size());
-    assertEquals("Row 1 color node value incorrect", "blue", jsonDetColorNodes.get(0).path("color").asText());
-    assertEquals("Row 1 sum node value incorrect", "60.06", jsonDetColorNodes.get(0).path("sum").asText());
-    assertEquals("Row 1 color count node value incorrect", "3", jsonDetColorNodes.get(0).path("CountofColors").asText());
 
-    assertEquals("Row 2 color node value incorrect", "green", jsonDetColorNodes.get(1).path("color").asText());
-    assertEquals("Row 2 sum node value incorrect", "150.15", jsonDetColorNodes.get(1).path("sum").asText());
-    assertEquals("Row 2 color count node value incorrect", "3", jsonDetColorNodes.get(1).path("CountofColors").asText());
+    // Order of the aggregated rows is not consistent
+    JsonNode firstRow = jsonDetColorNodes.get(0);
+    JsonNode secondRow = jsonDetColorNodes.get(1);
+    boolean firstRowIsBlue = firstRow.get("color").asText().equals("blue");
+    JsonNode blueRow =  firstRowIsBlue ? firstRow : secondRow;
+    JsonNode greenRow = firstRowIsBlue ? secondRow : firstRow;
+
+    assertEquals("Row 1 color node value incorrect", "blue", blueRow.path("color").asText());
+    assertEquals("Row 1 sum node value incorrect", "60.06", blueRow.path("sum").asText());
+    assertEquals("Row 1 color count node value incorrect", "3", blueRow.path("CountofColors").asText());
+
+    assertEquals("Row 2 color node value incorrect", "green", greenRow.path("color").asText());
+    assertEquals("Row 2 sum node value incorrect", "150.15", greenRow.path("sum").asText());
+    assertEquals("Row 2 color count node value incorrect", "3", greenRow.path("CountofColors").asText());
 
     JsonNode jsonAmtNodes = jsonBindingsNodes.get(0).get("Amt").get("value");
     assertEquals("6 nodes not returned from color nodes array ", 6, jsonAmtNodes.size());
 
     // Verify without aggregate param
     ModifyPlan plan4 =
-            plan1.joinInner(plan2)
+            detailPlan.joinInner(masterPlan)
                     .where(
                             p.eq(
                                     p.schemaCol("opticFunctionalTest", "master" , "id"),

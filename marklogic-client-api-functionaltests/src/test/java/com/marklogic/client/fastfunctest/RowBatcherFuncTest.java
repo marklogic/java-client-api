@@ -213,8 +213,8 @@ public class RowBatcherFuncTest extends AbstractFunctionalTest {
         StringBuilder failedBuf = null;
 
         RowBatcher<JsonNode> rowsBatcherOfJsonObj = dmManager.newRowBatcher(new JacksonHandle())
-                .withBatchSize(1)
-                .withThreadCount(1)
+                .withBatchSize(8)
+                .withThreadCount(4)
                 .withJobName("JoinfromViewfronLexicons");
         RowManager rowMgr = rowsBatcherOfJsonObj.getRowManager();
         rowMgr.setDatatypeStyle(RowManager.RowSetPart.HEADER);
@@ -235,19 +235,15 @@ public class RowBatcherFuncTest extends AbstractFunctionalTest {
 
         rowsBatcherOfJsonObj.withBatchView(output);
 
-        Set<String> resultCity = new HashSet<>();
+        Set<String> citiesFound = Collections.synchronizedSet(new HashSet<>());
 
         rowsBatcherOfJsonObj.onSuccess(e -> {
-            JsonNode resDoc = e.getRowsDoc().get("rows");
+            JsonNode rows = e.getRowsDoc().get("rows");
 
-            if (resDoc == null)
+            if (rows == null)
                 failedBuf.append("No rows returned in batch from " + e.getLowerBound() + "to" + e.getUpperBound());
             else {
-                System.out.println("resDoc.get(0) : " + resDoc.get(0).get("myCity.city").asText());
-                System.out.println("resDoc.get(1) : " + resDoc.get(1).get("myCity.city").asText());
-                System.out.println("Thread id : " + Thread.currentThread().getId() + " is named as " + Thread.currentThread().getName());
-                resultCity.add(resDoc.get(0).get("myCity.city").asText());
-                resultCity.add(resDoc.get(1).get("myCity.city").asText());
+                rows.forEach(row -> citiesFound.add(row.get("myCity.city").asText()));
             }
             }).onFailure((fevt, mythrows) -> {
                 failedBuf.append("Batch Failures in " + fevt.getJobBatchNumber() + "batch from " + fevt.getLowerBound() + "to" + fevt.getUpperBound());
@@ -255,10 +251,10 @@ public class RowBatcherFuncTest extends AbstractFunctionalTest {
         dmManager.startJob(rowsBatcherOfJsonObj);
         rowsBatcherOfJsonObj.awaitCompletion();
 
-        Stream.of("new jersey", "cape town", "beijing", "new york").forEach(city -> {
-            assertTrue("Did not find " + city + " in " + resultCity, resultCity.contains(city));
+        Stream.of("new jersey", "cape town", "beijing", "new york", "london").forEach(city -> {
+            assertTrue("Did not find " + city + " in " + citiesFound, citiesFound.contains(city));
         });
-        assertEquals(4, resultCity.size());
+        assertEquals(5, citiesFound.size());
     }
 
     @Test
