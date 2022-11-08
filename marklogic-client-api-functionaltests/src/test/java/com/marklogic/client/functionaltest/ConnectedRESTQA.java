@@ -49,7 +49,8 @@ public abstract class ConnectedRESTQA {
 	private static String restSslServerName = null;
 	private static String ssl_enabled = null;
 	private static String https_port = null;
-	private static String http_port = null;
+	protected static String http_port = null;
+	protected static String fast_http_port = null;
 	private static String admin_port = null;
 	// This needs to be a FQDN when SSL is enabled. Else localhost. Set in
 	// test.properties
@@ -2466,6 +2467,7 @@ public abstract class ConnectedRESTQA {
 
 		https_port = property.getProperty("httpsPort");
 		http_port = property.getProperty("httpPort");
+		fast_http_port = property.getProperty("fastHttpPort");
 		admin_port = property.getProperty("adminPort");
 
 		// Machine names where ML Server runs
