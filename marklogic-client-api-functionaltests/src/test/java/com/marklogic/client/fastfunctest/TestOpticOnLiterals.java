@@ -18,6 +18,7 @@ package com.marklogic.client.fastfunctest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
@@ -1760,8 +1761,6 @@ public class TestOpticOnLiterals extends AbstractFunctionalTest {
 
   @Test
   public void testLiteralsWithColumnInfo() {
-    System.out.println("In testLiteralsWithColumnInfo method");
-
     // Create a new Plan.
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
@@ -1769,14 +1768,21 @@ public class TestOpticOnLiterals extends AbstractFunctionalTest {
     // plans from literals
     ModifyPlan plan1 = p.fromLiterals(literals1);
     ModifyPlan plan2 = p.fromLiterals(literals2);
-    ModifyPlan output = plan1.joinInner(plan2).orderBy(p.asc(p.col("rowId")));
+    ModifyPlan output = plan1.joinInner(plan2); //.orderBy(p.asc(p.col("rowId")));
 
     String colInfo = rowMgr.columnInfoAs(output, String.class);
-    System.out.println("COL: " + colInfo);
-    //System.out.println("In testLiteralsWithColumnInfo method" + colInfo);
-    assertTrue("Element 1 desc value incorrect: " + colInfo, colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"desc\", \"type\":\"string\", \"nullable\":false"));
-    assertTrue("Element 2 colorId value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"colorId\", \"type\":\"integer\", \"nullable\":false}"));
-    assertTrue("Element 3 rowId value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"rowId\", \"type\":\"integer\", \"nullable\":false}"));
-    assertTrue("Element 4 colorDesc value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"colorDesc\", \"type\":\"string\", \"nullable\":false}"));
+    System.out.println(colInfo);
+
+    String expectedType = isML11OrHigher ? "string": "unknown";
+    assertTrue("Element 1 desc value incorrect: " + colInfo,
+        colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"desc\", \"type\":\"" + expectedType + "\", \"nullable\":false"));
+    assertTrue("Element 4 colorDesc value incorrect: " + colInfo,
+        colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"colorDesc\", \"type\":\"" + expectedType + "\", \"nullable\":false}"));
+
+    expectedType = isML11OrHigher ? "integer": "unknown";
+    assertTrue("Element 2 colorId value incorrect: " + colInfo,
+        colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"colorId\", \"type\":\"" + expectedType + "\", \"nullable\":false}"));
+    assertTrue("Element 3 rowId value incorrect: " + colInfo,
+        colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"rowId\", \"type\":\"" + expectedType + "\", \"nullable\":false}"));
   }
 }

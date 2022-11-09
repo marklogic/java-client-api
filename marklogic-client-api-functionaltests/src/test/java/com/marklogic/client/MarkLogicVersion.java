@@ -14,6 +14,7 @@ public class MarkLogicVersion {
     private int major;
     private Integer minor;
     private boolean nightly;
+    private String versionString;
 
     private final static String VERSION_WITH_PATCH_PATTERN = "^.*-(.+)\\..*";
 
@@ -23,6 +24,7 @@ public class MarkLogicVersion {
     }
 
     public MarkLogicVersion(String version) {
+        this.versionString = version;
         int major = Integer.parseInt(version.replaceAll("([^.]+)\\..*", "$1"));
         final String nightlyPattern = "[^-]+-(\\d{4})(\\d{2})(\\d{2})";
         final String majorWithMinorPattern = "^.*-(.+)$";
@@ -55,5 +57,9 @@ public class MarkLogicVersion {
 
     public boolean isNightly() {
         return nightly;
+    }
+
+    public String getVersionString() {
+        return versionString;
     }
 }
