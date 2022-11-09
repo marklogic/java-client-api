@@ -199,7 +199,6 @@ public class TestSandBox extends BasicJavaClientREST {
         false, "reject");
     // Enable triple index.
     enableTripleIndex(dbName);
-    waitForServerRestart();
     enableTrailingWildcardSearches(dbName);
     // Enable collection lexicon.
     enableCollectionLexicon(dbName);

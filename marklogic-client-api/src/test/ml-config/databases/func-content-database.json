@@ -7,9 +7,41 @@
   "maintain-last-modified": false,
   "range-element-index": [
     {
+      "scalar-type": "date",
+      "namespace-uri": "http://purl.org/dc/elements/1.1/",
+      "localname": "date",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
       "scalar-type": "string",
       "namespace-uri": "",
       "localname": "city",
+      "collation": "http://marklogic.com/collation/",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "decimal",
+      "namespace-uri": "http://test.aggr.com",
+      "localname": "score",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "int",
+      "namespace-uri": "http://test.tups.com",
+      "localname": "rate",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "string",
+      "namespace-uri": "",
+      "localname": "title",
       "collation": "http://marklogic.com/collation/",
       "range-value-positions": false,
       "invalid-values": "reject"
@@ -63,10 +95,26 @@
       "invalid-values": "reject"
     },
     {
+      "scalar-type": "long",
+      "namespace-uri": "",
+      "localname": "inventory",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "ignore"
+    },
+    {
       "scalar-type": "int",
       "namespace-uri": "",
       "localname": "id",
       "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "string",
+      "namespace-uri": "",
+      "localname": "animal",
+      "collation": "http://marklogic.com/collation/",
       "range-value-positions": false,
       "invalid-values": "reject"
     }
@@ -86,6 +134,70 @@
       "point-format": "point",
       "range-value-positions": false,
       "invalid-values": "reject"
+    }
+  ],
+  "range-path-index": [
+    {
+      "scalar-type": "string",
+      "path-expression": "com.marklogic.client.functionaltest.Artifact/name",
+      "collation": "http://marklogic.com/collation/",
+      "range-value-positions": false,
+      "invalid-values": "ignore"
+    },
+    {
+      "scalar-type": "string",
+      "path-expression": "com.marklogic.client.functionaltest.Artifact/manufacturer/com.marklogic.client.functionaltest.Company/name",
+      "collation": "http://marklogic.com/collation/",
+      "range-value-positions": false,
+      "invalid-values": "ignore"
+    },
+    {
+      "scalar-type": "long",
+      "path-expression": "com.marklogic.client.functionaltest.Artifact/inventory",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "dateTime",
+      "path-expression": "com.marklogic.client.functionaltest.ArtifactIndexedOnCalendar/expiryDate",
+      "collation": "",
+      "range-value-positions": true,
+      "invalid-values": "reject"
+    }
+  ],
+  "range-element-attribute-index": [
+    {
+      "scalar-type": "decimal",
+      "parent-namespace-uri": "http://cloudbank.com",
+      "parent-localname": "price",
+      "namespace-uri": "",
+      "localname": "amt",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    }
+  ],
+  "geospatial-path-index": [
+    {
+      "path-expression": "com.marklogic.client.functionaltest.GeoCompany/latlongPoint",
+      "coordinate-system": "wgs84",
+      "point-format": "point",
+      "range-value-positions": "false",
+      "invalid-values": "ignore"
+    }
+  ],
+  "geospatial-element-pair-index": [
+    {
+      "parent-namespace-uri": "",
+      "parent-localname": "com.marklogic.client.functionaltest.GeoCompany",
+      "latitude-namespace-uri": "",
+      "latitude-localname": "latitude",
+      "longitude-namespace-uri": "",
+      "longitude-localname": "longitude",
+      "coordinate-system": "wgs84",
+      "range-value-positions": "false",
+      "invalid-values": "ignore"
     }
   ]
 }

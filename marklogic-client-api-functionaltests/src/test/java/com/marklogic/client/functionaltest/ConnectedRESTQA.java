@@ -476,7 +476,7 @@ public abstract class ConnectedRESTQA {
 			boolean attachRestContextDB) throws Exception {
 		createDB(dbName);
 		createForest(fName, dbName);
-		Thread.sleep(1500);
+//		Thread.sleep(1500);
 		if (attachRestContextDB) {
 			assocRESTServer(restServerName, dbName, restPort);
 		} else {
@@ -771,7 +771,7 @@ public abstract class ConnectedRESTQA {
 					.build();
 			Response response = client.newCall(request).execute();
 			if (response.code() == ML_RES_CHANGED) {
-				Thread.sleep(3500);
+//				Thread.sleep(3500);
 				System.out.println("User " + usrName + " deleted");
 				System.out.println(response.body().string());
 			}
@@ -799,7 +799,7 @@ public abstract class ConnectedRESTQA {
 					.build();
 			Response response = client.newCall(request).execute();
 			if (response.code() == ML_RES_CHANGED) {
-				Thread.sleep(3500);
+//				Thread.sleep(3500);
 				System.out.println("Role " + roleName + " deleted");
 				System.out.println(response.body().string());
 			}
@@ -808,76 +808,6 @@ public abstract class ConnectedRESTQA {
 				System.out.println("Response from role deletion is: " + response);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
-	}
-
-	public static void setupJavaRESTServerWithDB(String restServerName, int restPort) throws Exception {
-		loadGradleProperties();
-		createRESTServerWithDB(restServerName, restPort);
-		createRESTUser("rest-admin", "x", "rest-admin");
-		createRESTUser("rest-writer", "x", "rest-writer");
-		createRESTUser("rest-reader", "x", "rest-reader");
-	}
-
-	/*
-	 * This function deletes the REST appserver along with attached content
-	 * database and module database
-	 */
-	public static void deleteRESTServerWithDB(String restServerName) {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String deleteUrl = new String("http://" + host_name + ":" + admin_port + "/v1/rest-apis/"
-					+ restServerName + "?include=content&include=modules");
-
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(deleteUrl)
-					.delete()
-					.build();
-			Response response = client.newCall(request).execute();
-			if (response.code() == ML_RES_SRVRDELETE) {
-				Thread.sleep(9500);
-				System.out.println("Server " + restServerName + " deleted");
-				//System.out.println(response.body().string());
-			}
-			else {
-				System.out.println("Server " + restServerName + " deletion has issues");
-				System.out.println("Response from server deletion is: " + response);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
-	}
-
-	public static void deleteRESTServer(String restServerName) {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String deleteUrl = new String(
-					"http://" + host_name + ":" + admin_port + "/v1/rest-apis/" + restServerName + "&include=modules");
-
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(deleteUrl)
-					.delete()
-					.build();
-			Response response = client.newCall(request).execute();
-
-			if (response.code() == ML_RES_SRVRDELETE) {
-				Thread.sleep(3500);
-				waitForServerRestart();
-			} else {
-				Thread.sleep(3500);
-				System.out.println("Server response " + response.body().string());
-			}
-		} catch (Exception e) {
-			System.out.println("Inside Deleting Rest server is throwing an error");
 			e.printStackTrace();
 		} finally {
 			client = null;
@@ -1034,41 +964,6 @@ public abstract class ConnectedRESTQA {
 		}
 	}
 
-	public static void waitForServerRestart() {
-		OkHttpClient client = createManageAdminClient("admin", "admin");;
-		try {
-			int count = 0;
-			while (count < 20) {
-				count++;
-				try {
-					String getrequestUrl = new String("http://" + host_name + ":8001/admin/v1/timestamp");
-					Request requestGet = new Request.Builder()
-							.header("Content-type", "application/json")
-							.url(getrequestUrl)
-							.build();
-					Response responseGet = client.newCall(requestGet).execute();
-
-					if (responseGet.code() == 503) {
-						Thread.sleep(5000);
-					} else if (responseGet.code() == 200) {
-						break;
-					} else {
-						System.out.println("Waiting for response from server, Trial :"
-								+ responseGet.code() + count);
-						Thread.sleep(6000);
-					}
-				} catch (Exception e) {
-					Thread.sleep(6000);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println("Inside wait for server restart is throwing an error");
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
-	}
-
 	public static void logTestMessages(String txt, long before) {
 		/*
 		 * Calendar cal = Calendar.getInstance(); long after
@@ -1121,17 +1016,6 @@ public abstract class ConnectedRESTQA {
 		logTestMessages("DELETE-DB", before);
 
 		logTestMessages(" Ending TESTCASE TEARDOWN ", beforeTeardown);
-	}
-
-	// This function deletes rest server along with default forest and database
-	public static void tearDownJavaRESTServerWithDB(String restServerName) throws Exception {
-		try {
-			deleteRESTServerWithDB(restServerName);
-			waitForServerRestart();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		Thread.sleep(6000);
 	}
 
 	// Setting up AppServices configurations setting up database properties whose value is string
@@ -2085,7 +1969,7 @@ public abstract class ConnectedRESTQA {
 				.build();
 		Response response = client.newCall(request).execute();
 		if (response.code() == ML_RES_CHANGED) {
-			Thread.sleep(3500);
+//			Thread.sleep(3500);
 			System.out.println("collection " + collectionName + " deleted");
 			System.out.println(response.body().string());
 		}
@@ -2254,11 +2138,11 @@ public abstract class ConnectedRESTQA {
 		KeyStore keyStore = KeyStore.getInstance("PKCS12");
 		Properties property = new Properties();
 		InputStream keyInput = property.getClass().getResourceAsStream(mlCertFile);
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			Thread.sleep(2000);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
 
 		try {
 			keyStore.load(keyInput, ml_certificate_password.toCharArray());

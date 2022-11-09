@@ -113,14 +113,6 @@ import com.marklogic.client.io.marker.GenericWriteHandle;
 
 public abstract class BasicJavaClientREST extends ConnectedRESTQA
 {
-  protected static String checkDoc =
-      "xquery version '1.0-ml';\n" +
-          "fn:doc('/bar/test/myBar.txt')";
-
-  public BasicJavaClientREST() {
-
-  }
-
   /**
    * Write document using InputStreamHandle
    * 
@@ -183,29 +175,6 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
     // write doc
     docMgr.write(docId, metadataHandle, contentHandle);
-
-    System.out.println("Write " + docId + " to database");
-  }
-
-  public void writeDocumentUsingInputStreamHandle(DatabaseClient client, String filename, String uri, Transaction transaction, String type) throws FileNotFoundException
-  {
-    // create doc manager
-    DocumentManager docMgr = null;
-    docMgr = documentManagerSelector(client, docMgr, type);
-
-    // create handle
-    InputStreamHandle contentHandle = new InputStreamHandle();
-
-    // get the file
-    InputStream inputStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
-
-    // set uri
-    String docId = uri + filename;
-
-    contentHandle.set(inputStream);
-
-    // write doc
-    docMgr.write(docId, contentHandle, transaction);
 
     System.out.println("Write " + docId + " to database");
   }
@@ -921,34 +890,6 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
   }
 
   /**
-   * Read document using JAXBHandle
-   * 
-   * @param client
-   * @param uri
-   * @param type
-   * @return
-   * @throws JAXBException
-   */
-  public JAXBHandle readDocumentUsingJAXBHandle(DatabaseClient client, String uri, String type) throws JAXBException
-  {
-    // create doc manager
-    DocumentManager docMgr = null;
-    docMgr = documentManagerSelector(client, docMgr, type);
-
-    // create handle
-    JAXBContext con = JAXBContext.newInstance(Product.class);
-    JAXBHandle contentHandle = new JAXBHandle(con);
-
-    // create doc id
-    String readDocId = uri;
-    System.out.println("Read " + readDocId + " from database");
-
-    docMgr.read(readDocId, contentHandle);
-
-    return contentHandle;
-  }
-
-  /**
    * Read document using StringHandle
    * 
    * @param client
@@ -1125,7 +1066,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
   /**
    * get Binary Size From Byte
    * 
-   * @param binaryFileInByte
+   * @param fileRead
    * @throws IOException
    */
   public int getBinarySizeFromByte(byte[] fileRead) throws IOException, IndexOutOfBoundsException
@@ -1513,40 +1454,6 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
   }
 
   /**
-   * Return search report based on element names
-   * 
-   * @param resultDoc
-   * @param tagNames
-   */
-  public String returnSearchReport(Document resultDoc, String[] tagNames)
-  {
-    String sConcat = "<result>";
-    Element root = resultDoc.getDocumentElement();
-    NodeList searchResultNodeList = root.getElementsByTagName("search:result");
-    for (int i = 0; i < searchResultNodeList.getLength(); i++)
-    {
-      Element attributeElement = (Element) searchResultNodeList.item(i);
-      String attributeValue = attributeElement.getAttribute("uri");
-
-      sConcat = sConcat + "<item uri='" + attributeValue + "'>";
-      for (String tagName : tagNames)
-      {
-        NodeList elementNodeList = root.getElementsByTagName(tagName);
-        Node elementNode = elementNodeList.item(i);
-        String elementValue = elementNode.getTextContent();
-        sConcat = sConcat + "<" + tagName + ">" + elementValue + "</" + tagName + ">";
-      }
-      sConcat = sConcat + "</item>";
-    }
-    NodeList searchReportList = root.getElementsByTagName("search:report");
-    Node searchReportNode = searchReportList.item(0);
-    String searchReportValue = searchReportNode.getTextContent();
-    sConcat = sConcat + "<search:report>" + searchReportValue + "</search:report></result>";
-
-    return sConcat;
-  }
-
-  /**
    * Get the expected XML document
    * 
    * @param filename
@@ -1579,42 +1486,6 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
     JsonFactory jfactory = new JsonFactory();
     JsonParser jParser = jfactory.createJsonParser(new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename));
     JsonNode expectedDoc = mapper.readTree(jParser);
-    return expectedDoc;
-  }
-
-  /**
-   * Get the expected JSON query option
-   * 
-   * @param filename
-   * @return
-   * @throws JsonParseException
-   * @throws IOException
-   */
-  public JsonNode expectedJSONQueryOption(String filename) throws JsonParseException, IOException
-  {
-    // get json document for expected result
-    ObjectMapper mapper = new ObjectMapper();
-    JsonFactory jfactory = new JsonFactory();
-    JsonParser jParser = jfactory.createJsonParser(new File("src/test/java/com/marklogic/client/functionaltest/queryoptions/" + filename));
-    JsonNode expectedDoc = mapper.readTree(jParser);
-    return expectedDoc;
-  }
-
-  /**
-   * Get the expected xml key
-   * 
-   * @param filename
-   * @return
-   * @throws ParserConfigurationException
-   * @throws SAXException
-   * @throws IOException
-   */
-  public Document expectedXMLKey(String filename) throws ParserConfigurationException, SAXException, IOException
-  {
-    // get xml document for expected result
-    DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
-    DocumentBuilder docBuilder = dbfac.newDocumentBuilder();
-    Document expectedDoc = docBuilder.parse(new File("src/test/java/com/marklogic/client/functionaltest/keys/" + filename));
     return expectedDoc;
   }
 
@@ -1658,31 +1529,9 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
   }
 
   /**
-   * Convert XMLEventReader To String
-   * 
-   * @param XMLEventReader
-   * @return String
-   * @throws XMLStreamException
-   *           , TransformerException, IOException,
-   *           ParserConfigurationException, SAXException
-   */
-
-  public String convertXMLEventReaderToString(XMLEventReader fileRead) throws IOException, TransformerException, XMLStreamException
-  {
-    // BufferedReader br = (BufferedReader) fileRead;
-    String readContent = "";
-    String line = null;
-    while (fileRead.hasNext())
-      readContent = readContent + fileRead.next();
-
-    return readContent;
-
-  }
-
-  /**
    * Convert XMLStreamReader To String
    * 
-   * @param XMLStreamReader
+   * @param reader
    * @return String
    * @throws XMLStreamException
    *           , TransformerException, IOException,
@@ -1719,13 +1568,6 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
     return output;
   }
 
-  // public String convertJAXBToString(JAXB readfile) throws JAXBException{
-  // String xml = null;
-  // readfile.marshal(readfile, xml);
-  // System.out.println(xml);
-  // return xml;
-  //
-  // }
   /**
    * Convert inputstream to string. Used on InputStreamHandle
    * 
@@ -1770,12 +1612,12 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
   /**
    * Convert source to string. Used on SourceHandle
    * 
-   * @param fileRead
+   * @param reader
    * @return
    * @throws IOException
    * @throws TransformerException
    */
-  public String convertSourceToString(Source reader) throws IOException, TransformerException
+  public String convertSourceToString(Source reader) throws TransformerException
   {
     StringWriter stringWriter = new StringWriter();
     Result result = new StreamResult(stringWriter);
