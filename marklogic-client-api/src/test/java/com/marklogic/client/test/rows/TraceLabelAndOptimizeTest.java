@@ -2,6 +2,7 @@ package com.marklogic.client.test.rows;
 
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.row.RowRecord;
+import com.marklogic.client.test.Common;
 import org.junit.Test;
 
 import java.util.List;
@@ -17,6 +18,10 @@ public class TraceLabelAndOptimizeTest extends AbstractOpticUpdateTest {
 
     @Test
     public void validTraceLabelAndOptimize() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
         rowManager.setOptimize(1);
         rowManager.setTraceLabel("test");
 
@@ -27,6 +32,10 @@ public class TraceLabelAndOptimizeTest extends AbstractOpticUpdateTest {
 
     @Test
     public void optimizeLessThanZeroWithExecute() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
         rowManager.setOptimize(-1);
         FailedRequestException ex = assertThrows(
             FailedRequestException.class,
@@ -40,6 +49,10 @@ public class TraceLabelAndOptimizeTest extends AbstractOpticUpdateTest {
 
     @Test
     public void optimizeLessThanZeroWithResultRows() {
+        if (!Common.markLogicIsVersion11OrHigher()) {
+            return;
+        }
+
         rowManager.setOptimize(-1);
         FailedRequestException ex = assertThrows(
             FailedRequestException.class,

@@ -42,7 +42,9 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
         // for "slow" tests that setup a new app server, and one for "fast" tests that use the deployed one
         original_http_port = http_port;
         http_port = fast_http_port;
-        isML11OrHigher = MarkLogicVersion.getMarkLogicVersion(connectAsAdmin()).getMajor() >= 11;
+        MarkLogicVersion version = MarkLogicVersion.getMarkLogicVersion(connectAsAdmin());
+        System.out.println("ML version: " + version.getVersionString());
+        isML11OrHigher = version.getMajor() >= 11;
         final String schemasDbName = "java-functest-schemas";
         final String modulesDbName = "java-unittest-modules";
         if (IsSecurityEnabled()) {
