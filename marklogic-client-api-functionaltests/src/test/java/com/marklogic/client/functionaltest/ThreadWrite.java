@@ -28,7 +28,7 @@ import com.marklogic.client.io.FileHandle;
 
 public class ThreadWrite extends BasicJavaClientREST implements Runnable {
 
-  String msg;
+  public String msg;
 
   public void run()
   {
@@ -50,7 +50,7 @@ public class ThreadWrite extends BasicJavaClientREST implements Runnable {
         docMgr.write(docId, new FileHandle().with(file));
 
         Random rand = new Random();
-        int r = rand.nextInt(2000) + 1000;
+        int r = rand.nextInt(200) + 100;
 
         try {
           Thread.sleep(r);
@@ -66,7 +66,7 @@ public class ThreadWrite extends BasicJavaClientREST implements Runnable {
     }
   }
 
-  ThreadWrite(String mg)
+  public ThreadWrite(String mg)
   {
     msg = mg;
   }

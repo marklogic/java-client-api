@@ -46,9 +46,20 @@ import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class TestPOJOQueryBuilderValueQuery extends AbstractFunctionalTest {
 
+  @BeforeClass
+  public static void beforeClass() {
+    setDatabaseProperties(DB_NAME, "trailing-wildcard-searches", false);
+  }
+
+  @AfterClass
+  public static void afterClass() {
+    setDatabaseProperties(DB_NAME, "trailing-wildcard-searches", true);
+  }
+
   @Before
   public void setUp() throws Exception {
     client = getDatabaseClient("rest-admin", "x", getConnType());
+
   }
 
   public Artifact getArtifact(int counter) {
@@ -389,6 +400,7 @@ public class TestPOJOQueryBuilderValueQuery extends AbstractFunctionalTest {
     p = products.search(qd, 1, jh);
 
     JsonNode nodePos = jh.get();
+    System.out.println(nodePos);
     // Return 1 node - constraint2.xml
     assertEquals("Number of results returned incorrect in response", "1", nodePos.path("total").asText());
     assertEquals("Result returned incorrect in response", "com.marklogic.client.functionaltest.Artifact/101.json", nodePos.path("results").get(0).path("uri").asText());

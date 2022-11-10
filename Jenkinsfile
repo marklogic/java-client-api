@@ -33,7 +33,7 @@ def runtests(String type, String version){
                 export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
                 export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
                 cd java-client-api
-                ./gradlew marklogic-client-api-functionaltests:test --tests "com.marklogic.client.fastfunctest.*" || true
+                ./gradlew marklogic-client-api-functionaltests:test || true
             '''
             sh label:'post-test-process', script: '''
                 cd $WORKSPACE/java-client-api/marklogic-client-api/build/test-results/test/
@@ -81,7 +81,7 @@ pipeline{
           export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
           cd java-client-api
           ./gradlew marklogic-client-api:test  || true
-          ./gradlew marklogic-client-api-functionaltests:test --tests "com.marklogic.client.fastfunctest.*" || true
+          ./gradlew marklogic-client-api-functionaltests:test --tests "com.marklogic.client.converted2.*" || true
         '''
         sh label:'ml development tool test', script: '''#!/bin/bash
           export JAVA_HOME=$JAVA_HOME_DIR
@@ -128,7 +128,7 @@ pipeline{
           export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
           cd java-client-api
           ./gradlew -i mlDeploy -PmlForestDataDirectory=/space
-          ./gradlew marklogic-client-api-functionaltests:test --tests "com.marklogic.client.fastfunctest.*" || true
+          ./gradlew marklogic-client-api-functionaltests:test || true
         '''
         sh '''
             cd $WORKSPACE/java-client-api/marklogic-client-api-functionaltests/build/test-results/test/

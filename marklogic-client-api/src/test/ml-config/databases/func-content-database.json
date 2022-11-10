@@ -5,7 +5,73 @@
   "uri-lexicon": true,
   "collection-lexicon": true,
   "maintain-last-modified": false,
+  "trailing-wildcard-searches": true,
+  "stemmed-searches": "basic",
   "range-element-index": [
+    {
+      "scalar-type": "int",
+      "namespace-uri": "",
+      "localname": "srchNumber",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "date",
+      "namespace-uri": "",
+      "localname": "srchDate",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "int",
+      "namespace-uri": "",
+      "localname": "srchLevel",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "string",
+      "namespace-uri": "",
+      "localname": "srchCity",
+      "collation": "http://marklogic.com/collation/",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "string",
+      "namespace-uri": "http://action/",
+      "localname": "title",
+      "collation": "http://marklogic.com/collation/",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "string",
+      "namespace-uri": "http://noun/",
+      "localname": "title",
+      "collation": "http://marklogic.com/collation/",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "decimal",
+      "namespace-uri": "http://example.com",
+      "localname": "rating",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "int",
+      "namespace-uri": "http://example.com",
+      "localname": "scoville",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
     {
       "scalar-type": "date",
       "namespace-uri": "http://purl.org/dc/elements/1.1/",
@@ -71,6 +137,30 @@
       "invalid-values": "reject"
     },
     {
+      "scalar-type": "dateTime",
+      "namespace-uri": "",
+      "localname": "bday",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "int",
+      "namespace-uri": "",
+      "localname": "height1",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "date",
+      "namespace-uri": "",
+      "localname": "height2",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
       "scalar-type": "string",
       "namespace-uri": "",
       "localname": "cityName",
@@ -108,7 +198,7 @@
       "localname": "id",
       "collation": "",
       "range-value-positions": false,
-      "invalid-values": "reject"
+      "invalid-values": "ignore"
     },
     {
       "scalar-type": "string",
@@ -137,6 +227,34 @@
     }
   ],
   "range-path-index": [
+    {
+      "scalar-type": "string",
+      "path-expression": "/Employee/fn",
+      "collation": "http://marklogic.com/collation/",
+      "range-value-positions": false,
+      "invalid-values": "ignore"
+    },
+    {
+      "scalar-type": "int",
+      "path-expression": "/root/popularity",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "ignore"
+    },
+    {
+      "scalar-type": "decimal",
+      "path-expression": "//@amt",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "ignore"
+    },
+    {
+      "scalar-type": "string",
+      "path-expression": "/doc/name",
+      "collation": "http://marklogic.com/collation/",
+      "range-value-positions": false,
+      "invalid-values": "ignore"
+    },
     {
       "scalar-type": "string",
       "path-expression": "com.marklogic.client.functionaltest.Artifact/name",
@@ -176,6 +294,16 @@
       "collation": "",
       "range-value-positions": false,
       "invalid-values": "reject"
+    },
+    {
+      "scalar-type": "dateTime",
+      "parent-namespace-uri": "http://example.com",
+      "parent-localname": "entry",
+      "namespace-uri": "",
+      "localname": "date",
+      "collation": "",
+      "range-value-positions": false,
+      "invalid-values": "reject"
     }
   ],
   "geospatial-path-index": [
@@ -187,6 +315,106 @@
       "invalid-values": "ignore"
     }
   ],
+  "field": [
+    {
+      "field-name": "",
+      "include-root": true
+    },
+    {
+      "field-name": "pop",
+      "include-root": false,
+      "included-element": [
+        {
+          "namespace-uri": "",
+          "localname": "popularity",
+          "weight": 2,
+          "attribute-namespace-uri": "",
+          "attribute-localname": "",
+          "attribute-value": ""
+        }
+      ]
+    },
+    {
+      "field-name": "para",
+      "include-root": false,
+      "included-element": [
+        {
+          "namespace-uri": "",
+          "localname": "p",
+          "weight": 5,
+          "attribute-namespace-uri": "",
+          "attribute-localname": "",
+          "attribute-value": ""
+        }
+      ]
+    },
+    {
+      "field-name": "description",
+      "include-root": true,
+      "included-element": [
+        {
+          "namespace-uri": "",
+          "localname": "description",
+          "weight": 1,
+          "attribute-namespace-uri": "",
+          "attribute-localname": "",
+          "attribute-value": ""
+        }
+      ]
+    },
+    {
+      "field-name": "bbqtext",
+      "include-root": true,
+      "included-element": [
+        {
+          "namespace-uri": "http://example.com",
+          "localname": "title",
+          "weight": 1,
+          "attribute-namespace-uri": "",
+          "attribute-localname": "",
+          "attribute-value": ""
+        },
+        {
+          "namespace-uri": "http://example.com",
+          "localname": "abstract",
+          "weight": 1,
+          "attribute-namespace-uri": "",
+          "attribute-localname": "",
+          "attribute-value": ""
+        }
+      ]
+    }
+  ],
+  "geospatial-element-index": [
+    {
+      "namespace-uri": "",
+      "localname": "latLonPoint",
+      "coordinate-system": "wgs84",
+      "point-format": "point",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    },
+    {
+      "namespace-uri": "",
+      "localname": "g-elem-point",
+      "coordinate-system": "wgs84",
+      "point-format": "point",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    }
+  ],
+  "geospatial-element-child-index": [
+    {
+      "parent-namespace-uri": "",
+      "parent-localname": "g-elem-child-parent",
+      "namespace-uri": "",
+      "localname": "g-elem-child-point",
+      "coordinate-system": "wgs84",
+      "point-format": "point",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    }
+  ],
   "geospatial-element-pair-index": [
     {
       "parent-namespace-uri": "",
@@ -196,8 +424,85 @@
       "longitude-namespace-uri": "",
       "longitude-localname": "longitude",
       "coordinate-system": "wgs84",
-      "range-value-positions": "false",
+      "range-value-positions": false,
       "invalid-values": "ignore"
+    },
+    {
+      "parent-namespace-uri": "",
+      "parent-localname": "g-elem-pair",
+      "latitude-namespace-uri": "",
+      "latitude-localname": "lat",
+      "longitude-namespace-uri": "",
+      "longitude-localname": "long",
+      "coordinate-system": "wgs84",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    }
+  ],
+  "geospatial-element-attribute-pair-index": [
+    {
+      "parent-namespace-uri": "",
+      "parent-localname": "g-attr-pair",
+      "latitude-namespace-uri": "",
+      "latitude-localname": "lat",
+      "longitude-namespace-uri": "",
+      "longitude-localname": "long",
+      "coordinate-system": "wgs84",
+      "range-value-positions": false,
+      "invalid-values": "reject"
+    }
+  ],
+  "geospatial-path-index": [
+    {
+      "path-expression": "com.marklogic.client.functionaltest.GeoCompany/latlongPoint",
+      "coordinate-system": "wgs84",
+      "point-format": "point",
+      "range-value-positions": false,
+      "invalid-values": "ignore"
+    },
+    {
+      "path-expression": "/doc/g-elem-point",
+      "coordinate-system": "wgs84",
+      "point-format": "point",
+      "range-value-positions": false,
+      "invalid-values": "ignore"
+    }
+  ],
+  "geospatial-region-path-index": [
+    {
+      "path-expression": "/root/item/linestring",
+      "coordinate-system": "wgs84/double",
+      "units": "miles",
+      "geohash-precision": 2,
+      "invalid-values": "reject"
+    },
+    {
+      "path-expression": "/root/item/point",
+      "coordinate-system": "wgs84",
+      "units": "miles",
+      "geohash-precision": 2,
+      "invalid-values": "reject"
+    },
+    {
+      "path-expression": "/root/item/circle",
+      "coordinate-system": "wgs84/double",
+      "units": "miles",
+      "geohash-precision": 2,
+      "invalid-values": "reject"
+    },
+    {
+      "path-expression": "/root/item/box",
+      "coordinate-system": "wgs84/double",
+      "units": "miles",
+      "geohash-precision": 2,
+      "invalid-values": "reject"
+    },
+    {
+      "path-expression": "/root/item/polygon",
+      "coordinate-system": "wgs84",
+      "units": "miles",
+      "geohash-precision": 3,
+      "invalid-values": "reject"
     }
   ]
 }

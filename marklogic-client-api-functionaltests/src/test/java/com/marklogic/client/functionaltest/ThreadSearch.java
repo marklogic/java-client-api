@@ -28,9 +28,9 @@ import com.marklogic.client.query.StringQueryDefinition;
 
 public class ThreadSearch extends BasicJavaClientREST implements Runnable {
 
-  String msg;
-  long totalResultsArray[] = new long[10];
-  long totalAllResults = 0;
+  public String msg;
+  public long totalResultsArray[] = new long[10];
+  public long totalAllResults = 0;
 
   public void run()
   {
@@ -63,7 +63,7 @@ public class ThreadSearch extends BasicJavaClientREST implements Runnable {
         totalAllResults = totalAllResults + totalResults;
 
         Random rand = new Random();
-        int r = rand.nextInt(3000) + 1000;
+        int r = rand.nextInt(200) + 100;
 
         try {
           Thread.sleep(r);
@@ -79,7 +79,7 @@ public class ThreadSearch extends BasicJavaClientREST implements Runnable {
     }
   }
 
-  ThreadSearch(String mg)
+  public ThreadSearch(String mg)
   {
     msg = mg;
   }
