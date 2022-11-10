@@ -66,6 +66,7 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
   @BeforeClass
   public static void setUp() throws Exception
   {
+    removeFieldIndices();
     // Install the TDE templates
     // loadFileToDB(client, filename, docURI, collection, document format)
     loadFileToDB(schemasClient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[] { "http://marklogic.com/xdmp/tde" });
@@ -93,6 +94,11 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     loadFileToDB(client, "city3.json", "/optic/lexicon/test/city3.json", "JSON", new String[] { "/optic/lexicon/test" });
     loadFileToDB(client, "city4.json", "/optic/lexicon/test/city4.json", "JSON", new String[] { "/optic/lexicon/test" });
     loadFileToDB(client, "city5.json", "/optic/lexicon/test/city5.json", "JSON", new String[] { "/optic/lexicon/test" });
+  }
+
+  @AfterClass
+  public static void tearDown() {
+    restoreFieldIndices();
   }
 
   @Test

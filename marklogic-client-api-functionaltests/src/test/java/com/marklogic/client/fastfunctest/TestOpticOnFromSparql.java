@@ -20,12 +20,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
-import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.RDFMimeTypes;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,14 +47,18 @@ public class TestOpticOnFromSparql extends AbstractFunctionalTest {
   private JsonNode jsonBindingsNodes;
   private JsonNode node;
 
-  
-@BeforeClass
-  public static void setUp() throws Exception
-  {
-    loadGraphToDB(client, "people.ttl", "/optic/sparql/test/people.ttl");
-    loadGraphToDB(client, "companies_100.ttl", "/optic/sparql/test/companies.ttl");
-  }
-  
+    @BeforeClass
+    public static void setUp() throws Exception {
+        removeFieldIndices();
+        loadGraphToDB(client, "people.ttl", "/optic/sparql/test/people.ttl");
+        loadGraphToDB(client, "companies_100.ttl", "/optic/sparql/test/companies.ttl");
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        restoreFieldIndices();
+    }
+
   @Before
   public void setUpBeforTest() {
 
