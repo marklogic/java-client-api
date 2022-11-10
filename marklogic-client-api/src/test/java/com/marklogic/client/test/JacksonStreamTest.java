@@ -24,6 +24,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -49,8 +50,14 @@ public class JacksonStreamTest {
   public static void beforeClass() {
     Common.connect();
     docMgr = Common.client.newJSONDocumentManager();
-    setup();
+
   }
+
+  @Before
+  public void beforeTest() {
+    docMgr.write(ORDER_URI, new ReaderHandle(Common.testFileToReader(ORDER_FILE)));
+  }
+
   @AfterClass
   public static void afterClass() {
     cleanUp();
@@ -220,11 +227,6 @@ public class JacksonStreamTest {
     assertEquals("readTree1 does not match writeTree", writeTree, readTree1);
     assertEquals("readTree2 does not match writeTree", writeTree, readTree2);
     assertEquals("readTree3 does not match writeTree", writeTree, readTree3);
-  }
-
-  private static void setup() {
-    ReaderHandle handle = new ReaderHandle(Common.testFileToReader(ORDER_FILE));
-    docMgr.write(ORDER_URI, handle);
   }
 
   private static void cleanUp() {

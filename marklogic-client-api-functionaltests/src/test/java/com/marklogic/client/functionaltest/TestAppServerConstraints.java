@@ -16,8 +16,8 @@
 
 package com.marklogic.client.functionaltest;
 
-import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.SearchHandle;
@@ -28,7 +28,6 @@ import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
@@ -45,39 +44,17 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXpathNotExists;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class TestAppServerConstraints extends BasicJavaClientREST {
-    private static String dbName = "AppServerConstraintDB";
-    private static String[] fNames = { "AppServerConstraintDB-1" };
-
-    private static DatabaseClient client = null;
+public class TestAppServerConstraints extends AbstractFunctionalTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
         System.out.println("In setup");
-        configureRESTServer(dbName, fNames);
-        setupAppServicesConstraint(dbName);
-        setupAppServicesGeoConstraint(dbName);
-        addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
-        addRangeElementIndex(dbName, "decimal", "http://example.com", "rating");
-        addRangeElementIndex(dbName, "int", "http://example.com", "scoville");
-        addRangeElementAttributeIndex(dbName, "dateTime", "http://example.com", "entry", "", "date");
-        addFieldExcludeRoot(dbName, "para");
-        includeElementFieldWithWeight(dbName, "para", "", "p", 5, "", "", "");
-
         client = getDatabaseClient("rest-admin", "x", getConnType());
     }
 
     @After
     public void testCleanUp() throws Exception {
-        clearDB();
-        System.out.println("Running clear script");
-    }
-
-    @AfterClass
-    public static void tearDown() throws Exception {
-        System.out.println("In tear down");
-        client.release();
-        cleanupRESTServer(dbName, fNames);
+        deleteDocuments(connectAsAdmin());
     }
 
     // Begin TestAppServicesAbsRangeConstraint

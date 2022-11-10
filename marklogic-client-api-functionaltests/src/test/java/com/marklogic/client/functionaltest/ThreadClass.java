@@ -58,7 +58,7 @@ public class ThreadClass extends BasicJavaClientREST implements Runnable {
 
   }
 
-  ThreadClass(String mg) {
+  public ThreadClass(String mg) {
     msg = mg;
   }
 }

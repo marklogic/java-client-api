@@ -73,7 +73,6 @@ public abstract class ConnectedRESTQA {
 	private static int PROPERTY_WAIT = 0;
 	private static final int ML_RES_OK = 200;
 	private static final int ML_RES_CREATED = 201;
-	private static final int ML_RES_SRVRDELETE = 202;
 	private static final int ML_RES_CHANGED = 204;
 	private static final int ML_RES_BADREQT = 400;
 	private static final int ML_RES_NOTFND = 404;
@@ -1067,7 +1066,7 @@ public abstract class ConnectedRESTQA {
 		}
 	}
 
-	public static void setDatabaseProperties(String dbName, String prop, boolean propValue) throws IOException {
+	public static void setDatabaseProperties(String dbName, String prop, boolean propValue) {
 		String resGet = null;
 		JsonNode jnode = null;
 		Response responsePut = null;
@@ -1192,11 +1191,6 @@ public abstract class ConnectedRESTQA {
 		setDatabaseProperties(dbName, "triple-index", true);
 	}
 
-	// Set triple-positions to false
-	public static void enableTriplePositions(String dbName) throws Exception {
-		setDatabaseProperties(dbName, "triple-positions", false);
-	}
-
 	public static void enableWordLexicon(String dbName) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode childNode = mapper.createObjectNode();
@@ -1212,10 +1206,6 @@ public abstract class ConnectedRESTQA {
 
 	public static void setMaintainLastModified(String dbName, boolean opt) throws Exception {
 		setDatabaseProperties(dbName, "maintain-last-modified", opt);
-	}
-
-	public static void setAutomaticDirectoryCreation(String dbName, String opt) throws Exception {
-		setDatabaseProperties(dbName, "directory-creation", opt);
 	}
 
 	/*
