@@ -23,6 +23,7 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.type.PlanColumn;
 import com.marklogic.client.type.PlanPrefixer;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -42,6 +43,7 @@ public class TestOpticEnhancements extends AbstractFunctionalTest {
 
   @BeforeClass
   public static void setUp() throws Exception {
+    removeFieldIndices();
   // Install the TDE templates into schemadbName DB
   // loadFileToDB(client, filename, docURI, collection, document format)
   loadFileToDB(schemasClient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[]{"http://marklogic.com/xdmp/tde"});
@@ -191,6 +193,11 @@ public class TestOpticEnhancements extends AbstractFunctionalTest {
     row.put("sales", 750);
     row.put("storeName", "Boston");
     internetSales[3] = row;
+  }
+
+  @AfterClass
+  public static void teardown() {
+    restoreFieldIndices();
   }
 
   @Test

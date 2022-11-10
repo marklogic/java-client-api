@@ -1,5 +1,9 @@
 package com.marklogic.client.fastfunctest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.MarkLogicVersion;
@@ -8,6 +12,9 @@ import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
+import com.marklogic.mgmt.ManageClient;
+import com.marklogic.mgmt.ManageConfig;
+import com.marklogic.mgmt.resource.databases.DatabaseManager;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.xml.sax.SAXException;
@@ -154,5 +161,102 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
     protected static DatabaseClient connectAsAdmin() {
         return DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(),
             new DatabaseClientFactory.DigestAuthContext(getAdminUser(), getAdminPassword()), getConnType());
+    }
+
+    protected static void removeFieldIndices() {
+        ManageClient client = new ManageClient(new ManageConfig(getServer(), 8002, getAdminUser(), getAdminPassword()));
+        ObjectNode config = new ObjectMapper().createObjectNode();
+        config.put("database-name", DB_NAME);
+        config.putArray("field");
+        new DatabaseManager(client).save(config.toString());
+    }
+
+    /**
+     * Temporary patch for tests that use Optic's from-triples, which does not seem happy with the existence of one
+     * or more of these fields. For example, the testRedactNumber test in TestOpticEnhancements fails because 6250 (!)
+     * rows are returned instead of 2.
+     */
+    protected static void restoreFieldIndices() {
+        String json = "[\n" +
+            "    {\n" +
+            "      \"field-name\": \"\",\n" +
+            "      \"include-root\": true\n" +
+            "    },\n" +
+            "    {\n" +
+            "      \"field-name\": \"pop\",\n" +
+            "      \"include-root\": false,\n" +
+            "      \"included-element\": [\n" +
+            "        {\n" +
+            "          \"namespace-uri\": \"\",\n" +
+            "          \"localname\": \"popularity\",\n" +
+            "          \"weight\": 2,\n" +
+            "          \"attribute-namespace-uri\": \"\",\n" +
+            "          \"attribute-localname\": \"\",\n" +
+            "          \"attribute-value\": \"\"\n" +
+            "        }\n" +
+            "      ]\n" +
+            "    },\n" +
+            "    {\n" +
+            "      \"field-name\": \"para\",\n" +
+            "      \"include-root\": false,\n" +
+            "      \"included-element\": [\n" +
+            "        {\n" +
+            "          \"namespace-uri\": \"\",\n" +
+            "          \"localname\": \"p\",\n" +
+            "          \"weight\": 5,\n" +
+            "          \"attribute-namespace-uri\": \"\",\n" +
+            "          \"attribute-localname\": \"\",\n" +
+            "          \"attribute-value\": \"\"\n" +
+            "        }\n" +
+            "      ]\n" +
+            "    },\n" +
+            "    {\n" +
+            "      \"field-name\": \"description\",\n" +
+            "      \"include-root\": true,\n" +
+            "      \"included-element\": [\n" +
+            "        {\n" +
+            "          \"namespace-uri\": \"\",\n" +
+            "          \"localname\": \"description\",\n" +
+            "          \"weight\": 1,\n" +
+            "          \"attribute-namespace-uri\": \"\",\n" +
+            "          \"attribute-localname\": \"\",\n" +
+            "          \"attribute-value\": \"\"\n" +
+            "        }\n" +
+            "      ]\n" +
+            "    },\n" +
+            "    {\n" +
+            "      \"field-name\": \"bbqtext\",\n" +
+            "      \"include-root\": true,\n" +
+            "      \"included-element\": [\n" +
+            "        {\n" +
+            "          \"namespace-uri\": \"http://example.com\",\n" +
+            "          \"localname\": \"title\",\n" +
+            "          \"weight\": 1,\n" +
+            "          \"attribute-namespace-uri\": \"\",\n" +
+            "          \"attribute-localname\": \"\",\n" +
+            "          \"attribute-value\": \"\"\n" +
+            "        },\n" +
+            "        {\n" +
+            "          \"namespace-uri\": \"http://example.com\",\n" +
+            "          \"localname\": \"abstract\",\n" +
+            "          \"weight\": 1,\n" +
+            "          \"attribute-namespace-uri\": \"\",\n" +
+            "          \"attribute-localname\": \"\",\n" +
+            "          \"attribute-value\": \"\"\n" +
+            "        }\n" +
+            "      ]\n" +
+            "    }\n" +
+            "  ]";
+
+        try {
+            ManageClient client = new ManageClient(new ManageConfig(getServer(), 8002, getAdminUser(), getAdminPassword()));
+            JsonNode fieldConfig = new ObjectMapper().readTree(json);
+            ObjectNode config = new ObjectMapper().createObjectNode();
+            config.put("database-name", DB_NAME);
+            config.set("field", fieldConfig);
+            new DatabaseManager(client).save(config.toString());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Unable to restore field config", e);
+        }
     }
 }
