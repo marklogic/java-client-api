@@ -16,50 +16,22 @@
 
 package com.marklogic.client.fastfunctest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Iterator;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
-import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
 import com.marklogic.client.expression.PlanBuilder.Plan;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowManager;
-import com.marklogic.client.type.PlanColumn;
-import com.marklogic.client.type.PlanParamExpr;
-import com.marklogic.client.type.PlanPrefixer;
-import com.marklogic.client.type.PlanSystemColumn;
-import com.marklogic.client.type.PlanTripleOption;
-import com.marklogic.client.type.PlanTriplePatternSeq;
-import com.marklogic.client.type.PlanTriplePositionSeq;
-import com.marklogic.client.type.SemStoreExpr;
+import com.marklogic.client.type.*;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.util.Iterator;
+
+import static org.junit.Assert.*;
 
 public class TestOpticOnTriples extends AbstractFunctionalTest {
 

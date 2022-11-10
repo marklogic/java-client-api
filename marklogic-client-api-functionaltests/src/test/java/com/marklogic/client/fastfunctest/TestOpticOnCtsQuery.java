@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.MarkLogicVersion;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
-import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowManager;

@@ -18,11 +18,9 @@ package com.marklogic.client.fastfunctest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
-import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowManager;
