@@ -78,6 +78,7 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
             return uri;
         }).collect(Collectors.toList());
         assertEquals(uriCountToWrite, persistedUris.size());
+        expectedUris.forEach(uri -> assertTrue("persistedUris does not contain "+uri, persistedUris.contains(uri)));
     }
 
     @Test
@@ -124,6 +125,9 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
             uris.add(rows.next().getString("uri"));
         }
          assertTrue(uris.size() == 4);
+        for(int i=0;i<4;i++){
+            assertTrue("uris does not contain /acme/"+i+".xml",uris.contains("/acme/"+i+".xml"));
+        }
     }
 
     @Test
@@ -248,6 +252,9 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
                 docMgr.read("/acme/doc1.json").next().getContent(new StringHandle()).toString().equals("{\"count\":1, \"total\":2}"));
         assertTrue("Contents for /acme/doc2.json not as expected.",
                 docMgr.read("/acme/doc2.json").next().getContent(new StringHandle()).toString().equals("{\"count\":2, \"total\":3}"));
+
+        assertTrue("/acme/doc1.json is not returned.",expectedUris.contains("/acme/doc1.json"));
+        assertTrue("/acme/doc2.json is not returned.",expectedUris.contains("/acme/doc2.json"));
     }
 
     @Test
@@ -297,5 +304,9 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
 
         assertTrue("Document /acme/doc7.json should not exist",docMgr.exists("/acme/doc7.json") == null);
         assertTrue(expectedUris.size()==4);
+         assertTrue("expectedUris does not contain /acme/doc1.json", expectedUris.contains("/acme/doc1.json"));
+         assertTrue("expectedUris does not contain /acme/doc3.json",expectedUris.contains("/acme/doc3.json"));
+         assertTrue("expectedUris does not contain /acme/doc5.json",expectedUris.contains("/acme/doc5.json"));
+         assertTrue("expectedUris does not contain /acme/doc6.json",expectedUris.contains("/acme/doc6.json"));
     }
 }

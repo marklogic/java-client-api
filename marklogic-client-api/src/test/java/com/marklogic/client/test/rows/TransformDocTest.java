@@ -168,7 +168,6 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
     }
 
     @Test
-    @Ignore("See https://bugtrack.marklogic.com/57987")
     public void multipleJsonDocs() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
