@@ -30,3 +30,6 @@ out
 uriCache.txt
 gradle-local.properties
 bin
+repairXMLFull.xml
+xml-with-props.xml
+

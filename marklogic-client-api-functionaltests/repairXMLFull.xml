@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<repair>
-<p>This is <b>bold and <i>italic</b> within the paragraph.</p>
-<p>This is <b>bold and <i>italic</i></b></u> within the paragraph.</p>
-<p>This is <b>bold and <i>italic</b></i> within the paragraph.</p>
-</repair>
