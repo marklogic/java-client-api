@@ -100,7 +100,7 @@ pipeline{
         junit '**/build/**/TEST*.xml'
       }
       post{
-        failure{
+        unsuccessful{
             script{
                 if(params.regressions){
                     sendMail params.Email,'<h3>Some Tests Failed on Released 11.0 ML Nightly Server Single Node </h3><h4><a href=${JENKINS_URL}/blue/organizations/jenkins/java-client-api-regression/detail/$JOB_BASE_NAME/$BUILD_ID/tests><font color=red>Check the Test Report</font></a></h4><h4><a href=${RUN_DISPLAY_URL}>Check the Pipeline View</a></h4><h4> <a href=${BUILD_URL}/console> Check Console Output Here</a></h4><h4>Please create bugs for the failed regressions and fix them</h4>',false,'${STAGE_NAME} on  develop against ML 11.0-nightly Failed'
@@ -136,7 +136,7 @@ pipeline{
         junit '**/build/**/TEST*.xml'
         }
         post{
-            failure{
+            unsuccessful{
                 sendMail params.Email,'<h3>Some Tests Failed on Released 11.0 ML Nightly Server Single Node </h3><h4><a href=${JENKINS_URL}/blue/organizations/jenkins/java-client-api-regression/detail/$JOB_BASE_NAME/$BUILD_ID/tests><font color=red>Check the Test Report</font></a></h4><h4><a href=${RUN_DISPLAY_URL}>Check the Pipeline View</a></h4><h4> <a href=${BUILD_URL}/console> Check Console Output Here</a></h4><h4>Please create bugs for the failed regressions and fix them</h4>',false,'${STAGE_NAME} on  develop against ML 11.0-nightly Failed'
             }
         }
@@ -153,7 +153,7 @@ pipeline{
             junit '**/build/**/TEST*.xml'
         }
         post{
-            failure{
+            unsuccessful{
                 sendMail params.Email,'<h3>Some Tests Failed on Released 10.0-9.5 ML  Server Single Node </h3><h4><a href=${JENKINS_URL}/blue/organizations/jenkins/java-client-api-regression/detail/$JOB_BASE_NAME/$BUILD_ID/tests><font color=red>Check the Test Report</font></a></h4><h4><a href=${RUN_DISPLAY_URL}>Check the Pipeline View</a></h4><h4> <a href=${BUILD_URL}/console> Check Console Output Here</a></h4><h4>Please create bugs for the failed regressions and fix them</h4>',false,'${STAGE_NAME} on  develop against ML 10.0-9.5 Failed'
             }
         }
