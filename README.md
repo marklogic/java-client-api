@@ -136,12 +136,15 @@ See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for more on contributing to this 
 
 The JUnit tests depend on an [ml-gradle](https://github.com/marklogic-community/ml-gradle) application being deployed. 
 This application contains a number of database and security settings that the tests depend on. 
-The `./marklogic-client-api/gradle.properties` file defines the connection properties for this application; these default 
-to `localhost` and an admin password of `admin`. To override these, create the file `./marklogic-client-api/gradle-local.properties`
+The `./gradle.properties` file defines the connection properties for this application; these default 
+to `localhost` and an admin password of `admin`. To override these, create the file `./gradle-local.properties`
 and add the following (you can override additional properties as necessary):
 
     mlHost=changeme
     mlPassword=changeme
+
+Note that additional properties are defined via `./tests-app/gradle.properties`, though it is not expected that these
+properties will need to be changed. 
 
 The application is then deployed via the following command:
 

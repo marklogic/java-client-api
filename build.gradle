@@ -1,4 +1,19 @@
+// We need the properties plugin to work on both marklogic-client-api and test-app. The 'plugins' Gradle syntax can't be
+// used for that. So we have to add the properties plugin to the buildscript classpath and then apply the properties
+// plugin via subprojects below.
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "net.saliman:gradle-properties-plugin:1.5.2"
+    }
+}
+
 subprojects {
+    apply plugin: "net.saliman.properties"
     apply plugin: 'java'
 
  	tasks.withType(JavaCompile) {
@@ -27,8 +42,5 @@ subprojects {
     	systemProperty "file.encoding", "UTF-8"
         systemProperty "javax.xml.stream.XMLOutputFactory", "com.sun.xml.internal.stream.XMLOutputFactoryImpl"
     }
-}
 
-task gradleWrapper(type: Wrapper) {
-    gradleVersion = '6.7'
 }
