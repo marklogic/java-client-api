@@ -145,9 +145,9 @@ See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for more on contributing to this 
 
 ### Running JUnit Tests
 
-    $ ./gradlew java-client-api:compileTestJava
-    $ ./gradlew testServerInit
-    $ ./gradlew java-client-api:test
+    $ ./gradlew marklogic-client-api:compileTestJava
+    $ ./gradlew marklogic-client-api:testServerInit
+    $ ./gradlew marklogic-client-api:test
 
 ## Support
 The MarkLogic Java Client API is maintained by [MarkLogic](https://www.marklogic.com/) Engineering and is made available under the [Apache 2.0 license](https://github.com/marklogic/java-client-api/blob/master/LICENSE). It is designed for use in production applications with MarkLogic Server. Everyone is encouraged to file bug reports, feature requests, and pull requests through [GitHub](https://github.com/marklogic/java-client-api/issues). This input is critical and will be carefully considered. However, we can’t promise a specific resolution or timeframe for any request. In addition, MarkLogic provides technical support for [release tags](https://github.com/marklogic/java-client-api/releases) of the Java Client API to licensed customers under the terms outlined in the [MarkLogic Technical Support Handbook](http://www.marklogic.com/files/Mark_Logic_Support_Handbook.pdf). Customers with an active maintenance contract can sign up for MarkLogic Technical Support on our [support portal](https://help.marklogic.com/).
