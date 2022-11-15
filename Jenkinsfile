@@ -133,7 +133,7 @@ pipeline{
             cd $WORKSPACE/java-client-api/marklogic-client-api-functionaltests/build/test-results/test/
             sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
         '''
-        junit '**/build/**/marklogic-client-api-functionaltests/**/TEST*.xml'
+        junit '**/marklogic-client-api-functionaltests/**/build/**/TEST*.xml'
         }
         post{
             unsuccessful{
