@@ -1,6 +1,6 @@
 xquery version "1.0-ml";
 
-(: Copyright (c) 2019 MarkLogic Corporation :)
+(: Copyright (c) 2022 MarkLogic Corporation :)
 
 (: An XQuery transform must follow some conventions rigorously:
    *  The transform must be an XQuery library module

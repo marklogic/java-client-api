@@ -1,3 +1,5 @@
+// Copyright (c) 2022 MarkLogic Corporation
+
 plugins {
     id "groovy"
     id 'maven-publish'

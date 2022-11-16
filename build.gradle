@@ -1,3 +1,5 @@
+// Copyright (c) 2022 MarkLogic Corporation
+
 // We need the properties plugin to work on both marklogic-client-api and test-app. The 'plugins' Gradle syntax can't be
 // used for that. So we have to add the properties plugin to the buildscript classpath and then apply the properties
 // plugin via subprojects below.
