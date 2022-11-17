@@ -56,11 +56,8 @@ public class TestJSResourceExtensions extends AbstractFunctionalTest {
       params.add("arg1", docUri);
       params.add("arg2", "Earth");
 
-      // specify the mime type for each expected document returned
-      String[] mimetypes = new String[] { "text/plain" };
-
       // call the service
-      ServiceResultIterator resultItr = getServices().get(params, mimetypes);
+      ServiceResultIterator resultItr = getServices().get(params);
 
       // iterate over the results
       List<String> responses = new ArrayList<>();
@@ -81,12 +78,10 @@ public class TestJSResourceExtensions extends AbstractFunctionalTest {
     public String postJSON(String docUri) {
       RequestParameters params = new RequestParameters();
       params.add("uri", docUri);
-      // specify the mime type for each expected document returned
-      String[] mimetypes = new String[] { "text/plain" };
-      
+
       String input = "{\"array\" : [1,2,3]}";
       // call the service
-      ServiceResultIterator resultItr = getServices().post(params, new StringHandle(input).withFormat(Format.JSON), mimetypes);
+      ServiceResultIterator resultItr = getServices().post(params, new StringHandle(input).withFormat(Format.JSON));
       // iterate over the results
       List<String> responses = new ArrayList<>();
       StringHandle readHandle = new StringHandle();
