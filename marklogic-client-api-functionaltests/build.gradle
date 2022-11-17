@@ -1,3 +1,5 @@
+// Copyright (c) 2022 MarkLogic Corporation
+
 test {
   testLogging{
     events 'started','passed', 'skipped'

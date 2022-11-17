@@ -1,3 +1,5 @@
+// Copyright (c) 2022 MarkLogic Corporation
+
 plugins {
     id 'maven-publish'
     id 'distribution'
@@ -67,7 +69,7 @@ javadoc {
     options.overview = "src/main/javadoc/overview.html"
     options.windowTitle = "$rootProject.describedName $rootProject.version"
     options.docTitle = "$rootProject.describedName $rootProject.version"
-    options.bottom = "Copyright &copy; 2013-2021 MarkLogic Corporation."
+    options.bottom = "Copyright &copy; 2022 MarkLogic Corporation"
     options.links = [ 'http://docs.oracle.com/javase/8/docs/api/' ]
     options.use = true
     if (JavaVersion.current().isJava9Compatible()) {
