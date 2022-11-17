@@ -30,60 +30,20 @@ The Java API supports the following core features of the MarkLogic database:
 *  Call Data Services by means of a Java interface on the client for data functionality 
 implemented by an endpoint on the server.
 
-### What's New in Java Client API 5
-
-As of 5.3, the Java API was compiled with Java 8 and tested on Java 8 through 11.
-
-Features:
-
-*  Splitters for CSV records, for entries in a ZipInputStream, for line-delimited JSON or XML
-records, and for large JSON or XML files for streaming to WriteBatcher.
-*  Support for RowBatcher to make it easy to export rows and documents for a view as modified 
-by a plan - see https://github.com/marklogic/java-client-api/wiki/Row-Batcher for more 
-detail.
-*  Support for Concurrent Bulk IO Data Services to make it easy to implement connectors for dataflow
-frameworks - see https://github.com/marklogic/java-client-api/wiki/Bulk-Data-Services for more 
-detail.
-*  Upgrade of dependencies including OkHttp 4.7.2
-
-### What's New in Java Client API 4
-
-* Optic API - blends relational with NoSQL by providing joins and aggregates over documents
-  * is powered by the new row index and query optimizer
-  * uses row, triple, and/or lexicon lenses
-  * matches the functionality of the Optic API for XQuery and Javascript, but idiomatic for Java
-    developers
-* Data Movement SDK - move large amounts of data into, out of, or within a MarkLogic cluster
-  * WriteBatcher distributes writes across many threads and across the entire MarkLogic cluster
-  * QueryBatcher enables bulk processing or export of matches to a query by distributing the query
-    across many threads and batch processing to listeners
-  * Comes with ApplyTransformListener, DeleteListener, ExportListener, ExportToWriterListener, and
-    UrisToWriterListener
-  * With custom listeners you can easily and efficiently apply your business logic to batches of query
-    matches
-* Kerberos and Client Certificate Authentication
-* Geospatial double precision and queries on region indexes
-* Temporal document enhancements
-  * protect and wipe
-  * more control over version uris
-* Support for document metadata values
-
-See also [CHANGELOG.md](CHANGELOG.md)
-
-### QuickStart
+## QuickStart
 
 To use the API in your maven project, include the following in your pom.xml:
 
     <dependency>
         <groupId>com.marklogic</groupId>
         <artifactId>marklogic-client-api</artifactId>
-        <version>5.2.0</version>
+        <version>6.0.0</version>
     </dependency>
 
 For gradle projects, use gradle 4.x+ and include the following:
 
     dependencies {
-        compile group: 'com.marklogic', name: 'marklogic-client-api', version: '5.3.0'
+        compile "com.marklogic:marklogic-client-api:6.0.0"
     }
 
 Read [The Java API in Five Minutes](http://developer.marklogic.com/try/java/index)
@@ -117,51 +77,6 @@ Files can be verified with the command:
 
     $ gpg marklogic-client-api-5.3.0.jar.asc
 
-
-### Building and Contributing
-
-You can build the API in the same way as any Gradle project on git:
-
-1. Clone the java-client-api repository on your machine.
-2. Choose the appropriate branch (usually develop)
-3. Execute a Gradle build in the directory containing the main project's build.gradle file.
-
-You might want to skip the tests until you have configured a test database and REST server:
-
-    $ ./gradlew build -x test
-
-See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for more on contributing to this github project.
-
-### Running JUnit Tests
-
-The JUnit tests depend on an [ml-gradle](https://github.com/marklogic-community/ml-gradle) application being deployed. 
-This application contains a number of database and security settings that the tests depend on. 
-The `./gradle.properties` file defines the connection properties for this application; these default 
-to `localhost` and an admin password of `admin`. To override these, create the file `./gradle-local.properties`
-and add the following (you can override additional properties as necessary):
-
-    mlHost=changeme
-    mlPassword=changeme
-
-Note that additional properties are defined via `./tests-app/gradle.properties`, though it is not expected that these
-properties will need to be changed. 
-
-The application is then deployed via the following command:
-
-    ./gradlew mlDeploy -i
-
-You can then run the tests, which will use the values of `mlHost` and `mlPassword` for connecting to MarkLogic as an 
-admin user:
-
-    ./gradlew marklogic-client-api:test
-
-Individual tests can be run in the following manner (replace `GraphsTest` with the name of the test class you wish to run):
-
-    ./gradlew marklogic-client-api:test --tests GraphsTest
-
-You can also undeploy the test application if you do not wish to keep it around on your MarkLogic instance:
-
-    ./gradlew mlUndeploy -i -Pconfirm=true
 
 ## Support
 The MarkLogic Java Client API is maintained by [MarkLogic](https://www.marklogic.com/) Engineering and is made available under the [Apache 2.0 license](https://github.com/marklogic/java-client-api/blob/master/LICENSE). It is designed for use in production applications with MarkLogic Server. Everyone is encouraged to file bug reports, feature requests, and pull requests through [GitHub](https://github.com/marklogic/java-client-api/issues). This input is critical and will be carefully considered. However, we can’t promise a specific resolution or timeframe for any request. In addition, MarkLogic provides technical support for [release tags](https://github.com/marklogic/java-client-api/releases) of the Java Client API to licensed customers under the terms outlined in the [MarkLogic Technical Support Handbook](http://www.marklogic.com/files/Mark_Logic_Support_Handbook.pdf). Customers with an active maintenance contract can sign up for MarkLogic Technical Support on our [support portal](https://help.marklogic.com/).
