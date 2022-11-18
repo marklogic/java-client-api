@@ -214,7 +214,7 @@ public interface XdmpExpr {
   */
   public ServerExpression elementContentType(ServerExpression element);
 /**
-  * Invertible function that escapes characters required to be part of an NCName. This is useful when translating names from other representations such as JSON to XML. Given any string, the result is always a valid NCName. Providing all names are passed through this function the result is distinct NCNames so the results can be used for searching as well as name generation. The inverse function is xdmp:decode-for-NCName.
+  * Invertible function that escapes characters required to be part of an NCName. This is useful when translating names from other representations such as JSON to XML. Given any string, the result is always a valid NCName. Providing all names are passed through this function the result is distinct NCNames so the results can be used for searching as well as name generation. The inverse function is xdmp:decode-from-NCName.
   *
   * <a name="ml-server-type-encode-for-NCName"></a>
   
@@ -225,7 +225,7 @@ public interface XdmpExpr {
   */
   public ServerExpression encodeForNCName(ServerExpression name);
 /**
-  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
+  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   *
   * <a name="ml-server-type-format-number"></a>
   
@@ -236,7 +236,7 @@ public interface XdmpExpr {
   */
   public ServerExpression formatNumber(ServerExpression value);
 /**
-  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
+  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
   * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
@@ -245,7 +245,7 @@ public interface XdmpExpr {
   */
   public ServerExpression formatNumber(ServerExpression value, String picture);
 /**
-  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
+  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
   * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
@@ -254,7 +254,7 @@ public interface XdmpExpr {
   */
   public ServerExpression formatNumber(ServerExpression value, ServerExpression picture);
 /**
-  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
+  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
   * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
@@ -264,7 +264,7 @@ public interface XdmpExpr {
   */
   public ServerExpression formatNumber(ServerExpression value, String picture, String language);
 /**
-  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
+  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
   * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
@@ -274,7 +274,7 @@ public interface XdmpExpr {
   */
   public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language);
 /**
-  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
+  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
   * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
@@ -285,7 +285,7 @@ public interface XdmpExpr {
   */
   public ServerExpression formatNumber(ServerExpression value, String picture, String language, String letterValue);
 /**
-  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
+  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
   * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
@@ -296,7 +296,7 @@ public interface XdmpExpr {
   */
   public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue);
 /**
-  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
+  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
   * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
@@ -308,7 +308,7 @@ public interface XdmpExpr {
   */
   public ServerExpression formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar);
 /**
-  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
+  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
   * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
@@ -320,7 +320,7 @@ public interface XdmpExpr {
   */
   public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar);
 /**
-  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
+  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
   * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
@@ -333,7 +333,7 @@ public interface XdmpExpr {
   */
   public ServerExpression formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar, String zeroPadding);
 /**
-  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
+  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
   * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
@@ -346,7 +346,7 @@ public interface XdmpExpr {
   */
   public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar, ServerExpression zeroPadding);
 /**
-  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
+  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
   * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
@@ -360,7 +360,7 @@ public interface XdmpExpr {
   */
   public ServerExpression formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar, String zeroPadding, String groupingSeparator);
 /**
-  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
+  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
   * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
@@ -374,7 +374,7 @@ public interface XdmpExpr {
   */
   public ServerExpression formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar, ServerExpression zeroPadding, ServerExpression groupingSeparator);
 /**
-  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
+  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
   * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
@@ -389,7 +389,7 @@ public interface XdmpExpr {
   */
   public ServerExpression formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar, String zeroPadding, String groupingSeparator, long groupingSize);
 /**
-  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
+  * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
   * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
@@ -1285,7 +1285,7 @@ public interface XdmpExpr {
   */
   public ServerExpression step64(ServerExpression initial, ServerExpression step);
 /**
-  * Formats a dateTime value using POSIX strftime. This function uses the POSIX strftime system call in the way it is implemented on each platform. For other XQuery functions that have more functionality (for example, for things like timezones), use one or more if the various XQuery or XSLT standard functions such as fn:format-dateTime.
+  * Formats a dateTime value using POSIX strftime. This function uses the POSIX strftime system call in the way it is implemented on each platform. For other XQuery functions that have more functionality (for example, for things like timezones), use one or more if the various XQuery or XSLT standard functions such as fn:format-dateTime .
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:strftime" target="mlserverdoc">xdmp:strftime</a> server function.
   * @param format  The strftime format string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -1294,7 +1294,7 @@ public interface XdmpExpr {
   */
   public ServerExpression strftime(ServerExpression format, String value);
 /**
-  * Formats a dateTime value using POSIX strftime. This function uses the POSIX strftime system call in the way it is implemented on each platform. For other XQuery functions that have more functionality (for example, for things like timezones), use one or more if the various XQuery or XSLT standard functions such as fn:format-dateTime.
+  * Formats a dateTime value using POSIX strftime. This function uses the POSIX strftime system call in the way it is implemented on each platform. For other XQuery functions that have more functionality (for example, for things like timezones), use one or more if the various XQuery or XSLT standard functions such as fn:format-dateTime .
   *
   * <a name="ml-server-type-strftime"></a>
   
@@ -1338,6 +1338,55 @@ public interface XdmpExpr {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a> server data type
   */
   public ServerExpression type(ServerExpression value);
+/**
+  * Parses a string as XML, returning one or more document nodes.
+  *
+  * <a name="ml-server-type-unquote"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:unquote" target="mlserverdoc">xdmp:unquote</a> server function.
+  * @param arg  Input to be unquoted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/document-node.html">document-node</a> server data type
+  */
+  public ServerExpression unquote(ServerExpression arg);
+/**
+  * Parses a string as XML, returning one or more document nodes.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:unquote" target="mlserverdoc">xdmp:unquote</a> server function.
+  * @param arg  Input to be unquoted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param defaultNamespace  Default namespace for nodes in the first parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/document-node.html">document-node</a> server data type
+  */
+  public ServerExpression unquote(ServerExpression arg, String defaultNamespace);
+/**
+  * Parses a string as XML, returning one or more document nodes.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:unquote" target="mlserverdoc">xdmp:unquote</a> server function.
+  * @param arg  Input to be unquoted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param defaultNamespace  Default namespace for nodes in the first parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/document-node.html">document-node</a> server data type
+  */
+  public ServerExpression unquote(ServerExpression arg, ServerExpression defaultNamespace);
+/**
+  * Parses a string as XML, returning one or more document nodes.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:unquote" target="mlserverdoc">xdmp:unquote</a> server function.
+  * @param arg  Input to be unquoted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param defaultNamespace  Default namespace for nodes in the first parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param options  The options for getting this document. The default value is (). Options include:  "repair-full" Specifies that malformed XML content be repaired. XML content with multiple top-level elements will be parsed as multiple documents. This option has no effect on binary or text documents. "repair-none" Specifies that malformed XML content be rejected. XML content will be parsed as a single document, so a maximum of one document node will be returned. This option has no effect on binary or text documents. "format-text" Specifies to get the document as a text document, regardless of the URI specified. "format-binary" Specifies to get the document as a binary document, regardless of the URI specified. "format-xml" Specifies to get the document as an XML document, regardless of the URI specified. "format-json" Specifies to get the document as a JSON document, regardless of the URI specified. "default-language=xx"  If the root element node specified in the first parameter does not already have an xml:lang attribute, the language to specify in an xml:lang attribute on the root element node. If default-language is not specified, then nothing is added to the root element node. Some examples are default-language=en and default-language=fr.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/document-node.html">document-node</a> server data type
+  */
+  public ServerExpression unquote(ServerExpression arg, String defaultNamespace, String options);
+/**
+  * Parses a string as XML, returning one or more document nodes.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:unquote" target="mlserverdoc">xdmp:unquote</a> server function.
+  * @param arg  Input to be unquoted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param defaultNamespace  Default namespace for nodes in the first parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param options  The options for getting this document. The default value is (). Options include:  "repair-full" Specifies that malformed XML content be repaired. XML content with multiple top-level elements will be parsed as multiple documents. This option has no effect on binary or text documents. "repair-none" Specifies that malformed XML content be rejected. XML content will be parsed as a single document, so a maximum of one document node will be returned. This option has no effect on binary or text documents. "format-text" Specifies to get the document as a text document, regardless of the URI specified. "format-binary" Specifies to get the document as a binary document, regardless of the URI specified. "format-xml" Specifies to get the document as an XML document, regardless of the URI specified. "format-json" Specifies to get the document as a JSON document, regardless of the URI specified. "default-language=xx"  If the root element node specified in the first parameter does not already have an xml:lang attribute, the language to specify in an xml:lang attribute on the root element node. If default-language is not specified, then nothing is added to the root element node. Some examples are default-language=en and default-language=fr.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/document-node.html">document-node</a> server data type
+  */
+  public ServerExpression unquote(ServerExpression arg, ServerExpression defaultNamespace, ServerExpression options);
 /**
   * Returns the content type of the given URI as matched in the mimetypes configuration. xdmp:content-type continues to work too.
   *

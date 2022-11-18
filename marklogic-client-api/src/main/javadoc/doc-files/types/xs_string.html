@@ -302,7 +302,7 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	  </tr>
 <tr class="rowColor">
 	    <td class="colFirst"><a href="cts_reference.html">cts:reference</a></td>
-	    <td class="colLast"><span class="memberNameLink">cts:geospatial-region-path-reference</span>(<span>xs:string <i>path-expression</i></span>, <span>xs:string <i>options</i>*</span>, <span><a href="map_map.html">map:map</a> <i>namespaces</i>?</span>)</td>
+	    <td class="colLast"><span class="memberNameLink">cts:geospatial-region-path-reference</span>(<span>xs:string <i>path-expression</i></span>, <span>xs:string <i>options</i>*</span>, <span><a href="map_map.html">map:map</a> <i>namespaces</i>?</span>, <span><a href="xs_integer.html">xs:integer</a> <i>geohash-precision</i>?</span>, <span>xs:string <i>units</i>*</span>, <span>xs:string <i>invalid-values</i>*</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/CtsExpr.html#ml-server-type-geospatial-region-path-reference">java</a></td>
 	    <td><a href="http://docs.marklogic.com/cts:geospatial-region-path-reference" target="mlserverdoc">server</a></td>
 	  </tr>
@@ -1164,24 +1164,30 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td><a href="http://docs.marklogic.com/xdmp:strftime" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="altColor">
+	    <td class="colFirst"><a href="document-node.html">document-node</a>+</td>
+	    <td class="colLast"><span class="memberNameLink">xdmp:unquote</span>(<span>xs:string <i>arg</i></span>, <span>xs:string <i>default-namespace</i>?</span>, <span>xs:string <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-unquote">java</a></td>
+	    <td><a href="http://docs.marklogic.com/xdmp:unquote" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
 	    <td class="colFirst">xs:string</td>
 	    <td class="colLast"><span class="memberNameLink">xdmp:uri-content-type</span>(<span>xs:string <i>uri</i></span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-uri-content-type">java</a></td>
 	    <td><a href="http://docs.marklogic.com/xdmp:uri-content-type" target="mlserverdoc">server</a></td>
 	  </tr>
-<tr class="rowColor">
+<tr class="altColor">
 	    <td class="colFirst">xs:string</td>
 	    <td class="colLast"><span class="memberNameLink">xdmp:uri-format</span>(<span>xs:string <i>uri</i></span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-uri-format">java</a></td>
 	    <td><a href="http://docs.marklogic.com/xdmp:uri-format" target="mlserverdoc">server</a></td>
 	  </tr>
-<tr class="altColor">
+<tr class="rowColor">
 	    <td class="colFirst">xs:string</td>
 	    <td class="colLast"><span class="memberNameLink">xdmp:url-decode</span>(<span>xs:string <i>encoded</i></span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-url-decode">java</a></td>
 	    <td><a href="http://docs.marklogic.com/xdmp:url-decode" target="mlserverdoc">server</a></td>
 	  </tr>
-<tr class="rowColor">
+<tr class="altColor">
 	    <td class="colFirst">xs:string</td>
 	    <td class="colLast"><span class="memberNameLink">xdmp:url-encode</span>(<span>xs:string <i>plaintext</i></span>, <span><a href="xs_boolean.html">xs:boolean</a> <i>noSpacePlus</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-url-encode">java</a></td>
