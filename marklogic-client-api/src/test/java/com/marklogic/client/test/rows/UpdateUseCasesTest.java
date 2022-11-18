@@ -11,7 +11,6 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
 import com.marklogic.client.type.PlanSystemColumn;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -100,7 +99,7 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
 
         List<RowRecord> rows = resultRows(plan);
         assertEquals("Only doc2 should be returned; doc1 should have been filtered out by the notExistsJoin " +
-                "since it already exists", 1, rows.size());
+            "since it already exists", 1, rows.size());
         assertEquals("/acme/doc2.json", rows.get(0).getString("uri"));
 
         // doc1 should not have been modified since it was filtered out from the plan
@@ -173,7 +172,6 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
     }
 
     @Test
-    @Ignore("See https://bugtrack.marklogic.com/58137")
     public void writeNewDocsFromView() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
