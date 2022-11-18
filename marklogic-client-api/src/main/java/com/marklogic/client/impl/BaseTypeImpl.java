@@ -246,6 +246,11 @@ public class BaseTypeImpl {
       super(fnPrefix, fnName, fnArgs);
     }
   }
+  static class DocumentNodeSeqCallImpl extends ItemCallImpl {
+    DocumentNodeSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
   static class ElementNodeSeqListImpl extends ItemSeqListImpl {
     ElementNodeSeqListImpl(Object[] items) {
       super(items);

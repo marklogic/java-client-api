@@ -1081,6 +1081,45 @@ class XdmpExprImpl implements XdmpExpr {
 
   
   @Override
+  public ServerExpression unquote(ServerExpression arg) {
+    if (arg == null) {
+      throw new IllegalArgumentException("arg parameter for unquote() cannot be null");
+    }
+    return new BaseTypeImpl.DocumentNodeSeqCallImpl("xdmp", "unquote", new Object[]{ arg });
+  }
+
+  
+  @Override
+  public ServerExpression unquote(ServerExpression arg, String defaultNamespace) {
+    return unquote(arg, (defaultNamespace == null) ? (ServerExpression) null : xs.string(defaultNamespace));
+  }
+
+  
+  @Override
+  public ServerExpression unquote(ServerExpression arg, ServerExpression defaultNamespace) {
+    if (arg == null) {
+      throw new IllegalArgumentException("arg parameter for unquote() cannot be null");
+    }
+    return new BaseTypeImpl.DocumentNodeSeqCallImpl("xdmp", "unquote", new Object[]{ arg, defaultNamespace });
+  }
+
+  
+  @Override
+  public ServerExpression unquote(ServerExpression arg, String defaultNamespace, String options) {
+    return unquote(arg, (defaultNamespace == null) ? (ServerExpression) null : xs.string(defaultNamespace), (options == null) ? (ServerExpression) null : xs.string(options));
+  }
+
+  
+  @Override
+  public ServerExpression unquote(ServerExpression arg, ServerExpression defaultNamespace, ServerExpression options) {
+    if (arg == null) {
+      throw new IllegalArgumentException("arg parameter for unquote() cannot be null");
+    }
+    return new BaseTypeImpl.DocumentNodeSeqCallImpl("xdmp", "unquote", new Object[]{ arg, defaultNamespace, options });
+  }
+
+  
+  @Override
   public ServerExpression uriContentType(ServerExpression uri) {
     if (uri == null) {
       throw new IllegalArgumentException("uri parameter for uriContentType() cannot be null");

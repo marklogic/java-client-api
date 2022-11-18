@@ -1287,6 +1287,24 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
     return new BaseTypeImpl.NodeSeqCallImpl("op", "xpath", new Object[]{ column, path });
   }
 
+  
+  @Override
+  public ServerExpression xpath(String column, String path, PlanNamespaceBindingsSeq namespaceBindings) {
+    return xpath((column == null) ? (PlanColumn) null : col(column), (path == null) ? (ServerExpression) null : xs.string(path), namespaceBindings);
+  }
+
+  
+  @Override
+  public ServerExpression xpath(PlanColumn column, ServerExpression path, PlanNamespaceBindingsSeq namespaceBindings) {
+    if (column == null) {
+      throw new IllegalArgumentException("column parameter for xpath() cannot be null");
+    }
+    if (path == null) {
+      throw new IllegalArgumentException("path parameter for xpath() cannot be null");
+    }
+    return new BaseTypeImpl.NodeSeqCallImpl("op", "xpath", new Object[]{ column, path, namespaceBindings });
+  }
+
 
   // external type implementations
   
@@ -1537,6 +1555,27 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
   
   static class NamedGroupCallImpl extends PlanCallImpl implements PlanNamedGroup {
     NamedGroupCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+
+  
+  static class NamespaceBindingsSeqListImpl extends PlanSeqListImpl implements PlanNamespaceBindingsSeq {
+    NamespaceBindingsSeqListImpl(Object[] items) {
+      super(items);
+    }
+  }
+
+  
+  static class NamespaceBindingsSeqCallImpl extends PlanCallImpl implements PlanNamespaceBindingsSeq {
+    NamespaceBindingsSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
+  }
+
+  
+  static class NamespaceBindingsCallImpl extends PlanCallImpl implements PlanNamespaceBindings {
+    NamespaceBindingsCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       super(fnPrefix, fnName, fnArgs);
     }
   }

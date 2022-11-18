@@ -124,7 +124,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ServerExpression divide(ServerExpression left, ServerExpression right);
   /**
-  * This function returns true if the left and right expressions return the same value. Otherwise, it returns false. In expressions, the call should pass the result from an op:col function to identify a column.
+  * This function takes two or more expressions and returns true if all of the expressions return the same value. Otherwise, it returns false. The expressions can include calls to the op:col function to get the value of a column. 
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/op:eq" target="mlserverdoc">op:eq</a> server function.
   * @param operand  Two or more expressions.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
@@ -546,21 +546,21 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   /**
   * This function dynamically constructs a row set based on a SPARQL SELECT query from triples.
   * @param select  A SPARQL SELECT query expressed as a string.
-  * @param qualifierName  Specifies a name for qualifying the column names. Placeholder parameters in the SPARQL string may be bound in the result() call
+  * @param qualifierName  Specifies a name for qualifying the column names. An "@" in front of the name specifies a parameter placeholder. A parameter placeholder in the SPARQL string must be bound to a parameter value in the result() call.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan fromSparql(String select, String qualifierName);
   /**
   * This function dynamically constructs a row set based on a SPARQL SELECT query from triples.
   * @param select  A SPARQL SELECT query expressed as a string.
-  * @param qualifierName  Specifies a name for qualifying the column names. Placeholder parameters in the SPARQL string may be bound in the result() call
+  * @param qualifierName  Specifies a name for qualifying the column names. An "@" in front of the name specifies a parameter placeholder. A parameter placeholder in the SPARQL string must be bound to a parameter value in the result() call.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan fromSparql(XsStringVal select, XsStringVal qualifierName);
   /**
   * This function dynamically constructs a row set based on a SPARQL SELECT query from triples.
   * @param select  A SPARQL SELECT query expressed as a string.
-  * @param qualifierName  Specifies a name for qualifying the column names. Placeholder parameters in the SPARQL string may be bound in the result() call
+  * @param qualifierName  Specifies a name for qualifying the column names. An "@" in front of the name specifies a parameter placeholder. A parameter placeholder in the SPARQL string must be bound to a parameter value in the result() call.
   * @param option  Options consisting of key-value pairs that set options. At present, the options consist of dedup and base. Option dedup can take an on|off value to enable or disable deduplication. Deduplication is on by default but will become off by default in a future release. Option base takes a string as the initial base IRI for the query.
   * @return  a ModifyPlan object
   */
@@ -568,7 +568,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   /**
   * This function dynamically constructs a row set based on a SPARQL SELECT query from triples.
   * @param select  A SPARQL SELECT query expressed as a string.
-  * @param qualifierName  Specifies a name for qualifying the column names. Placeholder parameters in the SPARQL string may be bound in the result() call
+  * @param qualifierName  Specifies a name for qualifying the column names. An "@" in front of the name specifies a parameter placeholder. A parameter placeholder in the SPARQL string must be bound to a parameter value in the result() call.
   * @param option  Options consisting of key-value pairs that set options. At present, the options consist of dedup and base. Option dedup can take an on|off value to enable or disable deduplication. Deduplication is on by default but will become off by default in a future release. Option base takes a string as the initial base IRI for the query.
   * @return  a ModifyPlan object
   */
@@ -618,14 +618,14 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanCondition sqlCondition(XsStringVal expression);
   /**
-  * Specifies an equijoin using one columndef each from the left and right rows. The result is used by the op:join-inner and op:join-left-outer functions. 
+  * Specifies an equijoin using one columndef each from the left and right rows. The result is used by the op:join-inner, op:join-left-outer, and op:join-full-outer, and functions. 
   * @param left  The rows from the left view. See {@link PlanBuilder#col(XsStringVal)}
   * @param right  The row set from the right view. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanJoinKey object
   */
   public abstract PlanJoinKey on(String left, String right);
   /**
-  * Specifies an equijoin using one columndef each from the left and right rows. The result is used by the op:join-inner and op:join-left-outer functions. 
+  * Specifies an equijoin using one columndef each from the left and right rows. The result is used by the op:join-inner, op:join-left-outer, and op:join-full-outer, and functions. 
   * @param left  The rows from the left view. See {@link PlanBuilder#col(XsStringVal)}
   * @param right  The row set from the right view. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanJoinKey object
@@ -805,7 +805,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function counts the rows where the specified input column has a value. If the input column is omitted, all rows in the group or row set are counted. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the column values. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The columns to be counted. See {@link PlanBuilder#col(XsStringVal)}
-  * @param option  The options can take a values key with a 'distinct' value to average the distinct values of the column.
+  * @param option  The options can take a values key with a 'distinct' value to count the distinct values of the column.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol count(String name, String column, PlanValueOption option);
@@ -813,7 +813,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function counts the rows where the specified input column has a value. If the input column is omitted, all rows in the group or row set are counted. The result is used for building the parameters used by the op:group-by function.
   * @param name  The name to be used for the column values. See {@link PlanBuilder#col(XsStringVal)}
   * @param column  The columns to be counted. See {@link PlanBuilder#col(XsStringVal)}
-  * @param option  The options can take a values key with a 'distinct' value to average the distinct values of the column.
+  * @param option  The options can take a values key with a 'distinct' value to count the distinct values of the column.
   * @return  a PlanAggregateCol object
   */
   public abstract PlanAggregateCol count(PlanColumn name, PlanExprCol column, PlanValueOption option);
@@ -1012,25 +1012,25 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanAggregateColSeq aggregateSeq(PlanAggregateCol... aggregate);
   /**
-  * This function sorts the specified columndef in ascending order. The results are used by the op:order-by function.
+  * This function sorts the rows by the values of the specified column in ascending order. The results are used by the op:order-by function.
   * @param column  The column by which order the output. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanSortKey object
   */
   public abstract PlanSortKey asc(String column);
   /**
-  * This function sorts the specified columndef in ascending order. The results are used by the op:order-by function.
+  * This function sorts the rows by the values of the specified column in ascending order. The results are used by the op:order-by function.
   * @param column  The column by which order the output. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanSortKey object
   */
   public abstract PlanSortKey asc(PlanExprCol column);
   /**
-  * This function sorts the specified columndef in descending order. The results are used by the op:order-by function.
+  * This function sorts the rows by the values of the specified column in descending order. The results are used by the op:order-by function.
   * @param column  The column by which order the output. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanSortKey object
   */
   public abstract PlanSortKey desc(String column);
   /**
-  * This function sorts the specified columndef in descending order. The results are used by the op:order-by function.
+  * This function sorts the rows by the values of the specified column in descending order. The results are used by the op:order-by function.
   * @param column  The column by which order the output. See {@link PlanBuilder#col(XsStringVal)}
   * @return  a PlanSortKey object
   */
@@ -1091,6 +1091,26 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/node.html">node</a> server data type
   */
   public abstract ServerExpression xpath(PlanColumn column, ServerExpression path);
+  /**
+  * This function extracts a sequence of child nodes from a column with node values -- especially, the document nodes from a document join. The path is an XPath (specified as a string) to apply to each node to generate a sequence of nodes as an expression value.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xpath" target="mlserverdoc">op:xpath</a> server function.
+  * @param column  The name of the column from which to extract the child nodes. See {@link PlanBuilder#col(XsStringVal)}
+  * @param path  An XPath (specified as a string) to apply to each node.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param namespaceBindings  A map of namespace bindings. The keys should be namespace prefixes and the values should be namespace URIs. These namespace bindings will be added to the in-scope namespace bindings in the evaluation of the path.
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/node.html">node</a> server data type
+  */
+  public abstract ServerExpression xpath(String column, String path, PlanNamespaceBindingsSeq namespaceBindings);
+  /**
+  * This function extracts a sequence of child nodes from a column with node values -- especially, the document nodes from a document join. The path is an XPath (specified as a string) to apply to each node to generate a sequence of nodes as an expression value.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xpath" target="mlserverdoc">op:xpath</a> server function.
+  * @param column  The name of the column from which to extract the child nodes. See {@link PlanBuilder#col(XsStringVal)}
+  * @param path  An XPath (specified as a string) to apply to each node.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param namespaceBindings  A map of namespace bindings. The keys should be namespace prefixes and the values should be namespace URIs. These namespace bindings will be added to the in-scope namespace bindings in the evaluation of the path.
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/node.html">node</a> server data type
+  */
+  public abstract ServerExpression xpath(PlanColumn column, ServerExpression path, PlanNamespaceBindingsSeq namespaceBindings);
   /**
   * This function constructs a JSON document with the root content, which must be exactly one JSON object or array node.
   * <p>
@@ -1538,27 +1558,27 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
 /**
-  * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
   * @param right  The row set from the right view.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right);
 /**
-  * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKey... keys);
 /**
-  * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys);
 /**
-  * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
@@ -1566,7 +1586,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
 /**
-  * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
+  * This method yields one output row set with the rows from an inner join as well as the other rows from the left row set. 
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function. See {@link PlanBuilder#joinKeySeq(PlanJoinKey...)}
   * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
@@ -1665,26 +1685,26 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public abstract PreparePlan prepare(XsIntVal optimize);
 /**
   * This call projects the specified columns from the current row set and / or applies a qualifier to the columns in the row set. Unlike SQL, a select call is not required in an Optic query.
-  * @param columns  The columns to select. See {@link PlanBuilder#colSeq(PlanExprCol...)}
+  * @param columns  The columns to project from the input rows. The columns can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as. See {@link PlanBuilder#colSeq(PlanExprCol...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan select(PlanExprCol... columns);
 /**
   * This call projects the specified columns from the current row set and / or applies a qualifier to the columns in the row set. Unlike SQL, a select call is not required in an Optic query.
-  * @param columns  The columns to select. See {@link PlanBuilder#colSeq(PlanExprCol...)}
+  * @param columns  The columns to project from the input rows. The columns can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as. See {@link PlanBuilder#colSeq(PlanExprCol...)}
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan select(PlanExprColSeq columns);
 /**
   * This call projects the specified columns from the current row set and / or applies a qualifier to the columns in the row set. Unlike SQL, a select call is not required in an Optic query.
-  * @param columns  The columns to select. See {@link PlanBuilder#colSeq(PlanExprCol...)}
+  * @param columns  The columns to project from the input rows. The columns can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as. See {@link PlanBuilder#colSeq(PlanExprCol...)}
   * @param qualifierName  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan select(PlanExprColSeq columns, String qualifierName);
 /**
   * This call projects the specified columns from the current row set and / or applies a qualifier to the columns in the row set. Unlike SQL, a select call is not required in an Optic query.
-  * @param columns  The columns to select. See {@link PlanBuilder#colSeq(PlanExprCol...)}
+  * @param columns  The columns to project from the input rows. The columns can be named with a string or a column parameter function such as op:col or constructed from an expression with op:as. See {@link PlanBuilder#colSeq(PlanExprCol...)}
   * @param qualifierName  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
   * @return  a ModifyPlan object
   */
