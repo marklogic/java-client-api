@@ -39,6 +39,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPathExpressionException;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.io.*;
@@ -48,6 +49,7 @@ import com.marklogic.client.row.*;
 import com.marklogic.client.type.*;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -1458,6 +1460,30 @@ public class RowManagerTest {
     long count = rows.stream().count();
     assertEquals("count doesn't match", 4, count);
   }
+
+  @Test
+  @Ignore("Waiting on a fix for https://bugtrack.marklogic.com/58233")
+  public void testBug58233() {
+    RowManager rowMgr = Common.client.newRowManager();
+
+    PlanBuilder op = rowMgr.newPlanBuilder();
+
+    // This succeeds
+    rowMgr.resultRows(op
+        .fromLiterals(numberRows)
+        .facetBy(
+            op.namedGroupSeq(op.bucketGroup(op.xs.string("r"), op.col("r"), op.xs.integerSeq(2, 4)))
+        )).stream().collect(Collectors.toList());
+
+    // But this fails when namedGroupSeq is not included
+    rowMgr.resultRows(op
+        .fromLiterals(numberRows)
+        .facetBy(
+            op.bucketGroup(op.xs.string("r"), op.col("r"), op.xs.integerSeq(2, 4))
+        )).stream().collect(Collectors.toList());
+  }
+
+
   @Test
   public void testBucketGroup() {
     RowManager rowMgr = Common.client.newRowManager();
