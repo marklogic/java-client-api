@@ -92,11 +92,8 @@ public class JavascriptResourceExtension {
       params.add("service", "hello");
       params.add("planet", "Earth");
 
-      // specify the mime type for each expected document returned
-      String[] mimetypes = new String[] {"text/plain"};
-
       // call the service
-      ServiceResultIterator resultItr = getServices().get(params, mimetypes);
+      ServiceResultIterator resultItr = getServices().get(params);
 
       // iterate over the results
       List<String> responses = new ArrayList<>();

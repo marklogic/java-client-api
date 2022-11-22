@@ -994,7 +994,7 @@ public class OkHttpServices implements RESTServices {
     }
 
     OkHttpResultIterator iterator = getIteratedResourceImpl(DefaultOkHttpResultIterator::new,
-      reqlog, path, transaction, params, MIMETYPE_MULTIPART_MIXED);
+      reqlog, path, transaction, params);
     if ( iterator != null ) {
       if ( iterator.getStart() == -1 ) iterator.setStart(1);
       if ( iterator.getSize() != -1 ) {
@@ -3222,14 +3222,14 @@ public class OkHttpServices implements RESTServices {
 
   @Override
   public RESTServiceResultIterator getIteratedResource(RequestLogger reqlog,
-                                                       String path, Transaction transaction, RequestParameters params, String... mimetypes)
+                                                       String path, Transaction transaction, RequestParameters params)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    return getIteratedResourceImpl(OkHttpServiceResultIterator::new, reqlog, path, transaction, params, mimetypes);
+    return getIteratedResourceImpl(OkHttpServiceResultIterator::new, reqlog, path, transaction, params);
   }
 
   private <U extends OkHttpResultIterator> U getIteratedResourceImpl(ResultIteratorConstructor<U> constructor,
-        RequestLogger reqlog, String path, Transaction transaction, RequestParameters params, String... mimetypes)
+        RequestLogger reqlog, String path, Transaction transaction, RequestParameters params)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     if ( params == null ) params = new RequestParameters();
@@ -3950,12 +3950,11 @@ public class OkHttpServices implements RESTServices {
 
   @Override
   public RESTServiceResultIterator postIteratedResource(RequestLogger reqlog,
-                                                        String path, Transaction transaction, RequestParameters params, AbstractWriteHandle input,
-                                                        String... outputMimetypes)
+                                                        String path, Transaction transaction, RequestParameters params, AbstractWriteHandle input)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
     return postIteratedResourceImpl(OkHttpServiceResultIterator::new,
-      reqlog, path, transaction, params, input, outputMimetypes);
+      reqlog, path, transaction, params, input);
   }
 
     public RESTServiceResultIterator postMultipartForm(
@@ -4040,7 +4039,7 @@ public class OkHttpServices implements RESTServices {
   private <U extends OkHttpResultIterator> U postIteratedResourceImpl(
     ResultIteratorConstructor<U> constructor, final RequestLogger reqlog,
     final String path, Transaction transaction, RequestParameters params,
-    AbstractWriteHandle input, String... outputMimetypes)
+    AbstractWriteHandle input)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
     if ( params == null ) params = new RequestParameters();
@@ -4087,16 +4086,16 @@ public class OkHttpServices implements RESTServices {
   @Override
   public <W extends AbstractWriteHandle> RESTServiceResultIterator postIteratedResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
-    W[] input, String... outputMimetypes)
+    W[] input)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
     return postIteratedResourceImpl(OkHttpServiceResultIterator::new,
-      reqlog, path, transaction, params, input, outputMimetypes);
+      reqlog, path, transaction, params, input);
   }
 
   private <W extends AbstractWriteHandle, U extends OkHttpResultIterator> U postIteratedResourceImpl(
     ResultIteratorConstructor<U> constructor, RequestLogger reqlog, String path, Transaction transaction,
-    RequestParameters params, W[] input, String... outputMimetypes)
+    RequestParameters params, W[] input)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
     if ( params == null ) params = new RequestParameters();
