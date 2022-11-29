@@ -55,7 +55,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 
 public class LegalHoldsTest {
   private Logger logger = LoggerFactory.getLogger(LegalHoldsTest.class);

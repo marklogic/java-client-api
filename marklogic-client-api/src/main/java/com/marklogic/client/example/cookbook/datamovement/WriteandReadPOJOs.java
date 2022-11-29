@@ -15,8 +15,8 @@
  */
 package com.marklogic.client.example.cookbook.datamovement;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

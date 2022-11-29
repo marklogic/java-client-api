@@ -19,8 +19,6 @@ build
 buildSrc/build
 
 .classpath
-.gitignore
-.classpath
 .project
 .settings/
 .idea

@@ -16,7 +16,7 @@
 
 package com.marklogic.client.functionaltest;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class Product

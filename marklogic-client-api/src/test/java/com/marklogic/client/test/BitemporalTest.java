@@ -23,7 +23,7 @@ import static org.junit.Assert.fail;
 import java.util.Calendar;
 import java.util.Random;
 
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

@@ -17,6 +17,24 @@ dependencies {
 
     testCompileOnly gradleTestKit()
     testImplementation 'com.squareup.okhttp3:okhttp:4.10.0'
+
+    // The jakarta.xml.bind implementation dependencies don't appear to come over from the implementation dependency
+    // on the marklogic-client-api project, so they're declared here again.
+    if (JavaVersion.current().isJava9Compatible()) {
+        testImplementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.0"
+        testImplementation "org.glassfish.jaxb:jaxb-runtime:4.0.1"
+        testImplementation "org.glassfish.jaxb:jaxb-core:4.0.1"
+    } else {
+        testImplementation "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
+        testImplementation "org.glassfish.jaxb:jaxb-runtime:3.0.1"
+        testImplementation "org.glassfish.jaxb:jaxb-core:3.0.1"
+    }
+}
+
+// Added to avoid problem where processResources fails because - somehow - the plugin properties file is getting
+// copied twice. This started occurring with the upgrade of Gradle from 6.x to 7.x.
+tasks.processResources {
+    duplicatesStrategy = "exclude"
 }
 
 task mlDevelopmentToolsJar(type: Jar, dependsOn: classes) {

@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.test;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 import com.marklogic.client.pojo.annotation.Id;
 import com.marklogic.client.pojo.annotation.PathIndexProperty;

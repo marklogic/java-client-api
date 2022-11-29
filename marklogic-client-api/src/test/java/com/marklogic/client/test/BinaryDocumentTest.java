@@ -22,7 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;

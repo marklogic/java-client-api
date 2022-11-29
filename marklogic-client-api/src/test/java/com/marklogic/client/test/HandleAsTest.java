@@ -31,8 +31,8 @@ import java.io.StringReader;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;

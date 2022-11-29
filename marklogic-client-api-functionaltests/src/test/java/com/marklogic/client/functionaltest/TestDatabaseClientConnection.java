@@ -42,7 +42,6 @@ import java.util.TreeMap;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
-import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
@@ -57,8 +56,6 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.alerting.RuleDefinition;
@@ -72,7 +69,6 @@ import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.JAXBHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.TuplesHandle;
 import com.marklogic.client.io.ValuesHandle;

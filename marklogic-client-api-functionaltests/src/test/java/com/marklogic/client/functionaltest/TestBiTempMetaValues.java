@@ -22,7 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Calendar;
 
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 import javax.xml.datatype.DatatypeFactory;
 
 import org.junit.After;

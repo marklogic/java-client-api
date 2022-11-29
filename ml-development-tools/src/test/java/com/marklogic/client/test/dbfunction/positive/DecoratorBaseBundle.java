@@ -24,7 +24,7 @@ public interface DecoratorBaseBundle {
      * @return	an object for executing database operations
      */
     static DecoratorBaseBundle on(DatabaseClient db) {
-        return on(db, null);
+      return on(db, null);
     }
     /**
      * Creates a DecoratorBaseBundle object for executing operations on the database server.
@@ -54,21 +54,21 @@ public interface DecoratorBaseBundle {
                 this.baseProxy = new BaseProxy("/dbf/test/decoratorBase/", servDecl);
 
                 this.req_docify = this.baseProxy.request(
-                        "docify.sjs", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC);
+                    "docify.sjs", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC);
             }
 
             @Override
             public com.fasterxml.jackson.databind.JsonNode docify(String value) {
                 return docify(
-                        this.req_docify.on(this.dbClient), value
-                );
+                    this.req_docify.on(this.dbClient), value
+                    );
             }
             private com.fasterxml.jackson.databind.JsonNode docify(BaseProxy.DBFunctionRequest request, String value) {
-                return BaseProxy.JsonDocumentType.toJsonNode(
-                        request
-                                .withParams(
-                                        BaseProxy.atomicParam("value", true, BaseProxy.StringType.fromString(value))
-                                ).responseSingle(true, Format.JSON)
+              return BaseProxy.JsonDocumentType.toJsonNode(
+                request
+                      .withParams(
+                          BaseProxy.atomicParam("value", true, BaseProxy.StringType.fromString(value))
+                          ).responseSingle(true, Format.JSON)
                 );
             }
         }
@@ -76,12 +76,12 @@ public interface DecoratorBaseBundle {
         return new DecoratorBaseBundleImpl(db, serviceDeclaration);
     }
 
-    /**
-     * Invokes the docify operation on the database server
-     *
-     * @param value	provides input
-     * @return	as output
-     */
+  /**
+   * Invokes the docify operation on the database server
+   *
+   * @param value	provides input
+   * @return	as output
+   */
     com.fasterxml.jackson.databind.JsonNode docify(String value);
 
 }

@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import com.marklogic.client.expression.CtsQueryBuilder;
