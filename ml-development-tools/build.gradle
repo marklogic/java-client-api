@@ -19,6 +19,12 @@ dependencies {
     testImplementation 'com.squareup.okhttp3:okhttp:4.10.0'
 }
 
+// Added to avoid problem where processResources fails because - somehow - the plugin properties file is getting
+// copied twice. This started occurring with the upgrade of Gradle from 6.x to 7.x.
+tasks.processResources {
+    duplicatesStrategy = "exclude"
+}
+
 task mlDevelopmentToolsJar(type: Jar, dependsOn: classes) {
     archivesBaseName = 'ml-development-tools'
 }

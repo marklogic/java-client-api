@@ -32,7 +32,7 @@ implemented by an endpoint on the server.
 
 ## QuickStart
 
-To use the API in your maven project, include the following in your pom.xml:
+To use the API in your [Maven](https://maven.apache.org/) project, include the following in your pom.xml file:
 
     <dependency>
         <groupId>com.marklogic</groupId>
@@ -40,13 +40,51 @@ To use the API in your maven project, include the following in your pom.xml:
         <version>6.0.0</version>
     </dependency>
 
-For gradle projects, use gradle 4.x+ and include the following:
+To use the API in your [Gradle](https://gradle.org/) project, include the following in your build.gradle file:
 
     dependencies {
-        compile "com.marklogic:marklogic-client-api:6.0.0"
+        implementation "com.marklogic:marklogic-client-api:6.0.0"
     }
 
-Read [The Java API in Five Minutes](http://developer.marklogic.com/try/java/index)
+Next, read [The Java API in Five Minutes](http://developer.marklogic.com/try/java/index) to get started.
+
+### Including JAXB support 
+
+If you are using Java 11 or higher (including Java 17) and you wish to use [JAXB](https://docs.oracle.com/javase/tutorial/jaxb/intro/)
+with the Java Client, you'll need to include JAXB API and implementation dependencies as those are no 
+longer included in Java 11 and higher.
+
+For Maven, include the following in your pom.xml file:
+
+    <dependency>
+        <groupId>javax.xml.bind</groupId>
+        <artifactId>jaxb-api</artifactId>
+        <version>2.3.1</version>
+    </dependency>
+    <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
+        <version>2.3.2</version>
+    </dependency>
+    <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-core</artifactId>
+        <version>2.3.0.1</version>
+    </dependency>
+
+For Gradle, include the following in your build.gradle file (this can be included in the same `dependencies` block 
+as the one that includes the marklogic-client-api dependency):
+
+    dependencies {
+        implementation "javax.xml.bind:jaxb-api:2.3.1"
+        implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
+        implementation "org.glassfish.jaxb:jaxb-core:2.3.0.1"
+    }
+
+You are free to use any implementation of JAXB that you wish, but you need to ensure that you're using a JAXB 
+implementation that corresponds to the `javax.xml.bind` interfaces. JAXB 3.0 and 4.0 interfaces are packaged under 
+`jakarta.xml.bind`, and the Java API does not yet depend on those interfaces. You are thus free to include an 
+implementation of JAXB 3.0 or 4.0 in your project for your own use; it will not affect the Java API. 
 
 ### Learning More
 

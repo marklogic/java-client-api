@@ -21,8 +21,14 @@ subprojects {
  	tasks.withType(JavaCompile) {
     	options.encoding = 'UTF-8'
   	}
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
+
+    // To ensure that the Java Client continues to support Java 8, both source and target compatibility are set to 1.8.
+    // May adjust this for src/test/java so that tests can take advantage of more expressive functions in Java 9+, such
+    // as Map.of().
+    java {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
 
     configurations {
         testImplementation.extendsFrom compileOnly
@@ -45,4 +51,11 @@ subprojects {
         systemProperty "javax.xml.stream.XMLOutputFactory", "com.sun.xml.internal.stream.XMLOutputFactoryImpl"
     }
 
+    // Until we do a cleanup of javadoc errors, the build (and specifically the javadoc task) fails on Java 11
+    // and higher. Preventing that until the cleanup can occur.
+    javadoc.failOnError = false
+
+    // Ignores warnings on param tags with no descriptions. Will remove this once javadoc errors are addressed.
+    // Until then, it's just a lot of noise.
+    javadoc.options.addStringOption('Xdoclint:none', '-quiet')
 }
