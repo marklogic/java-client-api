@@ -30,6 +30,10 @@ The Java API supports the following core features of the MarkLogic database:
 *  Call Data Services by means of a Java interface on the client for data functionality 
 implemented by an endpoint on the server.
 
+The Java API can be used in applications running on Java 8, 11, and 17. If you are using Java 11 or higher and intend
+to use [JAXB](https://docs.oracle.com/javase/tutorial/jaxb/intro/), please see the section below for ensuring that the
+necessary dependencies are available in your application's classpath.
+
 ## QuickStart
 
 To use the API in your [Maven](https://maven.apache.org/) project, include the following in your pom.xml file:
@@ -83,8 +87,28 @@ as the one that includes the marklogic-client-api dependency):
 
 You are free to use any implementation of JAXB that you wish, but you need to ensure that you're using a JAXB 
 implementation that corresponds to the `javax.xml.bind` interfaces. JAXB 3.0 and 4.0 interfaces are packaged under 
-`jakarta.xml.bind`, and the Java API does not yet depend on those interfaces. You are thus free to include an 
-implementation of JAXB 3.0 or 4.0 in your project for your own use; it will not affect the Java API. 
+`jakarta.xml.bind`, and the Java API does not yet depend on those interfaces. 
+
+Thus, you are free to include an implementation of JAXB 3.0 or 4.0 in your project for your own use; it will not 
+affect the Java API. A caveat though is if you are trying to use different major versions of the same JAXB 
+implementation library - such as `org.glassfish.jaxb:jaxb-runtime` - then you will run into an expected dependency 
+conflict between the two versions of the library. This can be worked around by using a different implementation of 
+JAXB 3.0 or JAXB 4.0 - for example:
+
+    dependencies {
+        // JAXB 2 dependencies required by Java Client
+        implementation "javax.xml.bind:jaxb-api:2.3.1"
+        implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
+        implementation "org.glassfish.jaxb:jaxb-core:2.3.0.1"
+        
+        // JAXB 4 dependencies required by other application code
+        implementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.0"
+        implementation "com.sun.xml.bind:jaxb-impl:4.0.1"
+    }
+
+The Java Client will soon be updated to use the newer `jakarta.xml.bind` interfaces. Until then, the above approach
+or one similar to it will allow for both the old and new JAXB interfaces and implementations to exist together in the
+same classpath.
 
 ### Learning More
 
