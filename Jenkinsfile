@@ -33,7 +33,9 @@ def runtests(String type, String version){
                 export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
                 export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
                 cd java-client-api
-                ./gradlew marklogic-client-api-functionaltests:test || true
+                ./gradlew mlDeploy
+                ./gradlew marklogic-client-api-functionaltests:testFastFunctionalTests || true
+                ./gradlew marklogic-client-api-functionaltests:testSlowFunctionalTests || true
             '''
             sh label:'post-test-process', script: '''
                 cd $WORKSPACE/java-client-api/marklogic-client-api/build/test-results/test/
@@ -81,6 +83,7 @@ pipeline{
           export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
           cd java-client-api
           ./gradlew marklogic-client-api:test  || true
+          ./gradlew marklogic-client-api-functionaltests:testFastFunctionalTests || true
         '''
         sh label:'ml development tool test', script: '''#!/bin/bash
           export JAVA_HOME=$JAVA_HOME_DIR

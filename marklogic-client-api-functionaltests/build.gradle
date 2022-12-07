@@ -35,3 +35,14 @@ dependencies {
 
   testImplementation group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.11'
 }
+
+task testFastFunctionalTests(type: Test) {
+  description = "Run all fast functional tests that don't setup/teardown custom app servers / databases"
+  include "com/marklogic/client/fastfunctest/**"
+}
+
+task testSlowFunctionalTests(type: Test) {
+  description = "Run slow functional tests; i.e. those that setup/teardown custom app servers / databases"
+  include "com/marklogic/client/datamovement/functionaltests/**"
+  include "com/marklogic/client/functionaltest/**"
+}
