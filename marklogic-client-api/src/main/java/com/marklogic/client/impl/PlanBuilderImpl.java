@@ -353,20 +353,20 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public AccessPlan fromParam(String paramName, String qualifier, PlanRowColTypesSeq colTypes) {
-    return fromParam((paramName == null) ? (XsStringVal) null : xs.string(paramName), (qualifier == null) ? (XsStringVal) null : xs.string(qualifier), colTypes);
+  public AccessPlan fromParam(String paramName, String qualifier, PlanRowColTypesSeq rowColTypes) {
+    return fromParam((paramName == null) ? (XsStringVal) null : xs.string(paramName), (qualifier == null) ? (XsStringVal) null : xs.string(qualifier), rowColTypes);
   }
 
   
   @Override
-  public AccessPlan fromParam(XsStringVal paramName, XsStringVal qualifier, PlanRowColTypesSeq colTypes) {
+  public AccessPlan fromParam(XsStringVal paramName, XsStringVal qualifier, PlanRowColTypesSeq rowColTypes) {
     if (paramName == null) {
       throw new IllegalArgumentException("paramName parameter for fromParam() cannot be null");
     }
-    if (colTypes == null) {
-      throw new IllegalArgumentException("colTypes parameter for fromParam() cannot be null");
+    if (rowColTypes == null) {
+      throw new IllegalArgumentException("rowColTypes parameter for fromParam() cannot be null");
     }
-    return new PlanBuilderSubImpl.AccessPlanSubImpl("op", "from-param", new Object[]{ paramName, qualifier, colTypes });
+    return new PlanBuilderSubImpl.AccessPlanSubImpl("op", "from-param", new Object[]{ paramName, qualifier, rowColTypes });
   }
 
   
@@ -1931,17 +1931,17 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
   @Override
-  public ModifyPlan joinDocCols(PlanDocColsIdentifier docCols, String docIdCol) {
-    return joinDocCols(docCols, (docIdCol == null) ? (PlanColumn) null : col(docIdCol));
+  public ModifyPlan joinDocCols(PlanDocColsIdentifier cols, String docIdCol) {
+    return joinDocCols(cols, (docIdCol == null) ? (PlanColumn) null : col(docIdCol));
   }
 
     
   @Override
-  public ModifyPlan joinDocCols(PlanDocColsIdentifier docCols, PlanColumn docIdCol) {
+  public ModifyPlan joinDocCols(PlanDocColsIdentifier cols, PlanColumn docIdCol) {
     if (docIdCol == null) {
       throw new IllegalArgumentException("docIdCol parameter for joinDocCols() cannot be null");
     }
-    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "join-doc-cols", new Object[]{ docCols, docIdCol });
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "join-doc-cols", new Object[]{ cols, docIdCol });
   }
 
     
@@ -2249,20 +2249,20 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
   @Override
-  public ModifyPlan validateDoc(String validated, PlanSchemaDef schemaDef) {
-    return validateDoc((validated == null) ? (PlanColumn) null : col(validated), schemaDef);
+  public ModifyPlan validateDoc(String validateDocCol, PlanSchemaDef schemaDef) {
+    return validateDoc((validateDocCol == null) ? (PlanColumn) null : col(validateDocCol), schemaDef);
   }
 
     
   @Override
-  public ModifyPlan validateDoc(PlanColumn validated, PlanSchemaDef schemaDef) {
-    if (validated == null) {
-      throw new IllegalArgumentException("validated parameter for validateDoc() cannot be null");
+  public ModifyPlan validateDoc(PlanColumn validateDocCol, PlanSchemaDef schemaDef) {
+    if (validateDocCol == null) {
+      throw new IllegalArgumentException("validateDocCol parameter for validateDoc() cannot be null");
     }
     if (schemaDef == null) {
       throw new IllegalArgumentException("schemaDef parameter for validateDoc() cannot be null");
     }
-    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "validate-doc", new Object[]{ validated, schemaDef });
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "validate-doc", new Object[]{ validateDocCol, schemaDef });
   }
 
     
