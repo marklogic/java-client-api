@@ -243,14 +243,14 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract PlanParamExpr param(XsStringVal name);
   /**
-  * This method identifies a column, where the column name is unique. A qualifier on the column name isn't necessary (and might not exist). In positions where only a column name can appear, the unqualified column name can also be provided as a string. Qualified column names cannot be provided as a string.
-  * @param column  The Optic AccessorPlan created by op:from-view, op:from-triples, or op:from-lexicons.
+  * Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist). 
+  * @param column  the column  value.
   * @return  a PlanColumn object
   */
   public abstract PlanColumn col(String column);
   /**
-  * This method identifies a column, where the column name is unique. A qualifier on the column name isn't necessary (and might not exist). In positions where only a column name can appear, the unqualified column name can also be provided as a string. Qualified column names cannot be provided as a string.
-  * @param column  The Optic AccessorPlan created by op:from-view, op:from-triples, or op:from-lexicons.
+  * Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist). 
+  * @param column  the column  value.
   * @return  a PlanColumn object
   */
   public abstract PlanColumn col(XsStringVal column);
@@ -561,7 +561,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function dynamically constructs a row set based on a SPARQL SELECT query from triples.
   * @param select  A SPARQL SELECT query expressed as a string.
   * @param qualifierName  Specifies a name for qualifying the column names. An "@" in front of the name specifies a parameter placeholder. A parameter placeholder in the SPARQL string must be bound to a parameter value in the result() call.
-  * @param option  Options consisting of key-value pairs that set options. At present, the options consist of dedup and base. Option dedup can take an on|off value to enable or disable deduplication. Deduplication is on by default but will become off by default in a future release. Option base takes a string as the initial base IRI for the query.
+  * @param option  Options consisting of key-value pairs that set options. At present, the options consist of dedup and base. Option dedup can take an on|off value to enable or disable deduplication. Deduplication is off by default. Option base takes a string as the initial base IRI for the query.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan fromSparql(String select, String qualifierName, PlanSparqlOptions option);
@@ -569,7 +569,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This function dynamically constructs a row set based on a SPARQL SELECT query from triples.
   * @param select  A SPARQL SELECT query expressed as a string.
   * @param qualifierName  Specifies a name for qualifying the column names. An "@" in front of the name specifies a parameter placeholder. A parameter placeholder in the SPARQL string must be bound to a parameter value in the result() call.
-  * @param option  Options consisting of key-value pairs that set options. At present, the options consist of dedup and base. Option dedup can take an on|off value to enable or disable deduplication. Deduplication is on by default but will become off by default in a future release. Option base takes a string as the initial base IRI for the query.
+  * @param option  Options consisting of key-value pairs that set options. At present, the options consist of dedup and base. Option dedup can take an on|off value to enable or disable deduplication. Deduplication is off by default. Option base takes a string as the initial base IRI for the query.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan fromSparql(XsStringVal select, XsStringVal qualifierName, PlanSparqlOptions option);
@@ -599,11 +599,47 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan fromSql(XsStringVal select, XsStringVal qualifierName);
-  public abstract AccessPlan fromParam(String paramName, String qualifier, PlanRowColTypesSeq colTypes);
-  public abstract AccessPlan fromParam(XsStringVal paramName, XsStringVal qualifier, PlanRowColTypesSeq colTypes);
+  /**
+  * This function constructs document rows with rows provided by a parameter.
+  * @param paramName  The paramName parameter specifies the placeholder parameter supplying the rows.
+  * @param qualifier  Specifies a name for qualifying the column names.
+  * @param rowColTypes  Describes the columns with an array of JavaScript objects. It's a combinations of column, type and nullable. The 'column' is the column name, which is required. The 'type' is the optional type of the column, which can be an atomic type or the default of none. The 'nullable' is an optional boolean defaulting to false. If your rows contains only uri, doc, collections, metadata, permissions, quality and temporalCollection columns, you could simply use op.docColTypes instead.
+  * @return  a AccessPlan object
+  */
+  public abstract AccessPlan fromParam(String paramName, String qualifier, PlanRowColTypesSeq rowColTypes);
+  /**
+  * This function constructs document rows with rows provided by a parameter.
+  * @param paramName  The paramName parameter specifies the placeholder parameter supplying the rows.
+  * @param qualifier  Specifies a name for qualifying the column names.
+  * @param rowColTypes  Describes the columns with an array of JavaScript objects. It's a combinations of column, type and nullable. The 'column' is the column name, which is required. The 'type' is the optional type of the column, which can be an atomic type or the default of none. The 'nullable' is an optional boolean defaulting to false. If your rows contains only uri, doc, collections, metadata, permissions, quality and temporalCollection columns, you could simply use op.docColTypes instead.
+  * @return  a AccessPlan object
+  */
+  public abstract AccessPlan fromParam(XsStringVal paramName, XsStringVal qualifier, PlanRowColTypesSeq rowColTypes);
+  /**
+  * This function constructs document rows from the docsDescriptors.
+  * @param docDescriptor  An array of document descriptors. Each document descriptor describes a document. A document descriptor contains a combination of uri, doc, collections, metadata, permissions, quality and temporalCollection. This is a simpler form of op.fromParam.
+  * @return  a AccessPlan object
+  */
   public abstract AccessPlan fromDocDescriptors(PlanDocDescriptor... docDescriptor);
+  /**
+  * This function constructs document rows from the docsDescriptors.
+  * @param docDescriptor  An array of document descriptors. Each document descriptor describes a document. A document descriptor contains a combination of uri, doc, collections, metadata, permissions, quality and temporalCollection. This is a simpler form of op.fromParam.
+  * @return  a AccessPlan object
+  */
   public abstract AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor);
+  /**
+  * This function constructs document rows from the docsDescriptors.
+  * @param docDescriptor  An array of document descriptors. Each document descriptor describes a document. A document descriptor contains a combination of uri, doc, collections, metadata, permissions, quality and temporalCollection. This is a simpler form of op.fromParam.
+  * @param qualifier  Specifies a name for qualifying the column names.
+  * @return  a AccessPlan object
+  */
   public abstract AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor, String qualifier);
+  /**
+  * This function constructs document rows from the docsDescriptors.
+  * @param docDescriptor  An array of document descriptors. Each document descriptor describes a document. A document descriptor contains a combination of uri, doc, collections, metadata, permissions, quality and temporalCollection. This is a simpler form of op.fromParam.
+  * @param qualifier  Specifies a name for qualifying the column names.
+  * @return  a AccessPlan object
+  */
   public abstract AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor, XsStringVal qualifier);
   /**
   * This function returns a filter definition as input for a WHERE operation. As with a cts:query or sem:store, the filter definition cannot be used in an Optic Boolean expression but, instead, must be the only argument to the WHERE call. Add a separate WHERE call to filter based on an Optic Boolean expression. The condition must be a valid simple SQL Boolean expression expressed as a string. 
@@ -1341,11 +1377,41 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a PlanFunction object
   */
   public abstract PlanFunction resolveFunction(XsQNameVal functionName, XsStringVal modulePath);
+  /**
+  * Constructs a document column identifier object for columns of uri, doc, collections, metadata, permissions, quality and temporalCollection. The document column identifier object can be passed to the prototype.joinDocCols or prototype.write.
+  * @return  a PlanDocColsIdentifier object
+  */
   public abstract PlanDocColsIdentifier docCols();
+  /**
+  * Constructs a document column identifier object for columns of uri, doc, collections, metadata, permissions, quality and temporalCollection. The document column identifier object can be passed to the prototype.joinDocCols or prototype.write.
+  * @param qualifier  Specifies a name for qualifying the column names.
+  * @return  a PlanDocColsIdentifier object
+  */
   public abstract PlanDocColsIdentifier docCols(String qualifier);
+  /**
+  * Constructs a document column identifier object for columns of uri, doc, collections, metadata, permissions, quality and temporalCollection. The document column identifier object can be passed to the prototype.joinDocCols or prototype.write.
+  * @param qualifier  Specifies a name for qualifying the column names.
+  * @return  a PlanDocColsIdentifier object
+  */
   public abstract PlanDocColsIdentifier docCols(XsStringVal qualifier);
+  /**
+  * Constructs a document column identifier object for columns of uri, doc, collections, metadata, permissions, quality and temporalCollection. The document column identifier object can be passed to the prototype.joinDocCols or prototype.write.
+  * @param qualifier  Specifies a name for qualifying the column names.
+  * @param names  An array of columns names, a combination of uri, doc, collections, metadata, permissions, quality and temporalCollection.
+  * @return  a PlanDocColsIdentifier object
+  */
   public abstract PlanDocColsIdentifier docCols(String qualifier, String names);
+  /**
+  * Constructs a document column identifier object for columns of uri, doc, collections, metadata, permissions, quality and temporalCollection. The document column identifier object can be passed to the prototype.joinDocCols or prototype.write.
+  * @param qualifier  Specifies a name for qualifying the column names.
+  * @param names  An array of columns names, a combination of uri, doc, collections, metadata, permissions, quality and temporalCollection.
+  * @return  a PlanDocColsIdentifier object
+  */
   public abstract PlanDocColsIdentifier docCols(XsStringVal qualifier, XsStringSeqVal names);
+  /**
+  * Provides the 3rd parameter for op.fromParam for row column types.
+  * @return  a PlanRowColTypesSeq object sequence
+  */
   public abstract PlanRowColTypesSeq docColTypes();
 /**
  * Provides functions and operations in the access phase
@@ -1353,14 +1419,14 @@ public abstract class PlanBuilder implements PlanBuilderBase {
  */
   public interface AccessPlan extends ModifyPlan, PlanBuilderBase.AccessPlanBase {
 /**
-  * This method identifies a column, where the column name is unique. A qualifier on the column name isn't necessary (and might not exist). In positions where only a column name can appear, the unqualified column name can also be provided as a string. Qualified column names cannot be provided as a string.
-  * @param column  The Optic AccessorPlan created by op:from-view, op:from-triples, or op:from-lexicons.
+  * Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist). 
+  * @param column  the column  value.
   * @return  a PlanColumn object
   */
   public abstract PlanColumn col(String column);
 /**
-  * This method identifies a column, where the column name is unique. A qualifier on the column name isn't necessary (and might not exist). In positions where only a column name can appear, the unqualified column name can also be provided as a string. Qualified column names cannot be provided as a string.
-  * @param column  The Optic AccessorPlan created by op:from-view, op:from-triples, or op:from-lexicons.
+  * Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist). 
+  * @param column  the column  value.
   * @return  a PlanColumn object
   */
   public abstract PlanColumn col(XsStringVal column);
@@ -1720,20 +1786,107 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan whereDistinct();
-public abstract ModifyPlan write();
-public abstract ModifyPlan write(PlanDocColsIdentifier docCols);
-public abstract ModifyPlan joinDocCols(PlanDocColsIdentifier docCols, String docIdCol);
-public abstract ModifyPlan joinDocCols(PlanDocColsIdentifier docCols, PlanColumn docIdCol);
-public abstract ModifyPlan validateDoc(String validated, PlanSchemaDef schemaDef);
-public abstract ModifyPlan validateDoc(PlanColumn validated, PlanSchemaDef schemaDef);
-public abstract ModifyPlan unnestInner(String inputColumn, String valueColumn);
-public abstract ModifyPlan unnestInner(PlanExprCol inputColumn, PlanExprCol valueColumn);
-public abstract ModifyPlan unnestInner(String inputColumn, String valueColumn, String ordinalColumn);
-public abstract ModifyPlan unnestInner(PlanExprCol inputColumn, PlanExprCol valueColumn, PlanExprCol ordinalColumn);
-public abstract ModifyPlan unnestLeftOuter(String inputColumn, String valueColumn);
-public abstract ModifyPlan unnestLeftOuter(PlanExprCol inputColumn, PlanExprCol valueColumn);
-public abstract ModifyPlan unnestLeftOuter(String inputColumn, String valueColumn, String ordinalColumn);
-public abstract ModifyPlan unnestLeftOuter(PlanExprCol inputColumn, PlanExprCol valueColumn, PlanExprCol ordinalColumn);
+/**
+  * Inserts or overwrites the documents identified by the uri column with the data supplied by the other document descriptor columns.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan write();
+/**
+  * Inserts or overwrites the documents identified by the uri column with the data supplied by the other document descriptor columns.
+  * @param docCols  the docCols  value.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan write(PlanDocColsIdentifier docCols);
+ /**
+  * This function populates the view with the uri, doc, collections, metadata, permissions, and/or quality document descriptor columns for database document values.
+  * @param cols  Supplies a document column identifier object to specify which document columns to join and their names. The names cannot conflict with existing column names.
+  * @param docIdCol  The document uri or fragment id value. This is either an op.fragmentIdCol object specifying a fragment id column or a document uri column.
+  * @return  a ModifyPlan object
+  */
+ public abstract ModifyPlan joinDocCols(PlanDocColsIdentifier cols, String docIdCol);
+ /**
+  * This function populates the view with the uri, doc, collections, metadata, permissions, and/or quality document descriptor columns for database document values.
+  * @param cols  Supplies a document column identifier object to specify which document columns to join and their names. The names cannot conflict with existing column names.
+  * @param docIdCol  The document uri or fragment id value. This is either an op.fragmentIdCol object specifying a fragment id column or a document uri column.
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan joinDocCols(PlanDocColsIdentifier cols, PlanColumn docIdCol);
+ /**
+  * Validates the document based on a supplied schema. This schema needs to be stored in the schema database.
+  * @param validateDocCol  Contains the document to validate.
+  * @param schemaDef  This is an object. The required 'kind' property of the schema object must be 'jsonSchema', 'schematron', or 'xmlSchema'. When 'kind' is 'jsonSchema' or 'schemtron' then a property 'schemaUri' is required.
+  *                   Property 'mode' takes 'strict', 'lax' or 'type' (refer to xdmp.validate).
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan validateDoc(String validateDocCol, PlanSchemaDef schemaDef);
+ /**
+  * Validates the document based on a supplied schema. This schema needs to be stored in the schema database.
+  * @param validateDocCol  Contains the document to validate.
+  * @param schemaDef  This is an object. The required 'kind' property of the schema object must be 'jsonSchema', 'schematron', or 'xmlSchema'. When 'kind' is 'jsonSchema' or 'schemtron' then a property 'schemaUri' is required.
+  *                   Property 'mode' takes 'strict', 'lax' or 'type' (refer to xdmp.validate).
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan validateDoc(PlanColumn validateDocCol, PlanSchemaDef schemaDef);
+/**
+  * This function flattens an array value into multiple rows.Then performs a op:join-inner on the rest of the rows.
+  * @param inputColumn  The input column, which contains an array, to flatten into rows. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col if you need to identify columns in the two views that have the same column name. See {@link PlanBuilder#col(XsStringVal)}
+  * @param valueColumn  The output column which contains the flattened array values. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col as needed. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan unnestInner(String inputColumn, String valueColumn);
+/**
+  * This function flattens an array value into multiple rows.Then performs a op:join-inner on the rest of the rows.
+  * @param inputColumn  The input column, which contains an array, to flatten into rows. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col if you need to identify columns in the two views that have the same column name. See {@link PlanBuilder#col(XsStringVal)}
+  * @param valueColumn  The output column which contains the flattened array values. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col as needed. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan unnestInner(PlanExprCol inputColumn, PlanExprCol valueColumn);
+/**
+  * This function flattens an array value into multiple rows.Then performs a op:join-inner on the rest of the rows.
+  * @param inputColumn  The input column, which contains an array, to flatten into rows. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col if you need to identify columns in the two views that have the same column name. See {@link PlanBuilder#col(XsStringVal)}
+  * @param valueColumn  The output column which contains the flattened array values. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col as needed. See {@link PlanBuilder#col(XsStringVal)}
+  * @param ordinalColumn  The ordinalColumn is optional. If specified, an additional column will be added to the rows of flattened array values, starting from 1. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col as needed. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan unnestInner(String inputColumn, String valueColumn, String ordinalColumn);
+/**
+  * This function flattens an array value into multiple rows.Then performs a op:join-inner on the rest of the rows.
+  * @param inputColumn  The input column, which contains an array, to flatten into rows. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col if you need to identify columns in the two views that have the same column name. See {@link PlanBuilder#col(XsStringVal)}
+  * @param valueColumn  The output column which contains the flattened array values. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col as needed. See {@link PlanBuilder#col(XsStringVal)}
+  * @param ordinalColumn  The ordinalColumn is optional. If specified, an additional column will be added to the rows of flattened array values, starting from 1. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col as needed. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan unnestInner(PlanExprCol inputColumn, PlanExprCol valueColumn, PlanExprCol ordinalColumn);
+/**
+  * This function flattens an array value into multiple rows.Then performs a op:join-left-outer on the rest of the rows.
+  * @param inputColumn  The input column, which contains an array, to flatten into rows. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col if you need to identify columns in the two views that have the same column name. See {@link PlanBuilder#col(XsStringVal)}
+  * @param valueColumn  The output column which contains the flattened array values. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col as needed. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan unnestLeftOuter(String inputColumn, String valueColumn);
+/**
+  * This function flattens an array value into multiple rows.Then performs a op:join-left-outer on the rest of the rows.
+  * @param inputColumn  The input column, which contains an array, to flatten into rows. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col if you need to identify columns in the two views that have the same column name. See {@link PlanBuilder#col(XsStringVal)}
+  * @param valueColumn  The output column which contains the flattened array values. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col as needed. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan unnestLeftOuter(PlanExprCol inputColumn, PlanExprCol valueColumn);
+/**
+  * This function flattens an array value into multiple rows.Then performs a op:join-left-outer on the rest of the rows.
+  * @param inputColumn  The input column, which contains an array, to flatten into rows. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col if you need to identify columns in the two views that have the same column name. See {@link PlanBuilder#col(XsStringVal)}
+  * @param valueColumn  The output column which contains the flattened array values. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col as needed. See {@link PlanBuilder#col(XsStringVal)}
+  * @param ordinalColumn  The ordinalColumn is optional. If specified, an additional column will be added to the rows of flattened array values, starting from 1. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col as needed. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan unnestLeftOuter(String inputColumn, String valueColumn, String ordinalColumn);
+/**
+  * This function flattens an array value into multiple rows.Then performs a op:join-left-outer on the rest of the rows.
+  * @param inputColumn  The input column, which contains an array, to flatten into rows. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col if you need to identify columns in the two views that have the same column name. See {@link PlanBuilder#col(XsStringVal)}
+  * @param valueColumn  The output column which contains the flattened array values. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col as needed. See {@link PlanBuilder#col(XsStringVal)}
+  * @param ordinalColumn  The ordinalColumn is optional. If specified, an additional column will be added to the rows of flattened array values, starting from 1. This can be a string of the column name or an op:col. Use op:view-col or op:schema-col as needed. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan unnestLeftOuter(PlanExprCol inputColumn, PlanExprCol valueColumn, PlanExprCol ordinalColumn);
   }
 
   
