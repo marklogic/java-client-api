@@ -1,0 +1,27 @@
+{
+  "template": {
+    "context": "office",
+    "rows": [
+      {
+        "schemaName": "unnestSchema",
+        "viewName": "unnestView",
+        "columns": [
+          {
+            "name": "department",
+            "scalarType": "string",
+            "val": "department",
+            "nullable": true,
+            "invalidValues": "ignore"
+          },
+          {
+            "name": "teamMembers",
+            "scalarType": "string",
+            "val": "teamMembers",
+            "nullable": true,
+            "invalidValues": "ignore"
+          }
+        ]
+      }
+    ]
+  }
+}
