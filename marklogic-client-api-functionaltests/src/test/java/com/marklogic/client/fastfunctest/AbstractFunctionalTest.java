@@ -74,7 +74,7 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
 
         // Clear the content and schemas databases so that the subclass can start with a "fresh" setup without any
         // data leftover from a previous test
-        Stream.of(client, schemasClient).forEach(c -> deleteDocuments(c));
+        Stream.of(connectAsAdmin(), schemasClient).forEach(c -> deleteDocuments(c));
     }
 
     protected static void deleteDocuments(DatabaseClient client) {

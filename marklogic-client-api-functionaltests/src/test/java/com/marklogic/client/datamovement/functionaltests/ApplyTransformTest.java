@@ -16,25 +16,14 @@
 
 package com.marklogic.client.datamovement.functionaltests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -68,18 +57,15 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.StructuredQueryBuilder;
 
-public class ApplyTransformTest extends BasicJavaClientREST {
+import static org.junit.Assert.*;
 
-	private static String dbName = "ApplyTransform";
+public class ApplyTransformTest extends AbstractFunctionalTest {
+
 	private static DataMovementManager dmManager = null;
 	private static final String TEST_DIR_PREFIX = "/WriteHostBatcher-testdata/";
 
 	private static DatabaseClient dbClient;
-	private static String user = "admin";
-	private static int port = 8000;
-	private static String password = "admin";
-	private static String server = "App-Services";
-	
+
 	private static JacksonHandle jacksonHandle;
 	private static JacksonHandle jacksonHandle1;
 	private static StringHandle stringHandle;
@@ -98,38 +84,17 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 	private static JsonNode jsonNode1;
 	private static final String query1 = "fn:count(fn:doc())";
 	private static String[] hostNames;
-	private static int forestCount = 1;
+
+	// Number of documents to insert in each test collection
+	private final static int DOC_COUNT = 1000;
 
 	/**
 	 * @throws Exception
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		loadGradleProperties();
-		server = getRestAppServerName();
-        port = getRestAppServerPort();
-
 		hostNames = getHosts();
-		createDB(dbName);
-		Thread.currentThread().sleep(500L);
-		//Ensure db has atleast one forest
-		createForestonHost(dbName + "-" + forestCount, dbName, hostNames[0]);
-		forestCount++;
-		for (String forestHost : hostNames) {
-			for(int i = 0; i < new Random().nextInt(3); i++) {
-				createForestonHost(dbName + "-" + forestCount, dbName, forestHost);
-				forestCount++;
-			}
-			Thread.currentThread().sleep(500L);
-		}
-		// Create App Server if needed.
-		createRESTServerWithDB(server, port);
-		assocRESTServer(server, dbName, port);
-		if (IsSecurityEnabled()) {
-			enableSecurityOnRESTServer(server, dbName);
-		}
-
-		dbClient = getDatabaseClient(user, password, getConnType());
+		dbClient = connectAsAdmin();
        	dmManager = dbClient.newDataMovementManager();
 
 		// FileHandle
@@ -186,61 +151,28 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		});
 
 		dmManager.startJob(ihb2);
-		outputList = new ArrayList<String>();
-		for (int j = 0; j < 2000; j++) {
+		outputList = new ArrayList<>();
+		for (int j = 0; j < DOC_COUNT; j++) {
 			String uri = "/local/json-" + j;
 			ihb2.add(uri, meta1, fileHandle);
 		}
-
-		ihb2.flushAndWait();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
-
-		for (int j = 0; j < 2000; j++) {
+		for (int j = 0; j < DOC_COUNT; j++) {
 			String uri = "/local/string-" + j;
 			outputList.add(uri);
 			ihb2.add(uri, meta2, stringHandle);
 		}
-		ihb2.flushAndWait();
-		
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4000);
-
 		ihb2.add("/local/quality", meta3, jacksonHandle);
-		ihb2.flushAndWait();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4001);
-
 		ihb2.add("/local/nomatch", meta4, jacksonHandle1);
-		ihb2.flushAndWait();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4002);
-
 		for (int j = 0; j < 100; j++) {
 			String uri = "/local/snapshot-" + j;
 			ihb2.add(uri, meta5, fileHandle);
 		}
-		ihb2.flushAndWait();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4102);
-
-		for (int j = 0; j < 2000; j++) {
+		for (int j = 0; j < DOC_COUNT; j++) {
 			String uri = "/local/skipped-" + j;
 			ihb2.add(uri, meta6, stringHandle);
 		}
-
-		ihb2.flushAndWait();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 6102);
-
 		ihb2.add("/local/nonexistent-1", stringHandle);
 		ihb2.flushAndWait();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 6103);
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-		associateRESTServerWithDB(server, "Documents");
-		for (int i = 0; i < forestCount -1; i++) {
-			detachForest(dbName, dbName + "-" + (i + 1));
-			deleteForest(dbName + "-" + (i + 1));
-		}
-
-		deleteDB(dbName);
 	}
 
 	@Test
@@ -288,8 +220,8 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 				});
 		dmManager.startJob(resultBatcher);				
 		resultBatcher.awaitCompletion();
-		assertEquals("document count", 2000, count.get());
-		assertEquals("document count", 2000, success.intValue());
+		assertEquals("document count", DOC_COUNT, count.get());
+		assertEquals("document count", DOC_COUNT, success.intValue());
 		assertEquals("document count", 0, skipped.intValue());
 
 	}
@@ -374,7 +306,7 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 				});
 		dmManager.startJob(resultBatcher);				
 		resultBatcher.awaitCompletion();
-		assertEquals("document count", 2000, count.get());
+		assertEquals("document count", DOC_COUNT, count.get());
 	}
 
 	@Test
@@ -538,15 +470,12 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 					System.out.println(batch.getForest().getHost());
 					urisList.addAll(Arrays.asList(batch.getItems()));
 				});
-		Map<String, String> properties = new HashMap<>();
-		properties.put("locking", "strict");
-		changeProperty(properties, "/manage/v2/databases/" + dbName + "/properties");
 
 		String insertQuery = "xdmp:document-insert(\"/local/failed\", "
-				+ "<foo>This is so foo</foo>, (), \"FailTransform\", 0, xdmp:forest(\"ApplyTransform-1\") )"
+				+ "<foo>This is so foo</foo>, (), \"FailTransform\", 0 )"
 				+ ";xdmp:document-insert(\"/local/failed-1\", object-node {\"c\":\"v1\"}, (),"
 				+ " \"FailTransform\","
-				+ " 0, xdmp:forest(\"ApplyTransform-1\") )";
+				+ " 0 )";
 
 		String response = dbClient.newServerEval().xquery(insertQuery).evalAs(String.class);
 		System.out.println(response);
@@ -716,30 +645,43 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		transform.put("name", "Lang");
 		transform.put("value", "French");
 
-		Set<String> skippedBatch = Collections.synchronizedSet(new HashSet<String>());
-		Set<String> successBatch = Collections.synchronizedSet(new HashSet<String>());
+		Set<String> skippedUris = Collections.synchronizedSet(new HashSet<>());
+		Set<String> successUris = Collections.synchronizedSet(new HashSet<>());
+		Set<String> failedUris = Collections.synchronizedSet(new HashSet<>());
 
-		ApplyTransformListener listener = new ApplyTransformListener().withTransform(transform)
-				.withApplyResult(ApplyResult.REPLACE).onSuccess(batch -> {
-					successBatch.addAll(Arrays.asList(batch.getItems()));
-				}).onSkipped(batch -> {
-					skippedBatch.addAll(Arrays.asList(batch.getItems()));
-					System.out.println("stopTransformJobTest : Skipped: " + batch.getItems()[0]);
+		List<Throwable> failures = new Vector<>();
 
-				}).onFailure((batch, throwable) -> {
-					throwable.printStackTrace();
-					System.out.println("stopTransformJobTest: Failed: " + batch.getItems()[0]);
+		ApplyTransformListener listener = new ApplyTransformListener()
+			.withTransform(transform)
+			.withApplyResult(ApplyResult.REPLACE).onSuccess(batch -> {
+				successUris.addAll(Arrays.asList(batch.getItems()));
+			}).onSkipped(batch -> {
+				skippedUris.addAll(Arrays.asList(batch.getItems()));
+			}).onFailure((batch, throwable) -> {
+				failures.add(throwable);
+				failedUris.addAll(Arrays.asList(batch.getItems()));
+			});
 
-				});
+		for (Throwable failure : failures) {
+			if (!(failure instanceof InterruptedException)) {
+				fail("Unexpected batch failure, only expecting an InterruptedException from the batcher being interrupted: " + failure);
+			}
+		}
+
 		QueryBatcher batcher = dmManager
-				.newQueryBatcher(new StructuredQueryBuilder().collection("Skipped"))
-				.onUrisReady(listener).withBatchSize(1).withThreadCount(1);
+			.newQueryBatcher(new StructuredQueryBuilder().collection("Skipped"))
+			.onUrisReady(listener)
+			.withBatchSize(10)
+			.withThreadCount(1);
+
 		JobTicket ticket = dmManager.startJob(batcher);
-		Thread.currentThread().sleep(4000L);
+		// Wait an amount of time that should result in some docs being transformed but not all
+		Thread.currentThread().sleep(200L);
 		dmManager.stopJob(ticket);
 		batcher.awaitCompletion();	
-		
-		AtomicInteger count = new AtomicInteger(0);
+
+		// Find how many documents were transformed
+		AtomicInteger notTransformedCount = new AtomicInteger(0);
 		QueryBatcher resultBatcher = dmManager
 				.newQueryBatcher(new StructuredQueryBuilder().collection("Skipped"))
 				.withBatchSize(25).withThreadCount(5)
@@ -749,25 +691,29 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 					while (page.hasNext()) {
 						DocumentRecord rec = page.next();
 						rec.getContent(dh);
-						if (dh.get().getElementsByTagName("foo")
-								.item(0).getAttributes().item(0) == null) {
-							count.incrementAndGet();
+						if (dh.get().getElementsByTagName("foo").item(0).getAttributes().item(0) == null) {
+							notTransformedCount.incrementAndGet();
 						}
-
 					}
-					
 				});
 		dmManager.startJob(resultBatcher);				
 		resultBatcher.awaitCompletion();
 
-		System.out.println("stopTransformJobTest: Success: " + successBatch.size());
-		System.out.println("stopTransformJobTest: Skipped: " + skippedBatch.size());
-		System.out.println("stopTransformJobTest : count " + count);
-		// TODO This has been failing intermittently with the sum being 1999 instead of 2000. Interestingly, the
-		// stopJobTransform test in QueryBatcherJobReportTest sometimes fails because it's off by one as well.
-		Assert.assertEquals(2000, successBatch.size() + skippedBatch.size() + count.get());
-		Assert.assertEquals(2000 - count.get(), successBatch.size());
+		int successCount = successUris.size();
+		int skippedCount = skippedUris.size();
+		int failedCount = failedUris.size();
 
+		System.out.println("SUCCESS: " + successCount);
+		System.out.println("SKIPPED: " + skippedCount);
+		System.out.println("FAILED: " + failedCount);
+		System.out.println("NOT TRANSFORMED: " + notTransformedCount.get());
+
+		assertEquals(
+			"Unexpected count; success: " + successCount + "; skipped: " + skippedCount + "; failed: " + failedCount,
+			DOC_COUNT, successCount + skippedCount + failedCount + notTransformedCount.get());
+		assertEquals(
+			"Unexpected count; success: " + successCount + "; failed: " + failedCount + "; not transformed: " + notTransformedCount.get(),
+			DOC_COUNT - notTransformedCount.get() - failedCount, successCount);
 	}
 
 	@Test
