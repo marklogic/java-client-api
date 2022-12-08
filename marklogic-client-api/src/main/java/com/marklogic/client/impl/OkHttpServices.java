@@ -3986,11 +3986,7 @@ public class OkHttpServices implements RESTServices {
       requestBldr = setupRequest(requestBldr, multiBuilder, null);
       requestBldr = addTransactionScopedCookies(requestBldr, transaction);
       requestBldr = addTelemetryAgentId(requestBldr);
-
-      if ("rows".equals(path)) {
-          requestBldr.addHeader("ML-Check-ML11-Headers", "true");
-          requestBldr.addHeader("TE", "trailers");
-      }
+      requestBldr = addTrailerHeadersIfNecessary(requestBldr, path);
 
       Function<Request.Builder, Response> doPostFunction = funcBuilder ->
               doPost(reqlog, funcBuilder.header(HEADER_ACCEPT, multipartMixedWithBoundary()), multiBuilder.build());
@@ -4053,11 +4049,7 @@ public class OkHttpServices implements RESTServices {
     requestBldr = setupRequest(requestBldr, inputMimetype, null);
     requestBldr = addTransactionScopedCookies(requestBldr, transaction);
     requestBldr = addTelemetryAgentId(requestBldr);
-
-    if ("rows".equals(path)) {
-        requestBldr.addHeader("ML-Check-ML11-Headers", "true");
-        requestBldr.addHeader("TE", "trailers");
-    }
+    requestBldr = addTrailerHeadersIfNecessary(requestBldr, path);
 
     Consumer<Boolean> resendableConsumer = new Consumer<Boolean>() {
       public void accept(Boolean resendable) {
@@ -4394,6 +4386,17 @@ public class OkHttpServices implements RESTServices {
     return requestBldr.header("ML-Agent-ID", "java");
   }
 
+    private Request.Builder addTrailerHeadersIfNecessary(Request.Builder requestBldr, String path) {
+        if ("rows".equals(path)) {
+            // Standard header supported by ML 11
+            requestBldr.addHeader("TE", "trailers");
+
+            // Proprietary header recognized by ML 10.0-9, per https://docs.marklogic.com/guide/relnotes/chap3#id_73268
+            requestBldr.addHeader("ML-Check-ML11-Headers", "true");
+        }
+        return requestBldr;
+    }
+
   private <W extends AbstractWriteHandle> boolean addParts(
     MultipartBody.Builder multiPart, RequestLogger reqlog, W[] input)
   {
@@ -4594,22 +4597,27 @@ public class OkHttpServices implements RESTServices {
     }
     List<BodyPart> partList = getPartList(entity);
 
+    String mlErrorCode = null;
+    String mlErrorMessage = null;
     try {
-        Headers trailer = response.trailers();
-        String code = trailer.get("ml-error-code");
-        String msg = trailer.get("ml-error-message");
-        String sha = trailer.get("ml-content-sha256");
-
-        if (code != null && !"N/A".equals(code)) {
-            FailedRequest failure = new FailedRequest();
-            failure.setMessageString(code);
-            failure.setStatusString(msg);
-            throw new FailedRequestException("failed to " + operation + " "
-                    + entityType + " at rows" + ": " + code + ", " + msg);
-        }
+        Headers trailers = response.trailers();
+        mlErrorCode = trailers.get("ml-error-code");
+        mlErrorMessage = trailers.get("ml-error-message");
     } catch (IOException e) {
-        throw new RuntimeException("No trailer header in repsonse");
+        // This does not seem worthy of causing the entire operation to fail; we also don't expect this to occur, as it
+        // should only occur due to a programming error where the response body has already been consumed
+        logger.warn("Unexpected IO error while getting HTTP response trailers: " + e.getMessage());
     }
+
+    if (mlErrorCode != null && !"N/A".equals(mlErrorCode)) {
+      FailedRequest failure = new FailedRequest();
+      failure.setMessageString(mlErrorCode);
+      failure.setStatusString(mlErrorMessage);
+      failure.setStatusCode(500);
+      throw new FailedRequestException("failed to " + operation + " "
+          + entityType + " at rows" + ": " + mlErrorCode + ", " + mlErrorMessage, failure);
+    }
+
     Closeable closeable = response;
     return makeResults(constructor, reqlog, operation, entityType, partList, response, closeable);
   }

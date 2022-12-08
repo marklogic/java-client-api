@@ -15,38 +15,23 @@
  */
 package com.marklogic.client.test.rows;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.io.LineNumberReader;
-import java.io.StringWriter;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.xml.namespace.QName;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPathExpressionException;
-
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.io.*;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.row.*;
+import com.marklogic.client.row.RowManager.RowSetPart;
+import com.marklogic.client.row.RowManager.RowStructure;
+import com.marklogic.client.row.RowRecord.ColumnKind;
+import com.marklogic.client.test.Common;
 import com.marklogic.client.type.*;
+import com.marklogic.client.util.EditableNamespaceContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -57,15 +42,19 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.row.RowManager.RowSetPart;
-import com.marklogic.client.row.RowManager.RowStructure;
-import com.marklogic.client.row.RowRecord.ColumnKind;
-import com.marklogic.client.test.Common;
-import com.marklogic.client.util.EditableNamespaceContext;
+import javax.xml.namespace.QName;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.StringWriter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.Assert.*;
 
 public class RowManagerTest {
   private static String[]             uris           = null;
@@ -528,26 +517,42 @@ public class RowManagerTest {
   }
 
   @Test
-  public void testSQLException() {
+  public void testErrorWhileStreamingRows() {
     if (!Common.markLogicIsVersion11OrHigher()) {
       return;
     }
 
-    RowManager rowMgr = Common.client.newRowManager();
-    PlanBuilder p = rowMgr.newPlanBuilder();
-    PlanBuilder.ExportablePlan builtPlan =
-        p.fromSql("select case when lastName = 'Davis' then fn_error(fn_qname('', 'SQL-TABLENOTFOUND'), 'Internal Server Error') end, opticUnitTest.musician.* from (select * from opticUnitTest.musician order by lastName)");
-    String exception = "";
-    int rowNum = 0;
-    try {
-      for (RowRecord row: rowMgr.resultRows(builtPlan)) {
-        rowNum++;
-      }
-    } catch (Exception e) {
-      exception = e.toString();
-    }
-    assertEquals(0, rowNum);
-    assertEquals("com.marklogic.client.FailedRequestException: failed to apply resource at rows: SQL-TABLENOTFOUND, Internal Server Error", exception);
+    final String validQueryThatEventuallyThrowsAnError = "select case " +
+        "when lastName = 'Davis' then fn_error(fn_qname('', 'SQL-TABLENOTFOUND'), 'Internal Server Error') end, " +
+        "opticUnitTest.musician.* from (select * from opticUnitTest.musician order by lastName)";
+
+    RowManager rowManager = Common.client.newRowManager();
+    PlanBuilder.ModifyPlan plan = rowManager.newPlanBuilder().fromSql(validQueryThatEventuallyThrowsAnError);
+
+    FailedRequestException ex = assertThrows(
+        "The SQL query is designed to not immediately fail - it will immediately return a 200 status code to the " +
+            "Java Client because the query itself can be executed - but will fail later as it streams rows; " +
+            "specifically, it will fail on the fourth row, which is the 'Davis' row. " +
+            "If chunking is configured correctly for the /v1/rows requests - i.e. if the " +
+            "'TE' header is present - then ML should return trailers in the HTTP response named 'ml-error-code' and " +
+            "'ml-error-message'. Those are intended to indicate that while a 200 was returned, an error occurred later " +
+            "while streaming data back. The Java Client is then expected to detect those trailers and throw a " +
+            "FailedRequestException. If the Java Client does not do that, then no exception will be thrown and this " +
+            "assertion will fail.", FailedRequestException.class, () -> rowManager.resultRows(plan));
+
+    assertEquals("A 500 is expected, even though ML immediately returned a 200 before it started streaming any data " +
+        "back; a 500 is used instead of a 400 here as we don't have a reliable way of knowing if the error " +
+        "occurred due to a bad request by the user, since the query was valid in the sense that it could be " +
+        "executed", 500, ex.getServerStatusCode());
+
+    assertEquals("The server error message is expected to be the value of the 'ml-error-message' trailer",
+        "SQL-TABLENOTFOUND", ex.getServerMessage());
+
+    assertEquals(
+        "The exception message is expected to be a formatted message containing the values of the 'ml-error-code' and " +
+            "'ml-error-message' trailers",
+        "Local message: failed to apply resource at rows: SQL-TABLENOTFOUND, Internal Server Error. Server Message: SQL-TABLENOTFOUND",
+        ex.getMessage());
   }
 
   @Test
