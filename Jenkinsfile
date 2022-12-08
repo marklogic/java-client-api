@@ -40,7 +40,11 @@ def runtests(String type, String version){
                 sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
                 cd $WORKSPACE/java-client-api/ml-development-tools/build/test-results/test/
                 sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
-                cd $WORKSPACE/java-client-api/marklogic-client-api-functionaltests/build/test-results/test/
+                cd $WORKSPACE/java-client-api/marklogic-client-api-functionaltests/build/test-results/runFragileTests/
+                sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
+                cd $WORKSPACE/java-client-api/marklogic-client-api-functionaltests/build/test-results/runFastFunctionalTests/
+                sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
+                cd $WORKSPACE/java-client-api/marklogic-client-api-functionaltests/build/test-results/runSlowFunctionalTests/
                 sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
             '''
 }

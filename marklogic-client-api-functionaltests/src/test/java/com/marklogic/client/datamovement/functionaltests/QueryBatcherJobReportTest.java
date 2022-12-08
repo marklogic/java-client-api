@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -70,18 +71,13 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 
-public class QueryBatcherJobReportTest extends BasicJavaClientREST {
+public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 
-	private static String dbName = "QueryBatcherJobReport";
 	private static DataMovementManager dmManager = null;
 	private static final String TEST_DIR_PREFIX = "/WriteHostBatcher-testdata/";
 
 	private static DatabaseClient dbClient;
-	private static String user = "admin";
-	private static int port = 8000;
-	private static String password = "admin";
-	private static String server = "App-Services";
-	
+
 	private static StringHandle stringHandle;
 	private static FileHandle fileHandle;
 
@@ -101,28 +97,10 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		loadGradleProperties();
-		server = getRestAppServerName();
-	    port = getRestAppServerPort();
-	    
-		getRestAppServerHostName();
-		dbClient = getDatabaseClient(user, password, getConnType());
+		dbClient = connectAsAdmin();
 		dmManager = dbClient.newDataMovementManager();
+
 		hostNames = getHosts();
-		createDB(dbName);
-		Thread.currentThread().sleep(500L);
-		int count = 1;
-		for (String forestHost : hostNames) {
-			createForestonHost(dbName + "-" + count, dbName, forestHost);
-			count++;
-			Thread.currentThread().sleep(500L);
-		}
-		// Create App Server if needed.
-		createRESTServerWithDB(server, port);
-		assocRESTServer(server, dbName, port);
-		if (IsSecurityEnabled()) {
-			enableSecurityOnRESTServer(server, dbName);
-		}
 
 		// FileHandle
 		fileJson = FileUtils.toFile(BasicJavaClientREST.class.getResource(TEST_DIR_PREFIX + "dir.json"));
@@ -179,17 +157,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 				.toFile(BasicJavaClientREST.class.getResource(TEST_DIR_PREFIX + "javascript_transform.sjs"));
 		FileHandle transformHandle1 = new FileHandle(transformFile1);
 		transMgr.writeJavascriptTransform("jsTransform", transformHandle1);
-
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-		associateRESTServerWithDB(server, "Documents");
-		for (int i = 0; i < hostNames.length; i++) {
-			detachForest(dbName, dbName + "-" + (i + 1));
-			deleteForest(dbName + "-" + (i + 1));
-		}
-		deleteDB(dbName);
 	}
 
 	@Test
@@ -359,7 +326,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 				System.out.println(dmManager.getJobReport(queryTicket).getSuccessEventsCount());
 				if (dmManager.getJobReport(queryTicket).getSuccessEventsCount() >= 0) {
 
-					changeProperty(properties, "/manage/v2/databases/" + dbName + "/properties");
+					changeProperty(properties, "/manage/v2/databases/java-functest/properties");
 					System.out.println("DB disabled");
 					state = false;
 				}
@@ -372,7 +339,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			}
 
 			properties.put("enabled", "true");
-			changeProperty(properties, "/manage/v2/databases/" + dbName + "/properties");
+			changeProperty(properties, "/manage/v2/databases/java-functest/properties");
 		}
 	}
 
@@ -508,27 +475,24 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
 		transform.put("name", "Lang");
 		transform.put("value", "French");
-		List<String> skippedBatch = new ArrayList<>();
-		List<String> successBatch = new ArrayList<>();
+		List<String> skippedUris = new ArrayList<>();
+		List<String> successUris = new ArrayList<>();
+		List<String> failedUris = new ArrayList<>();
+
 		AtomicLong skippedApplyTransCount = new AtomicLong(0L);
 
 		ApplyTransformListener listener = new ApplyTransformListener().withTransform(transform)
 				.withApplyResult(ApplyResult.REPLACE).onSuccess(batch -> {
-
 					List<String> batchList = Arrays.asList(batch.getItems());
-					successBatch.addAll(batchList);
-					/*System.out.println("stopTransformJobTest: Success: " + batch.getItems()[0]);
-					System.out.println("stopTransformJobTest: Success: " + dbClient.newServerEval()
-							.xquery("fn:doc(\"" + batch.getItems()[0] + "\")").eval().next().getString());*/
+					successUris.addAll(batchList);
 				}).onSkipped(batch -> {
 					List<String> batchList = Arrays.asList(batch.getItems());
-					skippedBatch.addAll(batchList);
+					skippedUris.addAll(batchList);
 					System.out.println("stopTransformJobTest : Skipped: " + batch.getItems()[0]);
 				}).onFailure((batch, throwable) -> {
 					List<String> batchList = Arrays.asList(batch.getItems());
-					throwable.printStackTrace();
+					failedUris.addAll(batchList);
 					System.out.println("stopTransformJobTest: Failed: " + batch.getItems()[0]);
-
 				});
 
 		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
@@ -540,10 +504,11 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			successCount.set(dmManager.getJobReport(queryTicket).getSuccessEventsCount());
 		}).onUrisReady(listener);
 		queryTicket = dmManager.startJob(batcher);
-		Thread.currentThread().sleep(4000L);
+		// Wait an amount of time that should result in some docs being transformed but not all
+		Thread.currentThread().sleep(500L);
 		dmManager.stopJob(queryTicket);
 		
-		AtomicInteger appliedTranscount = new AtomicInteger(0);
+		AtomicInteger transformedCount = new AtomicInteger(0);
 		QueryBatcher resultBatcher = dmManager
 				.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
 				.withBatchSize(25).withThreadCount(5)
@@ -556,7 +521,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 						if (dh.get().getElementsByTagName("foo").item(0).hasAttributes()) {
 							String appliedTransStrValue = dh.get().getElementsByTagName("foo").item(0).getAttributes().item(0).getNodeValue();
 							if (appliedTransStrValue.equalsIgnoreCase("French")) {
-								appliedTranscount.incrementAndGet();
+								transformedCount.incrementAndGet();
 								System.out.println("stopTransformJobTest: Did not get skipped in server" + rec.getUri());
 							}
 						}else {
@@ -568,17 +533,17 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		dmManager.startJob(resultBatcher);				
 		resultBatcher.awaitCompletion();
 
-		System.out.println("stopTransformJobTest: Success: " + successBatch.size());
+		System.out.println("stopTransformJobTest: Success: " + successUris.size());
 		System.out.println("stopTransformJobTest: Skipped Apply Transform count : " + skippedApplyTransCount.get());
-		System.out.println("stopTransformJobTest: Skipped: " + skippedBatch.size());
-		System.out.println("stopTransformJobTest : Applied Trans count " + appliedTranscount.get());
+		System.out.println("stopTransformJobTest: Skipped: " + skippedUris.size());
+		System.out.println("stopTransformJobTest : Applied Trans count " + transformedCount.get());
 		
 		System.out.println("stopTransformJobTest : successCount.get() " + successCount.get());
 		// This fails intermittently when the successBatch size is one less than the appliedTranscount. Interestingly,
 		// a potentially similar off-by-one error occurs with the stopTransformJob test in ApplyTransformTest
 		assertTrue("Number of docs transformed must be <= number of docs selected; " +
-			"applied count: " + appliedTranscount.get() + "; success batch size: " + successBatch.size(),
-			appliedTranscount.get() <= successBatch.size());
+			"applied count: " + transformedCount.get() + "; success batch size: " + successUris.size() + "; failed count: " + failedUris.size(),
+			transformedCount.get() <= (successUris.size() + failedUris.size()));
 	}
 	
 	/* Test 1 setMaxBatches(2035) - maximum specified in advance
