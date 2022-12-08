@@ -36,13 +36,33 @@ dependencies {
   testImplementation group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.11'
 }
 
-task testFastFunctionalTests(type: Test) {
-  description = "Run all fast functional tests that don't setup/teardown custom app servers / databases"
-  include "com/marklogic/client/fastfunctest/**"
+task runFragileTests(type: Test) {
+  description = "These are called 'fragile' because they'll pass when run by themselves, but when run as part of the " +
+          "full suite, there seem to be one or more other fast functional tests that run before them and cause some of " +
+          "their test methods to break. The Jenkinsfile thus calls these first before running the other functional " +
+          "tests."
+  include "com/marklogic/client/fastfunctest/TestQueryOptionBuilder.class"
+  include "com/marklogic/client/fastfunctest/TestRawCombinedQuery.class"
+  include "com/marklogic/client/fastfunctest/TestRawStructuredQuery.class"
 }
 
-task testSlowFunctionalTests(type: Test) {
+task runFastFunctionalTests(type: Test) {
+  description = "Run all fast functional tests that don't setup/teardown custom app servers / databases"
+  include "com/marklogic/client/fastfunctest/**"
+  // Exclude the "fragile" ones
+  exclude "com/marklogic/client/fastfunctest/TestQueryOptionBuilder.class"
+  exclude "com/marklogic/client/fastfunctest/TestRawCombinedQuery.class"
+  exclude "com/marklogic/client/fastfunctest/TestRawStructuredQuery.class"
+}
+
+task runSlowFunctionalTests(type: Test) {
   description = "Run slow functional tests; i.e. those that setup/teardown custom app servers / databases"
   include "com/marklogic/client/datamovement/functionaltests/**"
   include "com/marklogic/client/functionaltest/**"
 }
+
+task runFunctionalTests {
+  dependsOn(runFragileTests, runFastFunctionalTests, runSlowFunctionalTests)
+}
+runFastFunctionalTests.mustRunAfter runFragileTests
+runSlowFunctionalTests.mustRunAfter runFastFunctionalTests
