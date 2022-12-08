@@ -1,5 +1,15 @@
 @Library('shared-libraries') _
 
+def getJava(){
+    if(env.JAVA_VERSION=="JAVA17"){
+        return "/home/builder/java/jdk-17.0.2"
+    }else if(env.JAVA_VERSION=="JAVA11"){
+        return "/home/builder/java/jdk-11.0.2"
+    }else{
+        return "/home/builder/java/openjdk-1.8.0-262"
+    }
+}
+
 def runtests(String type, String version){
             copyRPM type, version
             setUpML '$WORKSPACE/xdmp/src/Mark*.rpm'
@@ -58,9 +68,10 @@ pipeline{
   parameters{
     booleanParam(name: 'regressions', defaultValue: false, description: 'indicator if build is for regressions')
     string(name: 'Email', defaultValue: '' ,description: 'Who should I say send the email to?')
+    string(name: 'JAVA_VERSION', defaultValue: 'JAVA8' ,description: 'Who should I say send the email to?')
   }
   environment{
-    JAVA_HOME_DIR="/home/builder/java/openjdk-1.8.0-262"
+    JAVA_HOME_DIR= getJava()
     GRADLE_DIR   =".gradle"
     DMC_USER     = credentials('MLBUILD_USER')
     DMC_PASSWORD = credentials('MLBUILD_PASSWORD')
