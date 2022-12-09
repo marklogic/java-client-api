@@ -124,8 +124,8 @@ public class DatabaseClientTest {
   @Test
   public void testCheckConnectionWithValidUser() {
 		
-	DatabaseClient marklogic = DatabaseClientFactory.newClient(Common.HOST,
-		        8000, "unittest-nodeapi", new DatabaseClientFactory.DigestAuthContext(
+	DatabaseClient marklogic = Common.makeNewClient(Common.HOST,
+		        8000, "unittest-nodeapi", Common.newSecurityContext(
 				        Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS));
   
     ConnectionResult connResult = marklogic.checkConnection();
@@ -135,9 +135,8 @@ public class DatabaseClientTest {
   @Test
   public void testCheckConnectionWithInvalidUser() {
 		
-	DatabaseClient marklogic = DatabaseClientFactory.newClient(Common.HOST,
-		        8000, "unittest-nodeapi", new DatabaseClientFactory.DigestAuthContext(
-				        "invalid", "invalid"));
+	DatabaseClient marklogic = Common.makeNewClient(Common.HOST,
+		        8000, "unittest-nodeapi", Common.newSecurityContext("invalid", "invalid"));
   
     ConnectionResult connResult = marklogic.checkConnection();
     assertFalse(connResult.isConnected());

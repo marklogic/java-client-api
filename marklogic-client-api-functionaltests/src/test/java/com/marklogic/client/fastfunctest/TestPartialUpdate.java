@@ -66,7 +66,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -141,7 +141,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     String[] filenames = { "json-original.json" };
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("bad-eval-user", "x");
+    SecurityContext secContext = newSecurityContext("bad-eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -158,7 +158,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     String[] filenames = { "json-original.json" };
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -232,7 +232,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     String filename = "constraint1.xml";
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -326,7 +326,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
   {
     System.out.println("Running testPartialUpdateDeletePath");
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -369,7 +369,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
   @Test
   public void testPartialUpdateFragments() throws Exception {
     System.out.println("Running testPartialUpdateFragments");
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -407,7 +407,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
   @Test
   public void testPartialUpdateInsertFragments() throws Exception {
     System.out.println("Running testPartialUpdateInsertFragments");
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -442,7 +442,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
   @Test
   public void testPartialUpdateInsertExistingFragments() throws Exception {
     System.out.println("Running testPartialUpdateInsertExistingFragments");
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -477,7 +477,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
   @Test
   public void testPartialUpdateReplaceApply() throws Exception {
     System.out.println("Running testPartialUpdateReplaceApply");
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-admin", "x");
+    SecurityContext secContext = newSecurityContext("rest-admin", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8000, secContext, getConnType());
     ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
 
@@ -602,7 +602,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
   @Test
   public void testPartialUpdateCombination() throws Exception {
     System.out.println("Running testPartialUpdateCombination");
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -634,7 +634,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
   @Test
   public void testPartialUpdateCombinationTransc() throws Exception {
     System.out.println("Running testPartialUpdateCombination");
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
     Transaction t = client.openTransaction("Transac");
     // write docs
@@ -672,7 +672,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
   @Test
   public void testPartialUpdateCombinationTranscRevert() throws Exception {
     System.out.println("Running testPartialUpdateCombinationTranscRevert");
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
     // write docs
     String[] filenames = { "constraint1.xml", "constraint2.xml" };
@@ -765,7 +765,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
   @Test
   public void testPartialUpdateMetadata() throws Exception {
     System.out.println("Running testPartialUpdateMetadata");
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -840,7 +840,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -877,7 +877,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     String[] filenames = { "json-original.json" };
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -922,7 +922,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -961,7 +961,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     String[] filenames = { "json-original.json" };
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -1006,7 +1006,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     String filename = "constraint1.xml";
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -1064,7 +1064,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     String[] filenames = { "json-original.json" };
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -1111,7 +1111,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     String[] filenames = { "json-original.json" };
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -1159,7 +1159,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     String[] filenames = { "json-original.json" };
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -1208,7 +1208,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     String[] filenames = { "json-original.json" };
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -1255,7 +1255,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     String[] filenames = { "json-original.json" };
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
@@ -1307,7 +1307,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
       content1.append("{ \"RegionId\": \"1004\", \"Direction\": \"SW\" }");
       content1.append("]}}]}");
 
-      SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+      SecurityContext secContext = newSecurityContext("eval-user", "x");
       DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
       int count = 1;
       XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -1389,7 +1389,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     String[] filenames = { "json-original.json" };
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
     DocumentMetadataHandle mhRead = new DocumentMetadataHandle();
 

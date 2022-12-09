@@ -174,7 +174,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
   
     DatabaseClient client = null;
 	SSLContext sslcontext = null;
-	SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-reader", "x");
+	SecurityContext secContext = newSecurityContext("rest-reader", "x");
 	
 		try {
 			sslcontext = getSslContext();
@@ -219,7 +219,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     String filename = "facebook-10443244874876159931";
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-reader", "x");
+    SecurityContext secContext = newSecurityContext("rest-reader", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8033, secContext, getConnType());
 
     String expectedException = null;
@@ -306,7 +306,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     String filename = "facebook-10443244874876159931";
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-writer", "x");
+    SecurityContext secContext = newSecurityContext("rest-writer", "x");
     DatabaseClient client = DatabaseClientFactory.newClient("foobarhost", 8011, secContext, getConnType());
 
     // String expectedException =
@@ -354,7 +354,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     String filename = "xml-original-test.xml";
     String uri = "/write-xml-string/";
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, secContext, getConnType());
 
     // write doc
@@ -387,7 +387,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     if (isLBHost())
     	client	= getDatabaseClient("eval-user", "x", getConnType());
     else {
-    	SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    	SecurityContext secContext = newSecurityContext("eval-user", "x");
     	client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
     }
 
@@ -417,7 +417,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     String[] filenames = { "multibyte1.xml", "multibyte2.xml", "multibyte3.xml" };
     String queryOptionName = "suggestionOpt.xml";
     
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
     // write docs
     for (String filename : filenames) {
@@ -447,7 +447,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     String[] filenames = { "aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml", "aggr5.xml" };
     String queryOptionName = "aggregatesOpt.xml";
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
 
     // write docs
@@ -505,7 +505,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     String[] filenames = { "aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml" };
     String queryOptionName = "aggregatesOpt5Occ.xml";
 
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
 
     // write docs
@@ -540,7 +540,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     System.out.println("Running testTransactionReadStatus");
 
     String docId[] = { "/foo/test/transactionURIFoo1.txt", "/foo/test/transactionURIFoo2.txt", "/foo/test/transactionURIFoo3.txt" };
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
     Transaction transaction = client.openTransaction();
     try {
@@ -659,7 +659,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     System.out.println("Running testAddAs");
 
     String[] docId = { "aggr1.xml", "aggr2.xml", "aggr3.xml" };
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
     Transaction transaction = client.openTransaction();
 
@@ -720,7 +720,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     try {
       String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-      SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+      SecurityContext secContext = newSecurityContext("eval-user", "x");
       client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
       // write docs
       for (String filename : filenames) {
@@ -860,7 +860,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 		  clientFactoryBean.setHost(getRestAppServerHostName());
 		  clientFactoryBean.setPort(getRestAppServerPort());
 		  clientFactoryBean.setConnectionType(getConnType());
-		  SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-admin", "x");
+		  SecurityContext secContext = newSecurityContext("rest-admin", "x");
 
 		  clientFactoryBean.setSecurityContext(secContext);
 		  client = clientFactoryBean.newClient();
@@ -897,7 +897,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 	  clientFactoryBean.setHost(getRestAppServerHostName());
 	  clientFactoryBean.setPort(getRestAppServerPort());
 	  clientFactoryBean.setConnectionType(getConnType());
-	  SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-writer", "x");
+	  SecurityContext secContext = newSecurityContext("rest-writer", "x");
 
 	  clientFactoryBean.setSecurityContext(secContext);
 	  client = clientFactoryBean.newClient();
@@ -1045,7 +1045,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     if (!IsSecurityEnabled()) {
       setDefaultUser("nobody", restServerName);
-      setAuthentication("digest", restServerName);
+      setAuthentication(securityContextType, restServerName);
     }
     // Associate the Server with Documents. Due to test orders being
     // undeterministic not sure which DB will be associated.

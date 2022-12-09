@@ -101,6 +101,7 @@ pipeline{
           export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
           cd java-client-api
           ./gradlew -i marklogic-client-api:test  || true
+          ./gradlew marklogic-client-api-functionaltests:runFastFunctionalTests || true
         '''
         junit '**/build/**/TEST*.xml'
       }

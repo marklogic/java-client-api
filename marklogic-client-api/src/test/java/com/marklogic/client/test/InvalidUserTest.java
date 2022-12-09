@@ -30,8 +30,8 @@ public class InvalidUserTest {
   @Test
   public void testInvalidUserAuth() {
     // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      Common.HOST, Common.PORT, new DigestAuthContext("MyFooUser", "x"));
+    DatabaseClient client = Common.makeNewClient(Common.HOST, Common.PORT,
+        Common.newSecurityContext("MyFooUser", "x"));
 
 
     String expectedException = "com.marklogic.client.FailedRequestException: " +

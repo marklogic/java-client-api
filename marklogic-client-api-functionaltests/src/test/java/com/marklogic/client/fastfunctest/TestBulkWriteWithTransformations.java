@@ -74,7 +74,7 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     if (isLBHost())
     	client	= getDatabaseClient("eval-user", "x", getConnType());
     else {
-    	SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    	SecurityContext secContext = newSecurityContext("eval-user", "x");
     client = DatabaseClientFactory.newClient(appServerHostname, uberPort, "java-functest", secContext, getConnType());
     }
   }

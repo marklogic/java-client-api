@@ -52,8 +52,7 @@ public class JacksonCSVSplitterTest {
     
     @Before
     public void setUp() {
-        client = DatabaseClientFactory.newClient(Common.HOST, 8012,
-                new DatabaseClientFactory.DigestAuthContext("rest-admin", "x"));
+        client = Common.makeNewClient(Common.HOST, Common.PORT, Common.newSecurityContext("rest-admin", "x"));
         moveMgr = client.newDataMovementManager();
     }
     

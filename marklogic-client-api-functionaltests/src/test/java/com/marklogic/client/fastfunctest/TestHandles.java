@@ -78,7 +78,7 @@ public class TestHandles extends AbstractFunctionalTest {
         XMLUnit.setNormalizeWhitespace(true);
 
         // connect the client
-        DatabaseClientFactory.SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+        DatabaseClientFactory.SecurityContext secContext = newSecurityContext("eval-user", "x");
         DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
         // write docs
@@ -140,7 +140,7 @@ public class TestHandles extends AbstractFunctionalTest {
         System.out.println("Runing test TextCRUD_BytesHandle");
 
         // connect the client
-        DatabaseClientFactory.SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+        DatabaseClientFactory.SecurityContext secContext = newSecurityContext("eval-user", "x");
         DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
         // write docs
@@ -201,7 +201,7 @@ public class TestHandles extends AbstractFunctionalTest {
         ObjectMapper mapper = new ObjectMapper();
 
         // connect the client
-        DatabaseClientFactory.SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+        DatabaseClientFactory.SecurityContext secContext = newSecurityContext("eval-user", "x");
         DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
         // write docs
@@ -262,7 +262,7 @@ public class TestHandles extends AbstractFunctionalTest {
         System.out.println("Running testBinaryCRUD_BytesHandle");
 
         // connect the client
-        DatabaseClientFactory.SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+        DatabaseClientFactory.SecurityContext secContext = newSecurityContext("eval-user", "x");
         DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
         // write docs
