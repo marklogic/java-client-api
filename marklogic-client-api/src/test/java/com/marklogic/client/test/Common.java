@@ -59,8 +59,8 @@ public class Common {
   final public static String  HOST          = System.getProperty("TEST_HOST", "localhost");
 
   final public static int     PORT          = Integer.parseInt(System.getProperty("TEST_PORT", "8012"));
+  final public static String SECURITY_CONTEXT_TYPE = System.getProperty("TEST_SECURITY_CONTEXT_TYPE", "digest");
   final public static boolean WITH_WAIT     = Boolean.parseBoolean(System.getProperty("TEST_WAIT", "false"));
-  final public static int     MODULES_WAIT  = Integer.parseInt(System.getProperty("TEST_MODULES_WAIT",  WITH_WAIT ? "1200" : "0"));
   final public static int     PROPERTY_WAIT = Integer.parseInt(System.getProperty("TEST_PROPERTY_WAIT", WITH_WAIT ? "8200" : "0"));
 
   final public static DatabaseClient.ConnectionType CONNECTION_TYPE =
@@ -106,40 +106,73 @@ public class Common {
   public static DatabaseClient newClientAsUser(String username) {
     return newClientAsUser(username, null);
   }
-  public static DatabaseClient newClientAsUser(String username, String databaseName) {
-    System.out.println("Connecting to: " + Common.HOST);
-    return DatabaseClientFactory.newClient(Common.HOST, Common.PORT, databaseName,
-            new DatabaseClientFactory.DigestAuthContext(username, Common.PASS),
-            CONNECTION_TYPE);
+
+  public static DatabaseClientFactory.SecurityContext newSecurityContext(String username, String password) {
+    if ("basic".equalsIgnoreCase(SECURITY_CONTEXT_TYPE)) {
+      return new DatabaseClientFactory.BasicAuthContext(username, password);
+    }
+    return new DatabaseClientFactory.DigestAuthContext(username, password);
   }
+
+  public static DatabaseClient newClientAsUser(String username, String databaseName) {
+    return makeNewClient(Common.HOST, Common.PORT, databaseName, newSecurityContext(username, Common.PASS));
+  }
+
+  public static DatabaseClient makeNewClient(String host, int port, DatabaseClientFactory.SecurityContext securityContext) {
+    return makeNewClient(host, port, null, securityContext);
+  }
+
+  public static DatabaseClient makeNewClient(String host, int port, String database, DatabaseClientFactory.SecurityContext securityContext) {
+    return makeNewClient(host, port, database, securityContext, CONNECTION_TYPE);
+  }
+
+  public static DatabaseClient makeNewClient(String host, int port, DatabaseClientFactory.SecurityContext securityContext,
+                                             DatabaseClient.ConnectionType connectionType) {
+    return makeNewClient(host, port, null, securityContext, connectionType);
+  }
+
+  /**
+   * Intent is to route every call to this method so that changes to how newClient works can easily be made in the
+   * future.
+   *
+   * @param host
+   * @param port
+   * @param database
+   * @param securityContext
+   * @param connectionType
+   * @return
+   */
+  public static DatabaseClient makeNewClient(String host, int port, String database,
+                                             DatabaseClientFactory.SecurityContext securityContext,
+                                             DatabaseClient.ConnectionType connectionType) {
+    System.out.println("Connecting to: " + Common.HOST + ":" + port);
+    return DatabaseClientFactory.newClient(host, port, database, securityContext, connectionType);
+  }
+
   public static DatabaseClient newAdminClient() {
     return newAdminClient(null);
   }
   public static DatabaseClient newAdminClient(String databaseName) {
-    return DatabaseClientFactory.newClient(Common.HOST, Common.PORT, databaseName,
-       new DigestAuthContext(Common.REST_ADMIN_USER, Common.REST_ADMIN_PASS),
-          CONNECTION_TYPE);
+    return makeNewClient(Common.HOST, Common.PORT, databaseName,
+       newSecurityContext(Common.REST_ADMIN_USER, Common.REST_ADMIN_PASS), CONNECTION_TYPE);
   }
   public static DatabaseClient newServerAdminClient() {
     return newServerAdminClient(null);
   }
   public static DatabaseClient newServerAdminClient(String databaseName) {
-    return DatabaseClientFactory.newClient(Common.HOST, Common.PORT, databaseName,
-       new DigestAuthContext(Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS),
-          CONNECTION_TYPE);
+    return makeNewClient(Common.HOST, Common.PORT, databaseName,
+       newSecurityContext(Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS), CONNECTION_TYPE);
   }
   public static DatabaseClient newEvalClient() {
     return newEvalClient(null);
   }
   public static DatabaseClient newEvalClient(String databaseName) {
-    return DatabaseClientFactory.newClient(
-      Common.HOST, Common.PORT, databaseName, new DigestAuthContext(Common.EVAL_USER, Common.EVAL_PASS),
-          CONNECTION_TYPE);
+    return makeNewClient(Common.HOST, Common.PORT, databaseName,
+        newSecurityContext(Common.EVAL_USER, Common.EVAL_PASS), CONNECTION_TYPE);
   }
   public static DatabaseClient newReadOnlyClient() {
-    return DatabaseClientFactory.newClient(
-      Common.HOST, Common.PORT, new DigestAuthContext(Common.READ_ONLY_USER, Common.READ_ONLY_PASS),
-          CONNECTION_TYPE);
+    return makeNewClient(Common.HOST, Common.PORT,
+        newSecurityContext(Common.READ_ONLY_USER, Common.READ_ONLY_PASS), CONNECTION_TYPE);
   }
 
   public static MarkLogicVersion getMarkLogicVersion() {
@@ -232,9 +265,6 @@ public class Common {
     } catch (ParserConfigurationException e) {
       throw new RuntimeException(e);
     }
-  }
-  public static void modulesWait() {
-    waitFor(MODULES_WAIT);
   }
   public static void propertyWait() {
     waitFor(PROPERTY_WAIT);

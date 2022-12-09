@@ -63,7 +63,7 @@ public class TestRuntimeDBselection extends AbstractFunctionalTest {
         assertEquals("count of documents ", 0, response2);
         client.release();
       } finally {
-        associateRESTServerWithDefaultUser("java-functest", "nobody", "digest");
+        associateRESTServerWithDefaultUser("java-functest", "nobody", securityContextType);
       }
     }
   }

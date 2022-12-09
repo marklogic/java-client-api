@@ -122,7 +122,7 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		createUserRolesWithPrevilages("ForbiddenRole", "any-uri");
 		createRESTUser("ForbiddenUser", "ap1U53r", "apiRole", "rest-admin", "rest-writer", "rest-reader",
 				"manage-user");
-		SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("apiUser", "ap1U53r");
+		SecurityContext secContext = newSecurityContext("apiUser", "ap1U53r");
 		dbclient = DatabaseClientFactory.newClient(host, port, secContext, getConnType());
 		schemaDBclient = getDatabaseClientOnDatabase(host, modulesPort, dbNameMod, user, "admin",
 				getConnType());
@@ -427,8 +427,8 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 	public void TestE2EUnAuthorizedUser() throws Exception {
 
 		System.out.println("Running TestE2EUnAuthorizedUser");
-		associateRESTServerWithDefaultUser(serverName, "security", "digest");
-		SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("ForbiddenUser", "ap1U53r");
+		associateRESTServerWithDefaultUser(serverName, "security", securityContextType);
+		SecurityContext secContext = newSecurityContext("ForbiddenUser", "ap1U53r");
 		DatabaseClient dbForbiddenclient = DatabaseClientFactory.newClient(host, port, secContext, getConnType());
 		String msg;
 		try {
@@ -441,7 +441,7 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 			assertTrue("Expected exception returned", msg.contains(
 					"failed to POST at /ext/TestE2EIntegerParamReturnDouble/TestE2EIntegerParamReturnDoubleErrorCond.sjs"));
 		} finally {
-			associateRESTServerWithDefaultUser(serverName, "nobody", "digest");
+			associateRESTServerWithDefaultUser(serverName, "nobody", securityContextType);
 		}
 	}
 
@@ -531,7 +531,7 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		// Used this test to verify ResourceNotFoundException when sjs module is installed with incorrect doc URI
 
 		System.out.println("Running TestE2EuserWithInvalidRole");
-		SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("secondApiUser", "ap1U53r");
+		SecurityContext secContext = newSecurityContext("secondApiUser", "ap1U53r");
 		DatabaseClient dbSecondClient = DatabaseClientFactory.newClient(host, port, secContext, getConnType());
 		String msg;
 		try {
@@ -602,7 +602,7 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		} catch (Exception ex) {
 			System.out.println("Exception - session2.json / session3.json - Client API call is " + ex.toString());
 		}
-		SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("apiUser", "ap1U53r");
+		SecurityContext secContext = newSecurityContext("apiUser", "ap1U53r");
 		DatabaseClient dbclientRest = DatabaseClientFactory.newClient(host, restTestport, secContext, getConnType());
 		this.waitForPropertyPropagate();
 		JSONDocumentManager docMgr = dbclientRest.newJSONDocumentManager();

@@ -21,13 +21,10 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.io.InputStreamHandle;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -42,13 +39,14 @@ public class TestDatabaseAuthentication extends AbstractFunctionalTest {
   private static String restServerName = "java-functest";
 
   @After
-  public void testCleanUp() throws Exception {
-    deleteDocuments(connectAsAdmin());
+  public void teardown() throws Exception {
+    setAuthentication(securityContextType, restServerName);
+    setDefaultUser("nobody", restServerName);
   }
 
   // Should throw exceptions when none specified.
   @Test
-  public void testAuthenticationNone() throws KeyManagementException, NoSuchAlgorithmException, IOException
+  public void testAuthenticationNone() throws IOException
   {
     System.out.println("Running testAuthenticationNone");
     if (!IsSecurityEnabled()) {
@@ -63,13 +61,11 @@ public class TestDatabaseAuthentication extends AbstractFunctionalTest {
       }
       assertEquals("Write Text difference", "makeSecurityContext should only be called with BASIC or DIGEST Authentication",
           str.toString().trim());
-      setAuthentication("digest", restServerName);
-      setDefaultUser("nobody", restServerName);
     }
   }
 
   @Test
-  public void testAuthenticationBasic() throws KeyManagementException, NoSuchAlgorithmException, IOException
+  public void testAuthenticationBasic() throws IOException
   {
     if (!IsSecurityEnabled()) {
       setAuthentication("basic", restServerName);
@@ -100,15 +96,6 @@ public class TestDatabaseAuthentication extends AbstractFunctionalTest {
 
       // release client
       client.release();
-
-      setAuthentication("digest", restServerName);
-      setDefaultUser("nobody", restServerName);
     }
-  }
-
-  @AfterClass
-  public static void tearDown() throws Exception {
-    setAuthentication("digest", restServerName);
-    setDefaultUser("nobody", restServerName);
   }
 }

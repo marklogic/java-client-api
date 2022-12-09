@@ -61,11 +61,11 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
             adminModulesClient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), modulesDbName, getAdminUser(), getAdminPassword(), getConnType());
         } else {
             schemasClient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemasDbName,
-                new DatabaseClientFactory.DigestAuthContext(OPTIC_USER, OPTIC_USER_PASSWORD));
+                newSecurityContext(OPTIC_USER, OPTIC_USER_PASSWORD));
             client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(),
-                new DatabaseClientFactory.DigestAuthContext(OPTIC_USER, OPTIC_USER_PASSWORD));
+                newSecurityContext(OPTIC_USER, OPTIC_USER_PASSWORD));
             adminModulesClient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), modulesDbName,
-                new DatabaseClientFactory.DigestAuthContext(getAdminUser(), getAdminPassword()));
+                newSecurityContext(getAdminUser(), getAdminPassword()));
         }
 
         // Required to ensure that tests using the "/ext/" prefix work reliably. Expand to other directories as needed.
@@ -155,12 +155,12 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
 
     protected static DatabaseClient connectAsRestWriter() {
         return DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(),
-            new DatabaseClientFactory.DigestAuthContext("rest-writer", "x"), getConnType());
+            newSecurityContext("rest-writer", "x"), getConnType());
     }
 
     protected static DatabaseClient connectAsAdmin() {
         return DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(),
-            new DatabaseClientFactory.DigestAuthContext(getAdminUser(), getAdminPassword()), getConnType());
+            newSecurityContext(getAdminUser(), getAdminPassword()), getConnType());
     }
 
     protected static void removeFieldIndices() {

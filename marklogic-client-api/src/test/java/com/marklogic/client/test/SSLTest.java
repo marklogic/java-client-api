@@ -67,7 +67,7 @@ public class SSLTest {
     sslContext.init(null, trustMgrs, null);
 
     // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(Common.HOST, Common.PORT, new DigestAuthContext("rest-writer", "x")
+    DatabaseClient client = Common.makeNewClient(Common.HOST, Common.PORT, Common.newSecurityContext("rest-writer", "x")
       .withSSLContext(sslContext, x509trustMgr)
       .withSSLHostnameVerifier(SSLHostnameVerifier.ANY));
 

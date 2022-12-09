@@ -319,7 +319,7 @@ public class BitemporalTest {
 
 
   static public void cleanUp() {
-    DatabaseClient client = DatabaseClientFactory.newClient(Common.HOST, Common.PORT, new DigestAuthContext(Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS));
+    DatabaseClient client = Common.newServerAdminClient();
     try {
       QueryManager queryMgr = client.newQueryManager();
       queryMgr.setPageLength(1000);

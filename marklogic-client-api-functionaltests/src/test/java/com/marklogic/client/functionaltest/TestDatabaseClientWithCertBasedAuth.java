@@ -69,7 +69,7 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST {
     createRESTServerWithDB(server, port);
     createRESTUser("portal", "seekrit", "admin", "rest-admin", "rest-writer", "rest-reader");
     associateRESTServerWithDB(setupServer, "Security");
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("admin", "admin");
+    SecurityContext secContext = newSecurityContext("admin", "admin");
     secClient = DatabaseClientFactory.newClient(host, setupPort, secContext, getConnType());
 
     createCACert();

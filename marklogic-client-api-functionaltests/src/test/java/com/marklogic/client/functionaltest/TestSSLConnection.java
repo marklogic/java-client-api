@@ -221,7 +221,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
     // create the client
     // (note: a real application should use a COMMON, STRICT, or implemented
     // hostname verifier)
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-admin", "x").withSSLContext(sslContext, new X509TrustManager() {
+    SecurityContext secContext = newSecurityContext("rest-admin", "x").withSSLContext(sslContext, new X509TrustManager() {
 
 		@Override
 		public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
@@ -285,7 +285,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
     // create the client
     // (note: a real application should use a COMMON, STRICT, or implemented
     // hostname verifier)
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-admin", "x").withSSLContext(sslContext, new X509TrustManager() {
+    SecurityContext secContext = newSecurityContext("rest-admin", "x").withSSLContext(sslContext, new X509TrustManager() {
 
 		@Override
 		public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
@@ -349,7 +349,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
     // create the client
     // (note: a real application should use a COMMON, STRICT, or implemented
     // hostname verifier)
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-admin", "foo").withSSLContext(sslContext, new X509TrustManager() {
+    SecurityContext secContext = newSecurityContext("rest-admin", "foo").withSSLContext(sslContext, new X509TrustManager() {
 
 		@Override
 		public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
@@ -416,7 +416,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
     // create the client
     // (note: a real application should use a COMMON, STRICT, or implemented
     // hostname verifier)
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("MyFooUser", "x");
+    SecurityContext secContext = newSecurityContext("MyFooUser", "x");
     secContext.withSSLContext(sslContext, new X509TrustManager() {
 
 		@Override

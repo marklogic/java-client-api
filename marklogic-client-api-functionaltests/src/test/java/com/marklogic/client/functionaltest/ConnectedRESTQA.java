@@ -45,6 +45,7 @@ import java.util.*;
 
 public abstract class ConnectedRESTQA {
 
+	protected static String securityContextType;
 	private static String restServerName = null;
 	private static String restSslServerName = null;
 	private static String ssl_enabled = null;
@@ -82,7 +83,7 @@ public abstract class ConnectedRESTQA {
 	private static OkHttpClient createManageAdminClient(String username, String password) {
 		// build client with authentication information.
 		RESTServices services = new OkHttpServices();
-		services.connect(host_name, Integer.parseInt(admin_port), ML_MANAGE_DB, new DatabaseClientFactory.DigestAuthContext(username, password));
+		services.connect(host_name, Integer.parseInt(admin_port), ML_MANAGE_DB, newSecurityContext(username, password));
 		OkHttpClient okHttpClient  = (OkHttpClient) services.getClientImplementation();
 		return okHttpClient;
 	}
@@ -2216,7 +2217,7 @@ public abstract class ConnectedRESTQA {
 		DatabaseClient client = null;
 		
 		SSLContext sslcontext = null;
-		SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext(user,password);
+		SecurityContext secContext = newSecurityContext(user,password);
 		if (IsSecurityEnabled()) {
 			try {
 				sslcontext = getSslContext();
@@ -2273,12 +2274,12 @@ public abstract class ConnectedRESTQA {
 				if (hostName.equalsIgnoreCase(host_name))
 					hostName = getSslServer();
 				
-				SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext(user,password);
+				SecurityContext secContext = newSecurityContext(user,password);
 				secContext.withSSLContext(sslcontext).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
 				
 				client = DatabaseClientFactory.newClient(hostName, port, databaseName, secContext, connType);
 			} else {
-				SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext(user,password);
+				SecurityContext secContext = newSecurityContext(user,password);
 				if (hostName.equalsIgnoreCase(host_name))
 					hostName = getServer();
 				client = DatabaseClientFactory.newClient(hostName, port, databaseName, secContext, connType);
@@ -2335,7 +2336,7 @@ public abstract class ConnectedRESTQA {
 		}
 		// Set the variable values.
 
-		// Rest App server names and ports.
+		securityContextType = property.getProperty("securityContextType");
 		restServerName = property.getProperty("mlAppServerName");
 		restSslServerName = property.getProperty("mlAppServerSSLName");
 
@@ -2880,5 +2881,12 @@ public abstract class ConnectedRESTQA {
 		} finally {
 			client = null;
 		}
+	}
+
+	public static DatabaseClientFactory.SecurityContext newSecurityContext(String username, String password) {
+		if ("basic".equalsIgnoreCase(securityContextType)) {
+			return new DatabaseClientFactory.BasicAuthContext(username, password);
+		}
+		return new DatabaseClientFactory.DigestAuthContext(username, password);
 	}
 }

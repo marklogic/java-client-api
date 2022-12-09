@@ -121,8 +121,7 @@ public class FailedRequestTest {
 
   @Test
   public void testErrorOnNonREST() throws ForbiddenUserException {
-    DatabaseClient badClient = DatabaseClientFactory.newClient(Common.HOST,
-      8001, new DigestAuthContext(Common.USER, Common.PASS));
+    DatabaseClient badClient = Common.makeNewClient(Common.HOST, 8001, Common.newSecurityContext(Common.USER, Common.PASS));
     ServerConfigurationManager serverConfig = badClient
       .newServerConfigManager();
 
