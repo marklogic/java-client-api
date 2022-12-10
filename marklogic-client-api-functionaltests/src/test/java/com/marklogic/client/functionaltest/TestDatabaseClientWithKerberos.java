@@ -103,6 +103,7 @@ import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.util.RequestLogger;
 
+@Ignore("Ignored because it was previously ignored in build.gradle though without explanation")
 public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 
   private static String dbName = "TestDatabaseClientWithKerberosDB";

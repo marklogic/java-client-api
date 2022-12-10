@@ -122,6 +122,7 @@ import com.marklogic.client.util.RequestLogger;
  * Copy the services.keytab file to ML Server data directory.
  */
 
+@Ignore("Ignored because it was previously ignored in build.gradle though without explanation")
 public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
 
   private static String dbName = "TestDBClientWithKerberosFileDB";
