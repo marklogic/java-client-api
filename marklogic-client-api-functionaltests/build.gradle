@@ -7,7 +7,7 @@ test {
   /* For use in testing TestDatabaseClientKerberosFromFile */
   systemProperty "keytabFile", System.getProperty("keytabFile")
   systemProperty "principal", System.getProperty("principal")
-  
+
   exclude 'com/marklogic/client/functionaltest/TestSSLConnection.class'
   exclude 'com/marklogic/client/functionaltest/TestBug18993.class'
   exclude 'com/marklogic/client/functionaltest/TestDatabaseClientWithKerberos.class'
@@ -59,12 +59,6 @@ task runSlowFunctionalTests(type: Test) {
   description = "Run slow functional tests; i.e. those that setup/teardown custom app servers / databases"
   include "com/marklogic/client/datamovement/functionaltests/**"
   include "com/marklogic/client/functionaltest/**"
-  exclude 'com/marklogic/client/functionaltest/TestSSLConnection.class'
-  exclude 'com/marklogic/client/functionaltest/TestBug18993.class'
-  exclude 'com/marklogic/client/functionaltest/TestDatabaseClientWithKerberos.class'
-  exclude 'com/marklogic/client/functionaltest/TestDatabaseClientKerberosFromFile.class'
-  exclude 'com/marklogic/client/functionaltest/TestDatabaseClientWithCertBasedAuth.class'
-  exclude 'com/marklogic/client/functionaltest/TestSandBox.class'
 }
 
 task runFunctionalTests {

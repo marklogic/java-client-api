@@ -32,11 +32,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,6 +46,7 @@ import com.marklogic.client.io.StringHandle;
 
 import junit.framework.Assert;
 
+@Ignore("Ignored because it was previously ignored in build.gradle though without explanation")
 public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST {
 
   public static String newLine = System.getProperty("line.separator");

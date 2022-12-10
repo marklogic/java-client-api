@@ -36,11 +36,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -85,6 +81,7 @@ import com.marklogic.client.semantics.RDFMimeTypes;
 import com.marklogic.client.type.CtsReferenceExpr;
 import com.marklogic.client.type.XsStringSeqVal;
 
+@Ignore("Ignored because it was previously ignored in build.gradle though without explanation")
 public class TestSandBox extends BasicJavaClientREST {
 
   private static String dbName = "TestSandBox";

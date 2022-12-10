@@ -31,6 +31,7 @@ import javax.net.ssl.X509TrustManager;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
@@ -38,6 +39,7 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 
+@Ignore("Ignored because it was previously ignored in build.gradle though without explanation")
 public class TestSSLConnection extends BasicJavaClientREST {
 
   private static String dbName = "TestSSLConnectionDB";

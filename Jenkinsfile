@@ -43,6 +43,7 @@ def runtests(String type, String version){
                 export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
                 export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
                 cd java-client-api
+                ./gradlew -i mlDeploy -PmlForestDataDirectory=/space
                 ./gradlew marklogic-client-api-functionaltests:runFunctionalTests || true
             '''
             sh label:'post-test-process', script: '''
