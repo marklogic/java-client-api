@@ -15,58 +15,39 @@
  */
 package com.marklogic.client.datamovement.functionaltests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.admin.ExtensionMetadata;
+import com.marklogic.client.admin.TransformExtensionsManager;
+import com.marklogic.client.datamovement.*;
+import com.marklogic.client.datamovement.ApplyTransformListener.ApplyResult;
+import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentRecord;
+import com.marklogic.client.document.ServerTransform;
+import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
+import com.marklogic.client.functionaltest.BasicJavaClientREST;
+import com.marklogic.client.io.*;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
-import org.apache.commons.io.FileUtils;
-import org.junit.*;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.admin.ExtensionMetadata;
-import com.marklogic.client.admin.TransformExtensionsManager;
-import com.marklogic.client.datamovement.ApplyTransformListener;
-import com.marklogic.client.datamovement.ApplyTransformListener.ApplyResult;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.DeleteListener;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryBatch;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.document.DocumentRecord;
-import com.marklogic.client.document.ServerTransform;
-import com.marklogic.client.functionaltest.BasicJavaClientREST;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 
@@ -245,15 +226,19 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 	}
 
 	@Test
-	@Ignore("Ignoring this test for now, as it fails intermittently, and when it does, the test hangs indefinitely, causing " +
-		"the test suite to never finish. Needs further investigation to make it more robust.")
+	@Ignore("Ignoring this test for now, as it's failing intermittently due to the bug captured at " +
+		"https://github.com/marklogic/java-client-api/issues/1327; did some cleanup on this before ignoring it, as " +
+		"when it passed, the onQueryFailure handler was never being invoked. So that stuff was removed. It appears " +
+		"that the intent of the test is to verify that the retry mechanism for QueryBatcher kicks in when a failure " +
+		"occurs due to the database being temporarily disabled. But due to the 1327 bug, the test can hang " +
+		"indefinitely when the queryMgr.uris call fails.")
 	public void queryFailures() throws Exception {
 		// Insert documents to query
 		String jsonDoc = "{" + "\"employees\": [" + "{ \"firstName\":\"John\" , \"lastName\":\"Doe\" },"
 				+ "{ \"firstName\":\"Ann\" , \"lastName\":\"Smith\" },"
 				+ "{ \"firstName\":\"Bob\" , \"lastName\":\"Foo\" }]" + "}";
 		WriteBatcher writeBatcher = dmManager.newWriteBatcher();
-		writeBatcher.withBatchSize(6000);
+		writeBatcher.withBatchSize(100).withThreadCount(8);
 		StringHandle handle = new StringHandle();
 		handle.set(jsonDoc);
 		for (int i = 0; i < 6000; i++) {
@@ -262,32 +247,14 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 		}
 		writeBatcher.flushAndWait();
 
-		// Construct a query to return all of the docs inserted above
+		// Construct a query to return the docs inserted above
 		QueryManager queryMgr = dbClient.newQueryManager();
 		StringQueryDefinition querydef = queryMgr.newStringDefinition();
 		querydef.setCriteria("John AND Bob");
 
-		// Construct a QueryBatcher that will keep track of
 		AtomicInteger successfulBatchCount = new AtomicInteger(0);
-		AtomicInteger queryFailureCount = new AtomicInteger(0);
-		QueryBatcher batcher = dmManager.newQueryBatcher(querydef).withBatchSize(10).withThreadCount(3);
+		QueryBatcher batcher = dmManager.newQueryBatcher(querydef).withBatchSize(100).withThreadCount(3);
 		batcher.onUrisReady(batch -> successfulBatchCount.incrementAndGet());
-		batcher.onQueryFailure(throwable -> {
-			System.out.println("QueryBatcher failure: " + throwable.getMessage());
-			queryFailureCount.incrementAndGet();
-			System.out.println("DB disabled for Forest " + throwable.getForest().getForestName());
-			// TODO Figure out why 7s was chosen here
-			try {
-				Thread.currentThread().sleep(7000L);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			throwable.getBatcher().retry(throwable);
-			// TODO Why does this need to throw an exception???
-			// We need an NullPointerException. Hence these statements.
-			String s = null;
-			s.length();
-		});
 
 		queryTicket = dmManager.startJob(batcher);
 
@@ -302,46 +269,31 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 		// Verify that the QueryBatcher was able to recover after the database was re-enabled
 		Assert.assertEquals(6000, dmManager.getJobReport(queryTicket).getSuccessEventsCount());
 		Assert.assertEquals(successfulBatchCount.intValue(), dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
-		if(!isLBHost()) {
-			System.out.println("Method queryFailure hostNames.length " + hostNames.length);
-			System.out.println("Method queryFailure getFailureEventsCount() " + dmManager.getJobReport(queryTicket).getFailureEventsCount());
-			
-			Assert.assertEquals(queryFailureCount.get(), dmManager.getJobReport(queryTicket).getFailureEventsCount());
-			Assert.assertEquals(queryFailureCount.get(), dmManager.getJobReport(queryTicket).getFailureBatchesCount());
-		}
 	}
 
 	class DisabledDBRunnable implements Runnable {
 		Map<String, String> properties = new HashMap<>();
+		private final Logger logger = LoggerFactory.getLogger(getClass());
 
 		@Override
 		public void run() {
 			properties.put("enabled", "false");
-			boolean state = true;
-			while (state) {
-				System.out.println(dmManager.getJobReport(queryTicket).getSuccessEventsCount());
-				// Wait for at least one successful event before disabling
-				if (dmManager.getJobReport(queryTicket).getSuccessEventsCount() >= 0) {
-					System.out.println("Disabling the java-functest database");
-					changeProperty(properties, "/manage/v2/databases/java-functest/properties");
-					System.out.println("DB disabled");
-					state = false;
-				}
-
-			}
+			logger.info("Disabling the java-functest database; successful events so far: "
+				+ dmManager.getJobReport(queryTicket).getSuccessEventsCount());
+			changeProperty(properties, "/manage/v2/databases/java-functest/properties");
 
 			// TODO Figure out why 5s was chosen here
-			System.out.println("Sleeping before re-enabling the java-functest database");
+			logger.info("Sleeping before re-enabling the java-functest database; successful events since database " +
+				"was disabled: " + dmManager.getJobReport(queryTicket).getSuccessEventsCount());
 			try {
 				Thread.currentThread().sleep(5000L);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 
-			System.out.println("Re-enabling the java-functest database");
 			properties.put("enabled", "true");
 			changeProperty(properties, "/manage/v2/databases/java-functest/properties");
-			System.out.println("Re-enabled the java-functest database");
+			logger.info("Re-enabled the java-functest database");
 		}
 	}
 
