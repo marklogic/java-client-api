@@ -40,10 +40,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
 import org.apache.commons.io.FileUtils;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
@@ -248,70 +245,69 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 	}
 
 	@Test
+	@Ignore("Ignoring this test for now, as it fails intermittently, and when it does, the test hangs indefinitely, causing " +
+		"the test suite to never finish. Needs further investigation to make it more robust.")
 	public void queryFailures() throws Exception {
-		System.out.println("In queryFailures method");
-		Thread t1 = new Thread(new DisabledDBRunnable());
-		t1.setName("Status Check -1");
-
-		QueryManager queryMgr = dbClient.newQueryManager();
-		StringQueryDefinition querydef = queryMgr.newStringDefinition();
-		querydef.setCriteria("John AND Bob");
-		AtomicInteger batches = new AtomicInteger(0);
-
+		// Insert documents to query
 		String jsonDoc = "{" + "\"employees\": [" + "{ \"firstName\":\"John\" , \"lastName\":\"Doe\" },"
 				+ "{ \"firstName\":\"Ann\" , \"lastName\":\"Smith\" },"
 				+ "{ \"firstName\":\"Bob\" , \"lastName\":\"Foo\" }]" + "}";
-		WriteBatcher wbatcher = dmManager.newWriteBatcher();
-		wbatcher.withBatchSize(6000);
-		wbatcher.onBatchFailure((batch, throwable) -> throwable.printStackTrace());
+		WriteBatcher writeBatcher = dmManager.newWriteBatcher();
+		writeBatcher.withBatchSize(6000);
 		StringHandle handle = new StringHandle();
 		handle.set(jsonDoc);
-		String uri = null;
-
-		// Insert 10 K documents
 		for (int i = 0; i < 6000; i++) {
-			uri = "/firstName" + i + ".json";
-			wbatcher.add(uri, handle);
+			String uri = "/firstName" + i + ".json";
+			writeBatcher.add(uri, handle);
 		}
+		writeBatcher.flushAndWait();
 
-		wbatcher.flushAndWait();
+		// Construct a query to return all of the docs inserted above
+		QueryManager queryMgr = dbClient.newQueryManager();
+		StringQueryDefinition querydef = queryMgr.newStringDefinition();
+		querydef.setCriteria("John AND Bob");
 
-		AtomicInteger failureCnts = new AtomicInteger(0);
+		// Construct a QueryBatcher that will keep track of
+		AtomicInteger successfulBatchCount = new AtomicInteger(0);
+		AtomicInteger queryFailureCount = new AtomicInteger(0);
 		QueryBatcher batcher = dmManager.newQueryBatcher(querydef).withBatchSize(10).withThreadCount(3);
-		batcher.onUrisReady(batch -> {
-			batches.incrementAndGet();
-		});
-		batcher.onQueryFailure((throwable) -> {
-			System.out.println("queryFailures: ");
-			failureCnts.incrementAndGet();
+		batcher.onUrisReady(batch -> successfulBatchCount.incrementAndGet());
+		batcher.onQueryFailure(throwable -> {
+			System.out.println("QueryBatcher failure: " + throwable.getMessage());
+			queryFailureCount.incrementAndGet();
 			System.out.println("DB disabled for Forest " + throwable.getForest().getForestName());
+			// TODO Figure out why 7s was chosen here
 			try {
 				Thread.currentThread().sleep(7000L);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			throwable.getBatcher().retry(throwable);
+			// TODO Why does this need to throw an exception???
 			// We need an NullPointerException. Hence these statements.
 			String s = null;
 			s.length();
-
 		});
 
 		queryTicket = dmManager.startJob(batcher);
-		t1.start();
 
+		// Run a thread to disable the database, and then sleep, and then enable the database
+		Thread t1 = new Thread(new DisabledDBRunnable());
+		t1.setName("Status Check -1");
+		t1.start();
 		t1.join();
 
 		batcher.awaitCompletion();
 
+		// Verify that the QueryBatcher was able to recover after the database was re-enabled
 		Assert.assertEquals(6000, dmManager.getJobReport(queryTicket).getSuccessEventsCount());
-		Assert.assertEquals(batches.intValue(), dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
+		Assert.assertEquals(successfulBatchCount.intValue(), dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
 		if(!isLBHost()) {
 			System.out.println("Method queryFailure hostNames.length " + hostNames.length);
 			System.out.println("Method queryFailure getFailureEventsCount() " + dmManager.getJobReport(queryTicket).getFailureEventsCount());
 			
-			Assert.assertEquals(failureCnts.get(), dmManager.getJobReport(queryTicket).getFailureEventsCount());
-			Assert.assertEquals(failureCnts.get(), dmManager.getJobReport(queryTicket).getFailureBatchesCount());
+			Assert.assertEquals(queryFailureCount.get(), dmManager.getJobReport(queryTicket).getFailureEventsCount());
+			Assert.assertEquals(queryFailureCount.get(), dmManager.getJobReport(queryTicket).getFailureBatchesCount());
 		}
 	}
 
@@ -324,22 +320,28 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 			boolean state = true;
 			while (state) {
 				System.out.println(dmManager.getJobReport(queryTicket).getSuccessEventsCount());
+				// Wait for at least one successful event before disabling
 				if (dmManager.getJobReport(queryTicket).getSuccessEventsCount() >= 0) {
-
+					System.out.println("Disabling the java-functest database");
 					changeProperty(properties, "/manage/v2/databases/java-functest/properties");
 					System.out.println("DB disabled");
 					state = false;
 				}
 
 			}
+
+			// TODO Figure out why 5s was chosen here
+			System.out.println("Sleeping before re-enabling the java-functest database");
 			try {
 				Thread.currentThread().sleep(5000L);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 
+			System.out.println("Re-enabling the java-functest database");
 			properties.put("enabled", "true");
 			changeProperty(properties, "/manage/v2/databases/java-functest/properties");
+			System.out.println("Re-enabled the java-functest database");
 		}
 	}
 
