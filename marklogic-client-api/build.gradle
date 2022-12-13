@@ -11,9 +11,9 @@ description = "The official MarkLogic Java client API."
 
 dependencies {
     if (JavaVersion.current().isJava9Compatible()) {
-        implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
-        implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.2'
-        implementation group: 'org.glassfish.jaxb', name: 'jaxb-core', version: '2.3.0.1'
+        implementation 'javax.xml.bind:jaxb-api:2.3.1'
+        implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.2'
+        implementation 'org.glassfish.jaxb:jaxb-core:2.3.0.1'
     }
     implementation group: 'com.squareup.okhttp3', name: 'okhttp', version:'4.10.0'
     implementation group: 'com.squareup.okhttp3', name: 'logging-interceptor', version:'4.10.0'
