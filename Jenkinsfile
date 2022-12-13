@@ -10,6 +10,7 @@ def getJava(){
     }
 }
 
+
 def runtests(String type, String version){
             copyRPM type, version
             setUpML '$WORKSPACE/xdmp/src/Mark*.rpm'
