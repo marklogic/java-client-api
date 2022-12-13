@@ -164,11 +164,10 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
     }
 
     protected static void removeFieldIndices() {
-        ManageClient client = new ManageClient(new ManageConfig(getServer(), 8002, getAdminUser(), getAdminPassword()));
         ObjectNode config = new ObjectMapper().createObjectNode();
         config.put("database-name", DB_NAME);
         config.putArray("field");
-        new DatabaseManager(client).save(config.toString());
+        new DatabaseManager(newManageClient()).save(config.toString());
     }
 
     /**
@@ -249,12 +248,11 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
             "  ]";
 
         try {
-            ManageClient client = new ManageClient(new ManageConfig(getServer(), 8002, getAdminUser(), getAdminPassword()));
             JsonNode fieldConfig = new ObjectMapper().readTree(json);
             ObjectNode config = new ObjectMapper().createObjectNode();
             config.put("database-name", DB_NAME);
             config.set("field", fieldConfig);
-            new DatabaseManager(client).save(config.toString());
+            new DatabaseManager(newManageClient()).save(config.toString());
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Unable to restore field config", e);
         }
