@@ -7,7 +7,11 @@ To build the client locally, complete the following steps:
 
 1. Clone this repository on your machine.
 2. Choose the appropriate branch (usually develop)
-3. Ensure you are using Java 8 or Java 11
+3. Ensure you are using Java 8 or Java 11 or Java 17 (the JVM version used to compile should not matter as compiler flags
+are set to ensure the compiled code will run on Java 8; Jenkins pipelines also exist to ensure that the tests pass on
+Java 8, 11, and 17, and thus they should for you locally as well; note that if you load the project into an IDE, you
+should use Java 8 in case your IDE does not process the build.gradle config that conditionally brings in JAXB dependencies
+required by Java 9+.)
 4. Verify that you can build the client by running `./gradlew build -x test`
 
 "Running the tests" in the context of developing and submitting a pull request refers to running the tests found
