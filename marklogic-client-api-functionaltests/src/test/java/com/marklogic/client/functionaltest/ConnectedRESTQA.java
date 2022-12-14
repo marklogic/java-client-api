@@ -31,6 +31,10 @@ import com.marklogic.client.impl.OkHttpServices;
 import com.marklogic.client.impl.RESTServices;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
+import com.marklogic.mgmt.ManageClient;
+import com.marklogic.mgmt.ManageConfig;
+import com.marklogic.mgmt.resource.appservers.ServerManager;
+import com.marklogic.mgmt.resource.databases.DatabaseManager;
 import okhttp3.*;
 import org.json.JSONObject;
 
@@ -1018,101 +1022,18 @@ public abstract class ConnectedRESTQA {
 		logTestMessages(" Ending TESTCASE TEARDOWN ", beforeTeardown);
 	}
 
-	// Setting up AppServices configurations setting up database properties whose value is string
-	public static void setDatabaseProperties(String dbName, String prop, String propValue) throws IOException {
-		String resGet = null;
-		JsonNode jnode = null;
-		Response responsePut = null;
-		OkHttpClient client = createManageAdminClient("admin", "admin");
-		try {
-			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-					+ "/properties?format=json");
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(getrequest)
-					.build();
-			Response response1 = client.newCall(request).execute();
-			if (response1.code() == ML_RES_OK) {
-				resGet = response1.body().string();
-				System.out.println("Response from Get is " + resGet);
-			}
-			if (resGet != null && !resGet.isEmpty())
-				jnode = new ObjectMapper().readTree(resGet);
-			else throw new Exception("Unexpected error " + response1);
-
-			if (!jnode.isNull()) {
-				((ObjectNode) jnode).put(prop, propValue);
-				String putUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-						+ "/properties?format=json");
-
-				String putProps = jnode.toString();
-				Request requestPut = new Request.Builder()
-						.header("Content-type", "application/json")
-						.url(putUrl)
-						.put(RequestBody.create(putProps, MediaType.parse("application/json")))
-						.build();
-				responsePut = client.newCall(requestPut).execute();
-
-				if (responsePut.code() == ML_RES_CHANGED) {
-					System.out.println("Database " + dbName + ". property " + prop +" has been updated with " + propValue);
-				}
-			} else {
-				System.out.println("REST call for database properties update has issues");
-				System.out.println(responsePut.toString());
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
+	public static void setDatabaseProperties(String dbName, String prop, String propValue) {
+		ObjectNode properties = new ObjectMapper().createObjectNode();
+		properties.put("database-name", dbName);
+		properties.put(prop, propValue);
+		new DatabaseManager(newManageClient()).save(properties.toString());
 	}
 
 	public static void setDatabaseProperties(String dbName, String prop, boolean propValue) {
-		String resGet = null;
-		JsonNode jnode = null;
-		Response responsePut = null;
-		OkHttpClient client = createManageAdminClient("admin", "admin");
-		try {
-			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-					+ "/properties?format=json");
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(getrequest)
-					.build();
-			Response response1 = client.newCall(request).execute();
-			if (response1.code() == ML_RES_OK) {
-				resGet = response1.body().string();
-				System.out.println("Response from Get is " + resGet);
-			}
-			if (resGet != null && !resGet.isEmpty())
-				jnode = new ObjectMapper().readTree(resGet);
-			else throw new Exception("Unexpected error " + response1);
-
-			if (!jnode.isNull()) {
-				((ObjectNode) jnode).put(prop, propValue);
-				String putUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-						+ "/properties?format=json");
-
-				String putProps = jnode.toString();
-				Request requestPut = new Request.Builder()
-						.header("Content-type", "application/json")
-						.url(putUrl)
-						.put(RequestBody.create(putProps, MediaType.parse("application/json")))
-						.build();
-				responsePut = client.newCall(requestPut).execute();
-
-				if (responsePut.code() == ML_RES_CHANGED) {
-					System.out.println("Database " + dbName + ". property " + prop +" has been updated with " + propValue);
-				}
-			} else {
-				System.out.println("REST call for database properties update has issues");
-				System.out.println(responsePut.toString());
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
+		ObjectNode properties = new ObjectMapper().createObjectNode();
+		properties.put("database-name", dbName);
+		properties.put(prop, propValue);
+		new DatabaseManager(newManageClient()).save(properties.toString());
 	}
 
 	/*
@@ -1320,31 +1241,6 @@ public abstract class ConnectedRESTQA {
 	}
 
 	/*
-	 * Overloaded function with default collation
-	 */
-	public static void addRangeElementAttributeIndex(String dbName, String type, String parentnamespace,
-			String parentlocalname, String namespace, String localname) throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-
-		ObjectNode childNode = mapper.createObjectNode();
-		ArrayNode childArray = mapper.createArrayNode();
-		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put("scalar-type", type);
-		childNodeObject.put("collation", "");
-		childNodeObject.put("parent-namespace-uri", parentnamespace);
-		childNodeObject.put("parent-localname", parentlocalname);
-		childNodeObject.put("namespace-uri", namespace);
-		childNodeObject.put("localname", localname);
-
-		childNodeObject.put("range-value-positions", false);
-		childNodeObject.put("invalid-values", "reject");
-		childArray.add(childNodeObject);
-		childNode.putArray("range-element-attribute-index").addAll(childArray);
-
-		setDatabaseProperties(dbName, "range-element-attribute-index", childNode);
-	}
-
-	/*
 	 * "range-path-indexes": { "range-path-index": [ { "scalar-type": "string",
 	 * "collation": "http:\/\/marklogic.com\/collation\/", "path-expression":
 	 * "\/Employee\/fn", "range-value-positions": false, "invalid-values":
@@ -1533,39 +1429,6 @@ public abstract class ConnectedRESTQA {
 		childNode.putArray("geospatial-path-index").addAll(childArray);
 
 		setDatabaseProperties(dbName, "geospatial-path-index", childNode);
-	}
-
-	/*
-	 * To create a geo spatial region path index for the following geo spatial
-	 * queries.
-	 * 
-	 * 1) Circle - Example - <circle>@120.5 -26.797920,136.406250</circle> 2)
-	 * Box - Example <box>[-40.234, 100.4634, -20.345, 140.45230]</box> 3)
-	 * Polygon - Example- <polygon>POLYGON((153.65 -8.35,170.57 -26.0,162.52
-	 * -52.52,136.0 -56.35,111.0 -51.0,100.89 -26.0,108.18 1.82,136.0
-	 * 10.26,153.65 -8.35))</polygon>
-	 * 
-	 * End-point used for GeoSpatial Region Path Indexes: REST endpoint:
-	 * manage/v2/databases/{id|name}/properties Payload structure:
-	 * "geospatial-region-path-index": [ { "path-expression": "//jurisdiction",
-	 * "coordinate-system": "wgs84", "geohash-precision": 6, "invalid-values":
-	 * "ignore" } ]
-	 */
-
-	public static void addGeospatialRegionPathIndexes(String dbName, String pathExpression, String coordinateSystem,
-			String geoHashPrecision, String invalidValues) throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode childNode = mapper.createObjectNode();
-		ArrayNode childArray = mapper.createArrayNode();
-		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put("path-expression", pathExpression);
-		childNodeObject.put("coordinate-system", coordinateSystem);
-		childNodeObject.put("invalid-values", invalidValues);
-		childNodeObject.put("geohash-precision", geoHashPrecision);
-		childArray.add(childNodeObject);
-		childNode.putArray("geospatial-region-path-index").addAll(childArray);
-
-		setDatabaseProperties(dbName, "geospatial-region-path-index", childNode);
 	}
 
 	/*
@@ -2174,8 +2037,13 @@ public abstract class ConnectedRESTQA {
 			setupJavaRESTServer(dbName, fNames[0], restSslServerName, getRestServerPort());
 		else
 			setupJavaRESTServer(dbName, fNames[0], restServerName, getRestServerPort());
-		if (isLBHost())
-			setRESTServerWithDistributeTimestamps(restServerName, "cluster");
+		if (isLBHost()) {
+			ObjectNode props = new ObjectMapper().createObjectNode();
+			props.put("server-name", restServerName);
+			props.put("group-name", "Default");
+			props.put("distribute-timestamps", "cluster");
+			new ServerManager(newManageClient()).save(props.toString());
+		}
 	}
 
 	//Configure a SSL or non SSL enabled REST Server based on the build.gradle
@@ -2823,64 +2691,12 @@ public abstract class ConnectedRESTQA {
 		  }
 	  }
 
-	  /*
-	   * Associate REST server with timestamps in "distribute timestamps" to specify distribution of commit timestamps
-	   * For example set to "strict" for Application Load Balancing (AWS) 
-	   * 
-	   */
-	  private static void setRESTServerWithDistributeTimestamps(String restServerName, String distributeTimestampType) throws Exception {
-
-		  OkHttpClient client = createManageAdminClient("admin", "admin");
-		  try {
-			  String extSecurityrName = "";
-			  String body = "{\"group-name\": \"Default\",\"distribute-timestamps\": \"" + distributeTimestampType + "\"}";
-
-			  String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
-					  + "/properties?server-type=http");
-			  Request request = new Request.Builder()
-					  .header("Content-type", "application/json")
-					  .url(putStr)
-					  .put(RequestBody.create(body, MediaType.parse("application/json")))
-					  .build();
-			  Response response = client.newCall(request).execute();
-			  if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-			  else if (response.code() == ML_RES_CHANGED) {
-				  System.out.println("Property " + distributeTimestampType + " successfully set");
-			  }
-		  }
-		  catch (Exception ex) {
-		  	ex.printStackTrace();
-		  } finally {
-			  client = null;
-		  }
-	  }
-
-	public static void associateRESTServerWithModuleDB(String restServerName, String modulesDbName) throws Exception {
-		OkHttpClient client = null;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String body = "{\"modules-database\": \"" + modulesDbName + "\",\"group-name\": \"Default\"}";
-
-			String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
-					+ "/properties?server-type=http");
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(putStr)
-					.put(RequestBody.create(body, MediaType.parse("application/json")))
-					.build();
-			Response response = client.newCall(request).execute();
-			if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-			else if (response.code() == ML_RES_CHANGED) {
-				System.out.println(restServerName + " server successfully associated with " + modulesDbName + "database");
-			}
-			else {
-				System.out.println("No proper response in associating RESTServer With ModuleDB");
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
+	  public static void associateRESTServerWithModuleDB(String restServerName, String modulesDbName) throws Exception {
+		  ObjectNode props = new ObjectMapper().createObjectNode();
+		  props.put("server-name", restServerName);
+		  props.put("group-name", "Default");
+		  props.put("modules-database", modulesDbName);
+		  new ServerManager(newManageClient()).save(props.toString());
 	}
 
 	public static DatabaseClientFactory.SecurityContext newSecurityContext(String username, String password) {
@@ -2888,5 +2704,9 @@ public abstract class ConnectedRESTQA {
 			return new DatabaseClientFactory.BasicAuthContext(username, password);
 		}
 		return new DatabaseClientFactory.DigestAuthContext(username, password);
+	}
+
+	protected static ManageClient newManageClient() {
+		return new ManageClient(new ManageConfig(getServer(), 8002, getAdminUser(), getAdminPassword()));
 	}
 }

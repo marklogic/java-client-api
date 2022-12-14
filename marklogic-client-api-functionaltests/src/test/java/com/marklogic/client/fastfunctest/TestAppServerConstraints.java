@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.marklogic.client.functionaltest;
+package com.marklogic.client.fastfunctest;
 
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
