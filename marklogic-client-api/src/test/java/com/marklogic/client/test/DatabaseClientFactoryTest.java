@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -169,8 +169,8 @@ public class DatabaseClientFactoryTest {
 
     DatabaseClientFactory.addConfigurator(configurator);
 
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      Common.HOST, Common.PORT, new DigestAuthContext(Common.USER, Common.PASS));
+    DatabaseClient client = Common.makeNewClient(
+      Common.HOST, Common.PORT, Common.newSecurityContext(Common.USER, Common.PASS));
     try {
       assertTrue("Factory did not apply custom configurator", configurator.isConfigured);
       OkHttpClient okClient = (OkHttpClient) client.getClientImplementation();

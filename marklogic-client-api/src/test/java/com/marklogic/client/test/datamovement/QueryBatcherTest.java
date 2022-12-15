@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 package com.marklogic.client.test.datamovement;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,6 +69,7 @@ import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import static com.marklogic.client.io.Format.JSON;
 import static com.marklogic.client.io.Format.XML;
+import static org.junit.Assert.*;
 
 import com.marklogic.client.datamovement.ApplyTransformListener;
 import com.marklogic.client.datamovement.DataMovementManager;
@@ -848,7 +844,8 @@ public class QueryBatcherTest {
     System.out.println("Failure event: "+moveMgr.getJobReport(queryTicket.get()).getFailureEventsCount());
     System.out.println("Failure batch: "+moveMgr.getJobReport(queryTicket.get()).getFailureBatchesCount());
 
-
+    assertNull("withConsistentSnapshot was not used, so the server timestamp should be null",
+            batcher.getServerTimestamp());
     assertTrue(successCount.get() < 200);
     assertTrue(batchCount.get() == moveMgr.getJobReport(queryTicket.get()).getSuccessBatchesCount());
   }
@@ -942,7 +939,7 @@ public class QueryBatcherTest {
 		try {
 			defaultClient = new DefaultHttpClient();
 			defaultClient.getCredentialsProvider().setCredentials(new AuthScope(client.getHost(), 8002),
-					new UsernamePasswordCredentials("admin", "admin"));
+					new UsernamePasswordCredentials(Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS));
 			HttpGet getrequest = new HttpGet("http://" + client.getHost() + ":" + 8002 + "/manage/v2/databases/"
 					+ dbName + "/properties?format=json");
 			HttpResponse getResponse = defaultClient.execute(getrequest);

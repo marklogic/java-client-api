@@ -1,6 +1,6 @@
 xquery version "1.0-ml";
 
-(: Copyright (c) 2019 MarkLogic Corporation :)
+(: Copyright (c) 2022 MarkLogic Corporation :)
 
 module namespace docsplit = "http://marklogic.com/rest-api/resource/docsplit";
 

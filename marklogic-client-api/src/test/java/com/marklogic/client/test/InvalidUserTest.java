@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ public class InvalidUserTest {
   @Test
   public void testInvalidUserAuth() {
     // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(
-      Common.HOST, Common.PORT, new DigestAuthContext("MyFooUser", "x"));
+    DatabaseClient client = Common.makeNewClient(Common.HOST, Common.PORT,
+        Common.newSecurityContext("MyFooUser", "x"));
 
 
     String expectedException = "com.marklogic.client.FailedRequestException: " +

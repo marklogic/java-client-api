@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -656,7 +656,6 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 			try {
 				Thread.currentThread().sleep(20000L);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			ihbMT.retry(batch);

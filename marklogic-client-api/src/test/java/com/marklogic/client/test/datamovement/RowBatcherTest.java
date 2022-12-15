@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class RowBatcherTest {
     private final static String TEST_DIR = "/test/rowbatch/unit/";
@@ -78,7 +78,7 @@ public class RowBatcherTest {
     private static void setupIndex() {
         final String tdeUri = TEST_COLLECTION+".tdex";
 
-        DatabaseClient schemasDB = Common.newServerAdminClient("Schemas");
+        DatabaseClient schemasDB = Common.newServerAdminClient("java-unittest-schemas");
         XMLDocumentManager schemaMgr = schemasDB.newXMLDocumentManager();
 
         if (schemaMgr.exists(tdeUri) == null) {
@@ -258,7 +258,7 @@ public class RowBatcherTest {
     }
     private void runJsonRowsTest(
             RowBatcher<JsonNode> rowBatcher, boolean consistentSnapshot, Class<? extends PlanBuilder.Plan> planType
-    ) throws Exception {
+    ) {
         if (consistentSnapshot) {
             rowBatcher.withConsistentSnapshot();
         }
@@ -349,7 +349,16 @@ public class RowBatcherTest {
         // System.out.println("stopped="+rowBatcher.isStopped());
 
         if (consistentSnapshot) {
+            assertNotNull("The RowBatcher should make the timestamp available so that the client can perform " +
+                            "additional operations using that timestamp after the job has completed. For example, " +
+                            "the client may wish to lookup the highest dateTime value in an index at the timestamp " +
+                            "so that a future job can constrain to documents with a dateTime greater than the " +
+                            "looked-up value, thus allowing for a 'Only process new records' feature.",
+                    rowBatcher.getServerTimestamp());
             docMgr.delete(addedDocUri);
+        } else {
+            assertNull("If withConsistentSnapshot is not used, getServerTimestamp() should return null since no " +
+                    "server timestamp would have been captured", rowBatcher.getServerTimestamp());
         }
 
         assertEquals("test execution failed", false, failed.get());

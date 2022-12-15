@@ -1,3 +1,5 @@
+// Copyright (c) 2022 MarkLogic Corporation
+
 test {
   testLogging{
     events 'started','passed', 'skipped'
@@ -5,7 +7,7 @@ test {
   /* For use in testing TestDatabaseClientKerberosFromFile */
   systemProperty "keytabFile", System.getProperty("keytabFile")
   systemProperty "principal", System.getProperty("principal")
-  
+
   exclude 'com/marklogic/client/functionaltest/TestSSLConnection.class'
   exclude 'com/marklogic/client/functionaltest/TestBug18993.class'
   exclude 'com/marklogic/client/functionaltest/TestDatabaseClientWithKerberos.class'
@@ -20,20 +22,47 @@ task testSandbox(type:Test) {
   include 'com/marklogic/client/functionaltest/TestSandBox.class'
 }
 
-/* The code repositories to consult for dependencies */
-
-repositories {
-  maven {url "http://distro.marklogic.com/nexus/repository/maven-snapshots" }
-  maven { url "http://developer.marklogic.com/maven2" }
-}
-
 dependencies {
   implementation project (':marklogic-client-api')
   implementation group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0'
-  implementation group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
-  testImplementation group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
-  implementation group: 'commons-io', name: 'commons-io', version: '2.6'
-  implementation group: 'com.squareup.okhttp3', name: 'okhttp', version:'4.7.2'
-  implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version:'2.11.1'
-  implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.11.1'
+  implementation group: 'org.slf4j', name: 'slf4j-api', version:'1.7.36'
+  implementation 'commons-io:commons-io:2.11.0'
+  implementation group: 'com.squareup.okhttp3', name: 'okhttp', version:'4.10.0'
+  implementation 'com.fasterxml.jackson.core:jackson-core:2.13.4'
+  implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4.2'
+  implementation "org.jdom:jdom2:2.0.6.1"
+  implementation "com.marklogic:ml-app-deployer:4.3.6"
+
+  testImplementation group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.11'
 }
+
+task runFragileTests(type: Test) {
+  description = "These are called 'fragile' because they'll pass when run by themselves, but when run as part of the " +
+          "full suite, there seem to be one or more other fast functional tests that run before them and cause some of " +
+          "their test methods to break. The Jenkinsfile thus calls these first before running the other functional " +
+          "tests."
+  include "com/marklogic/client/fastfunctest/TestQueryOptionBuilder.class"
+  include "com/marklogic/client/fastfunctest/TestRawCombinedQuery.class"
+  include "com/marklogic/client/fastfunctest/TestRawStructuredQuery.class"
+}
+
+task runFastFunctionalTests(type: Test) {
+  description = "Run all fast functional tests that don't setup/teardown custom app servers / databases"
+  include "com/marklogic/client/fastfunctest/**"
+  // Exclude the "fragile" ones
+  exclude "com/marklogic/client/fastfunctest/TestQueryOptionBuilder.class"
+  exclude "com/marklogic/client/fastfunctest/TestRawCombinedQuery.class"
+  exclude "com/marklogic/client/fastfunctest/TestRawStructuredQuery.class"
+}
+
+task runSlowFunctionalTests(type: Test) {
+  description = "Run slow functional tests; i.e. those that setup/teardown custom app servers / databases"
+  include "com/marklogic/client/datamovement/functionaltests/**"
+  include "com/marklogic/client/functionaltest/**"
+}
+
+task runFunctionalTests {
+  dependsOn(runFragileTests, runFastFunctionalTests, runSlowFunctionalTests)
+}
+runFastFunctionalTests.mustRunAfter runFragileTests
+runSlowFunctionalTests.mustRunAfter runFastFunctionalTests

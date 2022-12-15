@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,18 +61,18 @@ public interface ResourceServices {
   /**
    * Reads multiple resource content by calling a GET service.
    * @param params	the parameters for the call
-   * @param mimetypes	the mimetypes for the requested content
+   * @param mimetypes	the mimetypes for the requested content; deprecated since 6.0.0, has always been ignored by implementation
    * @return	an iterator over the requested content
    */
-  ServiceResultIterator get(RequestParameters params, String... mimetypes);
+  ServiceResultIterator get(RequestParameters params, @Deprecated String... mimetypes);
   /**
    * Reads multiple resource content by calling a GET service.
    * @param params	the parameters for the call
    * @param transaction	the transaction for reading content
-   * @param mimetypes	the mimetypes for the requested content
+   * @param mimetypes	the mimetypes for the requested content; deprecated since 6.0.0, has always been ignored by implementation
    * @return	an iterator over the requested content
    */
-  ServiceResultIterator get(RequestParameters params, Transaction transaction, String... mimetypes);
+  ServiceResultIterator get(RequestParameters params, Transaction transaction, @Deprecated String... mimetypes);
 
   /**
    * Writes content by calling a PUT service.
@@ -160,38 +160,38 @@ public interface ResourceServices {
    * Applies multiple content by calling a POST service.
    * @param params	the parameters for the call
    * @param input	the content passed with the call
-   * @param mimetypes	the mimetypes for the requested content
+   * @param mimetypes	the mimetypes for the requested content; deprecated since 6.0.0, has always been ignored by implementation
    * @return	an iterator over the requested content
    */
-  ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, String... mimetypes);
+  ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, @Deprecated String... mimetypes);
   /**
    * Applies multiple content by calling a POST service.
    * @param params	the parameters for the call
    * @param input	the content passed with the call
    * @param transaction	the transaction for applying content
-   * @param mimetypes	the mimetypes for the requested content
+   * @param mimetypes	the mimetypes for the requested content; deprecated since 6.0.0, has always been ignored by implementation
    * @return	an iterator over the requested content
    */
-  ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, String... mimetypes);
+  ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, @Deprecated String... mimetypes);
   /**
    * Applies multiple content by calling a POST service.
    * @param params	the parameters for the call
    * @param input	an array of content passed with the call
-   * @param mimetypes	the mimetypes for the requested content
+   * @param mimetypes	the mimetypes for the requested content; deprecated since 6.0.0, has always been ignored by implementation
    * @param <W> the type of AbstractWriteHandle's with content to send
    * @return	an iterator over the requested content
    */
-  <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, String... mimetypes);
+  <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, @Deprecated String... mimetypes);
   /**
    * Applies multiple content by calling a POST service.
    * @param params	the parameters for the call
    * @param input	an array of content passed with the call
    * @param transaction	the transaction for applying content
-   * @param mimetypes	the mimetypes for the requested content
+   * @param mimetypes	the mimetypes for the requested content; deprecated since 6.0.0, has always been ignored by implementation
    * @param <W> the type of AbstractWriteHandle's with content to send
    * @return	an iterator over the requested content
    */
-  <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, Transaction transaction, String... mimetypes);
+  <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, Transaction transaction, @Deprecated String... mimetypes);
 
   /**
    * Deletes content by calling a DELETE service.

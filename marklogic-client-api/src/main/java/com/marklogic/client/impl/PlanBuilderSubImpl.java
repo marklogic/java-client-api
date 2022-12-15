@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,16 @@
  */
 package com.marklogic.client.impl;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.expression.SemExpr;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.marklogic.client.document.DocumentWriteOperation;
+import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.expression.*;
+import com.marklogic.client.impl.BaseTypeImpl.BaseArgImpl;
+import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.type.*;
@@ -72,9 +75,11 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     if (select == null) {
       throw new IllegalArgumentException("select parameter for fromSparql() cannot be null");
     }
-    return new PlanBuilderSubImpl.ModifyPlanSubImpl(
+    ModifyPlanSubImpl plan = new PlanBuilderSubImpl.ModifyPlanSubImpl(
             "op", "from-sparql", new Object[]{ select, qualifierName, asArg(makeMap(option)) }
     );
+    plan.setHandleRegistry(this.getHandleRegistry());
+    return plan;
   }
 
   @Override
@@ -160,6 +165,139 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   @Override
   public AccessPlan fromView(XsStringVal schema, XsStringVal view, XsStringVal qualifierName, PlanSystemColumn sysCols) {
     return new AccessPlanSubImpl(this, "op", "from-view", new Object[]{ schema, view, qualifierName, sysCols });
+  }
+  // TODO: delete override of fromParam() arity after code generation passes PlanBuilderBaseImpl this
+  @Override
+  public AccessPlan fromParam(XsStringVal paramName, XsStringVal qualifier, PlanRowColTypesSeq colTypes) {
+    if (paramName == null) {
+      throw new IllegalArgumentException("paramName parameter for fromParam() cannot be null");
+    }
+    if (colTypes == null) {
+      throw new IllegalArgumentException("colTypes parameter for fromParam() cannot be null");
+    }
+    return new PlanBuilderSubImpl.AccessPlanSubImpl(this, "op", "from-param", new Object[]{ paramName, qualifier, colTypes });
+  }
+  // TODO: delete override of fromDocDescriptors() arity after code generation passes PlanBuilderBaseImpl this
+  @Override
+  public AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor) {
+    if (docDescriptor == null) {
+      throw new IllegalArgumentException("docDescriptor parameter for fromDocDescriptors() cannot be null");
+    }
+    return new PlanBuilderSubImpl.AccessPlanSubImpl(this,"op", "from-doc-descriptors", new Object[]{ docDescriptor });
+  }
+  @Override
+  public AccessPlan fromDocDescriptors(PlanDocDescriptorSeq docDescriptor, XsStringVal qualifier) {
+    if (docDescriptor == null) {
+      throw new IllegalArgumentException("docDescriptor parameter for fromDocDescriptors() cannot be null");
+    }
+    return new PlanBuilderSubImpl.AccessPlanSubImpl(this, "op", "from-doc-descriptors", new Object[]{ docDescriptor, qualifier });
+  }
+  // TODO: delete override of fromSql() arity after code generation passes PlanBuilderBaseImpl this
+  @Override
+  public ModifyPlan fromSql(XsStringVal select) {
+    if (select == null) {
+      throw new IllegalArgumentException("select parameter for fromSql() cannot be null");
+    }
+    ModifyPlanSubImpl plan = new PlanBuilderSubImpl.ModifyPlanSubImpl("op", "from-sql", new Object[]{ select });
+    plan.setHandleRegistry(this.getHandleRegistry());
+    return plan;
+  }
+
+  @Override
+  public AccessPlan fromDocUris(String... uris) {
+    return fromDocUris(this.cts.documentQuery(xs.stringSeq(uris)));
+  }
+
+  @Override
+  public AccessPlan fromDocUris(CtsQueryExpr querydef) {
+    return fromDocUris(querydef, null);
+  }
+
+  @Override
+  public AccessPlan fromDocUris(CtsQueryExpr querydef, String qualifierName) {
+    return new AccessPlanSubImpl(
+            this, "op", "from-doc-uris", new Object[]{querydef, (qualifierName == null) ?
+            null : xs.string(qualifierName)}
+    );
+  }
+
+  @Override
+  public PlanDocColsIdentifier docCols(Map<String, PlanColumn> descriptorColumnMapping) {
+    return new PlanDocColsIdentifierImpl(descriptorColumnMapping);
+  }
+
+  public static class PlanDocDescriptorImpl implements PlanDocDescriptor, BaseTypeImpl.BaseArgImpl {
+    private String template;
+    // Threadsafe, thus safe to reuse to avoid creating many instances
+    private static ObjectMapper mapper = new ObjectMapper();
+    public PlanDocDescriptorImpl(DocumentWriteOperation writeOp) {
+      ObjectNode node = mapper.createObjectNode();
+      DocDescriptorUtil.populateDocDescriptor(writeOp, node);
+      this.template = node.toString();
+    }
+    @Override
+    public StringBuilder exportAst(StringBuilder strb) {
+      return strb.append(template);
+    }
+  }
+
+  @Override
+  public PlanDocDescriptor docDescriptor(DocumentWriteOperation writeOp) {
+    return new PlanDocDescriptorImpl(writeOp);
+  }
+
+  static class PlanDocDescriptorSeqImpl implements PlanDocDescriptorSeq, BaseTypeImpl.BaseArgImpl {
+    private String template;
+    public PlanDocDescriptorSeqImpl(DocumentWriteSet writeSet) {
+      this.template = DocDescriptorUtil.buildDocDescriptors(writeSet).toString();
+    }
+    @Override
+    public StringBuilder exportAst(StringBuilder strb) {
+      return strb.append(template);
+    }
+  }
+
+  @Override
+  public PlanDocDescriptorSeq docDescriptors(DocumentWriteSet writeSet) {
+    return new PlanDocDescriptorSeqImpl(writeSet);
+  }
+
+  @Override
+  public PlanRowColTypesSeq colTypes(PlanRowColTypes... colTypes) {
+    return new PlanRowColTypesSeqImpl(colTypes);
+  }
+
+  @Override
+  public PlanRowColTypes colType(String column) {
+    return colType(column, null);
+  }
+
+  @Override
+  public PlanRowColTypes colType(String column, String type) {
+    return colType(column, type, null);
+  }
+
+  @Override
+  public PlanRowColTypes colType(String column, String type, Boolean nullable) {
+    return new PlanRowColTypesImpl(column, type, nullable);
+  }
+
+  
+  @Override
+  public TransformDef transformDef(String path) {
+    return new TransformDefImpl(path);
+  }
+  @Override
+  public SchemaDefExpr schemaDefinition(String kind) {
+    return new SchemaDefImpl(kind);
+  }
+
+  @Override
+  public ServerExpression permission(String roleName, String capability) {
+    return jsonObject(
+        prop(xs.string("roleName"), xs.string(roleName)),
+        prop(xs.string("capability"), xs.string(capability))
+    );
   }
 
   @Override
@@ -627,6 +765,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     private Object[]                         fnArgs   = null;
 
     private Map<PlanParamBase,BaseTypeImpl.ParamBinder> params = null;
+    private List<ContentParam> contentParams;
 
     PlanSubImpl(PlanBuilderBaseImpl.PlanBaseImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
       super(prior, fnPrefix, fnName, fnArgs);
@@ -637,9 +776,11 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
     private PlanSubImpl(
       PlanBuilderBaseImpl.PlanBaseImpl prior, String fnPrefix, String fnName, Object[] fnArgs,
-      Map<PlanParamBase,BaseTypeImpl.ParamBinder> params) {
+      Map<PlanParamBase,BaseTypeImpl.ParamBinder> params,
+      List<ContentParam> contentParams) {
       this(prior, fnPrefix, fnName, fnArgs);
       this.params = params;
+      this.contentParams = contentParams;
     }
 
     @Override
@@ -714,7 +855,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     @Override
     public Plan bindParam(PlanParamExpr param, PlanParamBindingVal literal) {
       if (!(param instanceof PlanParamBase)) {
-        throw new IllegalArgumentException("cannot set parameter that doesn't extend base");
+        throw new IllegalArgumentException("param must be an instance of PlanParamBase");
       }
 
       Map<PlanParamBase,BaseTypeImpl.ParamBinder> nextParams = new HashMap<>();
@@ -732,9 +873,54 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
         throw new IllegalArgumentException("cannot set value with unknown implementation");
       }
 
-      return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, nextParams);
+      return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, nextParams, this.contentParams);
     }
 
+    @Override
+    public Plan bindParam(String param, DocumentWriteSet writeSet) {
+      return bindParam(new PlanParamBase(param), writeSet);
+    }
+
+    @Override
+    public Plan bindParam(PlanParamExpr param, DocumentWriteSet writeSet) {
+      if (!(param instanceof PlanParamBase)) {
+        throw new IllegalArgumentException("param must be an instance of PlanParamBase");
+      }
+      List<ContentParam> nextContentParams = new ArrayList<>();
+      if (this.contentParams != null) {
+        nextContentParams.addAll(this.contentParams);
+      }
+      nextContentParams.add(ContentParam.fromDocumentWriteSet((PlanParamBase) param, writeSet));
+      return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, this.params, nextContentParams);
+    }
+
+    @Override
+    public Plan bindParam(String param, AbstractWriteHandle content) {
+      return bindParam(new PlanParamBase(param), content, null);
+    }
+
+    @Override
+    public Plan bindParam(String param, AbstractWriteHandle content, Map<String, Map<String, AbstractWriteHandle>> columnAttachments) {
+      return bindParam(new PlanParamBase(param), content, columnAttachments);
+    }
+
+    @Override
+    public Plan bindParam(PlanParamExpr param, AbstractWriteHandle content, Map<String, Map<String, AbstractWriteHandle>> columnAttachments) {
+      if (!(param instanceof PlanParamBase)) {
+        throw new IllegalArgumentException("param must be an instance of PlanParamBase");
+      }
+      PlanParamBase baseParam = (PlanParamBase) param;
+      List<ContentParam> nextContentParams = new ArrayList<>();
+      if (this.contentParams != null) {
+        nextContentParams.addAll(this.contentParams);
+      }
+      nextContentParams.add(new ContentParam(baseParam, content, columnAttachments));
+      return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, this.params, nextContentParams);
+    }
+    @Override
+    public List<ContentParam> getContentParams() {
+      return contentParams;
+    }
   }
 
   static class ExportablePlanSubImpl
@@ -836,6 +1022,16 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     public ModifyPlan limit(PlanParamExpr length) {
       return new ModifyPlanSubImpl(this, "op", "limit", new Object[]{ length });
     }
+    
+    @Override
+    public ModifyPlan lockForUpdate() {
+      return new ModifyPlanSubImpl(this, "op", "lockForUpdate", new Object[]{});
+    }
+
+    @Override
+    public ModifyPlan lockForUpdate(PlanColumn uriColumn) {
+      return new ModifyPlanSubImpl(this, "op", "lockForUpdate", new Object[]{uriColumn});
+    }
 
     @Override
     public ModifyPlan offset(long start) {
@@ -860,6 +1056,41 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     @Override
     public ModifyPlan offsetLimit(XsLongVal start, XsLongVal length) {
       return new ModifyPlanSubImpl(this, "op", "offset-limit", new Object[]{ start, length });
+    }
+
+    @Override
+    public ModifyPlan remove() {
+      return new ModifyPlanSubImpl(this, "op", "remove", new Object[]{});
+    }
+
+    @Override
+    public ModifyPlan remove(PlanColumn uriColumn) {
+      return new ModifyPlanSubImpl(this, "op", "remove", new Object[]{uriColumn});
+    }
+
+    static class TemporalRemoval implements BaseArgImpl {
+        private String template;
+
+        public TemporalRemoval(PlanColumn temporalCollection, PlanColumn uriColumn) {
+            this.template = String.format("{\"temporalCollection\":%s, \"uri\": %s}",
+                ((BaseArgImpl)temporalCollection).exportAst(new StringBuilder()),
+                    ((BaseArgImpl) uriColumn).exportAst(new StringBuilder()));
+        }
+
+        @Override
+        public StringBuilder exportAst(StringBuilder strb) {
+            return strb.append(template);
+        }
+    }
+
+    @Override
+    public ModifyPlan remove(PlanColumn temporalCollection, PlanColumn uriColumn) {
+        return new ModifyPlanSubImpl(this, "op", "remove", new Object[]{new TemporalRemoval(temporalCollection, uriColumn)});
+    }
+
+    @Override
+    public ModifyPlan transformDoc(PlanColumn docColumn, TransformDef transformDef) {
+      return new ModifyPlanSubImpl(this, "op", "transformDoc", new Object[]{docColumn, transformDef});
     }
 
     @Override
@@ -888,6 +1119,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     extends PlanBuilderImpl.AccessPlanImpl {
     XsStringVal schema    = null;
     XsStringVal qualifier = null;
+
     // TODO: delete overload constructor once generated PlanBuilderImpl arities pass builder reference
     AccessPlanSubImpl(String fnPrefix, String fnName, Object[] fnArgs) {
       this(null, fnPrefix, fnName, fnArgs);
@@ -918,6 +1150,9 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
         case "from-search":
         case "from-search-docs":
         case "from-triples":
+        case "from-doc-uris":
+        case "from-param":
+        case "from-doc-descriptors":
           if (fnArgs.length < 1) {
             throw new IllegalArgumentException("accessor constructor without parameters: "+fnArgs.length);
           }

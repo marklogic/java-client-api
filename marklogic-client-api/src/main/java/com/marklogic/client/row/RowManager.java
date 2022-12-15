@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,6 +81,29 @@ public interface RowManager {
     void setRowStructureStyle(RowStructure style);
 
     /**
+     * Set an optional label and enable the "optic" trace event for the duration of each plan execution
+     *
+     * @param label
+     */
+    void setTraceLabel(String label);
+
+    /**
+     * @return the label that will be used for all log messages associated with the "optic" trace event
+     */
+    String getTraceLabel();
+
+    /**
+     * Set an optional optimization level. Must be zero or higher.
+     * @param value
+     */
+    void setOptimize(Integer value);
+
+    /**
+     * @return optional optimization level
+     */
+    Integer getOptimize();
+
+    /**
      * Defines a plan from a JSON serialization of the plan AST (Abstract Syntax Tree).
      * @param	handle a handle for a JSON serialization of a plan AST
      * @return	a plan for constructing and retrieving database rows
@@ -104,6 +127,21 @@ public interface RowManager {
      * @return	a plan for constructing and retrieving database rows
      */
     RawSPARQLSelectPlan newRawSPARQLSelectPlan(TextWriteHandle handle);
+
+    /**
+     * Execute the given plan without returning any result.
+     * 
+     * @param plan the definition of a plan
+     */
+    void execute(Plan plan);
+
+    /**
+     * Execute the given plan without returning any result.
+     * 
+     * @param plan the definition of a plan
+     * @param transaction a open transaction for the execute operation to run within
+     */
+    void execute(Plan plan, Transaction transaction);
 
     /**
      * Constructs and retrieves a set of database rows based on a plan using

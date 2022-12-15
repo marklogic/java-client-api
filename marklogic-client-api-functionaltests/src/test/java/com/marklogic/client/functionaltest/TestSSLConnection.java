@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import javax.net.ssl.X509TrustManager;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
@@ -38,6 +39,7 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 
+@Ignore("Ignored because it was previously ignored in build.gradle though without explanation")
 public class TestSSLConnection extends BasicJavaClientREST {
 
   private static String dbName = "TestSSLConnectionDB";
@@ -221,23 +223,18 @@ public class TestSSLConnection extends BasicJavaClientREST {
     // create the client
     // (note: a real application should use a COMMON, STRICT, or implemented
     // hostname verifier)
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-admin", "x").withSSLContext(sslContext, new X509TrustManager() {
+    SecurityContext secContext = newSecurityContext("rest-admin", "x").withSSLContext(sslContext, new X509TrustManager() {
 
 		@Override
 		public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public X509Certificate[] getAcceptedIssuers() {
-			// TODO Auto-generated method stub
 			return null;
 		}}).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8033, secContext, getConnType());
@@ -290,26 +287,21 @@ public class TestSSLConnection extends BasicJavaClientREST {
     // create the client
     // (note: a real application should use a COMMON, STRICT, or implemented
     // hostname verifier)
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-admin", "x").withSSLContext(sslContext, new X509TrustManager() {
+    SecurityContext secContext = newSecurityContext("rest-admin", "x").withSSLContext(sslContext, new X509TrustManager() {
 
 		@Override
 		public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public X509Certificate[] getAcceptedIssuers() {
-			// TODO Auto-generated method stub
 			return null;
 		}}).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8011, secContext, getConnType());
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8014, secContext, getConnType());
 
     String expectedException = "com.sun.jersey.api.client.ClientHandlerException: javax.net.ssl.SSLPeerUnverifiedException: peer not authenticated";
     String exception = "";
@@ -359,23 +351,18 @@ public class TestSSLConnection extends BasicJavaClientREST {
     // create the client
     // (note: a real application should use a COMMON, STRICT, or implemented
     // hostname verifier)
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-admin", "foo").withSSLContext(sslContext, new X509TrustManager() {
+    SecurityContext secContext = newSecurityContext("rest-admin", "foo").withSSLContext(sslContext, new X509TrustManager() {
 
 		@Override
 		public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public X509Certificate[] getAcceptedIssuers() {
-			// TODO Auto-generated method stub
 			return null;
 		}}).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8012, secContext, getConnType());
@@ -431,24 +418,19 @@ public class TestSSLConnection extends BasicJavaClientREST {
     // create the client
     // (note: a real application should use a COMMON, STRICT, or implemented
     // hostname verifier)
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("MyFooUser", "x");
+    SecurityContext secContext = newSecurityContext("MyFooUser", "x");
     secContext.withSSLContext(sslContext, new X509TrustManager() {
 
 		@Override
 		public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public X509Certificate[] getAcceptedIssuers() {
-			// TODO Auto-generated method stub
 			return null;
 		}}).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8012, secContext, getConnType());

@@ -1,5 +1,9 @@
-apply plugin: 'maven-publish'
-apply plugin: 'distribution'
+// Copyright (c) 2022 MarkLogic Corporation
+
+plugins {
+    id 'maven-publish'
+    id 'distribution'
+}
 
 group = 'com.marklogic'
 
@@ -7,33 +11,45 @@ description = "The official MarkLogic Java client API."
 
 dependencies {
     if (JavaVersion.current().isJava9Compatible()) {
-        implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
-        implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.2'
-        implementation group: 'org.glassfish.jaxb', name: 'jaxb-core', version: '2.3.0.1'
+        implementation 'javax.xml.bind:jaxb-api:2.3.1'
+        implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.2'
+        implementation 'org.glassfish.jaxb:jaxb-core:2.3.0.1'
     }
-    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version:'4.7.2'
-    implementation group: 'com.squareup.okhttp3', name: 'logging-interceptor', version:'4.7.2'
-    implementation group: 'io.github.rburgst', name: 'okhttp-digest', version:'2.5'
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version:'4.10.0'
+    implementation group: 'com.squareup.okhttp3', name: 'logging-interceptor', version:'4.10.0'
+    implementation group: 'io.github.rburgst', name: 'okhttp-digest', version:'2.7'
     implementation group: 'com.sun.mail', name: 'javax.mail', version:'1.6.2'
     implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version:'2.1.1'
-    implementation group: 'org.slf4j', name: 'slf4j-api', version:'1.7.30'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version:'2.12.4'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version:'2.12.4'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.12.4'
-    implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-csv', version:'2.12.4'
-    testImplementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-xml', version:'2.12.4'
-    testImplementation group: 'org.mockito', name: 'mockito-all', version:'1.10.19'
-    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version:'1.7.36'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.13.4'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.13.4'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4.2'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.13.4'
+
+    testImplementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.4'
+    testImplementation "org.mockito:mockito-core:4.9.0"
+    testImplementation "org.mockito:mockito-inline:4.9.0"
+    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.11'
     testImplementation group: 'org.hsqldb', name: 'hsqldb', version:'2.5.1'
 // schema validation issue with testImplementation group: 'xerces', name: 'xercesImpl', version:'2.12.0'
     testImplementation group: 'org.opengis.cite.xerces', name: 'xercesImpl-xsd11', version:'2.12-beta-r1667115'
+
     compileOnly group: 'org.jdom', name: 'jdom2', version:'2.0.6'
     compileOnly group: 'dom4j', name: 'dom4j', version:'1.6.1'
     compileOnly group: 'com.google.code.gson', name: 'gson', version:'2.8.6'
     compileOnly group: 'net.sourceforge.htmlcleaner', name: 'htmlcleaner', version:'2.24'
     compileOnly group: 'com.opencsv', name: 'opencsv', version: '4.6'
     compileOnly group: 'org.geonames', name: 'geonames', version:'1.0'
-    compileOnly group: 'org.springframework', name: 'spring-jdbc', version: '5.3.18'
+    compileOnly 'org.springframework:spring-jdbc:5.3.23'
+}
+
+// Ensure that mlHost and mlPassword can override the defaults of localhost/admin if they've been modified
+test {
+    systemProperty "TEST_HOST", mlHost
+    systemProperty "TEST_ADMIN_PASSWORD", mlPassword
+    // Needed by the tests for the example programs
+    systemProperty "EXAMPLE_HOST", mlHost
+    systemProperty "EXAMPLE_ADMIN_PASSWORD", mlPassword
 }
 
 jar {
@@ -56,7 +72,7 @@ javadoc {
     options.overview = "src/main/javadoc/overview.html"
     options.windowTitle = "$rootProject.describedName $rootProject.version"
     options.docTitle = "$rootProject.describedName $rootProject.version"
-    options.bottom = "Copyright &copy; 2013-2021 MarkLogic Corporation."
+    options.bottom = "Copyright &copy; 2022 MarkLogic Corporation"
     options.links = [ 'http://docs.oracle.com/javase/8/docs/api/' ]
     options.use = true
     if (JavaVersion.current().isJava9Compatible()) {
@@ -192,13 +208,21 @@ task printClassPath() {
     }
 }
 
-task testServerInit(type: JavaExec) {
-    classpath = sourceSets.test.runtimeClasspath
-    main = 'com.marklogic.client.test.util.TestServerBootstrapper'
+task generatePomForDependencyGraph(dependsOn: "generatePomFileForMainJavaPublication") {
+    description = "Prepare for a release by making a copy of the generated pom file in the root directory so that it " +
+            "can enable Github's Dependency Graph feature, which does not yet support Gradle"
+    doLast {
+        def preamble = '<?xml version="1.0" encoding="UTF-8"?>'
+        def comment = "<!--\n" +
+                "This file was generated via Gradle and is being used primarily for github's Dependency Graph feature.\n" +
+                "It is not intended to be used to build this project.\n" +
+                "-->"
+        def fileText = file("build/publications/mainJava/pom-default.xml").getText()
+        file("../pom.xml").setText(fileText.replace(preamble, preamble + comment))
+    }
 }
 
-task testServerTeardown(type: JavaExec) {
-    classpath = sourceSets.test.runtimeClasspath
-    main = 'com.marklogic.client.test.util.TestServerBootstrapper'
-    args = ["teardown"]
+task testRows(type: Test) {
+    description = "Run all 'rows' tests; i.e. those exercising Optic and Optic Update functionality"
+    include "com/marklogic/client/test/rows/**"
 }

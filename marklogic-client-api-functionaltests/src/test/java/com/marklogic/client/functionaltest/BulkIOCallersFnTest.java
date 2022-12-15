@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -176,8 +176,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
         createUserRolesWithPrevilages("ForbiddenRole", "any-uri");
         createRESTUser("ForbiddenUser", "ap1U53r", "apiRole", "rest-admin", "rest-writer", "rest-reader",
                 "manage-user");
-        //SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("apiUser", "ap1U53r");
-        secContext = new DatabaseClientFactory.DigestAuthContext("admin", "admin");
+        secContext = newSecurityContext("admin", "admin");
 
         schemaDBclient = getDatabaseClientOnDatabase(host, modulesPort, dbNameMod, user, "admin", getConnType());
 

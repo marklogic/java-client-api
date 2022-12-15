@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -45,6 +38,7 @@ import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
 import com.marklogic.client.impl.RESTServices.RESTServiceResult;
@@ -66,6 +60,8 @@ public class RowManagerImpl
   private HandleFactoryRegistry handleRegistry;
   private RowSetPart   datatypeStyle     = null;
   private RowStructure rowStructureStyle = null;
+  private Integer optimize;
+  private String traceLabel;
 
   public RowManagerImpl(RESTServices services) {
     super();
@@ -112,6 +108,23 @@ public class RowManagerImpl
   }
 
   @Override
+  public String getTraceLabel() {
+    return traceLabel;
+  }
+  @Override
+  public void setTraceLabel(String label) {
+    this.traceLabel = label;
+  }
+  @Override
+  public Integer getOptimize() {
+    return this.optimize;
+  }
+  @Override
+  public void setOptimize(Integer value) {
+    this.optimize = value;
+  }
+
+  @Override
   public RawPlanDefinition newRawPlanDefinition(JSONWriteHandle handle) {
     return new RawPlanDefinitionImpl(handle);
   }
@@ -127,6 +140,12 @@ public class RowManagerImpl
   @Override
   public RawSPARQLSelectPlanImpl newRawSPARQLSelectPlan(TextWriteHandle handle) {
     return new RawSPARQLSelectPlanImpl(handle);
+  }
+
+  private RowsParamsBuilder newRowsParamsBuilder(PlanBuilderBaseImpl.RequestPlan plan) {
+    return new RowsParamsBuilder(plan)
+        .withOptimize(this.optimize)
+        .withTraceLabel(this.traceLabel);
   }
 
   @Override
@@ -148,18 +167,15 @@ public class RowManagerImpl
   }
   @Override
   public <T extends StructureReadHandle> T resultDoc(Plan plan, T resultsHandle, Transaction transaction) {
-    PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
-
-    AbstractWriteHandle astHandle = requestPlan.getHandle();
-
     if (resultsHandle == null) {
       throw new IllegalArgumentException("Must specify a handle to read the row result document");
     }
-
-    RequestParameters params = getParamBindings(requestPlan);
-    addDatatypeStyleParam(params,     getDatatypeStyle());
-    addRowStructureStyleParam(params, getRowStructureStyle());
-
+    PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
+    AbstractWriteHandle astHandle = requestPlan.getHandle();
+    RequestParameters params = newRowsParamsBuilder(requestPlan)
+        .withColumnTypes(getDatatypeStyle())
+        .withOutput(getRowStructureStyle())
+        .getRequestParameters();
     return services.postResource(requestLogger, "rows", transaction, params, astHandle, resultsHandle);
   }
 
@@ -167,14 +183,21 @@ public class RowManagerImpl
   public RowSet<RowRecord> resultRows(Plan plan) {
     return resultRows(plan, (Transaction) null);
   }
+
   @Override
   public RowSet<RowRecord> resultRows(Plan plan, Transaction transaction) {
-    RowSetPart   datatypeStyle     = getDatatypeStyle();
+    RowSetPart datatypeStyle = getDatatypeStyle();
     RowStructure rowStructureStyle = getRowStructureStyle();
 
-    RESTServiceResultIterator iter = makeRequest(
-      plan, "json", datatypeStyle, rowStructureStyle, "reference", transaction
-    );
+    PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
+    RequestParameters params = newRowsParamsBuilder(requestPlan)
+        .withRowFormat("json")
+        .withNodeColumns("reference")
+        .withColumnTypes(datatypeStyle)
+        .withOutput(rowStructureStyle)
+        .getRequestParameters();
+
+    RESTServiceResultIterator iter = submitPlan(requestPlan, params, transaction);
 
     RowSetRecord rowset = new RowSetRecord(
       "json", datatypeStyle, rowStructureStyle, iter, handleRegistry
@@ -183,50 +206,72 @@ public class RowManagerImpl
 
     return rowset;
   }
+
+  @Override
+  public void execute(Plan plan) {
+    execute(plan, null);
+  }
+  
+  @Override
+  public void execute(Plan plan, Transaction transaction) {
+    PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
+    RequestParameters params = newRowsParamsBuilder(requestPlan)
+        .withOutput("execute")
+        .getRequestParameters();
+    RESTServiceResultIterator iter = submitPlan(requestPlan, params, transaction);
+    if (iter != null) {
+      iter.close();
+    }
+  }
+
   @Override
   public <T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle) {
     return resultRows(plan, rowHandle, (Transaction) null);
   }
+
   @Override
   public <T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction) {
-    RowSetPart   datatypeStyle     = getDatatypeStyle();
+    RowSetPart datatypeStyle = getDatatypeStyle();
     RowStructure rowStructureStyle = getRowStructureStyle();
-
     String rowFormat = getRowFormat(rowHandle);
 
-    RESTServiceResultIterator iter = makeRequest(
-      plan, rowFormat, datatypeStyle, rowStructureStyle, "inline", transaction
-    );
+    PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
+    RequestParameters params = newRowsParamsBuilder(requestPlan)
+        .withRowFormat(rowFormat)
+        .withNodeColumns("inline")
+        .withColumnTypes(datatypeStyle)
+        .withOutput(rowStructureStyle)
+        .getRequestParameters();
 
-    RowSetHandle<T> rowset = new RowSetHandle<>(
-      rowFormat, datatypeStyle, rowStructureStyle, iter, rowHandle
-    );
+    RESTServiceResultIterator iter = submitPlan(requestPlan, params, transaction);
+    RowSetHandle<T> rowset = new RowSetHandle<>(rowFormat, datatypeStyle, rowStructureStyle, iter, rowHandle);
     rowset.init();
-
     return rowset;
   }
+
   @Override
   public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as) {
     return resultRowsAs(plan, as, (Transaction) null);
   }
   @Override
   public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as, Transaction transaction) {
-    RowSetPart   datatypeStyle     = getDatatypeStyle();
-    RowStructure rowStructureStyle = getRowStructureStyle();
-
     ContentHandle<T> rowHandle = handleFor(as);
-
     String rowFormat = getRowFormat(rowHandle);
 
-    RESTServiceResultIterator iter = makeRequest(
-      plan, rowFormat, datatypeStyle, rowStructureStyle, "inline", transaction
-    );
+    RowSetPart datatypeStyle = getDatatypeStyle();
+    RowStructure rowStructureStyle = getRowStructureStyle();
 
-    RowSetObject<T> rowset = new RowSetObject<>(
-      rowFormat, datatypeStyle, rowStructureStyle, iter, rowHandle
-    );
+    PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
+    RequestParameters params = newRowsParamsBuilder(requestPlan)
+        .withRowFormat(rowFormat)
+        .withNodeColumns("inline")
+        .withColumnTypes(datatypeStyle)
+        .withOutput(rowStructureStyle)
+        .getRequestParameters();
+    
+    RESTServiceResultIterator iter = submitPlan(requestPlan, params, transaction);
+    RowSetObject<T> rowset = new RowSetObject<>(rowFormat, datatypeStyle, rowStructureStyle, iter, rowHandle);
     rowset.init();
-
     return rowset;
   }
 
@@ -311,35 +356,6 @@ public class RowManagerImpl
     return handle.get();
   }
 
-  private void addDatatypeStyleParam(RequestParameters params, RowSetPart datatypeStyle) {
-    if (datatypeStyle != null) {
-      switch (datatypeStyle) {
-        case HEADER:
-          params.add("column-types", "header");
-          break;
-        case ROWS:
-          params.add("column-types", "rows");
-          break;
-        default:
-          throw new IllegalStateException("unknown data type style: "+datatypeStyle);
-      }
-    }
-  }
-  private void addRowStructureStyleParam(RequestParameters params, RowStructure rowStructureStyle) {
-    if (rowStructureStyle != null) {
-      switch (rowStructureStyle) {
-        case ARRAY:
-          params.add("output", "array");
-          break;
-        case OBJECT:
-          params.add("output", "object");
-          break;
-        default:
-          throw new IllegalStateException("unknown row structure style: "+rowStructureStyle);
-      }
-    }
-  }
-
   private <T extends AbstractReadHandle> String getRowFormat(T rowHandle) {
     if (rowHandle == null) {
       throw new IllegalArgumentException("Must specify a handle to iterate over the rows");
@@ -362,24 +378,17 @@ public class RowManagerImpl
         throw new IllegalArgumentException("Must use JSON or XML format to iterate rows instead of "+handleFormat.name());
     }
   }
-  private RESTServiceResultIterator makeRequest(
-    Plan plan,
-    String rowFormat, RowSetPart datatypeStyle, RowStructure rowStructureStyle, String nodeCols,
-    Transaction transaction
-  ) {
-    PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
 
+  private RESTServiceResultIterator submitPlan(PlanBuilderBaseImpl.RequestPlan requestPlan, RequestParameters params, Transaction transaction) {
     AbstractWriteHandle astHandle = requestPlan.getHandle();
-
-    RequestParameters params = getParamBindings(requestPlan);
-    params.add("row-format",   rowFormat);
-    params.add("node-columns", nodeCols);
-    addDatatypeStyleParam(params,     datatypeStyle);
-    addRowStructureStyleParam(params, rowStructureStyle);
-
-// QUESTION: outputMimetypes a noop?
+    List<ContentParam> contentParams = requestPlan.getContentParams();
+    if (contentParams != null && !contentParams.isEmpty()) {
+      contentParams.add(new ContentParam(new PlanBuilderBaseImpl.PlanParamBase("query"), astHandle, null));
+      return services.postMultipartForm(requestLogger, "rows", transaction, params, contentParams);
+    }
     return services.postIteratedResource(requestLogger, "rows", transaction, params, astHandle);
   }
+
   private PlanBuilderBaseImpl.RequestPlan checkPlan(Plan plan) {
     if (plan == null) {
       throw new IllegalArgumentException("Must specify a plan to produce row results");
@@ -390,26 +399,6 @@ public class RowManagerImpl
     }
     return (PlanBuilderBaseImpl.RequestPlan) plan;
   }
-  private RequestParameters getParamBindings(PlanBuilderBaseImpl.RequestPlan requestPlan) {
-    RequestParameters params = new RequestParameters();
-    Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> planParams = requestPlan.getParams();
-    if (planParams != null) {
-      for (Map.Entry<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> entry: planParams.entrySet()) {
-        BaseTypeImpl.ParamBinder binder = entry.getValue();
-
-        StringBuilder nameBuf = new StringBuilder("bind:");
-        nameBuf.append(entry.getKey().getName());
-        String paramQual = binder.getParamQualifier();
-        if (paramQual != null) {
-          nameBuf.append(paramQual);
-        }
-
-        params.add(nameBuf.toString(), binder.getParamValue());
-      }
-    }
-    return params;
-  }
-
   <T> ContentHandle<T> handleFor(Class<T> as) {
     if (as == null) {
       throw new IllegalArgumentException("Must specify a class for content with a registered handle");
@@ -1591,19 +1580,25 @@ public class RowManagerImpl
   }
 
   static abstract class RawPlanImpl<W extends AbstractWriteHandle> implements RawPlan, PlanBuilderBaseImpl.RequestPlan {
+    // TODO There's some significant duplication here with PlanSubImpl that ideally can be factored out
     private Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params = null;
+    private List<ContentParam> contentParams;
     private W handle;
     private RawPlanImpl(W handle) {
       setHandle(handle);
     }
     private RawPlanImpl(
             W handle,
-            Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params) {
+            Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+            List<ContentParam> contentParams) {
       this(handle);
       this.params = params;
+      this.contentParams = contentParams;
     }
 
-    abstract RawPlanImpl<W> parameterize(W handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params);
+    abstract RawPlanImpl<W> parameterize(W handle,
+                                         Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+                                         List<ContentParam> contentParams);
     abstract void configHandle(BaseHandle handle);
 
     @Override
@@ -1708,7 +1703,54 @@ public class RowManagerImpl
 
       nextParams.put((PlanBuilderBaseImpl.PlanParamBase) param, (XsValueImpl.AnyAtomicTypeValImpl) literal);
 
-      return parameterize(getHandle(), nextParams);
+      return parameterize(getHandle(), nextParams, this.contentParams);
+    }
+
+    @Override
+    public Plan bindParam(String param, DocumentWriteSet writeSet) {
+      return bindParam(new PlanBuilderBaseImpl.PlanParamBase(param), writeSet);
+    }
+
+    @Override
+    public Plan bindParam(PlanParamExpr param, DocumentWriteSet writeSet) {
+      if (!(param instanceof PlanBuilderBaseImpl.PlanParamBase)) {
+        throw new IllegalArgumentException("param must be an instance of PlanParamBase");
+      }
+      List<ContentParam> nextContentParams = new ArrayList<>();
+      if (this.contentParams != null) {
+        nextContentParams.addAll(this.contentParams);
+      }
+      nextContentParams.add(ContentParam.fromDocumentWriteSet((PlanBuilderBaseImpl.PlanParamBase) param, writeSet));
+      return parameterize(getHandle(), this.params, nextContentParams);
+    }
+
+    @Override
+    public Plan bindParam(String param, AbstractWriteHandle content) {
+      return bindParam(new PlanBuilderBaseImpl.PlanParamBase(param), content, null);
+    }
+
+    @Override
+    public Plan bindParam(String param, AbstractWriteHandle content, Map<String, Map<String, AbstractWriteHandle>> columnAttachments) {
+      return bindParam(new PlanBuilderBaseImpl.PlanParamBase(param), content, columnAttachments);
+    }
+
+    @Override
+    public Plan bindParam(PlanParamExpr param, AbstractWriteHandle content, Map<String, Map<String, AbstractWriteHandle>> columnAttachments) {
+      if (!(param instanceof PlanBuilderBaseImpl.PlanParamBase)) {
+        throw new IllegalArgumentException("param must be an instance of PlanParamBase");
+      }
+      PlanBuilderBaseImpl.PlanParamBase baseParam = (PlanBuilderBaseImpl.PlanParamBase) param;
+      List<ContentParam> nextContentParams = new ArrayList<>();
+      if (this.contentParams != null) {
+        nextContentParams.addAll(this.contentParams);
+      }
+      nextContentParams.add(new ContentParam(baseParam, content, columnAttachments));
+      return parameterize(getHandle(), this.params, nextContentParams);
+    }
+
+    @Override
+    public List<ContentParam> getContentParams() {
+      return contentParams;
     }
   }
   static class RawSQLPlanImpl extends RawPlanImpl<TextWriteHandle> implements RawSQLPlan {
@@ -1716,16 +1758,18 @@ public class RowManagerImpl
       super(handle);
     }
     RawSQLPlanImpl(
-            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+            List<ContentParam> contentParams
     ) {
-      super(handle, params);
+      super(handle, params, contentParams);
     }
 
     @Override
     RawSQLPlanImpl parameterize(
-            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+            List<ContentParam> contentParams
     ) {
-      return new RawSQLPlanImpl(handle, params);
+      return new RawSQLPlanImpl(handle, params, contentParams);
     }
     @Override
     void configHandle(BaseHandle handle) {
@@ -1744,16 +1788,18 @@ public class RowManagerImpl
       super(handle);
     }
     RawSPARQLSelectPlanImpl(
-            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+            List<ContentParam> contentParams
     ) {
-      super(handle, params);
+      super(handle, params, contentParams);
     }
 
     @Override
     RawSPARQLSelectPlanImpl parameterize(
-            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+            List<ContentParam> contentParams
     ) {
-      return new RawSPARQLSelectPlanImpl(handle, params);
+      return new RawSPARQLSelectPlanImpl(handle, params, contentParams);
     }
     @Override
     void configHandle(BaseHandle handle) {
@@ -1772,16 +1818,18 @@ public class RowManagerImpl
       super(handle);
     }
     RawQueryDSLPlanImpl(
-            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+            List<ContentParam> contentParams
     ) {
-      super(handle, params);
+      super(handle, params, contentParams);
     }
 
     @Override
     RawQueryDSLPlanImpl parameterize(
-            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+            TextWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+            List<ContentParam> contentParams
     ) {
-      return new RawQueryDSLPlanImpl(handle, params);
+      return new RawQueryDSLPlanImpl(handle, params, contentParams);
     }
     @Override
     void configHandle(BaseHandle handle) {
@@ -1801,15 +1849,17 @@ public class RowManagerImpl
     }
     private RawPlanDefinitionImpl(
       JSONWriteHandle handle,
-      Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params) {
-      super(handle, params);
+      Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+      List<ContentParam> contentParams) {
+      super(handle, params, contentParams);
     }
 
     @Override
     RawPlanDefinitionImpl parameterize(
-            JSONWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params
+            JSONWriteHandle handle, Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params,
+            List<ContentParam> contentParams
     ) {
-      return new RawPlanDefinitionImpl(handle, params);
+      return new RawPlanDefinitionImpl(handle, params, contentParams);
     }
     @Override
     void configHandle(BaseHandle handle) {

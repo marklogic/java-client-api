@@ -1194,6 +1194,12 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
+  public CtsReferenceExpr iriReference() {
+    return new ReferenceCallImpl("cts", "iri-reference", new Object[]{  });
+  }
+
+  
+  @Override
   public CtsQueryExpr jsonPropertyChildGeospatialQuery(String propertyName, String childName, CtsRegionExpr... region) {
     return jsonPropertyChildGeospatialQuery((propertyName == null) ? (XsStringVal) null : xs.string(propertyName), (childName == null) ? (XsStringVal) null : xs.string(childName), new RegionSeqListImpl(region));
   }

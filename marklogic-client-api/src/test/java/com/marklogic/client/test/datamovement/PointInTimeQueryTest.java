@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,6 @@ package com.marklogic.client.test.datamovement;
 
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import com.marklogic.client.datamovement.*;
 import org.junit.FixMethodOrder;
@@ -39,6 +36,8 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 
 import com.marklogic.client.test.Common;
+
+import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PointInTimeQueryTest {
@@ -138,6 +137,9 @@ public class PointInTimeQueryTest {
 
     // now that we're done deleting, wait for the exportBatcher to finish
     exportBatcher.awaitCompletion();
+
+    assertNotNull("withConsistentSnapshot was used, so the server timestamp should be available to the client",
+            exportBatcher.getServerTimestamp());
 
     // if we still got all the docs, that means our delete was ignored during the run
     assertEquals(numDocs, successDocs.get());

@@ -1,0 +1,10 @@
+{
+  "musician": {
+    "lastName": "Coltrane",
+    "firstName": "John",
+    "dob": "1926-09-23",
+    "instrument": [
+      "saxophone"
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "user-name": "read-privileged",
+  "description": "read-privileged user",
+  "role": [
+    "read-privileged"
+  ],
+  "password": "x"
+}

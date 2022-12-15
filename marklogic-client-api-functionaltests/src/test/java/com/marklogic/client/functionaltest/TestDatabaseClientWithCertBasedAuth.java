@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,11 +32,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,6 +46,7 @@ import com.marklogic.client.io.StringHandle;
 
 import junit.framework.Assert;
 
+@Ignore("Ignored because it was previously ignored in build.gradle though without explanation")
 public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST {
 
   public static String newLine = System.getProperty("line.separator");
@@ -69,7 +66,7 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST {
     createRESTServerWithDB(server, port);
     createRESTUser("portal", "seekrit", "admin", "rest-admin", "rest-writer", "rest-reader");
     associateRESTServerWithDB(setupServer, "Security");
-    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("admin", "admin");
+    SecurityContext secContext = newSecurityContext("admin", "admin");
     secClient = DatabaseClientFactory.newClient(host, setupPort, secContext, getConnType());
 
     createCACert();

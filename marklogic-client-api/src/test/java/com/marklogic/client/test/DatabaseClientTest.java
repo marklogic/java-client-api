@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,9 +124,9 @@ public class DatabaseClientTest {
   @Test
   public void testCheckConnectionWithValidUser() {
 		
-	DatabaseClient marklogic = DatabaseClientFactory.newClient("localhost",
-		        8000, "unittest-nodeapi", new DatabaseClientFactory.DigestAuthContext(
-				        "admin", "admin"));
+	DatabaseClient marklogic = Common.makeNewClient(Common.HOST,
+		        8000, "unittest-nodeapi", Common.newSecurityContext(
+				        Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS));
   
     ConnectionResult connResult = marklogic.checkConnection();
     assertTrue(connResult.isConnected());
@@ -135,9 +135,8 @@ public class DatabaseClientTest {
   @Test
   public void testCheckConnectionWithInvalidUser() {
 		
-	DatabaseClient marklogic = DatabaseClientFactory.newClient("localhost",
-		        8000, "unittest-nodeapi", new DatabaseClientFactory.DigestAuthContext(
-				        "invalid", "invalid"));
+	DatabaseClient marklogic = Common.makeNewClient(Common.HOST,
+		        8000, "unittest-nodeapi", Common.newSecurityContext("invalid", "invalid"));
   
     ConnectionResult connResult = marklogic.checkConnection();
     assertFalse(connResult.isConnected());

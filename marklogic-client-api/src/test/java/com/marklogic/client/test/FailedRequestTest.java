@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,8 +121,7 @@ public class FailedRequestTest {
 
   @Test
   public void testErrorOnNonREST() throws ForbiddenUserException {
-    DatabaseClient badClient = DatabaseClientFactory.newClient(Common.HOST,
-      8001, new DigestAuthContext(Common.USER, Common.PASS));
+    DatabaseClient badClient = Common.makeNewClient(Common.HOST, 8001, Common.newSecurityContext(Common.USER, Common.PASS));
     ServerConfigurationManager serverConfig = badClient
       .newServerConfigManager();
 

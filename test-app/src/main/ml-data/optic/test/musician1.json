@@ -1,0 +1,11 @@
+{
+  "musician": {
+    "lastName": "Armstrong",
+    "firstName": "Louis",
+    "dob": "1901-08-04",
+    "instrument": [
+      "trumpet",
+      "vocal"
+    ]
+  }
+}

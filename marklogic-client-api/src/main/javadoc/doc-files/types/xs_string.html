@@ -577,10 +577,34 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td><a href="http://docs.marklogic.com/geo:circle-polygon" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="rowColor">
+	    <td class="colFirst"><a href="xs_boolean.html">xs:boolean</a></td>
+	    <td class="colLast"><span class="memberNameLink">geo:contains</span>(<span><a href="cts_region.html">cts:region</a> <i>region-1</i></span>, <span><a href="cts_region.html">cts:region</a> <i>region-2</i></span>, <span>xs:string <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-contains">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:contains" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
 	    <td class="colFirst"><a href="xs_integer.html">xs:integer</a></td>
 	    <td class="colLast"><span class="memberNameLink">geo:count-distinct-vertices</span>(<span><a href="cts_region.html">cts:region</a> <i>region</i></span>, <span>xs:string <i>options</i>*</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-count-distinct-vertices">java</a></td>
 	    <td><a href="http://docs.marklogic.com/geo:count-distinct-vertices" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="xs_boolean.html">xs:boolean</a></td>
+	    <td class="colLast"><span class="memberNameLink">geo:covered-by</span>(<span><a href="cts_region.html">cts:region</a> <i>region-1</i></span>, <span><a href="cts_region.html">cts:region</a> <i>region-2</i></span>, <span>xs:string <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-covered-by">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:covered-by" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="xs_boolean.html">xs:boolean</a></td>
+	    <td class="colLast"><span class="memberNameLink">geo:covers</span>(<span><a href="cts_region.html">cts:region</a> <i>region-1</i></span>, <span><a href="cts_region.html">cts:region</a> <i>region-2</i></span>, <span>xs:string <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-covers">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:covers" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="xs_boolean.html">xs:boolean</a></td>
+	    <td class="colLast"><span class="memberNameLink">geo:crosses</span>(<span><a href="cts_region.html">cts:region</a> <i>region-1</i></span>, <span><a href="cts_region.html">cts:region</a> <i>region-2</i></span>, <span>xs:string <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-crosses">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:crosses" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="altColor">
 	    <td class="colFirst"><a href="cts_point.html">cts:point</a></td>
@@ -589,22 +613,34 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td><a href="http://docs.marklogic.com/geo:destination" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="rowColor">
+	    <td class="colFirst"><a href="xs_boolean.html">xs:boolean</a></td>
+	    <td class="colLast"><span class="memberNameLink">geo:disjoint</span>(<span><a href="cts_region.html">cts:region</a> <i>region-1</i></span>, <span><a href="cts_region.html">cts:region</a> <i>region-2</i></span>, <span>xs:string <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-disjoint">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:disjoint" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
 	    <td class="colFirst"><a href="xs_double.html">xs:double</a></td>
 	    <td class="colLast"><span class="memberNameLink">geo:distance</span>(<span><a href="cts_point.html">cts:point</a> <i>p1</i></span>, <span><a href="cts_point.html">cts:point</a> <i>p2</i></span>, <span>xs:string <i>options</i>*</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-distance">java</a></td>
 	    <td><a href="http://docs.marklogic.com/geo:distance" target="mlserverdoc">server</a></td>
 	  </tr>
-<tr class="altColor">
+<tr class="rowColor">
 	    <td class="colFirst"><a href="xs_double.html">xs:double</a></td>
 	    <td class="colLast"><span class="memberNameLink">geo:distance-convert</span>(<span><a href="xs_double.html">xs:double</a> <i>distance</i></span>, <span>xs:string <i>unit1</i>*</span>, <span>xs:string <i>unit2</i>*</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-distance-convert">java</a></td>
 	    <td><a href="http://docs.marklogic.com/geo:distance-convert" target="mlserverdoc">server</a></td>
 	  </tr>
-<tr class="rowColor">
+<tr class="altColor">
 	    <td class="colFirst"><a href="cts_polygon.html">cts:polygon</a></td>
 	    <td class="colLast"><span class="memberNameLink">geo:ellipse-polygon</span>(<span><a href="cts_point.html">cts:point</a> <i>center</i>*</span>, <span><a href="xs_double.html">xs:double</a> <i>semi-major-axis</i></span>, <span><a href="xs_double.html">xs:double</a> <i>semi-minor-axis</i></span>, <span><a href="xs_double.html">xs:double</a> <i>azimuth</i></span>, <span><a href="xs_double.html">xs:double</a> <i>arc-tolerance</i></span>, <span>xs:string <i>options</i>*</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-ellipse-polygon">java</a></td>
 	    <td><a href="http://docs.marklogic.com/geo:ellipse-polygon" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="xs_boolean.html">xs:boolean</a></td>
+	    <td class="colLast"><span class="memberNameLink">geo:equals</span>(<span><a href="cts_region.html">cts:region</a> <i>region-1</i></span>, <span><a href="cts_region.html">cts:region</a> <i>region-2</i></span>, <span>xs:string <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-equals">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:equals" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="altColor">
 	    <td class="colFirst"><a href="cts_box.html">cts:box</a></td>
@@ -641,6 +677,18 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td class="colLast"><span class="memberNameLink">geo:interior-point</span>(<span><a href="cts_region.html">cts:region</a> <i>region</i></span>, <span>xs:string <i>options</i>*</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-interior-point">java</a></td>
 	    <td><a href="http://docs.marklogic.com/geo:interior-point" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="xs_boolean.html">xs:boolean</a></td>
+	    <td class="colLast"><span class="memberNameLink">geo:intersects</span>(<span><a href="cts_region.html">cts:region</a> <i>region-1</i></span>, <span><a href="cts_region.html">cts:region</a> <i>region-2</i></span>, <span>xs:string <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-intersects">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:intersects" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="xs_boolean.html">xs:boolean</a></td>
+	    <td class="colLast"><span class="memberNameLink">geo:overlaps</span>(<span><a href="cts_region.html">cts:region</a> <i>region-1</i></span>, <span><a href="cts_region.html">cts:region</a> <i>region-2</i></span>, <span>xs:string <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-overlaps">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:overlaps" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="altColor">
 	    <td class="colFirst"><a href="cts_region.html">cts:region</a>*</td>
@@ -698,9 +746,21 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	  </tr>
 <tr class="altColor">
 	    <td class="colFirst"><a href="xs_boolean.html">xs:boolean</a></td>
+	    <td class="colLast"><span class="memberNameLink">geo:touches</span>(<span><a href="cts_region.html">cts:region</a> <i>region-1</i></span>, <span><a href="cts_region.html">cts:region</a> <i>region-2</i></span>, <span>xs:string <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-touches">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:touches" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="xs_boolean.html">xs:boolean</a></td>
 	    <td class="colLast"><span class="memberNameLink">geo:validate-wkt</span>(<span>xs:string <i>wkt</i></span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-validate-wkt">java</a></td>
 	    <td><a href="http://docs.marklogic.com/geo:validate-wkt" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="xs_boolean.html">xs:boolean</a></td>
+	    <td class="colLast"><span class="memberNameLink">geo:within</span>(<span><a href="cts_region.html">cts:region</a> <i>region-1</i></span>, <span><a href="cts_region.html">cts:region</a> <i>region-2</i></span>, <span>xs:string <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/GeoExpr.html#ml-server-type-within">java</a></td>
+	    <td><a href="http://docs.marklogic.com/geo:within" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="rowColor">
 	    <td class="colFirst"><a href="json_object.html">json:object</a></td>
@@ -1104,24 +1164,30 @@ For all server types, see the <a href="ml-server-type-tree.html">Server Expressi
 	    <td><a href="http://docs.marklogic.com/xdmp:strftime" target="mlserverdoc">server</a></td>
 	  </tr>
 <tr class="altColor">
+	    <td class="colFirst"><a href="document-node.html">document-node</a>+</td>
+	    <td class="colLast"><span class="memberNameLink">xdmp:unquote</span>(<span>xs:string <i>arg</i></span>, <span>xs:string <i>default-namespace</i>?</span>, <span>xs:string <i>options</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-unquote">java</a></td>
+	    <td><a href="http://docs.marklogic.com/xdmp:unquote" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
 	    <td class="colFirst">xs:string</td>
 	    <td class="colLast"><span class="memberNameLink">xdmp:uri-content-type</span>(<span>xs:string <i>uri</i></span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-uri-content-type">java</a></td>
 	    <td><a href="http://docs.marklogic.com/xdmp:uri-content-type" target="mlserverdoc">server</a></td>
 	  </tr>
-<tr class="rowColor">
+<tr class="altColor">
 	    <td class="colFirst">xs:string</td>
 	    <td class="colLast"><span class="memberNameLink">xdmp:uri-format</span>(<span>xs:string <i>uri</i></span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-uri-format">java</a></td>
 	    <td><a href="http://docs.marklogic.com/xdmp:uri-format" target="mlserverdoc">server</a></td>
 	  </tr>
-<tr class="altColor">
+<tr class="rowColor">
 	    <td class="colFirst">xs:string</td>
 	    <td class="colLast"><span class="memberNameLink">xdmp:url-decode</span>(<span>xs:string <i>encoded</i></span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-url-decode">java</a></td>
 	    <td><a href="http://docs.marklogic.com/xdmp:url-decode" target="mlserverdoc">server</a></td>
 	  </tr>
-<tr class="rowColor">
+<tr class="altColor">
 	    <td class="colFirst">xs:string</td>
 	    <td class="colLast"><span class="memberNameLink">xdmp:url-encode</span>(<span>xs:string <i>plaintext</i></span>, <span><a href="xs_boolean.html">xs:boolean</a> <i>noSpacePlus</i>?</span>)</td>
 	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-url-encode">java</a></td>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ public class BulkIOInputCallerTest {
         loader.awaitCompletion();
         checkDocuments("bulkInputTest_1");
         checkDocuments("bulkInputTest_2");
-        assertTrue("Number of documents written not as expected.", counter == 4);
+        assertEquals("Expected 4 documents written, was instead: " + counter, 4, counter);
         assertTrue("No documents written by first callContext in - bulkInputTest_1 collection.",
                 map.get("bulkInputTest_1") >= 1);
         assertTrue("No documents written by second callContext in - bulkInputTest_2 collection.",

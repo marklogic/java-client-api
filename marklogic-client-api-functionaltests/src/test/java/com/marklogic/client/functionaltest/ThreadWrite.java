@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import com.marklogic.client.io.FileHandle;
 
 public class ThreadWrite extends BasicJavaClientREST implements Runnable {
 
-  String msg;
+  public String msg;
 
   public void run()
   {
@@ -50,7 +50,7 @@ public class ThreadWrite extends BasicJavaClientREST implements Runnable {
         docMgr.write(docId, new FileHandle().with(file));
 
         Random rand = new Random();
-        int r = rand.nextInt(2000) + 1000;
+        int r = rand.nextInt(200) + 100;
 
         try {
           Thread.sleep(r);
@@ -61,14 +61,12 @@ public class ThreadWrite extends BasicJavaClientREST implements Runnable {
 
       // release client
       client.release();
-    } catch (KeyManagementException | NoSuchAlgorithmException
-        | IOException e1) {
-      // TODO Auto-generated catch block
+    } catch (KeyManagementException | NoSuchAlgorithmException | IOException e1) {
       e1.printStackTrace();
     }
   }
 
-  ThreadWrite(String mg)
+  public ThreadWrite(String mg)
   {
     msg = mg;
   }

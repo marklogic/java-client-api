@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,13 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.StringHandle;
 
+@Ignore
 public class TestBug18993 extends BasicJavaClientREST {
 
   private static String dbName = "Bug18993DB";

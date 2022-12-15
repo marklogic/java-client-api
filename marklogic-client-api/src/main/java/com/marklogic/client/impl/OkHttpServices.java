@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.*;
 import com.marklogic.client.DatabaseClient.ConnectionResult;
 import com.marklogic.client.DatabaseClientFactory.BasicAuthContext;
@@ -993,7 +994,7 @@ public class OkHttpServices implements RESTServices {
     }
 
     OkHttpResultIterator iterator = getIteratedResourceImpl(DefaultOkHttpResultIterator::new,
-      reqlog, path, transaction, params, MIMETYPE_MULTIPART_MIXED);
+      reqlog, path, transaction, params);
     if ( iterator != null ) {
       if ( iterator.getStart() == -1 ) iterator.setStart(1);
       if ( iterator.getSize() != -1 ) {
@@ -3221,14 +3222,14 @@ public class OkHttpServices implements RESTServices {
 
   @Override
   public RESTServiceResultIterator getIteratedResource(RequestLogger reqlog,
-                                                       String path, Transaction transaction, RequestParameters params, String... mimetypes)
+                                                       String path, Transaction transaction, RequestParameters params)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    return getIteratedResourceImpl(OkHttpServiceResultIterator::new, reqlog, path, transaction, params, mimetypes);
+    return getIteratedResourceImpl(OkHttpServiceResultIterator::new, reqlog, path, transaction, params);
   }
 
   private <U extends OkHttpResultIterator> U getIteratedResourceImpl(ResultIteratorConstructor<U> constructor,
-        RequestLogger reqlog, String path, Transaction transaction, RequestParameters params, String... mimetypes)
+        RequestLogger reqlog, String path, Transaction transaction, RequestParameters params)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     if ( params == null ) params = new RequestParameters();
@@ -3949,18 +3950,92 @@ public class OkHttpServices implements RESTServices {
 
   @Override
   public RESTServiceResultIterator postIteratedResource(RequestLogger reqlog,
-                                                        String path, Transaction transaction, RequestParameters params, AbstractWriteHandle input,
-                                                        String... outputMimetypes)
+                                                        String path, Transaction transaction, RequestParameters params, AbstractWriteHandle input)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
     return postIteratedResourceImpl(OkHttpServiceResultIterator::new,
-      reqlog, path, transaction, params, input, outputMimetypes);
+      reqlog, path, transaction, params, input);
   }
+
+    public RESTServiceResultIterator postMultipartForm(
+            RequestLogger reqlog, String path, Transaction transaction, RequestParameters params, List<ContentParam> contentParams)
+            throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
+    {
+      if ( transaction != null ) {
+          params.add("txid", transaction.getTransactionId());
+      }
+
+      // Don't include incoming request params, those all have to be form-data inputs
+      Request.Builder requestBldr = makePostWebResource(path, new RequestParameters());
+
+      MultipartBody.Builder multiBuilder = new MultipartBody.Builder().setType(MediaType.parse("multipart/form-data"));
+      for (String key : params.keySet()) {
+        for (String value : params.get(key)) {
+          if (value != null) {
+            multiBuilder.addFormDataPart(key, value);
+          }
+        }
+      }
+
+      contentParams.forEach(contentParam -> {
+          String name = contentParam.getPlanParam().getName();
+          multiBuilder.addFormDataPart(name, name, makeRequestBodyForContent(contentParam.getContent()));
+      });
+      this.addContentParamAttachments(multiBuilder, contentParams);
+
+      requestBldr = setupRequest(requestBldr, multiBuilder, null);
+      requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+      requestBldr = addTelemetryAgentId(requestBldr);
+      requestBldr = addTrailerHeadersIfNecessary(requestBldr, path);
+
+      Function<Request.Builder, Response> doPostFunction = funcBuilder ->
+              doPost(reqlog, funcBuilder.header(HEADER_ACCEPT, multipartMixedWithBoundary()), multiBuilder.build());
+
+      // The construction of this was based on whether the primary input was resendable or not. We don't have a primary
+      // input with a multipart request. So keeping this as null for now.
+      Consumer<Boolean> resendableConsumer = null;
+
+      Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPostFunction, resendableConsumer);
+      int status = response.code();
+      checkStatus(response, status, "apply", "resource", path, ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
+      return makeResults(OkHttpServiceResultIterator::new, reqlog, "apply", "resource", response);
+  }
+
+    /**
+     * The REST endpoint checks for a 'metadata' parameter that, if it exists, is expected to be a JSON object with
+     * an 'attachment/docs' array. Each object in the array is expected to have two fields - 'rowsField' and 'column'.
+     * The expectation is that 'rowsField' identifies a bound parameter name that is associated with a JSON array, and
+     * 'column' identifies a particular column in each object in the JSON array.
+     * <p>
+     * To provide support for this parameter, each object in the given {@code contentParamAttachments} array results in
+     * a new object in the 'rowsField' array. Then, each entry in the map of attachments in each such object is added
+     * as a new multipart form data part, with the map key being used as the form data part's filename. The value of
+     * the 'column' name in each row is then expected to be one of these map keys.
+     *
+     * @param multiBuilder
+     * @param contentParams
+     */
+    private void addContentParamAttachments(MultipartBody.Builder multiBuilder, List<ContentParam> contentParams) {
+        ObjectNode metadata = new ObjectMapper().createObjectNode();
+        ArrayNode docsArray = metadata.putObject("attachments").putArray("docs");
+        contentParams.stream().filter(contentParam -> contentParam.getColumnAttachments() != null).forEach(contentParam -> {
+            Map<String, Map<String, AbstractWriteHandle>> attachments = contentParam.getColumnAttachments();
+            attachments.keySet().forEach(columnName -> {
+                docsArray.addObject().put("rowsField", contentParam.getPlanParam().getName()).put("column", columnName);
+                attachments.get(columnName).keySet().forEach(filename -> {
+                    multiBuilder.addFormDataPart(columnName, filename, makeRequestBodyForContent(attachments.get(columnName).get(filename)));
+                });
+            });
+        });
+        if (docsArray.size() > 0) {
+            multiBuilder.addFormDataPart("metadata", "metadata", makeRequestBodyForContent(new JacksonHandle(metadata)));
+        }
+    }
 
   private <U extends OkHttpResultIterator> U postIteratedResourceImpl(
     ResultIteratorConstructor<U> constructor, final RequestLogger reqlog,
     final String path, Transaction transaction, RequestParameters params,
-    AbstractWriteHandle input, String... outputMimetypes)
+    AbstractWriteHandle input)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
     if ( params == null ) params = new RequestParameters();
@@ -3974,6 +4049,7 @@ public class OkHttpServices implements RESTServices {
     requestBldr = setupRequest(requestBldr, inputMimetype, null);
     requestBldr = addTransactionScopedCookies(requestBldr, transaction);
     requestBldr = addTelemetryAgentId(requestBldr);
+    requestBldr = addTrailerHeadersIfNecessary(requestBldr, path);
 
     Consumer<Boolean> resendableConsumer = new Consumer<Boolean>() {
       public void accept(Boolean resendable) {
@@ -4002,16 +4078,16 @@ public class OkHttpServices implements RESTServices {
   @Override
   public <W extends AbstractWriteHandle> RESTServiceResultIterator postIteratedResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
-    W[] input, String... outputMimetypes)
+    W[] input)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
     return postIteratedResourceImpl(OkHttpServiceResultIterator::new,
-      reqlog, path, transaction, params, input, outputMimetypes);
+      reqlog, path, transaction, params, input);
   }
 
   private <W extends AbstractWriteHandle, U extends OkHttpResultIterator> U postIteratedResourceImpl(
     ResultIteratorConstructor<U> constructor, RequestLogger reqlog, String path, Transaction transaction,
-    RequestParameters params, W[] input, String... outputMimetypes)
+    RequestParameters params, W[] input)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
     if ( params == null ) params = new RequestParameters();
@@ -4194,6 +4270,8 @@ public class OkHttpServices implements RESTServices {
     MediaType mediaType = makeType(requestBldr.build().header(HEADER_CONTENT_TYPE));
     if(value == null) {
       requestBldr = requestBldr.post(new ObjectRequestBody(null, null));
+    } else if (value instanceof MultipartBody) {
+        requestBldr = requestBldr.post((MultipartBody)value);
     } else if (value instanceof OutputStreamSender) {
       requestBldr = requestBldr
         .post(new StreamingOutputImpl((OutputStreamSender) value, reqlog, mediaType));
@@ -4307,6 +4385,17 @@ public class OkHttpServices implements RESTServices {
     if ( requestBldr == null ) throw new MarkLogicInternalException("no requestBldr available to set ML-Agent-ID header");
     return requestBldr.header("ML-Agent-ID", "java");
   }
+
+    private Request.Builder addTrailerHeadersIfNecessary(Request.Builder requestBldr, String path) {
+        if ("rows".equals(path)) {
+            // Standard header supported by ML 11
+            requestBldr.addHeader("TE", "trailers");
+
+            // Proprietary header recognized by ML 10.0-9, per https://docs.marklogic.com/guide/relnotes/chap3#id_73268
+            requestBldr.addHeader("ML-Check-ML11-Headers", "true");
+        }
+        return requestBldr;
+    }
 
   private <W extends AbstractWriteHandle> boolean addParts(
     MultipartBody.Builder multiPart, RequestLogger reqlog, W[] input)
@@ -4497,10 +4586,38 @@ public class OkHttpServices implements RESTServices {
     String operation, String entityType, Response response) {
     if ( response == null ) return null;
     ResponseBody body = response.body();
-    MimeMultipart entity = body.contentLength() != 0 ?
+    long length = body.contentLength();
+    MimeMultipart entity = length != 0 ?
       getEntity(body, MimeMultipart.class) : null;
 
+    try {
+        if (length == -1 && entity != null) entity.getCount();
+    } catch (MessagingException e) {
+        entity = null;
+    }
     List<BodyPart> partList = getPartList(entity);
+
+    String mlErrorCode = null;
+    String mlErrorMessage = null;
+    try {
+        Headers trailers = response.trailers();
+        mlErrorCode = trailers.get("ml-error-code");
+        mlErrorMessage = trailers.get("ml-error-message");
+    } catch (IOException e) {
+        // This does not seem worthy of causing the entire operation to fail; we also don't expect this to occur, as it
+        // should only occur due to a programming error where the response body has already been consumed
+        logger.warn("Unexpected IO error while getting HTTP response trailers: " + e.getMessage());
+    }
+
+    if (mlErrorCode != null && !"N/A".equals(mlErrorCode)) {
+      FailedRequest failure = new FailedRequest();
+      failure.setMessageString(mlErrorCode);
+      failure.setStatusString(mlErrorMessage);
+      failure.setStatusCode(500);
+      throw new FailedRequestException("failed to " + operation + " "
+          + entityType + " at rows" + ": " + mlErrorCode + ", " + mlErrorMessage, failure);
+    }
+
     Closeable closeable = response;
     return makeResults(constructor, reqlog, operation, entityType, partList, response, closeable);
   }
@@ -5617,6 +5734,21 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
+  public static RequestBody makeRequestBodyForContent(AbstractWriteHandle content) {
+      if (content == null) {
+          return new EmptyRequestBody();
+      }
+      HandleImplementation handleBase = HandleAccessor.as(content);
+      Format format = handleBase.getFormat();
+      String mimetype = (format == Format.BINARY) ? null : handleBase.getMimetype();
+      MediaType mediaType = MediaType.parse(
+              (mimetype != null) ? mimetype : "application/x-unknown-content-type"
+      );
+      return (content instanceof OutputStreamSender) ?
+              new StreamingOutputImpl((OutputStreamSender) content, null, mediaType) :
+              new ObjectRequestBody(HandleAccessor.sendContent(content), mediaType);
+  }
+
   class CallRequestImpl implements CallRequest {
     private SessionStateImpl session;
     private Request.Builder requestBldr;
@@ -5869,7 +6001,7 @@ public class OkHttpServices implements RESTServices {
                     paramValue = bytesHandle;
                 }
             hasValue.set();
-            multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue));
+            multiBldr.addFormDataPart(paramName, null, makeRequestBodyForContent(paramValue));
           }
         } else if (param instanceof UnbufferedMultipleNodeCallField) {
           Stream<? extends BufferableHandle> paramValues = ((UnbufferedMultipleNodeCallField) param).getParamValues();

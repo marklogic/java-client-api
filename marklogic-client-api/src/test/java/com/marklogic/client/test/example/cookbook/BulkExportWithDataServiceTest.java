@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,17 @@
 package com.marklogic.client.test.example.cookbook;
 
 import com.marklogic.client.example.cookbook.datamovement.BulkExportWithDataService;
+import com.marklogic.client.test.Common;
 import org.junit.Test;
 
 public class BulkExportWithDataServiceTest {
+
     @Test
     public void testMain() throws Exception {
-        BulkExportWithDataService.main(new String[0]);
+        new BulkExportWithDataService(
+            Common.connect(),
+            Common.newEvalClient("java-unittest-modules")
+        ).run();
     }
+    
 }

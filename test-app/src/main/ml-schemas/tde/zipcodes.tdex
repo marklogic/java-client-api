@@ -1,0 +1,21 @@
+<template xmlns="http://marklogic.com/xdmp/tde">
+    <context>/zipcode</context>
+    <rows>
+        <row>
+            <schema-name>cookbook</schema-name>
+            <view-name>zipcode</view-name>
+            <columns>
+                <column>
+                    <name>zip</name>
+                    <scalar-type>int</scalar-type>
+                    <val>zip</val>
+                </column>
+                <column>
+                    <name>city</name>
+                    <scalar-type>string</scalar-type>
+                    <val>city</val>
+                </column>
+            </columns>
+        </row>
+    </rows>
+</template>

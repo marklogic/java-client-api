@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.marklogic.client.impl;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
@@ -119,9 +120,10 @@ abstract class PlanBuilderBaseImpl extends PlanBuilder {
     }
   }
 
-  static interface RequestPlan {
-    public Map<PlanParamBase,BaseTypeImpl.ParamBinder> getParams();
-    public AbstractWriteHandle getHandle();
+  interface RequestPlan {
+    Map<PlanParamBase,BaseTypeImpl.ParamBinder> getParams();
+    AbstractWriteHandle getHandle();
+    List<ContentParam> getContentParams();
   }
 
   static abstract class PlanBaseImpl

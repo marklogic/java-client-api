@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@ package com.marklogic.client.expression;
 
 import java.util.Map;
 
+import com.marklogic.client.document.DocumentWriteOperation;
+import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 
 import com.marklogic.client.type.*;
@@ -151,7 +154,26 @@ public interface PlanBuilderBase {
      * @return  an AccessPlan object
      */
     PlanBuilder.AccessPlan fromLiterals(Map<String,Object>[] rows, XsStringVal qualifierName);
-
+    /**
+     * Construct an {@code AccessPlan} based on the URIs returned by the given query.
+     * @param querydef a CTS query
+     * @return  an AccessPlan object
+     */
+    PlanBuilder.AccessPlan fromDocUris(CtsQueryExpr querydef);
+    /**
+     * Construct an {@code AccessPlan} based on the URIs returned by the given query.
+     * @param querydef a CTS query
+     * @param qualifierName  Optional name for qualifying the column names similar to a view name
+     * @return  an AccessPlan object
+     */
+    PlanBuilder.AccessPlan fromDocUris(CtsQueryExpr querydef, String qualifierName);
+    /**
+     * Convenience method for constructing an {@code AccessPlan} based on a given set of URIs.
+     * 
+     * @param uris one or more URIs to pass into a {@code cts.documentQuery}
+     * @return an AccessPlanObject
+     */
+    PlanBuilder.AccessPlan fromDocUris(String... uris);
     /**
      * This function constructs a JSON object with the specified properties. The object can be used as the value of a column in a row or passed to a builtin function.
      * <p>
@@ -364,6 +386,91 @@ public interface PlanBuilderBase {
     ServerExpression seq(ServerExpression... expression);
 
     /**
+     * Build a new column identifier; the type will default to "none" and nullable will default to "false".
+     *
+     * @param column name of the column
+     * @return a new column identifier
+     */
+    PlanRowColTypes colType(String column);
+
+    /**
+     * Build a new column identifier; nullable will default to "false".
+     *
+     * @param column name of the column
+     * @param type type of the column, e.g. "string"
+     * @return a new column identifier
+     */
+    PlanRowColTypes colType(String column, String type);
+
+    /**
+     * Build a new column identifier.
+     *
+     * @param column name of the column
+     * @param type type of the column, e.g. "string"
+     * @param nullable whether a column value is required
+     * @return a new column identifier
+     */
+    PlanRowColTypes colType(String column, String type, Boolean nullable);
+
+    /**
+     * Build a sequence of column identifiers that can be used with {@code fromParam}.
+     *
+     * @param colTypes the column identifiers to associate with the plan
+     * @return a sequence of column identifiers
+     */
+    PlanRowColTypesSeq colTypes(PlanRowColTypes... colTypes);
+
+    /**
+     * Construct a mapping of document descriptor column names to columns in the plan. The available set of
+     * document descriptor names are: uri, doc, collections, permissions, metadata, quality, and temporalCollection. 
+     * Use this when mapping to non-standard column names.
+     *
+     * @param descriptorColumnMapping contains the mapping for column names to String values.
+     * @return a new {@code PlanDocColsIdentifier}
+     */
+    PlanDocColsIdentifier docCols(Map<String, PlanColumn> descriptorColumnMapping);
+
+    /**
+     * Build a single doc descriptor that can be used with {@code fromDocDescriptors}.
+     *
+     * @param writeOp contains the inputs for the doc descriptor
+     * @return a doc descriptor
+     */
+    PlanDocDescriptor docDescriptor(DocumentWriteOperation writeOp);
+
+    /**
+     * Build a sequence of doc descriptors that can be used with {@code fromDocDescriptors}.
+     *
+     * @param writeSet each {@code DocumentWriteOperation} in this will be converted into a doc descriptor
+     * @return a sequence of doc descriptors
+     */
+    PlanDocDescriptorSeq docDescriptors(DocumentWriteSet writeSet);
+
+    /**
+     * Build a transform definition for use with {@code transformDoc}.
+     * 
+     * @param path the path (URI) of either a *.mjs or *.xslt module in a modules database
+     * @return a new {@code TransformDef}
+     */
+    TransformDef transformDef(String path);
+
+    /**
+     * Build a schema definition for use with {@code validateDoc}.
+     * @param kind the kind of schema - jsonSchema, xmlSchema or schematron.
+     * @return a new {@code SchemaDefExpr}
+     */
+    SchemaDefExpr schemaDefinition(String kind);
+    /**
+     * Convenience method for constructing a permission that can then be used e.g. with {@code jsonArray} when binding
+     * an array of permissions to a column.
+     *
+     * @param roleName name of the role for the permission
+     * @param capability lower-cased capability; e.g. "read", "update", "execute"
+     * @return a new {@code ServerExpression}
+     */
+    ServerExpression permission(String roleName, String capability);
+
+    /**
      * Defines base methods for Plan. This interface is an implementation detail.
      * Use Plan as the type for instances of Plan.
      */
@@ -544,12 +651,82 @@ public interface PlanBuilderBase {
          * @return  a new instance of the Plan object with the parameter binding
          */
         PlanBuilder.Plan bindParam(PlanParamExpr param, String  literal);
+        /**
+         * Specifies a set of documents to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
+         * @param param the name of a placeholder parameter
+         * @param writeSet the set of documents to bind; the URI, content, and metadata in each document will be
+         *                 honored except for the properties fragment config in the metadata
+         * @return a new instance of the Plan object with the parameter binding
+         */
+        PlanBuilder.Plan bindParam(String param, DocumentWriteSet writeSet);
+        /**
+         * Specifies a set of documents to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
+         * @param param a placeholder parameter as constructed by the param() method
+         * @param writeSet the set of documents to bind; the URI, content, and metadata in each document will be
+         *                 honored except for the properties fragment config in the metadata
+         * @return a new instance of the Plan object with the parameter binding
+         */
+        PlanBuilder.Plan bindParam(PlanParamExpr param, DocumentWriteSet writeSet);
+        /**
+         * Specifies a content handle to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
+         * @param param the name of a placeholder parameter
+         * @param content the content to replace the parameter
+         * @return a new instance of the Plan object with the parameter binding
+         */
+        PlanBuilder.Plan bindParam(String param, AbstractWriteHandle content);
+        /**
+         * Specifies a content handle to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
+         * @param param the name of a placeholder parameter
+         * @param content the content to replace the parameter
+         * @param columnAttachments optional (can be null) map that associates column names with maps of attachments,
+         *                          which map filenames to content handles. For each column name in the map, the
+         *                          expectation is that the associated column in the content object will contain values
+         *                          matching the filenames in the map of filenames to content handles. When the plan is
+         *                          executed, those filenames will then be replaced with the associated attachment
+         *                          content objects.
+         * @return a new instance of the Plan object with the parameter binding
+         */
+        PlanBuilder.Plan bindParam(String param, AbstractWriteHandle content, Map<String, Map<String, AbstractWriteHandle>> columnAttachments);
+        /**
+         * Specifies a content handle to replace a placeholder parameter during this
+         * execution of the plan in all expressions in which the parameter appears.
+         * <p>As when building a plan, binding a parameter constructs a new instance
+         * of the plan with the binding instead of mutating the existing instance
+         * of the plan.</p>
+         * @param param a placeholder parameter as constructed by the param() method
+         * @param content the content to replace the parameter
+         * @param columnAttachments optional (can be null) map that associates column names with maps of attachments,
+         *                          which map filenames to content handles. For each column name in the map, the
+         *                          expectation is that the associated column in the content object will contain values
+         *                          matching the filenames in the map of filenames to content handles. When the plan is
+         *                          executed, those filenames will then be replaced with the associated attachment
+         *                          content objects.
+         * @return a new instance of the Plan object with the parameter binding
+         */
+        PlanBuilder.Plan bindParam(PlanParamExpr param, AbstractWriteHandle content, Map<String, Map<String, AbstractWriteHandle>> columnAttachments);
     }
     /**
      * Defines base methods for AccessPlan. This interface is an implementation detail.
      * Use AccessPlan as the type for instances of AccessPlan.
      */
     interface AccessPlanBase {
+
     }
     /**
      * Defines base methods for ExportablePlan. This interface is an implementation detail.
@@ -727,6 +904,17 @@ public interface PlanBuilderBase {
          */
         PlanBuilder.ModifyPlan limit(PlanParamExpr length);
         /**
+         * Acquires exclusive locks on the URI in the "uri" column of each row in the pipeline.
+         * @return a ModifyPlan object
+         */
+        PlanBuilder.ModifyPlan lockForUpdate();
+        /**
+         * Acquires exclusive locks on the URI in the given column of each row in the pipeline.
+         * @param uriColumn the column containing URIs to be locked
+         * @return a ModifyPlan object
+         */
+        PlanBuilder.ModifyPlan lockForUpdate(PlanColumn uriColumn);
+        /**
          * This method returns a subset of the rows in the result set by skipping the number of rows specified by start and returning the remaining rows up to the number specified by the prototype.limit method.
          * @param start  The number of rows to skip. 
          * @return  a ModifyPlan object
@@ -758,6 +946,37 @@ public interface PlanBuilderBase {
          * @return  a ModifyPlan object
          */
         PlanBuilder.ModifyPlan offsetLimit(XsLongVal start, XsLongVal length);
+        /**
+         * Removes (deletes) any document with a URI matching the value of the "uri" column in at least one row in the 
+         * pipeline.
+         * @return a ModifyPlan object
+         */
+        PlanBuilder.ModifyPlan remove();
+        /**
+         * Removes (deletes) any document with a URI matching the value of the given column in at least one row in the
+         * pipeline.
+         * @param uriColumn the column containing URIs to be removed
+         * @return a ModifyPlan object
+         */
+        PlanBuilder.ModifyPlan remove(PlanColumn uriColumn);
+        /**
+         * Removes (deletes) any temporal document with a URI matching the value of the given column in at least one 
+         * row in the pipeline. Results in each temporal document being marked as deleted. 
+         * 
+         * @param temporalCollection the name of the temporal collection containing URIs to remove
+         * @param uriColumn the column containing URIs to be removed
+         * @return a ModifyPlan object
+         */
+        PlanBuilder.ModifyPlan remove(PlanColumn temporalCollection, PlanColumn uriColumn);
+        /**
+         * Applies the given transformation to the content in the given column in each row. A {@code TransformDef}
+         * can be constructed via {@code PlanBuilder#transformDef(String)}.
+         * 
+         * @param docColumn the column containing content to be transformed.
+         * @param transformDef defines a transform for using with the {@code transformDoc} operator.
+         * @return a ModifyPlan object
+         */
+        PlanBuilder.ModifyPlan transformDoc(PlanColumn docColumn, TransformDef transformDef);
         /**
          * This method restricts the row set to rows matched by the boolean expression. Use boolean composers such as op.and and op.or to combine multiple expressions.
          * @param condition  The boolean expression on which to match. 

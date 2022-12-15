@@ -1,0 +1,14 @@
+<root name="second">
+    <child id="3">
+        <double>2.2</double>
+        <int>30</int>
+    </child>
+    <child id="5">
+        <double>1.2</double>
+        <int>10</int>
+    </child>
+    <child id="6">
+        <double>1.2</double>
+        <int>4</int>
+    </child>
+</root>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1439,7 +1439,6 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 				try {
 					Thread.currentThread().sleep(15000L);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				Set<Thread> threads = Thread.getAllStackTraces().keySet();
@@ -1524,7 +1523,6 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 				try {
 					Thread.currentThread().sleep(15000L);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				Set<Thread> threads = Thread.getAllStackTraces().keySet();
@@ -1616,7 +1614,6 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 				try {
 					Thread.currentThread().sleep(15000L);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				Set<Thread> threads = Thread.getAllStackTraces().keySet();
@@ -1748,7 +1745,6 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 						// Sleep for 4 seconds so that the threads are spawned
 						Thread.currentThread().sleep(4000L);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					Set<Thread> threads = Thread.getAllStackTraces().keySet();
@@ -2136,7 +2132,6 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			try {
 				Thread.currentThread().sleep(20000L);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			ihbMT.retry(batch);
@@ -2222,7 +2217,6 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			try {
 				Thread.currentThread().sleep(10000L);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			properties.put("server-name", server);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,6 +90,7 @@ public interface RESTServices {
   String MIMETYPE_APPLICATION_JSON = "application/json";
   String MIMETYPE_APPLICATION_XML = "application/xml";
   String MIMETYPE_MULTIPART_MIXED = "multipart/mixed";
+  String MIMETYPE_MULTIPART_FORM = "multipart/form-data";
 
   int STATUS_OK = 200;
   int STATUS_CREATED = 201;
@@ -230,7 +231,7 @@ public interface RESTServices {
                                                         Transaction transaction, RequestParameters params, R output)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
   RESTServiceResultIterator getIteratedResource(
-    RequestLogger reqlog, String path, Transaction transaction, RequestParameters params, String... mimetypes)
+    RequestLogger reqlog, String path, Transaction transaction, RequestParameters params)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
   <R extends AbstractReadHandle> R putResource(
@@ -261,12 +262,16 @@ public interface RESTServices {
     ForbiddenUserException, FailedRequestException;
   RESTServiceResultIterator postIteratedResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
-    AbstractWriteHandle input, String... outputMimetypes)
+    AbstractWriteHandle input)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
     FailedRequestException;
+  RESTServiceResultIterator postMultipartForm(
+          RequestLogger reqlog, String path, Transaction transaction, RequestParameters params, List<ContentParam> contentParams)
+          throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
+          FailedRequestException;
   <W extends AbstractWriteHandle> RESTServiceResultIterator postIteratedResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
-    W[] input, String... outputMimetypes)
+    W[] input)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
     FailedRequestException;
   EvalResultIterator postEvalInvoke(RequestLogger reqlog, String code, String modulePath,

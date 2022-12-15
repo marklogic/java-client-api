@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -319,7 +319,7 @@ public class BitemporalTest {
 
 
   static public void cleanUp() {
-    DatabaseClient client = DatabaseClientFactory.newClient(Common.HOST, Common.PORT, new DigestAuthContext(Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS));
+    DatabaseClient client = Common.newServerAdminClient();
     try {
       QueryManager queryMgr = client.newQueryManager();
       queryMgr.setPageLength(1000);

@@ -1,0 +1,12 @@
+<json:json version="1.0" type="object" xmlns:json="http://marklogic.com/xdmp/json">
+    <json:firstKey type="string">first value</json:firstKey>
+    <json:fourthKey type="object">
+        <json:subKey type="string">sub value</json:subKey>
+    </json:fourthKey>
+    <json:secondKey type="array">
+        <json:item type="string">first item</json:item>
+        <json:item type="string">second item</json:item>
+        <json:item type="string">third item</json:item>
+    </json:secondKey>
+    <json:thirdKey type="number">3</json:thirdKey>
+</json:json>

@@ -1,0 +1,15 @@
+{
+  "user-name": "opticUser",
+  "description": "user discription",
+  "password": "0pt1c",
+  "role": [
+    "tde-admin",
+    "tde-view",
+    "opticRole",
+    "rest-admin",
+    "rest-writer",
+    "rest-reader",
+    "rest-extension-user",
+    "manage-user"
+  ]
+}

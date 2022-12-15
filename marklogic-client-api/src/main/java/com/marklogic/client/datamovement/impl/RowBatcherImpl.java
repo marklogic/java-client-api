@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -316,6 +316,11 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     public JobTicket getJobTicket() {
         requireStarted("Must start job before getting ticket");
         return super.getJobTicket();
+    }
+    @Override
+    public Long getServerTimestamp() {
+        long val = this.serverTimestamp.get();
+        return val > -1 ? val : null;
     }
     private void requireNotStarted(String msg) {
         if (this.isStarted()) {

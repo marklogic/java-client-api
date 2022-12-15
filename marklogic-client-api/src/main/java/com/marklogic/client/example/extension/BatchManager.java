@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -330,9 +330,6 @@ public class BatchManager extends ResourceManager {
     manifestBuilder.append("<?xml version='1.0' encoding='UTF-8'?>\n");
     manifestBuilder.append("<rapi:batch-requests xmlns:rapi='http://marklogic.com/rest-api'>\n");
 
-    List<String> readMimetypes = new ArrayList<>();
-    // read the response manifest first
-    readMimetypes.add("application/xml");
     for (Map.Entry<String,InputItem> entry: request.items.entrySet()) {
       String    uri  = entry.getKey();
       InputItem item = entry.getValue();
@@ -369,8 +366,6 @@ public class BatchManager extends ResourceManager {
         }
 
         if (ritem.mimetype != null) {
-          readMimetypes.add(ritem.mimetype);
-
           manifestBuilder.append("<rapi:content-mimetype>");
           manifestBuilder.append(ritem.mimetype);
           manifestBuilder.append("</rapi:content-mimetype>\n");
@@ -401,12 +396,9 @@ public class BatchManager extends ResourceManager {
     requestManifest.set(manifestBuilder.toString());
     requestManifest.setFormat(Format.XML);
 
-    String[] requestMimetypes = new String[readMimetypes.size()];
-
     ServiceResultIterator resultItr = getServices().post(
       new RequestParameters(),
-      requestHandles.toArray(new AbstractWriteHandle[requestHandles.size()]),
-      requestMimetypes
+      requestHandles.toArray(new AbstractWriteHandle[requestHandles.size()])
     );
 
     if (!resultItr.hasNext())

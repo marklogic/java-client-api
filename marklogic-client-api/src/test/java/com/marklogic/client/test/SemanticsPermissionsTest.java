@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,10 +43,10 @@ import com.marklogic.client.semantics.SPARQLQueryManager;
 public class SemanticsPermissionsTest {
   private static GraphManager gmgr;
   private static String graphUri = "SemanticsPermissionsTest";
-  private static DatabaseClient readPrivilegedClient = DatabaseClientFactory.newClient(
-    Common.HOST, Common.PORT, new DigestAuthContext(Common.READ_PRIVILIGED_USER, Common.READ_PRIVILIGED_PASS));
-  private static DatabaseClient writePrivilegedClient = DatabaseClientFactory.newClient(
-    Common.HOST, Common.PORT, new DigestAuthContext(Common.WRITE_PRIVILIGED_USER, Common.WRITE_PRIVILIGED_PASS));
+  private static DatabaseClient readPrivilegedClient = Common.makeNewClient(
+    Common.HOST, Common.PORT, Common.newSecurityContext(Common.READ_PRIVILIGED_USER, Common.READ_PRIVILIGED_PASS));
+  private static DatabaseClient writePrivilegedClient = Common.makeNewClient(
+    Common.HOST, Common.PORT, Common.newSecurityContext(Common.WRITE_PRIVILIGED_USER, Common.WRITE_PRIVILIGED_PASS));
 
   @BeforeClass
   public static void beforeClass() {

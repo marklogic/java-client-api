@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,15 +52,13 @@ public class ThreadClass extends BasicJavaClientREST implements Runnable {
 
       // release client
       client.release();
-    } catch (KeyManagementException | NoSuchAlgorithmException
-        | IOException e) {
-      // TODO Auto-generated catch block
+    } catch (KeyManagementException | NoSuchAlgorithmException | IOException e) {
       e.printStackTrace();
     }
 
   }
 
-  ThreadClass(String mg) {
+  public ThreadClass(String mg) {
     msg = mg;
   }
 }

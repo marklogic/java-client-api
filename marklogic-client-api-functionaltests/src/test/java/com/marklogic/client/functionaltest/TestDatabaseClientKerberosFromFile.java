@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,6 +122,7 @@ import com.marklogic.client.util.RequestLogger;
  * Copy the services.keytab file to ML Server data directory.
  */
 
+@Ignore("Ignored because it was previously ignored in build.gradle though without explanation")
 public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
 
   private static String dbName = "TestDBClientWithKerberosFileDB";
@@ -1066,7 +1067,6 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
 
       associateRESTServerWithKerberosExtSecurity(UberrestServerName, extSecurityName);
     } catch (Exception e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
 
@@ -1095,7 +1095,6 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
       // Associate database to Documentst on App-Services.
       associateRESTServerWithDB(UberrestServerName, "Documents");
     } catch (Exception e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
 

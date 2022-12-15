@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ import com.marklogic.client.query.StringQueryDefinition;
 
 public class ThreadSearch extends BasicJavaClientREST implements Runnable {
 
-  String msg;
-  long totalResultsArray[] = new long[10];
-  long totalAllResults = 0;
+  public String msg;
+  public long totalResultsArray[] = new long[10];
+  public long totalAllResults = 0;
 
   public void run()
   {
@@ -63,7 +63,7 @@ public class ThreadSearch extends BasicJavaClientREST implements Runnable {
         totalAllResults = totalAllResults + totalResults;
 
         Random rand = new Random();
-        int r = rand.nextInt(3000) + 1000;
+        int r = rand.nextInt(200) + 100;
 
         try {
           Thread.sleep(r);
@@ -74,14 +74,12 @@ public class ThreadSearch extends BasicJavaClientREST implements Runnable {
 
       // release client
       client.release();
-    } catch (KeyManagementException | NoSuchAlgorithmException
-        | IOException e1) {
-      // TODO Auto-generated catch block
+    } catch (KeyManagementException | NoSuchAlgorithmException | IOException e1) {
       e1.printStackTrace();
     }
   }
 
-  ThreadSearch(String mg)
+  public ThreadSearch(String mg)
   {
     msg = mg;
   }

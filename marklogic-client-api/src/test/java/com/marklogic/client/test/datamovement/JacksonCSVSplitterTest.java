@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 
 import com.marklogic.client.datamovement.*;
+import com.marklogic.client.test.Common;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,9 +51,8 @@ public class JacksonCSVSplitterTest {
     private DataMovementManager moveMgr;
     
     @Before
-    public void setUp() throws Exception {
-        client = DatabaseClientFactory.newClient("localhost", 8012,
-                new DatabaseClientFactory.DigestAuthContext("rest-admin", "x"));
+    public void setUp() {
+        client = Common.makeNewClient(Common.HOST, Common.PORT, Common.newSecurityContext("rest-admin", "x"));
         moveMgr = client.newDataMovementManager();
     }
     

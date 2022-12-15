@@ -1,0 +1,9 @@
+{
+  "user-name": "rest-writer",
+  "description": "rest-writer user",
+  "role": [
+    "rest-writer",
+    "rest-delete-graph"
+  ],
+  "password": "x"
+}

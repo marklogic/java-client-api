@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,34 @@ public class DocumentWriteOperationImpl implements DocumentWriteOperation {
   private DocumentMetadataWriteHandle metadata;
   private AbstractWriteHandle content;
 
+  /**
+   * Defaults the type of operation to {@code OperationType.DOCUMENT_WRITE}.
+   * 
+   * @param uri
+   * @param metadata
+   * @param content
+   */
+  public DocumentWriteOperationImpl(String uri, DocumentMetadataWriteHandle metadata, AbstractWriteHandle content)
+  {
+    this(OperationType.DOCUMENT_WRITE, uri, metadata, content, null);
+  }
+
   public DocumentWriteOperationImpl(OperationType type, String uri,
                                     DocumentMetadataWriteHandle metadata, AbstractWriteHandle content)
   {
     this(type, uri, metadata, content, null);
+  }
+
+  /**
+   * Defaults the type of operation to {@code OperationType.DOCUMENT_WRITE}.
+   *
+   * @param uri
+   * @param metadata
+   * @param content
+   * @param temporalDocumentURI
+   */
+  public DocumentWriteOperationImpl(String uri, DocumentMetadataWriteHandle metadata, AbstractWriteHandle content, String temporalDocumentURI) {
+    this(OperationType.DOCUMENT_WRITE, uri, metadata, content, temporalDocumentURI);
   }
 
   public DocumentWriteOperationImpl(OperationType type, String uri,

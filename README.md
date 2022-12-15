@@ -30,74 +30,85 @@ The Java API supports the following core features of the MarkLogic database:
 *  Call Data Services by means of a Java interface on the client for data functionality 
 implemented by an endpoint on the server.
 
-### What's New in Java Client API 5
+The Java API can be used in applications running on Java 8, 11, and 17. If you are using Java 11 or higher and intend
+to use [JAXB](https://docs.oracle.com/javase/tutorial/jaxb/intro/), please see the section below for ensuring that the
+necessary dependencies are available in your application's classpath.
 
-As of 5.3, the Java API was compiled with Java 8 and tested on Java 8 through 11.
+## QuickStart
 
-Features:
-
-*  Splitters for CSV records, for entries in a ZipInputStream, for line-delimited JSON or XML
-records, and for large JSON or XML files for streaming to WriteBatcher.
-*  Support for RowBatcher to make it easy to export rows and documents for a view as modified 
-by a plan - see https://github.com/marklogic/java-client-api/wiki/Row-Batcher for more 
-detail.
-*  Support for Concurrent Bulk IO Data Services to make it easy to implement connectors for dataflow
-frameworks - see https://github.com/marklogic/java-client-api/wiki/Bulk-Data-Services for more 
-detail.
-*  Upgrade of dependencies including OkHttp 4.7.2
-
-### What's New in Java Client API 4
-
-* Optic API - blends relational with NoSQL by providing joins and aggregates over documents
-  * is powered by the new row index and query optimizer
-  * uses row, triple, and/or lexicon lenses
-  * matches the functionality of the Optic API for XQuery and Javascript, but idiomatic for Java
-    developers
-* Data Movement SDK - move large amounts of data into, out of, or within a MarkLogic cluster
-  * WriteBatcher distributes writes across many threads and across the entire MarkLogic cluster
-  * QueryBatcher enables bulk processing or export of matches to a query by distributing the query
-    across many threads and batch processing to listeners
-  * Comes with ApplyTransformListener, DeleteListener, ExportListener, ExportToWriterListener, and
-    UrisToWriterListener
-  * With custom listeners you can easily and efficiently apply your business logic to batches of query
-    matches
-* Kerberos and Client Certificate Authentication
-* Geospatial double precision and queries on region indexes
-* Temporal document enhancements
-  * protect and wipe
-  * more control over version uris
-* Support for document metadata values
-
-See also [CHANGELOG.md](CHANGELOG.md)
-
-### QuickStart
-
-To use the API in your maven project, include the following in your pom.xml:
+To use the API in your [Maven](https://maven.apache.org/) project, include the following in your pom.xml file:
 
     <dependency>
         <groupId>com.marklogic</groupId>
         <artifactId>marklogic-client-api</artifactId>
-        <version>5.2.0</version>
+        <version>6.0.0</version>
     </dependency>
 
-And add this repository to your pom.xml repositories section:
-
-    <repository>
-        <id>jcenter</id>
-        <url>https://jcenter.bintray.com</url>
-    </repository>
-
-For gradle projects, include the following:
+To use the API in your [Gradle](https://gradle.org/) project, include the following in your build.gradle file:
 
     dependencies {
-        compile group: 'com.marklogic', name: 'marklogic-client-api', version: '5.3.0'
+        implementation "com.marklogic:marklogic-client-api:6.0.0"
     }
 
-Use gradle 4.x+ and add this to your build.gradle repositories section:
+Next, read [The Java API in Five Minutes](http://developer.marklogic.com/try/java/index) to get started.
 
-    jcenter()
+### Including JAXB support 
 
-Read [The Java API in Five Minutes](http://developer.marklogic.com/try/java/index)
+If you are using Java 11 or higher (including Java 17) and you wish to use [JAXB](https://docs.oracle.com/javase/tutorial/jaxb/intro/)
+with the Java Client, you'll need to include JAXB API and implementation dependencies as those are no 
+longer included in Java 11 and higher.
+
+For Maven, include the following in your pom.xml file:
+
+    <dependency>
+        <groupId>javax.xml.bind</groupId>
+        <artifactId>jaxb-api</artifactId>
+        <version>2.3.1</version>
+    </dependency>
+    <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
+        <version>2.3.2</version>
+    </dependency>
+    <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-core</artifactId>
+        <version>2.3.0.1</version>
+    </dependency>
+
+For Gradle, include the following in your build.gradle file (this can be included in the same `dependencies` block 
+as the one that includes the marklogic-client-api dependency):
+
+    dependencies {
+        implementation "javax.xml.bind:jaxb-api:2.3.1"
+        implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
+        implementation "org.glassfish.jaxb:jaxb-core:2.3.0.1"
+    }
+
+You are free to use any implementation of JAXB that you wish, but you need to ensure that you're using a JAXB 
+implementation that corresponds to the `javax.xml.bind` interfaces. JAXB 3.0 and 4.0 interfaces are packaged under 
+`jakarta.xml.bind`, and the Java API does not yet depend on those interfaces. 
+
+Thus, you are free to include an implementation of JAXB 3.0 or 4.0 in your project for your own use; it will not 
+affect the Java API. A caveat though is if you are trying to use different major versions of the same JAXB 
+implementation library - such as `org.glassfish.jaxb:jaxb-runtime` - then you will run into an expected dependency 
+conflict between the two versions of the library. This can be worked around by using a different implementation of 
+JAXB 3.0 or JAXB 4.0 - for example:
+
+    dependencies {
+        // JAXB 2 dependencies required by Java Client
+        implementation "javax.xml.bind:jaxb-api:2.3.1"
+        implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
+        implementation "org.glassfish.jaxb:jaxb-core:2.3.0.1"
+        
+        // JAXB 4 dependencies required by other application code
+        implementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.0"
+        implementation "com.sun.xml.bind:jaxb-impl:4.0.1"
+    }
+
+The Java Client will soon be updated to use the newer `jakarta.xml.bind` interfaces. Until then, the above approach
+or one similar to it will allow for both the old and new JAXB interfaces and implementations to exist together in the
+same classpath.
 
 ### Learning More
 
@@ -128,26 +139,6 @@ Files can be verified with the command:
 
     $ gpg marklogic-client-api-5.3.0.jar.asc
 
-
-### Building and Contributing
-
-You can build the API in the same way as any Gradle project on git:
-
-1. Clone the java-client-api repository on your machine.
-2. Choose the appropriate branch (usually develop)
-3. Execute a Gradle build in the directory containing the main project's build.gradle file.
-
-You might want to skip the tests until you have configured a test database and REST server:
-
-    $ ./gradlew build -x test
-
-See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for more on contributing to this github project.
-
-### Running JUnit Tests
-
-    $ ./gradlew java-client-api:compileTestJava
-    $ ./gradlew testServerInit
-    $ ./gradlew java-client-api:test
 
 ## Support
 The MarkLogic Java Client API is maintained by [MarkLogic](https://www.marklogic.com/) Engineering and is made available under the [Apache 2.0 license](https://github.com/marklogic/java-client-api/blob/master/LICENSE). It is designed for use in production applications with MarkLogic Server. Everyone is encouraged to file bug reports, feature requests, and pull requests through [GitHub](https://github.com/marklogic/java-client-api/issues). This input is critical and will be carefully considered. However, we can’t promise a specific resolution or timeframe for any request. In addition, MarkLogic provides technical support for [release tags](https://github.com/marklogic/java-client-api/releases) of the Java Client API to licensed customers under the terms outlined in the [MarkLogic Technical Support Handbook](http://www.marklogic.com/files/Mark_Logic_Support_Handbook.pdf). Customers with an active maintenance contract can sign up for MarkLogic Technical Support on our [support portal](https://help.marklogic.com/).

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019 MarkLogic Corporation
+* Copyright (c) 2022 MarkLogic Corporation
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -332,7 +332,7 @@ public class WBFailover extends BasicJavaClientREST {
 			final AtomicInteger successCount = new AtomicInteger(0);
 			final AtomicBoolean containsBLHost = new AtomicBoolean(false);
 			final AtomicBoolean failState = new AtomicBoolean(false);
-			SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("admin", "admin");
+			SecurityContext secContext = newSecurityContext("admin", "admin");
 			DatabaseClient dbClient = DatabaseClientFactory.newClient(hostLists.get(3), 8000, secContext, getConnType());
 			DataMovementManager dmManager = dbClient.newDataMovementManager();
 			WriteBatcher ihb2 = dmManager.newWriteBatcher();

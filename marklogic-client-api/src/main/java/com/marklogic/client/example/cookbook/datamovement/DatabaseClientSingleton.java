@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,7 +85,7 @@ public class DatabaseClientSingleton {
     if (dbSpecificClients.get("admin" + database) == null) {
       registerHandlers();
       dbSpecificClients.put("admin" + database, DatabaseClientFactory.newClient(properties.host, properties.port, database,
-              new DigestAuthContext("admin", "admin")));
+              new DigestAuthContext(properties.adminUser, properties.adminPassword)));
     }
     return dbSpecificClients.get("admin" + database);
   }

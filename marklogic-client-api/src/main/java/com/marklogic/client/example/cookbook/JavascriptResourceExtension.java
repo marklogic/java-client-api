@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,11 +92,8 @@ public class JavascriptResourceExtension {
       params.add("service", "hello");
       params.add("planet", "Earth");
 
-      // specify the mime type for each expected document returned
-      String[] mimetypes = new String[] {"text/plain"};
-
       // call the service
-      ServiceResultIterator resultItr = getServices().get(params, mimetypes);
+      ServiceResultIterator resultItr = getServices().get(params);
 
       // iterate over the results
       List<String> responses = new ArrayList<>();

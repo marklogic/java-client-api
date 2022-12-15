@@ -22,6 +22,7 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.type.ServerExpression;
 
 // IMPORTANT: Do not edit. This file is generated.
+// Exception - two of these tests cannot pass on ML <= 10. Those have been modified to not run unless ML is >= 11.
 public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
@@ -161,17 +162,17 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testFnCurrentDate0Exec() {
-        executeTester("testFnCurrentDate0", p.fn.currentDate(), true, "xs:date", null, null, "2022-01-24-08:00", new ServerExpression[]{  });
+        executeTester("testFnCurrentDate0", p.fn.currentDate(), true, "xs:date", null, null, "2022-11-18-08:00", new ServerExpression[]{  });
     }
 
     @Test
     public void testFnCurrentDateTime0Exec() {
-        executeTester("testFnCurrentDateTime0", p.fn.currentDateTime(), true, "xs:dateTime", null, null, "2022-01-24T11:06:53.335048-08:00", new ServerExpression[]{  });
+        executeTester("testFnCurrentDateTime0", p.fn.currentDateTime(), true, "xs:dateTime", null, null, "2022-11-18T12:03:50.039794-08:00", new ServerExpression[]{  });
     }
 
     @Test
     public void testFnCurrentTime0Exec() {
-        executeTester("testFnCurrentTime0", p.fn.currentTime(), true, "xs:time", null, null, "11:06:53-08:00", new ServerExpression[]{  });
+        executeTester("testFnCurrentTime0", p.fn.currentTime(), true, "xs:time", null, null, "12:03:50-08:00", new ServerExpression[]{  });
     }
 
     @Test
@@ -681,7 +682,9 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testGeoGeohashDecode1Exec() {
-        executeTester("testGeoGeohashDecode1", p.geo.geohashDecode(p.col("1")), false, "cts:box", null, null, "[0.99975586, 1.9995117, 1.005249, 2.010498]", new ServerExpression[]{ p.xs.string("s01mtw") });
+        if (Common.markLogicIsVersion11OrHigher()) {
+            executeTester("testGeoGeohashDecode1", p.geo.geohashDecode(p.col("1")), false, "cts:box", null, null, "[0.9997558, 1.9995116, 1.005249, 2.010498]", new ServerExpression[]{p.xs.string("s01mtw")});
+        }
     }
 
     @Test
@@ -706,7 +709,9 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testGeoParseWkt1Exec() {
-        executeTester("testGeoParseWkt1", p.geo.parseWkt(p.col("1")), false, "cts:linestring", null, null, "LINESTRING(-112.25 47.1,-112.3 47.1,-112.4 47.2)", new ServerExpression[]{ p.xs.string("LINESTRING(-112.25 47.1,-112.3 47.1,-112.4 47.2)") });
+        if (Common.markLogicIsVersion11OrHigher()) {
+            executeTester("testGeoParseWkt1", p.geo.parseWkt(p.col("1")), false, "cts:linestring", null, null, "LINESTRING(-112.25 47.100002,-112.3 47.100002,-112.39999 47.199997)", new ServerExpression[]{p.xs.string("LINESTRING(-112.25 47.1,-112.3 47.1,-112.4 47.2)")});
+        }
     }
 
     @Test
@@ -951,7 +956,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemBnode0Exec() {
-        executeTester("testSemBnode0", p.sem.bnode(), true, "sem:blank", null, null, "_:bnode8859652367759070291", new ServerExpression[]{  });
+        executeTester("testSemBnode0", p.sem.bnode(), true, "sem:blank", null, null, "_:bnode10193685998165919640", new ServerExpression[]{  });
     }
 
     @Test
@@ -1031,7 +1036,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemRandom0Exec() {
-        executeTester("testSemRandom0", p.sem.random(), true, null, null, null, "0.777894850902498", new ServerExpression[]{  });
+        executeTester("testSemRandom0", p.sem.random(), true, null, null, null, "0.552677253828224", new ServerExpression[]{  });
     }
 
     @Test
@@ -1056,12 +1061,12 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemUuid0Exec() {
-        executeTester("testSemUuid0", p.sem.uuid(), true, "sem:iri", null, null, "urn:uuid:edf58826-68e8-4526-8714-6cf9df2bb43d", new ServerExpression[]{  });
+        executeTester("testSemUuid0", p.sem.uuid(), true, "sem:iri", null, null, "urn:uuid:52a00d8e-90bf-4513-b54a-fd63af554f59", new ServerExpression[]{  });
     }
 
     @Test
     public void testSemUuidString0Exec() {
-        executeTester("testSemUuidString0", p.sem.uuidString(), true, null, null, null, "fb230a93-f041-4c2e-a9cb-63bd3ce6abe7", new ServerExpression[]{  });
+        executeTester("testSemUuidString0", p.sem.uuidString(), true, null, null, null, "c24e74ca-12aa-4809-99eb-0f6b31f55ead", new ServerExpression[]{  });
     }
 
     @Test
@@ -1196,7 +1201,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSqlRand1Exec() {
-        executeTester("testSqlRand1", p.sql.rand(p.col("1")), true, "xs:unsignedLong", null, null, "16157935940800182344", new ServerExpression[]{ p.xs.unsignedLong(1) });
+        executeTester("testSqlRand1", p.sql.rand(p.col("1")), true, "xs:unsignedLong", null, null, "15547927416270629027", new ServerExpression[]{ p.xs.unsignedLong(1) });
     }
 
     @Test
@@ -1301,7 +1306,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpCrypt21Exec() {
-        executeTester("testXdmpCrypt21", p.xdmp.crypt2(p.col("1")), true, null, null, null, "$256$vMw7plCt8Thj4.sh8Kkm4.$256$Q21TCUjgd0JF1kRb", new ServerExpression[]{ p.xs.string("abc") });
+        executeTester("testXdmpCrypt21", p.xdmp.crypt2(p.col("1")), true, null, null, null, "$256$4OWPtLiJDWZQ48IRi2FIn1$256$aIpMKgaFMJAtIQ6z", new ServerExpression[]{ p.xs.string("abc") });
     }
 
     @Test
@@ -1531,7 +1536,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpRandom0Exec() {
-        executeTester("testXdmpRandom0", p.xdmp.random(), true, "xs:unsignedLong", null, null, "16993548811865669193", new ServerExpression[]{  });
+        executeTester("testXdmpRandom0", p.xdmp.random(), true, "xs:unsignedLong", null, null, "16681012044226997448", new ServerExpression[]{  });
     }
 
     @Test

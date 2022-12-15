@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,10 @@ import com.marklogic.client.impl.OkHttpServices;
 import com.marklogic.client.impl.RESTServices;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
+import com.marklogic.mgmt.ManageClient;
+import com.marklogic.mgmt.ManageConfig;
+import com.marklogic.mgmt.resource.appservers.ServerManager;
+import com.marklogic.mgmt.resource.databases.DatabaseManager;
 import okhttp3.*;
 import org.json.JSONObject;
 
@@ -44,12 +48,14 @@ import java.security.cert.X509Certificate;
 import java.util.*;
 
 public abstract class ConnectedRESTQA {
-	private String serverName = "";
+
+	protected static String securityContextType;
 	private static String restServerName = null;
 	private static String restSslServerName = null;
 	private static String ssl_enabled = null;
 	private static String https_port = null;
-	private static String http_port = null;
+	protected static String http_port = null;
+	protected static String fast_http_port = null;
 	private static String admin_port = null;
 	// This needs to be a FQDN when SSL is enabled. Else localhost. Set in
 	// test.properties
@@ -66,26 +72,22 @@ public abstract class ConnectedRESTQA {
 	private static String mlRestReadPassword = null;
 	private static String ml_certificate_password = null;
 	private static String ml_certificate_file = null;
-	private static String ml_certificate_path = null;
 	private static String mlDataConfigDirPath = null;
 	private static Boolean isLBHost = false;
 	
 	private static int PROPERTY_WAIT = 0;
 	private static final int ML_RES_OK = 200;
 	private static final int ML_RES_CREATED = 201;
-	private static final int ML_RES_SRVRDELETE = 202;
 	private static final int ML_RES_CHANGED = 204;
 	private static final int ML_RES_BADREQT = 400;
 	private static final int ML_RES_NOTFND = 404;
 	private static final String ML_MANAGE_DB = "App-Services";
 
-	SSLContext sslContext = null;
-
 	// Using MarkLogic client API's OKHttpClient Impl to connect to App-Services DB and use REST Manage API calls.
 	private static OkHttpClient createManageAdminClient(String username, String password) {
 		// build client with authentication information.
 		RESTServices services = new OkHttpServices();
-		services.connect(host_name, Integer.parseInt(admin_port), ML_MANAGE_DB, new DatabaseClientFactory.DigestAuthContext(username, password));
+		services.connect(host_name, Integer.parseInt(admin_port), ML_MANAGE_DB, newSecurityContext(username, password));
 		OkHttpClient okHttpClient  = (OkHttpClient) services.getClientImplementation();
 		return okHttpClient;
 	}
@@ -478,7 +480,7 @@ public abstract class ConnectedRESTQA {
 			boolean attachRestContextDB) throws Exception {
 		createDB(dbName);
 		createForest(fName, dbName);
-		Thread.sleep(1500);
+//		Thread.sleep(1500);
 		if (attachRestContextDB) {
 			assocRESTServer(restServerName, dbName, restPort);
 		} else {
@@ -773,7 +775,7 @@ public abstract class ConnectedRESTQA {
 					.build();
 			Response response = client.newCall(request).execute();
 			if (response.code() == ML_RES_CHANGED) {
-				Thread.sleep(3500);
+//				Thread.sleep(3500);
 				System.out.println("User " + usrName + " deleted");
 				System.out.println(response.body().string());
 			}
@@ -801,7 +803,7 @@ public abstract class ConnectedRESTQA {
 					.build();
 			Response response = client.newCall(request).execute();
 			if (response.code() == ML_RES_CHANGED) {
-				Thread.sleep(3500);
+//				Thread.sleep(3500);
 				System.out.println("Role " + roleName + " deleted");
 				System.out.println(response.body().string());
 			}
@@ -810,76 +812,6 @@ public abstract class ConnectedRESTQA {
 				System.out.println("Response from role deletion is: " + response);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
-	}
-
-	public static void setupJavaRESTServerWithDB(String restServerName, int restPort) throws Exception {
-		loadGradleProperties();
-		createRESTServerWithDB(restServerName, restPort);
-		createRESTUser("rest-admin", "x", "rest-admin");
-		createRESTUser("rest-writer", "x", "rest-writer");
-		createRESTUser("rest-reader", "x", "rest-reader");
-	}
-
-	/*
-	 * This function deletes the REST appserver along with attached content
-	 * database and module database
-	 */
-	public static void deleteRESTServerWithDB(String restServerName) {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String deleteUrl = new String("http://" + host_name + ":" + admin_port + "/v1/rest-apis/"
-					+ restServerName + "?include=content&include=modules");
-
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(deleteUrl)
-					.delete()
-					.build();
-			Response response = client.newCall(request).execute();
-			if (response.code() == ML_RES_SRVRDELETE) {
-				Thread.sleep(9500);
-				System.out.println("Server " + restServerName + " deleted");
-				//System.out.println(response.body().string());
-			}
-			else {
-				System.out.println("Server " + restServerName + " deletion has issues");
-				System.out.println("Response from server deletion is: " + response);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
-	}
-
-	public static void deleteRESTServer(String restServerName) {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String deleteUrl = new String(
-					"http://" + host_name + ":" + admin_port + "/v1/rest-apis/" + restServerName + "&include=modules");
-
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(deleteUrl)
-					.delete()
-					.build();
-			Response response = client.newCall(request).execute();
-
-			if (response.code() == ML_RES_SRVRDELETE) {
-				Thread.sleep(3500);
-				waitForServerRestart();
-			} else {
-				Thread.sleep(3500);
-				System.out.println("Server response " + response.body().string());
-			}
-		} catch (Exception e) {
-			System.out.println("Inside Deleting Rest server is throwing an error");
 			e.printStackTrace();
 		} finally {
 			client = null;
@@ -1036,41 +968,6 @@ public abstract class ConnectedRESTQA {
 		}
 	}
 
-	public static void waitForServerRestart() {
-		OkHttpClient client = createManageAdminClient("admin", "admin");;
-		try {
-			int count = 0;
-			while (count < 20) {
-				count++;
-				try {
-					String getrequestUrl = new String("http://" + host_name + ":8001/admin/v1/timestamp");
-					Request requestGet = new Request.Builder()
-							.header("Content-type", "application/json")
-							.url(getrequestUrl)
-							.build();
-					Response responseGet = client.newCall(requestGet).execute();
-
-					if (responseGet.code() == 503) {
-						Thread.sleep(5000);
-					} else if (responseGet.code() == 200) {
-						break;
-					} else {
-						System.out.println("Waiting for response from server, Trial :"
-								+ responseGet.code() + count);
-						Thread.sleep(6000);
-					}
-				} catch (Exception e) {
-					Thread.sleep(6000);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println("Inside wait for server restart is throwing an error");
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
-	}
-
 	public static void logTestMessages(String txt, long before) {
 		/*
 		 * Calendar cal = Calendar.getInstance(); long after
@@ -1125,112 +1022,18 @@ public abstract class ConnectedRESTQA {
 		logTestMessages(" Ending TESTCASE TEARDOWN ", beforeTeardown);
 	}
 
-	// This function deletes rest server along with default forest and database
-	public static void tearDownJavaRESTServerWithDB(String restServerName) throws Exception {
-		try {
-			deleteRESTServerWithDB(restServerName);
-			waitForServerRestart();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		Thread.sleep(6000);
+	public static void setDatabaseProperties(String dbName, String prop, String propValue) {
+		ObjectNode properties = new ObjectMapper().createObjectNode();
+		properties.put("database-name", dbName);
+		properties.put(prop, propValue);
+		new DatabaseManager(newManageClient()).save(properties.toString());
 	}
 
-	// Setting up AppServices configurations setting up database properties whose value is string
-	public static void setDatabaseProperties(String dbName, String prop, String propValue) throws IOException {
-		String resGet = null;
-		JsonNode jnode = null;
-		Response responsePut = null;
-		OkHttpClient client = createManageAdminClient("admin", "admin");
-		try {
-			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-					+ "/properties?format=json");
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(getrequest)
-					.build();
-			Response response1 = client.newCall(request).execute();
-			if (response1.code() == ML_RES_OK) {
-				resGet = response1.body().string();
-				System.out.println("Response from Get is " + resGet);
-			}
-			if (resGet != null && !resGet.isEmpty())
-				jnode = new ObjectMapper().readTree(resGet);
-			else throw new Exception("Unexpected error " + response1);
-
-			if (!jnode.isNull()) {
-				((ObjectNode) jnode).put(prop, propValue);
-				String putUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-						+ "/properties?format=json");
-
-				String putProps = jnode.toString();
-				Request requestPut = new Request.Builder()
-						.header("Content-type", "application/json")
-						.url(putUrl)
-						.put(RequestBody.create(putProps, MediaType.parse("application/json")))
-						.build();
-				responsePut = client.newCall(requestPut).execute();
-
-				if (responsePut.code() == ML_RES_CHANGED) {
-					System.out.println("Database " + dbName + ". property " + prop +" has been updated with " + propValue);
-				}
-			} else {
-				System.out.println("REST call for database properties update has issues");
-				System.out.println(responsePut.toString());
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
-	}
-
-	public static void setDatabaseProperties(String dbName, String prop, boolean propValue) throws IOException {
-		String resGet = null;
-		JsonNode jnode = null;
-		Response responsePut = null;
-		OkHttpClient client = createManageAdminClient("admin", "admin");
-		try {
-			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-					+ "/properties?format=json");
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(getrequest)
-					.build();
-			Response response1 = client.newCall(request).execute();
-			if (response1.code() == ML_RES_OK) {
-				resGet = response1.body().string();
-				System.out.println("Response from Get is " + resGet);
-			}
-			if (resGet != null && !resGet.isEmpty())
-				jnode = new ObjectMapper().readTree(resGet);
-			else throw new Exception("Unexpected error " + response1);
-
-			if (!jnode.isNull()) {
-				((ObjectNode) jnode).put(prop, propValue);
-				String putUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
-						+ "/properties?format=json");
-
-				String putProps = jnode.toString();
-				Request requestPut = new Request.Builder()
-						.header("Content-type", "application/json")
-						.url(putUrl)
-						.put(RequestBody.create(putProps, MediaType.parse("application/json")))
-						.build();
-				responsePut = client.newCall(requestPut).execute();
-
-				if (responsePut.code() == ML_RES_CHANGED) {
-					System.out.println("Database " + dbName + ". property " + prop +" has been updated with " + propValue);
-				}
-			} else {
-				System.out.println("REST call for database properties update has issues");
-				System.out.println(responsePut.toString());
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
-		}
+	public static void setDatabaseProperties(String dbName, String prop, boolean propValue) {
+		ObjectNode properties = new ObjectMapper().createObjectNode();
+		properties.put("database-name", dbName);
+		properties.put(prop, propValue);
+		new DatabaseManager(newManageClient()).save(properties.toString());
 	}
 
 	/*
@@ -1310,11 +1113,6 @@ public abstract class ConnectedRESTQA {
 		setDatabaseProperties(dbName, "triple-index", true);
 	}
 
-	// Set triple-positions to false
-	public static void enableTriplePositions(String dbName) throws Exception {
-		setDatabaseProperties(dbName, "triple-positions", false);
-	}
-
 	public static void enableWordLexicon(String dbName) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode childNode = mapper.createObjectNode();
@@ -1330,10 +1128,6 @@ public abstract class ConnectedRESTQA {
 
 	public static void setMaintainLastModified(String dbName, boolean opt) throws Exception {
 		setDatabaseProperties(dbName, "maintain-last-modified", opt);
-	}
-
-	public static void setAutomaticDirectoryCreation(String dbName, String opt) throws Exception {
-		setDatabaseProperties(dbName, "directory-creation", opt);
 	}
 
 	/*
@@ -1433,31 +1227,6 @@ public abstract class ConnectedRESTQA {
 		ObjectNode childNodeObject = mapper.createObjectNode();
 		childNodeObject.put("scalar-type", type);
 		childNodeObject.put("collation", collation);
-		childNodeObject.put("parent-namespace-uri", parentnamespace);
-		childNodeObject.put("parent-localname", parentlocalname);
-		childNodeObject.put("namespace-uri", namespace);
-		childNodeObject.put("localname", localname);
-
-		childNodeObject.put("range-value-positions", false);
-		childNodeObject.put("invalid-values", "reject");
-		childArray.add(childNodeObject);
-		childNode.putArray("range-element-attribute-index").addAll(childArray);
-
-		setDatabaseProperties(dbName, "range-element-attribute-index", childNode);
-	}
-
-	/*
-	 * Overloaded function with default collation
-	 */
-	public static void addRangeElementAttributeIndex(String dbName, String type, String parentnamespace,
-			String parentlocalname, String namespace, String localname) throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-
-		ObjectNode childNode = mapper.createObjectNode();
-		ArrayNode childArray = mapper.createArrayNode();
-		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put("scalar-type", type);
-		childNodeObject.put("collation", "");
 		childNodeObject.put("parent-namespace-uri", parentnamespace);
 		childNodeObject.put("parent-localname", parentlocalname);
 		childNodeObject.put("namespace-uri", namespace);
@@ -1660,39 +1429,6 @@ public abstract class ConnectedRESTQA {
 		childNode.putArray("geospatial-path-index").addAll(childArray);
 
 		setDatabaseProperties(dbName, "geospatial-path-index", childNode);
-	}
-
-	/*
-	 * To create a geo spatial region path index for the following geo spatial
-	 * queries.
-	 * 
-	 * 1) Circle - Example - <circle>@120.5 -26.797920,136.406250</circle> 2)
-	 * Box - Example <box>[-40.234, 100.4634, -20.345, 140.45230]</box> 3)
-	 * Polygon - Example- <polygon>POLYGON((153.65 -8.35,170.57 -26.0,162.52
-	 * -52.52,136.0 -56.35,111.0 -51.0,100.89 -26.0,108.18 1.82,136.0
-	 * 10.26,153.65 -8.35))</polygon>
-	 * 
-	 * End-point used for GeoSpatial Region Path Indexes: REST endpoint:
-	 * manage/v2/databases/{id|name}/properties Payload structure:
-	 * "geospatial-region-path-index": [ { "path-expression": "//jurisdiction",
-	 * "coordinate-system": "wgs84", "geohash-precision": 6, "invalid-values":
-	 * "ignore" } ]
-	 */
-
-	public static void addGeospatialRegionPathIndexes(String dbName, String pathExpression, String coordinateSystem,
-			String geoHashPrecision, String invalidValues) throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode childNode = mapper.createObjectNode();
-		ArrayNode childArray = mapper.createArrayNode();
-		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put("path-expression", pathExpression);
-		childNodeObject.put("coordinate-system", coordinateSystem);
-		childNodeObject.put("invalid-values", invalidValues);
-		childNodeObject.put("geohash-precision", geoHashPrecision);
-		childArray.add(childNodeObject);
-		childNode.putArray("geospatial-region-path-index").addAll(childArray);
-
-		setDatabaseProperties(dbName, "geospatial-region-path-index", childNode);
 	}
 
 	/*
@@ -2087,7 +1823,7 @@ public abstract class ConnectedRESTQA {
 				.build();
 		Response response = client.newCall(request).execute();
 		if (response.code() == ML_RES_CHANGED) {
-			Thread.sleep(3500);
+//			Thread.sleep(3500);
 			System.out.println("collection " + collectionName + " deleted");
 			System.out.println(response.body().string());
 		}
@@ -2256,12 +1992,11 @@ public abstract class ConnectedRESTQA {
 		KeyStore keyStore = KeyStore.getInstance("PKCS12");
 		Properties property = new Properties();
 		InputStream keyInput = property.getClass().getResourceAsStream(mlCertFile);
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			Thread.sleep(2000);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
 
 		try {
 			keyStore.load(keyInput, ml_certificate_password.toCharArray());
@@ -2302,8 +2037,13 @@ public abstract class ConnectedRESTQA {
 			setupJavaRESTServer(dbName, fNames[0], restSslServerName, getRestServerPort());
 		else
 			setupJavaRESTServer(dbName, fNames[0], restServerName, getRestServerPort());
-		if (isLBHost())
-			setRESTServerWithDistributeTimestamps(restServerName, "cluster");
+		if (isLBHost()) {
+			ObjectNode props = new ObjectMapper().createObjectNode();
+			props.put("server-name", restServerName);
+			props.put("group-name", "Default");
+			props.put("distribute-timestamps", "cluster");
+			new ServerManager(newManageClient()).save(props.toString());
+		}
 	}
 
 	//Configure a SSL or non SSL enabled REST Server based on the build.gradle
@@ -2345,7 +2085,7 @@ public abstract class ConnectedRESTQA {
 		DatabaseClient client = null;
 		
 		SSLContext sslcontext = null;
-		SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext(user,password);
+		SecurityContext secContext = newSecurityContext(user,password);
 		if (IsSecurityEnabled()) {
 			try {
 				sslcontext = getSslContext();
@@ -2372,13 +2112,10 @@ public abstract class ConnectedRESTQA {
 				client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), user, password,
 						authType);
 		} catch (CertificateException certEx) {
-			// TODO Auto-generated catch block
 			certEx.printStackTrace();
 		} catch (KeyStoreException ksEx) {
-			// TODO Auto-generated catch block
 			ksEx.printStackTrace();
 		} catch (UnrecoverableKeyException unReovkeyEx) {
-			// TODO Auto-generated catch block
 			unReovkeyEx.printStackTrace();
 		}
 		return client;
@@ -2405,24 +2142,21 @@ public abstract class ConnectedRESTQA {
 				if (hostName.equalsIgnoreCase(host_name))
 					hostName = getSslServer();
 				
-				SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext(user,password);
+				SecurityContext secContext = newSecurityContext(user,password);
 				secContext.withSSLContext(sslcontext).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
 				
 				client = DatabaseClientFactory.newClient(hostName, port, databaseName, secContext, connType);
 			} else {
-				SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext(user,password);
+				SecurityContext secContext = newSecurityContext(user,password);
 				if (hostName.equalsIgnoreCase(host_name))
 					hostName = getServer();
 				client = DatabaseClientFactory.newClient(hostName, port, databaseName, secContext, connType);
 			}
 		} catch (CertificateException certEx) {
-			// TODO Auto-generated catch block
 			certEx.printStackTrace();
 		} catch (KeyStoreException ksEx) {
-			// TODO Auto-generated catch block
 			ksEx.printStackTrace();
 		} catch (UnrecoverableKeyException unReovkeyEx) {
-			// TODO Auto-generated catch block
 			unReovkeyEx.printStackTrace();
 		}
 		return client;
@@ -2470,16 +2204,18 @@ public abstract class ConnectedRESTQA {
 		}
 		// Set the variable values.
 
-		// Rest App server names and ports.
+		securityContextType = property.getProperty("securityContextType");
 		restServerName = property.getProperty("mlAppServerName");
 		restSslServerName = property.getProperty("mlAppServerSSLName");
 
 		https_port = property.getProperty("httpsPort");
 		http_port = property.getProperty("httpPort");
+		fast_http_port = property.getProperty("fastHttpPort");
 		admin_port = property.getProperty("adminPort");
 
 		// Machine names where ML Server runs
 		host_name = property.getProperty("restHost");
+		System.out.println("Will connect to: " + host_name);
 		ssl_host_name = property.getProperty("restSSLHost");
 
 		// Users
@@ -2499,7 +2235,6 @@ public abstract class ConnectedRESTQA {
 		ssl_enabled = property.getProperty("restSSLset");
 		ml_certificate_password = property.getProperty("ml_certificate_password");
 		ml_certificate_file = property.getProperty("ml_certificate_file");
-		ml_certificate_path = property.getProperty("ml_certificate_path");
 		mlDataConfigDirPath = property.getProperty("mlDataConfigDirPath");
 		isLBHost = Boolean.parseBoolean(property.getProperty("lbHost"));
 		PROPERTY_WAIT = Integer.parseInt(isLBHost ? "15000" : "0");		
@@ -2956,63 +2691,22 @@ public abstract class ConnectedRESTQA {
 		  }
 	  }
 
-	  /*
-	   * Associate REST server with timestamps in "distribute timestamps" to specify distribution of commit timestamps
-	   * For example set to "strict" for Application Load Balancing (AWS) 
-	   * 
-	   */
-	  private static void setRESTServerWithDistributeTimestamps(String restServerName, String distributeTimestampType) throws Exception {
+	  public static void associateRESTServerWithModuleDB(String restServerName, String modulesDbName) throws Exception {
+		  ObjectNode props = new ObjectMapper().createObjectNode();
+		  props.put("server-name", restServerName);
+		  props.put("group-name", "Default");
+		  props.put("modules-database", modulesDbName);
+		  new ServerManager(newManageClient()).save(props.toString());
+	}
 
-		  OkHttpClient client = createManageAdminClient("admin", "admin");
-		  try {
-			  String extSecurityrName = "";
-			  String body = "{\"group-name\": \"Default\",\"distribute-timestamps\": \"" + distributeTimestampType + "\"}";
-
-			  String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
-					  + "/properties?server-type=http");
-			  Request request = new Request.Builder()
-					  .header("Content-type", "application/json")
-					  .url(putStr)
-					  .put(RequestBody.create(body, MediaType.parse("application/json")))
-					  .build();
-			  Response response = client.newCall(request).execute();
-			  if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-			  else if (response.code() == ML_RES_CHANGED) {
-				  System.out.println("Property " + distributeTimestampType + " successfully set");
-			  }
-		  }
-		  catch (Exception ex) {
-		  	ex.printStackTrace();
-		  } finally {
-			  client = null;
-		  }
-	  }
-
-	public static void associateRESTServerWithModuleDB(String restServerName, String modulesDbName) throws Exception {
-		OkHttpClient client = null;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String body = "{\"modules-database\": \"" + modulesDbName + "\",\"group-name\": \"Default\"}";
-
-			String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
-					+ "/properties?server-type=http");
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(putStr)
-					.put(RequestBody.create(body, MediaType.parse("application/json")))
-					.build();
-			Response response = client.newCall(request).execute();
-			if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-			else if (response.code() == ML_RES_CHANGED) {
-				System.out.println(restServerName + " server successfully associated with " + modulesDbName + "database");
-			}
-			else {
-				System.out.println("No proper response in associating RESTServer With ModuleDB");
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			client = null;
+	public static DatabaseClientFactory.SecurityContext newSecurityContext(String username, String password) {
+		if ("basic".equalsIgnoreCase(securityContextType)) {
+			return new DatabaseClientFactory.BasicAuthContext(username, password);
 		}
+		return new DatabaseClientFactory.DigestAuthContext(username, password);
+	}
+
+	protected static ManageClient newManageClient() {
+		return new ManageClient(new ManageConfig(getServer(), 8002, getAdminUser(), getAdminPassword()));
 	}
 }

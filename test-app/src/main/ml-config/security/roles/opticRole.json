@@ -1,0 +1,53 @@
+{
+  "role-name": "opticRole",
+  "description": "for marklogic-client-api-functionaltests",
+  "role": [
+    "rest-reader",
+    "rest-writer"
+  ],
+  "permission": [
+    {
+      "role-name": "rest-reader",
+      "capability": "read"
+    },
+    {
+      "role-name": "rest-writer",
+      "capability": "read"
+    },
+    {
+      "role-name": "rest-writer",
+      "capability": "execute"
+    },
+    {
+      "role-name": "rest-writer",
+      "capability": "update"
+    }
+  ],
+  "privilege": [
+    {
+      "privilege-name": "xdmp:eval-in",
+      "action": "http://marklogic.com/xdmp/privileges/xdmp-eval-in",
+      "kind": "execute"
+    },
+    {
+      "privilege-name": "xdbc:invoke",
+      "action": "http://marklogic.com/xdmp/privileges/xdbc-invoke",
+      "kind": "execute"
+    },
+    {
+      "privilege-name": "any-uri",
+      "action": "http://marklogic.com/xdmp/privileges/any-uri",
+      "kind": "execute"
+    },
+    {
+      "privilege-name": "xdbc:eval",
+      "action": "http://marklogic.com/xdmp/privileges/xdbc-eval",
+      "kind": "execute"
+    },
+    {
+      "privilege-name": "xdbc:eval-in",
+      "action": "http://marklogic.com/xdmp/privileges/xdbc-eval-in",
+      "kind": "execute"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -392,15 +392,14 @@ public class HandleAsTest {
     clientFactoryBean.setAuthentication(Authentication.DIGEST);
     return clientFactoryBean;
   }
-  
+
   private DatabaseClientFactory.Bean makeClientBeanFactory() {
-	  DatabaseClientFactory.Bean clientFactoryBean = new DatabaseClientFactory.Bean();
-	  DatabaseClientFactory.DigestAuthContext clientFactoryContext = new DatabaseClientFactory.DigestAuthContext(Common.USER, Common.PASS);
-	  clientFactoryBean.setHost(Common.HOST);
-	  clientFactoryBean.setPort(Common.PORT);
-	  clientFactoryBean.setSecurityContext(clientFactoryContext);
-	  return clientFactoryBean;
-	  }
+    DatabaseClientFactory.Bean clientFactoryBean = new DatabaseClientFactory.Bean();
+    clientFactoryBean.setHost(Common.HOST);
+    clientFactoryBean.setPort(Common.PORT);
+    clientFactoryBean.setSecurityContext(Common.newSecurityContext(Common.USER, Common.PASS));
+    return clientFactoryBean;
+  }
   
 
   static public class BufferHandle

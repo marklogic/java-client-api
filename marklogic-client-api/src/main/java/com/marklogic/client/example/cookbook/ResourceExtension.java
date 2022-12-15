@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,14 +119,8 @@ public class ResourceExtension {
       params.add("service", "check-dictionary");
       params.add("uris",    uris);
 
-      // specify the mime type for each expected document returned
-      String[] mimetypes = new String[uris.length];
-      for (int i=0; i < uris.length; i++) {
-        mimetypes[i] = "application/xml";
-      }
-
       // call the service
-      ServiceResultIterator resultItr = getServices().get(params, mimetypes);
+      ServiceResultIterator resultItr = getServices().get(params);
 
       // iterate over the results
       List<Document> documents = new ArrayList<>();

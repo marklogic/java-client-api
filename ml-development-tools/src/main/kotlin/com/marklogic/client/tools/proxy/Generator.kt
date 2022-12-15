@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -277,7 +277,7 @@ class Generator {
     val funcDecl    = mutableListOf<String>()
     val funcDepend  = mutableSetOf<String>()
     val funcSrc     = funcdefs.map{(root, funcdef) -> generateFuncSrc(
-      fieldDecl, fieldInit, funcDecl, funcDepend, className, servdef, moduleFiles[root]!!.name, funcdef
+      fieldDecl, fieldInit, funcDecl, funcDepend, servdef, moduleFiles[root]!!.name, funcdef
     )}.joinToString("\n")
     val fieldDecls   =
         if (fieldDecl.isEmpty()) ""
@@ -488,7 +488,7 @@ ${funcDecls}
   }
   fun generateFuncSrc(
       fieldDecl: MutableList<String>, fieldInit: MutableList<String>, funcDecl: MutableList<String>,
-      funcDepend: MutableSet<String>, className: String, servdef: ObjectNode, moduleFilename: String,
+      funcDepend: MutableSet<String>, servdef: ObjectNode, moduleFilename: String,
       funcdef: ObjectNode
   ): String {
     val funcName = funcdef.get("functionName")?.asText()

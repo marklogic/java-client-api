@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,12 @@ import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.TextDocumentManager;
+import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.example.cookbook.Util;
-import com.marklogic.client.query.*;
+import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StructuredQueryBuilder;
 
 import java.io.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,87 +49,90 @@ import java.util.stream.Stream;
 
 public class BulkExportWithDataService {
 
+    private final static String COLLECTION = "BulkExportWithDataService";
+
     private static Util.ExampleProperties properties = getProperties();
-    private DatabaseClient dbClient = DatabaseClientFactory.newClient(properties.host, 8012,
-            new DatabaseClientFactory.DigestAuthContext(properties.writerUser, properties.writerPassword));
-    private DatabaseClient dbModulesClient = DatabaseClientSingleton.getAdmin("java-unittest-modules");
-    private DataMovementManager moveMgr = dbClient.newDataMovementManager();
+    private DatabaseClient dbClient;
+    private DatabaseClient dbModulesClient;
+    private DataMovementManager moveMgr;
     private int count = 100;
 
     public static void main(String args[]) throws IOException {
-        new BulkExportWithDataService().run();
+        DatabaseClient dbClient = DatabaseClientFactory.newClient(properties.host, 8012,
+            new DatabaseClientFactory.DigestAuthContext(properties.writerUser, properties.writerPassword));
+        DatabaseClient dbModulesClient = DatabaseClientSingleton.getAdmin("java-unittest-modules");
+        new BulkExportWithDataService(dbClient, dbModulesClient).run();
     }
 
-    private void run() throws IOException {
+    public BulkExportWithDataService(DatabaseClient dbClient, DatabaseClient modulesClient) {
+        this.dbClient = dbClient;
+        this.dbModulesClient = modulesClient;
+        this.moveMgr = dbClient.newDataMovementManager();
+    }
+
+    public void run() throws IOException {
         setup();
         exportJson();
         tearDown();
     }
 
     private void setup() throws IOException {
-
-        writeDocuments(count,"BulkExportWithDataService");
+        writeDocuments(count, COLLECTION);
         writeScriptFile("readJsonDocs.api");
         writeScriptFile("readJsonDocs.sjs");
     }
 
-    private  void tearDown(){
-
+    private void tearDown() {
         QueryManager queryMgr = dbClient.newQueryManager();
         QueryManager queryMgrModules = dbModulesClient.newQueryManager();
         DeleteQueryDefinition deletedef = queryMgr.newDeleteDefinition();
-        deletedef.setCollections("BulkExportWithDataService");
+        deletedef.setCollections(COLLECTION);
         queryMgr.delete(deletedef);
         queryMgrModules.delete(deletedef);
     }
 
-
-    private void exportJson(){
+    private void exportJson() {
         BulkExportServices bulkExportServices = BulkExportServices.on(dbClient);
 
         StructuredQueryBuilder structuredQueryBuilder = new StructuredQueryBuilder();
         AtomicInteger docCount = new AtomicInteger();
-        QueryBatcher queryBatcher = moveMgr.newQueryBatcher(structuredQueryBuilder.collection("BulkExportWithDataService"))
-                .withBatchSize(3)
-                .withThreadCount(3)
-                .onQueryFailure(batch -> new InternalError("An exception occured in queryBatcher"))
-                .onUrisReady(batch -> (bulkExportServices.readJsonDocs(Stream.of(batch.getItems())))
-                        .forEach(reader -> {
-                            try {
-                                BufferedReader br = new BufferedReader(reader);
-                                StringBuilder out = new StringBuilder();
-                                String line;
-                                while ((line = br.readLine()) != null) {
-                                    out.append(line);
-                                    docCount.getAndIncrement();
-                                }
-                                System.out.println(out.toString());
-                                reader.close();
-                            }
-                            catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }));
+        QueryBatcher queryBatcher = moveMgr
+            .newQueryBatcher(structuredQueryBuilder.collection(COLLECTION))
+            .withBatchSize(10)
+            .withThreadCount(3)
+            .onUrisReady(batch -> {
+                try {
+                    Stream<Reader> docStream = bulkExportServices.readJsonDocs(Stream.of(batch.getItems()));
+                    docStream.forEach(doc -> docCount.getAndIncrement());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
+
         moveMgr.startJob(queryBatcher);
         queryBatcher.awaitCompletion();
         moveMgr.stopJob(queryBatcher);
-        if(docCount.get()!= count)
-            throw new InternalError("Mismatch between the number of documents written and read from the database.");
+        if (docCount.get() != count) {
+            throw new RuntimeException("Expected " + count + " documents; found: " + docCount.get());
+        }
     }
 
     private void writeDocuments(int count, String collection) {
         JSONDocumentManager manager = dbClient.newJSONDocumentManager();
-        DocumentMetadataHandle metadata = new DocumentMetadataHandle().withCollections(collection);
-
-        for(int i=1;i<=count;i++) {
-            StringHandle data = new StringHandle("{\"docNum\":"+i+", \"docName\":\"doc"+i+"\"}");
-            String docId = "/example/cookbook/bulkExport/"+i+".json";
-            manager.write(docId, metadata, data);
+        DocumentMetadataHandle metadata = new DocumentMetadataHandle()
+            .withCollections(collection)
+            .withPermission("rest-reader", DocumentMetadataHandle.Capability.READ, DocumentMetadataHandle.Capability.UPDATE);
+        DocumentWriteSet writeSet = manager.newWriteSet();
+        for (int i = 1; i <= count; i++) {
+            StringHandle data = new StringHandle("{\"docNum\":" + i + ", \"docName\":\"doc" + i + "\"}");
+            String docId = "/example/cookbook/bulkExport/" + i + ".json";
+            writeSet.add(docId, metadata, data);
         }
+        manager.write(writeSet);
     }
 
     private void writeScriptFile(String fileName) throws IOException {
-        try (InputStream in = (Util.openStream("scripts"+ File.separator+"bulkExport"+File.separator+fileName))) {
+        try (InputStream in = (Util.openStream("scripts" + File.separator + "bulkExport" + File.separator + fileName))) {
             final TextDocumentManager modMgr = dbModulesClient.newTextDocumentManager();
 
             final DocumentWriteSet writeSet = modMgr.newWriteSet();
@@ -143,8 +148,8 @@ public class BulkExportWithDataService {
                 out.append(line);
             }
 
-            writeSet.add("/example/cookbook/bulkExport/"+fileName, metadata,
-                    new StringHandle(out.toString()));
+            writeSet.add("/example/cookbook/bulkExport/" + fileName, metadata,
+                new StringHandle(out.toString()));
 
             modMgr.write(writeSet);
         }

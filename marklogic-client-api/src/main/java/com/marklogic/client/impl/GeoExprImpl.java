@@ -252,6 +252,36 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
+  public ServerExpression contains(ServerExpression region1, ServerExpression region2) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for contains() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for contains() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "contains", new Object[]{ region1, region2 });
+  }
+
+  
+  @Override
+  public ServerExpression contains(ServerExpression region1, ServerExpression region2, String options) {
+    return contains(region1, region2, (options == null) ? (ServerExpression) null : xs.string(options));
+  }
+
+  
+  @Override
+  public ServerExpression contains(ServerExpression region1, ServerExpression region2, ServerExpression options) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for contains() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for contains() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "contains", new Object[]{ region1, region2, options });
+  }
+
+  
+  @Override
   public ServerExpression countDistinctVertices(ServerExpression region) {
     if (region == null) {
       throw new IllegalArgumentException("region parameter for countDistinctVertices() cannot be null");
@@ -281,6 +311,96 @@ class GeoExprImpl implements GeoExpr {
       throw new IllegalArgumentException("region parameter for countVertices() cannot be null");
     }
     return new XsExprImpl.IntegerCallImpl("geo", "count-vertices", new Object[]{ region });
+  }
+
+  
+  @Override
+  public ServerExpression coveredBy(ServerExpression region1, ServerExpression region2) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for coveredBy() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for coveredBy() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "covered-by", new Object[]{ region1, region2 });
+  }
+
+  
+  @Override
+  public ServerExpression coveredBy(ServerExpression region1, ServerExpression region2, String options) {
+    return coveredBy(region1, region2, (options == null) ? (ServerExpression) null : xs.string(options));
+  }
+
+  
+  @Override
+  public ServerExpression coveredBy(ServerExpression region1, ServerExpression region2, ServerExpression options) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for coveredBy() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for coveredBy() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "covered-by", new Object[]{ region1, region2, options });
+  }
+
+  
+  @Override
+  public ServerExpression covers(ServerExpression region1, ServerExpression region2) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for covers() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for covers() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "covers", new Object[]{ region1, region2 });
+  }
+
+  
+  @Override
+  public ServerExpression covers(ServerExpression region1, ServerExpression region2, String options) {
+    return covers(region1, region2, (options == null) ? (ServerExpression) null : xs.string(options));
+  }
+
+  
+  @Override
+  public ServerExpression covers(ServerExpression region1, ServerExpression region2, ServerExpression options) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for covers() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for covers() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "covers", new Object[]{ region1, region2, options });
+  }
+
+  
+  @Override
+  public ServerExpression crosses(ServerExpression region1, ServerExpression region2) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for crosses() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for crosses() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "crosses", new Object[]{ region1, region2 });
+  }
+
+  
+  @Override
+  public ServerExpression crosses(ServerExpression region1, ServerExpression region2, String options) {
+    return crosses(region1, region2, (options == null) ? (ServerExpression) null : xs.string(options));
+  }
+
+  
+  @Override
+  public ServerExpression crosses(ServerExpression region1, ServerExpression region2, ServerExpression options) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for crosses() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for crosses() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "crosses", new Object[]{ region1, region2, options });
   }
 
   
@@ -323,6 +443,36 @@ class GeoExprImpl implements GeoExpr {
       throw new IllegalArgumentException("distance parameter for destination() cannot be null");
     }
     return new CtsExprImpl.RegionCallImpl("geo", "destination", new Object[]{ p, bearing, distance, options });
+  }
+
+  
+  @Override
+  public ServerExpression disjoint(ServerExpression region1, ServerExpression region2) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for disjoint() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for disjoint() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "disjoint", new Object[]{ region1, region2 });
+  }
+
+  
+  @Override
+  public ServerExpression disjoint(ServerExpression region1, ServerExpression region2, String options) {
+    return disjoint(region1, region2, (options == null) ? (ServerExpression) null : xs.string(options));
+  }
+
+  
+  @Override
+  public ServerExpression disjoint(ServerExpression region1, ServerExpression region2, ServerExpression options) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for disjoint() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for disjoint() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "disjoint", new Object[]{ region1, region2, options });
   }
 
   
@@ -416,6 +566,36 @@ class GeoExprImpl implements GeoExpr {
       throw new IllegalArgumentException("arcTolerance parameter for ellipsePolygon() cannot be null");
     }
     return new CtsExprImpl.RegionCallImpl("geo", "ellipse-polygon", new Object[]{ center, semiMajorAxis, semiMinorAxis, azimuth, arcTolerance, options });
+  }
+
+  
+  @Override
+  public ServerExpression equals(ServerExpression region1, ServerExpression region2) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for equals() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for equals() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "equals", new Object[]{ region1, region2 });
+  }
+
+  
+  @Override
+  public ServerExpression equals(ServerExpression region1, ServerExpression region2, String options) {
+    return equals(region1, region2, (options == null) ? (ServerExpression) null : xs.string(options));
+  }
+
+  
+  @Override
+  public ServerExpression equals(ServerExpression region1, ServerExpression region2, ServerExpression options) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for equals() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for equals() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "equals", new Object[]{ region1, region2, options });
   }
 
   
@@ -545,6 +725,66 @@ class GeoExprImpl implements GeoExpr {
       throw new IllegalArgumentException("region parameter for interiorPoint() cannot be null");
     }
     return new CtsExprImpl.RegionCallImpl("geo", "interior-point", new Object[]{ region, options });
+  }
+
+  
+  @Override
+  public ServerExpression intersects(ServerExpression region1, ServerExpression region2) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for intersects() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for intersects() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "intersects", new Object[]{ region1, region2 });
+  }
+
+  
+  @Override
+  public ServerExpression intersects(ServerExpression region1, ServerExpression region2, String options) {
+    return intersects(region1, region2, (options == null) ? (ServerExpression) null : xs.string(options));
+  }
+
+  
+  @Override
+  public ServerExpression intersects(ServerExpression region1, ServerExpression region2, ServerExpression options) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for intersects() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for intersects() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "intersects", new Object[]{ region1, region2, options });
+  }
+
+  
+  @Override
+  public ServerExpression overlaps(ServerExpression region1, ServerExpression region2) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for overlaps() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for overlaps() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "overlaps", new Object[]{ region1, region2 });
+  }
+
+  
+  @Override
+  public ServerExpression overlaps(ServerExpression region1, ServerExpression region2, String options) {
+    return overlaps(region1, region2, (options == null) ? (ServerExpression) null : xs.string(options));
+  }
+
+  
+  @Override
+  public ServerExpression overlaps(ServerExpression region1, ServerExpression region2, ServerExpression options) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for overlaps() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for overlaps() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "overlaps", new Object[]{ region1, region2, options });
   }
 
   
@@ -795,11 +1035,71 @@ class GeoExprImpl implements GeoExpr {
 
   
   @Override
+  public ServerExpression touches(ServerExpression region1, ServerExpression region2) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for touches() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for touches() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "touches", new Object[]{ region1, region2 });
+  }
+
+  
+  @Override
+  public ServerExpression touches(ServerExpression region1, ServerExpression region2, String options) {
+    return touches(region1, region2, (options == null) ? (ServerExpression) null : xs.string(options));
+  }
+
+  
+  @Override
+  public ServerExpression touches(ServerExpression region1, ServerExpression region2, ServerExpression options) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for touches() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for touches() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "touches", new Object[]{ region1, region2, options });
+  }
+
+  
+  @Override
   public ServerExpression validateWkt(ServerExpression wkt) {
     if (wkt == null) {
       throw new IllegalArgumentException("wkt parameter for validateWkt() cannot be null");
     }
     return new XsExprImpl.BooleanCallImpl("geo", "validate-wkt", new Object[]{ wkt });
+  }
+
+  
+  @Override
+  public ServerExpression within(ServerExpression region1, ServerExpression region2) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for within() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for within() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "within", new Object[]{ region1, region2 });
+  }
+
+  
+  @Override
+  public ServerExpression within(ServerExpression region1, ServerExpression region2, String options) {
+    return within(region1, region2, (options == null) ? (ServerExpression) null : xs.string(options));
+  }
+
+  
+  @Override
+  public ServerExpression within(ServerExpression region1, ServerExpression region2, ServerExpression options) {
+    if (region1 == null) {
+      throw new IllegalArgumentException("region1 parameter for within() cannot be null");
+    }
+    if (region2 == null) {
+      throw new IllegalArgumentException("region2 parameter for within() cannot be null");
+    }
+    return new XsExprImpl.BooleanCallImpl("geo", "within", new Object[]{ region1, region2, options });
   }
 
   }

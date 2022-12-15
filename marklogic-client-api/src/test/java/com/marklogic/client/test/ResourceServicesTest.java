@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 MarkLogic Corporation
+ * Copyright (c) 2022 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,9 +73,7 @@ public class ResourceServicesTest {
     assertNotNull("Failed to get resource service with single document", result);
     assertXpathEvaluatesTo("true", "/read-doc/param", result);
 
-    String[] mimetypes = {"application/xml", "application/xml"};
-
-    ServiceResultIterator resultItr = resourceMgr.getResourceServices().get(params, mimetypes);
+    ServiceResultIterator resultItr = resourceMgr.getResourceServices().get(params);
 
     List<Document> resultDocuments = new ArrayList<>();
     DOMHandle readHandle = new DOMHandle();
@@ -119,7 +117,7 @@ public class ResourceServicesTest {
     assertXpathEvaluatesTo("true", "/applied-doc/param", result);
     assertXpathEvaluatesTo("true", "/applied-doc/input-doc", result);
 
-    resultItr = resourceMgr.getResourceServices().post(params, writeHandles, mimetypes);
+    resultItr = resourceMgr.getResourceServices().post(params, writeHandles);
 
     resultDocuments = new ArrayList<>();
     readHandle = new DOMHandle();
