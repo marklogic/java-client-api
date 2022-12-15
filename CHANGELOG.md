@@ -1,52 +1,6 @@
 # CHANGELOG
-## 5.5.4
 
-#### Improvements and Bug Fixes
-- [#1337](https://github.com/marklogic/java-client-api/issues/1337) - Gradle breaks my build marklogic-client-api is missing the Gradle .module file in Maven Central
-
-## 5.5.3
-
-#### Improvements and Bug Fixes
-- [#1340](https://github.com/marklogic/java-client-api/issues/1340) - Spring library upgrade for Spring4Shell security vulnerability
-
-## 5.5.2
-#### New Functionality
-- [#1329](https://github.com/marklogic/java-client-api/issues/1329) - Inspect information about columns in the plan before execution - Server release 10.0-9 or above required
-
-#### Improvements and Bug Fixes
-- [#1335](https://github.com/marklogic/java-client-api/issues/1335) - Project description on Maven Central corrected
-
-## 5.5.1
-#### New Functionality
-- [#1296](https://github.com/marklogic/java-client-api/issues/1296) - Type anyDocument support for data service - Server release 10.0-7 or above required
-- #1314, #1315 - Support for Optic features Bucket group and sample by - Server release 10.0-8 or above required
-
-#### Improvements and Bug Fixes
-- [#1309](https://github.com/marklogic/java-client-api/issues/1309) - Upgrade to Jackson 2.12.4
-- [#1316](https://github.com/marklogic/java-client-api/issues/1316) - Optic fromSPARQL method support options parameter - Server release 10.0-8 or above required
-- [#1322](https://github.com/marklogic/java-client-api/issues/1322) - Method facetBy doesn't work with namedGroup
-
-## 5.5.0
-#### New Functionality
-- [#1294](https://github.com/marklogic/java-client-api/issues/1294) - New Optic features Redaction, generate views  - Server release 10.0-7 or above required
-
-#### Improvements and Bug Fixes
-- [#1230](https://github.com/marklogic/java-client-api/issues/1230) - Upgraded dependencies
-- [#1279](https://github.com/marklogic/java-client-api/issues/1279) - Size task queue for QueryBatcher based on forests, thread counts
-- [#1290](https://github.com/marklogic/java-client-api/issues/1290) - QueryBatcher fails with empty criteria
-- [#1298](https://github.com/marklogic/java-client-api/issues/1298) - Removed JCenter as repository
-
-## 5.4.0
-#### New Functionality
-- [#1260](https://github.com/marklogic/java-client-api/issues/1260) - CtsQueryBuilder for search is available - Server release 10.0-5 or above required
-- [#1280](https://github.com/marklogic/java-client-api/issues/1280) - Optic query DSL - Support for human-oriented representation of Optic query - Server release 10.0-6 or above required
-- [#1282](https://github.com/marklogic/java-client-api/issues/1282) - Optic enhancements - support for document matching, relevance, multiple groups - Server release 10.0-6 or above required
-
-#### Improvements and Bug Fixes
-- [#1256](https://github.com/marklogic/java-client-api/issues/1256) - Clear collections is not working in Java API
-- [#1268](https://github.com/marklogic/java-client-api/issues/1268) - Gradle wrapper upgrade to 6.7
-- [#1269](https://github.com/marklogic/java-client-api/issues/1269) - Increased concurrency for DMSDK QueryBatcher - Server release 10.0-6 or above required
-- [#1283](https://github.com/marklogic/java-client-api/issues/1283) - QueryBatcher fails when using path range query
+For releases 5.4.0 and later, please see [the Java Client releases page](https://github.com/marklogic/java-client-api/releases).
 
 ## 5.3.1
 #### Improvements and Bug Fixes
