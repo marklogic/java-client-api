@@ -26,8 +26,53 @@ import com.marklogic.client.type.ServerExpression;
 public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
+    public void testCtsBox4Exec() {
+        executeTester("testCtsBox4", p.cts.box(p.col("1"), p.col("2"), p.col("3"), p.col("4")), false, "cts:box", null, null, "[1, 2, 3, 4]", new ServerExpression[]{ p.xs.doubleVal(1), p.xs.doubleVal(2), p.xs.doubleVal(3), p.xs.doubleVal(4) });
+    }
+
+    @Test
+    public void testCtsBoxEast1Exec() {
+        executeTester("testCtsBoxEast1", p.cts.boxEast(p.col("1")), false, null, null, null, "4", new ServerExpression[]{ p.cts.box(1, 2, 3, 4) });
+    }
+
+    @Test
+    public void testCtsBoxNorth1Exec() {
+        executeTester("testCtsBoxNorth1", p.cts.boxNorth(p.col("1")), false, null, null, null, "3", new ServerExpression[]{ p.cts.box(1, 2, 3, 4) });
+    }
+
+    @Test
+    public void testCtsBoxSouth1Exec() {
+        executeTester("testCtsBoxSouth1", p.cts.boxSouth(p.col("1")), false, null, null, null, "1", new ServerExpression[]{ p.cts.box(1, 2, 3, 4) });
+    }
+
+    @Test
+    public void testCtsBoxWest1Exec() {
+        executeTester("testCtsBoxWest1", p.cts.boxWest(p.col("1")), false, null, null, null, "2", new ServerExpression[]{ p.cts.box(1, 2, 3, 4) });
+    }
+
+    @Test
+    public void testCtsCircle2Exec() {
+        executeTester("testCtsCircle2", p.cts.circle(p.col("1"), p.col("2")), false, "cts:circle", null, null, "@1.2 1,2", new ServerExpression[]{ p.xs.doubleVal(1.2), p.cts.point(1, 2) });
+    }
+
+    @Test
     public void testCtsPartOfSpeech1Exec() {
         executeTester("testCtsPartOfSpeech1", p.cts.partOfSpeech(p.col("1")), false, null, null, null, "", new ServerExpression[]{ p.xs.string("abc") });
+    }
+
+    @Test
+    public void testCtsPoint2Exec() {
+        executeTester("testCtsPoint2", p.cts.point(p.col("1"), p.col("2")), false, "cts:point", null, null, "1,2", new ServerExpression[]{ p.xs.doubleVal(1), p.xs.doubleVal(2) });
+    }
+
+    @Test
+    public void testCtsPointLatitude1Exec() {
+        executeTester("testCtsPointLatitude1", p.cts.pointLatitude(p.col("1")), false, null, null, null, "1", new ServerExpression[]{ p.cts.point(1, 2) });
+    }
+
+    @Test
+    public void testCtsPointLongitude1Exec() {
+        executeTester("testCtsPointLongitude1", p.cts.pointLongitude(p.col("1")), false, null, null, null, "2", new ServerExpression[]{ p.cts.point(1, 2) });
     }
 
     @Test
@@ -162,17 +207,17 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testFnCurrentDate0Exec() {
-        executeTester("testFnCurrentDate0", p.fn.currentDate(), true, "xs:date", null, null, "2022-11-18-08:00", new ServerExpression[]{  });
+        executeTester("testFnCurrentDate0", p.fn.currentDate(), true, "xs:date", null, null, "2022-12-16-08:00", new ServerExpression[]{  });
     }
 
     @Test
     public void testFnCurrentDateTime0Exec() {
-        executeTester("testFnCurrentDateTime0", p.fn.currentDateTime(), true, "xs:dateTime", null, null, "2022-11-18T12:03:50.039794-08:00", new ServerExpression[]{  });
+        executeTester("testFnCurrentDateTime0", p.fn.currentDateTime(), true, "xs:dateTime", null, null, "2022-12-16T12:21:07.737598-08:00", new ServerExpression[]{  });
     }
 
     @Test
     public void testFnCurrentTime0Exec() {
-        executeTester("testFnCurrentTime0", p.fn.currentTime(), true, "xs:time", null, null, "12:03:50-08:00", new ServerExpression[]{  });
+        executeTester("testFnCurrentTime0", p.fn.currentTime(), true, "xs:time", null, null, "12:21:07-08:00", new ServerExpression[]{  });
     }
 
     @Test
@@ -683,7 +728,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     @Test
     public void testGeoGeohashDecode1Exec() {
         if (Common.markLogicIsVersion11OrHigher()) {
-            executeTester("testGeoGeohashDecode1", p.geo.geohashDecode(p.col("1")), false, "cts:box", null, null, "[0.9997558, 1.9995116, 1.005249, 2.010498]", new ServerExpression[]{p.xs.string("s01mtw")});
+            executeTester("testGeoGeohashDecode1", p.geo.geohashDecode(p.col("1")), false, "cts:box", null, null, "[-90, -180, 90, 180]", new ServerExpression[]{p.xs.string("abc")});
         }
     }
 
@@ -956,7 +1001,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemBnode0Exec() {
-        executeTester("testSemBnode0", p.sem.bnode(), true, "sem:blank", null, null, "_:bnode10193685998165919640", new ServerExpression[]{  });
+        executeTester("testSemBnode0", p.sem.bnode(), true, "sem:blank", null, null, "_:bnode5979962185343367584", new ServerExpression[]{  });
     }
 
     @Test
@@ -1036,7 +1081,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemRandom0Exec() {
-        executeTester("testSemRandom0", p.sem.random(), true, null, null, null, "0.552677253828224", new ServerExpression[]{  });
+        executeTester("testSemRandom0", p.sem.random(), true, null, null, null, "0.428380961234932", new ServerExpression[]{  });
     }
 
     @Test
@@ -1061,12 +1106,12 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemUuid0Exec() {
-        executeTester("testSemUuid0", p.sem.uuid(), true, "sem:iri", null, null, "urn:uuid:52a00d8e-90bf-4513-b54a-fd63af554f59", new ServerExpression[]{  });
+        executeTester("testSemUuid0", p.sem.uuid(), true, "sem:iri", null, null, "urn:uuid:a55ec131-c835-47c7-821e-1a10c4ad0ef1", new ServerExpression[]{  });
     }
 
     @Test
     public void testSemUuidString0Exec() {
-        executeTester("testSemUuidString0", p.sem.uuidString(), true, null, null, null, "c24e74ca-12aa-4809-99eb-0f6b31f55ead", new ServerExpression[]{  });
+        executeTester("testSemUuidString0", p.sem.uuidString(), true, null, null, null, "3d4c4138-35e0-45ba-9444-584a3cf12b36", new ServerExpression[]{  });
     }
 
     @Test
@@ -1201,7 +1246,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSqlRand1Exec() {
-        executeTester("testSqlRand1", p.sql.rand(p.col("1")), true, "xs:unsignedLong", null, null, "15547927416270629027", new ServerExpression[]{ p.xs.unsignedLong(1) });
+        executeTester("testSqlRand1", p.sql.rand(p.col("1")), true, "xs:unsignedLong", null, null, "4427752476160726433", new ServerExpression[]{ p.xs.unsignedLong(1) });
     }
 
     @Test
@@ -1306,7 +1351,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpCrypt21Exec() {
-        executeTester("testXdmpCrypt21", p.xdmp.crypt2(p.col("1")), true, null, null, null, "$256$4OWPtLiJDWZQ48IRi2FIn1$256$aIpMKgaFMJAtIQ6z", new ServerExpression[]{ p.xs.string("abc") });
+        executeTester("testXdmpCrypt21", p.xdmp.crypt2(p.col("1")), true, null, null, null, "$256$/Ma0tvPJ39.CFc0UgU1/S/$256$k8p8zL5fr.EokfeX", new ServerExpression[]{ p.xs.string("abc") });
     }
 
     @Test
@@ -1536,12 +1581,12 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpRandom0Exec() {
-        executeTester("testXdmpRandom0", p.xdmp.random(), true, "xs:unsignedLong", null, null, "16681012044226997448", new ServerExpression[]{  });
+        executeTester("testXdmpRandom0", p.xdmp.random(), true, "xs:unsignedLong", null, null, "13118352151257417636", new ServerExpression[]{  });
     }
 
     @Test
     public void testXdmpRandom1Exec() {
-        executeTester("testXdmpRandom1", p.xdmp.random(p.col("1")), true, null, null, null, "0", new ServerExpression[]{ p.xs.unsignedLong(1) });
+        executeTester("testXdmpRandom1", p.xdmp.random(p.col("1")), true, null, null, null, "1", new ServerExpression[]{ p.xs.unsignedLong(1) });
     }
 
     @Test
@@ -1612,6 +1657,11 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     @Test
     public void testXdmpType1Exec() {
         executeTester("testXdmpType1", p.xdmp.type(p.col("1")), false, "xs:QName", null, null, "string", new ServerExpression[]{ p.xs.string("a") });
+    }
+
+    @Test
+    public void testXdmpUnquote1Exec() {
+        executeTester("testXdmpUnquote1", p.xdmp.unquote(p.col("1")), false, null, "array", Format.JSON, "[123]", new ServerExpression[]{ p.xs.string("[123]") });
     }
 
     @Test
