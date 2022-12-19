@@ -559,7 +559,7 @@ public class TestOpticOnLiterals extends AbstractFunctionalTest {
    * Test join inner doc on json and xml documents
    */
   @Test
-  public void testJoinInnerDocOnJson() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testJoinInnerDocOnJson()
   {
     System.out.println("In testJoinInnerDocOnJson method");
 
@@ -627,15 +627,18 @@ public class TestOpticOnLiterals extends AbstractFunctionalTest {
             p.col("val"),
             p.col("uri"),
             p.as("nodes", p.xpath("doc", "/doc/distance/@direction")))
-        .where(p.isDefined(p.col("nodes")))
-        .orderBy(p.asc("id"));
+        .where(p.isDefined(p.col("nodes")));
+
+    System.out.println(output17.exportAs(JsonNode.class).toPrettyString());
+
     JacksonHandle jacksonHandle17 = new JacksonHandle();
     jacksonHandle17.setMimetype("application/json");
     rowMgr.resultDoc(output17, jacksonHandle17);
     JsonNode jsonBindingsNodes17 = jacksonHandle17.get().path("rows");
 
-    // Should have 1 node returned.
-    assertEquals("One node not returned from testJoinInnerDocOnJson method", 1, jsonBindingsNodes17.size());
+    assertEquals("One node not returned from testJoinInnerDocOnJson method: " + jsonBindingsNodes17.toPrettyString(),
+        1, jsonBindingsNodes17.size());
+
     JsonNode node17 = jsonBindingsNodes17.path(0);
     assertEquals("Row 1 id value incorrect", "4", node17.path("id").path("value").asText());
     assertEquals("Row 1 val value incorrect", "8", node17.path("val").path("value").asText());
@@ -651,8 +654,8 @@ public class TestOpticOnLiterals extends AbstractFunctionalTest {
             p.col("val"),
             p.col("uri"),
             p.as("nodes", p.xpath("doc", "/doc/location/latLonPair/(lat|long)/text()")))
-        .where(p.isDefined(p.col("nodes")))
-        .orderBy(p.asc("id"));
+        .where(p.isDefined(p.col("nodes")));
+
     JacksonHandle jacksonHandle18 = new JacksonHandle();
     jacksonHandle18.setMimetype("application/json");
     rowMgr.resultDoc(output18, jacksonHandle18);
@@ -710,8 +713,7 @@ public class TestOpticOnLiterals extends AbstractFunctionalTest {
             p.col("val"),
             p.col("uri"),
             p.as("nodes", p.xpath("doc", "/doc/city")))
-        .where(p.isDefined(p.col("nodes")))
-        .orderBy(p.asc("id"));
+        .where(p.isDefined(p.col("nodes")));
     JacksonHandle jacksonHandle15 = new JacksonHandle();
     jacksonHandle15.setMimetype("application/json");
     rowMgr.resultDoc(output15, jacksonHandle15);
@@ -1772,15 +1774,14 @@ public class TestOpticOnLiterals extends AbstractFunctionalTest {
     System.out.println(colInfo);
 
     String expectedType = isML11OrHigher ? "string": "unknown";
-    assertTrue("Element 1 desc value incorrect: " + colInfo,
-        colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"desc\", \"type\":\"" + expectedType + "\", \"nullable\":false"));
-    assertTrue("Element 4 colorDesc value incorrect: " + colInfo,
-        colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"colorDesc\", \"type\":\"" + expectedType + "\", \"nullable\":false}"));
+
+    assertColumnInfosExist(colInfo,
+        new ColumnInfo("desc", expectedType),
+        new ColumnInfo("colorDesc", expectedType));
 
     expectedType = isML11OrHigher ? "integer": "unknown";
-    assertTrue("Element 2 colorId value incorrect: " + colInfo,
-        colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"colorId\", \"type\":\"" + expectedType + "\", \"nullable\":false}"));
-    assertTrue("Element 3 rowId value incorrect: " + colInfo,
-        colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"rowId\", \"type\":\"" + expectedType + "\", \"nullable\":false}"));
+    assertColumnInfosExist(colInfo,
+        new ColumnInfo("colorId", expectedType),
+        new ColumnInfo("rowId", expectedType));
   }
 }

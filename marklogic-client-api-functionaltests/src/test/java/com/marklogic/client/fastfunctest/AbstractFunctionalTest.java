@@ -12,8 +12,6 @@ import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
-import com.marklogic.mgmt.ManageClient;
-import com.marklogic.mgmt.ManageConfig;
 import com.marklogic.mgmt.resource.databases.DatabaseManager;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -23,6 +21,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.stream.Stream;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Abstract class for functional tests that depend on the test app in ./marklogic-client-api/src/test, which is
@@ -256,5 +256,15 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Unable to restore field config", e);
         }
+    }
+
+    public static void assertColumnInfosExist(String actualColumnInfo, ColumnInfo... expectedColumnInfos) {
+        Stream
+            .of(expectedColumnInfos)
+            .map(columnInfo -> columnInfo.getExpectedJson())
+            .forEach(expectedJson -> assertTrue(
+                "Did not find expected JSON: " + expectedJson + "; colInfo: " + actualColumnInfo,
+                actualColumnInfo.contains(expectedJson))
+            );
     }
 }

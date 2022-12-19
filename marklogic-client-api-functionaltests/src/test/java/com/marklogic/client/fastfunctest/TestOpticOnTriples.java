@@ -453,16 +453,14 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     ModifyPlan team_planSum = p.fromTriples(team_planSumSeq);
     
     ModifyPlan outputSum = player_planSum.joinInner(team_planSum)
-        .groupBy(null, p.sum(p.col("SumAll"), playerEffCol))
-        .orderBy(p.desc(p.col("SumAll")));
+        .groupBy(null, p.sum(p.col("SumAll"), playerEffCol));
     jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
 
     rowMgr.resultDoc(outputSum, jacksonHandle);
     jsonResults = jacksonHandle.get();
     jsonBindingsNodes = jsonResults.path("rows");
-    // Should have 1 nodes returned.
-    assertEquals("Node not returned from testGroupByCountAndSum method - Sum", 1, jsonBindingsNodes.size());
+    assertEquals("Node not returned from testGroupByCountAndSum method: " + jsonBindingsNodes.toPrettyString(), 1, jsonBindingsNodes.size());
     third = jsonBindingsNodes.path(0);
     assertEquals("Row 1 Sum of All value incorrect", "843.75", third.path("SumAll").path("value").asText());
   }

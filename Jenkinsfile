@@ -27,6 +27,7 @@ def runtests(String type, String version){
                 export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
                 export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
                 cd java-client-api
+                mkdir -p marklogic-client-api/build/test-results/test
                 ./gradlew marklogic-client-api:test  || true
             '''
             sh label:'run ml-development-tools tests', script: '''#!/bin/bash
@@ -34,6 +35,7 @@ def runtests(String type, String version){
                 export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
                 export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
                 cd java-client-api
+                mkdir -p ml-development-tools/build/test-results/test
                 ./gradlew ml-development-tools:setupTestServer || true
                 ./gradlew ml-development-tools:generateTests || true
                 ./gradlew ml-development-tools:test || true
@@ -43,6 +45,9 @@ def runtests(String type, String version){
                 export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
                 export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
                 cd java-client-api
+                mkdir -p marklogic-client-api-functionaltests/build/test-results/runFragileTests
+                mkdir -p marklogic-client-api-functionaltests/build/test-results/runFastFunctionalTests
+                mkdir -p marklogic-client-api-functionaltests/build/test-results/runSlowFunctionalTests
                 ./gradlew -i mlDeploy -PmlForestDataDirectory=/space
                 ./gradlew -i marklogic-client-api-functionaltests:runFunctionalTests || true
             '''
