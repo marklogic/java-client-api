@@ -1863,55 +1863,23 @@ public abstract class ConnectedRESTQA {
 		}
 	}
 
-	public static void setAuthentication(String level, String restServerName)
-			throws IOException {
-		OkHttpClient  client = createManageAdminClient("admin", "admin");
-		String body = "{\"authentication\": \"" + level + "\"}";
-
-		String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
-				+ "/properties?server-type=http&group-id=Default");
-		Request request = new Request.Builder()
-				.header("Content-type", "application/json")
-				.url(putStr)
-				.put(RequestBody.create(body, MediaType.parse("application/json")))
-				.build();
-		Response response = client.newCall(request).execute();
-
-		if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-		else if (response.code() == ML_RES_CHANGED) {
-			System.out.println("App Server Authentication value changed to " + level);
-		}
-		else {
-			System.out.println("App Server Authentication value change ran into issues");
-			System.out.println(response);
-		}
-		client = null;
+	public static ObjectNode newServerPayload(String serverName) {
+		ObjectNode payload = new ObjectMapper().createObjectNode();
+		payload.put("server-name", serverName);
+		payload.put("group-name", "Default");
+		return payload;
 	}
 
-	public static void setDefaultUser(String usr, String restServerName) throws IOException {
+	public static void setAuthentication(String authentication, String restServerName) {
+		new ServerManager(newManageClient()).save(
+			newServerPayload(restServerName).put("authentication", authentication).toString()
+		);
+	}
 
-		OkHttpClient client = createManageAdminClient("admin", "admin");
-
-		String body = "{\"default-user\": \"" + usr + "\"}";
-
-		String putStr = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
-				+ "/properties?server-type=http&group-id=Default");
-		Request request = new Request.Builder()
-				.header("Content-type", "application/json")
-				.url(putStr)
-				.put(RequestBody.create(body, MediaType.parse("application/json")))
-				.build();
-		Response response = client.newCall(request).execute();
-
-		if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-		else if (response.code() == ML_RES_CHANGED) {
-			System.out.println("Default User name changed to " + usr);
-		}
-		else {
-			System.out.println("Default User name change ran into issues");
-			System.out.println(response);
-		}
-		client = null;
+	public static void setDefaultUser(String username, String restServerName) {
+		new ServerManager(newManageClient()).save(
+			newServerPayload(restServerName).put("default-user", username).toString()
+		);
 	}
 
 	public static void setupServerRequestLogging(DatabaseClient client, boolean flag) throws Exception {
