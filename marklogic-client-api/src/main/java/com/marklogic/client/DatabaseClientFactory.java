@@ -145,7 +145,7 @@ public class DatabaseClientFactory {
      * @throws SSLException if the hostname isn't acceptable
      */
     public void verify(String hostname, String[] cns, String[] subjectAlts) throws SSLException;
-    
+
     /**
      * HostnameVerifierAdapter verifies the hostname,SSLSession and X509Certificate certificate.
      * */
@@ -207,10 +207,10 @@ public class DatabaseClientFactory {
 	            String[] cns = cnArray.toArray(new String[cnArray.size()]);
 	            String[] subjectAlts = subjectAltArray.toArray(new String[subjectAltArray.size()]);
 	            verifier.verify(hostname, cns, subjectAlts);
-	          } 
+	          }
     		catch(CertificateParsingException e) {
 	            throw new MarkLogicIOException(e);
-	          } 
+	          }
     		catch(InvalidNameException e) {
 	            throw new MarkLogicIOException(e);
 	          }
@@ -238,7 +238,7 @@ public class DatabaseClientFactory {
       public String getName() {
         return name;
       }
-      
+
     }
   }
 
@@ -324,6 +324,13 @@ public class DatabaseClientFactory {
      * @return	the SSL context
      */
     SSLContext getSSLContext();
+
+	  /**
+	   * @return the trust manager for this connection
+	   * @since 6.1.0 ; was already implemented by both implementations of this interface, and exposing it here
+	   * simplifies configuring SSL regardless of the interface implementation
+	   */
+	  X509TrustManager getTrustManager();
 
     /**
      * Set the context without a trust manager
@@ -419,7 +426,7 @@ public class DatabaseClientFactory {
 	public X509TrustManager getTrustManager() {
 		return this.trustManager;
 	}
-	
+
     @Override
     @Deprecated
     public SecurityContext withSSLContext(SSLContext context) {
@@ -563,7 +570,7 @@ public class DatabaseClientFactory {
   /**
    * A SAMLAuthContext is used for authorization using SAML.
    * It consists of a authorization token each with an expiration time stamp.
-   * SAMLAuthContext asks for a new token with a new expiration time stamp if 
+   * SAMLAuthContext asks for a new token with a new expiration time stamp if
    * the previous token expires and the session is still valid.
    */
 	public static class SAMLAuthContext implements SecurityContext {
@@ -635,7 +642,7 @@ public class DatabaseClientFactory {
         public ExpiringSAMLAuth getAuthorization() {
             return authorization;
         }
-		
+
 		/**
 		 * ExpiringSAMLAuth is used by SAMLAuthContext when renewing a SAML assertions token.
 		 */
@@ -651,7 +658,7 @@ public class DatabaseClientFactory {
 	         */
 	        public Instant getExpiry();
 	    }
-		
+
 		/**
          * Constructs an ExpiringSAMLAuth with a SAML assertions token and the expiration time stamp
          * for the token.
@@ -1516,7 +1523,7 @@ public class DatabaseClientFactory {
     public Bean() {
       super();
     }
-    
+
 
     /**
      * Returns the host for clients created with a
