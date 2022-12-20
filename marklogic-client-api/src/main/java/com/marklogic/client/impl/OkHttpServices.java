@@ -39,6 +39,9 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResultIterator;
 
+import com.marklogic.client.impl.okhttp.BasicAuthenticationConfigurer;
+import com.marklogic.client.impl.okhttp.DigestAuthenticationConfigurer;
+import com.marklogic.client.impl.okhttp.AuthenticationConfigurer;
 import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.*;
 import com.marklogic.client.query.*;
@@ -64,13 +67,7 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import okio.BufferedSink;
 import okio.Okio;
 import okio.Source;
-import com.burgstaller.okhttp.AuthenticationCacheInterceptor;
-import com.burgstaller.okhttp.CachingAuthenticatorDecorator;
-import com.burgstaller.okhttp.digest.CachingAuthenticator;
-import com.burgstaller.okhttp.digest.Credentials;
-import com.burgstaller.okhttp.digest.DigestAuthenticator;
 
-import org.apache.http.params.HttpProtocolParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,7 +104,6 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -203,71 +199,52 @@ public class OkHttpServices implements RESTServices {
 
   @Override
   public void connect(String host, int port, String database, SecurityContext securityContext){
-    SSLContext sslContext = null;
-    SSLHostnameVerifier sslVerifier = null;
-    X509TrustManager trustManager = null;
 
-    if (host == null)
-    	throw new IllegalArgumentException("No host provided");
+	  if (host == null)
+		  throw new IllegalArgumentException("No host provided");
+	  if (securityContext == null)
+		  throw new IllegalArgumentException("No security context provided");
 
-    OkHttpClient.Builder clientBldr = newClientBuilder();
+	  OkHttpClient.Builder clientBuilder = newClientBuilder();
+	  AuthenticationConfigurer authenticationConfigurer = null;
 
-	if (securityContext instanceof BasicAuthContext) {
-	    BasicAuthContext basicContext = (BasicAuthContext) securityContext;
-	    if (basicContext.getSSLContext() != null) {
-            sslContext = basicContext.getSSLContext();
-            if (basicContext.getTrustManager() != null)
-                trustManager = basicContext.getTrustManager();
-        }
-		clientBldr = configureAuthentication(basicContext, clientBldr);
-	}
-	else if (securityContext instanceof DigestAuthContext) {
-	    DigestAuthContext digestContext = (DigestAuthContext) securityContext;
-	    if (digestContext.getSSLContext() != null) {
-            sslContext = digestContext.getSSLContext();
-            if (digestContext.getTrustManager() != null)
-                trustManager = digestContext.getTrustManager();
-        }
-		clientBldr = configureAuthentication((DigestAuthContext) securityContext, clientBldr);
-	}
-	else if (securityContext instanceof KerberosAuthContext) {
-		KerberosAuthContext kerberosContext = (KerberosAuthContext) securityContext;
-		if (kerberosContext.getSSLContext() != null) {
-			sslContext = kerberosContext.getSSLContext();
-			if (kerberosContext.getTrustManager() != null)
-				trustManager = kerberosContext.getTrustManager();
-		}
-	    clientBldr = configureAuthentication(kerberosContext, host,clientBldr);
-	} else if (securityContext instanceof CertificateAuthContext) {
-		CertificateAuthContext certificateContext = (CertificateAuthContext) securityContext;
-		sslContext = certificateContext.getSSLContext();
-		if (certificateContext.getTrustManager() != null)
-			trustManager = certificateContext.getTrustManager();
-		checkFirstRequest = false;
-	} else if (securityContext instanceof SAMLAuthContext) {
-		SAMLAuthContext samlAuthContext = (SAMLAuthContext) securityContext;
-		if (samlAuthContext.getSSLContext() != null) {
-            sslContext = samlAuthContext.getSSLContext();
-            if (samlAuthContext.getTrustManager() != null)
-                trustManager = samlAuthContext.getTrustManager();
-        }
-        clientBldr = configureAuthentication(samlAuthContext, clientBldr);
-	} else {
-		throw new IllegalArgumentException("securityContext must be of type BasicAuthContext, "
-				+ "DigestAuthContext, KerberosAuthContext, CertificateAuthContext or SAMLAuthContext");
-	}
+	  // As of 6.1.0, kerberos/saml/certificate are still coded within this class to avoid potential breaks from
+	  // refactoring. Once the tests for these auth methods are running properly, the code for each can be
+	  // safely refactored.
+	  if (securityContext instanceof BasicAuthContext) {
+		  authenticationConfigurer = new BasicAuthenticationConfigurer();
+		  checkFirstRequest = false;
+	  } else if (securityContext instanceof DigestAuthContext) {
+		  authenticationConfigurer = new DigestAuthenticationConfigurer();
+		  checkFirstRequest = true;
+	  } else if (securityContext instanceof KerberosAuthContext) {
+		  configureKerberosAuth((KerberosAuthContext) securityContext, host, clientBuilder);
+		  checkFirstRequest = false;
+	  } else if (securityContext instanceof CertificateAuthContext) {
+		  checkFirstRequest = false;
+	  } else if (securityContext instanceof SAMLAuthContext) {
+		  configureSAMLAuth((SAMLAuthContext) securityContext, clientBuilder);
+		  checkFirstRequest = false;
+	  } else {
+		  throw new IllegalArgumentException("Unsupported security context: " + securityContext.getClass());
+	  }
 
-	if ((securityContext.getSSLContext() != null) || securityContext instanceof CertificateAuthContext) {
-        if (securityContext.getSSLHostnameVerifier() != null) {
-            sslVerifier = securityContext.getSSLHostnameVerifier();
-        }
-        else {
-	        sslVerifier = SSLHostnameVerifier.COMMON;
-	    }
-	}
+	  if (authenticationConfigurer != null) {
+		  authenticationConfigurer.configureAuthentication(clientBuilder, securityContext);
+	  }
 
-    this.configureSocketFactory(clientBldr, sslContext, trustManager);
-    this.configureHostnameVerifier(clientBldr, sslVerifier);
+	  SSLContext sslContext = securityContext.getSSLContext();
+	  X509TrustManager trustManager = securityContext.getTrustManager();
+
+	  SSLHostnameVerifier sslVerifier = null;
+	  if (sslContext != null || securityContext instanceof CertificateAuthContext) {
+		  sslVerifier = securityContext.getSSLHostnameVerifier() != null ?
+			  securityContext.getSSLHostnameVerifier() :
+			  SSLHostnameVerifier.COMMON;
+	  }
+
+    this.configureSocketFactory(clientBuilder, sslContext, trustManager);
+    this.configureHostnameVerifier(clientBuilder, sslVerifier);
 
     this.database = database;
 
@@ -280,11 +257,11 @@ public class OkHttpServices implements RESTServices {
 
     Properties props = System.getProperties();
     if (props.containsKey(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) {
-        configureOkHttpLogging(clientBldr, props);
+        configureOkHttpLogging(clientBuilder, props);
     }
     this.configureDelayAndRetry(props);
 
-    this.client = clientBldr.build();
+    this.client = clientBuilder.build();
   }
 
 	/**
@@ -316,33 +293,31 @@ public class OkHttpServices implements RESTServices {
     private void configureSocketFactory(OkHttpClient.Builder clientBuilder, SSLContext sslContext, X509TrustManager trustManager) {
         if (sslContext == null) {
             clientBuilder.socketFactory(new SocketFactoryDelegator(SocketFactory.getDefault()));
-        } else {
-            if (trustManager == null) {
-                // OkHttp requires the trust manager on Java 9 and on Java 8 after 8u251
-                // transitional workaround -- at next backward incompatibility boundary, replace try with thrown exception
-                try {
-                    TrustManagerFactory trustMgrFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-                    trustMgrFactory.init((KeyStore) null);
-                    TrustManager[] trustMgrs = trustMgrFactory.getTrustManagers();
-                    if (trustMgrs == null || trustMgrs.length == 0) {
-                        throw new IllegalArgumentException("no trust manager and could not get default trust manager");
-                    }
-                    if (!(trustMgrs[0] instanceof X509TrustManager)) {
-                        throw new IllegalArgumentException("no trust manager and default is not an X509TrustManager");
-                    }
-                    trustManager = (X509TrustManager) trustMgrs[0];
-                    sslContext.init(null, trustMgrs, null);
-                    clientBuilder.sslSocketFactory(new SSLSocketFactoryDelegator(sslContext.getSocketFactory()), trustManager);
-                } catch (KeyStoreException e) {
-                    throw new IllegalArgumentException("no trust manager and cannot initialize factory for default", e);
-                } catch (NoSuchAlgorithmException e) {
-                    throw new IllegalArgumentException("no trust manager and no algorithm for default manager", e);
-                } catch (KeyManagementException e) {
-                    throw new IllegalArgumentException("no trust manager and cannot initialize context with default", e);
-                }
-            } else {
-                clientBuilder.sslSocketFactory(new SSLSocketFactoryDelegator(sslContext.getSocketFactory()), trustManager);
-            }
+        } else if (trustManager != null) {
+			clientBuilder.sslSocketFactory(new SSLSocketFactoryDelegator(sslContext.getSocketFactory()), trustManager);
+		} else {
+			// OkHttp requires the trust manager on Java 9 and on Java 8 after 8u251
+			// transitional workaround -- at next backward incompatibility boundary, replace try with thrown exception
+			try {
+				TrustManagerFactory trustMgrFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+				trustMgrFactory.init((KeyStore) null);
+				TrustManager[] trustMgrs = trustMgrFactory.getTrustManagers();
+				if (trustMgrs == null || trustMgrs.length == 0) {
+					throw new IllegalArgumentException("no trust manager and could not get default trust manager");
+				}
+				if (!(trustMgrs[0] instanceof X509TrustManager)) {
+					throw new IllegalArgumentException("no trust manager and default is not an X509TrustManager");
+				}
+				trustManager = (X509TrustManager) trustMgrs[0];
+				sslContext.init(null, trustMgrs, null);
+				clientBuilder.sslSocketFactory(new SSLSocketFactoryDelegator(sslContext.getSocketFactory()), trustManager);
+			} catch (KeyStoreException e) {
+				throw new IllegalArgumentException("no trust manager and cannot initialize factory for default", e);
+			} catch (NoSuchAlgorithmException e) {
+				throw new IllegalArgumentException("no trust manager and no algorithm for default manager", e);
+			} catch (KeyManagementException e) {
+				throw new IllegalArgumentException("no trust manager and cannot initialize context with default", e);
+			}
         }
     }
 
@@ -412,61 +387,15 @@ public class OkHttpServices implements RESTServices {
         }
     }
 
-
-    public OkHttpClient.Builder configureAuthentication(BasicAuthContext basicAuthContext, OkHttpClient.Builder clientBuilder) {
-      String user = basicAuthContext.getUser();
-      String password = basicAuthContext.getPassword();
-      if (user == null)
-          throw new IllegalArgumentException("No user provided");
-      if (password == null)
-          throw new IllegalArgumentException("No password provided");
-      Credentials credentials = new Credentials(user, password);
-	  OkHttpClient.Builder builder = clientBuilder;
-	  Interceptor interceptor = new HTTPBasicAuthInterceptor(credentials);
-	  checkFirstRequest = false;
-
-	  if(interceptor != null)
-		  builder.addInterceptor(interceptor);
-	  return builder;
-  }
-
-  public OkHttpClient.Builder configureAuthentication(DigestAuthContext digestAuthContext, OkHttpClient.Builder clientBuilder) {
-	  	OkHttpClient.Builder builder = clientBuilder;
-        String user = digestAuthContext.getUser();
-        String password = digestAuthContext.getPassword();
-        if (user == null)
-            throw new IllegalArgumentException("No user provided");
-        if (password == null)
-            throw new IllegalArgumentException("No password provided");
-        Credentials credentials = new Credentials(user, password);
-        final Map<String,CachingAuthenticator> authCache = new ConcurrentHashMap<String,CachingAuthenticator>();
-	    CachingAuthenticator authenticator = new DigestAuthenticator(credentials);
-	    Interceptor interceptor =  new AuthenticationCacheInterceptor(authCache);
-        checkFirstRequest = true;
-
-        if(authenticator != null) {
-        	builder.authenticator(new CachingAuthenticatorDecorator(authenticator, authCache));
-        }
-        if(interceptor != null) {
-  		  builder.addInterceptor(interceptor);
-        }
-	    return builder;
-  }
-
-  public OkHttpClient.Builder configureAuthentication(KerberosAuthContext keberosAuthContext, String host, OkHttpClient.Builder clientBuilder) {
+  private void configureKerberosAuth(KerberosAuthContext keberosAuthContext, String host, OkHttpClient.Builder clientBuilder) {
 	  Map<String, String> kerberosOptions = keberosAuthContext.getKrbOptions();
 	  Interceptor interceptor = new HTTPKerberosAuthInterceptor(host, kerberosOptions);
-      checkFirstRequest = false;
-	  OkHttpClient.Builder builder = clientBuilder;
-	  if(interceptor != null)
-		  builder.addInterceptor(interceptor);
-	  return builder;
+	  clientBuilder.addInterceptor(interceptor);
   }
 
-  public OkHttpClient.Builder configureAuthentication(SAMLAuthContext samlAuthContext, OkHttpClient.Builder clientBuilder) {
-      Interceptor interceptor = null;
+  private void configureSAMLAuth(SAMLAuthContext samlAuthContext, OkHttpClient.Builder clientBuilder) {
+      Interceptor interceptor;
       String authorizationTokenValue = samlAuthContext.getToken();
-
       if(authorizationTokenValue != null && authorizationTokenValue.length() > 0) {
           interceptor = new HTTPSamlAuthInterceptor(authorizationTokenValue);
       } else if(samlAuthContext.getAuthorizer()!=null) {
@@ -475,13 +404,7 @@ public class OkHttpServices implements RESTServices {
           interceptor = new HTTPSamlAuthInterceptor(samlAuthContext.getAuthorization(),samlAuthContext.getRenewer());
       } else
           throw new IllegalArgumentException("Either a call back or renewer expected.");
-
-      checkFirstRequest = false;
-	  OkHttpClient.Builder builder = clientBuilder;
-
-	  if(interceptor != null)
-		  builder.addInterceptor(interceptor);
-	  return builder;
+	  clientBuilder.addInterceptor(interceptor);
   }
 
   @Override
