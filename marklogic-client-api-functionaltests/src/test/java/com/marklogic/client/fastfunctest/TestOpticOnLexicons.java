@@ -1252,8 +1252,7 @@ public class TestOpticOnLexicons extends AbstractFunctionalTest {
                 p.as(p.col("nodes"), p.xpath(p.col("doc"), p.xs.string("popularity[math:pow(., 2) eq 4]"))),
                 uriCol2, cityNameCol, cityTeamCol
             )
-            .where(p.isDefined(p.col("nodes")))
-            .orderBy(p.desc(p.col("distance")));
+            .where(p.isDefined(p.col("nodes")));
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -1261,8 +1260,7 @@ public class TestOpticOnLexicons extends AbstractFunctionalTest {
     rowMgr.resultDoc(UnnamedNodes, jacksonHandle);
     JsonNode jsonResults = jacksonHandle.get();
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
-    // Should have 1 node returned.
-    assertEquals("One node not returned from testJoinInnerKeymatchDateSort method ", 1, jsonBindingsNodes.size());
+    assertEquals("Expected 1 node: " + jsonBindingsNodes.toPrettyString(), 1, jsonBindingsNodes.size());
     JsonNode first = jsonBindingsNodes.path(0);
     assertEquals("Row 1 myCity.city value incorrect", "new jersey", first.path("myCity.city").path("value").asText());
   }

@@ -311,8 +311,7 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
     ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", p.fragmentIdCol("fragId2"));
 
     ModifyPlan output = plan1.joinInner(plan2)
-        .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
-        .orderBy(p.asc(p.col("date")));
+        .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")));
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -321,7 +320,7 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
 
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
-    assertTrue("Number of Elements after plan execution is incorrect. Should be 1", 1 == jsonBindingsNodes.size());
+    assertEquals("Unexpected result: " + jsonBindingsNodes.toPrettyString(), 1, jsonBindingsNodes.size());
     assertEquals("Row 1 myCity.city value incorrect", "london", jsonBindingsNodes.path(0).path("myCity.city").path("value").asText());
     assertEquals("Row 1 myCity.uri1 value incorrect", "/optic/lexicon/test/doc1.json", jsonBindingsNodes.path(0).path("myCity.uri1").path("value").asText());
     assertEquals("Row 1 myTeam.uri2 value incorrect", "/optic/lexicon/test/city1.json", jsonBindingsNodes.path(0).path("myTeam.uri2").path("value").asText());
@@ -331,7 +330,7 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
    * Checks for cts queries with options on fromLexicons TEST 14
    */
   @Test
-  public void testCtsQueriesWithOptions() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testCtsQueriesWithOptions()
   {
     System.out.println("In testCtsQueriesWithOptions method");
 
@@ -356,15 +355,9 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
     // plan2 - fromLexicons
     ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", p.fragmentIdCol("fragId2"));
 
-    XsStringSeqVal propertyName = p.xs.string("city");
-    XsStringSeqVal value = p.xs.string("*k");
-
-    XsStringSeqVal options = p.xs.stringSeq("wildcarded", "case-sensitive");
-
     ModifyPlan output = plan1.where(p.cts.jsonPropertyWordQuery("city", "*k", "wildcarded", "case-sensitive"))
         .joinInner(plan2)
-        .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
-        .orderBy(p.asc(p.col("date")));
+        .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")));
 
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
@@ -375,7 +368,7 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
     System.out.println("Results are " + jsonBindingsNodes.toString());
 
-    assertTrue("Number of Elements after plan execution is incorrect. Should be 1", 1 == jsonBindingsNodes.size());
+    assertEquals("Number of Elements after plan execution is incorrect: " + jsonBindingsNodes.toPrettyString(), 1, jsonBindingsNodes.size());
     assertEquals("Row 1 myCity.city value incorrect", "new york", jsonBindingsNodes.path(0).path("myCity.city").path("value").asText());
   }
 

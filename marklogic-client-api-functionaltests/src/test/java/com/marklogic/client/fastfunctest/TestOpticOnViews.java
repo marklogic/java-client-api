@@ -33,7 +33,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -2939,19 +2938,19 @@ public class TestOpticOnViews extends AbstractFunctionalTest {
                     p.col("color")
             )
             .orderBy(p.desc(p.col("MasterName")));
-    String colInfo = rowMgr.columnInfoAs(plan3, String.class);
-    //System.out.println("In testColumnInfo method" + colInfo);
-    // Should have 5 nodes returned.
-    assertTrue("Element 1 MasterName value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"MasterName\", \"type\":\"string\", \"nullable\":true}"));
-    assertTrue("Element 2 master value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"master\", \"column\":\"date\", \"type\":\"date\", \"nullable\":true}"));
-    assertTrue("Element 3 DetailName value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"DetailName\", \"type\":\"string\", \"nullable\":true}"));
-    assertTrue("Element 4 amount value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"detail\", \"column\":\"amount\", \"type\":\"double\", \"nullable\":true}"));
-    assertTrue("Element 5 color value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"detail\", \"column\":\"color\", \"type\":\"string\", \"nullable\":true}"));
+
+    assertColumnInfosExist(rowMgr.columnInfoAs(plan3, String.class),
+        new ColumnInfo("MasterName", "string").withNullable(true),
+        new ColumnInfo("opticFunctionalTest", "master", "date", "date").withNullable(true),
+        new ColumnInfo("DetailName", "string").withNullable(true),
+        new ColumnInfo("opticFunctionalTest", "detail", "amount", "double").withNullable(true),
+        new ColumnInfo("opticFunctionalTest", "detail", "color", "string").withNullable(true)
+    );
   }
 
   // Test for fragment Id types. Similar to testExplainPlan
   @Test
-  public void testColInfoWithSysCols() throws IOException {
+  public void testColInfoWithSysCols() {
     System.out.println("In testColInfoWithSysCols method");
 
     // Create a new Plan.
@@ -2982,15 +2981,17 @@ public class TestOpticOnViews extends AbstractFunctionalTest {
                     fIdCol2
             )
             .orderBy(p.desc(p.col("DetailName")));
-    String colInfo = rowMgr.columnInfoAs(output, String.class);
-    // Should have 7 nodes returned.
-    assertTrue("Element 1 MasterName value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"MasterName\", \"type\":\"string\", \"nullable\":false}"));
-    assertTrue("Element 2 master value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"master\", \"column\":\"date\", \"type\":\"date\", \"nullable\":false}"));
-    assertTrue("Element 3 DetailName value incorrect", colInfo.contains("{\"schema\":\"\", \"view\":\"\", \"column\":\"DetailName\", \"type\":\"string\", \"nullable\":false}"));
-    assertTrue("Element 4 detail-double value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"detail\", \"column\":\"amount\", \"type\":\"double\", \"nullable\":false}"));
-    assertTrue("Element 5 detail-string value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"detail\", \"column\":\"color\", \"type\":\"string\", \"nullable\":false}"));
-    final String expectedValue = isML11OrHigher ? "fragmentId": "fraghint";
-    assertTrue("Element 6 detail-unknown value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"detail\", \"column\":\"fragIdCol1\", \"type\":\"" + expectedValue + "\", \"nullable\":false}"));
-    assertTrue("Element 7 master-unknown value incorrect", colInfo.contains("{\"schema\":\"opticFunctionalTest\", \"view\":\"master\", \"column\":\"fragIdCol2\", \"type\":\"" + expectedValue + "\", \"nullable\":false}"));
+
+    final String expectedFragmentValue = isML11OrHigher ? "fragmentId": "fraghint";
+
+    assertColumnInfosExist(rowMgr.columnInfoAs(output, String.class),
+        new ColumnInfo("MasterName", "string"),
+        new ColumnInfo("opticFunctionalTest", "master", "date", "date"),
+        new ColumnInfo("DetailName", "string"),
+        new ColumnInfo("opticFunctionalTest", "detail", "amount", "double"),
+        new ColumnInfo("opticFunctionalTest", "detail", "color", "string"),
+        new ColumnInfo("opticFunctionalTest", "detail", "fragIdCol1", expectedFragmentValue, true),
+        new ColumnInfo("opticFunctionalTest", "master", "fragIdCol2", expectedFragmentValue, true)
+    );
   }
 }

@@ -1281,34 +1281,36 @@ public class RowManagerTest {
       rowNum++;
     }
   }
+
   @Test
-  public void testColumnInfo() throws IOException {
-    String expected =
-            "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"lastName\", \"type\":\"string\", \"nullable\":false}\n" +
-            "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"firstName\", \"type\":\"string\", \"nullable\":false}\n" +
-            "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"dob\", \"type\":\"date\", \"nullable\":false}\n" +
-            "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"rowid\", \"type\":\"rowid\", \"nullable\":false}";
+  public void testColumnInfo() {
     RowManager rowMgr = Common.client.newRowManager();
-
     PlanBuilder p = rowMgr.newPlanBuilder();
-
     PlanBuilder.PreparePlan builtPlan =
-            p.fromView("opticUnitTest", "musician")
-                    .where(
-                            p.cts.andQuery(
-                                    p.cts.jsonPropertyWordQuery("instrument", "trumpet"),
-                                    p.cts.jsonPropertyWordQuery(p.xs.string("lastName"), p.xs.stringSeq("Armstrong", "Davis"))
-                            )
-                    )
-                    .orderBy(p.col("lastName"));
+        p.fromView("opticUnitTest", "musician")
+            .where(
+                p.cts.andQuery(
+                    p.cts.jsonPropertyWordQuery("instrument", "trumpet"),
+                    p.cts.jsonPropertyWordQuery(p.xs.string("lastName"), p.xs.stringSeq("Armstrong", "Davis"))
+                )
+            )
+            .orderBy(p.col("lastName"));
 
-    String result = rowMgr.columnInfo(builtPlan, new StringHandle()).get();
-    assertNotNull(result);
-    assertEquals(result, expected);
-    result = rowMgr.columnInfoAs(builtPlan, String.class);
-    assertNotNull(result);
-    assertEquals(result, expected);
+    String[] expectedColumnInfos = new String[]{
+        "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"lastName\", \"type\":\"string\"",
+        "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"firstName\", \"type\":\"string\"",
+        "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"dob\", \"type\":\"date\"",
+        "{\"schema\":\"opticUnitTest\", \"view\":\"musician\", \"column\":\"rowid\", \"type\":\"rowid\""
+    };
+
+    String stringHandleResult = rowMgr.columnInfo(builtPlan, new StringHandle()).get();
+    String stringResult = rowMgr.columnInfoAs(builtPlan, String.class);
+    for (String columnInfo : expectedColumnInfos) {
+      assertTrue("Did not find " + columnInfo + " in result: " + stringHandleResult, stringHandleResult.contains(columnInfo));
+      assertTrue("Did not find " + columnInfo + " in result: " + stringResult, stringResult.contains(columnInfo));
+    }
   }
+
   @Test
   public void testGenerateView() throws IOException {
     RowManager rowMgr = Common.client.newRowManager();
