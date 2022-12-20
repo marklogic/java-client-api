@@ -70,6 +70,7 @@ import com.burgstaller.okhttp.digest.CachingAuthenticator;
 import com.burgstaller.okhttp.digest.Credentials;
 import com.burgstaller.okhttp.digest.DigestAuthenticator;
 
+import org.apache.http.params.HttpProtocolParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -205,23 +206,12 @@ public class OkHttpServices implements RESTServices {
     SSLContext sslContext = null;
     SSLHostnameVerifier sslVerifier = null;
     X509TrustManager trustManager = null;
-      
-    if (host == null) 
+
+    if (host == null)
     	throw new IllegalArgumentException("No host provided");
-    
-    OkHttpClient.Builder clientBldr = new OkHttpClient.Builder()
-    	      .followRedirects(false)
-    	      .followSslRedirects(false)
-    	      // all clients share a single connection pool
-    	      .connectionPool(connectionPool)
-    	      // cookies are ignored (except when a Transaction is being used)
-    	      .cookieJar(CookieJar.NO_COOKIES)
-    	      // no timeouts since some of our clients' reads and writes can be massive
-    	      .readTimeout(0, TimeUnit.SECONDS)
-    	      .writeTimeout(0, TimeUnit.SECONDS)
-              // prefer ipv4 to ipv6
-              .dns(new DnsImpl());
-    
+
+    OkHttpClient.Builder clientBldr = newClientBuilder();
+
 	if (securityContext instanceof BasicAuthContext) {
 	    BasicAuthContext basicContext = (BasicAuthContext) securityContext;
 	    if (basicContext.getSSLContext() != null) {
@@ -230,7 +220,7 @@ public class OkHttpServices implements RESTServices {
                 trustManager = basicContext.getTrustManager();
         }
 		clientBldr = configureAuthentication(basicContext, clientBldr);
-	} 
+	}
 	else if (securityContext instanceof DigestAuthContext) {
 	    DigestAuthContext digestContext = (DigestAuthContext) securityContext;
 	    if (digestContext.getSSLContext() != null) {
@@ -239,7 +229,7 @@ public class OkHttpServices implements RESTServices {
                 trustManager = digestContext.getTrustManager();
         }
 		clientBldr = configureAuthentication((DigestAuthContext) securityContext, clientBldr);
-	} 
+	}
 	else if (securityContext instanceof KerberosAuthContext) {
 		KerberosAuthContext kerberosContext = (KerberosAuthContext) securityContext;
 		if (kerberosContext.getSSLContext() != null) {
@@ -247,7 +237,7 @@ public class OkHttpServices implements RESTServices {
 			if (kerberosContext.getTrustManager() != null)
 				trustManager = kerberosContext.getTrustManager();
 		}
-	    clientBldr = configureAuthentication(kerberosContext, host,clientBldr); 
+	    clientBldr = configureAuthentication(kerberosContext, host,clientBldr);
 	} else if (securityContext instanceof CertificateAuthContext) {
 		CertificateAuthContext certificateContext = (CertificateAuthContext) securityContext;
 		sslContext = certificateContext.getSSLContext();
@@ -266,28 +256,19 @@ public class OkHttpServices implements RESTServices {
 		throw new IllegalArgumentException("securityContext must be of type BasicAuthContext, "
 				+ "DigestAuthContext, KerberosAuthContext, CertificateAuthContext or SAMLAuthContext");
 	}
+
 	if ((securityContext.getSSLContext() != null) || securityContext instanceof CertificateAuthContext) {
         if (securityContext.getSSLHostnameVerifier() != null) {
             sslVerifier = securityContext.getSSLHostnameVerifier();
-        } 
+        }
         else {
 	        sslVerifier = SSLHostnameVerifier.COMMON;
 	    }
 	}
-	HostnameVerifier hostnameVerifier = null;
-	if (sslVerifier == SSLHostnameVerifier.ANY) {
-		hostnameVerifier = new HostnameVerifier() {
-			@Override
-			public boolean verify(String hostname, SSLSession session) {
-				return true;
-			}
-		};
-	} else if (sslVerifier == SSLHostnameVerifier.COMMON || sslVerifier == SSLHostnameVerifier.STRICT) {
-		hostnameVerifier = null;
-	} else if (sslVerifier != null) {
-		hostnameVerifier = new SSLHostnameVerifier.HostnameVerifierAdapter(sslVerifier);
-	} 
-	
+
+    this.configureSocketFactory(clientBldr, sslContext, trustManager);
+    this.configureHostnameVerifier(clientBldr, sslVerifier);
+
     this.database = database;
 
     this.baseUri = new HttpUrl.Builder()
@@ -297,122 +278,172 @@ public class OkHttpServices implements RESTServices {
       .encodedPath("/v1/ping")
       .build();
 
-    if (sslContext != null) {
-      if (trustManager == null) {
-        // OkHttp requires the trust manager on Java 9 and on Java 8 after 8u251
-        // transitional workaround -- at next backward incompatibility boundary, replace try with thrown exception
-        try {
-          TrustManagerFactory trustMgrFactory =
-              TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-          trustMgrFactory.init((KeyStore) null);
-          TrustManager[] trustMgrs = trustMgrFactory.getTrustManagers();
-          if (trustMgrs == null || trustMgrs.length == 0)
-            throw new IllegalArgumentException("no trust manager and could not get default trust manager");
-          if (!(trustMgrs[0] instanceof X509TrustManager))
-            throw new IllegalArgumentException("no trust manager and default is not an X509TrustManager");
-          trustManager = (X509TrustManager) trustMgrs[0];
-          sslContext.init(null, trustMgrs, null);
-          clientBldr.sslSocketFactory(new SSLSocketFactoryDelegator(sslContext.getSocketFactory()), trustManager);
-        } catch (KeyStoreException e) {
-          throw new IllegalArgumentException("no trust manager and cannot initialize factory for default", e);
-        } catch (NoSuchAlgorithmException e) {
-          throw new IllegalArgumentException("no trust manager and no algorithm for default manager", e);
-        } catch (KeyManagementException e) {
-          throw new IllegalArgumentException("no trust manager and cannot initialize context with default", e);
-        }
-      } else {
-        clientBldr.sslSocketFactory(new SSLSocketFactoryDelegator(sslContext.getSocketFactory()), trustManager);
-      }
-    } else {
-        clientBldr.socketFactory(new SocketFactoryDelegator(SocketFactory.getDefault()));
-    }
-
-    if ( hostnameVerifier != null ) {
-      clientBldr = clientBldr.hostnameVerifier(hostnameVerifier);
-    }
-
     Properties props = System.getProperties();
-
     if (props.containsKey(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) {
-      final boolean useLogger = "LOGGER".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_OUTPUT));
-      final boolean useStdErr = "STDERR".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_OUTPUT));
-      HttpLoggingInterceptor networkInterceptor = new HttpLoggingInterceptor(
-        new HttpLoggingInterceptor.Logger() {
-          public void log(String message) {
-            if ( useLogger == true ) {
-              logger.debug(message);
-            } else if ( useStdErr == true ) {
-              System.err.println(message);
-            } else {
-              System.out.println(message);
-            }
-          }
-        }
-      );
-      if ( "BASIC".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) ) {
-        networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
-      } else if ( "BODY".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) ) {
-        networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-      } else if ( "HEADERS".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) ) {
-        networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
-      } else if ( "NONE".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) ) {
-        networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
-      }
-      clientBldr = clientBldr.addNetworkInterceptor(networkInterceptor);
+        configureOkHttpLogging(clientBldr, props);
     }
-
-    if (props.containsKey(MAX_DELAY_PROP)) {
-      int max = Utilities.parseInt(props.getProperty(MAX_DELAY_PROP));
-      if (max > 0) {
-        maxDelay = max * 1000;
-      }
-    }
-    if (props.containsKey(MIN_RETRY_PROP)) {
-      int min = Utilities.parseInt(props.getProperty(MIN_RETRY_PROP));
-      if (min > 0) {
-        minRetry = min;
-      }
-    }
+    this.configureDelayAndRetry(props);
 
     this.client = clientBldr.build();
-    // System.setProperty("javax.net.debug", "all"); // all or ssl
-    /* TODO: long-term alternative to isFirstRequest alive
-             HttpProtocolParams.setUseExpectContinue(httpParams, false);
-             httpParams.setIntParameter(CoreProtocolPNames.WAIT_FOR_CONTINUE, 1000);
-     */
   }
-  
-  public OkHttpClient.Builder configureAuthentication(BasicAuthContext basicAuthContext, OkHttpClient.Builder clientBuilder) {
+
+	/**
+	 * @return an OkHttpClient.Builder initialized with a sensible set of defaults that can then have authentication
+	 * configured
+	 */
+	private OkHttpClient.Builder newClientBuilder() {
+		return new OkHttpClient.Builder()
+			.followRedirects(false)
+			.followSslRedirects(false)
+			// all clients share a single connection pool
+			.connectionPool(connectionPool)
+			// cookies are ignored (except when a Transaction is being used)
+			.cookieJar(CookieJar.NO_COOKIES)
+			// no timeouts since some of our clients' reads and writes can be massive
+			.readTimeout(0, TimeUnit.SECONDS)
+			.writeTimeout(0, TimeUnit.SECONDS)
+			// prefer ipv4 to ipv6
+			.dns(new DnsImpl());
+	}
+
+	/**
+	 * Configure the socket factory used by the given OkHttpClient.Builder based on whether SSL is required or not.
+	 *
+	 * @param clientBuilder
+	 * @param sslContext
+	 * @param trustManager
+	 */
+    private void configureSocketFactory(OkHttpClient.Builder clientBuilder, SSLContext sslContext, X509TrustManager trustManager) {
+        if (sslContext == null) {
+            clientBuilder.socketFactory(new SocketFactoryDelegator(SocketFactory.getDefault()));
+        } else {
+            if (trustManager == null) {
+                // OkHttp requires the trust manager on Java 9 and on Java 8 after 8u251
+                // transitional workaround -- at next backward incompatibility boundary, replace try with thrown exception
+                try {
+                    TrustManagerFactory trustMgrFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                    trustMgrFactory.init((KeyStore) null);
+                    TrustManager[] trustMgrs = trustMgrFactory.getTrustManagers();
+                    if (trustMgrs == null || trustMgrs.length == 0) {
+                        throw new IllegalArgumentException("no trust manager and could not get default trust manager");
+                    }
+                    if (!(trustMgrs[0] instanceof X509TrustManager)) {
+                        throw new IllegalArgumentException("no trust manager and default is not an X509TrustManager");
+                    }
+                    trustManager = (X509TrustManager) trustMgrs[0];
+                    sslContext.init(null, trustMgrs, null);
+                    clientBuilder.sslSocketFactory(new SSLSocketFactoryDelegator(sslContext.getSocketFactory()), trustManager);
+                } catch (KeyStoreException e) {
+                    throw new IllegalArgumentException("no trust manager and cannot initialize factory for default", e);
+                } catch (NoSuchAlgorithmException e) {
+                    throw new IllegalArgumentException("no trust manager and no algorithm for default manager", e);
+                } catch (KeyManagementException e) {
+                    throw new IllegalArgumentException("no trust manager and cannot initialize context with default", e);
+                }
+            } else {
+                clientBuilder.sslSocketFactory(new SSLSocketFactoryDelegator(sslContext.getSocketFactory()), trustManager);
+            }
+        }
+    }
+
+	/**
+	 * Configure the hostname verifier for the given OkHttpClient.Builder based on the given SSLHostnameVerifier.
+	 *
+	 * @param clientBuilder
+	 * @param sslVerifier
+	 */
+	private void configureHostnameVerifier(OkHttpClient.Builder clientBuilder, SSLHostnameVerifier sslVerifier) {
+		HostnameVerifier hostnameVerifier = null;
+		if (SSLHostnameVerifier.ANY.equals(sslVerifier)) {
+			hostnameVerifier = (hostname, session) -> true;
+		} else if (SSLHostnameVerifier.COMMON.equals(sslVerifier) || SSLHostnameVerifier.STRICT.equals(sslVerifier)) {
+			hostnameVerifier = null;
+		} else if (sslVerifier != null) {
+			hostnameVerifier = new SSLHostnameVerifier.HostnameVerifierAdapter(sslVerifier);
+		}
+		if (hostnameVerifier != null) {
+			clientBuilder.hostnameVerifier(hostnameVerifier);
+		}
+	}
+
+	/**
+	 * Based on the given properties, add a network interceptor to the given OkHttpClient.Builder to log HTTP
+	 * traffic.
+	 *
+	 * @param clientBuilder
+	 * @param props
+	 */
+	private void configureOkHttpLogging(OkHttpClient.Builder clientBuilder, Properties props) {
+        final boolean useLogger = "LOGGER".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_OUTPUT));
+        final boolean useStdErr = "STDERR".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_OUTPUT));
+        HttpLoggingInterceptor networkInterceptor = new HttpLoggingInterceptor(message -> {
+            if (useLogger == true) {
+                logger.debug(message);
+            } else if (useStdErr == true) {
+                System.err.println(message);
+            } else {
+                System.out.println(message);
+            }
+        });
+        if ("BASIC".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL))) {
+            networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
+        } else if ("BODY".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL))) {
+            networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        } else if ("HEADERS".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL))) {
+            networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
+        } else if ("NONE".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL))) {
+            networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
+        }
+        clientBuilder.addNetworkInterceptor(networkInterceptor);
+    }
+
+    private void configureDelayAndRetry(Properties props) {
+        if (props.containsKey(MAX_DELAY_PROP)) {
+            int max = Utilities.parseInt(props.getProperty(MAX_DELAY_PROP));
+            if (max > 0) {
+                maxDelay = max * 1000;
+            }
+        }
+        if (props.containsKey(MIN_RETRY_PROP)) {
+            int min = Utilities.parseInt(props.getProperty(MIN_RETRY_PROP));
+            if (min > 0) {
+                minRetry = min;
+            }
+        }
+    }
+
+
+    public OkHttpClient.Builder configureAuthentication(BasicAuthContext basicAuthContext, OkHttpClient.Builder clientBuilder) {
       String user = basicAuthContext.getUser();
       String password = basicAuthContext.getPassword();
       if (user == null)
           throw new IllegalArgumentException("No user provided");
-      if (password == null) 
+      if (password == null)
           throw new IllegalArgumentException("No password provided");
       Credentials credentials = new Credentials(user, password);
 	  OkHttpClient.Builder builder = clientBuilder;
 	  Interceptor interceptor = new HTTPBasicAuthInterceptor(credentials);
 	  checkFirstRequest = false;
-	  
-	  if(interceptor != null) 
+
+	  if(interceptor != null)
 		  builder.addInterceptor(interceptor);
 	  return builder;
   }
-  
+
   public OkHttpClient.Builder configureAuthentication(DigestAuthContext digestAuthContext, OkHttpClient.Builder clientBuilder) {
 	  	OkHttpClient.Builder builder = clientBuilder;
         String user = digestAuthContext.getUser();
         String password = digestAuthContext.getPassword();
         if (user == null)
             throw new IllegalArgumentException("No user provided");
-        if (password == null) 
+        if (password == null)
             throw new IllegalArgumentException("No password provided");
         Credentials credentials = new Credentials(user, password);
         final Map<String,CachingAuthenticator> authCache = new ConcurrentHashMap<String,CachingAuthenticator>();
 	    CachingAuthenticator authenticator = new DigestAuthenticator(credentials);
 	    Interceptor interceptor =  new AuthenticationCacheInterceptor(authCache);
         checkFirstRequest = true;
-        
+
         if(authenticator != null) {
         	builder.authenticator(new CachingAuthenticatorDecorator(authenticator, authCache));
         }
@@ -421,21 +452,21 @@ public class OkHttpServices implements RESTServices {
         }
 	    return builder;
   }
-  
+
   public OkHttpClient.Builder configureAuthentication(KerberosAuthContext keberosAuthContext, String host, OkHttpClient.Builder clientBuilder) {
 	  Map<String, String> kerberosOptions = keberosAuthContext.getKrbOptions();
 	  Interceptor interceptor = new HTTPKerberosAuthInterceptor(host, kerberosOptions);
       checkFirstRequest = false;
 	  OkHttpClient.Builder builder = clientBuilder;
-	  if(interceptor != null) 
+	  if(interceptor != null)
 		  builder.addInterceptor(interceptor);
 	  return builder;
   }
-  
+
   public OkHttpClient.Builder configureAuthentication(SAMLAuthContext samlAuthContext, OkHttpClient.Builder clientBuilder) {
       Interceptor interceptor = null;
       String authorizationTokenValue = samlAuthContext.getToken();
-      
+
       if(authorizationTokenValue != null && authorizationTokenValue.length() > 0) {
           interceptor = new HTTPSamlAuthInterceptor(authorizationTokenValue);
       } else if(samlAuthContext.getAuthorizer()!=null) {
@@ -444,11 +475,11 @@ public class OkHttpServices implements RESTServices {
           interceptor = new HTTPSamlAuthInterceptor(samlAuthContext.getAuthorization(),samlAuthContext.getRenewer());
       } else
           throw new IllegalArgumentException("Either a call back or renewer expected.");
-	  
+
       checkFirstRequest = false;
 	  OkHttpClient.Builder builder = clientBuilder;
-	  
-	  if(interceptor != null) 
+
+	  if(interceptor != null)
 		  builder.addInterceptor(interceptor);
 	  return builder;
   }
@@ -1193,7 +1224,7 @@ public class OkHttpServices implements RESTServices {
   public boolean exists(String uri) throws ForbiddenUserException, FailedRequestException {
     return headImpl(null, uri, null, setupRequest(uri, null)) == null ? false : true;
   }
-  
+
   @Override
   public ConnectionResult checkConnection() {
 	  Request.Builder request = new Request.Builder()
@@ -1211,7 +1242,7 @@ public class OkHttpServices implements RESTServices {
 	  }
 	  return connectionResultImpl;
   }
-  
+
   private Response headImpl(RequestLogger reqlog, String uri,
                             Transaction transaction, Request.Builder requestBldr) {
     Response response = headImplExec(reqlog, uri, transaction, requestBldr);
@@ -1253,7 +1284,7 @@ public class OkHttpServices implements RESTServices {
 	    };
 	    return sendRequestWithRetry(requestBldr, (transaction == null), doHeadFunction, null);
   }
-  
+
   @Override
   public TemporalDescriptor putDocument(RequestLogger reqlog, DocumentDescriptor desc,
                                         Transaction transaction, Set<Metadata> categories,
@@ -6042,7 +6073,7 @@ public class OkHttpServices implements RESTServices {
                     }
                 }
             }
-        } 
+        }
         else {
           throw new IllegalStateException(
               "unknown multipart "+paramName+" param of: "+param.getClass().getName()
@@ -6764,7 +6795,7 @@ public class OkHttpServices implements RESTServices {
         is = true;
     }
   }
-  
+
   static class ConnectionResultImpl implements ConnectionResult {
 	private boolean connected = false;
 	private int statusCode;
