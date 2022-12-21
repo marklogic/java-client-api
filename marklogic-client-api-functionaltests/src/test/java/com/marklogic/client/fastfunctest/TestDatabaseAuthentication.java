@@ -44,9 +44,8 @@ public class TestDatabaseAuthentication extends AbstractFunctionalTest {
     setDefaultUser("nobody", restServerName);
   }
 
-  // Should throw exceptions when none specified.
   @Test
-  public void testAuthenticationNone() throws IOException
+  public void testAuthenticationNone()
   {
     System.out.println("Running testAuthenticationNone");
     if (!IsSecurityEnabled()) {
@@ -55,7 +54,8 @@ public class TestDatabaseAuthentication extends AbstractFunctionalTest {
       // connect the client
       StringBuilder str = new StringBuilder();
       try {
-    	  DatabaseClient client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort());
+		  // This does not need to specify basePath since it's expected to fail
+		  DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort());
       } catch (Exception ex) {
         str.append(ex.getMessage());
       }
@@ -77,7 +77,7 @@ public class TestDatabaseAuthentication extends AbstractFunctionalTest {
 
       // connect the client
       SecurityContext secContext = new DatabaseClientFactory.BasicAuthContext("rest-writer", "x");
-      DatabaseClient client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), secContext, getConnType());
+      DatabaseClient client = newClient(getRestServerHostName(), getRestServerPort(), secContext, getConnType());
 
       // write doc
       writeDocumentUsingStringHandle(client, filename, "/write-text-doc-basic/", "Text");

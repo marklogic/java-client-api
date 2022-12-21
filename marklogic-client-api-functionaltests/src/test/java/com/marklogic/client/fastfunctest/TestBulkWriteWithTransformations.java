@@ -16,7 +16,6 @@
 
 package com.marklogic.client.fastfunctest;
 
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.admin.ExtensionMetadata;
@@ -75,7 +74,7 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     	client	= getDatabaseClient("eval-user", "x", getConnType());
     else {
     	SecurityContext secContext = newSecurityContext("eval-user", "x");
-    client = DatabaseClientFactory.newClient(appServerHostname, uberPort, "java-functest", secContext, getConnType());
+    client = newClient(appServerHostname, uberPort, "java-functest", secContext, getConnType());
     }
   }
 
@@ -113,7 +112,7 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     }
     docMgr.write(writeset);
     FileHandle dh = new FileHandle();
-    
+
     try {
     docMgr.read(docId[0], dh);
     scanner = new Scanner(dh.get()).useDelimiter("\\Z");
@@ -209,7 +208,7 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     transform.put("name", "Land");
     transform.put("value", "USA");
     int count = 1;
-    
+
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
     docMgr.setWriteTransform(transform);
     Map<String, String> map = new HashMap<>();
@@ -232,7 +231,7 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
       uris[i] = DIRECTORY + "foo" + i + ".xml";
     }
     count = 0;
-    
+
     XMLDocumentManager docMgrRd = client.newXMLDocumentManager();
     DocumentPage page = docMgrRd.read(uris);
     DOMHandle dh = new DOMHandle();
@@ -335,13 +334,13 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     String content = dhRdNull.toString();
 
     assertTrue("Attribute value incorrect :", content.contains("<foo>This is so foo Multiple</foo>"));
-    
-    // Git Issue 639 - Case 1: Test using documentManager.setReadTransform and passing in a SearchReadHandle 
+
+    // Git Issue 639 - Case 1: Test using documentManager.setReadTransform and passing in a SearchReadHandle
     // to verify it gets transformed .
-    
+
     DocumentWriteSet writesetSearch = docMgrRd.newWriteSet();
     writesetSearch.add(DIRECTORY + "MarkLogic9.0" + ".xml", new DOMHandle(getDocumentContent("This is the best NoSQL product")));
-    docMgrRd.write(writesetSearch);    
+    docMgrRd.write(writesetSearch);
 
     ServerTransform transformSrch = new ServerTransform("add-attr-xquery-transform");
     transformSrch.put("name", "Domicile");
@@ -355,9 +354,9 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
             "<cts:text>NoSQL</cts:text></cts:word-query>";
     StringHandle handle = new StringHandle().with(wordQuery);
     RawCtsQueryDefinition querydef = queryMgr.newRawCtsQueryDefinition(handle);
-    
+
     DocumentPage pageSrch = docMgrSrch.search(querydef, 1);
-    
+
     DOMHandle dhSrch = new DOMHandle();
     DocumentRecord recSrch = pageSrch.next();
     recSrch.getContent(dhSrch);
@@ -365,12 +364,12 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
 
     assertTrue("Transform value incorrect :", attribute.contains("Domicile=\"USA\""));
     assertTrue("URI value incorrect :", recSrch.getUri().trim().contains("/bulkTransform/MarkLogic9.0.xml"));
-    
+
     // Test search() with SearchReadHandle
     // create result handle
     DOMHandle resultsDOMHandle = new DOMHandle();
     DocumentPage pageSrch1 = docMgrSrch.search(querydef, 1, resultsDOMHandle);
-    
+
     //DOMHandle dhSrchHandle = new DOMHandle();
     DocumentRecord recSrchHandle = pageSrch1.next();
     recSrchHandle.getContent(resultsDOMHandle);
@@ -380,24 +379,24 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     assertTrue("URI value incorrect :", recSrch.getUri().trim().contains("/bulkTransform/MarkLogic9.0.xml"));
 
     // Test with documentManager.setReadTransform and queryDefinition.setResponseTransform set to different transforms.
-    // Case 1 : Transform applies to same location 
+    // Case 1 : Transform applies to same location
     RawCtsQueryDefinition qdefWithTransform = queryMgr.newRawCtsQueryDefinition(handle);
     ServerTransform transformOnQdef = new ServerTransform("add-attr-xquery-transform");
     transformOnQdef.put("name", "Continent");
     transformOnQdef.put("value", "North America");
-    
+
     qdefWithTransform.setResponseTransform(transformOnQdef);
     DocumentPage pageSrch2 = docMgrSrch.search(qdefWithTransform, 1);
-    
+
     DOMHandle dhSrch2 = new DOMHandle();
     DocumentRecord recSrch2 = pageSrch2.next();
     recSrch2.getContent(dhSrch2);
     System.out.println("DOMHandle multiple Transforms " + dhSrch2.toString());
     attribute = dhSrch2.get().getDocumentElement().getAttributes().getNamedItem("Continent").toString();
-    
+
     assertTrue("Transform value incorrect :", attribute.contains("Continent=\"North America\""));
     assertTrue("URI value incorrect :", recSrch.getUri().trim().contains("/bulkTransform/MarkLogic9.0.xml"));
-    
+
     // Case 2 : Apply different transforms. QueryDef has add element transformation
     // throws java.lang.IllegalStateException
     String strExptdMsg = "QueryDefinition transform and DocumentManager transform have different names (add-element-xquery-transform, add-attr-xquery-transform)";
@@ -413,7 +412,7 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
         File transformFile2 = new File(
                 "src/test/java/com/marklogic/client/functionaltest/transforms/add-element-xquery-transform.xqy");
         FileHandle transformHandle2 = new FileHandle(transformFile2);
-        transMgr2.writeXQueryTransform("add-element-xquery-transform", transformHandle2, metadata2);        
+        transMgr2.writeXQueryTransform("add-element-xquery-transform", transformHandle2, metadata2);
         ServerTransform transform2 = new ServerTransform("add-element-xquery-transform");
         transform2.put("name", "Planet");
         transform2.put("value", "Earth");
@@ -437,7 +436,7 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
   /*
    * This test is similar to testBulkLoadWithXQueryTransform and is used to
    * validate Git Issue 396.
-   * 
+   *
    * Verify that a ServerTransform object is passed along when in transactions.
    */
 
@@ -522,9 +521,9 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     }
     assertEquals("document count", 102, count);
   }
-  
+
 //Refer to BT 52461. Having bulk write with transform (no meta-data on the transform itself) used to throw
- // SVC-FILSTAT: cts:tokenize("attachment; filename=&quot;/bulkTransform/foo0.xml&quot;", "http://marklogic.com/collation/") 
+ // SVC-FILSTAT: cts:tokenize("attachment; filename=&quot;/bulkTransform/foo0.xml&quot;", "http://marklogic.com/collation/")
  // -- File status error: GetFileAttributes
  @Test
  public void testBulkWriteNoMetadataWithXQueryTransform() throws KeyManagementException, NoSuchAlgorithmException, Exception {

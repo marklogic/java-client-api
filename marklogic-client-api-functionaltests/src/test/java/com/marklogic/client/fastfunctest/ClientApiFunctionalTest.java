@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.SessionState;
@@ -284,7 +283,7 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		System.out.println("Running TestE2EUnAuthorizedUser");
 		associateRESTServerWithDefaultUser(serverName, "security", securityContextType);
 		SecurityContext secContext = newSecurityContext("ForbiddenUser", "ap1U53r");
-		DatabaseClient dbForbiddenclient = DatabaseClientFactory.newClient(host, port, secContext, getConnType());
+		DatabaseClient dbForbiddenclient = newClient(host, port, secContext, getConnType());
 		String msg;
 		try {
 			TestE2EIntegerParaReturnDouble.on(dbForbiddenclient).TestE2EItemPriceErrorCond(10, 50);
@@ -384,7 +383,7 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 
 		System.out.println("Running TestE2EuserWithInvalidRole");
 		SecurityContext secContext = newSecurityContext("secondApiUser", "ap1U53r");
-		DatabaseClient dbSecondClient = DatabaseClientFactory.newClient(host, port, secContext, getConnType());
+		DatabaseClient dbSecondClient = newClient(host, port, secContext, getConnType());
 		String msg;
 		try {
 			TestE2EIntegerParaReturnDouble.on(dbSecondClient).TestE2EItemPriceErrorCond(10, 50);
@@ -450,7 +449,7 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 			System.out.println("Exception - session2.json / session3.json - Client API call is " + ex);
 		}
 		SecurityContext secContext = newSecurityContext("apiUser", "ap1U53r");
-		DatabaseClient dbclientRest = DatabaseClientFactory.newClient(host, restTestport, secContext, getConnType());
+		DatabaseClient dbclientRest = newClient(host, restTestport, secContext, getConnType());
 		waitForPropertyPropagate();
 		JSONDocumentManager docMgr = dbclientRest.newJSONDocumentManager();
 		JacksonHandle jh = new JacksonHandle();

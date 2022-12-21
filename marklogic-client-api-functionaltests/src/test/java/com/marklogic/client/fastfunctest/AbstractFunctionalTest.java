@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.MarkLogicVersion;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentWriteSet;
@@ -60,11 +59,11 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
             client = getDatabaseClient(OPTIC_USER, OPTIC_USER_PASSWORD, getConnType());
             adminModulesClient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), modulesDbName, getAdminUser(), getAdminPassword(), getConnType());
         } else {
-            schemasClient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemasDbName,
+            schemasClient = newClient(getRestServerHostName(), getRestServerPort(), schemasDbName,
                 newSecurityContext(OPTIC_USER, OPTIC_USER_PASSWORD));
-            client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(),
+            client = newClient(getRestServerHostName(), getRestServerPort(), null,
                 newSecurityContext(OPTIC_USER, OPTIC_USER_PASSWORD));
-            adminModulesClient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), modulesDbName,
+            adminModulesClient = newClient(getRestServerHostName(), getRestServerPort(), modulesDbName,
                 newSecurityContext(getAdminUser(), getAdminPassword()));
         }
 
@@ -154,12 +153,12 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
     }
 
     protected static DatabaseClient connectAsRestWriter() {
-        return DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(),
+        return newClient(getRestServerHostName(), getRestServerPort(),
             newSecurityContext("rest-writer", "x"), getConnType());
     }
 
     protected static DatabaseClient connectAsAdmin() {
-        return DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(),
+        return newClient(getRestServerHostName(), getRestServerPort(),
             newSecurityContext(getAdminUser(), getAdminPassword()), getConnType());
     }
 

@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClient.ConnectionType;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.admin.ServerConfigurationManager;
@@ -74,7 +73,7 @@ public abstract class ConnectedRESTQA {
 	private static String ml_certificate_file = null;
 	private static String mlDataConfigDirPath = null;
 	private static Boolean isLBHost = false;
-	
+
 	private static int PROPERTY_WAIT = 0;
 	private static final int ML_RES_OK = 200;
 	private static final int ML_RES_CREATED = 201;
@@ -225,7 +224,7 @@ public abstract class ConnectedRESTQA {
 
 	public static void postRequest(Map<String, String> payload, Map<String, String> params, String endpoint) {
 		OkHttpClient client;
-		JSONObject JSONpayload = null; 
+		JSONObject JSONpayload = null;
 		try {
 			if (payload == null) {
 				JSONpayload = new JSONObject();
@@ -1649,17 +1648,17 @@ public abstract class ConnectedRESTQA {
 	/*
 	 * Create a temporal axis based on 2 element range indexes, for start and
 	 * end values (for system or valid axis)
-	 * 
+	 *
 	 * @dbName Database Name
-	 * 
+	 *
 	 * @axisName Axis Name (name of axis that needs to be created)
-	 * 
+	 *
 	 * @namespaceStart Namespace for 'start' element range index
-	 * 
+	 *
 	 * @localnameStart Local name for 'start' element range index
-	 * 
+	 *
 	 * @namespaceEnd Namespace for 'end' element range index
-	 * 
+	 *
 	 * @localnameEnd Local name for 'end' element range index
 	 */
 	public static void addElementRangeIndexTemporalAxis(String dbName, String axisName, String namespaceStart,
@@ -1925,7 +1924,7 @@ public abstract class ConnectedRESTQA {
 	/*
 	 * Returns a SSLContext, so that the tests can run on a SSL enabled REST
 	 * server.
-	 * 
+	 *
 	 * @return
 	 * @throws IOException
 	 * @throws NoSuchAlgorithmException
@@ -1994,7 +1993,7 @@ public abstract class ConnectedRESTQA {
 	/*
 	 * Configure a SSL or non SSL enabled REST Server based on the build.gradle
 	 * ssl setting.
-	 * 
+	 *
 	 * @param dbName
 	 * @param fNames
 	 * @throws Exception
@@ -2042,16 +2041,33 @@ public abstract class ConnectedRESTQA {
 		return bSecurityEnabled;
 	}
 
-	public static DatabaseClient getDatabaseClient()
-			throws KeyManagementException, NoSuchAlgorithmException, IOException {
-		DatabaseClient client = DatabaseClientFactory.newClient(getServer(), getRestServerPort());
-		return client;
+	public static DatabaseClient newClient(String host, int port, String database, SecurityContext securityContext) {
+		return DatabaseClientFactory.newClient(host, port, database, securityContext, null);
 	}
-	
+
+	public static DatabaseClient newClient(String host, int port, SecurityContext securityContext, ConnectionType connectionType) {
+		return DatabaseClientFactory.newClient(host, port, null, securityContext, connectionType);
+	}
+
+	/**
+	 * Intent is for every functional test to create a client ultimately via this method so that basePath can be
+	 * applied in one place.
+	 *
+	 * @param host
+	 * @param port
+	 * @param database
+	 * @param securityContext
+	 * @param connectionType
+	 * @return
+	 */
+	public static DatabaseClient newClient(String host, int port, String database,
+										   SecurityContext securityContext, ConnectionType connectionType) {
+		connectionType = connectionType != null ? connectionType : getConnType();
+		return DatabaseClientFactory.newClient(host, port, database, securityContext, connectionType);
+	}
+
 	public static DatabaseClient getDatabaseClient(String user, String password, ConnectionType connType)
 			throws KeyManagementException, NoSuchAlgorithmException, IOException {
-		DatabaseClient client = null;
-		
 		SSLContext sslcontext = null;
 		SecurityContext secContext = newSecurityContext(user,password);
 		if (IsSecurityEnabled()) {
@@ -2062,31 +2078,7 @@ public abstract class ConnectedRESTQA {
 			}
 			secContext = secContext.withSSLContext(sslcontext).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
 		}
-			client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(),
-					secContext, connType);				
-		return client;
-	}
-
-	public static DatabaseClient getDatabaseClient(String user, String password, Authentication authType)
-			throws KeyManagementException, NoSuchAlgorithmException, IOException {
-		DatabaseClient client = null;
-		try {
-			SSLContext sslcontext = null;
-			if (IsSecurityEnabled()) {
-				sslcontext = getSslContext();
-				client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), user, password,
-						authType, sslcontext, SSLHostnameVerifier.ANY);
-			} else
-				client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), user, password,
-						authType);
-		} catch (CertificateException certEx) {
-			certEx.printStackTrace();
-		} catch (KeyStoreException ksEx) {
-			ksEx.printStackTrace();
-		} catch (UnrecoverableKeyException unReovkeyEx) {
-			unReovkeyEx.printStackTrace();
-		}
-		return client;
+		return newClient(getRestServerHostName(), getRestServerPort(), null, secContext, connType);
 	}
 
 	/*
@@ -2097,37 +2089,31 @@ public abstract class ConnectedRESTQA {
 	public static DatabaseClient getDatabaseClientOnDatabase(String hostName, int port, String databaseName,
 			String user, String password, ConnectionType connType)
 			throws KeyManagementException, NoSuchAlgorithmException, IOException {
-		DatabaseClient client = null;
 		try {
 			SSLContext sslcontext = null;
 			// Enable secure access on non 8000 port. Uber servers on port 8000
 			// aren't
 			// security enabled as of now.
-			
+
 			if (IsSecurityEnabled() && port != 8000) {
-				
+
 				sslcontext = getSslContext();
 				if (hostName.equalsIgnoreCase(host_name))
 					hostName = getSslServer();
-				
+
 				SecurityContext secContext = newSecurityContext(user,password);
 				secContext.withSSLContext(sslcontext).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
-				
-				client = DatabaseClientFactory.newClient(hostName, port, databaseName, secContext, connType);
+
+				return newClient(hostName, port, databaseName, secContext, connType);
 			} else {
 				SecurityContext secContext = newSecurityContext(user,password);
 				if (hostName.equalsIgnoreCase(host_name))
 					hostName = getServer();
-				client = DatabaseClientFactory.newClient(hostName, port, databaseName, secContext, connType);
+				return newClient(hostName, port, databaseName, secContext, connType);
 			}
-		} catch (CertificateException certEx) {
-			certEx.printStackTrace();
-		} catch (KeyStoreException ksEx) {
-			ksEx.printStackTrace();
-		} catch (UnrecoverableKeyException unReovkeyEx) {
-			unReovkeyEx.printStackTrace();
+		} catch (Exception ex) {
+			throw new RuntimeException("Unable to create DatabaseClient", ex);
 		}
-		return client;
 	}
 
 	//Return a Server name. For SSL runs returns value in restSslServerName For
@@ -2139,7 +2125,7 @@ public abstract class ConnectedRESTQA {
 	/*
 	 * Return a Server host name configured in build.gradle. For SSL runs
 	 * returns SSL_HOST_NAME For non SSL runs returns HOST_NAME
-	 * 
+	 *
 	 * @return
 	 */
 	public static String getRestServerHostName() {
@@ -2149,7 +2135,7 @@ public abstract class ConnectedRESTQA {
 	/*
 	 * Return a Server host port configured in build.gradle. For SSL runs
 	 * returns HTTPS_PORT For non SSL runs returns HTTP_PORT
-	 * 
+	 *
 	 * @return
 	 */
 	public static int getRestServerPort() {
@@ -2205,9 +2191,9 @@ public abstract class ConnectedRESTQA {
 		ml_certificate_file = property.getProperty("ml_certificate_file");
 		mlDataConfigDirPath = property.getProperty("mlDataConfigDirPath");
 		isLBHost = Boolean.parseBoolean(property.getProperty("lbHost"));
-		PROPERTY_WAIT = Integer.parseInt(isLBHost ? "15000" : "0");		
+		PROPERTY_WAIT = Integer.parseInt(isLBHost ? "15000" : "0");
 	}
-	
+
 	public static boolean isLBHost() {
 		return isLBHost;
 	}
@@ -2318,7 +2304,7 @@ public abstract class ConnectedRESTQA {
 	/*
 	 * Associate REST server with External Security (Kerberos) Property changes
 	 * needed for Kerberos are:
-	 * 
+	 *
 	 * authentication set to "kerberos-ticket" internal security set to "false"
 	 * external security set to "$extSecurityrName"
 	 */
@@ -2573,7 +2559,7 @@ public abstract class ConnectedRESTQA {
 		}
 		return null;
 	}
-	
+
 	// Disable automation for a LSQT enabled DB on a collection. Tests need to manually advance LSQT.
 	  public static void disableAutomationOnTemporalCollection(String dbName, String collectionName, boolean enable)
 	          throws Exception {
@@ -2610,7 +2596,7 @@ public abstract class ConnectedRESTQA {
 	      }
 	      client = null;
 	  }
-	  
+
 	  public static int getDocumentCount(String dbName) throws IOException {
 	      String jsonStr = null;
 		  OkHttpClient client = null;

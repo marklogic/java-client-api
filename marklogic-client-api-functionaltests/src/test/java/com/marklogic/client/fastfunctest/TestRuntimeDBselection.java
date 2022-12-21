@@ -51,7 +51,7 @@ public class TestRuntimeDBselection extends AbstractFunctionalTest {
         int restPort = getRestServerPort();
         SecurityContext secContext = new DatabaseClientFactory.BasicAuthContext("eval-user", "x");
 
-        client = DatabaseClientFactory.newClient(appServerHostname, restPort, "java-functest", secContext, getConnType());
+        client = newClient(appServerHostname, restPort, "java-functest", secContext, getConnType());
         String insertJSON = "xdmp:document-insert(\"test2.json\",object-node {\"test\":\"hello\"})";
         client.newServerEval().xquery(insertJSON).eval();
         String query1 = "fn:count(fn:doc())";
