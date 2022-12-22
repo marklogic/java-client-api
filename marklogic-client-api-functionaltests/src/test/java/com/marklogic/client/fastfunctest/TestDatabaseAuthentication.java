@@ -16,11 +16,15 @@
 
 package com.marklogic.client.fastfunctest;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.mgmt.resource.appservers.ServerManager;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -37,10 +41,16 @@ import static org.junit.Assert.assertEquals;
 public class TestDatabaseAuthentication extends AbstractFunctionalTest {
 
   private static String restServerName = "java-functest";
+  private String originalServerAuthentication;
+
+  @Before
+  public void before() {
+	  originalServerAuthentication = getServerAuthentication(restServerName);
+  }
 
   @After
   public void teardown() throws Exception {
-    setAuthentication(securityContextType, restServerName);
+    setAuthentication(originalServerAuthentication, restServerName);
     setDefaultUser("nobody", restServerName);
   }
 

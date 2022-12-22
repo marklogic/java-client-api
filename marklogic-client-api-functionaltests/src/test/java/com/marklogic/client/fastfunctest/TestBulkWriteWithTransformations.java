@@ -48,8 +48,6 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
   private static final int BATCH_SIZE = 100;
   private static final String DIRECTORY = "/bulkTransform/";
 
-  // Additional port to test for Uber port
-  private static int uberPort = 8000;
   private static String appServerHostname = null;
 
   @BeforeClass
@@ -74,7 +72,7 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     	client	= getDatabaseClient("eval-user", "x", getConnType());
     else {
     	SecurityContext secContext = newSecurityContext("eval-user", "x");
-    client = newClient(appServerHostname, uberPort, "java-functest", secContext, getConnType());
+    client = newClient(appServerHostname, getRestServerPort(), getRestServerName(), secContext, getConnType());
     }
   }
 

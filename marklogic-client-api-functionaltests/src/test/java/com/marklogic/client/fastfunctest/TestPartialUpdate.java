@@ -46,13 +46,14 @@ import static org.junit.Assert.assertTrue;
 
 public class TestPartialUpdate extends AbstractFunctionalTest {
   private static String dbName = "java-functest";
-  // Additional port to test for Uber port
-  private static int uberPort = 8000;
+  private static int uberPort;
   private static String appServerHostname = null;
 
   @BeforeClass
   public static void setUp() throws Exception {
     System.out.println("In setup");
+	// Don't know why this was called "uberPort" or why it defaulted to 8000 before
+	uberPort = getRestServerPort();
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createUserRolesWithPrevilages("replaceRoleTest", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval", "replaceRoleTest", "rest-admin", "rest-writer", "rest-reader");
@@ -477,7 +478,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
   public void testPartialUpdateReplaceApply() throws Exception {
     System.out.println("Running testPartialUpdateReplaceApply");
     SecurityContext secContext = newSecurityContext("rest-admin", "x");
-    DatabaseClient client = newClient(appServerHostname, 8000, secContext, getConnType());
+    DatabaseClient client = newClient(appServerHostname, uberPort, secContext, getConnType());
     ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
 
     libsMgr.write("/ext/patch/custom-lib.xqy", new FileHandle(new File("src/test/java/com/marklogic/client/functionaltest/data/custom-lib.xqy")).withFormat(Format.TEXT));

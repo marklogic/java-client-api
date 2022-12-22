@@ -16,6 +16,7 @@
 
 package com.marklogic.client.functionaltest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -34,6 +35,8 @@ import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.ManageConfig;
 import com.marklogic.mgmt.resource.appservers.ServerManager;
 import com.marklogic.mgmt.resource.databases.DatabaseManager;
+import com.marklogic.mgmt.resource.security.RoleManager;
+import com.marklogic.mgmt.resource.security.UserManager;
 import okhttp3.*;
 import org.json.JSONObject;
 
@@ -49,15 +52,14 @@ import java.util.*;
 public abstract class ConnectedRESTQA {
 
 	protected static String securityContextType;
-	private static String restServerName = null;
+	protected static String restServerName = null;
 	private static String restSslServerName = null;
 	private static String ssl_enabled = null;
 	private static String https_port = null;
 	protected static String http_port = null;
 	protected static String fast_http_port = null;
 	private static String admin_port = null;
-	// This needs to be a FQDN when SSL is enabled. Else localhost. Set in
-	// test.properties
+	// This needs to be a FQDN when SSL is enabled. Else localhost
 	private static String host_name = null;
 	// This needs to be a FQDN when SSL is enabled. Else localhost
 	private static String ssl_host_name = null;
@@ -86,7 +88,10 @@ public abstract class ConnectedRESTQA {
 	private static OkHttpClient createManageAdminClient(String username, String password) {
 		// build client with authentication information.
 		RESTServices services = new OkHttpServices();
-		services.connect(host_name, Integer.parseInt(admin_port), ML_MANAGE_DB, newSecurityContext(username, password));
+		// Manage API is assumed to require digest auth; if that assumption falls apart, we should add a new property
+		// for this and not assume that the authentication for the REST server will work
+		services.connect(host_name, Integer.parseInt(admin_port), ML_MANAGE_DB,
+			new DatabaseClientFactory.DigestAuthContext(username, password));
 		OkHttpClient okHttpClient  = (OkHttpClient) services.getClientImplementation();
 		return okHttpClient;
 	}
@@ -366,39 +371,6 @@ public abstract class ConnectedRESTQA {
 	}
 
 	/*
-	 * Associate REST server with default user this is created for the sake of
-	 * runtime DB selection
-	 */
-	public static void associateRESTServerWithDefaultUser(String restServerName, String userName, String authType)
-			throws Exception {
-		OkHttpClient client;
-		try {
-			client = createManageAdminClient("admin", "admin");
-			String body = "{ \"default-user\":\"" + userName + "\",\"authentication\": \"" + authType
-					+ "\",\"group-name\": \"Default\"}";
-			StringBuilder resp = new StringBuilder();
-			String put = new String("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
-					+ "/properties?server-type=http");
-			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(put)
-					.put(RequestBody.create(body, MediaType.parse("application/json")))
-					.build();
-			try (Response response = client.newCall(request).execute()) {
-				if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-				else {
-					if (response.code() == ML_RES_CREATED) {
-						System.out.println("Associate REST server with default user successful") ;
-						System.out.println(response);
-					}
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/*
 	 * Creating RESTServer With default content and module database
 	 */
 	public static void createRESTServerWithDB(String restServerName, int restPort) {
@@ -638,9 +610,9 @@ public abstract class ConnectedRESTQA {
 			client = createManageAdminClient("admin", "admin");
 			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users/" + usrName);
 			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(getrequest)
-					.build();
+				.header("Content-type", "application/json")
+				.url(getrequest)
+				.build();
 			Response response = client.newCall(request).execute();
 			if (response.code() == ML_RES_OK) {
 				System.out.println("User already exist");
@@ -661,10 +633,10 @@ public abstract class ConnectedRESTQA {
 				System.out.println(mainNode.toString());
 				String postUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users?format=json");
 				Request requestPost = new Request.Builder()
-						.header("Content-type", "application/json")
-						.url(postUrl)
-						.post(RequestBody.create(mainNode.toString(), MediaType.parse("application/json")))
-						.build();
+					.header("Content-type", "application/json")
+					.url(postUrl)
+					.post(RequestBody.create(mainNode.toString(), MediaType.parse("application/json")))
+					.build();
 				Response responsePost = client.newCall(requestPost).execute();
 				if (responsePost.code() == ML_RES_BADREQT) {
 					System.out.println("Creation of user has a problem");
@@ -711,15 +683,15 @@ public abstract class ConnectedRESTQA {
 	}
 
 	public static void createRESTUserWithPermissions(String usrName, String pass, ObjectNode perm,
-			ObjectNode colections, String... roleNames) {
+													 ObjectNode colections, String... roleNames) {
 		OkHttpClient client;
 		try {
 			client = createManageAdminClient("admin", "admin");
 			String getrequest = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users/" + usrName);
 			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(getrequest)
-					.build();
+				.header("Content-type", "application/json")
+				.url(getrequest)
+				.build();
 			Response response = client.newCall(request).execute();
 			if (response.code() == ML_RES_OK) {
 				System.out.println("User already exist");
@@ -742,10 +714,10 @@ public abstract class ConnectedRESTQA {
 				System.out.println(mainNode.toString());
 				String postUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users?format=json");
 				Request requestPost = new Request.Builder()
-						.header("Content-type", "application/json")
-						.url(postUrl)
-						.post(RequestBody.create(mainNode.toString(), MediaType.parse("application/json")))
-						.build();
+					.header("Content-type", "application/json")
+					.url(postUrl)
+					.post(RequestBody.create(mainNode.toString(), MediaType.parse("application/json")))
+					.build();
 				Response responsePost = client.newCall(requestPost).execute();
 				if (responsePost.code() == ML_RES_BADREQT) {
 					System.out.println("Bad User creation request");
@@ -768,10 +740,10 @@ public abstract class ConnectedRESTQA {
 			client = createManageAdminClient("admin", "admin");
 			String deleteUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/users/" + usrName);
 			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(deleteUrl)
-					.delete()
-					.build();
+				.header("Content-type", "application/json")
+				.url(deleteUrl)
+				.delete()
+				.build();
 			Response response = client.newCall(request).execute();
 			if (response.code() == ML_RES_CHANGED) {
 //				Thread.sleep(3500);
@@ -779,8 +751,8 @@ public abstract class ConnectedRESTQA {
 				System.out.println(response.body().string());
 			}
 			else {
-					System.out.println("User " + usrName + " deletion has issues");
-					System.out.println("Response from user deletion is: " + response);
+				System.out.println("User " + usrName + " deletion has issues");
+				System.out.println("Response from user deletion is: " + response);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -796,10 +768,10 @@ public abstract class ConnectedRESTQA {
 			String deleteUrl = new String("http://" + host_name + ":" + admin_port + "/manage/v2/roles/" + roleName);
 
 			Request request = new Request.Builder()
-					.header("Content-type", "application/json")
-					.url(deleteUrl)
-					.delete()
-					.build();
+				.header("Content-type", "application/json")
+				.url(deleteUrl)
+				.delete()
+				.build();
 			Response response = client.newCall(request).execute();
 			if (response.code() == ML_RES_CHANGED) {
 //				Thread.sleep(3500);
@@ -1875,6 +1847,15 @@ public abstract class ConnectedRESTQA {
 		);
 	}
 
+	public static String getServerAuthentication(String serverName) {
+		String json = new ServerManager(newManageClient()).getPropertiesAsJson(serverName);
+		try {
+			return new ObjectMapper().readTree(json).get("authentication").asText();
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public static void setDefaultUser(String username, String restServerName) {
 		new ServerManager(newManageClient()).save(
 			newServerPayload(restServerName).put("default-user", username).toString()
@@ -2042,11 +2023,11 @@ public abstract class ConnectedRESTQA {
 	}
 
 	public static DatabaseClient newClient(String host, int port, String database, SecurityContext securityContext) {
-		return DatabaseClientFactory.newClient(host, port, database, securityContext, null);
+		return newClient(host, port, database, securityContext, null);
 	}
 
 	public static DatabaseClient newClient(String host, int port, SecurityContext securityContext, ConnectionType connectionType) {
-		return DatabaseClientFactory.newClient(host, port, null, securityContext, connectionType);
+		return newClient(host, port, null, securityContext, connectionType);
 	}
 
 	/**
@@ -2142,55 +2123,50 @@ public abstract class ConnectedRESTQA {
 		return (getSslEnabled().trim().equalsIgnoreCase("true") ? getHttpsPort() : getHttpPort());
 	}
 
+	/**
+	 * This must be invoked before any test class extending this tries to connect to MarkLogic.
+	 */
 	public static void loadGradleProperties() {
-		Properties property = new Properties();
-		InputStream input = null;
+		Properties properties = new Properties();
 
-		try {
-			input = ConnectedRESTQA.class.getResourceAsStream("/test.properties");
-
-			// load a properties file
-			property.load(input);
-
+		try (InputStream input = ConnectedRESTQA.class.getResourceAsStream("/test.properties")) {
+			properties.load(input);
 		} catch (IOException ex) {
-			ex.printStackTrace();
-			throw new RuntimeException(ex);
+			throw new RuntimeException("Unable to load properties from test.properties", ex);
 		}
-		// Set the variable values.
 
-		securityContextType = property.getProperty("securityContextType");
-		restServerName = property.getProperty("mlAppServerName");
-		restSslServerName = property.getProperty("mlAppServerSSLName");
+		securityContextType = properties.getProperty("securityContextType");
+		restServerName = properties.getProperty("mlAppServerName");
+		restSslServerName = properties.getProperty("mlAppServerSSLName");
 
-		https_port = property.getProperty("httpsPort");
-		http_port = property.getProperty("httpPort");
-		fast_http_port = property.getProperty("fastHttpPort");
-		admin_port = property.getProperty("adminPort");
+		https_port = properties.getProperty("httpsPort");
+		http_port = properties.getProperty("httpPort");
+		fast_http_port = properties.getProperty("fastHttpPort");
+		admin_port = properties.getProperty("adminPort");
 
 		// Machine names where ML Server runs
-		host_name = property.getProperty("restHost");
-		System.out.println("Will connect to: " + host_name);
-		ssl_host_name = property.getProperty("restSSLHost");
+		host_name = properties.getProperty("restHost");
+		ssl_host_name = properties.getProperty("restSSLHost");
 
 		// Users
-		admin_user = property.getProperty("mlAdminUser");
-		admin_password = property.getProperty("mlAdminPassword");
+		admin_user = properties.getProperty("mlAdminUser");
+		admin_password = properties.getProperty("mlAdminPassword");
 
-		mlRestWriteUser = property.getProperty("mlRestWriteUser");
-		mlRestWritePassword = property.getProperty("mlRestWritePassword");
+		mlRestWriteUser = properties.getProperty("mlRestWriteUser");
+		mlRestWritePassword = properties.getProperty("mlRestWritePassword");
 
-		mlRestAdminUser = property.getProperty("mlRestAdminUser");
-		mlRestAdminPassword = property.getProperty("mlRestAdminPassword");
+		mlRestAdminUser = properties.getProperty("mlRestAdminUser");
+		mlRestAdminPassword = properties.getProperty("mlRestAdminPassword");
 
-		mlRestReadUser = property.getProperty("mlRestReadUser");
-		mlRestReadPassword = property.getProperty("mlRestReadPassword");
+		mlRestReadUser = properties.getProperty("mlRestReadUser");
+		mlRestReadPassword = properties.getProperty("mlRestReadPassword");
 
 		// Security and Certificate properties.
-		ssl_enabled = property.getProperty("restSSLset");
-		ml_certificate_password = property.getProperty("ml_certificate_password");
-		ml_certificate_file = property.getProperty("ml_certificate_file");
-		mlDataConfigDirPath = property.getProperty("mlDataConfigDirPath");
-		isLBHost = Boolean.parseBoolean(property.getProperty("lbHost"));
+		ssl_enabled = properties.getProperty("restSSLset");
+		ml_certificate_password = properties.getProperty("ml_certificate_password");
+		ml_certificate_file = properties.getProperty("ml_certificate_file");
+		mlDataConfigDirPath = properties.getProperty("mlDataConfigDirPath");
+		isLBHost = Boolean.parseBoolean(properties.getProperty("lbHost"));
 		PROPERTY_WAIT = Integer.parseInt(isLBHost ? "15000" : "0");
 	}
 
@@ -2255,11 +2231,11 @@ public abstract class ConnectedRESTQA {
 		return (IsSecurityEnabled() ? getSslServer() : getServer());
 	}
 
-	public static int getHttpsPort() {
+	private static int getHttpsPort() {
 		return (Integer.parseInt(https_port));
 	}
 
-	public static int getHttpPort() {
+	private static int getHttpPort() {
 		return (Integer.parseInt(http_port));
 	}
 
@@ -2268,8 +2244,7 @@ public abstract class ConnectedRESTQA {
 	}
 
 	/*
-	 * This needs to be a FQDN when SSL is enabled. Else localhost. Set in
-	 * test.properties or using a sed in build script
+	 * This needs to be a FQDN when SSL is enabled. Else localhost.
 	 */
 	public static String getServer() {
 		if (IsSecurityEnabled()) {
@@ -2281,8 +2256,7 @@ public abstract class ConnectedRESTQA {
 	}
 
 	/*
-	 * This needs to be a FQDN when SSL is enabled. Else localhost. Set in
-	 * test.properties or using a sed in build script
+	 * This needs to be a FQDN when SSL is enabled. Else localhost.
 	 */
 	public static String getSslServer() {
 		if (IsSecurityEnabled()) {

@@ -39,7 +39,8 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
     protected static DatabaseClient adminModulesClient;
 
     protected static boolean isML11OrHigher;
-    private static String original_http_port;
+    private static String originalHttpPort;
+	private static String originalRestServerName;
 
     @BeforeClass
     public static void initializeClients() throws Exception {
@@ -47,8 +48,11 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
 
         // Until all the tests can use the same ml-gradle-deployed app server, we need to have separate ports - one
         // for "slow" tests that setup a new app server, and one for "fast" tests that use the deployed one
-        original_http_port = http_port;
+        originalHttpPort = http_port;
         http_port = fast_http_port;
+		originalRestServerName = restServerName;
+		restServerName = "java-functest";
+
         MarkLogicVersion version = MarkLogicVersion.getMarkLogicVersion(connectAsAdmin());
         System.out.println("ML version: " + version.getVersionString());
         isML11OrHigher = version.getMajor() >= 11;
@@ -82,7 +86,8 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
 
     @AfterClass
     public static void classTearDown() {
-        http_port = original_http_port;
+        http_port = originalHttpPort;
+		restServerName = originalRestServerName;
         client.release();
         schemasClient.release();
     }

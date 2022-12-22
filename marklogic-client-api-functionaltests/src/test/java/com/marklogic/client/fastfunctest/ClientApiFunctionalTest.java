@@ -24,6 +24,7 @@ import okhttp3.Response;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -275,34 +276,24 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		}
 	}
 
-	// This test sets the App Server Default user to some one else and then DBClient
-	// uses another one to login. Expect to see ResourceNotFoundException.
 	@Test
-	public void TestE2EUnAuthorizedUser() throws Exception {
-
+	public void TestE2EUnAuthorizedUser() {
 		System.out.println("Running TestE2EUnAuthorizedUser");
-		associateRESTServerWithDefaultUser(serverName, "security", securityContextType);
-		SecurityContext secContext = newSecurityContext("ForbiddenUser", "ap1U53r");
-		DatabaseClient dbForbiddenclient = newClient(host, port, secContext, getConnType());
+		DatabaseClient dbForbiddenclient = newClient(host, port, newSecurityContext("ForbiddenUser", "ap1U53r"), getConnType());
 		String msg;
 		try {
 			TestE2EIntegerParaReturnDouble.on(dbForbiddenclient).TestE2EItemPriceErrorCond(10, 50);
-		} catch (Exception ex) {
-			msg = ex.toString();
-			System.out.println("Exception response from the Client API call is " + ex);
-			assertTrue("Expected exception type not returned",
-					msg.contains("com.marklogic.client.FailedRequestException"));
-			assertTrue("Expected exception returned", msg.contains(
-					"failed to POST at /ext/TestE2EIntegerParamReturnDouble/TestE2EIntegerParamReturnDoubleErrorCond.sjs"));
-		} finally {
-			associateRESTServerWithDefaultUser(serverName, "nobody", securityContextType);
+		} catch (FailedRequestException ex) {
+			msg = ex.getMessage();
+			assertTrue("Unexpected exception: " + msg,
+				msg.contains("failed to POST at") &&
+					msg.contains("/ext/TestE2EIntegerParamReturnDouble/TestE2EIntegerParamReturnDoubleErrorCond.sjs"));
 		}
 	}
 
 	// No module installed for test.
 	@Test
 	public void TestE2EModuleNotFound() {
-
 		System.out.println("Running TestE2EModuleNotFound");
 		String msg;
 		try {
@@ -312,15 +303,16 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 			System.out.println("Exception response from the Client API call is " + ex);
 			assertTrue("Expected exception type not returned",
 					msg.contains("com.marklogic.client.FailedRequestException"));
-			assertTrue("Expected exception returned", msg.contains(
-					"failed to POST at /ext/TestE2EModuleNotFound/TestE2EModuleNotFound.sjs"));
+			assertTrue("Unexpected message: " + msg,
+				msg.contains("failed to POST at ") &&
+				msg.contains("/ext/TestE2EModuleNotFound/TestE2EModuleNotFound.sjs"));
 		}
 	}
 
 	// This test sets the App Server concurrent users to be 1 instead of 0
 	// (default). Expect to see ForbiddenUser when same user logins multiple times.
 	@Test
-	public void TestE2ENumberOfConcurrentUsers() {
+	public void TestE2ENumberOfConcurrentUsers() throws InterruptedException {
 		StringBuilder msgEx = new StringBuilder();
 		Thread w1, w2, w3;
 
@@ -351,28 +343,22 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 
 		// Setup 3 API calls
 		try {
-			MultipleApiUsers m1 = new MultipleApiUsers("m1");
-			w1 = new Thread(m1);
-
-			MultipleApiUsers m2 = new MultipleApiUsers("m2");
-			w2 = new Thread(m2);
-
-			MultipleApiUsers m3 = new MultipleApiUsers("m3");
-			w3 = new Thread(m3);
+			w1 = new Thread(new MultipleApiUsers("m1"));
+			w2 = new Thread(new MultipleApiUsers("m2"));
+			w3 = new Thread(new MultipleApiUsers("m3"));
 
 			w1.start();
 			w2.start();
 			w3.start();
-		} catch (FailedRequestException ex) {
-			msgEx.append(ex);
-
+			w1.join();
+			w2.join();
+			w3.join();
 		} finally {
-			// revert back to 0.
 			modifyConcurrentUsersOnHttpServer(serverName, 0);
 			System.out.println("Exception from API responses of call are " + msgEx);
-
-			assertTrue("Expected exception not returned", msgEx.toString().contains(
-					"Local message: failed to POST at /ext/TestE2EIntegerParamReturnDouble/TestE2EIntegerParamReturnDoubleErrorCond.sjs"));
+			assertTrue("Unexpected error message: " + msgEx,
+				msgEx.toString().contains("Local message: failed to POST at") &&
+				msgEx.toString().contains("/ext/TestE2EIntegerParamReturnDouble/TestE2EIntegerParamReturnDoubleErrorCond.sjs"));
 		}
 	}
 
@@ -388,12 +374,10 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		try {
 			TestE2EIntegerParaReturnDouble.on(dbSecondClient).TestE2EItemPriceErrorCond(10, 50);
 		} catch (Exception ex) {
-			msg = ex.toString();
-			System.out.println("Exception response from the Client API call is " + ex);
-			assertTrue("Expected exception type not returned",
-					msg.contains("com.marklogic.client.ResourceNotFoundException"));
-			assertTrue("Expected exception returned", msg.contains(
-					"Could not POST at /ext/TestE2EIntegerParaReturnDouble/TestE2EIntegerParamReturnDoubleErrorCond.sjs"));
+			msg = ex.getMessage();
+			assertTrue("Unexpected exception: " + msg,
+				msg.contains("failed to POST at") &&
+				msg.contains("ext/TestE2EIntegerParamReturnDouble/TestE2EIntegerParamReturnDoubleErrorCond.sjs"));
 		}
 	}
 
@@ -427,29 +411,18 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 	// Tests API calls with session data-type.
 	@Test
 	public void TestE2ESessions() {
-
 		System.out.println("Running TestE2ESessions");
 		SessionState apiSession1 = TestE2ESession.on(dbclient).newSessionState();
 
-		try {
-			TestE2ESession.on(dbclient).SessionChecks(apiSession1, "/session1.json", "{\"value\":\"Checking first sessions\"}");
-			//assertTrue("Server module returned false. session1.json not inserted? See Logs", responseBack1);
-		} catch (Exception ex) {
-			System.out.println("Exception - session1.json first Client API call is " + ex);
-		}
-		// Try multiple calls sequentially  - different session
-		try {
-			SessionState apiSession2 = TestE2ESession.on(dbclient).newSessionState();
-			TestE2ESession.on(dbclient).SessionChecks(apiSession2, "/session2.json", "{\"value\":\"Checking sessions 2\"}");
-			Thread.sleep(5000);
-			SessionState apiSession3 = TestE2ESession.on(dbclient).newSessionState();
-			TestE2ESession.on(dbclient).SessionChecks(apiSession3, "/session3.json", "{\"value\":\"Checking sessions 3\"}");
+		TestE2ESession.on(dbclient).SessionChecks(apiSession1, "/session1.json", "{\"value\":\"Checking first sessions\"}");
 
-		} catch (Exception ex) {
-			System.out.println("Exception - session2.json / session3.json - Client API call is " + ex);
-		}
-		SecurityContext secContext = newSecurityContext("apiUser", "ap1U53r");
-		DatabaseClient dbclientRest = newClient(host, restTestport, secContext, getConnType());
+		// Try multiple calls sequentially  - different session
+		SessionState apiSession2 = TestE2ESession.on(dbclient).newSessionState();
+		TestE2ESession.on(dbclient).SessionChecks(apiSession2, "/session2.json", "{\"value\":\"Checking sessions 2\"}");
+		SessionState apiSession3 = TestE2ESession.on(dbclient).newSessionState();
+		TestE2ESession.on(dbclient).SessionChecks(apiSession3, "/session3.json", "{\"value\":\"Checking sessions 3\"}");
+
+		DatabaseClient dbclientRest = newClient(host, restTestport, newSecurityContext("apiUser", "ap1U53r"), getConnType());
 		waitForPropertyPropagate();
 		JSONDocumentManager docMgr = dbclientRest.newJSONDocumentManager();
 		JacksonHandle jh = new JacksonHandle();
@@ -460,17 +433,12 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		assertTrue("Server module returned false. session1.json not inserted? See Logs", nodeStr.contains("Checking first sessions") );
 
 		// Try multiple calls sequentially - same session
-		try {
-			SessionState apiSession4 = TestE2ESession.on(dbclient).newSessionState();
-			TestE2ESession.on(dbclient).SessionChecks(apiSession4, "/session4.json",
-					"{\"value\":\"Checking sessions 4\"}");
-			Thread.sleep(5000);
-			TestE2ESession.on(dbclient).SessionChecks(apiSession4, "/session5.json",
-					"{\"value\":\"Checking sessions 5\"}");
+		SessionState apiSession4 = TestE2ESession.on(dbclient).newSessionState();
+		TestE2ESession.on(dbclient).SessionChecks(apiSession4, "/session4.json",
+				"{\"value\":\"Checking sessions 4\"}");
+		TestE2ESession.on(dbclient).SessionChecks(apiSession4, "/session5.json",
+				"{\"value\":\"Checking sessions 5\"}");
 
-		} catch (Exception ex) {
-			System.out.println("Exception - session4.json / session5.json - Client API call is " + ex);
-		}
 		// Validate the content
 		jh = new JacksonHandle();
 		docMgr.read("/session5.json", jh);
@@ -510,6 +478,10 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 				nodeStr.contains("Checking sessions 7"));
 	}
 
+	private String buildUrl(String path) {
+		return "http://" + host + ":" + restTestport + path;
+	}
+
 	//Test Open API docs for Param In and Param Out
 	@Test
 	public void TestOpenApiParamInParamOut() throws Exception {
@@ -517,9 +489,9 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 
 		OkHttpClient okHttpClient = (OkHttpClient) dbclient.getClientImplementation();
 
-		String url = "http://" + host+ ":" + restTestport + endPointURI_8 + ".sjs";
+		String url = buildUrl(endPointURI_8 + ".sjs");
 
-		String credential = Credentials.basic("admin", "admin");
+		String credential = Credentials.basic(getAdminUser(), getAdminPassword());
 
 		Request.Builder requestBuilder = new Request.Builder()
 				.addHeader("Accept", "application/vnd.oai.openapi+json")
@@ -553,9 +525,9 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 
 		OkHttpClient okHttpClient = (OkHttpClient) dbclient.getClientImplementation();
 
-		String url = "http://" + host+ ":" + restTestport + endPointURI_9 + ".sjs";
+		String url = buildUrl(endPointURI_9 + ".sjs");
 
-		String credential = Credentials.basic("admin", "admin");
+		String credential = Credentials.basic(getAdminUser(), getAdminPassword());
 
 		Request.Builder requestBuilder = new Request.Builder()
 				.addHeader("Accept", "application/vnd.oai.openapi+json")
@@ -581,9 +553,9 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 
 		OkHttpClient okHttpClient = (OkHttpClient) dbclient.getClientImplementation();
 
-		String url = "http://" + host+ ":" + restTestport + endPointURI_10 + ".sjs";
+		String url = buildUrl(endPointURI_10 + ".sjs");
 
-		String credential = Credentials.basic("admin", "admin");
+		String credential = Credentials.basic(getAdminUser(), getAdminPassword());
 
 		Request.Builder requestBuilder = new Request.Builder()
 				.addHeader("Accept", "application/vnd.oai.openapi+json")
@@ -609,9 +581,9 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 
 		OkHttpClient okHttpClient = (OkHttpClient) dbclient.getClientImplementation();
 
-		String url = "http://" + host+ ":" + restTestport + endPointURI_11 + ".sjs";
+		String url = buildUrl(endPointURI_11 + ".sjs");
 
-		String credential = Credentials.basic("admin", "admin");
+		String credential = Credentials.basic(getAdminUser(), getAdminPassword());
 
 		Request.Builder requestBuilder = new Request.Builder()
 				.addHeader("Accept", "application/vnd.oai.openapi+json")
@@ -637,9 +609,9 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 
 		OkHttpClient okHttpClient = (OkHttpClient) dbclient.getClientImplementation();
 
-		String url = "http://" + host+ ":" + restTestport + "/ext/TestOpenApi/";
+		String url = buildUrl("/ext/TestOpenApi/");
 
-		String credential = Credentials.basic("admin", "admin");
+		String credential = Credentials.basic(getAdminUser(), getAdminPassword());
 
 		Request.Builder requestBuilder = new Request.Builder()
 				.addHeader("Accept", "application/vnd.oai.openapi+json")

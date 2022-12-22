@@ -15,28 +15,20 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClient.ConnectionResult;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.alerting.RuleManager;
-import com.marklogic.client.document.BinaryDocumentManager;
-import com.marklogic.client.document.GenericDocumentManager;
-import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.document.TextDocumentManager;
-import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.document.*;
 import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.util.RequestLogger;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class DatabaseClientTest {
   @BeforeClass
@@ -125,7 +117,7 @@ public class DatabaseClientTest {
   public void testCheckConnectionWithValidUser() {
 		
 	DatabaseClient marklogic = Common.makeNewClient(Common.HOST,
-		        8000, "unittest-nodeapi", Common.newSecurityContext(
+		        Common.PORT, Common.newSecurityContext(
 				        Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS));
   
     ConnectionResult connResult = marklogic.checkConnection();
@@ -134,9 +126,8 @@ public class DatabaseClientTest {
   
   @Test
   public void testCheckConnectionWithInvalidUser() {
-		
 	DatabaseClient marklogic = Common.makeNewClient(Common.HOST,
-		        8000, "unittest-nodeapi", Common.newSecurityContext("invalid", "invalid"));
+		        Common.PORT, Common.newSecurityContext("invalid", "invalid"));
   
     ConnectionResult connResult = marklogic.checkConnection();
     assertFalse(connResult.isConnected());

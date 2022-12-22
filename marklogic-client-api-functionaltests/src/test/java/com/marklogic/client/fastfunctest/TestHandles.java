@@ -46,7 +46,6 @@ import static org.junit.Assert.assertTrue;
 public class TestHandles extends AbstractFunctionalTest {
 
     private static String dbName = "java-functest";
-    private static int uberPort = 8000;
     private static String appServerHostname = null;
 
     @BeforeClass
@@ -79,7 +78,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         // connect the client
         DatabaseClientFactory.SecurityContext secContext = newSecurityContext("eval-user", "x");
-        DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
+        DatabaseClient client = newClient(appServerHostname, getRestServerPort(), dbName, secContext, getConnType());
 
         // write docs
         writeDocumentUsingBytesHandle(client, filename, uri, null, "XML");
@@ -141,7 +140,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         // connect the client
         DatabaseClientFactory.SecurityContext secContext = newSecurityContext("eval-user", "x");
-        DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
+        DatabaseClient client = newClient(appServerHostname, getRestServerPort(), dbName, secContext, getConnType());
 
         // write docs
         writeDocumentUsingBytesHandle(client, filename, uri, "Text");
@@ -202,7 +201,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         // connect the client
         DatabaseClientFactory.SecurityContext secContext = newSecurityContext("eval-user", "x");
-        DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
+        DatabaseClient client = newClient(appServerHostname, getRestServerPort(), dbName, secContext, getConnType());
 
         // write docs
         writeDocumentUsingBytesHandle(client, filename, uri, "JSON");
@@ -263,7 +262,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         // connect the client
         DatabaseClientFactory.SecurityContext secContext = newSecurityContext("eval-user", "x");
-        DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
+        DatabaseClient client = newClient(appServerHostname, getRestServerPort(), dbName, secContext, getConnType());
 
         // write docs
         writeDocumentUsingBytesHandle(client, filename, uri, "Binary");
