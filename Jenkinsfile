@@ -106,8 +106,8 @@ pipeline{
           export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
           export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
           cd java-client-api
-          ./gradlew -i marklogic-client-api:test  || true
-          ./gradlew marklogic-client-api-functionaltests:runFastFunctionalTests || true
+          ./gradlew cleanTest marklogic-client-api:test
+          ./gradlew -i cleanTest -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api:test marklogic-client-api-functionaltests:runFastFunctionalTests || true
         '''
         junit '**/build/**/TEST*.xml'
       }

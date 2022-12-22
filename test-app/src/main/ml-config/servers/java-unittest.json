@@ -1,4 +1,5 @@
 {
-  "server-name": "java-unittest",
-  "distribute-timestamps": "cluster"
+	"server-name": "java-unittest",
+	"authentication": "digestbasic",
+	"distribute-timestamps": "cluster"
 }

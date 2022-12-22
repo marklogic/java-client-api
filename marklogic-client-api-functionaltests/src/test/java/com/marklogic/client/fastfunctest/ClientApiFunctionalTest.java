@@ -479,7 +479,11 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 	}
 
 	private String buildUrl(String path) {
-		return "http://" + host + ":" + restTestport + path;
+		String url = "http://" + host + ":" + restTestport;
+		if (StringUtils.hasText(basePath)) {
+			url += "/" + basePath;
+		}
+		return url + path;
 	}
 
 	//Test Open API docs for Param In and Param Out

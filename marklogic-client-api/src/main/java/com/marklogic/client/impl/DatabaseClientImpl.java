@@ -54,19 +54,21 @@ public class DatabaseClientImpl implements DatabaseClient {
   private final RESTServices          services;
   private final String                host;
   private final int                   port;
+  private final String basePath;
   private final String                database;
   private final SecurityContext       securityContext;
   private final ConnectionType        connectionType;
 
   private HandleFactoryRegistry handleRegistry;
 
-  public DatabaseClientImpl(RESTServices services, String host, int port, String database,
+  public DatabaseClientImpl(RESTServices services, String host, int port, String basePath, String database,
                             SecurityContext securityContext, ConnectionType connectionType) {
     connectionType = (connectionType == null) ? DatabaseClient.ConnectionType.DIRECT : connectionType;
 
     this.services = services;
     this.host     = host;
     this.port     = port;
+	this.basePath = basePath;
     this.database = database;
     this.securityContext = securityContext;
     this.connectionType  = connectionType;
@@ -265,6 +267,11 @@ public class DatabaseClientImpl implements DatabaseClient {
   @Override
   public String getDatabase() {
     return database;
+  }
+
+  @Override
+  public String getBasePath() {
+	  return this.basePath;
   }
 
   @Override

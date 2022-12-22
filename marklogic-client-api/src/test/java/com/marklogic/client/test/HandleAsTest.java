@@ -387,9 +387,8 @@ public class HandleAsTest {
     DatabaseClientFactory.Bean clientFactoryBean = new DatabaseClientFactory.Bean();
     clientFactoryBean.setHost(Common.HOST);
     clientFactoryBean.setPort(Common.PORT);
-    clientFactoryBean.setUser(Common.USER);
-    clientFactoryBean.setPassword(Common.PASS);
-    clientFactoryBean.setAuthentication(Authentication.DIGEST);
+	clientFactoryBean.setBasePath(Common.BASE_PATH);
+	clientFactoryBean.setSecurityContext(Common.newSecurityContext(Common.USER, Common.PASS));
     return clientFactoryBean;
   }
 
@@ -397,10 +396,11 @@ public class HandleAsTest {
     DatabaseClientFactory.Bean clientFactoryBean = new DatabaseClientFactory.Bean();
     clientFactoryBean.setHost(Common.HOST);
     clientFactoryBean.setPort(Common.PORT);
+    clientFactoryBean.setBasePath(Common.BASE_PATH);
     clientFactoryBean.setSecurityContext(Common.newSecurityContext(Common.USER, Common.PASS));
     return clientFactoryBean;
   }
-  
+
 
   static public class BufferHandle
     extends BaseHandle<String, String>
