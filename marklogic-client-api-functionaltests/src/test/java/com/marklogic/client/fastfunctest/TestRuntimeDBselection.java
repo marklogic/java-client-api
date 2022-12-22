@@ -44,10 +44,11 @@ public class TestRuntimeDBselection extends AbstractFunctionalTest {
 
   // Issue 184 exists
   @Test
-  public void testRuntimeDBclientWithDifferentAuthType() throws Exception {
+  public void testRuntimeDBclientWithDifferentAuthType() {
     if (!IsSecurityEnabled()) {
+		String originalServerAuthentication = getServerAuthentication(getRestServerName());
       try {
-        associateRESTServerWithDefaultUser("java-functest", "nobody", "basic");
+		  setAuthentication("basic", getRestServerName());
         int restPort = getRestServerPort();
         SecurityContext secContext = new DatabaseClientFactory.BasicAuthContext("eval-user", "x");
 
@@ -63,7 +64,7 @@ public class TestRuntimeDBselection extends AbstractFunctionalTest {
         assertEquals("count of documents ", 0, response2);
         client.release();
       } finally {
-        associateRESTServerWithDefaultUser("java-functest", "nobody", securityContextType);
+		  setAuthentication(originalServerAuthentication, getRestServerName());
       }
     }
   }

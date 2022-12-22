@@ -116,25 +116,5 @@ public class FailedRequestTest {
     } catch (Exception e) {
       fail("Call failed with unexpected exception: "+e.getMessage());
     }
-
   }
-
-  @Test
-  public void testErrorOnNonREST() throws ForbiddenUserException {
-    DatabaseClient badClient = Common.makeNewClient(Common.HOST, 8001, Common.newSecurityContext(Common.USER, Common.PASS));
-    ServerConfigurationManager serverConfig = badClient
-      .newServerConfigManager();
-
-    try {
-      serverConfig.readConfiguration();
-    } catch (ForbiddenUserException e) {
-      assertEquals(
-        "Local message: User is not allowed to read config/properties. Server Message: SEC-NOADMIN: (err:FOER0000) User does not have admin-ui privilege.",
-        e.getMessage());
-      assertEquals(403, e.getServerStatusCode());
-      assertEquals("Forbidden", e.getServerStatus());
-    }
-
-  }
-
 }
