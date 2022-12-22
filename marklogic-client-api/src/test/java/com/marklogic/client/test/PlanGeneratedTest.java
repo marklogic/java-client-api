@@ -22,7 +22,7 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.type.ServerExpression;
 
 // IMPORTANT: Do not edit. This file is generated.
-// Exception - two of these tests cannot pass on ML <= 10. Those have been modified to not run unless ML is >= 11.
+// Exception - some of these tests cannot pass on ML <= 10. Those have been modified to not run unless ML is >= 11.
 public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
@@ -1661,7 +1661,9 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpUnquote1Exec() {
-        executeTester("testXdmpUnquote1", p.xdmp.unquote(p.col("1")), false, null, "array", Format.JSON, "[123]", new ServerExpression[]{ p.xs.string("[123]") });
+		if (Common.markLogicIsVersion11OrHigher()) {
+			executeTester("testXdmpUnquote1", p.xdmp.unquote(p.col("1")), false, null, "array", Format.JSON, "[123]", new ServerExpression[]{p.xs.string("[123]")});
+		}
     }
 
     @Test
