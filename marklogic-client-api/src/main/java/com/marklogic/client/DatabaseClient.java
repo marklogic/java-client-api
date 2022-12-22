@@ -153,13 +153,13 @@ public interface DatabaseClient {
   SPARQLQueryManager newSPARQLQueryManager();
 
   /**
-   * Creates a PojoRepository specific to the specified class and its id type. 
+   * Creates a PojoRepository specific to the specified class and its id type.
    * The PojoRepository provides a facade for persisting, retrieving, and
    * querying data contained in Java objects.  Annotations are required to
    * identify the id field and any fields for which you wish to create indexes.
    *
    * @param clazz the class type for this PojoRepository to handle
-   * @param idClass the class type of the id field for this clazz, must obviously 
+   * @param idClass the class type of the id field for this clazz, must obviously
    *          be Serializable or we'll struggle to marshall it
    * @param <T> the pojo type this PojoRepository will manage
    * @param <ID> the scalar type of the id for pojos of type &lt;T&gt;
@@ -206,12 +206,12 @@ public interface DatabaseClient {
    *
    * You can call the getClass().getName() and getClass().getPackage().getName() to discover
    * the class of the current implementation object.
-   * @return	the object implementing communication with the server 
+   * @return	the object implementing communication with the server
    */
   Object getClientImplementation();
 
   /**
-   * Creates a ServerEvaluationCall for eval and invoke of server-side xquery or 
+   * Creates a ServerEvaluationCall for eval and invoke of server-side xquery or
    * javascript code.  Eval requires the xdbc:eval privilege and invoke requires the
    * xdbc:invoke privilege.  If this DatabaseClient is pointed at a database different
    * than the default for this REST server, you will need the xdbc:eval-in or xdbc:invoke-in
@@ -225,23 +225,30 @@ public interface DatabaseClient {
    * @return the connection type
    */
   ConnectionType getConnectionType();
-  
+
   /**
    * Checks if the connection is valid.
-   * @return {@link ConnectionResult} with a connected property of true or false. 
+   * @return {@link ConnectionResult} with a connected property of true or false.
    *  In the false case it contains the errorMessage property identifying the failure.
    */
   ConnectionResult checkConnection();
-  
+
   static public interface ConnectionResult {
 	  boolean isConnected();
 	  Integer getStatusCode();
-	  String getErrorMessage();  
+	  String getErrorMessage();
   }
 
   String getHost();
 
   int getPort();
+
+	/**
+	 *
+	 * @since 6.1.0
+	 * @return optional base path associated with this client instance
+	 */
+	String getBasePath();
 
   String getDatabase();
 

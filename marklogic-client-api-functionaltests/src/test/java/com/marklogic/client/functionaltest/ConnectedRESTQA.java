@@ -58,6 +58,7 @@ public abstract class ConnectedRESTQA {
 	private static String https_port = null;
 	protected static String http_port = null;
 	protected static String fast_http_port = null;
+	protected static String basePath = null;
 	private static String admin_port = null;
 	// This needs to be a FQDN when SSL is enabled. Else localhost
 	private static String host_name = null;
@@ -90,7 +91,7 @@ public abstract class ConnectedRESTQA {
 		RESTServices services = new OkHttpServices();
 		// Manage API is assumed to require digest auth; if that assumption falls apart, we should add a new property
 		// for this and not assume that the authentication for the REST server will work
-		services.connect(host_name, Integer.parseInt(admin_port), ML_MANAGE_DB,
+		services.connect(host_name, Integer.parseInt(admin_port), null, ML_MANAGE_DB,
 			new DatabaseClientFactory.DigestAuthContext(username, password));
 		OkHttpClient okHttpClient  = (OkHttpClient) services.getClientImplementation();
 		return okHttpClient;
@@ -2044,7 +2045,7 @@ public abstract class ConnectedRESTQA {
 	public static DatabaseClient newClient(String host, int port, String database,
 										   SecurityContext securityContext, ConnectionType connectionType) {
 		connectionType = connectionType != null ? connectionType : getConnType();
-		return DatabaseClientFactory.newClient(host, port, database, securityContext, connectionType);
+		return DatabaseClientFactory.newClient(host, port, basePath, database, securityContext, connectionType);
 	}
 
 	public static DatabaseClient getDatabaseClient(String user, String password, ConnectionType connType)
@@ -2123,6 +2124,16 @@ public abstract class ConnectedRESTQA {
 		return (getSslEnabled().trim().equalsIgnoreCase("true") ? getHttpsPort() : getHttpPort());
 	}
 
+	private static void overrideTestPropertiesWithSystemProperties(Properties testProperties) {
+		if ("true".equals(System.getProperty("TEST_USE_REVERSE_PROXY_SERVER"))) {
+			System.out.println("TEST_USE_REVERSE_PROXY_SERVER is true, so overriding properties to use reverse proxy server");
+			testProperties.setProperty("httpPort", "8020");
+			testProperties.setProperty("fastHttpPort", "8020");
+			testProperties.setProperty("basePath", "testFunctional");
+			testProperties.setProperty("securityContextType", "basic");
+		}
+	}
+
 	/**
 	 * This must be invoked before any test class extending this tries to connect to MarkLogic.
 	 */
@@ -2135,6 +2146,8 @@ public abstract class ConnectedRESTQA {
 			throw new RuntimeException("Unable to load properties from test.properties", ex);
 		}
 
+		overrideTestPropertiesWithSystemProperties(properties);
+
 		securityContextType = properties.getProperty("securityContextType");
 		restServerName = properties.getProperty("mlAppServerName");
 		restSslServerName = properties.getProperty("mlAppServerSSLName");
@@ -2143,6 +2156,7 @@ public abstract class ConnectedRESTQA {
 		http_port = properties.getProperty("httpPort");
 		fast_http_port = properties.getProperty("fastHttpPort");
 		admin_port = properties.getProperty("adminPort");
+		basePath = properties.getProperty("basePath");
 
 		// Machine names where ML Server runs
 		host_name = properties.getProperty("restHost");
@@ -2168,6 +2182,11 @@ public abstract class ConnectedRESTQA {
 		mlDataConfigDirPath = properties.getProperty("mlDataConfigDirPath");
 		isLBHost = Boolean.parseBoolean(properties.getProperty("lbHost"));
 		PROPERTY_WAIT = Integer.parseInt(isLBHost ? "15000" : "0");
+
+		System.out.println("For 'slow' tests, will connect to: " + host_name + ":" + http_port + "; basePath: " +  basePath +
+			"; auth: " + securityContextType);
+		System.out.println("For 'fast' tests, will connect to: " + host_name + ":" + fast_http_port + "; basePath: " +  basePath +
+			"; auth: " + securityContextType);
 	}
 
 	public static boolean isLBHost() {

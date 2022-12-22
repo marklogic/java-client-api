@@ -45,11 +45,12 @@ dependencies {
 
 // Ensure that mlHost and mlPassword can override the defaults of localhost/admin if they've been modified
 test {
-    systemProperty "TEST_HOST", mlHost
-    systemProperty "TEST_ADMIN_PASSWORD", mlPassword
-    // Needed by the tests for the example programs
-    systemProperty "EXAMPLE_HOST", mlHost
-    systemProperty "EXAMPLE_ADMIN_PASSWORD", mlPassword
+	systemProperty "TEST_HOST", mlHost
+	systemProperty "TEST_ADMIN_PASSWORD", mlPassword
+	// Needed by the tests for the example programs
+	systemProperty "EXAMPLE_HOST", mlHost
+	systemProperty "EXAMPLE_ADMIN_PASSWORD", mlPassword
+	systemProperty "TEST_USE_REVERSE_PROXY_SERVER", testUseReverseProxyServer
 }
 
 jar {

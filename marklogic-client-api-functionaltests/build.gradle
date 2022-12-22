@@ -7,6 +7,8 @@ test {
   /* For use in testing TestDatabaseClientKerberosFromFile */
   systemProperty "keytabFile", System.getProperty("keytabFile")
   systemProperty "principal", System.getProperty("principal")
+
+	systemProperty "TEST_USE_REVERSE_PROXY_SERVER", testUseReverseProxyServer
 }
 
 /* The minimal number of tests that run in a sandbox environment */

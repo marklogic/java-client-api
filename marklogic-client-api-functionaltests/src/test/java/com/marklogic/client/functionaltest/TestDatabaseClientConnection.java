@@ -165,23 +165,23 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     // release client
     client.release();
   }
-  
+
   // To test getters of SecurityContext
   @Test
   public void testDatabaseClientGetters() throws KeyManagementException, NoSuchAlgorithmException, IOException
   {
     System.out.println("Running testDatabaseClientGetters");
-  
+
     DatabaseClient client = null;
 	SSLContext sslcontext = null;
 	SecurityContext secContext = newSecurityContext("rest-reader", "x");
-	
+
 		try {
 			sslcontext = getSslContext();
 		} catch (UnrecoverableKeyException | KeyStoreException | CertificateException e) {
 			e.printStackTrace();
 		}
-		
+
 		secContext.withSSLContext(sslcontext, new X509TrustManager() {
 			public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
 				// nothing to do
@@ -196,21 +196,21 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 			}
 		})
 		.withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
-	
+
 		client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(),
 				secContext, getConnType());
 	SecurityContext readSecContext = client.getSecurityContext();
 	String verifier = readSecContext.getSSLHostnameVerifier().toString();
 	String protocol = readSecContext.getSSLContext().getProtocol();
-	boolean needClient = readSecContext.getSSLContext().getSupportedSSLParameters().getNeedClientAuth();    
-    
+	boolean needClient = readSecContext.getSSLContext().getSupportedSSLParameters().getNeedClientAuth();
+
     assertTrue("Verifier not Builtin", verifier.contains("Builtin"));
     assertTrue("Protocol incorrect", protocol.contains("TLSv1.2"));
     assertTrue("NeedClientAuth incorrect", needClient == false);
     // release client
     client.release();
   }
-  
+
 
   @Test
   public void testDatabaseClientConnectionInvalidPort() throws IOException
@@ -333,12 +333,12 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
   /*
    * These tests are specifically to validate Git Issue 332.
    * https://github.com/marklogic/java-client-api/issues/332
-   * 
+   *
    * We need to test that REST calls can pass a database name and access that
    * database on the uber server port (8000). Create a database, forest and
    * associate the database to the uber server on port 8000, where App-Services
    * is running. We will be testing the following :
-   * 
+   *
    * QueryManager.suggest() QueryManager.tuples() QueryManager.values()
    * QueryManager.valuesList() Transaction.readStatus()
    * RuleManager.readRule(As)() RuleManager.match(As)() with
@@ -416,7 +416,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     String[] filenames = { "multibyte1.xml", "multibyte2.xml", "multibyte3.xml" };
     String queryOptionName = "suggestionOpt.xml";
-    
+
     SecurityContext secContext = newSecurityContext("eval-user", "x");
     DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
     // write docs
@@ -849,7 +849,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     // release client
     client.release();
   }
-  
+
   @Test
   public void testDatabaseClientFactoryBean() throws IOException, ParserConfigurationException, SAXException, XpathException, KeyManagementException,
   NoSuchAlgorithmException
@@ -859,6 +859,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 		  DatabaseClientFactory.Bean clientFactoryBean = new DatabaseClientFactory.Bean();
 		  clientFactoryBean.setHost(getRestAppServerHostName());
 		  clientFactoryBean.setPort(getRestAppServerPort());
+		  clientFactoryBean.setBasePath(basePath);
 		  clientFactoryBean.setConnectionType(getConnType());
 		  SecurityContext secContext = newSecurityContext("rest-admin", "x");
 
@@ -886,7 +887,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 		  client.release();
 	  }
   }
-  
+
   // Verify that DatabaseClient from Bean handles transactions
   @Test
   public void testDBClientFactoryBeanTransaction() throws Exception {
@@ -896,12 +897,13 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 	  DatabaseClientFactory.Bean clientFactoryBean = new DatabaseClientFactory.Bean();
 	  clientFactoryBean.setHost(getRestAppServerHostName());
 	  clientFactoryBean.setPort(getRestAppServerPort());
+	  clientFactoryBean.setBasePath(basePath);
 	  clientFactoryBean.setConnectionType(getConnType());
 	  SecurityContext secContext = newSecurityContext("rest-writer", "x");
 
 	  clientFactoryBean.setSecurityContext(secContext);
 	  client = clientFactoryBean.newClient();
-	 
+
 	  DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
 	  DocumentMetadataHandle readMetadataHandle = new DocumentMetadataHandle();
 	  DocumentMetadataValues metadatavalues = readMetadataHandle.getMetadataValues();

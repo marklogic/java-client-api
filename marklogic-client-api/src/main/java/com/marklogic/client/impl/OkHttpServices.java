@@ -42,6 +42,7 @@ import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.impl.okhttp.BasicAuthenticationConfigurer;
 import com.marklogic.client.impl.okhttp.DigestAuthenticationConfigurer;
 import com.marklogic.client.impl.okhttp.AuthenticationConfigurer;
+import com.marklogic.client.impl.okhttp.HttpUrlBuilder;
 import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.*;
 import com.marklogic.client.query.*;
@@ -198,7 +199,7 @@ public class OkHttpServices implements RESTServices {
   }
 
   @Override
-  public void connect(String host, int port, String database, SecurityContext securityContext){
+  public void connect(String host, int port, String basePath, String database, SecurityContext securityContext){
 
 	  if (host == null)
 		  throw new IllegalArgumentException("No host provided");
@@ -247,13 +248,7 @@ public class OkHttpServices implements RESTServices {
     this.configureHostnameVerifier(clientBuilder, sslVerifier);
 
     this.database = database;
-
-    this.baseUri = new HttpUrl.Builder()
-      .scheme(sslContext == null ? "http" : "https")
-      .host(host)
-      .port(port)
-      .encodedPath("/v1/ping")
-      .build();
+    this.baseUri = HttpUrlBuilder.newBaseUrl(host, port, basePath, sslContext);
 
     Properties props = System.getProperties();
     if (props.containsKey(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) {
@@ -4449,9 +4444,8 @@ public class OkHttpServices implements RESTServices {
     if ( database != null && ! path.startsWith("config/") ) {
       uri.addQueryParameter("database", database);
     }
-    Request.Builder request = new Request.Builder()
-        .url(uri.build());
-    return request;
+    HttpUrl httpUrl = uri.build();
+    return new Request.Builder().url(httpUrl);
   }
 
   private Request.Builder setupRequest(String path, RequestParameters params) {
@@ -5720,12 +5714,7 @@ public class OkHttpServices implements RESTServices {
       this.method = method;
       this.session = (SessionStateImpl) session;
       this.hasStreamingPart = false;
-      this.callBaseUri = new HttpUrl.Builder()
-          .scheme(baseUri.scheme())
-          .host(baseUri.host())
-          .port(baseUri.port())
-          .encodedPath("/")
-          .build();
+      this.callBaseUri = HttpUrlBuilder.newDataServicesBaseUri(baseUri);
     }
 
     @Override

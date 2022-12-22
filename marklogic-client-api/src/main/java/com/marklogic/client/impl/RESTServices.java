@@ -114,7 +114,7 @@ public interface RESTServices {
   int getMaxDelay();
   void setMaxDelay(int maxDelay);
 
-  void connect(String host, int port, String database, SecurityContext securityContext);
+  void connect(String host, int port, String basePath, String database, SecurityContext securityContext);
   DatabaseClient getDatabaseClient();
   void setDatabaseClient(DatabaseClient client);
   void release();

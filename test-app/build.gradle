@@ -1,3 +1,23 @@
 plugins {
-    id 'com.marklogic.ml-gradle' version '4.3.6'
+	id 'com.marklogic.ml-gradle' version '4.3.7'
+	id 'java'
+	id "com.github.psxpaul.execfork" version "0.2.2"
+}
+
+dependencies {
+	implementation "io.undertow:undertow-core:2.2.21.Final"
+	implementation "io.undertow:undertow-servlet:2.2.21.Final"
+}
+
+// See https://github.com/psxpaul/gradle-execfork-plugin for docs.
+// Note that the task will stop at the end of the build by default, which is typically the behavior we want when
+// running tests.
+task runReverseProxyServer(type: com.github.psxpaul.task.JavaExecFork, dependsOn: 'compileJava') {
+	description = "Run a reverse proxy so that the Java tests can be verified when talking to a reverse proxy instead of " +
+		"directly to MarkLogic"
+	classpath = sourceSets.main.runtimeClasspath
+	main = "com.marklogic.client.test.ReverseProxyServer"
+	workingDir = "$buildDir"
+	standardOutput = file("$buildDir/reverse-proxy.log")
+	errorOutput = file("$buildDir/reverse-proxy-error.log")
 }

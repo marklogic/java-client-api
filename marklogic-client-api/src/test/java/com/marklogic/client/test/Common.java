@@ -38,7 +38,6 @@ import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 
 public class Common {
   final public static String USER= "rest-writer";
@@ -58,8 +57,10 @@ public class Common {
 
   final public static String  HOST          = System.getProperty("TEST_HOST", "localhost");
 
-  final public static int     PORT          = Integer.parseInt(System.getProperty("TEST_PORT", "8012"));
-  final public static String SECURITY_CONTEXT_TYPE = System.getProperty("TEST_SECURITY_CONTEXT_TYPE", "digest");
+  final public static boolean USE_REVERSE_PROXY_SERVER = Boolean.parseBoolean(System.getProperty("TEST_USE_REVERSE_PROXY_SERVER", "false"));
+  final public static int     PORT          = USE_REVERSE_PROXY_SERVER ? 8020 : Integer.parseInt(System.getProperty("TEST_PORT", "8012"));
+  final public static String SECURITY_CONTEXT_TYPE = USE_REVERSE_PROXY_SERVER ? "basic" : System.getProperty("TEST_SECURITY_CONTEXT_TYPE", "digest");
+  final public static String BASE_PATH = USE_REVERSE_PROXY_SERVER ? "test/marklogic/unit" : System.getProperty("TEST_BASE_PATH", null);
   final public static boolean WITH_WAIT     = Boolean.parseBoolean(System.getProperty("TEST_WAIT", "false"));
   final public static int     PROPERTY_WAIT = Integer.parseInt(System.getProperty("TEST_PROPERTY_WAIT", WITH_WAIT ? "8200" : "0"));
 
@@ -145,8 +146,8 @@ public class Common {
   public static DatabaseClient makeNewClient(String host, int port, String database,
                                              DatabaseClientFactory.SecurityContext securityContext,
                                              DatabaseClient.ConnectionType connectionType) {
-    System.out.println("Connecting to: " + Common.HOST + ":" + port);
-    return DatabaseClientFactory.newClient(host, port, database, securityContext, connectionType);
+    System.out.println("Connecting to: " + Common.HOST + ":" + port + "; basePath: " + BASE_PATH  + "; auth: " + securityContext.getClass().getSimpleName());
+    return DatabaseClientFactory.newClient(host, port, BASE_PATH, database, securityContext, connectionType);
   }
 
   public static DatabaseClient newAdminClient() {

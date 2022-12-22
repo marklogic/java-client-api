@@ -49,6 +49,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import com.marklogic.client.impl.RESTServices;
 import okhttp3.OkHttpClient;
 
 import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
@@ -1212,8 +1213,7 @@ public class DatabaseClientFactory {
    * @param host the host with the REST server
    * @param port the port for the REST server
    * @param securityContext the security context created depending upon the
-   *            authentication type - BasicAuthContext, DigestAuthContext or KerberosAuthContext
-   *            and communication channel type (SSL)
+   *            authentication type and communication channel type (SSL)
    * @return a new client for making database requests
    */
   static public DatabaseClient newClient(String host, int port, SecurityContext securityContext) {
@@ -1226,8 +1226,7 @@ public class DatabaseClientFactory {
    * @param host the host with the REST server
    * @param port the port for the REST server
    * @param securityContext the security context created depending upon the
-   *            authentication type - BasicAuthContext, DigestAuthContext or KerberosAuthContext
-   *            and communication channel type (SSL)
+   *            authentication type and communication channel type (SSL)
    * @param connectionType whether the client connects directly to the MarkLogic host
    *            or using a gateway such as a load balancer
    * @return a new client for making database requests
@@ -1250,8 +1249,7 @@ public class DatabaseClientFactory {
    * @param database the database to access (default: configured database for
    *            the REST server)
    * @param securityContext the security context created depending upon the
-   *            authentication type - BasicAuthContext, DigestAuthContext or KerberosAuthContext
-   *            and communication channel type (SSL)
+   *            authentication type and communication channel type (SSL)
    * @return a new client for making database requests
    */
   static public DatabaseClient newClient(String host, int port, String database, SecurityContext securityContext) {
@@ -1270,39 +1268,59 @@ public class DatabaseClientFactory {
    * @param database the database to access (default: configured database for
    *            the REST server)
    * @param securityContext the security context created depending upon the
-   *            authentication type - BasicAuthContext, DigestAuthContext or KerberosAuthContext
-   *            and communication channel type (SSL)
+   *            authentication type and communication channel type (SSL)
    * @param connectionType whether the client connects directly to the MarkLogic host
    *            or using a gateway such as a load balancer
    * @return a new client for making database requests
    */
   static public DatabaseClient newClient(String host, int port, String database,
-          SecurityContext securityContext,
-          DatabaseClient.ConnectionType connectionType)
-{
-    OkHttpServices services = new OkHttpServices();
-    services.connect(host, port, database, securityContext);
+                                         SecurityContext securityContext,
+                                         DatabaseClient.ConnectionType connectionType) {
+      return newClient(host, port, null, database, securityContext, connectionType);
+  }
 
-    if (clientConfigurator != null) {
-      if ( clientConfigurator instanceof OkHttpClientConfigurator ) {
-        OkHttpClient client = services.getClientImplementation();
-        OkHttpClient.Builder clientBuilder = client.newBuilder();
-        ((OkHttpClientConfigurator) clientConfigurator).configure(
-          clientBuilder
-        );
-        ((OkHttpServices) services).setClientImplementation(clientBuilder.build());
-      } else if ( clientConfigurator instanceof HttpClientConfigurator ) {
-        // do nothing as we not longer use HttpClient so there's nothing this can configure
-      } else {
-        throw new IllegalArgumentException("A ClientConfigurator must implement OkHttpClientConfigurator");
+	/**
+	 * Creates a client to access the database by means of a REST server.
+	 *
+	 * A data service interface can only call an endpoint for the configured content database
+	 * of the appserver. You cannot specify the database when constructing a client for working
+	 * with a data service.
+	 *
+	 * @param host the host with the REST server
+	 * @param port the port for the REST server
+	 * @param basePath optional base path, typically used when connecting to MarkLogic via a reverse proxy; since 6.1.0
+	 * @param database the database to access (default: configured database for
+	 *            the REST server)
+	 * @param securityContext the security context created depending upon the
+	 *            authentication type and communication channel type (SSL)
+	 * @param connectionType whether the client connects directly to the MarkLogic host
+	 *            or using a gateway such as a load balancer
+	 * @return a new client for making database requests
+	 */
+  static public DatabaseClient newClient(String host, int port, String basePath, String database,
+                                         SecurityContext securityContext,
+                                         DatabaseClient.ConnectionType connectionType) {
+      RESTServices services = new OkHttpServices();
+      services.connect(host, port, basePath, database, securityContext);
+
+      if (clientConfigurator != null) {
+          if (clientConfigurator instanceof OkHttpClientConfigurator) {
+              OkHttpClient okHttpClient = (OkHttpClient) services.getClientImplementation();
+              OkHttpClient.Builder clientBuilder = okHttpClient.newBuilder();
+              ((OkHttpClientConfigurator) clientConfigurator).configure(clientBuilder);
+              ((OkHttpServices) services).setClientImplementation(clientBuilder.build());
+          } else if (clientConfigurator instanceof HttpClientConfigurator) {
+              // do nothing as we no longer use HttpClient so there's nothing this can configure
+          } else {
+              throw new IllegalArgumentException("A ClientConfigurator must implement OkHttpClientConfigurator");
+          }
       }
-    }
 
-    DatabaseClientImpl client = new DatabaseClientImpl(
-          services, host, port, database, securityContext, connectionType
-    );
-    client.setHandleRegistry(getHandleRegistry().copy());
-    return client;
+      DatabaseClientImpl client = new DatabaseClientImpl(
+          services, host, port, basePath, database, securityContext, connectionType
+      );
+      client.setHandleRegistry(getHandleRegistry().copy());
+      return client;
   }
 
 
@@ -1501,6 +1519,7 @@ public class DatabaseClientFactory {
 
     private           String                host;
     private           int                   port;
+    private String basePath;
     private           String                database;
     private           String                user;
     private           String                password;
@@ -1557,7 +1576,16 @@ public class DatabaseClientFactory {
     public void setPort(int port) {
       this.port = port;
     }
-    /**
+
+      public String getBasePath() {
+          return basePath;
+      }
+
+      public void setBasePath(String basePath) {
+          this.basePath = basePath;
+      }
+
+      /**
      * Returns the user authentication for clients created with a
      * DatabaseClientFactory.Bean object.
      * @return	the user
@@ -1773,12 +1801,13 @@ public class DatabaseClientFactory {
      * The client accesses the database by means of a REST server.
      * @return	a new client for making database requests
      */
-	public DatabaseClient newClient() {
-      DatabaseClientImpl client = (DatabaseClientImpl) DatabaseClientFactory.newClient(
-            host, port, database, (securityContext!=null? securityContext:makeSecurityContext(user, password, authentication, context, verifier)),
+    public DatabaseClient newClient() {
+        DatabaseClientImpl client = (DatabaseClientImpl) DatabaseClientFactory.newClient(
+            host, port, basePath, database,
+            (securityContext != null ? securityContext : makeSecurityContext(user, password, authentication, context, verifier)),
             connectionType);
-      client.setHandleRegistry(getHandleRegistry().copy());
-      return client;
+        client.setHandleRegistry(getHandleRegistry().copy());
+        return client;
     }
   }
 }
