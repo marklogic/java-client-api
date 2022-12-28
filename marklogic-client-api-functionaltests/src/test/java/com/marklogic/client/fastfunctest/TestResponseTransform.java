@@ -26,7 +26,8 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -36,7 +37,7 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.assertTrue;
+
 
 public class TestResponseTransform extends AbstractFunctionalTest {
 
@@ -104,9 +105,9 @@ public class TestResponseTransform extends AbstractFunctionalTest {
 
     System.out.println(resultDoc);
 
-    assertTrue("transform on title is not found", resultDoc.contains("<title>Custom Search Results</title>"));
-    assertTrue("transform on header is not found", resultDoc.contains("MyURI"));
-    assertTrue("transform on doc return is not found", resultDoc.contains("<td align=\"left\">/response-transform/constraint5.xml</td>"));
+    assertTrue( resultDoc.contains("<title>Custom Search Results</title>"));
+    assertTrue( resultDoc.contains("MyURI"));
+    assertTrue( resultDoc.contains("<td align=\"left\">/response-transform/constraint5.xml</td>"));
 
     transMgr.deleteTransform("search2html");
 
@@ -184,9 +185,9 @@ public class TestResponseTransform extends AbstractFunctionalTest {
     }
 
     String expectedException = "Local message: search failed: Bad Request. Server Message: RESTAPI-INVALIDREQ: (err:FOER0000)";
-    assertTrue("exception is not thrown", exception.contains(expectedException));
+    assertTrue( exception.contains(expectedException));
     // bug 22356
-    assertTrue("Value should be null", resultsHandle.get() == null);
+    assertTrue( resultsHandle.get() == null);
 
     transMgr.deleteTransform("search2html");
 

@@ -25,8 +25,9 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.query.*;
 import com.marklogic.client.query.QueryManager.QueryView;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -36,13 +37,14 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.custommonkey.xmlunit.XMLAssert.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathNotExists;
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathExists;
+
 
 public class TestSearchOptions extends AbstractFunctionalTest {
 
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception
   {
       deleteDocuments(connectAsAdmin());
@@ -303,8 +305,8 @@ public class TestSearchOptions extends AbstractFunctionalTest {
     // release client
     client.release();
   }
-  
-  
+
+
   //Tests for simple restricted xpath
   @Test
   public void testRestrictedXPaths() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
@@ -324,7 +326,7 @@ public class TestSearchOptions extends AbstractFunctionalTest {
     content1.append("{ \"RegionId\": \"1003\", \"Direction\": \"NW\" },");
     content1.append("{ \"RegionId\": \"1004\", \"Direction\": \"SW\" }");
     content1.append("]}}]}");
-    
+
     StringBuilder content2 = new StringBuilder();
     content2.append("{\"World\":[{\"CountyId\": \"0002\",");
     content2.append("\"Govt\": \"Monarchy\",");
@@ -355,7 +357,7 @@ public class TestSearchOptions extends AbstractFunctionalTest {
     if (count % BATCH_SIZE > 0) {
         docMgr.write(writeset1);
     }
-    
+
     // Write docs
     DocumentWriteSet writeset2 = docMgr.newWriteSet();
     docStr = content2.toString();
@@ -371,13 +373,13 @@ public class TestSearchOptions extends AbstractFunctionalTest {
     if (count % BATCH_SIZE > 0) {
         docMgr.write(writeset2);
     }
-    
+
     QueryManager queryMgr = client.newQueryManager();
-    
+
     String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
     String tail = "</search:search>";
     String qtext1 = "<search:qtext>Presidential</search:qtext>";
-    
+
     String options1 ="<search:options>" +
                     "<search:extract-document-data selected=\"include\">" +
                     "</search:extract-document-data>" +
@@ -394,7 +396,7 @@ public class TestSearchOptions extends AbstractFunctionalTest {
     // get the result
     JsonNode resultNode = resultsHandle.get();
     System.out.println(resultNode.toString());
-    assertEquals("Total search elements for incorrect", "11", resultNode.get("total").asText());
+    assertEquals( "11", resultNode.get("total").asText());
 
     String options2 ="<search:options>" +
             "<search:extract-document-data selected=\"include\">" +
@@ -407,14 +409,14 @@ public class TestSearchOptions extends AbstractFunctionalTest {
     String qtext2 = "<search:qtext>Presidential</search:qtext>";
 
     combinedSearch = head + qtext2 + options2 + tail;
-    
+
      rawCombinedQueryDefinition =
             queryMgr.newRawCombinedQueryDefinition(new StringHandle(combinedSearch).withMimetype("application/xml"));
 
     // create handle
     SearchHandle resSearchHandle = new SearchHandle();
     resSearchHandle = queryMgr.search(rawCombinedQueryDefinition, new SearchHandle());
-    
+
     MatchDocumentSummary[] summaries = resSearchHandle.getMatchResults();
 
     for (MatchDocumentSummary summary : summaries) {
@@ -423,12 +425,11 @@ public class TestSearchOptions extends AbstractFunctionalTest {
             for (ExtractedItem item : extracted) {
                 String extractItem = item.getAs(String.class);
                 System.out.println("Extracted item from element search " + extractItem);
-                assertTrue("Extracted items incorrect", extractItem.contains("{\"Govt\":\"Presidential\"}")
-                                                         || extractItem.contains("{\"Pop\":328}"));
+                assertTrue( extractItem.contains("{\"Govt\":\"Presidential\"}") || extractItem.contains("{\"Pop\":328}"));
             }
         }
     }
-    // Extract path with array element 
+    // Extract path with array element
     String qtext3 = "<search:qtext>2002</search:qtext>";
     String options3 ="<search:options>" +
             "<search:extract-document-data selected=\"include\">" +
@@ -438,7 +439,7 @@ public class TestSearchOptions extends AbstractFunctionalTest {
             "</search:options>";
 
     combinedSearch = head + qtext3 + options3 + tail;
-    
+
      rawCombinedQueryDefinition =
             queryMgr.newRawCombinedQueryDefinition(new StringHandle(combinedSearch).withMimetype("application/xml"));
 
@@ -456,10 +457,10 @@ public class TestSearchOptions extends AbstractFunctionalTest {
                 String extractItem = item.getAs(String.class);
                 System.out.println("Extracted item from array element search " + extractItem);
                 if (extractItem.startsWith("{\"R")) {
-                assertTrue("Extracted items incorrect", extractItem.matches(RegionPatternStr));
+                assertTrue( extractItem.matches(RegionPatternStr));
                 }
                 else {
-                    assertTrue("Extracted items incorrect", extractItem.matches(DirectionPatternStr));
+                    assertTrue( extractItem.matches(DirectionPatternStr));
                 }
             }
         }
@@ -486,11 +487,11 @@ public class TestSearchOptions extends AbstractFunctionalTest {
             for (ExtractedItem item : extracted) {
                 String extractItem = item.getAs(String.class);
                 System.out.println("Extracted item from named node element search " + extractItem);
-                    assertTrue("Extracted Named node items incorrect", extractItem.matches(DirectionPatternStr));
+                    assertTrue( extractItem.matches(DirectionPatternStr));
             }
         }
     }
-    
+
     // object-node - Unnamed Node
     String qtext5 = "<search:qtext>1001</search:qtext>";
     String options5 ="<search:options>" +
@@ -512,11 +513,11 @@ public class TestSearchOptions extends AbstractFunctionalTest {
             for (ExtractedItem item : extracted) {
                 String extractItem = item.getAs(String.class);
                 System.out.println("Extracted item from Unnamed node element search " + extractItem);
-                    assertTrue("Extracted Unnamed node items incorrect", extractItem.matches(DirectionPatternStr));
+                    assertTrue( extractItem.matches(DirectionPatternStr));
             }
         }
     }
-    
+
     // object-node - Number Node
     String qtext6 = "<search:qtext>1001</search:qtext>";
     String options6 ="<search:options>" +
@@ -538,15 +539,15 @@ public class TestSearchOptions extends AbstractFunctionalTest {
             for (ExtractedItem item : extracted) {
                 String extractItem = item.getAs(String.class);
                 System.out.println("Extracted item from Number node element search " + extractItem);
-                    assertTrue("Extracted Number node items incorrect", extractItem.matches("\\{\"Pop\":328\\}"));
+                    assertTrue( extractItem.matches("\\{\"Pop\":328\\}"));
             }
         }
     }
     // release client
     client.release();
   }
-  
-  // Note : Test asserts changed due to the fact that different serialization and parsers produce diff NS 
+
+  // Note : Test asserts changed due to the fact that different serialization and parsers produce diff NS
   @Test
   public void testXmlFilesRestrictedXPaths() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
       TransformerException
@@ -585,11 +586,11 @@ public class TestSearchOptions extends AbstractFunctionalTest {
     }
 
     QueryManager queryMgr = client.newQueryManager();
-    
+
     String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
     String tail = "</search:search>";
     String qtext1 = "<search:qtext>0011</search:qtext>";
-    
+
     String options1 ="<search:options>" +
                     "<search:extract-document-data selected=\"include\">" +
                     "</search:extract-document-data>" +
@@ -606,7 +607,7 @@ public class TestSearchOptions extends AbstractFunctionalTest {
     // get the result
     JsonNode resultNode = resultsHandle.get();
     System.out.println(resultNode.toString());
-    assertEquals("Total search elements for incorrect", "11", resultNode.get("total").asText());
+    assertEquals( "11", resultNode.get("total").asText());
 
     String options2 ="<search:options>" +
             "<search:extract-document-data selected=\"include\">" +
@@ -618,14 +619,14 @@ public class TestSearchOptions extends AbstractFunctionalTest {
     String qtext2 = "<search:qtext>0011</search:qtext>";
 
     combinedSearch = head + qtext2 + options2 + tail;
-    
+
      rawCombinedQueryDefinition =
             queryMgr.newRawCombinedQueryDefinition(new StringHandle(combinedSearch).withMimetype("application/xml"));
 
     // create handle
     SearchHandle resSearchHandle = new SearchHandle();
     resSearchHandle = queryMgr.search(rawCombinedQueryDefinition, new SearchHandle());
-    
+
     MatchDocumentSummary[] summaries = resSearchHandle.getMatchResults();
 
     for (MatchDocumentSummary summary : summaries) {
@@ -634,8 +635,8 @@ public class TestSearchOptions extends AbstractFunctionalTest {
             for (ExtractedItem item : extracted) {
                 String extractItem = item.getAs(String.class);
                 System.out.println("Extracted item from price element search " + extractItem);
-                assertTrue("Extracted price items incorrect", extractItem.contains("http://cloudbank.com"));
-                assertTrue("Extracted price items incorrect", extractItem.contains("amt=\"0.1\""));
+                assertTrue( extractItem.contains("http://cloudbank.com"));
+                assertTrue( extractItem.contains("amt=\"0.1\""));
             }
         }
     }
@@ -648,7 +649,7 @@ public class TestSearchOptions extends AbstractFunctionalTest {
             "</search:options>";
 
     combinedSearch = head + qtext3 + options3 + tail;
-    
+
      rawCombinedQueryDefinition =
             queryMgr.newRawCombinedQueryDefinition(new StringHandle(combinedSearch).withMimetype("application/xml"));
 
@@ -656,22 +657,22 @@ public class TestSearchOptions extends AbstractFunctionalTest {
     resSearchHandle = new SearchHandle();
     resSearchHandle = queryMgr.search(rawCombinedQueryDefinition, new SearchHandle());
     summaries = resSearchHandle.getMatchResults();
-    
+
     for (MatchDocumentSummary summary : summaries) {
         ExtractedResult extracted = summary.getExtracted();
         if ( Format.XML == summary.getFormat() ) {
             for (ExtractedItem item : extracted) {
                 String extractItem = item.getAs(String.class);
                 System.out.println("Extracted item from date and ancestor element search " + extractItem);
-                assertTrue("Extracted date and ancestor items incorrect", 
+                assertTrue(
                             extractItem.contains("http://purl.org/dc/elements/1.1"));
-                assertTrue("Extracted date and ancestor items incorrect", 
+                assertTrue(
                         extractItem.contains("2005-01-01"));
 
             }
         }
     }
-    
+
  // Extract path with array element - include-with-ancestors - Negative
     String qtext4 = "<search:qtext>0011</search:qtext>";
     String options4 ="<search:options>" +
@@ -681,7 +682,7 @@ public class TestSearchOptions extends AbstractFunctionalTest {
             "</search:options>";
 
     combinedSearch = head + qtext4 + options4 + tail;
-    
+
      rawCombinedQueryDefinition =
             queryMgr.newRawCombinedQueryDefinition(new StringHandle(combinedSearch).withMimetype("application/xml"));
 
@@ -689,10 +690,10 @@ public class TestSearchOptions extends AbstractFunctionalTest {
     resSearchHandle = new SearchHandle();
     resSearchHandle = queryMgr.search(rawCombinedQueryDefinition, new SearchHandle());
     summaries = resSearchHandle.getMatchResults();
-    
-    MatchDocumentSummary summary = summaries[0]; 
+
+    MatchDocumentSummary summary = summaries[0];
     ExtractedResult extracted = summary.getExtracted();
-    assertTrue("Extracted date and ancestor items incorrect", extracted.isEmpty());
+    assertTrue( extracted.isEmpty());
 
     // release client
     client.release();

@@ -12,16 +12,15 @@ import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.mgmt.resource.databases.DatabaseManager;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.stream.Stream;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * Abstract class for functional tests that depend on the test app in ./marklogic-client-api/src/test, which is
@@ -42,7 +41,7 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
     private static String originalHttpPort;
 	private static String originalRestServerName;
 
-    @BeforeClass
+    @BeforeAll
     public static void initializeClients() throws Exception {
         loadGradleProperties();
 
@@ -84,7 +83,7 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
         client.newServerEval().xquery("cts:uris((), (), cts:true-query()) ! xdmp:document-delete(.)").evalAs(String.class);
     }
 
-    @AfterClass
+    @AfterAll
     public static void classTearDown() {
         http_port = originalHttpPort;
 		restServerName = originalRestServerName;
@@ -266,9 +265,9 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
         Stream
             .of(expectedColumnInfos)
             .map(columnInfo -> columnInfo.getExpectedJson())
-            .forEach(expectedJson -> assertTrue(
-                "Did not find expected JSON: " + expectedJson + "; colInfo: " + actualColumnInfo,
-                actualColumnInfo.contains(expectedJson))
-            );
+            .forEach(expectedJson -> Assertions.assertTrue(
+				actualColumnInfo.contains(expectedJson),
+				"Did not find expected JSON: " + expectedJson + "; colInfo: " + actualColumnInfo
+            ));
     }
 }

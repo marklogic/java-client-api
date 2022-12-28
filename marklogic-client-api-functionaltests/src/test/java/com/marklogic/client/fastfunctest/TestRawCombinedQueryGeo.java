@@ -25,8 +25,9 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -38,11 +39,11 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertTrue;
+
 
 public class TestRawCombinedQueryGeo extends AbstractFunctionalTest {
 
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception
   {
     deleteDocuments(connectAsAdmin());
@@ -132,9 +133,9 @@ public class TestRawCombinedQueryGeo extends AbstractFunctionalTest {
 
     System.out.println(resultDoc);
 
-    assertTrue("total document returned is incorrect", resultDoc.contains("total=\"1\""));
-    assertTrue("returned doc is incorrect", resultDoc.contains("uri=\"/geo-constraint/geo-constraint1.xml\""));
-    assertTrue("matched text is incorrect", resultDoc.contains("karl_kara 12,5 12,5 12 5"));
+    assertTrue( resultDoc.contains("total=\"1\""));
+    assertTrue( resultDoc.contains("uri=\"/geo-constraint/geo-constraint1.xml\""));
+    assertTrue( resultDoc.contains("karl_kara 12,5 12,5 12 5"));
 
     // release client
     client.release();
@@ -180,8 +181,8 @@ public class TestRawCombinedQueryGeo extends AbstractFunctionalTest {
 
     System.out.println(resultDoc);
 
-    assertTrue("total document returned is incorrect", resultDoc.contains("total=\"1\""));
-    assertTrue("returned doc is incorrect", resultDoc.contains("uri=\"/geo-constraint/geo-constraint20.xml\""));
+    assertTrue( resultDoc.contains("total=\"1\""));
+    assertTrue( resultDoc.contains("uri=\"/geo-constraint/geo-constraint20.xml\""));
 
     // release client
     client.release();

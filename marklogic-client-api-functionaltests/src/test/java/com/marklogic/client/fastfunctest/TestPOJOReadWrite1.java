@@ -27,13 +27,12 @@ import com.marklogic.client.pojo.PojoQueryBuilder.Operator;
 import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.pojo.annotation.Id;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Calendar;
 import java.util.TimeZone;
-
-import static org.junit.Assert.*;
 
 public class TestPOJOReadWrite1 extends AbstractFunctionalTest {
   Calendar calOne = null;
@@ -121,7 +120,7 @@ public class TestPOJOReadWrite1 extends AbstractFunctionalTest {
     }
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     client = getDatabaseClient("rest-admin", "x", getConnType());
   }
@@ -142,9 +141,9 @@ public class TestPOJOReadWrite1 extends AbstractFunctionalTest {
   }
 
   public void validateArtifact(Artifact art) {
-    assertNotNull("Artifact object should never be Null", art);
-    assertNotNull("Id should never be Null", art.id);
-    assertTrue("Inventry is always greater than 1000", art.getInventory() > 1000);
+    assertNotNull( art);
+    assertNotNull( art.id);
+    assertTrue( art.getInventory() > 1000);
   }
 
   // This test is to persist a simple design model objects in ML, read from ML,
@@ -157,19 +156,19 @@ public class TestPOJOReadWrite1 extends AbstractFunctionalTest {
     for (int i = 1; i < 112; i++) {
       products.write(this.getArtifact(i));
     }
-    assertEquals("Total number of object recods", 111, products.count());
+    assertEquals( 111, products.count());
     for (long i = 1; i < 112; i++) {
-      assertTrue("Product id " + i + " does not exist", products.exists(i));
+      assertTrue(products.exists(i));
       this.validateArtifact(products.read(i));
     }
     products.deleteAll();
     for (long i = 1; i < 112; i++) {
-      assertFalse("Product id exists ?", products.exists(i));
+      assertFalse(products.exists(i));
     }
   }
 
   // Issue 192 describes the use case
-  @Test(expected = ResourceNotFoundException.class)
+	@Test
   public void testPOJOReadInvalidId() {
     PojoRepository<Artifact, Long> products = client.newPojoRepository(Artifact.class, Long.class);
     products.deleteAll();
@@ -177,14 +176,9 @@ public class TestPOJOReadWrite1 extends AbstractFunctionalTest {
     for (int i = 1; i < 112; i++) {
       products.write(this.getArtifact(i));
     }
-    assertEquals("Total number of object recods", 111, products.count());
-    for (long i = 1143; i < 1193; i++) {
-      this.validateArtifact(products.read(i));
-    }
+    assertEquals( 111, products.count());
+	assertThrows(ResourceNotFoundException.class, () -> this.validateArtifact(products.read(1143l)));
     products.deleteAll();
-    for (long i = 1; i < 112; i++) {
-      assertFalse("Product id exists ?", products.exists(i));
-    }
   }
 
   // This test is to persist objects into different collections, read documents
@@ -202,20 +196,20 @@ public class TestPOJOReadWrite1 extends AbstractFunctionalTest {
         products.write(this.getArtifact(i), "odd", "numbers");
       }
     }
-    assertEquals("Total number of object recods", 110, products.count("numbers"));
-    assertEquals("Collection even count", 55, products.count("even"));
-    assertEquals("Collection odd count", 55, products.count("odd"));
+    assertEquals( 110, products.count("numbers"));
+    assertEquals( 55, products.count("even"));
+    assertEquals( 55, products.count("odd"));
     for (long i = 112; i < 222; i++) {
       // validate all the records inserted are readable
-      assertTrue("Product id " + i + " does not exist", products.exists(i));
+      assertTrue(products.exists(i));
       this.validateArtifact(products.read(i));
     }
     products.delete((long) 112);
-    assertFalse("Product id 112 exists ?", products.exists((long) 112));
+    assertFalse( products.exists((long) 112));
     products.deleteAll();
     // see any document exists
     for (long i = 112; i < 222; i++) {
-      assertFalse("Product id " + i + " exists ?", products.exists(i));
+      assertFalse(products.exists(i));
     }
     // see if it complains when there are no records
     products.delete((long) 112);
@@ -244,12 +238,12 @@ public class TestPOJOReadWrite1 extends AbstractFunctionalTest {
     }
     ids[j] = (long) 1234234;
     j++;
-    assertEquals("Total number of object recods", 111, products.count("numbers"));
-    assertEquals("Collection even count", 56, products.count("even"));
-    assertEquals("Collection odd count", 55, products.count("odd"));
+    assertEquals( 111, products.count("numbers"));
+    assertEquals( 56, products.count("even"));
+    assertEquals( 55, products.count("odd"));
 
     System.out.println("Default Page length setting on docMgr :" + products.getPageLength());
-    assertEquals("Default setting for page length", 50, products.getPageLength());
+    assertEquals( 50, products.getPageLength());
 
     PojoPage<Artifact> p = products.read(ids);
     // test for page methods
@@ -260,11 +254,11 @@ public class TestPOJOReadWrite1 extends AbstractFunctionalTest {
       this.validateArtifact(p.next());
       count++;
     }
-    assertEquals("document count", 111, count);
+    assertEquals( 111, count);
     products.deleteAll();
     // see any document exists
     for (long i = 112; i < 222; i++) {
-      assertFalse("Product id " + i + " exists ?", products.exists(i));
+      assertFalse(products.exists(i));
     }
     // see if it complains when there are no records
   }
@@ -282,63 +276,63 @@ public class TestPOJOReadWrite1 extends AbstractFunctionalTest {
         products.write(this.getArtifact(i), "odd", "numbers");
       }
     }
-    assertEquals("Total number of object recods", 111, products.count("numbers"));
-    assertEquals("Collection even count", 56, products.count("even"));
-    assertEquals("Collection odd count", 55, products.count("odd"));
+    assertEquals( 111, products.count("numbers"));
+    assertEquals( 56, products.count("even"));
+    assertEquals( 55, products.count("odd"));
 
     System.out.println("Default Page length setting on docMgr :" + products.getPageLength());
-    assertEquals("Default setting for page length", 50, products.getPageLength());
+    assertEquals( 50, products.getPageLength());
     products.setPageLength(1);
-    assertEquals("explicit setting for page length", 1, products.getPageLength());
+    assertEquals( 1, products.getPageLength());
     PojoPage<Artifact> p = products.readAll(1);
     // test for page methods
-    assertEquals("Number of records", 1, p.size());
+    assertEquals( 1, p.size());
     System.out.println("Page size" + p.size());
-    assertEquals("Starting record in first page ", 1, p.getStart());
+    assertEquals( 1, p.getStart());
     System.out.println("Starting record in first page " + p.getStart());
 
-    assertEquals("Total number of estimated results:", 111, p.getTotalSize());
+    assertEquals(111, p.getTotalSize());
     System.out.println("Total number of estimated results:" + p.getTotalSize());
-    assertEquals("Total number of estimated pages :", 111, p.getTotalPages());
+    assertEquals(111, p.getTotalPages());
     System.out.println("Total number of estimated pages :" + p.getTotalPages());
-    assertTrue("Is this First page :", p.isFirstPage());
-    assertFalse("Is this Last page :", p.isLastPage());
-    assertTrue("Is this First page has content:", p.hasContent());
+    assertTrue(p.isFirstPage());
+    assertFalse(p.isLastPage());
+    assertTrue(p.hasContent());
     // Need the Issue #75 to be fixed
-    assertFalse("Is first page has previous page ?", p.hasPreviousPage());
+    assertFalse( p.hasPreviousPage());
     long pageNo = 1, count = 0;
     do {
       count = 0;
       p = products.readAll(pageNo);
 
       if (pageNo > 1) {
-        assertFalse("Is this first Page", p.isFirstPage());
-        assertTrue("Is page has previous page ?", p.hasPreviousPage());
+        assertFalse( p.isFirstPage());
+        assertTrue( p.hasPreviousPage());
       }
 
       while (p.iterator().hasNext()) {
         this.validateArtifact(p.iterator().next());
         count++;
       }
-      assertEquals("document count", p.size(), count);
+      assertEquals( p.size(), count);
 
       pageNo = pageNo + p.getPageSize();
     } while (!(p.isLastPage()) && pageNo < p.getTotalSize());
-    assertTrue("page count is 111 ", pageNo == p.getTotalPages());
-    assertTrue("Page has previous page ?", p.hasPreviousPage());
-    assertEquals("page size", 1, p.getPageSize());
-    assertEquals("document count", 111, p.getTotalSize());
+    assertTrue( pageNo == p.getTotalPages());
+    assertTrue( p.hasPreviousPage());
+    assertEquals( 1, p.getPageSize());
+    assertEquals( 111, p.getTotalSize());
 
     products.deleteAll();
     p = products.readAll(1);
-    assertFalse("Page has any records ?", p.hasContent());
+    assertFalse( p.hasContent());
   }
 
   @Test
   public void testPOJOgetDocumentUri() {
     PojoRepository<StringPOJO, String> strPojoRepo = client.newPojoRepository(StringPOJO.class, String.class);
     StringPOJO sobj = new StringPOJO();
-    
+
     sobj.setName("StringUri");
     strPojoRepo.write(sobj);
     System.out.println(strPojoRepo.getDocumentUri(sobj));
@@ -394,7 +388,7 @@ public class TestPOJOReadWrite1 extends AbstractFunctionalTest {
     JacksonHandle jh = new JacksonHandle();
     rangeQryRepos.setPageLength(56);
     p = rangeQryRepos.search(qdEQ, 1, jh);
-    assertEquals("total no of pages", 1, p.getTotalPages());
+    assertEquals( 1, p.getTotalPages());
 
     long pageNo = 1, count = 0;
     do {
@@ -403,29 +397,29 @@ public class TestPOJOReadWrite1 extends AbstractFunctionalTest {
       while (p.hasNext()) {
         ArtifactIndexedOnCalendar a = p.next();
 
-        assertTrue("Artifact Expiry date incorrect", a.getExpiryDate().getTime().equals(calOne.getTime()));
-        assertTrue("Artifact id incorrect", a.getId() == 57);
-        assertTrue("Artifact inventory incorrect", a.getInventory() == 1057);
-        assertTrue("Artifact name incorrect", a.getName().equalsIgnoreCase("Cogs special 57"));
-        assertTrue("Artifact manufacturer latitude incorrect", a.getManufacturer().getLatitude() == 98.998);
-        assertTrue("Artifact manufacturer longitude incorrect", a.getManufacturer().getLongitude() == -30.966);
-        assertTrue("Artifact manufacturer name incorrect", a.getManufacturer().getName().equalsIgnoreCase("Acme special, Inc."));
-        assertTrue("Artifact website incorrect", a.getManufacturer().getWebsite().equalsIgnoreCase("http://www.acme special.com"));
+        assertTrue( a.getExpiryDate().getTime().equals(calOne.getTime()));
+        assertTrue( a.getId() == 57);
+        assertTrue( a.getInventory() == 1057);
+        assertTrue( a.getName().equalsIgnoreCase("Cogs special 57"));
+        assertTrue( a.getManufacturer().getLatitude() == 98.998);
+        assertTrue( a.getManufacturer().getLongitude() == -30.966);
+        assertTrue( a.getManufacturer().getName().equalsIgnoreCase("Acme special, Inc."));
+        assertTrue( a.getManufacturer().getWebsite().equalsIgnoreCase("http://www.acme special.com"));
 
         count++;
       }
-      assertEquals("Page size", count, p.size());
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
     } while (!p.isLastPage() && pageNo <= p.getTotalSize());
-    assertEquals("page number after the loop", 1, p.getPageNumber());
-    assertEquals("total no of pages", 1, p.getTotalPages());
+    assertEquals( 1, p.getPageNumber());
+    assertEquals( 1, p.getTotalPages());
 
     // Range query on Greater than equal.
     PojoQueryDefinition qdGE = qb.range("expiryDate", Operator.GE, calTwo);
     JacksonHandle jhGE = new JacksonHandle();
 
     p = rangeQryRepos.search(qdGE, 1, jhGE);
-    assertEquals("total no of pages", 1, p.getTotalPages());
+    assertEquals( 1, p.getTotalPages());
 
     pageNo = 1;
     count = 0;
@@ -437,13 +431,13 @@ public class TestPOJOReadWrite1 extends AbstractFunctionalTest {
         ArtifactIndexedOnCalendar a = p.next();
 
         if (a.getId() == 97) {
-          assertTrue("Expiry date incorrect", a.getExpiryDate().getTime().equals(calTwo.getTime()));
-          assertTrue("Artifact inventory incorrect", a.getInventory() == 1097);
-          assertTrue("Artifact name incorrect", a.getName().equalsIgnoreCase("Cogs special 97"));
-          assertTrue("Artifact manufacturer latitude incorrect", a.getManufacturer().getLatitude() == 138.998);
-          assertTrue("Artifact manufacturer longitude incorrect", a.getManufacturer().getLongitude() == 9.03400000000001);
-          assertTrue("Artifact manufacturer name incorrect", a.getManufacturer().getName().equalsIgnoreCase("Acme special, Inc."));
-          assertTrue("Artifact website incorrect incorrect", a.getManufacturer().getWebsite().equalsIgnoreCase("http://www.acme special.com"));
+          assertTrue( a.getExpiryDate().getTime().equals(calTwo.getTime()));
+          assertTrue( a.getInventory() == 1097);
+          assertTrue( a.getName().equalsIgnoreCase("Cogs special 97"));
+          assertTrue( a.getManufacturer().getLatitude() == 138.998);
+          assertTrue( a.getManufacturer().getLongitude() == 9.03400000000001);
+          assertTrue( a.getManufacturer().getName().equalsIgnoreCase("Acme special, Inc."));
+          assertTrue( a.getManufacturer().getWebsite().equalsIgnoreCase("http://www.acme special.com"));
 
           bFound = true;
         }
@@ -453,19 +447,19 @@ public class TestPOJOReadWrite1 extends AbstractFunctionalTest {
       if (!bFound) {
         fail("Range Query on Calendar type failed when greater than or equal used.");
       }
-      assertEquals("Number of rows returned count should be 14", 14, count);
-      assertEquals("Page size", count, p.size());
+      assertEquals( 14, count);
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
     } while (!p.isLastPage() && pageNo <= p.getTotalSize());
-    assertEquals("page number after the loop", 1, p.getPageNumber());
-    assertEquals("total no of pages", 1, p.getTotalPages());
+    assertEquals( 1, p.getPageNumber());
+    assertEquals( 1, p.getTotalPages());
 
     // Range query on Greater than. count should be 1 less than previous count.
     PojoQueryDefinition qdGT = qb.range("expiryDate", Operator.GT, calTwo);
     JacksonHandle jhGT = new JacksonHandle();
 
     p = rangeQryRepos.search(qdGT, 1, jhGT);
-    assertEquals("total no of pages", 1, p.getTotalPages());
+    assertEquals( 1, p.getTotalPages());
 
     pageNo = 1;
     count = 0;
@@ -482,12 +476,12 @@ public class TestPOJOReadWrite1 extends AbstractFunctionalTest {
         count++;
       }
 
-      assertEquals("Number of rows returned count should be 13", 13, count);
-      assertEquals("Page size", count, p.size());
+      assertEquals( 13, count);
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
     } while (!p.isLastPage() && pageNo <= p.getTotalSize());
-    assertEquals("page number after the loop", 1, p.getPageNumber());
-    assertEquals("total no of pages", 1, p.getTotalPages());
+    assertEquals( 1, p.getPageNumber());
+    assertEquals( 1, p.getTotalPages());
   }
 
   public void loadSimplePojos(PojoRepository rangeQueryRepos) {

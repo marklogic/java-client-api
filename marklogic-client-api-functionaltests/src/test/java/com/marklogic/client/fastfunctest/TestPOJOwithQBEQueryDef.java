@@ -30,18 +30,17 @@ import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryManager;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.*;
-
 public class TestPOJOwithQBEQueryDef extends AbstractFunctionalTest {
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     client = getDatabaseClient("rest-admin", "x", getConnType());
   }
@@ -93,9 +92,9 @@ public class TestPOJOwithQBEQueryDef extends AbstractFunctionalTest {
 
   public void validateArtifact(Artifact art)
   {
-    assertNotNull("Artifact object should never be Null", art);
-    assertNotNull("Id should never be Null", art.id);
-    assertTrue("Inventry is always greater than 1000", art.getInventory() > 1000);
+    assertNotNull( art);
+    assertNotNull( art.id);
+    assertTrue( art.getInventory() > 1000);
   }
 
   public void loadSimplePojos(PojoRepository products)
@@ -110,7 +109,7 @@ public class TestPOJOwithQBEQueryDef extends AbstractFunctionalTest {
     }
   }
 
-  @Test(expected = ClassCastException.class)
+	@Test
   public void testPOJOqbeSearchWithoutSearchHandle() {
     PojoRepository<Artifact, Long> products = client.newPojoRepository(Artifact.class, Long.class);
     PojoPage<Artifact> p;
@@ -122,36 +121,14 @@ public class TestPOJOwithQBEQueryDef extends AbstractFunctionalTest {
             + ",\"$not\":[{\"name\":{\"$word\":\"special\",\"$exact\": false}}]"
             + "}}";
 
-    PojoQueryDefinition qd = (PojoQueryDefinition) queryMgr.newRawQueryByExampleDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
-    qd.setCollections("odd");
-    products.setPageLength(11);
-    p = products.search(qd, 1);
-    assertEquals("total no of pages", 4, p.getTotalPages());
-    // System.out.println(p.getTotalPages());
-    long pageNo = 1, count = 0;
-    do {
-      count = 0;
-
-      p = products.search(qd, pageNo);
-
-      while (p.iterator().hasNext()) {
-        Artifact a = p.iterator().next();
-        validateArtifact(a);
-        assertFalse("Verifying document with special is not there", a.getId() % 5 == 0);
-        assertTrue("Artifact Id is odd", a.getId() % 2 != 0);
-        assertTrue("Company name contains widgets", a.getManufacturer().getName().contains("Widgets"));
-        count++;
-        // System.out.println(a.getId()+" "+a.getManufacturer().getName()
-        // +"  "+count);
-      }
-      assertEquals("Page size", count, p.size());
-      pageNo = pageNo + p.getPageSize();
-    } while (!p.isLastPage() && pageNo < p.getTotalSize());
-    assertEquals("page number after the loop", 4, p.getPageNumber());
-    assertEquals("total no of pages", 4, p.getTotalPages());
+		assertThrows(ClassCastException.class, () -> {
+				PojoQueryDefinition queryDef = (PojoQueryDefinition)
+					queryMgr.newRawQueryByExampleDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
+			}
+		);
   }
 
-  @Test(expected = ClassCastException.class)
+	@Test
   public void testPOJOqbeSearchWithSearchHandle() {
     PojoRepository<Artifact, Long> products = client.newPojoRepository(Artifact.class, Long.class);
     PojoPage<Artifact> p;
@@ -163,49 +140,12 @@ public class TestPOJOwithQBEQueryDef extends AbstractFunctionalTest {
             + "\"$and\":[{\"inventory\":{\"$gt\":1010}},{\"inventory\":{\"$le\":1110}}]"
             + ",\"$filtered\": true}}";
     System.out.println(queryAsString);
-    PojoQueryDefinition qd = (PojoQueryDefinition) queryMgr.newRawQueryByExampleDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
-    qd.setCollections("even");
-    SearchHandle results = new SearchHandle();
-    products.setPageLength(10);
-    p = products.search(qd, 1, results);
-    assertEquals("total no of pages", 5, p.getTotalPages());
-    System.out.println(p.getTotalPages());
-    // System.out.println(results.getMetrics().getQueryResolutionTime());
-    long pageNo = 1, count = 0;
-    do {
-      count = 0;
-      p = products.search(qd, pageNo, results);
-
-      while (p.iterator().hasNext()) {
-        Artifact a = p.iterator().next();
-        validateArtifact(a);
-        assertTrue("Enventory lies between 1010 to 1110", a.getInventory() > 1010 && a.getInventory() <= 1110);
-        assertTrue("Artifact Id is even", a.getId() % 2 == 0);
-        assertTrue("Company name contains Acme", a.getManufacturer().getName().contains("Acme"));
-        count++;
-        // System.out.println(a.getId()+" "+a.getManufacturer().getName()
-        // +"  "+count);
-      }
-      assertEquals("Page size", count, p.size());
-      pageNo = pageNo + p.getPageSize();
-      MatchDocumentSummary[] mds = results.getMatchResults();
-      assertEquals("Size of the results summary", 10, mds.length);
-      for (MatchDocumentSummary md : mds) {
-        assertTrue("every uri should contain the class name", md.getUri().contains("Artifact"));
-      }
-      String[] facetNames = results.getFacetNames();
-      for (String fname : facetNames) {
-        System.out.println(fname);
-      }
-      // assertEquals("Total results from search handle ",50,results.getTotalResults());
-      // assertTrue("Search Handle metric results ",results.getMetrics().getTotalTime()>0);
-    } while (!p.isLastPage() && pageNo < p.getTotalSize());
-    assertEquals("Page start check", 41, p.getStart());
-    assertEquals("page number after the loop", 5, p.getPageNumber());
-    assertEquals("total no of pages", 5, p.getTotalPages());
+	assertThrows(ClassCastException.class, () -> {
+		PojoQueryDefinition qd = (PojoQueryDefinition) queryMgr.newRawQueryByExampleDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
+	});
   }
 
-  @Test(expected = ClassCastException.class)
+	@Test
   public void testPOJOCombinedSearchWithJacksonHandle() {
     PojoRepository<Artifact, Long> products = client.newPojoRepository(Artifact.class, Long.class);
     PojoPage<Artifact> p;
@@ -217,42 +157,14 @@ public class TestPOJOwithQBEQueryDef extends AbstractFunctionalTest {
         + "\"options\":{\"constraint\":{\"name\":\"pojo-name-field\", \"word\":{\"json-property\":\"name\"}}}"
         + "}}";
 
-    PojoQueryDefinition qd = (PojoQueryDefinition) queryMgr.newRawCombinedQueryDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
-    JacksonHandle results = new JacksonHandle();
-    p = products.search(qd, 1, results);
-    products.setPageLength(11);
-    assertEquals("total no of pages", 1, p.getTotalPages());
-    // System.out.println(p.getTotalPages()+results.get().toString());
-    long pageNo = 1, count = 0;
-    do {
-      count = 0;
-      p = products.search(qd, pageNo, results);
-
-      while (p.iterator().hasNext()) {
-        Artifact a = p.iterator().next();
-        validateArtifact(a);
-        count++;
-        assertTrue("Manufacture name starts with acme", a.getManufacturer().getName().contains("Acme"));
-        assertTrue("Artifact name contains", a.getName().contains("special"));
-
-      }
-      assertEquals("Page size", count, p.size());
-      pageNo = pageNo + p.getPageSize();
-
-      assertEquals("Page start from search handls vs page methods", results.get().get("start").asLong(), p.getStart());
-      assertEquals("Format in the search handle", "json", results.get().withArray("results").get(1).path("format").asText());
-      assertTrue("Uri in search handle contains Artifact", results.get().withArray("results").get(1).path("uri").asText().contains("Artifact"));
-      // System.out.println(results.get().toString());
-    } while (!p.isLastPage() && pageNo < p.getTotalSize());
-    assertFalse("search handle has metrics", results.get().has("metrics"));
-    assertEquals("Total from search handle", 11, results.get().get("total").asInt());
-    assertEquals("page number after the loop", 1, p.getPageNumber());
-    assertEquals("total no of pages", 1, p.getTotalPages());
+	assertThrows(ClassCastException.class, () -> {
+		PojoQueryDefinition qd = (PojoQueryDefinition) queryMgr.newRawCombinedQueryDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
+	});
   }
 
   // Searching for Id as Number in JSON using range query
-  @Test(expected = ClassCastException.class)
-  public void testPOJOcombinedSearchforNumberWithStringHandle() throws KeyManagementException, NoSuchAlgorithmException, JsonProcessingException, IOException {
+	@Test
+  public void testPOJOcombinedSearchforNumberWithStringHandle() {
     PojoRepository<Artifact, Long> products = client.newPojoRepository(Artifact.class, Long.class);
     PojoPage<Artifact> p;
     this.loadSimplePojos(products);
@@ -262,32 +174,9 @@ public class TestPOJOwithQBEQueryDef extends AbstractFunctionalTest {
         + "\"range-constraint-query\":{\"constraint-name\":\"id\", \"value\":[5,10,15,20,25,30]}},"
         + "\"options\":{\"return-metrics\":false, \"constraint\":{\"name\":\"id\", \"range\":{\"type\": \"xs:long\",\"json-property\":\"id\"}}}"
         + "}}";
-    PojoQueryDefinition qd = (PojoQueryDefinition) queryMgr.newRawCombinedQueryDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
-
-    StringHandle results = new StringHandle();
-    JacksonHandle jh = new JacksonHandle();
-    p = products.search(qd, 1, jh);
-
-    long pageNo = 1, count = 0;
-    do {
-      count = 0;
-      p = products.search(qd, pageNo, results.withFormat(Format.JSON));
-
-      while (p.iterator().hasNext()) {
-        Artifact a = p.iterator().next();
-        validateArtifact(a);
-        count++;
-      }
-      assertEquals("Page total results", count, p.getTotalSize());
-      pageNo = pageNo + p.getPageSize();
-      System.out.println(results.get().toString());
-    } while (!p.isLastPage() && pageNo < p.getTotalSize());
-    assertFalse("String handle is not empty", results.get().isEmpty());
-    assertTrue("String handle contains results", results.get().contains("results"));
-    assertTrue("String handle contains format", results.get().contains("\"format\":\"json\""));
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode actNode = mapper.readTree(results.get()).get("total");
-    assertEquals("Total search results resulted are ", 6, actNode.asInt());
+	assertThrows(ClassCastException.class, () -> {
+		PojoQueryDefinition qd = (PojoQueryDefinition) queryMgr.newRawCombinedQueryDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
+	});
   }
 
 }

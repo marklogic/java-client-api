@@ -16,24 +16,6 @@
 
 package com.marklogic.client.functionaltest;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.InetAddress;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
-import org.junit.*;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -43,10 +25,24 @@ import com.marklogic.client.DatabaseClientFactory.CertificateAuthContext;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.junit.jupiter.api.*;
 
-import junit.framework.Assert;
+import java.io.*;
+import java.net.InetAddress;
 
-@Ignore("Ignored because it was previously ignored in build.gradle though without explanation")
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@Disabled("Ignored because it was previously ignored in build.gradle though without explanation")
 public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST {
 
   public static String newLine = System.getProperty("line.separator");
@@ -60,7 +56,7 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST {
   public static DatabaseClient secClient;
   public static String localHostname = getBootStrapHostFromML();
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
 
     createRESTServerWithDB(server, port);
@@ -83,7 +79,7 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST {
     associateRESTServerWithDB(server, "Documents");
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
 
     removeTrustedCert();
@@ -92,13 +88,9 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST {
     associateRESTServerWithDB(setupServer, "Documents");
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     clearDB(port);
-  }
-
-  @After
-  public void tearDown() throws Exception {
   }
 
   @SuppressWarnings("deprecation")
@@ -119,7 +111,7 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST {
     docMgr.write(docId, handle);
     System.out.println(client.newServerEval().xquery(query1));
     System.out.println("Doc written");
-    Assert.assertEquals(count + 1, client.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+    assertEquals(count + 1, client.newServerEval().xquery(query1).eval().next().getNumber().intValue());
     client.release();
   }
 
@@ -134,8 +126,8 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST {
     } catch (Exception e) {
       e.printStackTrace();
       System.out.println("Exception is " + e.getClass().getName());
-      Assert.assertTrue(e.getClass().getName().equals("com.marklogic.client.FailedRequestException"));
-      Assert.assertTrue(e.getMessage().equals("Local message: failed to apply resource at eval: Unauthorized. Server Message: Unauthorized"));
+      assertTrue(e.getClass().getName().equals("com.marklogic.client.FailedRequestException"));
+      assertTrue(e.getMessage().equals("Local message: failed to apply resource at eval: Unauthorized. Server Message: Unauthorized"));
 
     }
   }

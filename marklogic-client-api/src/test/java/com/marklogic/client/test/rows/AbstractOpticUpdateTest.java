@@ -16,8 +16,8 @@ import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +25,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 public abstract class AbstractOpticUpdateTest {
 
@@ -36,7 +37,7 @@ public abstract class AbstractOpticUpdateTest {
     protected PlanBuilder op;
     protected ObjectMapper mapper = new ObjectMapper();
 
-    @Before
+    @BeforeEach
     public void setup() {
         // Subclasses of this test are expected to only write URIs starting with /acme/ (which is used so that test
         // URIs show up near the top when exploring the database in qconsole), so delete all of them before running the
@@ -50,7 +51,7 @@ public abstract class AbstractOpticUpdateTest {
         op = rowManager.newPlanBuilder();
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         // Reset back to the default client that non-OpticUpdate tests expect
         Common.client = Common.newClient();
@@ -70,8 +71,9 @@ public abstract class AbstractOpticUpdateTest {
         PlanBuilder.Plan rawPlanToExecute = bindingFunction != null ? bindingFunction.apply(rawPlan) : rawPlan;
 
         List<RowRecord> rowsFromExportedPlan = resultRows(rawPlanToExecute);
-        assertEquals("The row count from the exported list should match that of the rows from the original plan",
-                rowsFromPlan.size(), rowsFromExportedPlan.size());
+        assertEquals(
+                rowsFromPlan.size(), rowsFromExportedPlan.size(),
+			"The row count from the exported list should match that of the rows from the original plan");
     }
 
     protected final void verifyJsonDoc(String uri, Consumer<ObjectNode> verifier) {
@@ -144,7 +146,7 @@ public abstract class AbstractOpticUpdateTest {
 
     /**
      * Defines the required fields for the temporal axes configured for the test project.
-     * 
+     *
      * @return
      */
     protected final ObjectNode newTemporalContent() {
@@ -161,7 +163,8 @@ public abstract class AbstractOpticUpdateTest {
 
     protected final void assertPermissionExists(DocumentMetadataHandle.DocumentPermissions perms, String role,
                                                 DocumentMetadataHandle.Capability capability) {
-        assertTrue("No permissions for role: " + role, perms.containsKey(role));
-        assertTrue("Capability " + capability + " for role " + role + " not found", perms.get(role).contains(capability));
+        assertTrue(perms.containsKey(role), "No permissions for role: " + role);
+        assertTrue(perms.get(role).contains(capability),
+			"Capability " + capability + " for role " + role + " not found");
     }
 }

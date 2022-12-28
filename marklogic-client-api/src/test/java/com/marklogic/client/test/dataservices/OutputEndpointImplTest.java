@@ -19,14 +19,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.dataservices.OutputCaller;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class OutputEndpointImplTest {
     static ObjectNode apiObj;
@@ -34,7 +34,7 @@ public class OutputEndpointImplTest {
     static String scriptPath;
     static String apiPath;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         apiObj = IOTestUtil.readApi(apiName);
         scriptPath = IOTestUtil.getScriptPath(apiObj);
@@ -89,10 +89,10 @@ public class OutputEndpointImplTest {
         assertNotNull(resultArray);
         ObjectNode resultObj = IOTestUtil.mapper.readValue(resultArray[0], ObjectNode.class);
         assertNotNull(resultObj);
-        assertTrue("Result object is empty", resultObj.size() != 0);
+        assertTrue(resultObj.size() != 0);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }

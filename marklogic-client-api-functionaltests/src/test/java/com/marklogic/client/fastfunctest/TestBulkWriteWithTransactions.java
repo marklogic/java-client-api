@@ -27,9 +27,10 @@ import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.security.KeyManagementException;
@@ -38,7 +39,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+
 
 public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
 
@@ -46,7 +47,7 @@ public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
   private static final String DIRECTORY = "/bulkTransacton/";
   private static int ndocCount = 0;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     System.out.println("In Setup");
     createRESTUser("app-user", "password", "rest-writer", "rest-reader", "flexrep-eval");
@@ -56,11 +57,11 @@ public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
 		  ndocCount = 1;
 	  }
 	  else {
-		  ndocCount = 102; 
+		  ndocCount = 102;
 	  }
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tear down");
     deleteRESTUser("app-user");
@@ -92,26 +93,26 @@ public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
     String actualProperties = getDocumentPropertiesString(properties);
     boolean result = actualProperties.contains("size:5|");
 
-    assertTrue("Document properties count", result);
+    assertTrue( result);
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:6"));
-    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
-    assertTrue("Document permissions difference in app-user permissions",
+    assertTrue( actualPermissions.contains("size:6"));
+    assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue(
         (actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions.contains("app-user:[READ, UPDATE]")));
-    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
-    
+    assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
+
     // Collections
     String expectedCollections = "size:2|my-collection1|my-collection2|";
-    String[] actualCollections = getDocumentCollectionsString(collections).split("\\|");    
+    String[] actualCollections = getDocumentCollectionsString(collections).split("\\|");
 
-    assertTrue("Document collections difference", expectedCollections.contains(actualCollections[0]));
-    assertTrue("Document collections difference", expectedCollections.contains(actualCollections[1]));
-    assertTrue("Document collections difference", expectedCollections.contains(actualCollections[2]));
+    assertTrue( expectedCollections.contains(actualCollections[0]));
+    assertTrue( expectedCollections.contains(actualCollections[1]));
+    assertTrue( expectedCollections.contains(actualCollections[2]));
 
   }
 
@@ -126,28 +127,28 @@ public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println("Returned permissions: " + actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
-    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
-    assertTrue("Document permissions difference in flexrep-eval permission", actualPermissions.contains("flexrep-eval:[READ]"));
-    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
+    assertTrue( actualPermissions.contains("size:5"));
+    assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue( actualPermissions.contains("flexrep-eval:[READ]"));
+    assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
     // Collections
     String expectedCollections = "size:1|http://permission-collections/|";
     String[] actualCollections = getDocumentCollectionsString(collections).split("\\|");
 
-    assertTrue("Document collections difference", expectedCollections.contains(actualCollections[0]));
-    assertTrue("Document collections difference", expectedCollections.contains(actualCollections[1]));
+    assertTrue( expectedCollections.contains(actualCollections[0]));
+    assertTrue( expectedCollections.contains(actualCollections[1]));
 
     // System.out.println(actualPermissions);
   }
 
   public void validateRecord(DocumentRecord record, Format type) {
 
-    assertNotNull("DocumentRecord should never be null", record);
-    assertNotNull("Document uri should never be null", record.getUri());
-    assertTrue("Document uri should start with " + DIRECTORY, record.getUri().startsWith(DIRECTORY));
-    assertEquals("All records are expected to be in same format", type, record.getFormat());
+    assertNotNull( record);
+    assertNotNull( record.getUri());
+    assertTrue(record.getUri().startsWith(DIRECTORY));
+    assertEquals( type, record.getFormat());
   }
 
   /*
@@ -173,7 +174,7 @@ public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
 				  // Slow down in the cloud env.
 				  System.out.println("count is = " + count);
 			  }
-			  count++;			  
+			  count++;
 		  }
 		  if (count % BATCH_SIZE > 0) {
 			  docMgr.write(writeset, t);
@@ -191,7 +192,7 @@ public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
 				  DocumentRecord rec = page.next();
 				  validateRecord(rec, Format.XML);
 				  rec.getContent(dh);
-				  assertEquals("Comparing the content :", map.get(rec.getUri()), convertXMLDocumentToString(dh.get()));
+				  assertEquals( map.get(rec.getUri()), convertXMLDocumentToString(dh.get()));
 				  count++;
 				  System.out.println("count is = " + count);
 			  }
@@ -200,7 +201,7 @@ public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
 			  System.out.println(e.getMessage());
 			  throw e;
 		  }
-		  assertEquals("document count", 102, count);
+		  assertEquals( 102, count);
 	  } catch (Exception e) {
 		  e.printStackTrace();
 	  }
@@ -249,11 +250,11 @@ public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
 				  DocumentRecord rec = page.next();
 				  validateRecord(rec, Format.XML);
 				  rec.getContent(dh);
-				  assertEquals("Comparing the content :", map.get(rec.getUri()), convertXMLDocumentToString(dh.get()));
+				  assertEquals( map.get(rec.getUri()), convertXMLDocumentToString(dh.get()));
 				  count++;
 			  }
 
-			  assertEquals("document count", 102, count);
+			  assertEquals( 102, count);
 			  t1.rollback();
 			  tstatus = false;
 			  count = 0;
@@ -263,10 +264,10 @@ public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
 				  DocumentRecord rec = page.next();
 				  validateRecord(rec, Format.XML);
 				  rec.getContent(dh);
-				  assertEquals("Comparing the content :", map.get(rec.getUri()), convertXMLDocumentToString(dh.get()));
+				  assertEquals( map.get(rec.getUri()), convertXMLDocumentToString(dh.get()));
 				  count++;
 			  }
-			  assertEquals("document count", 0, count);
+			  assertEquals( 0, count);
 
 		  } catch (Exception e) {
 			  System.out.println(e.getMessage());
@@ -293,7 +294,7 @@ public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
 	  int count = 1;
 	  boolean tstatus = true;
 	  System.out.println("Inside testBulkWritewithMetadataTransactionNoCommit");
-	  try {		  
+	  try {
 		  client = getDatabaseClient("usr1", "password", getConnType());
 		  Transaction t1 = client.openTransaction();
 		  try {
@@ -339,12 +340,12 @@ public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
 				  DocumentRecord rec = page.next();
 				  validateRecord(rec, Format.XML);
 				  rec.getContent(dh);
-				  assertEquals("Comparing the content :", map2.get(rec.getUri()), convertXMLDocumentToString(dh.get()));
+				  assertEquals( map2.get(rec.getUri()), convertXMLDocumentToString(dh.get()));
 				  docMgr.readMetadata(rec.getUri(), mh2, t1);
 				  validateMetadata(mh2);
 				  count++;
 			  }
-			  assertEquals("document count", 102, count);
+			  assertEquals( 102, count);
 			  t1.rollback();
 			  tstatus = false;
 			  count = 0;
@@ -355,12 +356,12 @@ public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
 				  DocumentRecord rec = page.next();
 				  validateRecord(rec, Format.XML);
 				  rec.getContent(dh);
-				  assertEquals("Comparing the content :", map.get(rec.getUri()), convertXMLDocumentToString(dh.get()));
+				  assertEquals( map.get(rec.getUri()), convertXMLDocumentToString(dh.get()));
 				  docMgr.readMetadata(rec.getUri(), mh2);
 				  validateDefaultMetadata(mh2);
 				  count++;
 			  }
-			  assertEquals("document count", 102, count);
+			  assertEquals( 102, count);
 
 		  } catch (Exception e) {
 			  System.out.println(e.getMessage());
@@ -417,12 +418,12 @@ public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
         DocumentRecord rec = page.next();
         validateRecord(rec, Format.XML);
         rec.getContent(dh);
-        assertEquals("Comparing the content :", map.get(rec.getUri()), convertXMLDocumentToString(dh.get()));
+        assertEquals( map.get(rec.getUri()), convertXMLDocumentToString(dh.get()));
         dMgr.readMetadata(rec.getUri(), mh2, t1);
         validateMetadata(mh2);
         count++;
       }
-      assertEquals("document count", 102, count);
+      assertEquals( 102, count);
       t1.commit();
       tstatus = false;
 
@@ -445,7 +446,7 @@ public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
     int count = 1;
     String docId[] = { "Sega-4MB.jpg" };
     System.out.println("Inside testBulkWritewithTransactionCommitTimeOut");
-	  try {		  
+	  try {
 		  client = getDatabaseClient("usr1", "password", getConnType());
     Transaction t = client.openTransaction("timeoutTrans", 1);
     BinaryDocumentManager docMgr = client.newBinaryDocumentManager();
@@ -477,13 +478,13 @@ public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
       DocumentRecord rec = page.next();
       validateRecord(rec, Format.BINARY);
       rec.getContent(rh);
-      assertEquals("Content length :", file1.length(), rh.get().length());
+      assertEquals( file1.length(), rh.get().length());
       count++;
     }
-    assertEquals("document count", ndocCount, count);
+    assertEquals( ndocCount, count);
 	  }
 	  catch (Exception e) {
-		  e.printStackTrace();		  
+		  e.printStackTrace();
 	  }
 	  finally {
 		  client.release();
@@ -492,7 +493,7 @@ public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
 
   /*
    * Purpose: To test bulk delete within a transaction.
-   * 
+   *
    * Test bulk insert documents with transaction open and then perform a bulk
    * delete. Read documents before and after delete.
    */
@@ -534,12 +535,12 @@ public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
         DocumentRecord rec = page.next();
         validateRecord(rec, Format.XML);
         rec.getContent(dh);
-        assertEquals("Comparing the content :", map.get(rec.getUri()),
+        assertEquals( map.get(rec.getUri()),
             convertXMLDocumentToString(dh.get()));
         count++;
       }
 
-      assertEquals("document count", 102, count);
+      assertEquals( 102, count);
       // Perform a bulk delete.
       docMgr.delete(t1, uris);
 
@@ -550,12 +551,12 @@ public class TestBulkWriteWithTransactions extends AbstractFunctionalTest {
         DocumentRecord rec = page.next();
         validateRecord(rec, Format.XML);
         rec.getContent(dh);
-        assertEquals("Comparing the content :", map.get(rec.getUri()),
+        assertEquals( map.get(rec.getUri()),
             convertXMLDocumentToString(dh.get()));
         count++;
       }
       System.out.println("testBulkWriteDeleteWithTransactions document count = " + count);
-      assertEquals("document count", 0, count);
+      assertEquals( 0, count);
 
     } catch (Exception e) {
       System.out.println(e.getMessage());

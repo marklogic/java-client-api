@@ -15,13 +15,12 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.example.cookbook.ClientCreator;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import org.junit.Test;
-
-import com.marklogic.client.example.cookbook.ClientCreator;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ClientCreatorTest {
   @Test
@@ -33,6 +32,6 @@ public class ClientCreatorTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    assertTrue("ClientCreator example failed", succeeded);
+    assertTrue( succeeded);
   }
 }

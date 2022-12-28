@@ -15,25 +15,6 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
-
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
@@ -43,17 +24,22 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.ValuesHandle;
 import com.marklogic.client.io.ValuesListHandle;
-import com.marklogic.client.query.AggregateResult;
-import com.marklogic.client.query.CountedDistinctValue;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawCtsQueryDefinition;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.query.ValueQueryDefinition;
-import com.marklogic.client.query.ValuesDefinition;
-import com.marklogic.client.query.ValuesListDefinition;
+import com.marklogic.client.query.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ValuesHandleTest {
 
@@ -61,13 +47,13 @@ public class ValuesHandleTest {
   private static final Logger logger = (Logger) LoggerFactory
     .getLogger(ValuesHandleTest.class);
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
     Common.connectAdmin();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -90,15 +76,15 @@ public class ValuesHandleTest {
     ValuesHandle v = queryMgr.values(vdef, new ValuesHandle());
 
     AggregateResult[] agg = v.getAggregates();
-    assertEquals("There should be 2 aggregates", 2, agg.length);
+    assertEquals( 2, agg.length);
     double first  = agg[0].get("xs:double", Double.class);
-    assertTrue("Aggregate 1 should be between 11.4 and 12",
+    assertTrue(
       11.4 < first && first < 12.0);
 
     double second = agg[1].get("xs:double", Double.class);
 
     logger.debug("" + second);
-    assertTrue("Aggregate 2 should be between 1.43 and 1.44",
+    assertTrue(
       1.43 < second && second < 1.44);
 
     Common.adminClient.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
@@ -139,14 +125,14 @@ public class ValuesHandleTest {
           vQuery = rawCtsQuery;
           break;
         default:
-          assertTrue("test case error", false);
+          assertTrue( false);
       }
       vdef.setQueryDefinition(vQuery);
 
       ValuesHandle v = queryMgr.values(vdef, new ValuesHandle());
       CountedDistinctValue dv[] = v.getValues();
-      assertNotNull("There should be values", dv);
-      assertEquals("There should be 3 values", 3, dv.length);
+      assertNotNull( dv);
+      assertEquals( 3, dv.length);
     }
 
     Common.adminClient.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
@@ -160,14 +146,14 @@ public class ValuesHandleTest {
       v = new MyValuesHandle();
       v.parseTestData(is);
     }
-    assertTrue("Name should be 'size'", "size".equals(v.getName()));
-    assertEquals("Type should be 'xs:unsignedLong'", "xs:unsignedLong", v.getType());
+    assertTrue("size".equals(v.getName()));
+    assertEquals( "xs:unsignedLong", v.getType());
 
     CountedDistinctValue dv[] = v.getValues();
 
-    assertEquals("There should be 8 values", 8, dv.length);
-    assertEquals("Frequency should be 1", 1, dv[0].getCount());
-    assertEquals("Value should be 815", (long) 815, (long) dv[0].get(v.getType(), Long.class));
+    assertEquals( 8, dv.length);
+    assertEquals( 1, dv[0].getCount());
+    assertEquals( (long) 815, (long) dv[0].get(v.getType(), Long.class));
   }
 
   @Test
@@ -179,8 +165,8 @@ public class ValuesHandleTest {
 
     v.parseTestData(is);
     Map<String,String> map = v.getValuesMap();
-    assertEquals("Map should contain two keys", map.size(), 2);
-    assertEquals("Size should have this uri", map.get("size"), "/v1/values/size?options=photos");
+    assertEquals( map.size(), 2);
+    assertEquals( map.get("size"), "/v1/values/size?options=photos");
   }
 
 
@@ -195,12 +181,12 @@ public class ValuesHandleTest {
 
     ValuesHandle v = queryMgr.values(vdef, new ValuesHandle(), 2);
     CountedDistinctValue dv[] = v.getValues();
-    assertNotNull("There should be values", dv);
-    assertEquals("There should be 2 values", 2, dv.length);
+    assertNotNull( dv);
+    assertEquals( 2, dv.length);
 
-    assertEquals("The first value should be '1.2'",
+    assertEquals(
       dv[0].get("xs:double", Double.class).toString(), "1.2");
-    assertEquals("The second value should be '2.2'",
+    assertEquals(
       dv[1].get("xs:double", Double.class).toString(), "2.2");
 
     Common.adminClient.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
@@ -216,15 +202,15 @@ public class ValuesHandleTest {
     ValuesListHandle results = queryMgr.valuesList(vdef, new ValuesListHandle());
     assertNotNull(results);
     Map<String,String> map = results.getValuesMap();
-    assertEquals("Map should contain two keys", map.size(), 2);
-    assertEquals("Size should have this uri", map.get("size"), "/v1/values/size?options=photos");
+    assertEquals( map.size(), 2);
+    assertEquals( map.get("size"), "/v1/values/size?options=photos");
 
     // test pagelength
     queryMgr.setPageLength(1L);
     results = queryMgr.valuesList(vdef, new ValuesListHandle());
     assertNotNull(results);
     map = results.getValuesMap();
-    assertEquals("Map should contain one keys", map.size(), 1);
+    assertEquals( map.size(), 1);
 
   }
 

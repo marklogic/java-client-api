@@ -20,7 +20,8 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.io.FileHandle;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -28,8 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-
-import static org.junit.Assert.assertEquals;
 
 public class TestDocumentMimetype extends AbstractFunctionalTest {
 
@@ -62,14 +61,14 @@ public class TestDocumentMimetype extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // read document format
     docMgr.read(docId, handle);
     String format = handle.getFormat().name();
     String expectedFormat = "XML";
 
-    assertEquals("Format does not match", expectedFormat, format);
+    assertEquals( expectedFormat, format);
 
     // release the client
     client.release();
@@ -104,14 +103,14 @@ public class TestDocumentMimetype extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // read document mimetype
     docMgr.read(docId, handle);
     String format = handle.getFormat().name();
     String expectedFormat = "XML";
 
-    assertEquals("Format does not match", expectedFormat, format);
+    assertEquals( expectedFormat, format);
 
     // release the client
     client.release();
@@ -146,14 +145,14 @@ public class TestDocumentMimetype extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // read document mimetype
     docMgr.read(docId, handle);
     String format = handle.getFormat().name();
     String expectedFormat = "XML";
 
-    assertEquals("Format does not match", expectedFormat, format);
+    assertEquals( expectedFormat, format);
 
     // release the client
     client.release();
@@ -188,14 +187,14 @@ public class TestDocumentMimetype extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // read document mimetype
     docMgr.read(docId, handle);
     String format = handle.getFormat().name();
     String expectedFormat = "XML";
 
-    assertEquals("Format does not match", expectedFormat, format);
+    assertEquals( expectedFormat, format);
 
     // release the client
     client.release();
@@ -230,14 +229,14 @@ public class TestDocumentMimetype extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // read document format
     docMgr.read(docId, handle);
     String format = handle.getFormat().name();
     String expectedFormat = "JSON";
 
-    assertEquals("Format does not match", expectedFormat, format);
+    assertEquals( expectedFormat, format);
 
     // release the client
     client.release();
@@ -272,14 +271,14 @@ public class TestDocumentMimetype extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // read document mimetype
     docMgr.read(docId, handle);
     String format = handle.getFormat().name();
     String expectedFormat = "JSON";
 
-    assertEquals("Format does not match", expectedFormat, format);
+    assertEquals( expectedFormat, format);
 
     // release the client
     client.release();
@@ -314,14 +313,14 @@ public class TestDocumentMimetype extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // read document mimetype
     docMgr.read(docId, handle);
     String format = handle.getFormat().name();
     String expectedFormat = "JSON";
 
-    assertEquals("Format does not match", expectedFormat, format);
+    assertEquals( expectedFormat, format);
 
     // release the client
     client.release();
@@ -356,14 +355,14 @@ public class TestDocumentMimetype extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // read document mimetype
     docMgr.read(docId, handle);
     String format = handle.getFormat().name();
     String expectedFormat = "JSON";
 
-    assertEquals("Format does not match", expectedFormat, format);
+    assertEquals( expectedFormat, format);
 
     // release the client
     client.release();
@@ -398,14 +397,14 @@ public class TestDocumentMimetype extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // read document format
     docMgr.read(docId, handle);
     String format = handle.getFormat().name();
     String expectedFormat = "BINARY";
 
-    assertEquals("Format does not match", expectedFormat, format);
+    assertEquals( expectedFormat, format);
 
     // release the client
     client.release();
@@ -440,14 +439,14 @@ public class TestDocumentMimetype extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // read document mimetype
     docMgr.read(docId, handle);
     String format = handle.getFormat().name();
     String expectedFormat = "BINARY";
 
-    assertEquals("Format does not match", expectedFormat, format);
+    assertEquals( expectedFormat, format);
 
     // release the client
     client.release();
@@ -482,14 +481,14 @@ public class TestDocumentMimetype extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // read document mimetype
     docMgr.read(docId, handle);
     String format = handle.getFormat().name();
     String expectedFormat = "BINARY";
 
-    assertEquals("Format does not match", expectedFormat, format);
+    assertEquals( expectedFormat, format);
 
     // release the client
     client.release();
@@ -524,14 +523,14 @@ public class TestDocumentMimetype extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // read document mimetype
     docMgr.read(docId, handle);
     String format = handle.getFormat().name();
     String expectedFormat = "BINARY";
 
-    assertEquals("Format does not match", expectedFormat, format);
+    assertEquals( expectedFormat, format);
 
     // release the client
     client.release();
@@ -566,14 +565,14 @@ public class TestDocumentMimetype extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // read document format
     docMgr.read(docId, handle);
     String format = handle.getFormat().name();
     String expectedFormat = "TEXT";
 
-    assertEquals("Format does not match", expectedFormat, format);
+    assertEquals( expectedFormat, format);
 
     // release the client
     client.release();
@@ -608,14 +607,14 @@ public class TestDocumentMimetype extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // read document mimetype
     docMgr.read(docId, handle);
     String format = handle.getFormat().name();
     String expectedFormat = "TEXT";
 
-    assertEquals("Format does not match", expectedFormat, format);
+    assertEquals( expectedFormat, format);
 
     // release the client
     client.release();
@@ -650,14 +649,14 @@ public class TestDocumentMimetype extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // read document mimetype
     docMgr.read(docId, handle);
     String format = handle.getFormat().name();
     String expectedFormat = "TEXT";
 
-    assertEquals("Format does not match", expectedFormat, format);
+    assertEquals( expectedFormat, format);
 
     // release the client
     client.release();
@@ -692,14 +691,14 @@ public class TestDocumentMimetype extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // read document mimetype
     docMgr.read(docId, handle);
     String format = handle.getFormat().name();
     String expectedFormat = "TEXT";
 
-    assertEquals("Format does not match", expectedFormat, format);
+    assertEquals( expectedFormat, format);
 
     // release the client
     client.release();

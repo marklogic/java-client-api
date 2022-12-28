@@ -15,24 +15,6 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
-import javax.xml.namespace.QName;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
-
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
@@ -42,28 +24,33 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.FacetResult;
-import com.marklogic.client.query.FacetValue;
-import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.MatchLocation;
-import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.*;
 import com.marklogic.client.query.QueryManager.QueryView;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
-import com.marklogic.client.query.SearchMetrics;
-import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.util.RequestLogger;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class StringSearchTest {
   @SuppressWarnings("unused")
   private static final Logger logger = (Logger) LoggerFactory.getLogger(StringSearchTest.class);
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
     Common.connectAdmin();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -86,13 +73,13 @@ public class StringSearchTest {
 
     FacetResult[] facets = results.getFacetResults();
     assertNotNull(facets);
-    assertEquals("expected 1 facet", 1, facets.length);
+    assertEquals( 1, facets.length);
     FacetValue[] facetVals = facets[0].getFacetValues();
-    assertEquals("expected 6 facet values", 6, facetVals.length);
+    assertEquals( 6, facetVals.length);
 
     MatchDocumentSummary[] summaries = results.getMatchResults();
     assertNotNull(summaries);
-    assertEquals("expected 2 results", 2, summaries.length);
+    assertEquals( 2, summaries.length);
   }
 
   @Test
@@ -109,11 +96,11 @@ public class StringSearchTest {
 
     MatchDocumentSummary[] summaries = handle.getMatchResults();
     assertNotNull(summaries);
-    assertEquals("expected 2 results", 2, summaries.length);
+    assertEquals( 2, summaries.length);
 
     for ( MatchDocumentSummary summary : summaries ) {
       MatchLocation[] locations = summary.getMatchLocations();
-      assertEquals("expected 1 match location", 1, locations.length);
+      assertEquals( 1, locations.length);
       for ( MatchLocation location : locations ) {
         assertNotNull(location.getAllSnippetText());
       }
@@ -139,9 +126,9 @@ public class StringSearchTest {
 
     FacetResult[] facets = results.getFacetResults();
     assertNotNull(facets);
-    assertEquals("expected 1 facet", 1, facets.length);
+    assertEquals( 1, facets.length);
     FacetValue[] facetVals = facets[0].getFacetValues();
-    assertEquals("expected 6 facet values", 6, facetVals.length);
+    assertEquals( 6, facetVals.length);
 
     MatchDocumentSummary[] summaries = results.getMatchResults();
     assertTrue(summaries == null || summaries.length == 0);
@@ -155,8 +142,8 @@ public class StringSearchTest {
 
     summaries = results.getMatchResults();
     assertNotNull(summaries);
-    assertEquals("expected 2 results", 2, summaries.length);
-    assertEquals("empty-snippet", results.getSnippetTransformType());
+    assertEquals( 2, summaries.length);
+	  assertEquals("empty-snippet", results.getSnippetTransformType());
   }
 
   @Test
@@ -177,7 +164,7 @@ public class StringSearchTest {
     assertTrue(results.getConstraintIterator(new StringHandle()).next().get().startsWith("<search:constraint"));
     assertTrue(results.getConstraintNames()[0].equals("myFacet"));
     assertTrue(results.getConstraint("myFacet", new StringHandle()).get().startsWith("<search:constraint"));
-    assertEquals("myFacet", results.getFacetNames()[0]);
+    assertEquals( "myFacet", results.getFacetNames()[0]);
     SearchMetrics metrics = results.getMetrics();
     assertTrue(metrics.getFacetResolutionTime() >= 0);
     assertTrue(metrics.getQueryResolutionTime() >= 0);

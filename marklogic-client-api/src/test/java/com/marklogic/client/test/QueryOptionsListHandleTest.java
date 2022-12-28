@@ -15,44 +15,41 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
-
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.QueryOptionsListHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class QueryOptionsListHandleTest {
   @SuppressWarnings("unused")
   private static final Logger logger = (Logger) LoggerFactory
     .getLogger(QueryOptionsListHandleTest.class);
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
     Common.connectAdmin();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -65,8 +62,8 @@ public class QueryOptionsListHandleTest {
       v.parseTestData(is);
     }
     Map<String,String> map = v.getValuesMap();
-    assertEquals("Map should contain two keys", map.size(), 2);
-    assertEquals("photos should have this uri", map.get("photos"), "/v1/config/query/photos");
+    assertEquals( map.size(), 2);
+    assertEquals( map.get("photos"), "/v1/config/query/photos");
   }
 
   // This only works if you've loaded the 5min guide @Test
@@ -76,8 +73,8 @@ public class QueryOptionsListHandleTest {
     QueryOptionsListHandle results = queryMgr.optionsList(new QueryOptionsListHandle());
     assertNotNull(results);
     Map<String,String> map = results.getValuesMap();
-    assertEquals("Map should contain two keys", map.size(), 2);
-    assertEquals("photos should have this uri", map.get("photos"), "/v1/config/query/photos");
+    assertEquals( map.size(), 2);
+    assertEquals( map.get("photos"), "/v1/config/query/photos");
   }
 
   @Test

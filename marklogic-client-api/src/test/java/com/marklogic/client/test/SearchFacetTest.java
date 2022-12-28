@@ -15,32 +15,30 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertNotNull;
-
-import java.io.IOException;
-import java.io.StringReader;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
+import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.query.FacetResult;
 import com.marklogic.client.query.QueryManager;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import com.marklogic.client.query.StringQueryDefinition;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.query.FacetResult;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.SearchHandle;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.StringReader;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class SearchFacetTest {
   private static String options =
@@ -123,13 +121,13 @@ public class SearchFacetTest {
 
   private QueryOptionsManager mgr;
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connectAdmin();
     Common.connect();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 

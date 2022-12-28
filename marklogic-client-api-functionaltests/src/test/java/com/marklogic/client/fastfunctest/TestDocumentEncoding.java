@@ -20,7 +20,8 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.StringHandle;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -36,7 +37,7 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestDocumentEncoding extends AbstractFunctionalTest
 {
@@ -120,7 +121,7 @@ public class TestDocumentEncoding extends AbstractFunctionalTest
     int length2 = docMgr.read("/doc/bar.xml", new BytesHandle()).get().length;
     System.out.println(length2);
 
-    assertEquals("Byte size is not the same", length1, length2);
+    assertEquals(length1, length2);
 
     // **************************
 

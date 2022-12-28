@@ -15,16 +15,13 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class InvalidUserTest {
   @Test

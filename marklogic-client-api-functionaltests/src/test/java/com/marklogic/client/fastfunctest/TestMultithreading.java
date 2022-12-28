@@ -27,8 +27,9 @@ import com.marklogic.client.functionaltest.ThreadWrite;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,14 +37,14 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+
 
 public class TestMultithreading extends AbstractFunctionalTest {
 
   private static final Logger logger = LoggerFactory.getLogger(TestMultithreading.class);
 
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception {
     deleteDocuments(connectAsAdmin());
   }
@@ -67,13 +68,13 @@ public class TestMultithreading extends AbstractFunctionalTest {
     for (int i = 1; i <= 5; i++) {
       String expectedUri = "/multithread-content-A/filename" + i + ".txt";
       String docUri = docMgr.exists("/multithread-content-A/filename" + i + ".txt").getUri();
-      assertEquals("URI is not found", expectedUri, docUri);
+      assertEquals( expectedUri, docUri);
     }
 
     for (int i = 1; i <= 5; i++) {
       String expectedUri = "/multithread-content-B/filename" + i + ".txt";
       String docUri = docMgr.exists("/multithread-content-B/filename" + i + ".txt").getUri();
-      assertEquals("URI is not found", expectedUri, docUri);
+      assertEquals( expectedUri, docUri);
     }
 
     // release client
@@ -114,9 +115,9 @@ public class TestMultithreading extends AbstractFunctionalTest {
     t5.join();
 
     long totalAllDocumentsReturned = ts1.totalAllResults + ts2.totalAllResults + ts3.totalAllResults + ts4.totalAllResults + ts5.totalAllResults;
-    assertTrue("Documents count is incorrect", totalAllDocumentsReturned == 750);
+    assertTrue( totalAllDocumentsReturned == 750);
   }
-  
+
   @Test
   public void testDeadlockInMultiStmt() throws KeyManagementException, NoSuchAlgorithmException, InterruptedException, IOException
   {
@@ -147,56 +148,56 @@ public class TestMultithreading extends AbstractFunctionalTest {
 		  }
 	  }, "t1");
 	  th1.setDaemon(false);
-	  
-	  final Thread th2 = new Thread(() -> {        
+
+	  final Thread th2 = new Thread(() -> {
 		  try {
 			  client.newXMLDocumentManager().write(docId, new StringHandle("<doc><t>Original Modified by t2</t></doc>").withFormat(Format.XML), t2);
 			  logger.info("Committing t2");
-			  t2.commit();            
+			  t2.commit();
 		  } catch (Exception ex) {
 			  logger.info("Rollback t2");
 			  t2.rollback();
 		  }
 	  }, "t2");
-	  th2.setDaemon(false);	  
-	  
-	  final Thread th3 = new Thread(() -> {        
+	  th2.setDaemon(false);
+
+	  final Thread th3 = new Thread(() -> {
 		  try {
 			  client.newXMLDocumentManager().write(docId, new StringHandle("<doc><t>Original Modified by t3</t></doc>").withFormat(Format.XML), t3);
 			  logger.info("Committing t3");
-			  t3.commit();            
+			  t3.commit();
 		  } catch (Exception ex) {
 			  logger.info("Rollback t3");
 			  t3.rollback();
 		  }
 	  }, "t3");
 	  th3.setDaemon(false);
-	  
-	  final Thread th4 = new Thread(() -> {        
+
+	  final Thread th4 = new Thread(() -> {
 		  try {
 			  client.newXMLDocumentManager().write(docId, new StringHandle("<doc><t>Original Modified by t4</t></doc>").withFormat(Format.XML), t4);
 			  logger.info("Committing t4");
-			  t4.commit();            
+			  t4.commit();
 		  } catch (Exception ex) {
 			  logger.info("Rollback t4");
 			  t4.rollback();
 		  }
 	  }, "t4");
 	  th4.setDaemon(false);
-	  
-	  final Thread th5 = new Thread(() -> {        
+
+	  final Thread th5 = new Thread(() -> {
 		  try {
 			  client.newXMLDocumentManager().write(docId, new StringHandle("<doc><t>Original Modified by t5</t></doc>").withFormat(Format.XML), t5);
 			  logger.info("Committing t5");
-			  t5.commit();            
+			  t5.commit();
 		  } catch (Exception ex) {
 			  logger.info("Rollback t5");
 			  t5.rollback();
 		  }
 	  }, "t5");
 	  th5.setDaemon(false);
-	 
-	  final Thread th6 = new Thread(() -> {        
+
+	  final Thread th6 = new Thread(() -> {
 		  try {
 			  client.newXMLDocumentManager().write(docId, new StringHandle("<doc><t>Original Modified by t6</t></doc>").withFormat(Format.XML), t6);
 			  logger.info("Committing t6");
@@ -205,14 +206,14 @@ public class TestMultithreading extends AbstractFunctionalTest {
 			  JsonNode node = jh.get();
 			  System.out.println("Read status from t6 is " + node.asText());
 			  //Thread.sleep(15000);
-			  t6.commit();            
+			  t6.commit();
 		  } catch (Exception ex) {
 			  logger.info("Rollback t6");
 			  t6.rollback();
 		  }
 	  }, "t6");
 	  th6.setDaemon(false);
-	  
+
 	  th2.start();
 	  th1.start();
 	  th4.start();
@@ -228,7 +229,7 @@ public class TestMultithreading extends AbstractFunctionalTest {
 
 	  StringHandle strHdle2 = docMgr.read(docId, new StringHandle());
 	  System.out.println(strHdle2.get().toString());
-	  
+
 	  if (th1.isAlive()) {th1.join(5000);}
 	  if (th2.isAlive()) {th2.join(5000);}
 	  if (th3.isAlive()) {th3.join(5000);}

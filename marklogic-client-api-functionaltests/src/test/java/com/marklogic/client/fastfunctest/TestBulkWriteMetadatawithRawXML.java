@@ -24,7 +24,9 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
-import org.junit.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.*;
 import org.w3c.dom.Document;
 
 import javax.xml.transform.Source;
@@ -38,8 +40,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+
 
 /**
  * @author skottam This test is test the DocumentWriteSet function public
@@ -50,14 +52,14 @@ import static org.junit.Assert.assertTrue;
  *         data as default client make a connection with usr1 to do bulk loading
  *         load set of documents where default metadata is set with raw xml or
  *         json documents test disableDefault().
- * 
+ *
  */
 public class TestBulkWriteMetadatawithRawXML extends AbstractFunctionalTest {
 
   /**
    * @throws java.lang.Exception
    */
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     createRESTUser("app-user", "password", "rest-writer", "rest-reader");
     createRESTUserWithPermissions("usr1", "password", getPermissionNode("flexrep-eval", Capability.READ), getCollectionNode("http://permission-collections/"), "rest-writer",
@@ -67,7 +69,7 @@ public class TestBulkWriteMetadatawithRawXML extends AbstractFunctionalTest {
   /**
    * @throws java.lang.Exception
    */
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     deleteRESTUser("app-user");
     deleteRESTUser("usr1");
@@ -76,7 +78,7 @@ public class TestBulkWriteMetadatawithRawXML extends AbstractFunctionalTest {
   /**
    * @throws java.lang.Exception
    */
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     // create new connection for each test below
     client = getDatabaseClient("usr1", "password", getConnType());
@@ -85,7 +87,7 @@ public class TestBulkWriteMetadatawithRawXML extends AbstractFunctionalTest {
   /**
    * @throws java.lang.Exception
    */
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     client.release();
   }
@@ -116,28 +118,28 @@ public class TestBulkWriteMetadatawithRawXML extends AbstractFunctionalTest {
     // "size:5|reviewed:true|myInteger:10|myDecimal:34.56678|myCalendar:2014|myString:foo|";
     String actualProperties = getDocumentPropertiesString(properties);
     boolean result = actualProperties.contains("size:5|");
-    assertTrue("Document properties count", result);
+    assertTrue( result);
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println(actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:6"));
-    assertTrue("Document permissions difference in flexrep-eval permission", actualPermissions.contains("flexrep-eval:[READ]"));
-    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
-    assertTrue("Document permissions difference in app-user permissions",
+    assertTrue( actualPermissions.contains("size:6"));
+    assertTrue( actualPermissions.contains("flexrep-eval:[READ]"));
+    assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue(
         (actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions.contains("app-user:[READ, UPDATE]")));
-    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
+    assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
 
     // Collections
     String actualCollections = getDocumentCollectionsString(collections);
     System.out.println(collections);
 
-    assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
-    assertTrue("my-collection1 not found", actualCollections.contains("my-collection1"));
-    assertTrue("my-collection2 not found", actualCollections.contains("my-collection2"));
+    assertTrue( actualCollections.contains("size:2"));
+    assertTrue( actualCollections.contains("my-collection1"));
+    assertTrue( actualCollections.contains("my-collection2"));
 
   }
 
@@ -152,17 +154,17 @@ public class TestBulkWriteMetadatawithRawXML extends AbstractFunctionalTest {
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println(actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
-    assertTrue("Document permissions difference in flexrep-eval permission", actualPermissions.contains("flexrep-eval:[READ]"));
-    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
+    assertTrue( actualPermissions.contains("size:5"));
+    assertTrue( actualPermissions.contains("flexrep-eval:[READ]"));
+    assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
 
     // Collections
     String actualCollections = getDocumentCollectionsString(collections);
-    assertTrue("Document collections difference in size value", actualCollections.contains("size:1"));
-    assertTrue("my-collection1 not found", actualCollections.contains("http://permission-collections/"));
+    assertTrue( actualCollections.contains("size:1"));
+    assertTrue( actualCollections.contains("http://permission-collections/"));
   }
 
   @Test
@@ -370,7 +372,7 @@ public class TestBulkWriteMetadatawithRawXML extends AbstractFunctionalTest {
     jdm.readMetadata(rec.getUri(), mh);
     System.out.print(mh.getQuality());
     validateDefaultMetadata(mh);
-    assertEquals("default quality", 0, mh.getQuality());
+    assertEquals( 0, mh.getQuality());
 
     // Doc2 should use the first batch default metadata, that has only
     // properties i.e. rest needs to be default to system defaults
@@ -381,9 +383,9 @@ public class TestBulkWriteMetadatawithRawXML extends AbstractFunctionalTest {
     String expectedCollections = "size:1|http://permission-collections/|";
     String actualCollections = getDocumentCollectionsString(mh.getCollections());
 
-    assertEquals("Document collections difference", expectedCollections, actualCollections);
+    assertEquals( expectedCollections, actualCollections);
 
-    assertEquals("default quality", 0, mh.getQuality());
+    assertEquals( 0, mh.getQuality());
 
     // Doc3 should have the system default document quality (0) because quality
     // was not included in the document-specific metadata. It should be in the
@@ -392,20 +394,20 @@ public class TestBulkWriteMetadatawithRawXML extends AbstractFunctionalTest {
     page = jdm.read("doc3.json");
     rec = page.next();
     jdm.readMetadata(rec.getUri(), mh);
-    assertEquals("default quality", 0, mh.getQuality());
-    assertEquals("default collection must change", "[http://Json-Uri-spec-collections/]", mh.getCollections().toString());
+    assertEquals( 0, mh.getQuality());
+    assertEquals( "[http://Json-Uri-spec-collections/]", mh.getCollections().toString());
 
     // Doc 4 should also use the 1st batch default metadata, with quality 1
     page = jdm.read("doc4.json");
     rec = page.next();
     jdm.readMetadata(rec.getUri(), mh);
-    assertEquals("default quality", 0, mh.getQuality());
-    assertTrue("default collections reset", mh.getProperties().containsValue("9"));
+    assertEquals( 0, mh.getQuality());
+    assertTrue( mh.getProperties().containsValue("9"));
     // Doc5 should use the 2nd batch default metadata, with quality 2
     page = jdm.read("doc5.json");
     rec = page.next();
     jdm.readMetadata(rec.getUri(), mh);
-    assertEquals("default quality", 20, mh.getQuality());
+    assertEquals( 20, mh.getQuality());
 
   }
 
@@ -496,17 +498,17 @@ public class TestBulkWriteMetadatawithRawXML extends AbstractFunctionalTest {
     DocumentPage page = docMgr.read("/generic/Sega.jpg");
     DocumentRecord rec = page.next();
     docMgr.readMetadata(rec.getUri(), mh1);
-    assertEquals("default quality", 0, mh1.getQuality());
-    assertTrue("Properties contains value 19", mh1.getProperties().containsValue("19"));
+    assertEquals( 0, mh1.getQuality());
+    assertTrue( mh1.getProperties().containsValue("19"));
 
     page = docMgr.read("/generic/dog.json");
     rec = page.next();
     docMgr.readMetadata(rec.getUri(), mh1);
-    assertEquals("default quality", 10, mh1.getQuality());
+    assertEquals( 10, mh1.getQuality());
     String expectedCollections = "size:1|http://permission-collections/|";
     String actualCollections = getDocumentCollectionsString(mh1.getCollections());
 
-    assertEquals("Document collections difference", expectedCollections, actualCollections);
+    assertEquals( expectedCollections, actualCollections);
 
     page = docMgr.read("/generic/foo1.txt");
     rec = page.next();
@@ -514,24 +516,24 @@ public class TestBulkWriteMetadatawithRawXML extends AbstractFunctionalTest {
     expectedCollections = "size:1|http://permission-collections/|";
     actualCollections = getDocumentCollectionsString(mh1.getCollections());
 
-    assertEquals("Document collections difference", expectedCollections, actualCollections);
+    assertEquals( expectedCollections, actualCollections);
 
-    assertEquals("default quality", 0, mh1.getQuality());
+    assertEquals( 0, mh1.getQuality());
 
     String actualPermissions = mh1.getPermissions().toString();
     System.out.println(actualPermissions);
-    assertTrue("Default permissions must contain flexrep-eval=[READ]",
+    assertTrue(
         actualPermissions.contains("flexrep-eval=[READ]"));
-    assertTrue("Default permissions must contain rest-reader=[READ]",
+    assertTrue(
         actualPermissions.contains("rest-reader=[READ]"));
-    assertTrue("Default permissions must contain rest-writer=[UPDATE]",
+    assertTrue(
         actualPermissions.contains("rest-writer=[UPDATE]"));
 
     page = docMgr.read("/generic/foo.xml");
     rec = page.next();
     docMgr.readMetadata(rec.getUri(), mh1);
-    assertEquals("default quality", 0, mh1.getQuality());
-    assertEquals("default collection must change",
+    assertEquals( 0, mh1.getQuality());
+    assertEquals(
         "[http://Json-Uri-generic-collections/]", mh1.getCollections()
             .toString());
     sh.close();

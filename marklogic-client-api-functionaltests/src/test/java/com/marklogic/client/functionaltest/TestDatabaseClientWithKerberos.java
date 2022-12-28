@@ -16,43 +16,6 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import javax.net.ssl.SSLContext;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.transform.TransformerException;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
@@ -66,32 +29,17 @@ import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.alerting.RuleDefinition;
 import com.marklogic.client.alerting.RuleDefinitionList;
 import com.marklogic.client.alerting.RuleManager;
-import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.document.*;
 import com.marklogic.client.document.DocumentManager.Metadata;
-import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.document.DocumentRecord;
-import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.document.ServerTransform;
-import com.marklogic.client.document.TextDocumentManager;
-import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResult.Type;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.eval.ServerEvaluationCall;
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.*;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonDatabindHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.XMLStreamReaderHandle;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.pojo.PojoQueryDefinition;
@@ -102,8 +50,34 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.util.RequestLogger;
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.jupiter.api.*;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
-@Ignore("Ignored because it was previously ignored in build.gradle though without explanation")
+import javax.net.ssl.SSLContext;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.transform.TransformerException;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.jupiter.api.Assertions.*;
+
+@Disabled("Ignored because it was previously ignored in build.gradle though without explanation")
 public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 
   private static String dbName = "TestDatabaseClientWithKerberosDB";
@@ -125,7 +99,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 
   private DatabaseClient client;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     System.out.println("In setup");
     loadGradleProperties();
@@ -144,7 +118,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     createRESTUser("rest-admin", "x", "rest-admin");
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tear down");
     deleteUserRole("test-evalKer");
@@ -152,7 +126,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     tearDownJavaRESTServer(dbName, fNames, appServerName);
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     SSLContext sslcontext = null;
 
@@ -166,7 +140,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
           appServerHostPort, new KerberosAuthContext(kdcPrincipalUser));
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     // release client
     client.release();
@@ -189,7 +163,6 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
         succeeded = true;
       } else {
         assertTrue(
-            "testArtifactIndexedOnString - No Json node available to insert into database",
             succeeded);
       }
 
@@ -254,9 +227,9 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
   }
 
   public void validateArtifact(GeoSpecialArtifact art) {
-    assertNotNull("Artifact object should never be Null", art);
-    assertNotNull("Id should never be Null", art.id);
-    assertTrue("Inventry is always greater than 1000", art.getInventory() > 1000);
+    assertNotNull(art);
+    assertNotNull(art.id);
+    assertTrue( art.getInventory() > 1000);
   }
 
   public void loadSimplePojos(PojoRepository products) {
@@ -281,28 +254,27 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     // "size:5|reviewed:true|myInteger:10|myDecimal:34.56678|myCalendar:2014|myString:foo|";
     String actualProperties = getDocumentPropertiesString(properties);
     boolean result = actualProperties.contains("size:5|");
-    assertTrue("Document properties count", result);
+    assertTrue( result);
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println(actualPermissions);
     // size:5|rest-writer:[EXECUTE, READ,
     // UPDATE]|rest-reader:[READ]|app-user:[READ, UPDATE]|
-    assertTrue("Document permissions difference in size value",
+    assertTrue(
         actualPermissions.contains("size:5"));
-    assertTrue("Document permissions difference in rest-reader permission",
+    assertTrue(
         actualPermissions.contains("rest-reader:[READ]"));
     // Split up rest-writer:[READ, EXECUTE, UPDATE] string
     String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
 
-    assertTrue("Document permissions difference in rest-writer permission - first permission",
+    assertTrue(
         writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
-    assertTrue("Document permissions difference in rest-writer permission - second permission",
+    assertTrue(
         writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
-    assertTrue("Document permissions difference in rest-writer permission - third permission",
+    assertTrue(
         writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
     assertTrue(
-        "Document permissions difference in app-user permissions",
         (actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions
             .contains("app-user:[READ, UPDATE]")));
 
@@ -310,11 +282,11 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     String actualCollections = getDocumentCollectionsString(collections);
     System.out.println(collections);
 
-    assertTrue("Document collections difference in size value",
+    assertTrue(
         actualCollections.contains("size:2"));
-    assertTrue("my-collection1 not found",
+    assertTrue(
         actualCollections.contains("my-collection1"));
-    assertTrue("my-collection2 not found",
+    assertTrue(
         actualCollections.contains("my-collection2"));
   }
 
@@ -346,53 +318,53 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 
         if (jh.get().isArray()) {
             System.out.println("Type Array :" + jh.get().toString());
-            assertEquals("array value at index 0 ", 1, jh.get().get(0).asInt());
-            assertEquals("array value at index 1 ", 2, jh.get().get(1).asInt());
-            assertEquals("array value at index 2 ", 3, jh.get().get(2).asInt());
+            assertEquals( 1, jh.get().get(0).asInt());
+            assertEquals( 2, jh.get().get(1).asInt());
+            assertEquals( 3, jh.get().get(2).asInt());
          } else if (jh.get().isObject()) {
            System.out.println("Type Object :" + jh.get().toString());
            if (jh.get().has("foo")) {
                assertNull("this object also has null node", jh.get().get("testNull").textValue());
            } else if (jh.get().has("obj")) {
-               assertEquals("Value of the object is ", "value", jh.get().get("obj").asText());
+               assertEquals("value", jh.get().get("obj").asText());
            } else {
-               assertFalse("getting a wrong object ", true);
+               fail("getting a wrong object ");
            }
 
            } else if (jh.get().isNumber()) {
                System.out.println("Type Number :" + jh.get().toString());
-               assertEquals("Number value", 1, jh.get().asInt());
+               assertEquals( 1, jh.get().asInt());
            } else if (jh.get().isNull()) {
                System.out.println("Type Null :" + jh.get().toString());
                assertNull("Returned Null", jh.get().textValue());
            } else if (jh.get().isBoolean()) {
                System.out.println("Type boolean :" + jh.get().toString());
-               assertTrue("Boolean value returned false", jh.get().asBoolean());
+               assertTrue( jh.get().asBoolean());
            } else {
                // System.out.println("Running into different types than expected");
-               assertFalse("Running into different types than expected", true);
+               fail("Running into different types than expected");
            }
 
       } else if (er.getType().equals(Type.TEXTNODE)) {
-          assertTrue("document contains", er.getAs(String.class).equals("test1"));
+          assertTrue( er.getAs(String.class).equals("test1"));
               // System.out.println("type txt node :"+er.getAs(String.class));
 
       } else if (er.getType().equals(Type.BINARY)) {
           FileHandle fh = new FileHandle();
           fh = er.get(fh);
           // System.out.println("type binary :"+fh.get().length());
-          assertEquals("files size", 2, fh.get().length());
+          assertEquals( 2, fh.get().length());
       } else if (er.getType().equals(Type.BOOLEAN)) {
-          assertTrue("Documents exist?", er.getBoolean());
+          assertTrue( er.getBoolean());
           // System.out.println("type boolean:"+er.getBoolean());
       } else if (er.getType().equals(Type.INTEGER)) {
           System.out.println("type Integer: "+ er.getNumber().longValue());
-          assertEquals("count of documents ", 31, er.getNumber().intValue());
+          assertEquals( 31, er.getNumber().intValue());
       } else if (er.getType().equals(Type.STRING)) {
           String str = er.getString();
           // There is git issue 152
           System.out.println("type string: " + str );
-          assertTrue("String?", str.contains("true") || str.contains("xml")
+          assertTrue( str.contains("true") || str.contains("xml")
                       || str.contains("31") || str.contains("1.0471975511966"));
 
       } else if (er.getType().equals(Type.NULL)) {
@@ -402,71 +374,69 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
       } else if (er.getType().equals(Type.OTHER)) {
           // There is git issue 151
           System.out.println("Testing is Others? "+ er.getAs(String.class));
-          // assertEquals("Returns OTHERs","xdmp:forest-restart#1",er.getString());
 
       } else if (er.getType().equals(Type.ANYURI)) {
           // System.out.println("Testing is AnyUri? "+er.getAs(String.class));
-          assertEquals("Returns me a uri :", "test1.xml", er.getAs(String.class));
+          assertEquals( "test1.xml", er.getAs(String.class));
 
       } else if (er.getType().equals(Type.DATE)) {
           // System.out.println("Testing is DATE? "+er.getAs(String.class));
-          assertEquals("Returns me a date :", "2002-03-07-07:00", er.getAs(String.class));
+          assertEquals( "2002-03-07-07:00", er.getAs(String.class));
       } else if (er.getType().equals(Type.DATETIME)) {
           // System.out.println("Testing is DATETIME? "+er.getAs(String.class));
-          assertEquals("Returns me a dateTime :", "2010-01-06T18:13:50.874-07:00", er.getAs(String.class));
+          assertEquals( "2010-01-06T18:13:50.874-07:00", er.getAs(String.class));
       } else if (er.getType().equals(Type.DECIMAL)) {
           // System.out.println("Testing is Decimal? "+er.getAs(String.class));
-          assertEquals("Returns me a Decimal :", "1.0471975511966", er.getAs(String.class));
+          assertEquals( "1.0471975511966", er.getAs(String.class));
 
       } else if (er.getType().equals(Type.DOUBLE)) {
           // System.out.println("Testing is Double? "+er.getAs(String.class));
           assertEquals(1.0471975511966, er.getNumber().doubleValue(), 0);
       } else if (er.getType().equals(Type.DURATION)) {
           System.out.println("Testing is Duration? "+ er.getAs(String.class));
-          // assertEquals("Returns me a Duration :",0.4903562,er.getNumber().floatValue());
       } else if (er.getType().equals(Type.FLOAT)) {
           // System.out.println("Testing is Float? "+er.getAs(String.class));
           assertEquals(20, er.getNumber().floatValue(), 0);
       } else if (er.getType().equals(Type.GDAY)) {
           // System.out.println("Testing is GDay? "+er.getAs(String.class));
-          assertEquals("Returns me a GDAY :", "---01", er.getAs(String.class));
+          assertEquals( "---01", er.getAs(String.class));
       } else if (er.getType().equals(Type.GMONTH)) {
           // System.out.println("Testing is GMonth "+er.getAs(String.class));
-          assertEquals("Returns me a GMONTH :", "--01", er.getAs(String.class));
+          assertEquals( "--01", er.getAs(String.class));
       } else if (er.getType().equals(Type.GMONTHDAY)) {
           // System.out.println("Testing is GMonthDay? "+er.getAs(String.class));
-          assertEquals("Returns me a GMONTHDAY :", "--12-25-14:00", er.getAs(String.class));
+          assertEquals( "--12-25-14:00", er.getAs(String.class));
       } else if (er.getType().equals(Type.GYEAR)) {
           // System.out.println("Testing is GYear? "+er.getAs(String.class));
-          assertEquals("Returns me a GYEAR :", "2005-12:00", er.getAs(String.class));
+          assertEquals( "2005-12:00", er.getAs(String.class));
       } else if (er.getType().equals(Type.GYEARMONTH)) {
           // System.out.println("Testing is GYearMonth?1976-02 "+er.getAs(String.class));
-          assertEquals("Returns me a GYEARMONTH :", "1976-02", er.getAs(String.class));
+          assertEquals( "1976-02", er.getAs(String.class));
       } else if (er.getType().equals(Type.HEXBINARY)) {
           // System.out.println("Testing is HEXBINARY? "+er.getAs(String.class));
-          assertEquals("Returns me a HEXBINARY :", "BEEF", er.getAs(String.class));
+          assertEquals( "BEEF", er.getAs(String.class));
       } else if (er.getType().equals(Type.QNAME)) {
           // System.out.println("Testing is QNAME integer"+er.getAs(String.class));
-          assertEquals("Returns me a QNAME :", "integer", er.getAs(String.class));
+          assertEquals( "integer", er.getAs(String.class));
       } else if (er.getType().equals(Type.TIME)) {
           // System.out.println("Testing is TIME? "+er.getAs(String.class));
-          assertEquals("Returns me a TIME :", "10:00:00", er.getAs(String.class));
+          assertEquals( "10:00:00", er.getAs(String.class));
       } else if (er.getType().equals(Type.ATTRIBUTE)) {
           // System.out.println("Testing is ATTRIBUTE? "+er.getAs(String.class));
-          assertEquals("Returns me a ATTRIBUTE :", "attribute", er.getAs(String.class));
+          assertEquals( "attribute", er.getAs(String.class));
       } else if (er.getType().equals(Type.PROCESSINGINSTRUCTION)) {
           // System.out.println("Testing is ProcessingInstructions? "+er.getAs(String.class));
-          assertEquals("Returns me a PROCESSINGINSTRUCTION :", "<?processing instruction?>", er.getAs(String.class));
+          assertEquals( "<?processing instruction?>", er.getAs(String.class));
       } else if (er.getType().equals(Type.COMMENT)) {
           // System.out.println("Testing is Comment node? "+er.getAs(String.class));
-          assertEquals("Returns me a COMMENT :", "<!--comment-->", er.getAs(String.class));
+          assertEquals( "<!--comment-->", er.getAs(String.class));
       } else if (er.getType().equals(Type.BASE64BINARY)) {
           // System.out.println("Testing is Base64Binary  "+er.getAs(String.class));
-          assertEquals("Returns me a BASE64BINARY :", "DEADBEEF", er.getAs(String.class));
+          assertEquals( "DEADBEEF", er.getAs(String.class));
       } else {
           System.out.println("Got something which is not belongs to anytype we support "
                       + er.getAs(String.class));
-          assertFalse("getting in else part, missing a type  ", true);
+          fail("getting in else part, missing a type  ");
       }
     }
   }
@@ -490,7 +460,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     products.setPageLength(5);
     p = products.search(qd, 1, jh);
     System.out.println(jh.get().toString());
-    assertEquals("total no of pages", 3, p.getTotalPages());
+    assertEquals( 3, p.getTotalPages());
     System.out.println(jh.get().toString());
 
     long pageNo = 1, count = 0;
@@ -500,17 +470,17 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
       while (p.hasNext()) {
         GeoSpecialArtifact a = p.next();
         validateArtifact(a);
-        assertTrue("Verifying document id is part of the search ids", a.getId() % 5 == 0);
-        assertEquals("Verifying Manufacurer is from state ", "Reno", a.getManufacturer().getState());
+        assertTrue( a.getId() % 5 == 0);
+        assertEquals( "Reno", a.getManufacturer().getState());
         count++;
       }
-      assertEquals("Page size", count, p.size());
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
     } while (!p.isLastPage() && pageNo <= p.getTotalSize());
-    assertEquals("page number after the loop", 3, p.getPageNumber());
-    assertEquals("total no of pages", 3, p.getTotalPages());
-    assertEquals("page length from search handle", 5, jh.get().path("page-length").asInt());
-    assertEquals("Total results from search handle", 11, jh.get().path("total").asInt());
+    assertEquals( 3, p.getPageNumber());
+    assertEquals( 3, p.getTotalPages());
+    assertEquals( 5, jh.get().path("page-length").asInt());
+    assertEquals( 11, jh.get().path("total").asInt());
   }
 
   @Test
@@ -519,7 +489,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     String docId = "/foo/test/myFoo.txt";
     TextDocumentManager docMgr = client.newTextDocumentManager();
     docMgr.write(docId, new StringHandle().with("This is so foo"));
-    assertEquals("Text document write difference", "This is so foo", docMgr.read(docId, new StringHandle()).get());
+    assertEquals( "This is so foo", docMgr.read(docId, new StringHandle()).get());
   }
 
   @Test
@@ -541,7 +511,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     long size = getBinarySizeFromByte(fileRead);
     long expectedSize = 34543;
 
-    assertEquals("Binary size difference", expectedSize, size);
+    assertEquals( expectedSize, size);
 
     // update the doc
     // acquire the content for update
@@ -558,7 +528,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     long sizeUpdate = getBinarySizeFromByte(fileReadUpdate);
     // long expectedSizeUpdate = 3290;
     long expectedSizeUpdate = 3322;
-    assertEquals("Binary size difference", expectedSizeUpdate, sizeUpdate);
+    assertEquals( expectedSizeUpdate, sizeUpdate);
 
     // delete the document
     deleteDocument(client, uri + filename, "Binary");
@@ -572,7 +542,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     }
 
     String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-bin-Bytehandle/Pandakarlino.jpg";
-    assertEquals("Document is not deleted", expectedException, exception);
+    assertEquals( expectedException, exception);
   }
 
   @Test
@@ -611,27 +581,27 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     docMgr.read(docId[0], jacksonDBReadHandle);
     Product product1 = (Product) jacksonDBReadHandle.get();
 
-    assertTrue("Did not return a iPhone 6", product1.getName().equalsIgnoreCase("iPhone 6"));
-    assertTrue("Did not return a Mobile Phone", product1.getIndustry().equalsIgnoreCase("Mobile Phone"));
-    assertTrue("Did not return a Mobile Phone", product1.getDescription().equalsIgnoreCase("New iPhone 6"));
+    assertTrue( product1.getName().equalsIgnoreCase("iPhone 6"));
+    assertTrue( product1.getIndustry().equalsIgnoreCase("Mobile Phone"));
+    assertTrue( product1.getDescription().equalsIgnoreCase("New iPhone 6"));
 
     docMgr.readMetadata(docId[0], mhRead);
     validateMetadata(mhRead);
 
     docMgr.read(docId[1], jacksonDBReadHandle);
     Product product2 = (Product) jacksonDBReadHandle.get();
-    assertTrue("Did not return a iMac", product2.getName().equalsIgnoreCase("iMac"));
-    assertTrue("Did not return a Desktop", product2.getIndustry().equalsIgnoreCase("Desktop"));
-    assertTrue("Did not return a Air Book OS X", product2.getDescription().equalsIgnoreCase("Air Book OS X"));
+    assertTrue( product2.getName().equalsIgnoreCase("iMac"));
+    assertTrue( product2.getIndustry().equalsIgnoreCase("Desktop"));
+    assertTrue( product2.getDescription().equalsIgnoreCase("Air Book OS X"));
 
     docMgr.readMetadata(docId[1], mhRead);
     validateMetadata(mhRead);
 
     docMgr.read(docId[2], jacksonDBReadHandle);
     Product product3 = (Product) jacksonDBReadHandle.get();
-    assertTrue("Did not return a iPad", product3.getName().equalsIgnoreCase("iPad"));
-    assertTrue("Did not return a Tablet", product3.getIndustry().equalsIgnoreCase("Tablet"));
-    assertTrue("Did not return a iPad Mini", product3.getDescription().equalsIgnoreCase("iPad Mini"));
+    assertTrue( product3.getName().equalsIgnoreCase("iPad"));
+    assertTrue( product3.getIndustry().equalsIgnoreCase("Tablet"));
+    assertTrue( product3.getDescription().equalsIgnoreCase("iPad Mini"));
 
     docMgr.readMetadata(docId[2], mhRead);
     validateMetadata(mhRead);
@@ -659,7 +629,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     Document expectedDoc = expectedXMLDocument(filename);
     String expectedContent = convertXMLDocumentToString(expectedDoc);
     expectedContent = "null" + expectedContent.substring(expectedContent.indexOf("<name>") + 6, expectedContent.indexOf("</name>"));
-    assertEquals("Write XML difference", expectedContent, readContent);
+    assertEquals( expectedContent, readContent);
 
     // delete the document
     deleteDocument(client, uri + filename, "XML");
@@ -673,7 +643,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 
     String expectedException = "Could not read non-existent document";
     boolean documentIsDeleted = exception.contains(expectedException);
-    assertTrue("Document is not deleted", documentIsDeleted);
+    assertTrue( documentIsDeleted);
   }
 
   @Test
@@ -822,7 +792,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
       // Verify rollback on DocumentManager write method with transform.
       tRollback.rollback();
       DocumentPage pageRollback = docMgr.read(uris);
-      assertEquals("Document count is not zero. Transaction did not rollback", 0, pageRollback.size());
+      assertEquals( 0, pageRollback.size());
 
       // Perform write with a commit.
       Transaction tCommit = client.openTransaction();
@@ -849,16 +819,16 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
       while (page.hasNext()) {
         DocumentRecord rec = page.next();
         rec.getContent(dh);
-        assertTrue("Element has attribure ? :", dh.get().getElementsByTagName("foo").item(0).hasAttributes());
+        assertTrue( dh.get().getElementsByTagName("foo").item(0).hasAttributes());
         verifyAttrValue = dh.get().getElementsByTagName("foo").item(0).getAttributes().getNamedItem("Lang").getNodeValue();
-        assertTrue("Server Transform did not go through ", verifyAttrValue.equalsIgnoreCase("testBulkXQYTransformWithTrans"));
+        assertTrue( verifyAttrValue.equalsIgnoreCase("testBulkXQYTransformWithTrans"));
         count++;
       }
     } catch (Exception e) {
       System.out.println(e.getMessage());
       throw e;
     }
-    assertEquals("document count", 102, count);
+    assertEquals( 102, count);
   }
 
   @Test
@@ -900,7 +870,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     docMgr.stopLogging();
 
     String expectedContentMax = "9223372036854775807";
-    assertEquals("Content log is not equal", expectedContentMax, Long.toString(logger.getContentMax()));
+    assertEquals( expectedContentMax, Long.toString(logger.getContentMax()));
   }
 
   @Test
@@ -994,11 +964,11 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     }
 
     System.out.println(expected);
-    assertTrue("incorrect rule", expected.contains("RULE-TEST-1 - {rule-number=one} |"));
+    assertTrue( expected.contains("RULE-TEST-1 - {rule-number=one} |"));
   }
 
   // Access database on Uber port with specifying the database name.
-  @Ignore
+  @Disabled
   public void testUberClientWithDbName() throws IOException, SAXException, ParserConfigurationException {
     System.out.println("Running testUberClientWithDbName method");
 
@@ -1072,11 +1042,11 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 
       docMgr.write(writeset);
 
-      assertEquals("Text document write difference", "This is so foo1",
+      assertEquals( "This is so foo1",
           docMgr.read(docId[0], new StringHandle()).get());
-      assertEquals("Text document write difference", "This is so foo2",
+      assertEquals( "This is so foo2",
           docMgr.read(docId[1], new StringHandle()).get());
-      assertEquals("Text document write difference", "This is so foo3",
+      assertEquals( "This is so foo3",
           docMgr.read(docId[2], new StringHandle()).get());
 
       // Bulk delete on TextDocumentManager
@@ -1087,12 +1057,12 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
       System.out.println("Exception is" + exception);
     }
     String expectedException = null;
-    if (IsSecurityEnabled()) 
+    if (IsSecurityEnabled())
         expectedException = "java.net.ProtocolException";
     else
      expectedException = "com.marklogic.client.FailedRequestException: Local message: failed to apply resource at documents: Unauthorized. Server Message: Unauthorized";
     boolean exceptionIsThrown = exception.contains(expectedException);
-    assertTrue("Exception is not thrown", exceptionIsThrown);
+    assertTrue( exceptionIsThrown);
 
     clientDigest.release();
   }

@@ -16,28 +16,6 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
@@ -48,17 +26,32 @@ import com.marklogic.client.pojo.PojoQueryBuilder.Operator;
 import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.pojo.util.GenerateIndexConfig;
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.junit.jupiter.api.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /*
  * Purpose : To test the following data type range path index can be created in a database.
- * 
- * int - Verifies that the configuration file is generated, which is then used by MarkLogic Admin user to generate range index. 
+ *
+ * int - Verifies that the configuration file is generated, which is then used by MarkLogic Admin user to generate range index.
  * String - Verifies that the configuration file is generated.
  * dateTime- Verifies that the configuration file is generated.
  * daytimeduration* - This needs Java SE 8. Not tested in this class
  * URI- Verifies that the configuration file is generated.
  * Numerals as Strings* - Verifies that the configuration file is generated.
- * Integer - This class has additional range index search test methods for Integer type (Git issue # 222). 
+ * Integer - This class has additional range index search test methods for Integer type (Git issue # 222).
  * Float - Same as for Integer type. This class has additional range index search test methods for Float type (Git issue # 222).
  */
 
@@ -70,7 +63,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
   private static String appServerHostname = null;
   private static int adminPort = 0;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     System.out.println("In setup");
     configureRESTServer(dbName, fNames);
@@ -80,18 +73,18 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
     adminPort = getAdminPort();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tear down");
     cleanupRESTServer(dbName, fNames);
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     client = getDatabaseClient("admin", "admin", getConnType());
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     // release client
     client.release();
@@ -131,11 +124,11 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 
           boolean contains = pathExpressValue.contains(propValueJsonDecorated);
           propertyAvailable = contains == true ? (" contains " + propValue) : (" does not contain " + propValue);
-          assertTrue(new StringBuffer("Database : " + dbName + propertyAvailable).toString(), contains);
+          assertTrue(contains, new StringBuffer("Database : " + dbName + propertyAvailable).toString());
         }
 
       } else {
-        assertTrue("Path range property not available or database properties not avilable", propFound);
+        assertTrue(propFound, "Path range property not available or database properties not avilable");
       }
     } catch (Exception e) {
       // writing error to Log
@@ -180,20 +173,18 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
           String propValueJsonDecorated1 = "[\"" + propValue[0];
 
           boolean contains1 = pathExpressValue1.contains(propValueJsonDecorated1);
-          propertyAvailable1 = contains1 == true ? (" contains " + propValue[0]) : (" does not contain " + propValue[0]);
-          assertTrue(new StringBuffer("Database : " + dbName + propertyAvailable1).toString(), contains1);
+          assertTrue(contains1);
 
           // Validate the second propValue at index 1. we have only two
           String pathExpressValue2 = (jsonStringList1.get(1)).findValues("path-expression").toString();
           String propValueJsonDecorated2 = propValue[1] + "\"]";
 
           boolean contains2 = pathExpressValue2.contains(propValueJsonDecorated2);
-          propertyAvailable2 = contains2 == true ? (" contains " + propValue[1]) : (" does not contain " + propValue[1]);
-          assertTrue(new StringBuffer("Database : " + dbName + propertyAvailable2).toString(), contains2);
+          assertTrue(contains2);
         }
 
       } else {
-        assertTrue("Path range property not available or database properties not avilable", propFound);
+        assertTrue(propFound);
       }
     } catch (Exception e) {
       // writing error to Log
@@ -221,9 +212,8 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
         succeeded = true;
         validateRangePathIndexInDatabase("range-path-index", "com.marklogic.client.functionaltest.ArtifactIndexedOnInt/inventory");
       } else {
-        assertTrue(
-            "testArtifactIndexedOnInt - No Json node available to insert into database",
-            succeeded);
+        assertTrue(succeeded,
+            "testArtifactIndexedOnInt - No Json node available to insert into database");
       }
 
     } catch (IOException e) {
@@ -260,9 +250,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
         succeeded = true;
         validateRangePathIndexInDatabase("range-path-index", "com.marklogic.client.functionaltest.ArtifactIndexedOnInteger/inventory");
       } else {
-        assertTrue(
-            "testArtifactIndexedOnInteger - No Json node available to insert into database",
-            succeeded);
+        assertTrue(succeeded, "testArtifactIndexedOnInteger - No Json node available to insert into database");
       }
     } catch (Exception e) {
       System.out.println(e.getMessage());
@@ -285,7 +273,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
       /*
        * The following exception was seen when there was no sleep. (broken into
        * multiple lines for easy reading):
-       * 
+       *
        * com.marklogic.client.FailedRequestException: Local message: search
        * failed: Bad Request. Server Message: XDMP-PATHRIDXNOTFOUND:
        * cts:search(fn:collection(), cts:and-query((cts:path-range-query(
@@ -300,7 +288,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 
       pojoPage = products.search(qd, 1, jh);
 
-      assertEquals("total no of pages", 1, pojoPage.getTotalPages());
+      assertEquals(1, pojoPage.getTotalPages());
 
       long pageNo = 1, count = 0;
       do {
@@ -309,10 +297,10 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
         while (pojoPage.hasNext()) {
           ArtifactIndexedOnInteger a = pojoPage.next();
           validateArtifact(a);
-          assertTrue("Verifying document id is part of the search ids", a.getId() >= 55);
+          assertTrue(a.getId() >= 55);
           count++;
         }
-        assertEquals("Page size", count, pojoPage.size());
+        assertEquals(count, pojoPage.size());
         pageNo = pageNo + pojoPage.getPageSize();
       } while (!pojoPage.isLastPage() && pageNo <= pojoPage.getTotalSize());
 
@@ -345,9 +333,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
         succeeded = true;
         validateRangePathIndexInDatabase("range-path-index", "com.marklogic.client.functionaltest.ArtifactIndexedOnString/name");
       } else {
-        assertTrue(
-            "testArtifactIndexedOnString - No Json node available to insert into database",
-            succeeded);
+        assertTrue(succeeded, "testArtifactIndexedOnString - No Json node available to insert into database");
       }
 
     } catch (IOException e) {
@@ -379,9 +365,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
         succeeded = true;
         validateRangePathIndexInDatabase("range-path-index", "com.marklogic.client.functionaltest.ArtifactIndexedOnDateTime/expiryDate");
       } else {
-        assertTrue(
-            "testArtifactIndexedOnDateTime - No Json node available to insert into database",
-            succeeded);
+        assertTrue(succeeded, "testArtifactIndexedOnString - No Json node available to insert into database");
       }
 
     } catch (IOException e) {
@@ -413,9 +397,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
         succeeded = true;
         validateRangePathIndexInDatabase("range-path-index", "com.marklogic.client.functionaltest.ArtifactIndexedOnFloat/price");
       } else {
-        assertTrue(
-            "testArtifactIndexedOFloat - No Json node available to insert into database",
-            succeeded);
+        assertTrue(succeeded, "testArtifactIndexedOFloat - No Json node available to insert into database");
       }
 
     } catch (IOException e) {
@@ -447,9 +429,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
         succeeded = true;
         validateRangePathIndexInDatabase("range-path-index", "com.marklogic.client.functionaltest.ArtifactIndexedOnUri/artifactUri");
       } else {
-        assertTrue(
-            "testArtifactIndexedOnUri - No Json node available to insert into database",
-            succeeded);
+        assertTrue(succeeded, "testArtifactIndexedOnUri - No Json node available to insert into database");
       }
 
     } catch (IOException e) {
@@ -481,9 +461,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
         succeeded = true;
         validateRangePathIndexInDatabase("range-path-index", "com.marklogic.client.functionaltest.ArtifactIndexedOnIntAsString/inventory");
       } else {
-        assertTrue(
-            "testArtifactIndexedOnIntAsString - No Json node available to insert into database",
-            succeeded);
+        assertTrue(succeeded, "testArtifactIndexedOnIntAsString - No Json node available to insert into database");
       }
 
     } catch (IOException e) {
@@ -519,9 +497,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
         succeeded = true;
         validateMultipleRangePathIndexInDatabase("range-path-index", propValueStrArray);
       } else {
-        assertTrue(
-            "testArtifactIndexedOnIntAsString - No Json node available to insert into database",
-            succeeded);
+        assertTrue(succeeded, "testArtifactIndexedOnIntAsString - No Json node available to insert into database");
       }
 
     } catch (IOException e) {
@@ -557,9 +533,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
         succeeded = true;
         validateMultipleRangePathIndexInDatabase("range-path-index", propValueStrArray);
       } else {
-        assertTrue(
-            "testArtifactIndexedOnStringInSuperClass - No Json node available to insert into database",
-            succeeded);
+        assertTrue(succeeded, "testArtifactIndexedOnStringInSuperClass - No Json node available to insert into database");
       }
 
     } catch (IOException e) {
@@ -591,9 +565,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
         succeeded = true;
         validateRangePathIndexInDatabase("range-path-index", "com.marklogic.client.functionaltest.ArtifactMultipleIndexedOnInt/inventory");
       } else {
-        assertTrue(
-            "testArtifactMultipleIndexedOnInt - No Json node available to insert into database",
-            succeeded);
+        assertTrue(succeeded, "testArtifactMultipleIndexedOnInt - No Json node available to insert into database");
       }
 
     } catch (IOException e) {
@@ -612,16 +584,16 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
    * annotation declared on user defined data type will ONLY accept types from
    * scalarType class. Assigning a scalarType.Company to the class member in the
    * annotation like below, WILL NOT COMPILE:
-   * 
+   *
    * @PathIndexProperty(scalarType = ScalarType.Company) public Company
    * manufacture;
-   * 
+   *
    * However, for the following, we can declare for example for class property
    * Company (which is user defined type), the scalarType.STRING in the class.
-   * 
+   *
    * @PathIndexProperty(scalarType = ScalarType.STRING) public Company
    * manufacture;
-   * 
+   *
    * MarkLogic server accepts this range path index and this was verified
    * manually through the MarkLogic administration GUI on the database also.
    */
@@ -644,9 +616,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
         succeeded = true;
         validateRangePathIndexInDatabase("range-path-index", "com.marklogic.client.functionaltest.ArtifactIndexedUnSupportedDataType/manufacturer");
       } else {
-        assertTrue(
-            "testArtifactIndexedOnUnSupportedAsString - No Json node available to insert into database",
-            succeeded);
+        assertTrue(succeeded, "testArtifactIndexedOnUnSupportedAsString - No Json node available to insert into database");
       }
 
     } catch (IOException e) {
@@ -664,9 +634,9 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
    * The following three methods are used to validate "search on range index"
    * when POJO class ArtifactIndexedOnInteger has been annotated for path range
    * index as below:
-   * 
+   *
    * @PathIndexProperty(scalarType = ScalarType.INT) private Integer inventory;
-   * 
+   *
    * These methods are used to validate Git Issue # 222.
    */
   public void loadSimplePojos(PojoRepository<ArtifactIndexedOnInteger, String> products)
@@ -729,9 +699,9 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 
   public void validateArtifact(ArtifactIndexedOnInteger art)
   {
-    assertNotNull("Artifact object should never be Null", art);
-    assertNotNull("Id should never be Null", art.id);
-    assertTrue("Inventry is always greater than 1000", art.getInventory() > 1000);
+    assertNotNull(art);
+    assertNotNull(art.id);
+    assertTrue(art.getInventory() > 1000);
   }
 
 }

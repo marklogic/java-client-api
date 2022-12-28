@@ -24,25 +24,25 @@ import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.type.CtsQueryExpr;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 
 import java.io.File;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CtsQueryDefinitionTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         Common.connect();
         queryMgr = Common.client.newQueryManager();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         Common.client.newDocumentManager().delete("CtsQueryDefinitionTest.xml");
         Common.client.newDocumentManager().delete("CtsQueryDefinitionTest.json");

@@ -25,17 +25,16 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.type.*;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Iterator;
 
-import static org.junit.Assert.*;
-
 public class TestOpticOnTriples extends AbstractFunctionalTest {
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception
   {
     removeFieldIndices();
@@ -68,13 +67,13 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     loadFileToDB(client, "city5.json", "/optic/lexicon/test/city5.json", "JSON", new String[] { "/optic/lexicon/test" });
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() {
     restoreFieldIndices();
   }
 
   @Test
-  public void testfromTriples() 
+  public void testfromTriples()
   {
     System.out.println("In testfromTriples method");
 
@@ -95,14 +94,14 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     // Verify first node.
     Iterator<JsonNode> nameNodesItr = jsonBindingsNodes.elements();
     // Should have 8 nodes returned.
-    assertEquals("Eight nodes not returned from testfromTriples method ", 8, jsonBindingsNodes.size());
+    assertEquals( 8, jsonBindingsNodes.size());
     JsonNode jsonNameNode = null;
     if (nameNodesItr.hasNext()) {
       jsonNameNode = nameNodesItr.next();
       // Verify result 1's values.
-      assertEquals("Row 1 age value incorrect", "19", jsonNameNode.path("players.age").path("value").asText());
+      assertEquals( "19", jsonNameNode.path("players.age").path("value").asText());
       // Verify the last node's age value
-      assertEquals("Row 8 age value incorrect", "34", jsonBindingsNodes.get(7).path("players.age").path("value").asText());
+      assertEquals( "34", jsonBindingsNodes.get(7).path("players.age").path("value").asText());
     }
     else {
       fail("Could not traverse the Eight Triplesin testfromTriples method");
@@ -110,7 +109,7 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
   }
 
   @Test
-  public void testPrefixerfromTriples() 
+  public void testPrefixerfromTriples()
   {
     System.out.println("In testPrefixerfromTriples method");
 
@@ -118,10 +117,10 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     PlanPrefixer rowGraph = p.prefixer("http://marklogic.com/baseball/players");
-    
+
     PlanTriplePatternSeq patSeq = p.patternSeq(
             p.pattern(p.col("id"), rowGraph.iri("age"), p.col("age")));
-    
+
     ExportablePlan plan1 = p.fromTriples(patSeq, "players", null, PlanTripleOption.DEDUPLICATED)
         .orderBy(p.col("age"));
 
@@ -135,14 +134,14 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     // Verify first node.
     Iterator<JsonNode> nameNodesItr = jsonBindingsNodes.elements();
     // Should have 8 nodes returned.
-    assertEquals("Eight nodes not returned from testfromTriples method ", 8, jsonBindingsNodes.size());
+    assertEquals( 8, jsonBindingsNodes.size());
     JsonNode jsonNameNode = null;
     if (nameNodesItr.hasNext()) {
       jsonNameNode = nameNodesItr.next();
       // Verify result 1's values.
-      assertEquals("Row 1 age value incorrect", "19", jsonNameNode.path("players.age").path("value").asText());
+      assertEquals( "19", jsonNameNode.path("players.age").path("value").asText());
       // Verify the last node's age value
-      assertEquals("Row 8 age value incorrect", "34", jsonBindingsNodes.get(7).path("players.age").path("value").asText());
+      assertEquals( "34", jsonBindingsNodes.get(7).path("players.age").path("value").asText());
     }
     else {
       fail("Could not traverse the Eight Triplesin testfromTriples method");
@@ -151,11 +150,11 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
 
   /*
    * This test checks access with select aliased columns.
-   * 
+   *
    * Should return 8 results.
    */
   @Test
-  public void testAccessWithSelectAlias() 
+  public void testAccessWithSelectAlias()
   {
     System.out.println("In testAccessWithSelectAlias method");
 
@@ -189,23 +188,23 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
     // Should have 8 nodes returned.
-    assertEquals("Eight nodes not returned from testAccessWithSelectAlias method ", 8, jsonBindingsNodes.size());
+    assertEquals( 8, jsonBindingsNodes.size());
     JsonNode first = jsonBindingsNodes.path(0);
-    assertEquals("Row 1 PlayerName value incorrect", "Aoki Yamada", first.path("PlayerName").path("value").asText());
-    assertEquals("Row 1 PlayerPosition value incorrect", "First Base", first.path("PlayerPosition").path("value").asText());
+    assertEquals( "Aoki Yamada", first.path("PlayerName").path("value").asText());
+    assertEquals( "First Base", first.path("PlayerPosition").path("value").asText());
 
     JsonNode eight = jsonBindingsNodes.path(7);
-    assertEquals("Row 2 PlayerName value incorrect", "Pedro Barrozo", eight.path("PlayerName").path("value").asText());
-    assertEquals("Row 2 PlayerPosition value incorrect", "Midfielder", eight.path("PlayerPosition").path("value").asText());
+    assertEquals( "Pedro Barrozo", eight.path("PlayerName").path("value").asText());
+    assertEquals( "Midfielder", eight.path("PlayerPosition").path("value").asText());
   }
 
   /*
    * This test checks join inner with condition.
-   * 
+   *
    * Should return 2 results.
    */
   @Test
-  public void testJoinInnerWithCondition() 
+  public void testJoinInnerWithCondition()
   {
     System.out.println("In testJoinInnerWithCondition method");
     // Create a new Plan.
@@ -248,24 +247,24 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
     // Should have 2 nodes returned.
-    assertEquals("Two nodes not returned from testJoinInnerWithCondition method ", 2, jsonBindingsNodes.size());
+    assertEquals( 2, jsonBindingsNodes.size());
     JsonNode first = jsonBindingsNodes.path(0);
-    assertEquals("Row 1 PlayerName value incorrect", "Josh Ream", first.path("PlayerName").path("value").asText());
-    assertEquals("Row 1 PlayerAge value incorrect", "29", first.path("PlayerAge").path("value").asText());
-    assertEquals("Row 1 TeamName value incorrect", "San Francisco Giants", first.path("TeamName").path("value").asText());
+    assertEquals( "Josh Ream", first.path("PlayerName").path("value").asText());
+    assertEquals( "29", first.path("PlayerAge").path("value").asText());
+    assertEquals( "San Francisco Giants", first.path("TeamName").path("value").asText());
     JsonNode second = jsonBindingsNodes.path(1);
-    assertEquals("Row 2 PlayerName value incorrect", "John Doe", second.path("PlayerName").path("value").asText());
-    assertEquals("Row 2 PlayerAge value incorrect", "31", second.path("PlayerAge").path("value").asText());
-    assertEquals("Row 2 TeamName value incorrect", "San Francisco Giants", second.path("TeamName").path("value").asText());
+    assertEquals( "John Doe", second.path("PlayerName").path("value").asText());
+    assertEquals( "31", second.path("PlayerAge").path("value").asText());
+    assertEquals( "San Francisco Giants", second.path("TeamName").path("value").asText());
   }
 
   /*
    * This test checks union with where distinct.
-   * 
+   *
    * Should return 13 results.
    */
   @Test
-  public void testUnionWithWhereDistinct() 
+  public void testUnionWithWhereDistinct()
   {
     System.out.println("In testUnionWithWhereDistinct method");
 
@@ -300,7 +299,7 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
     // Should have 13 nodes returned.
-    assertEquals("Thirteen nodes not returned from testUnionWithWhereDistinct method ", 13, jsonBindingsNodes.size());
+    assertEquals( 13, jsonBindingsNodes.size());
   }
 
   /*
@@ -308,7 +307,7 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
    * max. Should return 4 results. Max - 34
    */
   @Test
-  public void testGroupBys() 
+  public void testGroupBys()
   {
     System.out.println("In testGroupBys method");
 
@@ -345,10 +344,10 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
     // Should have 4 nodes returned.
-    assertEquals("Four nodes not returned from testGroupBys method - Average ", 4, jsonBindingsNodes.size());
+    assertEquals( 4, jsonBindingsNodes.size());
     JsonNode fourth = jsonBindingsNodes.path(3);
-    assertEquals("Row 4 PlayerName value incorrect", "Giants", fourth.path("team_name").path("value").asText());
-    assertEquals("Row 4 PlayerAge value incorrect", "29", fourth.path("AverageAge").path("value").asText());
+    assertEquals( "Giants", fourth.path("team_name").path("value").asText());
+    assertEquals( "29", fourth.path("AverageAge").path("value").asText());
 
     // Group by max.
     ModifyPlan outputMax = player_plan.joinInner(team_plan)
@@ -362,9 +361,9 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     jsonBindingsNodes = jsonResults.path("rows");
     // Should have 4 nodes returned.
     JsonNode first = jsonBindingsNodes.path(0);
-    assertEquals("Four nodes not returned from testGroupBys method - Max", 4, jsonBindingsNodes.size());
-    assertEquals("Row 1 PlayerName value incorrect", "Padres", first.path("team_name").path("value").asText());
-    assertEquals("Row 1 PlayerAge value incorrect", "34", first.path("MaxAge").path("value").asText());
+    assertEquals( 4, jsonBindingsNodes.size());
+    assertEquals( "Padres", first.path("team_name").path("value").asText());
+    assertEquals( "34", first.path("MaxAge").path("value").asText());
   }
 
   /*
@@ -373,7 +372,7 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
    * 4 results. Min - 25.45 3) Sum on all. Should return 1 result. Sum 350.4
    */
   @Test
-  public void testGroupByCountAndSum() 
+  public void testGroupByCountAndSum()
   {
     System.out.println("In testGroupByCountAndSum method");
 
@@ -392,7 +391,7 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     PlanColumn teamNameCol = p.col("team_name");
     PlanColumn teamCityCol = p.col("team_city");
 
-    PlanTriplePatternSeq playerSeq = p.patternSeq( 
+    PlanTriplePatternSeq playerSeq = p.patternSeq(
     		p.pattern(playerIdCol, bb.iri("age"), playerAgeCol),
             p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
             p.pattern(playerIdCol, bb.iri("team"), playerTeamCol),
@@ -414,13 +413,13 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
     // Should have 4 nodes returned.
-    assertEquals("Four nodes not returned from testGroupByCountAndSum method - Count", 4, jsonBindingsNodes.size());
+    assertEquals( 4, jsonBindingsNodes.size());
     JsonNode first = jsonBindingsNodes.path(0);
-    assertEquals("Row 1 PlayerName value incorrect", "Mariners", first.path("team_name").path("value").asText());
-    assertEquals("Row 1 PlayerAge value incorrect", "17", first.path("CountPlayer").path("value").asText());
+    assertEquals( "Mariners", first.path("team_name").path("value").asText());
+    assertEquals( "17", first.path("CountPlayer").path("value").asText());
     first = jsonBindingsNodes.path(3);
-    assertEquals("Row 4 PlayerName value incorrect", "Athletics", first.path("team_name").path("value").asText());
-    assertEquals("Row 4 PlayerAge value incorrect", "1", first.path("CountPlayer").path("value").asText());
+    assertEquals( "Athletics", first.path("team_name").path("value").asText());
+    assertEquals( "1", first.path("CountPlayer").path("value").asText());
 
     // group by min on decimals
     ModifyPlan outputMin = player_plan.joinInner(team_plan)
@@ -433,25 +432,25 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     jsonResults = jacksonHandle.get();
     jsonBindingsNodes = jsonResults.path("rows");
     // Should have 4 nodes returned.
-    assertEquals("Four nodes not returned from testGroupByCountAndSum method - Min", 4, jsonBindingsNodes.size());
+    assertEquals( 4, jsonBindingsNodes.size());
     JsonNode third = jsonBindingsNodes.path(3);
-    assertEquals("Row 4 PlayerName value incorrect", "Giants", third.path("team_name").path("value").asText());
-    assertEquals("Row 4 PlayerAge value incorrect", "25.45", third.path("MinEff").path("value").asText());
+    assertEquals( "Giants", third.path("team_name").path("value").asText());
+    assertEquals( "25.45", third.path("MinEff").path("value").asText());
 
     // group by sum on all
-    PlanTriplePatternSeq playerSumSeq = p.patternSeq( 
+    PlanTriplePatternSeq playerSumSeq = p.patternSeq(
     p.pattern(playerIdCol, bb.iri("age"), playerAgeCol),
     p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
     p.pattern(playerIdCol, bb.iri("team"), playerTeamCol),
     p.pattern(playerIdCol, bb.iri("eff"), playerEffCol));
-    
+
     PlanTriplePatternSeq team_planSumSeq = p.patternSeq(
     p.pattern(teamIdCol, tm.iri("name"), teamNameCol),
     p.pattern(teamIdCol, tm.iri("city"), teamCityCol));
-    
+
 	ModifyPlan player_planSum = p.fromTriples(playerSumSeq/* , "players", null, PlanTripleOption.DEDUPLICATED */);
     ModifyPlan team_planSum = p.fromTriples(team_planSumSeq);
-    
+
     ModifyPlan outputSum = player_planSum.joinInner(team_planSum)
         .groupBy(null, p.sum(p.col("SumAll"), playerEffCol));
     jacksonHandle = new JacksonHandle();
@@ -460,16 +459,17 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     rowMgr.resultDoc(outputSum, jacksonHandle);
     jsonResults = jacksonHandle.get();
     jsonBindingsNodes = jsonResults.path("rows");
-    assertEquals("Node not returned from testGroupByCountAndSum method: " + jsonBindingsNodes.toPrettyString(), 1, jsonBindingsNodes.size());
+    assertEquals(1, jsonBindingsNodes.size(),
+		"Node not returned from testGroupByCountAndSum method: " + jsonBindingsNodes.toPrettyString());
     third = jsonBindingsNodes.path(0);
-    assertEquals("Row 1 Sum of All value incorrect", "843.75", third.path("SumAll").path("value").asText());
+    assertEquals( "843.75", third.path("SumAll").path("value").asText());
   }
 
   /*
    * This test checks join inner with graph iri and options.
    */
   @Test
-  public void testJoinInnerWithGraphIRI() 
+  public void testJoinInnerWithGraphIRI()
   {
     System.out.println("In testJoinInnerWithGraphIRI method");
     // 'TEST 13 - join inner with graph iri'
@@ -516,21 +516,21 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get().path("rows");
 
     // Should have 3 nodes returned.
-    assertEquals("Three nodes not returned from testJoinInnerWithGraphIRI method ", 3, jsonResults.size());
-    assertEquals("Row 1 PlayerName value incorrect", "Juan Leone", jsonResults.get(0).path("PlayerName").path("value").asText());
-    assertEquals("Row 1 PlayerAge value incorrect", "27", jsonResults.get(0).path("PlayerAge").path("value").asText());
-    assertEquals("Row 1 TeamName value incorrect", "San Francisco Giants", jsonResults.get(0).path("TeamName").path("value").asText());
-    assertEquals("Row 1 GraphName value incorrect", "/optic/player/triple/test", jsonResults.get(0).path("GraphName").path("value").asText());
+    assertEquals( 3, jsonResults.size());
+    assertEquals( "Juan Leone", jsonResults.get(0).path("PlayerName").path("value").asText());
+    assertEquals( "27", jsonResults.get(0).path("PlayerAge").path("value").asText());
+    assertEquals( "San Francisco Giants", jsonResults.get(0).path("TeamName").path("value").asText());
+    assertEquals( "/optic/player/triple/test", jsonResults.get(0).path("GraphName").path("value").asText());
 
-    assertEquals("Row 2 PlayerName value incorrect", "Josh Ream", jsonResults.get(1).path("PlayerName").path("value").asText());
-    assertEquals("Row 2 PlayerAge value incorrect", "29", jsonResults.get(1).path("PlayerAge").path("value").asText());
-    assertEquals("Row 2 TeamName value incorrect", "San Francisco Giants", jsonResults.get(1).path("TeamName").path("value").asText());
-    assertEquals("Row 2 GraphName value incorrect", "/optic/player/triple/test", jsonResults.get(1).path("GraphName").path("value").asText());
+    assertEquals( "Josh Ream", jsonResults.get(1).path("PlayerName").path("value").asText());
+    assertEquals( "29", jsonResults.get(1).path("PlayerAge").path("value").asText());
+    assertEquals( "San Francisco Giants", jsonResults.get(1).path("TeamName").path("value").asText());
+    assertEquals( "/optic/player/triple/test", jsonResults.get(1).path("GraphName").path("value").asText());
 
-    assertEquals("Row 3 PlayerName value incorrect", "John Doe", jsonResults.get(2).path("PlayerName").path("value").asText());
-    assertEquals("Row 3 PlayerAge value incorrect", "31", jsonResults.get(2).path("PlayerAge").path("value").asText());
-    assertEquals("Row 3 TeamName value incorrect", "San Francisco Giants", jsonResults.get(2).path("TeamName").path("value").asText());
-    assertEquals("Row 3 GraphName value incorrect", "/optic/player/triple/test", jsonResults.get(2).path("GraphName").path("value").asText());
+    assertEquals( "John Doe", jsonResults.get(2).path("PlayerName").path("value").asText());
+    assertEquals( "31", jsonResults.get(2).path("PlayerAge").path("value").asText());
+    assertEquals( "San Francisco Giants", jsonResults.get(2).path("TeamName").path("value").asText());
+    assertEquals( "/optic/player/triple/test", jsonResults.get(2).path("GraphName").path("value").asText());
   }
 
   /*
@@ -538,7 +538,7 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
    * and p.sem.rulesetStore()
    */
   @Test
-  public void testJoinInnerWithSemStore() 
+  public void testJoinInnerWithSemStore()
   {
     System.out.println("In testJoinInnerWithSemStore method");
 
@@ -592,18 +592,18 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get().path("rows");
 
     // Should have 3 nodes returned.
-    assertEquals("Three nodes not returned from testJoinInnerWithGraphIRI method ", 3, jsonResults.size());
-    assertEquals("Row 1 PlayerName value incorrect", "Juan Leone", jsonResults.get(0).path("PlayerName").path("value").asText());
-    assertEquals("Row 1 PlayerAge value incorrect", "27", jsonResults.get(0).path("PlayerAge").path("value").asText());
-    assertEquals("Row 1 TeamName value incorrect", "San Francisco Giants", jsonResults.get(0).path("TeamName").path("value").asText());
+    assertEquals( 3, jsonResults.size());
+    assertEquals( "Juan Leone", jsonResults.get(0).path("PlayerName").path("value").asText());
+    assertEquals( "27", jsonResults.get(0).path("PlayerAge").path("value").asText());
+    assertEquals( "San Francisco Giants", jsonResults.get(0).path("TeamName").path("value").asText());
 
-    assertEquals("Row 2 PlayerName value incorrect", "Josh Ream", jsonResults.get(1).path("PlayerName").path("value").asText());
-    assertEquals("Row 2 PlayerAge value incorrect", "29", jsonResults.get(1).path("PlayerAge").path("value").asText());
-    assertEquals("Row 2 TeamName value incorrect", "San Francisco Giants", jsonResults.get(1).path("TeamName").path("value").asText());
+    assertEquals( "Josh Ream", jsonResults.get(1).path("PlayerName").path("value").asText());
+    assertEquals( "29", jsonResults.get(1).path("PlayerAge").path("value").asText());
+    assertEquals( "San Francisco Giants", jsonResults.get(1).path("TeamName").path("value").asText());
 
-    assertEquals("Row 3 PlayerName value incorrect", "John Doe", jsonResults.get(2).path("PlayerName").path("value").asText());
-    assertEquals("Row 3 PlayerAge value incorrect", "31", jsonResults.get(2).path("PlayerAge").path("value").asText());
-    assertEquals("Row 3 TeamName value incorrect", "San Francisco Giants", jsonResults.get(2).path("TeamName").path("value").asText());
+    assertEquals( "John Doe", jsonResults.get(2).path("PlayerName").path("value").asText());
+    assertEquals( "31", jsonResults.get(2).path("PlayerAge").path("value").asText());
+    assertEquals( "San Francisco Giants", jsonResults.get(2).path("TeamName").path("value").asText());
 
     // Verify overloaded fromTriples() with graphIRI
     ModifyPlan player_plan1 = p.fromTriples(patPlayerSeq, (String) null, "/optic/player/triple/test", PlanTripleOption.DEDUPLICATED);
@@ -622,28 +622,28 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     jsonResults = jacksonHandle.get().path("rows");
 
     // Should have 3 nodes returned.
-    assertEquals("Three nodes not returned from testJoinInnerWithGraphIRI method ", 3, jsonResults.size());
-    assertEquals("Row 1 PlayerName value incorrect", "Juan Leone", jsonResults.get(0).path("PlayerName").path("value").asText());
-    assertEquals("Row 1 PlayerAge value incorrect", "27", jsonResults.get(0).path("PlayerAge").path("value").asText());
-    assertEquals("Row 1 TeamName value incorrect", "San Francisco Giants", jsonResults.get(0).path("TeamName").path("value").asText());
-    assertEquals("Row 1 GraphName value incorrect", "/optic/player/triple/test", jsonResults.get(0).path("PlayerGraph").path("value").asText());
+    assertEquals( 3, jsonResults.size());
+    assertEquals( "Juan Leone", jsonResults.get(0).path("PlayerName").path("value").asText());
+    assertEquals( "27", jsonResults.get(0).path("PlayerAge").path("value").asText());
+    assertEquals( "San Francisco Giants", jsonResults.get(0).path("TeamName").path("value").asText());
+    assertEquals( "/optic/player/triple/test", jsonResults.get(0).path("PlayerGraph").path("value").asText());
 
-    assertEquals("Row 2 PlayerName value incorrect", "Josh Ream", jsonResults.get(1).path("PlayerName").path("value").asText());
-    assertEquals("Row 2 PlayerAge value incorrect", "29", jsonResults.get(1).path("PlayerAge").path("value").asText());
-    assertEquals("Row 2 TeamName value incorrect", "San Francisco Giants", jsonResults.get(1).path("TeamName").path("value").asText());
-    assertEquals("Row 2 GraphName value incorrect", "/optic/player/triple/test", jsonResults.get(1).path("PlayerGraph").path("value").asText());
+    assertEquals( "Josh Ream", jsonResults.get(1).path("PlayerName").path("value").asText());
+    assertEquals( "29", jsonResults.get(1).path("PlayerAge").path("value").asText());
+    assertEquals( "San Francisco Giants", jsonResults.get(1).path("TeamName").path("value").asText());
+    assertEquals( "/optic/player/triple/test", jsonResults.get(1).path("PlayerGraph").path("value").asText());
 
-    assertEquals("Row 3 PlayerName value incorrect", "John Doe", jsonResults.get(2).path("PlayerName").path("value").asText());
-    assertEquals("Row 3 PlayerAge value incorrect", "31", jsonResults.get(2).path("PlayerAge").path("value").asText());
-    assertEquals("Row 3 TeamName value incorrect", "San Francisco Giants", jsonResults.get(2).path("TeamName").path("value").asText());
-    assertEquals("Row 3 GraphName value incorrect", "/optic/player/triple/test", jsonResults.get(2).path("PlayerGraph").path("value").asText());
+    assertEquals( "John Doe", jsonResults.get(2).path("PlayerName").path("value").asText());
+    assertEquals( "31", jsonResults.get(2).path("PlayerAge").path("value").asText());
+    assertEquals( "San Francisco Giants", jsonResults.get(2).path("TeamName").path("value").asText());
+    assertEquals( "/optic/player/triple/test", jsonResults.get(2).path("PlayerGraph").path("value").asText());
   }
 
   /*
    * This test checks access with qualifier.
    */
   @Test
-  public void testAccessWithQualifier() 
+  public void testAccessWithQualifier()
   {
     System.out.println("In testAccessWithQualifier method");
 
@@ -669,16 +669,16 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
     JsonNode nodeVal = jsonBindingsNodes.path(0);
     // Should have 8 nodes returned.
-    assertEquals("Eight nodes not returned from testAccessWithQualifier method", 8, jsonBindingsNodes.size());
-    assertEquals("Row 1 myPlayer.id value incorrect", "http://marklogic.com/baseball/id#006", nodeVal.path("myPlayer.id").path("value").asText());
-    assertEquals("Row 1 myPlayer.age value incorrect", "34", nodeVal.path("myPlayer.age").path("value").asText());
-    assertEquals("Row 1 myPlayer.name value incorrect", "Aoki Yamada", nodeVal.path("myPlayer.name").path("value").asText());
-    assertEquals("Row 1 myPlayer.team value incorrect", "http://marklogic.com/mlb/team/id/003", nodeVal.path("myPlayer.team").path("value").asText());
+    assertEquals( 8, jsonBindingsNodes.size());
+    assertEquals( "http://marklogic.com/baseball/id#006", nodeVal.path("myPlayer.id").path("value").asText());
+    assertEquals( "34", nodeVal.path("myPlayer.age").path("value").asText());
+    assertEquals( "Aoki Yamada", nodeVal.path("myPlayer.name").path("value").asText());
+    assertEquals( "http://marklogic.com/mlb/team/id/003", nodeVal.path("myPlayer.team").path("value").asText());
     nodeVal = jsonBindingsNodes.path(7);
-    assertEquals("Row 8 myPlayer.id value incorrect", "http://marklogic.com/baseball/id#005", nodeVal.path("myPlayer.id").path("value").asText());
-    assertEquals("Row 8 myPlayer.age value incorrect", "19", nodeVal.path("myPlayer.age").path("value").asText());
-    assertEquals("Row 8 myPlayer.name value incorrect", "Pedro Barrozo", nodeVal.path("myPlayer.name").path("value").asText());
-    assertEquals("Row 8 myPlayer.team value incorrect", "http://marklogic.com/mlb/team/id/002", nodeVal.path("myPlayer.team").path("value").asText());
+    assertEquals( "http://marklogic.com/baseball/id#005", nodeVal.path("myPlayer.id").path("value").asText());
+    assertEquals( "19", nodeVal.path("myPlayer.age").path("value").asText());
+    assertEquals( "Pedro Barrozo", nodeVal.path("myPlayer.name").path("value").asText());
+    assertEquals( "http://marklogic.com/mlb/team/id/002", nodeVal.path("myPlayer.team").path("value").asText());
 
     // access with qualifier with where and order by
     ModifyPlan output1 = p.fromTriples(patSeq, "myPlayer")
@@ -694,13 +694,13 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     nodeVal = jsonBindingsNodes.path(0);
 
     // Should have 3 nodes returned.
-    assertEquals("Three nodes not returned from testAccessWithQualifier method", 3, jsonBindingsNodes.size());
-    assertEquals("Row 1 myPlayer.name value incorrect", "Pedro Barrozo", nodeVal.path("myPlayer.name").path("value").asText());
-    assertEquals("Row 1 myPlayer.age value incorrect", "19", nodeVal.path("myPlayer.age").path("value").asText());
+    assertEquals( 3, jsonBindingsNodes.size());
+    assertEquals( "Pedro Barrozo", nodeVal.path("myPlayer.name").path("value").asText());
+    assertEquals( "19", nodeVal.path("myPlayer.age").path("value").asText());
 
     nodeVal = jsonBindingsNodes.path(2);
-    assertEquals("Row 3 myPlayer.name value incorrect", "Bob Brian", nodeVal.path("myPlayer.name").path("value").asText());
-    assertEquals("Row 3 myPlayer.age value incorrect", "23", nodeVal.path("myPlayer.age").path("value").asText());
+    assertEquals( "Bob Brian", nodeVal.path("myPlayer.name").path("value").asText());
+    assertEquals( "23", nodeVal.path("myPlayer.age").path("value").asText());
 
     // access with qualifier and no subject
     ModifyPlan outputNoSubject = p.fromTriples(p.pattern(null, bb.iri("age"), ageCol), "myPlayer", null, PlanTripleOption.DEDUPLICATED)
@@ -714,10 +714,10 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     nodeVal = jsonBindingsNodes.path(0);
 
     // Should have 7 nodes returned.
-    assertEquals("Seven nodes not returned from testAccessWithQualifier method", 7, jsonBindingsNodes.size());
-    assertEquals("Row 1 myPlayer.age value incorrect", "34", nodeVal.path("myPlayer.age").path("value").asText());
+    assertEquals( 7, jsonBindingsNodes.size());
+    assertEquals( "34", nodeVal.path("myPlayer.age").path("value").asText());
     nodeVal = jsonBindingsNodes.path(6);
-    assertEquals("Row 8 myPlayer.age value incorrect", "19", nodeVal.path("myPlayer.age").path("value").asText());
+    assertEquals( "19", nodeVal.path("myPlayer.age").path("value").asText());
 
     // access with qualifier and no object
     ModifyPlan outputNoObject = p.fromTriples(p.pattern(idCol, bb.iri("age"), null), "myPlayer", null, PlanTripleOption.DEDUPLICATED)
@@ -728,12 +728,12 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     rowMgr.resultDoc(outputNoObject, jacksonHandle);
     jsonResults = jacksonHandle.get();
     jsonBindingsNodes = jsonResults.path("rows");
-    assertEquals("Eight nodes not returned from testAccessWithQualifier method", 8, jsonBindingsNodes.size());
+    assertEquals( 8, jsonBindingsNodes.size());
 
     nodeVal = jsonBindingsNodes.path(0);
-    assertEquals("Row 1 myPlayer.id value incorrect", "http://marklogic.com/baseball/id#001", nodeVal.path("myPlayer.id").path("value").asText());
+    assertEquals( "http://marklogic.com/baseball/id#001", nodeVal.path("myPlayer.id").path("value").asText());
     nodeVal = jsonBindingsNodes.path(7);
-    assertEquals("Row 8 myPlayer.id value incorrect", "http://marklogic.com/baseball/id#008", nodeVal.path("myPlayer.id").path("value").asText());
+    assertEquals( "http://marklogic.com/baseball/id#008", nodeVal.path("myPlayer.id").path("value").asText());
 
     // access with qualifier and fragment id column
 
@@ -753,23 +753,23 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     jsonResults = jacksonHandle.get();
     jsonBindingsNodes = jsonResults.path("rows");
     // Should return 3 nodes.
-    assertEquals("Three nodes not returned from testAccessWithQualifier method", 3, jsonBindingsNodes.size());
+    assertEquals( 3, jsonBindingsNodes.size());
 
-    assertEquals("Row 1 myPlayer.name value incorrect", "Pedro Barrozo", jsonBindingsNodes.get(0).path("myPlayer.name").path("value").asText());
-    assertEquals("Row 1 myPlayer.age value incorrect", "19", jsonBindingsNodes.get(0).path("myPlayer.age").path("value").asText());
+    assertEquals( "Pedro Barrozo", jsonBindingsNodes.get(0).path("myPlayer.name").path("value").asText());
+    assertEquals( "19", jsonBindingsNodes.get(0).path("myPlayer.age").path("value").asText());
 
-    assertEquals("Row 1 myPlayer.name value incorrect", "Pat Crenshaw", jsonBindingsNodes.get(1).path("myPlayer.name").path("value").asText());
-    assertEquals("Row 1 myPlayer.age value incorrect", "25", jsonBindingsNodes.get(1).path("myPlayer.age").path("value").asText());
+    assertEquals( "Pat Crenshaw", jsonBindingsNodes.get(1).path("myPlayer.name").path("value").asText());
+    assertEquals( "25", jsonBindingsNodes.get(1).path("myPlayer.age").path("value").asText());
 
-    assertEquals("Row 1 myPlayer.name value incorrect", "Bob Brian", jsonBindingsNodes.get(2).path("myPlayer.name").path("value").asText());
-    assertEquals("Row 1 myPlayer.age value incorrect", "23", jsonBindingsNodes.get(2).path("myPlayer.age").path("value").asText());
+    assertEquals( "Bob Brian", jsonBindingsNodes.get(2).path("myPlayer.name").path("value").asText());
+    assertEquals( "23", jsonBindingsNodes.get(2).path("myPlayer.age").path("value").asText());
   }
 
   /*
    * This test checks access with iri predicate.
    */
   @Test
-  public void testSemIRI() 
+  public void testSemIRI()
   {
     System.out.println("In testSemIRI method");
 
@@ -796,10 +796,10 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
     JsonNode nodeVal = jsonBindingsNodes.path(0);
     // Should have 8 nodes returned.
-    assertEquals("Eight nodes not returned from testSemIRI method", 8, jsonBindingsNodes.size());
-    assertEquals("Row 1 myPlayer.age  value incorrect", "31", nodeVal.path("myPlayer.age").path("value").asText());
+    assertEquals( 8, jsonBindingsNodes.size());
+    assertEquals( "31", nodeVal.path("myPlayer.age").path("value").asText());
     nodeVal = jsonBindingsNodes.path(7);
-    assertEquals("Row 8 myPlayer.age value incorrect", "27", nodeVal.path("myPlayer.age").path("value").asText());
+    assertEquals( "27", nodeVal.path("myPlayer.age").path("value").asText());
 
     // access with iri subject
     ModifyPlan output1 = p.fromTriples(p.pattern(p.sem.iri("http://marklogic.com/baseball/id#001"), bb.iri("age"), ageCol), "myPlayer");
@@ -811,15 +811,15 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     jsonBindingsNodes = jsonResults.path("rows");
     nodeVal = jsonBindingsNodes.path(0);
     // Should have 1 nodes returned.
-    assertEquals("One node not returned from testSemIRI method", 1, jsonBindingsNodes.size());
-    assertEquals("Row 1 myPlayer.age value incorrect", "31", nodeVal.path("myPlayer.age").path("value").asText());
+    assertEquals( 1, jsonBindingsNodes.size());
+    assertEquals( "31", nodeVal.path("myPlayer.age").path("value").asText());
   }
 
   /*
    * This test checks join left outer with condition and multiple keymatch.
    */
   @Test
-  public void testJoinLeftWithMultipleKeyMatch() 
+  public void testJoinLeftWithMultipleKeyMatch()
   {
     System.out.println("In testJoinLeftWithMultipleKeyMatch method");
 
@@ -857,14 +857,14 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
     // Should have 1 nodes returned.
-    assertEquals("One node not returned from testJoinLeftWithMultipleKeyMatch method", 1, jsonBindingsNodes.size());
+    assertEquals( 1, jsonBindingsNodes.size());
   }
 
   /*
    * This test checks join inner outer with whereDistinct. Returns 8 results
    */
   @Test
-  public void testJoinWhereDistinct() 
+  public void testJoinWhereDistinct()
   {
     System.out.println("In testJoinWhereDistinct method");
 
@@ -908,14 +908,14 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
     // Should have 8 nodes returned.
-    assertEquals("Eight nodes not returned from testJoinWhereDistinct method", 8, jsonBindingsNodes.size());
+    assertEquals( 8, jsonBindingsNodes.size());
   }
 
   /*
    * This test checks value processing functions. Returns 8 results
    */
   @Test
-  public void testProcessingFunctions() 
+  public void testProcessingFunctions()
   {
     System.out.println("In testProcessingFunctions method");
 
@@ -971,23 +971,23 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
     JsonNode nodeVal = jsonBindingsNodes.path(0);
     // Should have 8 nodes returned.
-    assertEquals("Eight nodes not returned from testProcessingFunctions method", 8, jsonBindingsNodes.size());
+    assertEquals( 8, jsonBindingsNodes.size());
 
-    assertEquals("Row 1 name value incorrect", "pedro barrozo", nodeVal.path("name").path("value").asText());
-    assertEquals("Row 1 nameLength value incorrect", "13", nodeVal.path("nameLength").path("value").asText());
-    assertEquals("Row 1 firstname value incorrect", "Pedro", nodeVal.path("firstname").path("value").asText());
-    assertEquals("Row 1 year value incorrect", "1991", nodeVal.path("year").path("value").asText());
-    assertEquals("Row 1 month value incorrect", "12", nodeVal.path("month").path("value").asText());
-    assertEquals("Row 1 day value incorrect", "9", nodeVal.path("day").path("value").asText());
-    assertEquals("Row 1 log incorrect", "3.72930136861285", nodeVal.path("log").path("value").asText());
+    assertEquals( "pedro barrozo", nodeVal.path("name").path("value").asText());
+    assertEquals( "13", nodeVal.path("nameLength").path("value").asText());
+    assertEquals( "Pedro", nodeVal.path("firstname").path("value").asText());
+    assertEquals( "1991", nodeVal.path("year").path("value").asText());
+    assertEquals( "12", nodeVal.path("month").path("value").asText());
+    assertEquals( "9", nodeVal.path("day").path("value").asText());
+    assertEquals( "3.72930136861285", nodeVal.path("log").path("value").asText());
     nodeVal = jsonBindingsNodes.path(7);
-    assertEquals("Row 7 name value incorrect", "aoki yamada", nodeVal.path("name").path("value").asText());
-    assertEquals("Row 7 nameLength value incorrect", "11", nodeVal.path("nameLength").path("value").asText());
-    assertEquals("Row 7 firstname value incorrect", "Aoki", nodeVal.path("firstname").path("value").asText());
-    assertEquals("Row 7 year value incorrect", "1987", nodeVal.path("year").path("value").asText());
-    assertEquals("Row 7 month value incorrect", "3", nodeVal.path("month").path("value").asText());
-    assertEquals("Row 7 day value incorrect", "15", nodeVal.path("day").path("value").asText());
-    assertEquals("Row 7 log incorrect", "4.01096295328305", nodeVal.path("log").path("value").asText());
+    assertEquals( "aoki yamada", nodeVal.path("name").path("value").asText());
+    assertEquals( "11", nodeVal.path("nameLength").path("value").asText());
+    assertEquals( "Aoki", nodeVal.path("firstname").path("value").asText());
+    assertEquals( "1987", nodeVal.path("year").path("value").asText());
+    assertEquals( "3", nodeVal.path("month").path("value").asText());
+    assertEquals( "15", nodeVal.path("day").path("value").asText());
+    assertEquals( "4.01096295328305", nodeVal.path("log").path("value").asText());
   }
 
   /*
@@ -995,7 +995,7 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
    * contents.
    */
   @Test
-  public void testExportPlan() 
+  public void testExportPlan()
   {
     System.out.println("In testExportPlan method");
 
@@ -1031,20 +1031,20 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     exportedPlan.export(strHandle);
     // Verify the handle contents - Some of the plan fields.
     String str = strHandle.get();
-    assertTrue("Function not available fromTriples in exported plan", str.contains("\"fn\":\"from-triples\""));
-    assertTrue("Left join fromTriples not in exported plan", str.contains("\"fn\":\"join-left-outer\""));
-    assertTrue("Player_id not available in exported plan", str.contains("\"args\":[\"player_id\"]"));
-    assertTrue("Players IRI not availables in exported plan", str.contains("\"args\":[\"http://marklogic.com/baseball/players/age\"]"));
-    assertTrue("Team IRI not available in exported plan", str.contains("\"args\":[\"http://marklogic.com/baseball/players/team\"]"));
-    assertTrue("Where clause values not available in exported plan", str.contains("\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"20\"]"));
-    assertTrue("Where clause values not available in exported plan", str.contains("\"fn\":\"is-defined\""));
+    assertTrue( str.contains("\"fn\":\"from-triples\""));
+    assertTrue( str.contains("\"fn\":\"join-left-outer\""));
+    assertTrue(str.contains("\"args\":[\"player_id\"]"));
+    assertTrue( str.contains("\"args\":[\"http://marklogic.com/baseball/players/age\"]"));
+    assertTrue( str.contains("\"args\":[\"http://marklogic.com/baseball/players/team\"]"));
+    assertTrue( str.contains("\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"20\"]"));
+    assertTrue( str.contains("\"fn\":\"is-defined\""));
   }
 
   /*
    * Test multiple left join on different prefixers
    */
   @Test
-  public void testMultipleLeftJoins() 
+  public void testMultipleLeftJoins()
   {
     System.out.println("In testMultipleLeftJoins method");
     RowManager rowMgr = client.newRowManager();
@@ -1092,33 +1092,33 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
     // Should have 8 nodes returned.
-    assertEquals("Eight nodes not returned from testProcessingFunctions method", 8, jsonBindingsNodes.size());
-    assertEquals("Row 1 myOriginal.org_name value incorrect", "Aoki Yamada", jsonBindingsNodes.path(0).path("myOriginal.org_name").path("value").asText());
-    assertEquals("Row 1 myTeam.team_name value incorrect", "Padres", jsonBindingsNodes.path(0).path("myTeam.team_name").path("value").asText());
-    assertEquals("Row 1 myPlayer.player_name value incorrect", "Phil Green", jsonBindingsNodes.path(0).path("myPlayer.player_name").path("value").asText());
+    assertEquals( 8, jsonBindingsNodes.size());
+    assertEquals("Aoki Yamada", jsonBindingsNodes.path(0).path("myOriginal.org_name").path("value").asText());
+    assertEquals("Padres", jsonBindingsNodes.path(0).path("myTeam.team_name").path("value").asText());
+    assertEquals("Phil Green", jsonBindingsNodes.path(0).path("myPlayer.player_name").path("value").asText());
 
-    assertEquals("Row 2 myOriginal.org_name value incorrect", "John Doe", jsonBindingsNodes.path(1).path("myOriginal.org_name").path("value").asText());
-    assertEquals("Row 2 myTeam.team_name value incorrect", "Giants", jsonBindingsNodes.path(1).path("myTeam.team_name").path("value").asText());
-    assertTrue("Row 2 myPlayer.player_name value incorrect", jsonBindingsNodes.path(1).path("myPlayer.player_name").asText().isEmpty());
+    assertEquals("John Doe", jsonBindingsNodes.path(1).path("myOriginal.org_name").path("value").asText());
+    assertEquals("Giants", jsonBindingsNodes.path(1).path("myTeam.team_name").path("value").asText());
+    assertTrue(jsonBindingsNodes.path(1).path("myPlayer.player_name").asText().isEmpty());
 
-    assertEquals("Row 6 myOriginal.org_name value incorrect", "Pat Crenshaw", jsonBindingsNodes.path(5).path("myOriginal.org_name").path("value").asText());
-    assertEquals("Row 6 myTeam.team_name value incorrect", "Mariners", jsonBindingsNodes.path(5).path("myTeam.team_name").path("value").asText());
-    assertEquals("Row 6 myTeam.team_city value incorrect", "Seattle", jsonBindingsNodes.path(5).path("myTeam.team_city").path("value").asText());
+    assertEquals("Pat Crenshaw", jsonBindingsNodes.path(5).path("myOriginal.org_name").path("value").asText());
+    assertEquals("Mariners", jsonBindingsNodes.path(5).path("myTeam.team_name").path("value").asText());
+    assertEquals("Seattle", jsonBindingsNodes.path(5).path("myTeam.team_city").path("value").asText());
 
-    assertEquals("Row 7 myOriginal.org_age value incorrect", "23", jsonBindingsNodes.path(6).path("myOriginal.org_age").path("value").asText());
+    assertEquals("23", jsonBindingsNodes.path(6).path("myOriginal.org_age").path("value").asText());
 
-    assertEquals("Row 8 myOriginal.org_name value incorrect", "Pedro Barrozo", jsonBindingsNodes.path(7).path("myOriginal.org_name").path("value").asText());
+    assertEquals("Pedro Barrozo", jsonBindingsNodes.path(7).path("myOriginal.org_name").path("value").asText());
   }
 
   // Negative Cases
 
   /*
    * This test checks additional parameter.
-   * 
+   *
    * Should return exceptions.
    */
   @Test
-  public void testInvalidViewCol() 
+  public void testInvalidViewCol()
   {
     System.out.println("In testInvalidViewCol method");
 
@@ -1148,18 +1148,18 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
       System.out.println("Exception message is " + str.toString());
     }
     // Should have SQL-NOCOLUMN exceptions.
-    assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN"));
-    assertTrue("Exceptions not found", str.toString().contains("Column not found"));
-    assertTrue("Exceptions not found", str.toString().contains("myPlayer_Invalid.age"));
+    assertTrue( str.toString().contains("SQL-NOCOLUMN"));
+    assertTrue( str.toString().contains("Column not found"));
+    assertTrue( str.toString().contains("myPlayer_Invalid.age"));
   }
 
   /*
    * This test checks triples with invaid qualifier.
-   * 
+   *
    * Should return exception.
    */
   @Test
-  public void testInvalidQualifier() 
+  public void testInvalidQualifier()
   {
     System.out.println("In testInvalidQualifier method");
 
@@ -1191,17 +1191,17 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
       System.out.println("Exception message is " + str.toString());
     }
     // Should have SQL-NOCOLUMN exceptions.
-    assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN"));
-    assertTrue("Exceptions not found", str.toString().contains("Column not found: myPlayer_Invalid.age"));
+    assertTrue( str.toString().contains("SQL-NOCOLUMN"));
+    assertTrue( str.toString().contains("Column not found: myPlayer_Invalid.age"));
   }
 
   /*
    * This test checks null value in avg function.
-   * 
+   *
    * Should return exception.
    */
   @Test
-  public void testNullAvgFunction() 
+  public void testNullAvgFunction()
   {
     System.out.println("In testNullAvgFunction method");
     StringBuilder str = new StringBuilder();
@@ -1240,14 +1240,14 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
       str.append(ex.getMessage());
       System.out.println("Exception message is : " + str.toString());
     }
-    assertTrue("Exceptions not found", str.toString().contains("column parameter for avg() cannot be null"));
+    assertTrue( str.toString().contains("column parameter for avg() cannot be null"));
   }
 
   /*
    * This test checks bindParam on triples' subject and object.
    */
   @Test
-  public void testFromTriplesWithbindParam() 
+  public void testFromTriplesWithbindParam()
   {
     System.out.println("In testFromTriplesWithbindParam method");
 
@@ -1273,9 +1273,9 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
     // Should have 1 nodes returned.
-    assertEquals("One node not returned from testFromTriplesWithbindParam method ", 1, jsonBindingsNodes.size());
-    assertEquals("Row 1 player name value incorrect", "Juan Leone", jsonBindingsNodes.path(0).path("player_name").path("value").asText());
-    assertEquals("Row 1 player team value incorrect", "http://marklogic.com/mlb/team/id/001", jsonBindingsNodes.path(0).path("player_team").path("value").asText());
+    assertEquals( 1, jsonBindingsNodes.size());
+    assertEquals( "Juan Leone", jsonBindingsNodes.path(0).path("player_name").path("value").asText());
+    assertEquals( "http://marklogic.com/mlb/team/id/001", jsonBindingsNodes.path(0).path("player_team").path("value").asText());
 
     // Verify bind value with different types, values.
     Plan player_plan2 = player_plan.bindParam(ageParam, p.xs.intVal(0));
@@ -1285,7 +1285,7 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     rowMgr.resultDoc(player_plan2, jacksonHandle);
     jsonResults = jacksonHandle.get();
 
-    assertTrue("No data should have been returned", jsonResults == null);
+    assertTrue( jsonResults == null);
 
     // Should not throw an exception, but return null results
     Plan player_plan3 = player_plan.bindParam(ageParam, p.xs.intVal(-1));
@@ -1295,7 +1295,7 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     rowMgr.resultDoc(player_plan3, jacksonHandle);
     jsonResults = jacksonHandle.get();
     // Should have null nodes returned.
-    assertTrue("No data should have been returned", jsonResults == null);
+    assertTrue( jsonResults == null);
 
     // Should not throw an exception, but return null results
     Plan player_plan4 = player_plan.bindParam(ageParam, p.xs.string("abcd"));
@@ -1305,14 +1305,14 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     rowMgr.resultDoc(player_plan4, jacksonHandle);
     jsonResults = jacksonHandle.get();
     // Should have null nodes returned.
-    assertTrue("No data should have been returned", jsonResults == null);
+    assertTrue( jsonResults == null);
   }
 
   /*
    * This test checks union instead of join over pattern value permutations.
    */
   @Test
-  public void testPatternValuePermutations() 
+  public void testPatternValuePermutations()
   {
     System.out.println("In testPatternValuePermutations method");
 
@@ -1351,15 +1351,15 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
     JsonNode nodeVal = jsonBindingsNodes.path(0);
     // Should have 2 nodes returned.
-    assertEquals("Two nodes not returned from testPatternValuePermutations method", 2, jsonBindingsNodes.size());
-    assertEquals("Row 1 PlayerName value incorrect", "Bob Brian", nodeVal.path("PlayerName").path("value").asText());
-    assertEquals("Row 1 PlayerAge value incorrect", "23", nodeVal.path("PlayerAge").path("value").asText());
-    assertEquals("Row 1 PlayerPosition value incorrect", "Outfielder", nodeVal.path("PlayerPosition").path("value").asText());
+    assertEquals( 2, jsonBindingsNodes.size());
+    assertEquals( "Bob Brian", nodeVal.path("PlayerName").path("value").asText());
+    assertEquals( "23", nodeVal.path("PlayerAge").path("value").asText());
+    assertEquals( "Outfielder", nodeVal.path("PlayerPosition").path("value").asText());
 
     nodeVal = jsonBindingsNodes.path(1);
-    assertEquals("Row 2 PlayerName value incorrect", "Pedro Barrozo", nodeVal.path("PlayerName").path("value").asText());
-    assertEquals("Row 2 PlayerAge value incorrect", "19", nodeVal.path("PlayerAge").path("value").asText());
-    assertEquals("Row 2 PlayerPosition value incorrect", "Midfielder", nodeVal.path("PlayerPosition").path("value").asText());
+    assertEquals( "Pedro Barrozo", nodeVal.path("PlayerName").path("value").asText());
+    assertEquals( "19", nodeVal.path("PlayerAge").path("value").asText());
+    assertEquals( "Midfielder", nodeVal.path("PlayerPosition").path("value").asText());
 
     // Test for verifying that value permutations do not appear in the result
     // rows. They should not be part of results.
@@ -1373,11 +1373,11 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     JsonNode jsonResults1 = jacksonHandle1.get();
     JsonNode jsonBindingsNodes1 = jsonResults1.path("rows");
     // Should have 2 nodes returned.
-    assertEquals("Two nodes not returned from testPatternValuePermutations method", 2, jsonBindingsNodes1.size());
-    assertTrue("Node not returned from testPatternValuePermutations method",
+    assertEquals( 2, jsonBindingsNodes1.size());
+    assertTrue(
         jsonBindingsNodes1.path(0).get("myPlayer.id").get("value").asText().contains("http://marklogic.com/baseball/id#005") ||
             jsonBindingsNodes1.path(0).get("myPlayer.id").get("value").asText().contains("http://marklogic.com/baseball/id#002"));
-    assertTrue("Node not returned from testPatternValuePermutations method",
+    assertTrue(
         jsonBindingsNodes1.path(1).get("myPlayer.id").get("value").asText().contains("http://marklogic.com/baseball/id#005") ||
             jsonBindingsNodes1.path(1).get("myPlayer.id").get("value").asText().contains("http://marklogic.com/baseball/id#002"));
     // Negative cases
@@ -1401,7 +1401,7 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     JsonNode jsonResultsNeg = jacksonHandle.get();
 
     // Should have 0 nodes returned.
-    assertTrue("Zero nodes not returned from testPatternValuePermutations method", jsonResultsNeg == null);
+    assertTrue( jsonResultsNeg == null);
 
     PlanTriplePositionSeq objectSeqNeg1 = p.objectSeq(p.xs.intVal(23), p.xs.intVal(19), p.xs.intVal(-1));
 
@@ -1424,14 +1424,14 @@ public class TestOpticOnTriples extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodesNeg1 = jsonResultsNeg1.path("rows");
     JsonNode nodeValNeg1 = jsonBindingsNodesNeg1.path(0);
     // Should have 2 nodes returned.
-    assertEquals("Two nodes not returned from testPatternValuePermutations method", 2, jsonBindingsNodesNeg1.size());
-    assertEquals("Row 1 PlayerName value incorrect", "Bob Brian", nodeValNeg1.path("PlayerName").path("value").asText());
-    assertEquals("Row 1 PlayerAge value incorrect", "23", nodeValNeg1.path("PlayerAge").path("value").asText());
-    assertEquals("Row 1 PlayerPosition value incorrect", "Outfielder", nodeValNeg1.path("PlayerPosition").path("value").asText());
+    assertEquals( 2, jsonBindingsNodesNeg1.size());
+    assertEquals( "Bob Brian", nodeValNeg1.path("PlayerName").path("value").asText());
+    assertEquals( "23", nodeValNeg1.path("PlayerAge").path("value").asText());
+    assertEquals( "Outfielder", nodeValNeg1.path("PlayerPosition").path("value").asText());
 
     nodeValNeg1 = jsonBindingsNodesNeg1.path(1);
-    assertEquals("Row 2 PlayerName value incorrect", "Pedro Barrozo", nodeValNeg1.path("PlayerName").path("value").asText());
-    assertEquals("Row 2 PlayerAge value incorrect", "19", nodeValNeg1.path("PlayerAge").path("value").asText());
-    assertEquals("Row 2 PlayerPosition value incorrect", "Midfielder", nodeValNeg1.path("PlayerPosition").path("value").asText());
+    assertEquals( "Pedro Barrozo", nodeValNeg1.path("PlayerName").path("value").asText());
+    assertEquals( "19", nodeValNeg1.path("PlayerAge").path("value").asText());
+    assertEquals( "Midfielder", nodeValNeg1.path("PlayerPosition").path("value").asText());
   }
 }

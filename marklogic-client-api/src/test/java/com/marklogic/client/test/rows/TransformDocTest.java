@@ -10,15 +10,14 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TransformDocTest extends AbstractOpticUpdateTest {
 
@@ -43,10 +42,9 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
         ObjectNode transformedDoc = results.get(0).getContentAs("doc", ObjectNode.class);
         assertEquals("world", transformedDoc.get("hello").asText());
         assertEquals("my value", transformedDoc.get("yourParam").asText());
-        assertEquals(
-            "The transform is expected to receive the incoming doc via the 'doc' param and then toss it into the " +
-                "response under the key 'thedoc'",
-            "content", transformedDoc.get("theDoc").get("some").asText());
+        assertEquals("content", transformedDoc.get("theDoc").get("some").asText(),
+			"The transform is expected to receive the incoming doc via the 'doc' param and then toss it into the " +
+				"response under the key 'thedoc'");
     }
 
     @Test
@@ -118,7 +116,7 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
 
         ObjectNode transformedDoc = results.get(0).getContentAs("doc", ObjectNode.class);
         assertEquals("world", transformedDoc.get("hello").asText());
-        assertFalse("myParam was not specified, so yourParam should not exist", transformedDoc.has("yourParam"));
+        assertFalse(transformedDoc.has("yourParam"), "myParam was not specified, so yourParam should not exist");
         assertEquals("content", transformedDoc.get("theDoc").get("some").asText());
     }
 
@@ -141,7 +139,8 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
             .write();
 
         List<RowRecord> rows = resultRows(plan);
-        assertEquals("Two docs should have been written because the transform returns an array of 2 objects", 2, rows.size());
+        assertEquals(2, rows.size(),
+			"Two docs should have been written because the transform returns an array of 2 objects");
         rows.forEach(row -> {
             final String uri = row.getString("uri");
             final ObjectNode returnedDoc = row.getContentAs("doc", ObjectNode.class);
@@ -164,7 +163,8 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
             .transformDoc(op.col("doc"), op.transformDef("/etc/optic/test/transformDoc-throwsError.mjs"));
 
         FailedRequestException ex = assertThrows(FailedRequestException.class, () -> rowManager.execute(plan));
-        assertTrue("Unexpected message: " + ex.getMessage(), ex.getMessage().contains("throw Error(\"This is intentional\")"));
+        assertTrue(ex.getMessage().contains("throw Error(\"This is intentional\")"),
+			"Unexpected message: " + ex.getMessage());
     }
 
     @Test
@@ -218,13 +218,13 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
 
         String xml = getRowContentWithoutXmlDeclaration(results.get(0), "doc");
         String message = "Unexpected XML doc: " + xml;
-        // marklogic-junit would make this much easier/nicer once we change this project
+        // TODO marklogic-junit would make this much easier/nicer once we change this project
         // to use JUnit 5
-        assertTrue(message, xml.startsWith("<result>"));
-        assertTrue(message, xml.contains("<doc>1</doc>"));
-        assertTrue(message, xml.contains("<hello>world</hello>"));
-        assertTrue(message, xml.contains("<yourParam>my value</yourParam"));
-        assertTrue(message, xml.endsWith("</result>"));
+        assertTrue(xml.startsWith("<result>"), message);
+        assertTrue(xml.contains("<doc>1</doc>"), message);
+        assertTrue(xml.contains("<hello>world</hello>"), message);
+        assertTrue(xml.contains("<yourParam>my value</yourParam"), message);
+        assertTrue(xml.endsWith("</result>"), message);
     }
 
     @Test
@@ -249,9 +249,9 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
 
         String xml = getRowContentWithoutXmlDeclaration(results.get(0), "doc");
         String message = "Unexpected XML doc: " + xml;
-        assertTrue(message, xml.startsWith("<result>"));
-        assertTrue(message, xml.contains("<hello>world</hello>"));
-        assertTrue(message, xml.contains("<yourParam/>"));
-        assertTrue(message, xml.endsWith("</result>"));
+        assertTrue(xml.startsWith("<result>"), message);
+        assertTrue(xml.contains("<hello>world</hello>"), message);
+        assertTrue(xml.contains("<yourParam/>"), message);
+        assertTrue(xml.endsWith("</result>"), message);
     }
 }

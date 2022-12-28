@@ -16,25 +16,22 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.io.StringHandle;
+import org.junit.jupiter.api.*;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import org.junit.*;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.io.StringHandle;
-
-@Ignore
+@Disabled
 public class TestBug18993 extends BasicJavaClientREST {
 
   private static String dbName = "Bug18993DB";
   private static String[] fNames = { "Bug18993DB-1" };
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception
   {
     System.out.println("In setup");
@@ -45,7 +42,7 @@ public class TestBug18993 extends BasicJavaClientREST {
     }
   }
 
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception
   {
     clearDB();
@@ -76,7 +73,7 @@ public class TestBug18993 extends BasicJavaClientREST {
         System.out.println();
         String strXML = readHandle.toString();
         System.out.print(readHandle.toString());
-        assertTrue("Document is not returned", strXML.contains(expectedXML));
+        Assertions.assertTrue(strXML.contains(expectedXML));
         System.out.println();
       }
 
@@ -85,7 +82,7 @@ public class TestBug18993 extends BasicJavaClientREST {
     }
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws Exception
   {
     System.out.println("In tear down");

@@ -23,13 +23,11 @@ import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.pojo.annotation.Id;
 import com.marklogic.client.query.StringQueryDefinition;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.Iterator;
-
-import static org.junit.Assert.*;
 
 /*
  * Purpose : To test the following special cases for PojoRepository class methods
@@ -195,7 +193,7 @@ public class TestPOJOSpecialCharRead extends AbstractFunctionalTest {
     }
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     client = getDatabaseClient("rest-admin", "x", getConnType());
   }
@@ -326,13 +324,13 @@ public class TestPOJOSpecialCharRead extends AbstractFunctionalTest {
    * This method is used when there is a need to validate one read and search.
    */
   public void validateArtifact(Artifact artifact, long longId) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.id);
-    assertEquals("Id of the object is ", longId, artifact.getId());
-    assertEquals("Name of the object is ", "Cogs", artifact.getName());
-    assertEquals("Inventory of the object is ", 1000, artifact.getInventory());
-    assertEquals("Company name of the object is ", "Acme Inc.", artifact.getManufacturer().getName());
-    assertEquals("Web site of the object is ", "http://www.acme.com", artifact.getManufacturer().getWebsite());
+    assertNotNull( artifact);
+    assertNotNull( artifact.id);
+    assertEquals( longId, artifact.getId());
+    assertEquals( "Cogs", artifact.getName());
+    assertEquals( 1000, artifact.getInventory());
+    assertEquals( "Acme Inc.", artifact.getManufacturer().getName());
+    assertEquals( "http://www.acme.com", artifact.getManufacturer().getWebsite());
     assertEquals(-87.966, artifact.getManufacturer().getLongitude(), 0.00);
     assertEquals(41.998, artifact.getManufacturer().getLatitude(), 0.00);
   }
@@ -342,13 +340,13 @@ public class TestPOJOSpecialCharRead extends AbstractFunctionalTest {
    * with default Id field value. Verify that artifact.getId() returns 0L.
    */
   public void validateArtifactWithDefault(Artifact artifact) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.id);
-    assertEquals("Id of the object is ", 0, artifact.getId());
-    assertEquals("Name of the object is ", "Cogs", artifact.getName());
-    assertEquals("Inventory of the object is ", 1000, artifact.getInventory());
-    assertEquals("Company name of the object is ", "Acme Inc.", artifact.getManufacturer().getName());
-    assertEquals("Web site of the object is ", "http://www.acme.com", artifact.getManufacturer().getWebsite());
+    assertNotNull( artifact);
+    assertNotNull( artifact.id);
+    assertEquals( 0, artifact.getId());
+    assertEquals( "Cogs", artifact.getName());
+    assertEquals( 1000, artifact.getInventory());
+    assertEquals( "Acme Inc.", artifact.getManufacturer().getName());
+    assertEquals( "http://www.acme.com", artifact.getManufacturer().getWebsite());
     assertEquals(-87.966, artifact.getManufacturer().getLongitude(), 0.00);
     assertEquals(41.998, artifact.getManufacturer().getLatitude(), 0.00);
   }
@@ -359,11 +357,11 @@ public class TestPOJOSpecialCharRead extends AbstractFunctionalTest {
    * that has some parts not yet created/defined etc..
    */
   public void validateArtifactWithNull(Artifact artifact, long longId) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.id);
-    assertEquals("Id of the object is ", longId, artifact.getId());
-    assertEquals("Name of the object is ", "Cogs", artifact.getName());
-    assertEquals("Inventory of the object is ", 1000, artifact.getInventory());
+    assertNotNull( artifact);
+    assertNotNull( artifact.id);
+    assertEquals( longId, artifact.getId());
+    assertEquals( "Cogs", artifact.getName());
+    assertEquals( 1000, artifact.getInventory());
     assertNull(artifact.getManufacturer());
   }
 
@@ -372,13 +370,13 @@ public class TestPOJOSpecialCharRead extends AbstractFunctionalTest {
    * with special characters in SpecialArtifact Name field.
    */
   public void validateSpecialArtifactWithSpecialCharacter(SpecialArtifact artifact, String artifactName, long longId) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.id);
-    assertEquals("Id of the object is ", longId, artifact.getId());
-    assertEquals("Name of the object is ", artifactName, artifact.getName());
-    assertEquals("Inventory of the object is ", 1000, artifact.getInventory());
-    assertEquals("Company name of the object is ", artifactName, artifact.getManufacturer().getName());
-    assertEquals("Web site of the object is ", "http://www.acme.com", artifact.getManufacturer().getWebsite());
+    assertNotNull( artifact);
+    assertNotNull( artifact.id);
+    assertEquals( longId, artifact.getId());
+    assertEquals( artifactName, artifact.getName());
+    assertEquals( 1000, artifact.getInventory());
+    assertEquals( artifactName, artifact.getManufacturer().getName());
+    assertEquals( "http://www.acme.com", artifact.getManufacturer().getWebsite());
     assertEquals(-87.966, artifact.getManufacturer().getLongitude(), 0.00);
     assertEquals(41.998, artifact.getManufacturer().getLatitude(), 0.00);
   }
@@ -388,13 +386,13 @@ public class TestPOJOSpecialCharRead extends AbstractFunctionalTest {
    * with special characters in SpArtifactWithGetSetId Name field.
    */
   public void validateSpArtifactWithSpecialCharacter(SpArtifactWithGetSetId artifact, String artifactName, long longId) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.id);
-    assertEquals("Id of the object is ", longId, artifact.getId());
-    assertEquals("Name of the object is ", artifactName, artifact.getName());
-    assertEquals("Inventory of the object is ", 1000, artifact.getInventory());
-    assertEquals("Company name of the object is ", artifactName, artifact.getManufacturer().getName());
-    assertEquals("Web site of the object is ", "http://www.acme.com", artifact.getManufacturer().getWebsite());
+    assertNotNull( artifact);
+    assertNotNull( artifact.id);
+    assertEquals( longId, artifact.getId());
+    assertEquals( artifactName, artifact.getName());
+    assertEquals( 1000, artifact.getInventory());
+    assertEquals( artifactName, artifact.getManufacturer().getName());
+    assertEquals( "http://www.acme.com", artifact.getManufacturer().getWebsite());
     assertEquals(-87.966, artifact.getManufacturer().getLongitude(), 0.00);
     assertEquals(41.998, artifact.getManufacturer().getLatitude(), 0.00);
   }
@@ -404,13 +402,13 @@ public class TestPOJOSpecialCharRead extends AbstractFunctionalTest {
    * searches.
    */
   public void validateArtifactTwo(Artifact artifact, long longId) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.id);
-    assertEquals("Id of the object is ", longId, artifact.getId());
-    assertEquals("Name of the object is ", "Cogs", artifact.getName());
-    assertEquals("Inventory of the object is ", 1000, artifact.getInventory());
-    assertEquals("Company name of the object is ", "Acme Inc.", artifact.getManufacturer().getName());
-    assertEquals("Web site of the object is ", "http://www.acme.com", artifact.getManufacturer().getWebsite());
+    assertNotNull( artifact);
+    assertNotNull( artifact.id);
+    assertEquals( longId, artifact.getId());
+    assertEquals( "Cogs", artifact.getName());
+    assertEquals( 1000, artifact.getInventory());
+    assertEquals( "Acme Inc.", artifact.getManufacturer().getName());
+    assertEquals( "http://www.acme.com", artifact.getManufacturer().getWebsite());
     assertEquals(-87.966, artifact.getManufacturer().getLongitude(), 0.00);
     assertEquals(41.998, artifact.getManufacturer().getLatitude(), 0.00);
   }
@@ -420,10 +418,10 @@ public class TestPOJOSpecialCharRead extends AbstractFunctionalTest {
    * @Id on id field.
    */
   public void validateByteArray(ByteArrayId artifact, byte[] arrayOrig, byte bTest) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.id);
+    assertNotNull( artifact);
+    assertNotNull( artifact.id);
     assertTrue(Arrays.equals(artifact.getByteName(), arrayOrig));
-    assertEquals("Id of the object is ", bTest, artifact.getId());
+    assertEquals( bTest, artifact.getId());
   }
 
   /*
@@ -431,10 +429,10 @@ public class TestPOJOSpecialCharRead extends AbstractFunctionalTest {
    * @Id on a byte[] array class member.
    */
   public void validateAnnotatedByteArray(AnnotateByteArray artifact, byte[] arrayOrig, byte bTest) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.id);
+    assertNotNull( artifact);
+    assertNotNull( artifact.id);
     assertTrue(Arrays.equals(artifact.getByteName(), arrayOrig));
-    assertEquals("Id of the object is ", bTest, artifact.getId());
+    assertEquals( bTest, artifact.getId());
   }
 
   /*
@@ -475,8 +473,7 @@ public class TestPOJOSpecialCharRead extends AbstractFunctionalTest {
    * instance @Id field value with Negative numbers. Expect
    * ResourceNotFoundException when there are no URI found. As per Git # 188.
    */
-
-  @Test(expected = ResourceNotFoundException.class)
+	@Test
   public void testPOJORepoDeleteWithNegativeId() {
     PojoRepository<Artifact, Long> pojoReposProducts = client.newPojoRepository(Artifact.class, Long.class);
 
@@ -486,11 +483,7 @@ public class TestPOJOSpecialCharRead extends AbstractFunctionalTest {
 
     // Delete the object
     pojoReposProducts.delete(longId);
-
-    // Validate the artifact read back. ResourceNotFoundException will be
-    // thrown.
-    @SuppressWarnings("unused")
-    Artifact artifact = pojoReposProducts.read(longId);
+    assertThrows(ResourceNotFoundException.class, () -> pojoReposProducts.read(longId));
   }
 
   /*
@@ -516,13 +509,13 @@ public class TestPOJOSpecialCharRead extends AbstractFunctionalTest {
     // Validate the artifacts read back.
     pojoArtifactPage = pojoReposProducts.read(pojoReposProductsIdLongArray);
 
-    assertEquals("The count of items in this page ", 2, pojoArtifactPage.size());
+    assertEquals( 2, pojoArtifactPage.size());
 
     pojoReposProducts.delete(longId1, longId2);
 
     pojoArtifactPage = pojoReposProducts.read(pojoReposProductsIdLongArray);
 
-    assertEquals("The count of items in this page ", 0, pojoArtifactPage.size());
+    assertEquals( 0, pojoArtifactPage.size());
 
     System.out.println("The count of items in this page " + pojoArtifactPage.size());
 
@@ -554,22 +547,22 @@ public class TestPOJOSpecialCharRead extends AbstractFunctionalTest {
     pojoArtifactPage = pojoReposProducts.read(pojoReposProductsIdLongArray);
 
     System.out.println("The count of items in this page " + pojoArtifactPage.size());
-    assertEquals("The count of items in this page ", 2, pojoArtifactPage.size());
+    assertEquals( 2, pojoArtifactPage.size());
 
     System.out.println("The number of pages covering all possible items " + pojoArtifactPage.getTotalPages());
-    assertEquals("The number of pages covering all possible items ", 1, pojoArtifactPage.getTotalPages());
+    assertEquals( 1, pojoArtifactPage.getTotalPages());
 
     System.out.println("The page number within the count of all possible pages " + pojoArtifactPage.getPageNumber());
-    assertEquals("The page number within the count of all possible pages ", 1, pojoArtifactPage.getPageNumber());
+    assertEquals( 1, pojoArtifactPage.getPageNumber());
 
     System.out.println("The page size which is the maximum number of items allowed in one page " + pojoArtifactPage.getPageSize());
-    assertEquals("The page size which is the maximum number of items allowed in one page ", 2, pojoArtifactPage.getPageSize());
+    assertEquals( 2, pojoArtifactPage.getPageSize());
 
     System.out.println("The start position of this page within all possible items " + pojoArtifactPage.getStart());
-    assertEquals("The start position of this page within all possible items ", 1, pojoArtifactPage.getStart());
+    assertEquals( 1, pojoArtifactPage.getStart());
 
     System.out.println("The total count (potentially an estimate) of all possible items in the set " + pojoArtifactPage.getTotalSize());
-    assertEquals("The total count (potentially an estimate) of all possible items in the set ", 2, pojoArtifactPage.getTotalSize());
+    assertEquals(2, pojoArtifactPage.getTotalSize());
 
     Iterator<Artifact> itr = pojoArtifactPage.iterator();
     Artifact artifact = null;
@@ -827,11 +820,11 @@ public class TestPOJOSpecialCharRead extends AbstractFunctionalTest {
       while (page.hasNext()) {
         String artifactName = new String("Byte Array test " + count);
         byte[] testByteArray = artifactName.getBytes();
-        assertNotNull("Should return an object", page.next());
+        assertNotNull( page.next());
         count++;
       }
       page.close();
     }
-    assertEquals("total number of iterations", 101, i);
+    assertEquals( 101, i);
   }
 }

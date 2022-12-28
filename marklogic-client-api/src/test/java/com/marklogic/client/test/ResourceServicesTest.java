@@ -15,38 +15,37 @@
  */
 package com.marklogic.client.test;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.util.ArrayList;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.w3c.dom.Document;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.util.RequestParameters;
 import com.marklogic.client.admin.ResourceExtensionsManager;
 import com.marklogic.client.extensions.ResourceManager;
 import com.marklogic.client.extensions.ResourceServices;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.util.RequestParameters;
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ResourceServicesTest {
   static private String resourceServices;
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() throws IOException {
     Common.connectAdmin();
     resourceServices = Common.testFileToString(ResourceExtensionsTest.XQUERY_FILE, "UTF-8");
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     resourceServices = null;
   }
@@ -70,7 +69,7 @@ public class ResourceServicesTest {
     params.put("value", "true");
 
     Document result = resourceMgr.getResourceServices().get(params, new DOMHandle()).get();
-    assertNotNull("Failed to get resource service with single document", result);
+    assertNotNull( result);
     assertXpathEvaluatesTo("true", "/read-doc/param", result);
 
     ServiceResultIterator resultItr = resourceMgr.getResourceServices().get(params);
@@ -86,19 +85,19 @@ public class ResourceServicesTest {
     resultItr.close();
 
     int size = resultDocuments.size();
-    assertTrue("Failed to get resource service with two documents", size == 2);
+    assertTrue( size == 2);
     result = resultDocuments.get(0);
-    assertNotNull("Failed to get resource service with first document", result);
+    assertNotNull( result);
     assertXpathEvaluatesTo("true", "/read-doc/param", result);
     result = resultDocuments.get(1);
-    assertNotNull("Failed to get resource service with second document", result);
+    assertNotNull( result);
     assertXpathEvaluatesTo("true", "/read-multi-doc/multi-param", result);
 
     StringHandle writeHandle =
       new StringHandle().withFormat(Format.XML).with("<input-doc>true</input-doc>");
 
     result = resourceMgr.getResourceServices().put(params, writeHandle, new DOMHandle()).get();
-    assertNotNull("Failed to put resource service with a single document", result);
+    assertNotNull( result);
     assertXpathEvaluatesTo("true", "/wrote-doc/param", result);
     assertXpathEvaluatesTo("true", "/wrote-doc/input-doc", result);
 
@@ -107,13 +106,13 @@ public class ResourceServicesTest {
     writeHandles[1] = new StringHandle().withFormat(Format.XML).with("<multi-input-doc>true</multi-input-doc>");
 
     result = resourceMgr.getResourceServices().put(params, writeHandles, new DOMHandle()).get();
-    assertNotNull("Failed to put resource service with multiple documents", result);
+    assertNotNull( result);
     assertXpathEvaluatesTo("true", "/wrote-doc/param", result);
     assertXpathEvaluatesTo("true", "/wrote-doc/input-doc", result);
     assertXpathEvaluatesTo("true", "/wrote-doc/multi-input-doc", result);
 
     result = resourceMgr.getResourceServices().post(params, writeHandle, new DOMHandle()).get();
-    assertNotNull("Failed to post resource service with a single document", result);
+    assertNotNull( result);
     assertXpathEvaluatesTo("true", "/applied-doc/param", result);
     assertXpathEvaluatesTo("true", "/applied-doc/input-doc", result);
 
@@ -130,16 +129,16 @@ public class ResourceServicesTest {
     resultItr.close();
 
     size = resultDocuments.size();
-    assertTrue("Failed to post resource service with two documents", size == 2);
+    assertTrue( size == 2);
     result = resultDocuments.get(0);
-    assertNotNull("Failed to post resource service with first document", result);
+    assertNotNull( result);
     assertXpathEvaluatesTo("true", "/applied-doc/param", result);
     result = resultDocuments.get(1);
-    assertNotNull("Failed to post resource service with second document", result);
+    assertNotNull( result);
     assertXpathEvaluatesTo("true", "/applied-multi-doc/multi-param", result);
 
     result = resourceMgr.getResourceServices().delete(params, new DOMHandle()).get();
-    assertNotNull("Failed to delete resource service with a single document", result);
+    assertNotNull( result);
     assertXpathEvaluatesTo("true", "/deleted-doc/param", result);
 
     extensionMgr.deleteServices(ResourceExtensionsTest.RESOURCE_NAME);
@@ -155,13 +154,13 @@ public class ResourceServicesTest {
     Common.adminClient = null;
     String expectedMessage = "You cannot use this connected object anymore--connection has already been released";
     try { extensionMgr.writeServices(ResourceExtensionsTest.RESOURCE_NAME, null, null);
-    } catch (IllegalStateException e) { assertEquals("Wrong error", expectedMessage, e.getMessage()); }
+    } catch (IllegalStateException e) { assertEquals( expectedMessage, e.getMessage()); }
     try { extensionMgr.readServices(ResourceExtensionsTest.RESOURCE_NAME, new StringHandle());
-    } catch (IllegalStateException e) { assertEquals("Wrong error", expectedMessage, e.getMessage()); }
+    } catch (IllegalStateException e) { assertEquals( expectedMessage, e.getMessage()); }
     try { extensionMgr.listServices(new DOMHandle());
-    } catch (IllegalStateException e) { assertEquals("Wrong error", expectedMessage, e.getMessage()); }
+    } catch (IllegalStateException e) { assertEquals( expectedMessage, e.getMessage()); }
     try { extensionMgr.deleteServices(ResourceExtensionsTest.RESOURCE_NAME);
-    } catch (IllegalStateException e) { assertEquals("Wrong error", expectedMessage, e.getMessage()); }
+    } catch (IllegalStateException e) { assertEquals( expectedMessage, e.getMessage()); }
   }
 
   @Test

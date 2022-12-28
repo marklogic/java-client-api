@@ -15,48 +15,30 @@
  */
 package com.marklogic.client.test.rows;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
 import com.marklogic.client.test.Common;
-import com.marklogic.client.type.ItemVal;
-import com.marklogic.client.type.PlanExprCol;
-import com.marklogic.client.type.PlanPrefixer;
-import com.marklogic.client.type.XsAnyAtomicTypeVal;
-import com.marklogic.client.type.XsBooleanVal;
-import com.marklogic.client.type.XsByteVal;
-import com.marklogic.client.type.XsDoubleVal;
-import com.marklogic.client.type.XsFloatVal;
-import com.marklogic.client.type.XsIntVal;
-import com.marklogic.client.type.XsLongVal;
-import com.marklogic.client.type.XsShortVal;
+import com.marklogic.client.type.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RowRecordTest {
   protected static RowManager  rowMgr = null;
   protected static PlanBuilder p      = null;
 
   protected static Map<String,ItemVal> datatypedValues = null;
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
     rowMgr = Common.client.newRowManager();
@@ -92,7 +74,7 @@ public class RowRecordTest {
     datatypedValues.put("langString",        p.rdf.langString("abc", "en"));
     datatypedValues.put("iri",               p.sem.iri("http://a/b"));
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     p      = null;
     rowMgr = null;
@@ -114,7 +96,7 @@ public class RowRecordTest {
     for (int prefix=0; prefix < prefixes.length; prefix++) {
       PlanPrefixer prefixer = p.prefixer(prefixes[prefix]);
       for (int suffix=0; suffix < suffixes.length; suffix++) {
-        assertEquals("prefixer "+prefix+","+suffix,
+        assertEquals(
           p.sem.iri(results[prefix][suffix]).getString(),
           prefixer.iri(suffixes[suffix]).getString()
         );
@@ -144,7 +126,7 @@ public class RowRecordTest {
 
     RowSet<RowRecord>   rowSet = rowMgr.resultRows(plan);
     Iterator<RowRecord> rowItr = rowSet.iterator();
-    assertTrue("no row to test for datatypes", rowItr.hasNext());
+    assertTrue( rowItr.hasNext());
 
     RowRecord row = rowItr.next();
     datatypedValues.forEach((key,expected) -> {
@@ -157,12 +139,12 @@ public class RowRecordTest {
         if (isFloatingPoint && expectedStr.length() < actualStr.length()) {
           actualStr = actualStr.substring(0, expectedStr.length());
         }
-        assertEquals("string comparison for: "+key, expectedStr, actualStr);
+        assertEquals(expectedStr, actualStr);
 
         RowRecord.ColumnKind expectedKind = RowRecord.ColumnKind.ATOMIC_VALUE;
         RowRecord.ColumnKind actualKind   =
           useKey ? row.getKind(key) : row.getKind(col);
-        assertEquals("column kind for: "+key, expectedKind, actualKind);
+        assertEquals(expectedKind, actualKind);
 
         String actualDatatype =
           useKey ? row.getDatatype(key) : row.getDatatype(col);
@@ -198,7 +180,7 @@ public class RowRecordTest {
                 expectedTypePrefix = "sem";
                 break;
             }
-            assertEquals("column datatype for: "+key,
+            assertEquals(
               expectedTypePrefix+":"+expectedTypeName,
               actualDatatype
             );
@@ -217,14 +199,14 @@ public class RowRecordTest {
               String name = expectedClass.getSimpleName();
               name = name.substring(0, name.length() - "Impl".length());
               try {
-                assertNotNull("null value for: "+key,
+                assertNotNull(
                   useKey ? row.getValueAs(key, expectedClass) : row.getValueAs(col, expectedClass));
 
                 @SuppressWarnings("unchecked")
                 Class<? extends XsAnyAtomicTypeVal> expectedInterface =
                   (Class<? extends XsAnyAtomicTypeVal>) Class.forName("com.marklogic.client.type.Xs"+name);
 
-                assertNotNull("null value for: "+key,
+                assertNotNull(
                   useKey ? row.getValueAs(key, expectedInterface) : row.getValueAs(col, expectedInterface));
               } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -235,40 +217,40 @@ public class RowRecordTest {
 
         switch(key) {
           case "boolean":
-            assertEquals("boolean overload", ((XsBooleanVal) expected).getBoolean(),
+            assertEquals(((XsBooleanVal) expected).getBoolean(),
               useKey ? row.getBoolean(key) : row.getBoolean(col));
             break;
           case "byte":
-            assertEquals("byte overload", ((XsByteVal) expected).getByte(),
+            assertEquals(((XsByteVal) expected).getByte(),
               useKey ? row.getByte(key) : row.getByte(col));
             break;
           case "double":
-            assertEquals("double overload", ((XsDoubleVal) expected).getDouble(),
+            assertEquals(((XsDoubleVal) expected).getDouble(),
               useKey ? row.getDouble(key) : row.getDouble(col),
               0.1);
             break;
           case "float":
-            assertEquals("float overload", ((XsFloatVal) expected).getFloat(),
+            assertEquals(((XsFloatVal) expected).getFloat(),
               useKey ? row.getFloat(key) : row.getFloat(col),
               0.1);
             break;
           case "int":
-            assertEquals("int overload", ((XsIntVal) expected).getInt(),
+            assertEquals(((XsIntVal) expected).getInt(),
               useKey ? row.getInt(key) : row.getInt(col));
             break;
           case "long":
-            assertEquals("long overload", ((XsLongVal) expected).getLong(),
+            assertEquals(((XsLongVal) expected).getLong(),
               useKey ? row.getLong(key) : row.getLong(col));
             break;
           case "short":
-            assertEquals("short overload", ((XsShortVal) expected).getShort(),
+            assertEquals(((XsShortVal) expected).getShort(),
               useKey ? row.getShort(key) : row.getShort(col));
             break;
         }
       }
     });
 
-    assertFalse("too many results for datatypes", rowItr.hasNext());
+    assertFalse( rowItr.hasNext());
     rowSet.close();
   }
 
@@ -281,23 +263,23 @@ public class RowRecordTest {
 
     RowSet<RowRecord>   rowSet = rowMgr.resultRows(plan);
     Iterator<RowRecord> rowItr = rowSet.iterator();
-    assertTrue("no row to test for datatypes", rowItr.hasNext());
+    assertTrue( rowItr.hasNext());
 
     RowRecord row = rowItr.next();
 
     for (String colName: new String[]{"opticUnitTest.musician.lastName", "musician.lastName", "lastName"}) {
       RowRecord.ColumnKind expectedKind = RowRecord.ColumnKind.ATOMIC_VALUE;
       RowRecord.ColumnKind actualKind   = row.getKind(colName);
-      assertEquals("kind for alias: "+colName, expectedKind, actualKind);
+      assertEquals(expectedKind, actualKind);
 
       String datatype = row.getDatatype(colName);
-      assertEquals("datatype for alias: "+colName, "xs:string", datatype);
+      assertEquals("xs:string", datatype);
 
       String value = row.getString(colName);
-      assertEquals("value for alias: "+colName, "Armstrong", value);
+      assertEquals("Armstrong", value);
     }
 
-    assertFalse("too many results for alias", rowItr.hasNext());
+    assertFalse( rowItr.hasNext());
     rowSet.close();
   }
 
@@ -309,7 +291,7 @@ public class RowRecordTest {
     expected.add("int:{kind: \"ATOMIC_VALUE\", type: \"xs:integer\", value: 2},");
     expected.add("str:{kind: \"ATOMIC_VALUE\", type: \"xs:string\", value: \"string four\"},");
 
-    Map<String,Object> literalRow = new HashMap<String,Object>();
+    Map<String,Object> literalRow = new HashMap<>();
     literalRow.put("bool", true);
     literalRow.put("int",  2);
     literalRow.put("dec",  3.3);
@@ -320,7 +302,7 @@ public class RowRecordTest {
 
     RowSet<RowRecord>   rowSet = rowMgr.resultRows(plan);
     Iterator<RowRecord> rowItr = rowSet.iterator();
-    assertTrue("no row to test for datatypes", rowItr.hasNext());
+    assertTrue( rowItr.hasNext());
 
     RowRecord row = rowItr.next();
 
@@ -331,7 +313,7 @@ public class RowRecordTest {
       .map(line -> (line.endsWith(",") ? line : line.concat(",")))
       .collect(Collectors.toSet());
 
-    assertTrue("stringified record", expected.equals(actual));
+    assertTrue( expected.equals(actual));
 
     rowSet.close();
   }

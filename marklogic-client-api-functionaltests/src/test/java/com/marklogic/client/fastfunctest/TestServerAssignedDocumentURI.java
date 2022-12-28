@@ -28,7 +28,8 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -41,7 +42,7 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.assertTrue;
+
 
 public class TestServerAssignedDocumentURI extends AbstractFunctionalTest {
 
@@ -79,7 +80,7 @@ public class TestServerAssignedDocumentURI extends AbstractFunctionalTest {
     String content = docMgr.read(desc, new StringHandle()).get();
     System.out.println(content);
 
-    assertTrue("document is not created", content.contains("Flipper"));
+    assertTrue( content.contains("Flipper"));
 
     // release the client
     client.release();
@@ -120,7 +121,7 @@ public class TestServerAssignedDocumentURI extends AbstractFunctionalTest {
       content = docMgr.read(desc, new StringHandle()).get();
       System.out.println(content);
 
-      assertTrue("document is not created", content.contains("Flipper"));
+      assertTrue( content.contains("Flipper"));
     } catch (ResourceNotFoundException e) {
       System.out.println("Because of Special Characters in uri, it is throwing exception");
     }
@@ -203,7 +204,7 @@ public class TestServerAssignedDocumentURI extends AbstractFunctionalTest {
       System.out.println(docId);
     } catch (IllegalArgumentException i) {
       i.printStackTrace();
-      assertTrue("Expected error didnt came up", i.toString().contains("Directory is not valid: /:?#[]@/"));
+      assertTrue( i.toString().contains("Directory is not valid: /:?#[]@/"));
     }
     // release the client
     client.release();
@@ -280,7 +281,7 @@ public class TestServerAssignedDocumentURI extends AbstractFunctionalTest {
     }
 
     String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT";
-    assertTrue("Exception is not thrown", exception.contains(expectedException));
+    assertTrue( exception.contains(expectedException));
 
     System.out.println("After commit:");
     transaction.commit();
@@ -288,13 +289,13 @@ public class TestServerAssignedDocumentURI extends AbstractFunctionalTest {
     String content1 = docMgr.read(desc, new StringHandle()).get();
     System.out.println(content1);
 
-    assertTrue("document is not created", content1.contains("firstname"));
+    assertTrue( content1.contains("firstname"));
 
     // read metadata
     String metadataContent = docMgr.readMetadata(docId, new StringHandle()).get();
     System.out.println(metadataContent);
 
-    assertTrue("metadata is not created", metadataContent.contains("<Author>MarkLogic</Author>"));
+    assertTrue( metadataContent.contains("<Author>MarkLogic</Author>"));
     handle.close();
 
     // release client

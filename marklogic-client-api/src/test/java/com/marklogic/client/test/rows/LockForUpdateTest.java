@@ -6,12 +6,12 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LockForUpdateTest extends AbstractOpticUpdateTest {
 
@@ -54,9 +54,10 @@ public class LockForUpdateTest extends AbstractOpticUpdateTest {
         long duration = System.currentTimeMillis() - start;
         System.out.println("DUR: " + duration);
 
-        assertTrue("Because the eval call slept for 2 seconds, the duration of the plan execution should be at least " +
-            "1500ms, which is much longer than normal; it may not be at least 2 seconds due to the small delay in " +
-            "the Java layer of executing the plan; duration: " + duration, duration > 1500);
+        assertTrue(duration > 1500,
+			"Because the eval call slept for 2 seconds, the duration of the plan execution should be at least " +
+				"1500ms, which is much longer than normal; it may not be at least 2 seconds due to the small delay in " +
+				"the Java layer of executing the plan; duration: " + duration);
 
         // Verify that the collections were set based on the plan, which should have run second
         verifyMetadata(uri, metadata -> {

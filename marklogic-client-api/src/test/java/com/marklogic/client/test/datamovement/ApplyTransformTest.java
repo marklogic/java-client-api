@@ -15,31 +15,31 @@
  */
 package com.marklogic.client.test.datamovement;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.*;
+import com.marklogic.client.datamovement.ApplyTransformListener.ApplyResult;
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.datamovement.ApplyTransformListener.ApplyResult;
+import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.test.Common;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ApplyTransformTest {
   private static DatabaseClient client = Common.connect();
@@ -53,12 +53,12 @@ public class ApplyTransformTest {
   private static String transformName1 = "WriteBatcherTest_transform.sjs";
   private static String transformName2 = "ApplyTransformTest_result_ignore_transform.sjs";
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     installModule();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
     deleteQuery.setCollections(collection);
@@ -92,8 +92,7 @@ public class ApplyTransformTest {
     moveMgr.stopJob(ticket);
 
     JsonNode docContents = docMgr.readAs(collection + "/test1.json", JsonNode.class);
-    assertEquals( "the transform should have changed testProperty to 'test1a'",
-      "test1a", docContents.get("testProperty").textValue() );
+    assertEquals("test1a", docContents.get("testProperty").textValue() );
   }
 
   @Test
@@ -115,8 +114,7 @@ public class ApplyTransformTest {
     moveMgr.stopJob(ticket);
 
     JsonNode docContents = docMgr.readAs(collection + "/test2.json", JsonNode.class);
-    assertEquals( "the transform should have changed testProperty to 'test2a'",
-      "test2a", docContents.get("testProperty").textValue() );
+    assertEquals("test2a", docContents.get("testProperty").textValue() );
   }
 
   @Test
@@ -152,7 +150,7 @@ public class ApplyTransformTest {
     batcher.awaitCompletion();
     moveMgr.stopJob(ticket2);
     System.out.println("DEBUG: count2=[" + count2 + "]");
-    assertEquals( "exactly " + numDocs + " docs should have been transformed", numDocs, count2.get());
+    assertEquals(numDocs, count2.get());
 
     StructuredQueryDefinition query3 = sqb.value(sqb.jsonProperty("testProperty"), "test3a");
     query3.setCollections(collection);
@@ -166,7 +164,7 @@ public class ApplyTransformTest {
     moveMgr.stopJob(ticket3);
 
     System.out.println("DEBUG: count3=[" + count3 + "]");
-    assertEquals( "exactly " + numDocs + " docs should match the new value test3a", numDocs, count3.get());
+    assertEquals(numDocs, count3.get());
   }
 
   @Test

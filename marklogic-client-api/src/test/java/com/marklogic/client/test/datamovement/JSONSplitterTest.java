@@ -20,16 +20,15 @@ import com.marklogic.client.datamovement.JSONSplitter;
 import com.marklogic.client.datamovement.NodeOperation;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.JSONWriteHandle;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-import com.marklogic.client.io.marker.JSONWriteHandle;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JSONSplitterTest {
     static final private String jsonObjectFile = "src/test/resources/data" + File.separator + "pathSplitter/JsonSplitterObject.json";

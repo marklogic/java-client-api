@@ -22,8 +22,9 @@ import com.marklogic.client.io.*;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -34,12 +35,12 @@ import java.io.InputStream;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+
 
 public class TestSearchOnJSON extends AbstractFunctionalTest {
 
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception
   {
     deleteDocuments(connectAsAdmin());
@@ -80,7 +81,7 @@ public class TestSearchOnJSON extends AbstractFunctionalTest {
 
     String expectedOutput = "{\"options\":{\"return-metrics\":false, \"return-qtext\":false, \"debug\":true, \"transform-results\":{\"apply\":\"raw\"}, \"constraint\":[{\"name\":\"id\", \"value\":{\"element\":{\"ns\":\"\", \"name\":\"id\"}}}]}}";
 
-    assertEquals("query option in JSON is difference", expectedOutput, output.trim());
+    assertEquals( expectedOutput, output.trim());
 
     // create handle to write back option in json
     String queryOptionNameJson = queryOptionName.replaceAll(".xml", ".json");

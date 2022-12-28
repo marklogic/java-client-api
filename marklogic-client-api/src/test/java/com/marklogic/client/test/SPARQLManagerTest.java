@@ -15,25 +15,6 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.util.Map;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -42,27 +23,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
-import com.marklogic.client.query.RawStructuredQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.semantics.GraphManager;
-import com.marklogic.client.semantics.RDFMimeTypes;
-import com.marklogic.client.semantics.SPARQLBindings;
-import com.marklogic.client.semantics.SPARQLMimeTypes;
-import com.marklogic.client.semantics.SPARQLQueryDefinition;
-import com.marklogic.client.semantics.SPARQLQueryManager;
-import com.marklogic.client.semantics.SPARQLRuleset;
+import com.marklogic.client.io.*;
+import com.marklogic.client.query.*;
+import com.marklogic.client.semantics.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SPARQLManagerTest {
   private static String graphUri = "http://marklogic.com/java/SPARQLManagerTest";
@@ -81,7 +59,7 @@ public class SPARQLManagerTest {
   private static SPARQLQueryManager smgr;
   private static GraphManager gmgr;
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
     gmgr = Common.client.newGraphManager();
@@ -91,7 +69,7 @@ public class SPARQLManagerTest {
     smgr = Common.client.newSPARQLQueryManager();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     gmgr.delete(graphUri);
   }
@@ -143,18 +121,14 @@ public class SPARQLManagerTest {
 
     Node description = rdf.getFirstChild().getFirstChild();
     assertNotNull(description.getAttributes());
-    assertEquals("subject",
-      "http://example.org/s1", description.getAttributes().item(0).getTextContent());
+    assertEquals("http://example.org/s1", description.getAttributes().item(0).getTextContent());
     assertNotNull(description.getFirstChild());
-    assertEquals("predicate",
-      "p1", description.getFirstChild().getNodeName());
-    assertEquals("predicate namespace",
-      "http://example.org/", description.getFirstChild().getNamespaceURI());
+    assertEquals("p1", description.getFirstChild().getNodeName());
+    assertEquals("http://example.org/", description.getFirstChild().getNamespaceURI());
     NamedNodeMap attrs = description.getFirstChild().getAttributes();
     assertNotNull(attrs);
     assertNotNull(attrs.getNamedItemNS("http://www.w3.org/1999/02/22-rdf-syntax-ns#", "resource"));
-    assertEquals("object", "http://example.org/o1",
-      attrs.getNamedItemNS("http://www.w3.org/1999/02/22-rdf-syntax-ns#", "resource").getTextContent());
+    assertEquals("http://example.org/o1", attrs.getNamedItemNS("http://www.w3.org/1999/02/22-rdf-syntax-ns#", "resource").getTextContent());
   }
 
   @Test
@@ -493,7 +467,7 @@ public class SPARQLManagerTest {
           sparqlManagerReader
             .newQueryDefinition("select ?o where { <s1> <p1> ?o }"),
           new StringHandle());
-      assertEquals("Empty result outside transaction", "{\"head\":{\"vars\":[]},\"results\":{\"bindings\":[]}}", handle.get());
+      assertEquals( "{\"head\":{\"vars\":[]},\"results\":{\"bindings\":[]}}", handle.get());
 
       // and can inside (with writer user)
       handle = smgr
@@ -501,7 +475,7 @@ public class SPARQLManagerTest {
           sparqlManagerReader
             .newQueryDefinition("select ?o where { <s1> <p1> ?o }"),
           new StringHandle(), tx);
-      assertEquals("writer must see effects within transaction.", "{\"head\":{\"vars\":[\"o\"]},\"results\":{\"bindings\":[{\"o\":{\"type\":\"uri\",\"value\":\"o1\"}}]}}", handle.get());
+      assertEquals( "{\"head\":{\"vars\":[\"o\"]},\"results\":{\"bindings\":[{\"o\":{\"type\":\"uri\",\"value\":\"o1\"}}]}}", handle.get());
 
       tx.rollback();
       tx = null;
@@ -511,7 +485,7 @@ public class SPARQLManagerTest {
           sparqlManagerReader
             .newQueryDefinition("select ?o where { <s1> <p1> ?o }"),
           new StringHandle());
-      assertEquals("Empty result after rollback", "{\"head\":{\"vars\":[]},\"results\":{\"bindings\":[]}}", handle.get());
+      assertEquals( "{\"head\":{\"vars\":[]},\"results\":{\"bindings\":[]}}", handle.get());
 
       // new tx
       tx = Common.client.openTransaction();
@@ -527,7 +501,7 @@ public class SPARQLManagerTest {
           sparqlManagerReader
             .newQueryDefinition("select ?o where { <s1> <p1> ?o }"),
           new StringHandle());
-      assertEquals("update has been committed", "{\"head\":{\"vars\":[\"o\"]},\"results\":{\"bindings\":[{\"o\":{\"type\":\"uri\",\"value\":\"o1\"}}]}}", handle.get());
+      assertEquals( "{\"head\":{\"vars\":[\"o\"]},\"results\":{\"bindings\":[{\"o\":{\"type\":\"uri\",\"value\":\"o1\"}}]}}", handle.get());
 
       // new transaction
       tx = Common.client.openTransaction();
@@ -539,7 +513,7 @@ public class SPARQLManagerTest {
         .executeSelect(
           smgr.newQueryDefinition("select ?o where { <s1> <p1> ?o }"),
           new StringHandle(), tx);
-      assertEquals("Empty result after delete, within tx", "{\"head\":{\"vars\":[]},\"results\":{\"bindings\":[]}}", handle.get());
+      assertEquals( "{\"head\":{\"vars\":[]},\"results\":{\"bindings\":[]}}", handle.get());
 
       tx.commit();
       tx = null;

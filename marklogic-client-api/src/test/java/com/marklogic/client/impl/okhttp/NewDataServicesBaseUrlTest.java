@@ -1,9 +1,9 @@
 package com.marklogic.client.impl.okhttp;
 
 import okhttp3.HttpUrl;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class NewDataServicesBaseUrlTest {
 
@@ -12,10 +12,11 @@ public class NewDataServicesBaseUrlTest {
 		HttpUrl url = HttpUrlBuilder.newDataServicesBaseUri(
 			HttpUrlBuilder.newBaseUrl("anyhost", 8000, null, null)
 		);
-		assertEquals("For DS, the expectation is that the v1 stuff doesn't exist, as endpoints are expected " +
-				"to be resolved from the root of the app server",
-			"http://anyhost:8000/", url.toString());
-		assertEquals("http://anyhost:8000/my/service/endpoint.sjs", url.resolve("my/service/endpoint.sjs").toString());
+		assertEquals("http://anyhost:8000/", url.toString(),
+			"For DS, the expectation is that the v1 stuff doesn't exist, as endpoints are expected " +
+				"to be resolved from the root of the app server");
+		assertEquals("http://anyhost:8000/my/service/endpoint.sjs",
+			url.resolve("my/service/endpoint.sjs").toString());
 	}
 
 	@Test

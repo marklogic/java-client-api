@@ -21,10 +21,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.*;
 import com.marklogic.client.io.*;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import java.io.File;
 import java.security.KeyManagementException;
@@ -32,11 +32,11 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /*
  * This test is designed to to test simple bulk reads with different types of Managers and different content type like JSON,text,binary,XMl by passing set of uris
- * 
+ *
  *  TextDocumentManager
  *  XMLDocumentManager
  *  BinaryDocumentManager
@@ -44,7 +44,7 @@ import static org.junit.Assert.*;
  *  GenericDocumentManager
  */
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class TestBulkReadSample1 extends AbstractFunctionalTest {
 
   private static final int BATCH_SIZE = 100;
@@ -53,19 +53,19 @@ public class TestBulkReadSample1 extends AbstractFunctionalTest {
 
   private static DatabaseClient client;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception
   {
 	  if (isLBHost()) {
 		  ndocCount = 5;
 	  }
 	  else {
-		  ndocCount = 10; 
+		  ndocCount = 10;
 	  }
   }
 
   /*
-   * 
+   *
    * Use StringHandle to load 102 text documents using bulk write set. Test Bulk
    * Read to see you can read all the documents?
    */
@@ -76,7 +76,7 @@ public class TestBulkReadSample1 extends AbstractFunctionalTest {
     try {
 		int count = 1;
 		client = getDatabaseClient("rest-admin", "x", getConnType());
-		
+
 		TextDocumentManager docMgr = client.newTextDocumentManager();
 		DocumentWriteSet writeset = docMgr.newWriteSet();
 
@@ -104,7 +104,7 @@ public class TestBulkReadSample1 extends AbstractFunctionalTest {
 		  count++;
 		}
 		System.out.println("Document count test1ReadMultipleTextDoc " + count);
-		assertEquals("document count", 102, count);
+		assertEquals(102, count);
 	} catch (Exception e) {
 		e.printStackTrace();
 	}
@@ -152,11 +152,11 @@ public class TestBulkReadSample1 extends AbstractFunctionalTest {
 		  DocumentRecord rec = page.next();
 		  validateRecord(rec, Format.XML);
 		  rec.getContent(dh);
-		  assertEquals("Comparing the content :", map.get(rec.getUri()), convertXMLDocumentToString(dh.get()));
+		  assertEquals( map.get(rec.getUri()), convertXMLDocumentToString(dh.get()));
 		  count++;
 		}
 		System.out.println("Document count test2ReadMultipleXMLDoc " + count);
-		assertEquals("document count", 102, count);
+		assertEquals( 102, count);
 	} catch (Exception e) {
 		e.printStackTrace();
 	}
@@ -173,7 +173,7 @@ public class TestBulkReadSample1 extends AbstractFunctionalTest {
   public void test3ReadMultipleBinaryDoc() throws KeyManagementException, NoSuchAlgorithmException, Exception
   {
 	  System.out.println("Inside test3ReadMultipleBinaryDoc");
-	  
+
     try {
 		String docId[] = { "Sega-4MB.jpg" };
 		int count = 1;
@@ -194,7 +194,7 @@ public class TestBulkReadSample1 extends AbstractFunctionalTest {
 		/*if (count % BATCH_SIZE > 0) {
 		  docMgr.write(writeset);
 		}*/
-		
+
 		String uris[] = new String[ndocCount];
 		for (int i = 0; i < ndocCount; i++) {
 		  uris[i] = DIRECTORY + "binary" + i + ".jpg";
@@ -206,12 +206,12 @@ public class TestBulkReadSample1 extends AbstractFunctionalTest {
 		  DocumentRecord rec = page.next();
 		  validateRecord(rec, Format.BINARY);
 		  rec.getContent(rh);
-		  assertEquals("Content length :", file1.length(), rh.get().length());
+		  assertEquals(file1.length(), rh.get().length());
 		  count++;
 		}
-		assertEquals("document count", ndocCount, count);
+		assertEquals( ndocCount, count);
 		// Testing the multiple same uris will not read multiple records
-		
+
 		for (int i = 0; i < ndocCount; i++) {
 		  uris[i] = DIRECTORY + "binary" + 1 + ".jpg";
 		}
@@ -223,7 +223,7 @@ public class TestBulkReadSample1 extends AbstractFunctionalTest {
 		  count++;
 		}
 		System.out.println("Document count test3ReadMultipleBinaryDoc " + count);
-		assertEquals("document count", 1, count);
+		assertEquals( 1, count);
 	} catch (Exception e) {
 		e.printStackTrace();
 	}
@@ -266,7 +266,7 @@ public class TestBulkReadSample1 extends AbstractFunctionalTest {
 		  docMgr.write(writeset);
 		}
 		waitForPropertyPropagate();
-		
+
 		String uris[] = new String[103];
 		for (int i = 0; i < 102; i++) {
 		  uris[i] = DIRECTORY + "dog" + i + ".json";
@@ -280,11 +280,11 @@ public class TestBulkReadSample1 extends AbstractFunctionalTest {
 		  rec = page.next();
 		  validateRecord(rec, Format.JSON);
 		  rec.getContent(jh);
-		  assertEquals("Comparing the content :", map.get(rec.getUri()), jh.get().toString());
+		  assertEquals( map.get(rec.getUri()), jh.get().toString());
 		  count++;
 		}
 		System.out.println("Document count test4WriteMultipleJSONDocs " + count);
-		assertEquals("document count", 102, count);
+		assertEquals( 102, count);
 	} catch (Exception e) {
 		e.printStackTrace();
 	}
@@ -313,7 +313,7 @@ public class TestBulkReadSample1 extends AbstractFunctionalTest {
 		for (int i = 0; i < 10; i++) {
 		writesetXML.add(DIRECTORY + "foo" + i + ".xml", new DOMHandle(getDocumentContent("This is so foo" + i)));
 		uris[count++] =  DIRECTORY + "foo" + i + ".xml";
-		} 
+		}
 		xmldocMgr.write(writesetXML);
 
 		TextDocumentManager txtdocMgr = client.newTextDocumentManager();
@@ -321,7 +321,7 @@ public class TestBulkReadSample1 extends AbstractFunctionalTest {
 
 		for (int i = 0; i < 10; i++) {
 		writesetTXT.add(DIRECTORY + "foo" + i + ".txt", new StringHandle().with("This is so foo" + i));
-		uris[count++] =  DIRECTORY + "foo" + i + ".txt";    
+		uris[count++] =  DIRECTORY + "foo" + i + ".txt";
 		}
 		txtdocMgr.write(writesetTXT);
 
@@ -333,8 +333,8 @@ public class TestBulkReadSample1 extends AbstractFunctionalTest {
 				file1 = new File("src/test/java/com/marklogic/client/functionaltest/data/" + docId[0]);
 		FileHandle h1 = new FileHandle(file1);
 		for (int i = 0; i < 10; i++) {
-		writesetBIN.add(DIRECTORY + "binary" + i + ".jpg", h1); 
-		uris[count++] = DIRECTORY + "binary" + i + ".jpg";   
+		writesetBIN.add(DIRECTORY + "binary" + i + ".jpg", h1);
+		uris[count++] = DIRECTORY + "binary" + i + ".jpg";
 		}
 		bindocMgr.write(writesetBIN);
 
@@ -349,7 +349,7 @@ public class TestBulkReadSample1 extends AbstractFunctionalTest {
 		uris[count++] = DIRECTORY + "dog" + i + ".json";
 		}
 		jsondocMgr.write(writesetJSON);
-		
+
 		// for(String uri:uris){System.out.println(uri);}
 		DocumentPage page = docMgr.read(uris);
 
@@ -379,10 +379,10 @@ public class TestBulkReadSample1 extends AbstractFunctionalTest {
 		System.out.println("Document countTEXT test5WriteGenericDocMgr " + countTEXT);
 		System.out.println("Document countJpg test5WriteGenericDocMgr " + countJpg);
 		System.out.println("Document countJson test5WriteGenericDocMgr " + countJson);
-		assertEquals("xml document count", 10, countXML);
-		assertEquals("text document count", 10, countTEXT);
-		assertEquals("binary document count", isLBHost()?1:10, countJpg);
-		assertEquals("Json document count", 10, countJson);
+		assertEquals( 10, countXML);
+		assertEquals( 10, countTEXT);
+		assertEquals( isLBHost()?1:10, countJpg);
+		assertEquals( 10, countJson);
 	} catch (Exception e) {
 		e.printStackTrace();
 	}
@@ -431,14 +431,14 @@ public class TestBulkReadSample1 extends AbstractFunctionalTest {
 		    rec = page.next();
 		    validateRecord(rec, Format.JSON);
 		    rec.getContent(jh);
-		    assertEquals("Comparing the content :", map.get(rec.getUri()), jh.get().toString());
+		    assertEquals( map.get(rec.getUri()), jh.get().toString());
 		    count++;
 		  }
-		  page.close();		  
+		  page.close();
 		}
 		// validateRecord(rec,Format.JSON);
 		System.out.println("Document count test6CloseMethodforReadMultipleDoc " + count);
-		assertEquals("document count", 10, count);
+		assertEquals( 10, count);
 	} catch (Exception e) {
 		e.printStackTrace();
 	}
@@ -448,9 +448,9 @@ public class TestBulkReadSample1 extends AbstractFunctionalTest {
   }
 
   public void validateRecord(DocumentRecord record, Format type) {
-    assertNotNull("DocumentRecord should never be null", record);
-    assertNotNull("Document uri should never be null", record.getUri());
-    assertTrue("Document uri should start with " + DIRECTORY, record.getUri().startsWith(DIRECTORY));
-    assertEquals("All records are expected to be in same format", type, record.getFormat());
+    assertNotNull( record);
+    assertNotNull( record.getUri());
+    assertTrue(record.getUri().startsWith(DIRECTORY));
+    assertEquals( type, record.getFormat());
   }
 }

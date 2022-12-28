@@ -15,28 +15,26 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
-import java.io.IOException;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.ServerConfigurationManager.UpdatePolicy;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerConfigurationManagerTest {
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connectAdmin();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -46,7 +44,7 @@ public class ServerConfigurationManagerTest {
   {
     ServerConfigurationManager initialServerConfig  = Common.adminClient.newServerConfigManager();
 
-    assertNull("Initial query option validation not null", initialServerConfig.getQueryOptionValidation());
+    assertNull( initialServerConfig.getQueryOptionValidation());
 
     initialServerConfig.readConfiguration();
 
@@ -95,12 +93,12 @@ public class ServerConfigurationManagerTest {
     initialServerConfig.setUpdatePolicy(initialVersionReq);
     initialServerConfig.writeConfiguration();
 
-    assertEquals("Failed to change query validation",            modQueryValid,   refreshQueryValid);
-    assertEquals("Failed to change query options validation",    modOptionValid,  refreshOptionValid);
-    assertEquals("Failed to change document read transform",     modReadTrans,    refreshReadTrans);
-    assertEquals("Failed to change document read transform all", modReadTransAll, refreshReadTransAll);
-    assertEquals("Failed to change server request logging",      modRequestLog,   refreshRequestLog);
-    assertEquals("Failed to change update policy ",              modVersionReq,   refreshVersionReq);
+    assertEquals(            modQueryValid,   refreshQueryValid);
+    assertEquals(    modOptionValid,  refreshOptionValid);
+    assertEquals(     modReadTrans,    refreshReadTrans);
+    assertEquals( modReadTransAll, refreshReadTransAll);
+    assertEquals(      modRequestLog,   refreshRequestLog);
+    assertEquals(              modVersionReq,   refreshVersionReq);
 
     Common.propertyWait();
   }

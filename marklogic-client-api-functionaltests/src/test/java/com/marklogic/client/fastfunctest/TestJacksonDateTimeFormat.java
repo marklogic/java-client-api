@@ -27,8 +27,9 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.pojo.annotation.Id;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.security.KeyManagementException;
@@ -36,11 +37,11 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-import static org.junit.Assert.*;
+
 
 /*
  * Purpose : To test the date-time data type.
- * 
+ *
  */
 
 public class TestJacksonDateTimeFormat extends AbstractFunctionalTest {
@@ -173,7 +174,7 @@ public class TestJacksonDateTimeFormat extends AbstractFunctionalTest {
     this.artifactId = artifactId;
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     client = getDatabaseClient("rest-admin", "x", getConnType());
   }
@@ -236,21 +237,21 @@ public class TestJacksonDateTimeFormat extends AbstractFunctionalTest {
     System.out.println("Argumnt : " + datetime.toString());
     System.out.println("Jackson POJO : " + artifact.getExpiryDate().toString());
 
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.id);
-    assertEquals("Id of the object is ", longId, artifact.getId());
-    assertEquals("Name of the object is ", artifactName, artifact.getName());
-    assertEquals("Inventory of the object is ", 1000, artifact.getInventory());
-    assertEquals("Company name of the object is ", artifactName, artifact.getManufacturer().getName());
-    assertEquals("Web site of the object is ", "http://www.acme.com", artifact.getManufacturer().getWebsite());
+    assertNotNull( artifact);
+    assertNotNull( artifact.id);
+    assertEquals( longId, artifact.getId());
+    assertEquals( artifactName, artifact.getName());
+    assertEquals( 1000, artifact.getInventory());
+    assertEquals( artifactName, artifact.getManufacturer().getName());
+    assertEquals( "http://www.acme.com", artifact.getManufacturer().getWebsite());
     // Validate the calendar object's field, instead of object or string
     // comparisions.
-    assertEquals("Expiry date: MONTH ", datetime.get(Calendar.MONTH), artifact.getExpiryDate().get(Calendar.MONTH));
-    assertEquals("Expiry date: DAY_OF_MONTH ", datetime.get(Calendar.DAY_OF_MONTH), artifact.getExpiryDate().get(Calendar.DAY_OF_MONTH));
-    assertEquals("Expiry date: YEAR ", datetime.get(Calendar.YEAR), artifact.getExpiryDate().get(Calendar.YEAR));
-    assertEquals("Expiry date: HOUR ", datetime.get(Calendar.HOUR), artifact.getExpiryDate().get(Calendar.HOUR));
-    assertEquals("Expiry date: MINUTE ", datetime.get(Calendar.MINUTE), artifact.getExpiryDate().get(Calendar.MINUTE));
-    assertEquals("Expiry date: SECOND ", datetime.get(Calendar.SECOND), artifact.getExpiryDate().get(Calendar.SECOND));
+    assertEquals( datetime.get(Calendar.MONTH), artifact.getExpiryDate().get(Calendar.MONTH));
+    assertEquals(datetime.get(Calendar.DAY_OF_MONTH), artifact.getExpiryDate().get(Calendar.DAY_OF_MONTH));
+    assertEquals( datetime.get(Calendar.YEAR), artifact.getExpiryDate().get(Calendar.YEAR));
+    assertEquals( datetime.get(Calendar.HOUR), artifact.getExpiryDate().get(Calendar.HOUR));
+    assertEquals( datetime.get(Calendar.MINUTE), artifact.getExpiryDate().get(Calendar.MINUTE));
+    assertEquals( datetime.get(Calendar.SECOND), artifact.getExpiryDate().get(Calendar.SECOND));
     assertEquals(-87.966, artifact.getManufacturer().getLongitude(), 0.00);
     assertEquals(41.998, artifact.getManufacturer().getLatitude(), 0.00);
   }
@@ -263,21 +264,21 @@ public class TestJacksonDateTimeFormat extends AbstractFunctionalTest {
     System.out.println("Argumnt : " + datetime.toString());
     System.out.println("Jackson POJO : " + artifact.getExpiryDate().toString());
 
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.id);
-    assertEquals("Id of the object is ", longId, artifact.getId());
-    assertEquals("Name of the object is ", artifactName, artifact.getName());
-    assertEquals("Inventory of the object is ", 1000, artifact.getInventory());
-    assertEquals("Company name of the object is ", artifactName, artifact.getManufacturer().getName());
-    assertEquals("Web site of the object is ", "http://www.acme.com", artifact.getManufacturer().getWebsite());
+    assertNotNull( artifact);
+    assertNotNull( artifact.id);
+    assertEquals( longId, artifact.getId());
+    assertEquals( artifactName, artifact.getName());
+    assertEquals( 1000, artifact.getInventory());
+    assertEquals( artifactName, artifact.getManufacturer().getName());
+    assertEquals( "http://www.acme.com", artifact.getManufacturer().getWebsite());
     // Validate the calendar object's field, instead of object or string
     // comparisions.
-    assertEquals("Expiry date: MONTH ", datetime.get(Calendar.MONTH), artifact.getExpiryDate().get(Calendar.MONTH));
-    assertEquals("Expiry date: DAY_OF_MONTH ", datetime.get(Calendar.DAY_OF_MONTH), artifact.getExpiryDate().get(Calendar.DAY_OF_MONTH));
-    assertEquals("Expiry date: YEAR ", datetime.get(Calendar.YEAR), artifact.getExpiryDate().get(Calendar.YEAR));
-    assertEquals("Expiry date: HOUR ", datetime.get(Calendar.HOUR), artifact.getExpiryDate().get(Calendar.HOUR));
-    assertEquals("Expiry date: MINUTE ", datetime.get(Calendar.MINUTE), artifact.getExpiryDate().get(Calendar.MINUTE));
-    assertEquals("Expiry date: SECOND ", datetime.get(Calendar.SECOND), artifact.getExpiryDate().get(Calendar.SECOND));
+    assertEquals( datetime.get(Calendar.MONTH), artifact.getExpiryDate().get(Calendar.MONTH));
+    assertEquals(datetime.get(Calendar.DAY_OF_MONTH), artifact.getExpiryDate().get(Calendar.DAY_OF_MONTH));
+    assertEquals( datetime.get(Calendar.YEAR), artifact.getExpiryDate().get(Calendar.YEAR));
+    assertEquals( datetime.get(Calendar.HOUR), artifact.getExpiryDate().get(Calendar.HOUR));
+    assertEquals( datetime.get(Calendar.MINUTE), artifact.getExpiryDate().get(Calendar.MINUTE));
+    assertEquals( datetime.get(Calendar.SECOND), artifact.getExpiryDate().get(Calendar.SECOND));
     assertEquals(-87.966, artifact.getManufacturer().getLongitude(), 0.00);
     assertEquals(41.998, artifact.getManufacturer().getLatitude(), 0.00);
   }
@@ -361,16 +362,16 @@ public class TestJacksonDateTimeFormat extends AbstractFunctionalTest {
     // Introduce a wait for the document to be deleted.
     try {
       artifact = pojoReposProducts.read(calTime);
-      assertFalse("Test Expecting exception", true);
+      assertFalse( true);
     } catch (ResourceNotFoundException e) {
-      assertTrue("expected exception", true);
+      assertTrue( true);
     } catch (Exception e) {
-      assertFalse("Test got unexpected", true);
+      assertFalse( true);
     }
     // Validate the artifact read back.
     // long count = pojoReposProducts.count();
     //
-    // assertEquals("Artifact with calendar as Id found - Delete did not work",0,
+    // assertEquals(0,
     // count);
   }
 

@@ -15,12 +15,24 @@
  */
 package com.marklogic.client.test.datamovement;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.datamovement.*;
 import com.marklogic.client.document.*;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.Ignore;
+import com.marklogic.client.io.*;
+import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.test.Common;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,45 +42,10 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.datamovement.BatchFailureListener;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.FilteredForestConfiguration;
-import com.marklogic.client.datamovement.ForestConfiguration;
-import com.marklogic.client.datamovement.HostAvailabilityListener;
-import com.marklogic.client.datamovement.JobReport;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.NoResponseListener;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatch;
-import com.marklogic.client.datamovement.WriteBatchListener;
-import com.marklogic.client.datamovement.WriteEvent;
-import com.marklogic.client.datamovement.WriteFailureListener;
-import com.marklogic.client.datamovement.WriteBatcher;
-
-import com.marklogic.client.test.Common;
-
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class WriteBatcherTest {
   private Logger logger = LoggerFactory.getLogger(WriteBatcherTest.class);
@@ -86,13 +63,13 @@ public class WriteBatcherTest {
     new Random().nextInt(10000);
 
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     docMgr = client.newDocumentManager();
     installModule();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     docMgr.delete(uri1, uri2, uri3);
     QueryManager queryMgr = client.newQueryManager();
@@ -150,7 +127,7 @@ public class WriteBatcherTest {
   public void testWrites() throws Exception {
     String collection = whbTestCollection + ".testWrites";
 
-    assertEquals( "Since the doc doesn't exist, docMgr.exists() should return null",
+    assertEquals(
       null, docMgr.exists(uri1) );
 
     final StringBuffer successListenerWasRun = new StringBuffer();
@@ -200,18 +177,17 @@ public class WriteBatcherTest {
     meta = new DocumentMetadataHandle().withCollections(collection, whbTestCollection);
     batcher.add(uri4, meta, new JacksonHandle(doc4));
     batcher.flushAndWait();
-    assertEquals("The success listener should have run", "true", successListenerWasRun.toString());
-    assertEquals("The failure listener should have run", "true", failListenerWasRun.toString());
+    assertEquals( "true", successListenerWasRun.toString());
+    assertEquals( "true", failListenerWasRun.toString());
 
     StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collection);
     try ( DocumentPage docs = docMgr.search(query, 1) ) {
       // only doc1 and doc2 wrote successfully, doc3 failed
-      assertEquals("there should be two docs in the collection", 2, docs.getTotalSize());
+      assertEquals(2, docs.getTotalSize());
 
       for (DocumentRecord record : docs ) {
         if ( uri1.equals(record.getUri()) ) {
-          assertEquals( "the transform should have changed testProperty to 'test1a'",
-            "test1a", record.getContentAs(JsonNode.class).get("testProperty").textValue() );
+          assertEquals("test1a", record.getContentAs(JsonNode.class).get("testProperty").textValue() );
         }
       }
     }
@@ -274,35 +250,35 @@ public class WriteBatcherTest {
 
       batcher.flushAndWait();
 
-      assertEquals("success count", 3, successBatch.size());
-      assertNull("default metadata", successBatch.get(0));
-      assertEquals("first success", firstUri, successBatch.get(1));
-      assertEquals("first success", secondUri, successBatch.get(2));
-      assertEquals("failure count", 0, failureBatch.size());
+      assertEquals(3, successBatch.size());
+      assertNull( successBatch.get(0));
+      assertEquals(firstUri, successBatch.get(1));
+      assertEquals(secondUri, successBatch.get(2));
+      assertEquals(0, failureBatch.size());
 
       DocumentPage docPage = docMgr.readMetadata(firstUri, secondUri);
-      assertEquals("missing metadata", 2, docPage.getPageSize());
+      assertEquals(2, docPage.getPageSize());
       for (DocumentRecord docRecord: docPage) {
         DocumentMetadataHandle actual = docRecord.getMetadata(new DocumentMetadataHandle());
-        assertNotNull("no metadata", actual);
+        assertNotNull( actual);
 
         DocumentMetadataHandle.DocumentCollections actualCollections = actual.getCollections();
-        assertNotNull("no collections metadata", actualCollections);
+        assertNotNull( actualCollections);
         for (String expectedCollection: collections) {
-          assertTrue("collection metadata not set", actualCollections.contains(expectedCollection));
+          assertTrue( actualCollections.contains(expectedCollection));
         }
 
         DocumentMetadataHandle.DocumentPermissions actualPermissions = actual.getPermissions();
-        assertNotNull("no permissions metadata", actualPermissions);
-        assertTrue("permissions metadata not set",
+        assertNotNull( actualPermissions);
+        assertTrue(
             actualPermissions.get("manage-user").contains(DocumentMetadataHandle.Capability.READ)
         );
 
         DocumentMetadataHandle.DocumentMetadataValues actualMetaVals = actual.getMetadataValues();
-        assertNotNull("no key-value metadata", actualMetaVals);
-        assertEquals("key-value metadata not set", actualMetaVals.get("metaKey"), "metaValue");
+        assertNotNull( actualMetaVals);
+        assertEquals( actualMetaVals.get("metaKey"), "metaValue");
 
-        assertEquals("quality metadata not set", meta.getQuality(), actual.getQuality());
+        assertEquals( meta.getQuality(), actual.getQuality());
       }
     }
   }
@@ -399,7 +375,7 @@ public class WriteBatcherTest {
           failListenerWasRun.append("true");
           throwable.printStackTrace();
           logger.debug("[testWritesWithTransactions.onBatchFailure] batch.getJobBatchNumber()=[" + batch.getJobBatchNumber() + "]");
-          assertEquals("There should be two items in the batch", 2, batch.getItems().length);
+          assertEquals( 2, batch.getItems().length);
           if ( 2 != batch.getItems().length) {
             failures.append("ERROR: There should be 2 items in batch " + batch.getJobBatchNumber() +
               " but there are " + batch.getItems().length);
@@ -432,14 +408,14 @@ public class WriteBatcherTest {
     moveMgr.stopJob(ticket);
 
     if ( failures.length() > 0 ) fail(failures.toString());
-    assertEquals("The success listener should have run", "truetrue", successListenerWasRun.toString());
-    assertEquals("The failure listener should have run", "truetrue", failListenerWasRun.toString());
+    assertEquals( "truetrue", successListenerWasRun.toString());
+    assertEquals( "truetrue", failListenerWasRun.toString());
 
     StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collection);
     DocumentPage docs = docMgr.search(query, 1);
     // only docs 5, 7, 8, and 8 wrote successfully, docs 1, 2, 3, and 4 failed in the same
     // transaction as doc 1
-    assertEquals("there should be four docs in the collection", 4, docs.getTotalSize());
+    assertEquals( 4, docs.getTotalSize());
 
     for (DocumentRecord record : docs ) {
       if ( uri5.equals(record.getUri()) ) {
@@ -503,8 +479,8 @@ public class WriteBatcherTest {
 
     moveMgr.startJob(writeBatcher);
     moveMgr.stopJob(writeBatcher);
-    assertTrue("Close method is not called on WriteBatchListener", calledBatchListener.get());
-    assertTrue("Close method is not called on WriteFailureListener", calledFailureListener.get());
+    assertTrue( calledBatchListener.get());
+    assertTrue( calledFailureListener.get());
   }
 
   @Test
@@ -597,9 +573,9 @@ public class WriteBatcherTest {
       )
       .withJobId(writeBatcherJobId);
     long batchMinTime = new Date().getTime();
-    assertFalse("Job should not be started yet", batcher.isStarted());
+    assertFalse( batcher.isStarted());
     moveMgr.startJob(batcher);
-    assertTrue("Job should be started now", batcher.isStarted());
+    assertTrue( batcher.isStarted());
     JobTicket ticket = moveMgr.getActiveJob(writeBatcherJobId);
     assertEquals(batchSize, batcher.getBatchSize());
     assertEquals(writeBatcherJobId, batcher.getJobId());
@@ -678,37 +654,37 @@ public class WriteBatcherTest {
     batcher.flushAndWait();
 
     JobReport report = moveMgr.getJobReport(ticket);
-    //assertEquals("Job Report has incorrect completion information", false, report.isJobComplete());
+    //assertEquals( false, report.isJobComplete());
 
-    assertFalse("Job should not be stopped yet", batcher.isStopped());
+    assertFalse( batcher.isStopped());
     moveMgr.stopJob(ticket);
-    //assertTrue("Job should be stopped now", batcher.isStopped());
+    //assertTrue( batcher.isStopped());
 
     if ( failures.length() > 0 ) fail(failures.toString());
-    assertTrue("WriteOperationRunnable thread failed", noExternalFailure.get());
+    assertTrue( noExternalFailure.get());
 
     logger.debug("expectedSuccess=[{}] successfulCount.get()=[{}]", totalDocCount, successfulCount.get());
-    assertEquals("The success listener ran wrong number of times", totalDocCount, successfulCount.get());
+    assertEquals( totalDocCount, successfulCount.get());
 
-    assertEquals("Batch JobTicket should match JobTicket from startJob", ticket, batchTicket.get());
+    assertEquals( ticket, batchTicket.get());
 
     StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collection);
     DocumentPage docs = docMgr.search(query, 1);
-    assertEquals("there should be " + successfulCount + " docs in the collection", successfulCount.get(), docs.getTotalSize());
+    assertEquals(successfulCount.get(), docs.getTotalSize());
 
     report = moveMgr.getJobReport(ticket);
     long maxTime = new Date().getTime();
     Date batchDate = batchTimestamp.get().getTime();
-    assertTrue("Batch has incorrect timestamp", batchDate.getTime() >= batchMinTime && batchDate.getTime() <= maxTime);
+    assertTrue( batchDate.getTime() >= batchMinTime && batchDate.getTime() <= maxTime);
 
     long minTime = new Date().getTime()-200;
     Date reportDate = report.getReportTimestamp().getTime();
-    assertTrue("Job Report has incorrect timestamp", reportDate.getTime() >= minTime && reportDate.getTime() <= maxTime);
-    assertEquals("Job Report has incorrect successful batch counts", successfulBatchCount.get(),report.getSuccessBatchesCount());
-    assertEquals("Job Report has incorrect successful event counts", successfulCount.get(),report.getSuccessEventsCount());
-    assertEquals("Job Report has incorrect failure batch counts", failureBatchCount.get(), report.getFailureBatchesCount());
-    assertEquals("Job Report has incorrect failure events counts", failureCount.get(), report.getFailureEventsCount());
-    //assertEquals("Job Report has incorrect job completion information", true, report.isJobComplete());
+    assertTrue( reportDate.getTime() >= minTime && reportDate.getTime() <= maxTime);
+    assertEquals( successfulBatchCount.get(),report.getSuccessBatchesCount());
+    assertEquals( successfulCount.get(),report.getSuccessEventsCount());
+    assertEquals( failureBatchCount.get(), report.getFailureBatchesCount());
+    assertEquals( failureCount.get(), report.getFailureEventsCount());
+    //assertEquals( true, report.isJobComplete());
     long duration = System.currentTimeMillis() - start;
     System.out.println("Completed test " + testName + " in " + duration + " millis");
   }
@@ -923,9 +899,9 @@ public class WriteBatcherTest {
 
     BytesHandle readContents = client.newDocumentManager().read("/doc/string", new BytesHandle());
     System.out.println("Read doc, and format=[" + readContents.getFormat() + "]");
-    assertEquals("contents from db should match", docContents, new String(readContents.get()));
+    assertEquals( docContents, new String(readContents.get()));
 
-    assertEquals("one doc should have been written", 1, successfulCount.get());
+    assertEquals( 1, successfulCount.get());
   }
 
   @Test
@@ -1141,7 +1117,7 @@ public class WriteBatcherTest {
   }
 
   // TODO: uncomment this after fixing https://github.com/marklogic/java-client-api/issues/646
-  @Ignore
+  @Disabled
   public void testIssue646() throws Exception {
 
     WriteBatcher ihb2 = moveMgr.newWriteBatcher()
@@ -1180,9 +1156,9 @@ public class WriteBatcherTest {
     docMgr.write(writeSet);
 
     DocumentPage documentsPage = docMgr.read("/CXXXX_Ü_9999.json","Ä_9999.json");
-    assertTrue("All the documents were not written.",documentsPage.size() == 2);
-    assertEquals("First document content not as expected.",handle1,documentsPage.next().getContent(handle1));
-    assertEquals("Second document content not as expected.",handle2,documentsPage.next().getContent(handle2));
+    assertTrue(documentsPage.size() == 2);
+    assertEquals(handle1,documentsPage.next().getContent(handle1));
+    assertEquals(handle2,documentsPage.next().getContent(handle2));
 
     client.newDocumentManager().delete("/CXXXX_Ü_9999.json");
     client.newDocumentManager().delete("Ä_9999.json");

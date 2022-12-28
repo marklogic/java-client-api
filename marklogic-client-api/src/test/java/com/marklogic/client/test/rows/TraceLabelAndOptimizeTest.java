@@ -3,11 +3,11 @@ package com.marklogic.client.test.rows;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * The actual usage of trace label has to be manually verified by inspecting logs. And there's not a reliable way to
@@ -41,10 +41,8 @@ public class TraceLabelAndOptimizeTest extends AbstractOpticUpdateTest {
             FailedRequestException.class,
             () -> rowManager.execute(op.fromDocUris(op.cts.documentQuery("/doesnt-matter")))
         );
-        assertTrue(
-            "Unexpected message: " + ex.getMessage(),
-            ex.getMessage().contains("optimize can only be a positive integer")
-        );
+        assertTrue(ex.getMessage().contains("optimize can only be a positive integer"),
+			"Unexpected message: " + ex.getMessage());
     }
 
     @Test
@@ -58,9 +56,7 @@ public class TraceLabelAndOptimizeTest extends AbstractOpticUpdateTest {
             FailedRequestException.class,
             () -> resultRows(op.fromDocUris(op.cts.documentQuery("/doesnt-matter")))
         );
-        assertTrue(
-            "Unexpected message: " + ex.getMessage(),
-            ex.getMessage().contains("optimize can only be a positive integer")
-        );
+        assertTrue(ex.getMessage().contains("optimize can only be a positive integer"),
+			"Unexpected message: " + ex.getMessage());
     }
 }

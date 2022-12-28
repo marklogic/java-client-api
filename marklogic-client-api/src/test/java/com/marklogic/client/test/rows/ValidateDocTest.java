@@ -26,21 +26,21 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.marklogic.client.io.Format.XML;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ValidateDocTest extends AbstractOpticUpdateTest {
 
     private Set<String> expectedUris = new HashSet<>();
     private DataMovementManager dataMovementManager;
 
-    @Before
+    @BeforeEach
     public void moreSetup(){
         dataMovementManager = Common.client.newDataMovementManager();
     }
@@ -69,7 +69,7 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
                 op.schemaDefinition("xmlSchema").withMode("lax")
             );
         XMLDocumentManager mgr = Common.client.newXMLDocumentManager();
-        expectedUris.forEach(uri -> assertNotNull("URI was not written: " + uri, mgr.exists(uri)));
+        expectedUris.forEach(uri -> assertNotNull(mgr.exists(uri), "URI was not written: " + uri));
 
         List<RowRecord> rows = resultRows(plan);
 
@@ -78,7 +78,7 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
             return uri;
         }).collect(Collectors.toList());
         assertEquals(uriCountToWrite, persistedUris.size());
-        expectedUris.forEach(uri -> assertTrue("persistedUris does not contain "+uri, persistedUris.contains(uri)));
+        expectedUris.forEach(uri -> assertTrue(persistedUris.contains(uri), "persistedUris does not contain "+uri));
     }
 
     @Test
@@ -126,7 +126,7 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
         }
          assertTrue(uris.size() == 4);
         for(int i=0;i<4;i++){
-            assertTrue("uris does not contain /acme/"+i+".xml",uris.contains("/acme/"+i+".xml"));
+            assertTrue(uris.contains("/acme/"+i+".xml"), "uris does not contain /acme/"+i+".xml");
         }
     }
 
@@ -218,9 +218,9 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
         List<RowRecord> rows = resultRows(plan);
         assertEquals(1, rows.size());
         DocumentManager docMgr = Common.client.newDocumentManager();
-        assertTrue("Document /acme/doc1.xml should not exist",docMgr.exists("/acme/doc1.xml") == null);
-        assertTrue("Document /acme/doc2.xml should not exist",docMgr.exists("/acme/doc2.xml") == null);
-        assertTrue("Document /acme/doc3.xml does not exist",docMgr.exists("/acme/doc3.xml") != null);
+        assertTrue(docMgr.exists("/acme/doc1.xml") == null);
+        assertTrue(docMgr.exists("/acme/doc2.xml") == null);
+        assertTrue(docMgr.exists("/acme/doc3.xml") != null);
     }
 
     @Test
@@ -246,15 +246,15 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
         assertTrue(expectedUris.size()==2);
         rowManager.execute(plan.write());
         DocumentManager docMgr = Common.client.newDocumentManager();
-        assertTrue("Document /acme/doc1.json does not exist",docMgr.exists("/acme/doc1.json")!=null);
-        assertTrue("Document /acme/doc2.json does not exist",docMgr.exists("/acme/doc2.json")!=null);
-        assertTrue("Contents for /acme/doc1.json not as expected.",
+        assertTrue(docMgr.exists("/acme/doc1.json")!=null);
+        assertTrue(docMgr.exists("/acme/doc2.json")!=null);
+        assertTrue(
                 docMgr.read("/acme/doc1.json").next().getContent(new StringHandle()).toString().equals("{\"count\":1, \"total\":2}"));
-        assertTrue("Contents for /acme/doc2.json not as expected.",
+        assertTrue(
                 docMgr.read("/acme/doc2.json").next().getContent(new StringHandle()).toString().equals("{\"count\":2, \"total\":3}"));
 
-        assertTrue("/acme/doc1.json is not returned.",expectedUris.contains("/acme/doc1.json"));
-        assertTrue("/acme/doc2.json is not returned.",expectedUris.contains("/acme/doc2.json"));
+        assertTrue(expectedUris.contains("/acme/doc1.json"));
+        assertTrue(expectedUris.contains("/acme/doc2.json"));
     }
 
     @Test
@@ -285,28 +285,28 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
 
         rowManager.execute(plan.write());
         DocumentManager docMgr = Common.client.newDocumentManager();
-        assertTrue("Document /acme/doc1.json does not exist",docMgr.exists("/acme/doc1.json")!=null);
-        assertTrue("Contents for /acme/doc1.json not as expected.",
+        assertTrue(docMgr.exists("/acme/doc1.json")!=null);
+        assertTrue(
                 docMgr.read("/acme/doc1.json").next().getContent(new StringHandle()).toString().equals("{\"count\":1, \"total\":2}"));
-        assertTrue("Document /acme/doc2.json should not exist",docMgr.exists("/acme/doc2.json") == null);
-        assertTrue("Document /acme/doc3.json does not exist",docMgr.exists("/acme/doc3.json") != null);
-        assertTrue("Contents for /acme/doc3.json not as expected.",
+        assertTrue(docMgr.exists("/acme/doc2.json") == null);
+        assertTrue(docMgr.exists("/acme/doc3.json") != null);
+        assertTrue(
                 docMgr.read("/acme/doc3.json").next().getContent(new StringHandle()).toString().equals("{\"count\":2, \"total\":13}"));
-        assertTrue("Document /acme/doc4.json should not exist",docMgr.exists("/acme/doc4.json") == null);
+        assertTrue(docMgr.exists("/acme/doc4.json") == null);
 
-        assertTrue("Document /acme/doc5.json does not exist",docMgr.exists("/acme/doc5.json") != null);
-        assertTrue("Contents for /acme/doc5.json not as expected.",
+        assertTrue(docMgr.exists("/acme/doc5.json") != null);
+        assertTrue(
                 docMgr.read("/acme/doc5.json").next().getContent(new StringHandle()).toString().equals("{\"count\":3, \"total\":33}"));
 
-        assertTrue("Document /acme/doc6.json does not exist",docMgr.exists("/acme/doc6.json") != null);
-        assertTrue("Contents for /acme/doc6.json not as expected.",
+        assertTrue(docMgr.exists("/acme/doc6.json") != null);
+        assertTrue(
                 docMgr.read("/acme/doc6.json").next().getContent(new StringHandle()).toString().equals("{\"count\":4, \"total\":34}"));
 
-        assertTrue("Document /acme/doc7.json should not exist",docMgr.exists("/acme/doc7.json") == null);
+        assertTrue(docMgr.exists("/acme/doc7.json") == null);
         assertTrue(expectedUris.size()==4);
-         assertTrue("expectedUris does not contain /acme/doc1.json", expectedUris.contains("/acme/doc1.json"));
-         assertTrue("expectedUris does not contain /acme/doc3.json",expectedUris.contains("/acme/doc3.json"));
-         assertTrue("expectedUris does not contain /acme/doc5.json",expectedUris.contains("/acme/doc5.json"));
-         assertTrue("expectedUris does not contain /acme/doc6.json",expectedUris.contains("/acme/doc6.json"));
+         assertTrue( expectedUris.contains("/acme/doc1.json"));
+         assertTrue(expectedUris.contains("/acme/doc3.json"));
+         assertTrue(expectedUris.contains("/acme/doc5.json"));
+         assertTrue(expectedUris.contains("/acme/doc6.json"));
     }
 }

@@ -21,14 +21,15 @@ import com.marklogic.client.Transaction;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.util.RequestLogger;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.assertEquals;
+
 
 public class TestRequestLogger extends AbstractFunctionalTest {
 
@@ -74,7 +75,7 @@ public class TestRequestLogger extends AbstractFunctionalTest {
     docMgr.stopLogging();
 
     String expectedContentMax = "9223372036854775807";
-    assertEquals("Content log is not equal", expectedContentMax, Long.toString(logger.getContentMax()));
+    assertEquals( expectedContentMax, Long.toString(logger.getContentMax()));
 
     // release client
     client.release();

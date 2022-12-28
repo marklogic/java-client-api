@@ -18,13 +18,14 @@ package com.marklogic.client.fastfunctest;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.SearchHandle;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.assertEquals;
+
 
 public class TestWordConstraint extends AbstractFunctionalTest {
 
@@ -55,7 +56,7 @@ public class TestWordConstraint extends AbstractFunctionalTest {
 
     System.out.println(searchResult);
 
-    assertEquals("Search result difference", expectedSearchResult, searchResult);
+    assertEquals( expectedSearchResult, searchResult);
 
     // release client
     client.release();

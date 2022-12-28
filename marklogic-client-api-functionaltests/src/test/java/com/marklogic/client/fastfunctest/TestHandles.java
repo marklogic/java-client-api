@@ -22,10 +22,10 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.io.*;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -40,27 +40,27 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestHandles extends AbstractFunctionalTest {
 
     private static String dbName = "java-functest";
     private static String appServerHostname = null;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Exception {
         createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
         createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
         appServerHostname = getRestAppServerHostName();
     }
 
-    @After
+    @AfterEach
     public void testCleanUp() throws Exception {
         deleteDocuments(connectAsAdmin());
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         deleteRESTUser("eval-user");
         deleteUserRole("test-eval");
@@ -123,9 +123,9 @@ public class TestHandles extends AbstractFunctionalTest {
         }
 
         String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-xml-domhandle/xml-original-test.xml";
-        assertEquals("Document is not deleted", expectedException, exception);
+        assertEquals( expectedException, exception);
 
-        // assertFalse("Document is not deleted", isDocumentExist(client, uri +
+        // assertFalse( isDocumentExist(client, uri +
         // filename, "XML"));
 
         // release client
@@ -152,7 +152,7 @@ public class TestHandles extends AbstractFunctionalTest {
         // String readContent = contentHandle.get().toString();
         String readContent = new String(fileRead);
         String expectedContent = "hello world, welcome to java API";
-        assertEquals("Write Text difference", expectedContent.trim(), readContent.trim());
+        assertEquals( expectedContent.trim(), readContent.trim());
 
         // UPDATE the doc
         // acquire the content for update
@@ -168,13 +168,13 @@ public class TestHandles extends AbstractFunctionalTest {
         String readContentUpdate = new String(fileReadUpdate);
         String expectedContentUpdate = "hello world, welcome to java API after new updates";
 
-        assertEquals("Write Text difference", expectedContentUpdate.trim(), readContentUpdate.toString().trim());
+        assertEquals( expectedContentUpdate.trim(), readContentUpdate.toString().trim());
 
         // delete the document
         deleteDocument(client, uri + filename, "Text");
 
         // read the deleted document
-        // assertFalse("Document is not deleted", isDocumentExist(client, uri +
+        // assertFalse( isDocumentExist(client, uri +
         // filename, "Text"));
 
         String exception = "";
@@ -185,7 +185,7 @@ public class TestHandles extends AbstractFunctionalTest {
         }
 
         String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-text-Byteshandle/text-original.txt";
-        assertEquals("Document is not deleted", expectedException, exception);
+        assertEquals( expectedException, exception);
 
         // release client
         client.release();
@@ -215,7 +215,7 @@ public class TestHandles extends AbstractFunctionalTest {
         // get expected contents
         JsonNode expectedContent = expectedJSONDocument(filename);
 
-        assertTrue("Write JSON document difference", readContent.equals(expectedContent));
+        assertTrue( readContent.equals(expectedContent));
 
         // update the doc
         // acquire the content for update
@@ -231,13 +231,13 @@ public class TestHandles extends AbstractFunctionalTest {
 
         // get expected contents
         JsonNode expectedContentUpdate = expectedJSONDocument(updateFilename);
-        assertTrue("Write JSON document difference", readContentUpdate.equals(expectedContentUpdate));
+        assertTrue( readContentUpdate.equals(expectedContentUpdate));
 
         // delete the document
         deleteDocument(client, uri + filename, "JSON");
 
         // read the deleted document
-        // assertFalse("Document is not deleted", isDocumentExist(client, uri +
+        // assertFalse( isDocumentExist(client, uri +
         // filename, "JSON"));
 
         String exception = "";
@@ -248,7 +248,7 @@ public class TestHandles extends AbstractFunctionalTest {
         }
 
         String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-json-Byteshandle/json-original.json";
-        assertEquals("Document is not deleted", expectedException, exception);
+        assertEquals( expectedException, exception);
 
         // release client
         client.release();
@@ -276,7 +276,7 @@ public class TestHandles extends AbstractFunctionalTest {
         long size = getBinarySizeFromByte(fileRead);
         long expectedSize = 34543;
 
-        assertEquals("Binary size difference", expectedSize, size);
+        assertEquals( expectedSize, size);
 
         // update the doc
         // acquire the content for update
@@ -293,13 +293,13 @@ public class TestHandles extends AbstractFunctionalTest {
         long sizeUpdate = getBinarySizeFromByte(fileReadUpdate);
         // long expectedSizeUpdate = 3290;
         long expectedSizeUpdate = 3322;
-        assertEquals("Binary size difference", expectedSizeUpdate, sizeUpdate);
+        assertEquals( expectedSizeUpdate, sizeUpdate);
 
         // delete the document
         deleteDocument(client, uri + filename, "Binary");
 
         // read the deleted document
-        // assertFalse("Document is not deleted", isDocumentExist(client, uri +
+        // assertFalse( isDocumentExist(client, uri +
         // filename, "Binary"));
 
         String exception = "";
@@ -309,7 +309,7 @@ public class TestHandles extends AbstractFunctionalTest {
             exception = e.toString();
         }
         String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-bin-Bytehandle/Pandakarlino.jpg";
-        assertEquals("Document is not deleted", expectedException, exception);
+        assertEquals( expectedException, exception);
 
         // release client
         client.release();
@@ -341,13 +341,13 @@ public class TestHandles extends AbstractFunctionalTest {
         // get xml document for expected result
         Document expectedDoc = expectedXMLDocument(filename);
 
-        assertEquals("First Node incorrect in input doc", readDoc.getFirstChild().getNodeName().trim(), "food");
-        assertEquals("First Node attribute incorrect in input doc", readDoc.getFirstChild().getAttributes().item(0).getNodeValue().trim(), "en");
-        assertEquals("Child Node value incorrect in input doc", readDoc.getChildNodes().item(0).getTextContent().trim(), "noodle");
+        assertEquals( readDoc.getFirstChild().getNodeName().trim(), "food");
+        assertEquals( readDoc.getFirstChild().getAttributes().item(0).getNodeValue().trim(), "en");
+        assertEquals( readDoc.getChildNodes().item(0).getTextContent().trim(), "noodle");
 
-        assertEquals("First Node incorrect in output doc", expectedDoc.getFirstChild().getNodeName().trim(), "food");
-        assertEquals("First Node attribute incorrect in output doc", expectedDoc.getFirstChild().getAttributes().item(0).getNodeValue().trim(), "en");
-        assertEquals("Child Node value incorrect in output doc", expectedDoc.getChildNodes().item(0).getTextContent().trim(), "noodle");
+        assertEquals( expectedDoc.getFirstChild().getNodeName().trim(), "food");
+        assertEquals( expectedDoc.getFirstChild().getAttributes().item(0).getNodeValue().trim(), "en");
+        assertEquals( expectedDoc.getChildNodes().item(0).getTextContent().trim(), "noodle");
 
         // update the doc
         // acquire the content for update
@@ -359,9 +359,9 @@ public class TestHandles extends AbstractFunctionalTest {
 
         Document readDocUpdate = updateHandle.get();
 
-        assertEquals("First Node incorrect in output doc", readDocUpdate.getFirstChild().getNodeName().trim(), "food");
-        assertEquals("First Node attribute incorrect in output doc", readDocUpdate.getFirstChild().getAttributes().item(0).getNodeValue().trim(), "en");
-        assertEquals("Child Node value incorrect in output doc", readDocUpdate.getChildNodes().item(0).getTextContent().trim(), "fried noodle");
+        assertEquals( readDocUpdate.getFirstChild().getNodeName().trim(), "food");
+        assertEquals( readDocUpdate.getFirstChild().getAttributes().item(0).getNodeValue().trim(), "en");
+        assertEquals( readDocUpdate.getChildNodes().item(0).getTextContent().trim(), "fried noodle");
 
         // delete the document
         deleteDocument(client, uri + filename, "XML");
@@ -376,7 +376,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release client
         client.release();
@@ -446,7 +446,7 @@ public class TestHandles extends AbstractFunctionalTest {
         }
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release client
         client.release();
@@ -475,7 +475,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedContent = "hello world, welcome to java API";
 
-        assertEquals("Write Text difference", expectedContent.trim(), readContent.trim());
+        assertEquals( expectedContent.trim(), readContent.trim());
 
         // update the doc
         // acquire the content for update
@@ -492,13 +492,13 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedContentUpdate = "hello world, welcome to java API after new updates";
 
-        assertEquals("Write Text difference", expectedContentUpdate.trim(), readContentUpdate.toString().trim());
+        assertEquals( expectedContentUpdate.trim(), readContentUpdate.toString().trim());
 
         // delete the document
         deleteDocument(client, uri + filename, "Text");
 
         // read the deleted document
-        // assertFalse("Document is not deleted", isDocumentExist(client, uri +
+        // assertFalse( isDocumentExist(client, uri +
         // filename, "Text"));
 
         String exception = "";
@@ -510,7 +510,7 @@ public class TestHandles extends AbstractFunctionalTest {
         //
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release client
         client.release();
@@ -542,7 +542,7 @@ public class TestHandles extends AbstractFunctionalTest {
         // get expected contents
         JsonNode expectedContent = expectedJSONDocument(filename);
 
-        assertTrue("Write JSON document difference", readContent.equals(expectedContent));
+        assertTrue( readContent.equals(expectedContent));
 
         // update the doc
         // acquire the content for update
@@ -560,13 +560,13 @@ public class TestHandles extends AbstractFunctionalTest {
         // get expected contents
         JsonNode expectedContentUpdate = expectedJSONDocument(updateFilename);
 
-        assertTrue("Write JSON document difference", readContentUpdate.equals(expectedContentUpdate));
+        assertTrue( readContentUpdate.equals(expectedContentUpdate));
 
         // delete the document
         deleteDocument(client, uri + filename, "JSON");
 
         // read the deleted document
-        // assertFalse("Document is not deleted", isDocumentExist(client, uri +
+        // assertFalse( isDocumentExist(client, uri +
         // filename, "JSON"));
 
         String exception = "";
@@ -578,7 +578,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release client
         client.release();
@@ -608,7 +608,7 @@ public class TestHandles extends AbstractFunctionalTest {
         long size = fileRead.length();
         long expectedSize = 34543;
 
-        assertEquals("Binary size difference", expectedSize, size);
+        assertEquals( expectedSize, size);
 
         // update the doc
         // acquire the content for update
@@ -625,13 +625,13 @@ public class TestHandles extends AbstractFunctionalTest {
         long sizeUpdate = fileReadUpdate.length();
         long expectedSizeUpdate = 3322;
 
-        assertEquals("Binary size difference", expectedSizeUpdate, sizeUpdate);
+        assertEquals( expectedSizeUpdate, sizeUpdate);
 
         // delete the document
         deleteDocument(client, uri + filename, "Binary");
 
         // read the deleted document
-        // assertFalse("Document is not deleted", isDocumentExist(client, uri +
+        // assertFalse( isDocumentExist(client, uri +
         // filename, "Binary"));
 
         String exception = "";
@@ -643,7 +643,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release client
         client.release();
@@ -715,7 +715,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release client
         contentHandle.close();
@@ -788,7 +788,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release client
         client.release();
@@ -817,7 +817,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedContent = "hello world, welcome to java API";
 
-        assertEquals("Write Text difference", expectedContent.trim(), readContent.trim());
+        assertEquals( expectedContent.trim(), readContent.trim());
 
         // update the doc
         // acquire the content for update
@@ -834,13 +834,13 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedContentUpdate = "hello world, welcome to java API after new updates";
 
-        assertEquals("Write Text difference", expectedContentUpdate.trim(), readContentUpdate.toString().trim());
+        assertEquals( expectedContentUpdate.trim(), readContentUpdate.toString().trim());
 
         // delete the document
         deleteDocument(client, uri + filename, "Text");
 
         // read the deleted document
-        // assertFalse("Document is not deleted", isDocumentExist(client, uri +
+        // assertFalse( isDocumentExist(client, uri +
         // filename, "Text"));
 
         String exception = "";
@@ -852,7 +852,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release client
         client.release();
@@ -883,7 +883,7 @@ public class TestHandles extends AbstractFunctionalTest {
         // get expected contents
         JsonNode expectedContent = expectedJSONDocument(filename);
 
-        assertTrue("Write JSON document difference", readContent.equals(expectedContent));
+        assertTrue( readContent.equals(expectedContent));
 
         // update the doc
         // acquire the content for update
@@ -901,13 +901,13 @@ public class TestHandles extends AbstractFunctionalTest {
         // get expected contents
         JsonNode expectedContentUpdate = expectedJSONDocument(updateFilename);
 
-        assertTrue("Write JSON document difference", readContentUpdate.equals(expectedContentUpdate));
+        assertTrue( readContentUpdate.equals(expectedContentUpdate));
 
         // delete the document
         deleteDocument(client, uri + filename, "JSON");
 
         // read the deleted document
-        // assertFalse("Document is not deleted", isDocumentExist(client, uri +
+        // assertFalse( isDocumentExist(client, uri +
         // filename, "JSON"));
 
         String exception = "";
@@ -919,7 +919,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release client
         client.release();
@@ -948,7 +948,7 @@ public class TestHandles extends AbstractFunctionalTest {
         int size = getBinarySize(fileRead);
         int expectedSize = 34543;
 
-        assertEquals("Binary size difference", expectedSize, size);
+        assertEquals( expectedSize, size);
 
         // update the doc
         // acquire the content for update
@@ -965,13 +965,13 @@ public class TestHandles extends AbstractFunctionalTest {
         int sizeUpdate = getBinarySize(fileReadUpdate);
         int expectedSizeUpdate = 3322;
 
-        assertEquals("Binary size difference", expectedSizeUpdate, sizeUpdate);
+        assertEquals( expectedSizeUpdate, sizeUpdate);
 
         // delete the document
         deleteDocument(client, uri + filename, "Binary");
 
         // read the deleted document
-        // assertFalse("Document is not deleted", isDocumentExist(client, uri +
+        // assertFalse( isDocumentExist(client, uri +
         // filename, "Binary"));
 
         String exception = "";
@@ -983,7 +983,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release client
         client.release();
@@ -1052,7 +1052,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release client
         client.release();
@@ -1081,7 +1081,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedContent = "hello world, welcome to java API";
 
-        assertEquals("Write Text difference", expectedContent.trim(), readContent.trim());
+        assertEquals( expectedContent.trim(), readContent.trim());
 
         // update the doc
         // acquire the content for update
@@ -1098,7 +1098,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedContentUpdate = "hello world, welcome to java API after new updates";
 
-        assertEquals("Write Text difference", expectedContentUpdate.trim(), readContentUpdate.toString().trim());
+        assertEquals( expectedContentUpdate.trim(), readContentUpdate.toString().trim());
 
         // delete the document
         deleteDocument(client, uri + filename, "Text");
@@ -1113,7 +1113,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release client
         client.release();
@@ -1144,7 +1144,7 @@ public class TestHandles extends AbstractFunctionalTest {
         // get expected contents
         JsonNode expectedContent = expectedJSONDocument(filename);
 
-        assertTrue("Write JSON document difference", readContent.equals(expectedContent));
+        assertTrue( readContent.equals(expectedContent));
 
         // update the doc
         // acquire the content for update
@@ -1162,13 +1162,13 @@ public class TestHandles extends AbstractFunctionalTest {
         // get expected contents
         JsonNode expectedContentUpdate = expectedJSONDocument(updateFilename);
 
-        assertTrue("Write JSON document difference", readContentUpdate.equals(expectedContentUpdate));
+        assertTrue( readContentUpdate.equals(expectedContentUpdate));
 
         // delete the document
         deleteDocument(client, uri + filename, "JSON");
 
         // read the deleted document
-        // assertFalse("Document is not deleted", isDocumentExist(client, uri +
+        // assertFalse( isDocumentExist(client, uri +
         // filename, "JSON"));
 
         String exception = "";
@@ -1180,7 +1180,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release client
         client.release();
@@ -1209,7 +1209,7 @@ public class TestHandles extends AbstractFunctionalTest {
         int size = getBinarySize(fileRead);
         int expectedSize = 34543;
 
-        assertEquals("Binary size difference", expectedSize, size);
+        assertEquals( expectedSize, size);
 
         // update the doc
         // acquire the content for update
@@ -1226,7 +1226,7 @@ public class TestHandles extends AbstractFunctionalTest {
         int sizeUpdate = getBinarySize(fileReadUpdate);
         int expectedSizeUpdate = 3322;
 
-        assertEquals("Binary size difference", expectedSizeUpdate, sizeUpdate);
+        assertEquals( expectedSizeUpdate, sizeUpdate);
 
         // delete the document
         deleteDocument(client, uri + filename, "Binary");
@@ -1241,7 +1241,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release client
         client.release();
@@ -1315,7 +1315,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release the client
         client.release();
@@ -1344,7 +1344,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String readContent = convertReaderToString(fileRead);
 
-        assertEquals("Write Text document difference", expectedContent, readContent);
+        assertEquals( expectedContent, readContent);
 
         // update the doc
         // acquire the content for update
@@ -1361,7 +1361,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedContentUpdate = "hello world, welcome to java API after new updates";
 
-        assertEquals("Update Text document difference", expectedContentUpdate, readContentUpdate);
+        assertEquals( expectedContentUpdate, readContentUpdate);
 
         // delete the document
         deleteDocument(client, uri + filename, "Text");
@@ -1376,7 +1376,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release the client
         client.release();
@@ -1407,7 +1407,7 @@ public class TestHandles extends AbstractFunctionalTest {
         // get expected contents
         JsonNode expectedContent = expectedJSONDocument(filename);
 
-        assertTrue("Write JSON document difference", readContent.equals(expectedContent));
+        assertTrue( readContent.equals(expectedContent));
 
         // update the doc
         // acquire the content for update
@@ -1424,7 +1424,7 @@ public class TestHandles extends AbstractFunctionalTest {
         // get expected contents
         JsonNode expectedContentUpdate = expectedJSONDocument(updateFilename);
 
-        assertTrue("Write JSON document difference", readContentUpdate.equals(expectedContentUpdate));
+        assertTrue( readContentUpdate.equals(expectedContentUpdate));
 
         // delete the document
         deleteDocument(client, uri + filename, "JSON");
@@ -1439,7 +1439,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release the client
         client.release();
@@ -1510,7 +1510,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release client
         contentHandle.close();
@@ -1580,7 +1580,7 @@ public class TestHandles extends AbstractFunctionalTest {
         }
 
         String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-xml-string/xml-original-test.xml";
-        assertEquals("Document is not deleted", expectedException, exception);
+        assertEquals( expectedException, exception);
 
         // release client
         client.release();
@@ -1609,7 +1609,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedContent = "hello world, welcome to java API";
 
-        assertEquals("Write Text difference", expectedContent.trim(), readContent.trim());
+        assertEquals( expectedContent.trim(), readContent.trim());
 
         // update the doc
         // acquire the content for update
@@ -1626,7 +1626,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedContentUpdate = "hello world, welcome to java API after new updates";
 
-        assertEquals("Write Text difference", expectedContentUpdate.trim(), readContentUpdate.toString().trim());
+        assertEquals( expectedContentUpdate.trim(), readContentUpdate.toString().trim());
 
         // delete the document
         deleteDocument(client, uri + filename, "Text");
@@ -1639,7 +1639,7 @@ public class TestHandles extends AbstractFunctionalTest {
         }
 
         String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-text-stringhandle/text-original.txt";
-        assertEquals("Document is not deleted", expectedException, exception);
+        assertEquals( expectedException, exception);
 
         // release client
         client.release();
@@ -1669,7 +1669,7 @@ public class TestHandles extends AbstractFunctionalTest {
         // get expected contents
         JsonNode expectedContent = expectedJSONDocument(filename);
 
-        assertTrue("Write JSON document difference", readContent.equals(expectedContent));
+        assertTrue( readContent.equals(expectedContent));
 
         // update the doc
         // acquire the content for update
@@ -1687,7 +1687,7 @@ public class TestHandles extends AbstractFunctionalTest {
         // get expected contents
         JsonNode expectedContentUpdate = expectedJSONDocument(updateFilename);
 
-        assertTrue("Write JSON document difference", readContentUpdate.equals(expectedContentUpdate));
+        assertTrue( readContentUpdate.equals(expectedContentUpdate));
 
         // delete the document
         deleteDocument(client, uri + filename, "JSON");
@@ -1700,7 +1700,7 @@ public class TestHandles extends AbstractFunctionalTest {
         }
 
         String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-json-stringhandle/json-original.json";
-        assertEquals("Document is not deleted", expectedException, exception);
+        assertEquals( expectedException, exception);
 
         // release client
         client.release();
@@ -1791,7 +1791,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release the client
         client.release();
@@ -1824,7 +1824,7 @@ public class TestHandles extends AbstractFunctionalTest {
         Document expectedDoc = expectedXMLDocument(filename);
         String expectedContent = convertXMLDocumentToString(expectedDoc);
         expectedContent = "null" + expectedContent.substring(expectedContent.indexOf("<name>") + 6, expectedContent.indexOf("</name>"));
-        assertEquals("Write XML difference", expectedContent, readContent);
+        assertEquals( expectedContent, readContent);
 
         // delete the document
         deleteDocument(client, uri + filename, "XML");
@@ -1838,7 +1838,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         String expectedException = "Could not read non-existent document";
         boolean documentIsDeleted = exception.contains(expectedException);
-        assertTrue("Document is not deleted", documentIsDeleted);
+        assertTrue( documentIsDeleted);
 
         // release the client
         client.release();

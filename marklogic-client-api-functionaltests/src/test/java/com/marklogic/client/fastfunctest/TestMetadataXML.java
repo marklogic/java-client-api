@@ -20,7 +20,8 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -30,7 +31,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertTrue;
+
 
 public class TestMetadataXML extends AbstractFunctionalTest {
 
@@ -158,11 +159,11 @@ public class TestMetadataXML extends AbstractFunctionalTest {
       exception = e.toString();
     }
 
-    // assertEquals("Could write metadata with forbidden user",
+    // assertEquals(
     // expectedException, exception);
 
     boolean exceptionIsThrown = exception.contains(expectedException);
-    assertTrue("Exception is not thrown", exceptionIsThrown);
+    assertTrue( exceptionIsThrown);
 
     // release the clients
     client1.release();

@@ -23,10 +23,9 @@ import com.marklogic.client.io.*;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.After;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -38,12 +37,11 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.*;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class TestRawCombinedQuery extends AbstractFunctionalTest {
 
-  @After
+  @AfterEach
   public void testCleanUp()
   {
     deleteDocuments(connectAsAdmin());
@@ -309,7 +307,7 @@ public class TestRawCombinedQuery extends AbstractFunctionalTest {
 
     System.out.println(resultDoc);
 
-    assertTrue("document is not returned", resultDoc.contains("/raw-combined-query/constraint1.xml"));
+    assertTrue( resultDoc.contains("/raw-combined-query/constraint1.xml"));
 
     // release client
     client.release();
@@ -362,7 +360,7 @@ public class TestRawCombinedQuery extends AbstractFunctionalTest {
 
     System.out.println(resultDoc);
 
-    assertTrue("document is not returned", resultDoc.contains("/raw-combined-query/constraint5.xml"));
+    assertTrue( resultDoc.contains("/raw-combined-query/constraint5.xml"));
 
     // release client
     client.release();
@@ -707,7 +705,6 @@ public class TestRawCombinedQuery extends AbstractFunctionalTest {
 
     System.out.println(resultDoc);
     assertTrue(
-        "Returned result is not correct",
         resultDoc
             .contains("<search:result index=\"1\" uri=\"/collection-constraint/constraint1.xml\" path=\"fn:doc(&quot;/collection-constraint/constraint1.xml&quot;)\""));
 
@@ -716,8 +713,7 @@ public class TestRawCombinedQuery extends AbstractFunctionalTest {
   }
 
   @Test
-  public void test12RawCombinedQueryFieldJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
-      TransformerException
+  public void test12RawCombinedQueryFieldJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException
   {
     System.out.println("Running testRawCombinedQueryFieldJSON");
 
@@ -760,9 +756,9 @@ public class TestRawCombinedQuery extends AbstractFunctionalTest {
 
     System.out.println(resultDoc);
 
-    assertTrue("total document returned is incorrect", resultDoc.contains("total=\"2\""));
-    assertTrue("returned doc is incorrect", resultDoc.contains("uri=\"/field-constraint/constraint5.xml\""));
-    assertTrue("returned doc is incorrect", resultDoc.contains("uri=\"/field-constraint/constraint1.xml\""));
+    assertTrue( resultDoc.contains("total=\"2\""));
+    assertTrue( resultDoc.contains("uri=\"/field-constraint/constraint5.xml\""));
+    assertTrue( resultDoc.contains("uri=\"/field-constraint/constraint1.xml\""));
 
     // release client
     client.release();
@@ -776,7 +772,7 @@ public class TestRawCombinedQuery extends AbstractFunctionalTest {
    */
 
   @Test
-  public void testBug43940() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+  public void testBug43940() throws KeyManagementException, NoSuchAlgorithmException, IOException
   {
     // Negative test
     System.out.println("Running testBug43940");

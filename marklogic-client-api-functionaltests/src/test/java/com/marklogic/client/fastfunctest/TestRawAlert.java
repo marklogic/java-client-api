@@ -31,8 +31,9 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -45,11 +46,11 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+
 
 public class TestRawAlert extends AbstractFunctionalTest {
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception
   {
     deleteDocuments(connectAsAdmin());
@@ -115,7 +116,7 @@ public class TestRawAlert extends AbstractFunctionalTest {
 
     System.out.println(expected);
 
-    assertTrue("incorrect rule", expected.contains("RULE-TEST-1 - {rule-number=one} |"));
+    assertTrue( expected.contains("RULE-TEST-1 - {rule-number=one} |"));
 
     // release client
     client.release();
@@ -165,7 +166,7 @@ public class TestRawAlert extends AbstractFunctionalTest {
 
     System.out.println(matchedRules.size());
 
-    assertEquals("incorrect matching rule", 0, matchedRules.size());
+    assertEquals( 0, matchedRules.size());
 
     // release client
     client.release();
@@ -237,7 +238,7 @@ public class TestRawAlert extends AbstractFunctionalTest {
 
     System.out.println(expected);
 
-    assertTrue("incorrect rules", expected.contains("RULE-TEST-1 - {rule-number=one}") && expected.contains("RULE-TEST-2 - {rule-number=two}"));
+    assertTrue( expected.contains("RULE-TEST-1 - {rule-number=one}") && expected.contains("RULE-TEST-2 - {rule-number=two}"));
 
     // release client
     client.release();
@@ -284,7 +285,7 @@ public class TestRawAlert extends AbstractFunctionalTest {
 
     String expectedException = "Invalid content: If provided, rule name in payload must match rule name in URL";
 
-    assertTrue("Exception is not thrown", exception.contains(expectedException));
+    assertTrue( exception.contains(expectedException));
 
     // release client
     client.release();
@@ -363,7 +364,7 @@ public class TestRawAlert extends AbstractFunctionalTest {
 
     System.out.println(expected);
 
-    assertTrue("rule is not correct", expected.contains("RULE-TEST-1-JSON - {{http://marklogic.com/rest-api}rule-number=one json}"));
+    assertTrue( expected.contains("RULE-TEST-1-JSON - {{http://marklogic.com/rest-api}rule-number=one json}"));
 
     // release client
     client.release();
@@ -412,7 +413,7 @@ public class TestRawAlert extends AbstractFunctionalTest {
 
     System.out.println(matchedRules.size()); // bug, should return 1
 
-    assertEquals("result count is not correct", 1, matchedRules.size());
+    assertEquals( 1, matchedRules.size());
 
     // iterate over the matched rules
     Iterator<RuleDefinition> ruleItr = matchedRules.iterator();
@@ -478,7 +479,7 @@ public class TestRawAlert extends AbstractFunctionalTest {
 
     System.out.println(matchedRules.size()); // bug, should return 1
 
-    assertEquals("result count is not correct", 1, matchedRules.size());
+    assertEquals( 1, matchedRules.size());
 
     // iterate over the matched rules
     Iterator<RuleDefinition> ruleItr = matchedRules.iterator();
@@ -581,15 +582,15 @@ public class TestRawAlert extends AbstractFunctionalTest {
 
     if (expected.equals("RULE-TEST-3 - {rule-number=three} | RULE-TEST-3-JSON - {{http://marklogic.com/rest-api}rule-number=three json} | "))
     {
-      assertTrue("rule is incorrect", expected.contains("RULE-TEST-3 - {rule-number=three} | RULE-TEST-3-JSON - {{http://marklogic.com/rest-api}rule-number=three json}"));
+      assertTrue( expected.contains("RULE-TEST-3 - {rule-number=three} | RULE-TEST-3-JSON - {{http://marklogic.com/rest-api}rule-number=three json}"));
     }
     else if (expected.equals("RULE-TEST-3-JSON - {{http://marklogic.com/rest-api}rule-number=three json} | RULE-TEST-3 - {rule-number=three} | "))
     {
-      assertTrue("rule is incorrect", expected.contains("RULE-TEST-3-JSON - {{http://marklogic.com/rest-api}rule-number=three json} | RULE-TEST-3 - {rule-number=three}"));
+      assertTrue( expected.contains("RULE-TEST-3-JSON - {{http://marklogic.com/rest-api}rule-number=three json} | RULE-TEST-3 - {rule-number=three}"));
     }
     else
     {
-      assertTrue("there is no matching rule", false);
+      assertTrue( false);
     }
 
     // release client
@@ -665,7 +666,7 @@ public class TestRawAlert extends AbstractFunctionalTest {
 
     System.out.println(matchedRules.size());
 
-    assertEquals("match rule is incorrect", 0, matchedRules.size());
+    assertEquals( 0, matchedRules.size());
 
     // release client
     client.release();
@@ -733,7 +734,7 @@ public class TestRawAlert extends AbstractFunctionalTest {
 
     System.out.println(expected);
 
-    assertTrue("rule is incorrect", expected.contains("RULE-TEST-1 - {rule-number=one}"));
+    assertTrue( expected.contains("RULE-TEST-1 - {rule-number=one}"));
 
     // release client
     client.release();
@@ -798,7 +799,7 @@ public class TestRawAlert extends AbstractFunctionalTest {
 
     System.out.println(expected);
 
-    assertTrue("rule is incorrect", expected.contains("RULE-TEST-2 - {rule-number=two}"));
+    assertTrue( expected.contains("RULE-TEST-2 - {rule-number=two}"));
 
     // release client
     client.release();

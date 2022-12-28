@@ -29,7 +29,9 @@ import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.StringQueryDefinition;
-import org.junit.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -40,30 +42,30 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+
 
 public class TestBulkSearchWithStringQueryDef extends AbstractFunctionalTest {
   private static final int BATCH_SIZE = 100;
   private static final String DIRECTORY = "/bulkSearch/";
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     createRESTUserWithPermissions("usr1", "password", getPermissionNode("flexrep-eval", Capability.READ), getCollectionNode("http://permission-collections/"), "rest-writer",
         "rest-reader");
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     deleteRESTUser("usr1");
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     // create new connection for each test below
     client = getDatabaseClient("usr1", "password", getConnType());
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     client.release();
   }
@@ -95,10 +97,10 @@ public class TestBulkSearchWithStringQueryDef extends AbstractFunctionalTest {
 
   public void validateRecord(DocumentRecord record, Format type) {
 
-    assertNotNull("DocumentRecord should never be null", record);
-    assertNotNull("Document uri should never be null", record.getUri());
-    assertTrue("Document uri should start with " + DIRECTORY, record.getUri().startsWith(DIRECTORY));
-    assertEquals("All records are expected to be in same format", type, record.getFormat());
+    assertNotNull( record);
+    assertNotNull( record.getUri());
+    assertTrue(record.getUri().startsWith(DIRECTORY));
+    assertEquals( type, record.getFormat());
     // System.out.println(record.getMimetype());
 
   }
@@ -154,37 +156,37 @@ public class TestBulkSearchWithStringQueryDef extends AbstractFunctionalTest {
     docMgr.setPageLength(1);
     docMgr.setSearchView(QueryView.RESULTS);
     docMgr.setNonDocumentFormat(Format.XML);
-    assertEquals("format set on document manager", "XML", docMgr.getNonDocumentFormat().toString());
-    assertEquals("Queryview set on document manager ", "RESULTS", docMgr.getSearchView().toString());
-    assertEquals("Page length ", 1, docMgr.getPageLength());
+    assertEquals( "XML", docMgr.getNonDocumentFormat().toString());
+    assertEquals( "RESULTS", docMgr.getSearchView().toString());
+    assertEquals( 1, docMgr.getPageLength());
     // Search for documents where content has bar and get first result record,
     // get search handle on it
     SearchHandle sh = new SearchHandle();
     DocumentPage page = docMgr.search(qd, 0);
     // test for page methods
-    assertEquals("Number of records", 1, page.size());
-    assertEquals("Starting record in first page ", 1, page.getStart());
-    assertEquals("Total number of estimated results:", 101, page.getTotalSize());
-    assertEquals("Total number of estimated pages :", 101, page.getTotalPages());
+    assertEquals( 1, page.size());
+    assertEquals( 1, page.getStart());
+    assertEquals(101, page.getTotalSize());
+    assertEquals(101, page.getTotalPages());
     // till the issue #78 get fixed
     System.out.println("Is this First page :" + page.isFirstPage() + page.getPageNumber());// this
                                                                                            // is
                                                                                            // bug
     System.out.println("Is this Last page :" + page.isLastPage());
     System.out.println("Is this First page has content:" + page.hasContent());
-    assertTrue("Is this First page :", page.isFirstPage());// this is bug
-    assertFalse("Is this Last page :", page.isLastPage());
-    assertTrue("Is this First page has content:", page.hasContent());
+    assertTrue( page.isFirstPage());// this is bug
+    assertFalse( page.isLastPage());
+    assertTrue( page.hasContent());
     // Need the Issue #75 to be fixed
-    assertFalse("Is first page has previous page ?", page.hasPreviousPage());
+    assertFalse( page.hasPreviousPage());
     //
     long pageNo = 1;
     do {
       count = 0;
       page = docMgr.search(qd, pageNo, sh);
       if (pageNo > 1) {
-        assertFalse("Is this first Page", page.isFirstPage());
-        assertTrue("Is page has previous page ?", page.hasPreviousPage());
+        assertFalse( page.isFirstPage());
+        assertTrue( page.hasPreviousPage());
       }
       while (page.hasNext()) {
         DocumentRecord rec = page.next();
@@ -194,27 +196,26 @@ public class TestBulkSearchWithStringQueryDef extends AbstractFunctionalTest {
         count++;
       }
       MatchDocumentSummary[] mds = sh.getMatchResults();
-      assertEquals("Matched document count", 1, mds.length);
+      assertEquals( 1, mds.length);
       // since we set the query view to get only results, facet count supposed
       // be 0
-      assertEquals("Matched Facet count", 0, sh.getFacetNames().length);
+      assertEquals( 0, sh.getFacetNames().length);
 
-      assertEquals("document count", page.size(), count);
-      // assertEquals("Page Number #",pageNo,page.getPageNumber());
+      assertEquals( page.size(), count);
       pageNo = pageNo + page.getPageSize();
     } while (!page.isLastPage());
-    // assertTrue("page count is 101 ",pageNo == page.getTotalPages());
-    assertTrue("Page has previous page ?", page.hasPreviousPage());
-    assertEquals("page size", 1, page.getPageSize());
-    assertEquals("document count", 101, page.getTotalSize());
+    // assertTrue(pageNo == page.getTotalPages());
+    assertTrue( page.hasPreviousPage());
+    assertEquals( 1, page.getPageSize());
+    assertEquals( 101, page.getTotalSize());
     page = docMgr.search(qd, 102);
-    assertFalse("Page has any records ?", page.hasContent());
+    assertFalse( page.hasContent());
   }
 
   // This test is trying to set the setResponse to JSON on DocumentManager and
   // use search handle which only work with XML
-  @Test(expected = UnsupportedOperationException.class)
-  public void testBulkSearchSQDwithWrongResponseFormat() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+	@Test
+  public void testBulkSearchSQDwithWrongResponseFormat() {
     loadTxtDocuments();
     TextDocumentManager docMgr = client.newTextDocumentManager();
     QueryManager queryMgr = client.newQueryManager();
@@ -222,21 +223,12 @@ public class TestBulkSearchWithStringQueryDef extends AbstractFunctionalTest {
     qd.setCriteria("bar");
     docMgr.setNonDocumentFormat(Format.JSON);
     SearchHandle results = new SearchHandle();
-    DocumentPage page = docMgr.search(qd, 1, results);
-    MatchDocumentSummary[] summaries = results.getMatchResults();
-    for (MatchDocumentSummary summary : summaries) {
-      MatchLocation[] locations = summary.getMatchLocations();
-      for (MatchLocation location : locations) {
-        System.out.println(location.getAllSnippetText());
-        // do something with the snippet text
-      }
-    }
-
+    assertThrows(UnsupportedOperationException.class, () -> docMgr.search(qd, 1, results));
   }
 
   // Testing issue 192
   @Test
-  public void testBulkSearchSQDwithNoResults() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+  public void testBulkSearchSQDwithNoResults() {
     loadTxtDocuments();
     TextDocumentManager docMgr = client.newTextDocumentManager();
     QueryManager queryMgr = client.newQueryManager();
@@ -244,7 +236,7 @@ public class TestBulkSearchWithStringQueryDef extends AbstractFunctionalTest {
     qd.setCriteria("zzzz");
     SearchHandle results = new SearchHandle();
     DocumentPage page = docMgr.search(qd, 1, results);
-    assertFalse("Should return no results", page.hasNext());
+    assertFalse( page.hasNext());
 
   }
 
@@ -271,10 +263,10 @@ public class TestBulkSearchWithStringQueryDef extends AbstractFunctionalTest {
       DocumentRecord rec = page.next();
       validateRecord(rec, Format.TEXT);
       docMgr.readMetadata(rec.getUri(), mh);
-      assertTrue("Records has permissions? ", mh.getPermissions().containsKey("flexrep-eval"));
-      assertTrue("Record has collections ?", mh.getCollections().isEmpty());
+      assertTrue( mh.getPermissions().containsKey("flexrep-eval"));
+      assertTrue( mh.getCollections().isEmpty());
     }
-    assertFalse("Search handle contains", results.get().isEmpty());
+    assertFalse( results.get().isEmpty());
 
   }
 
@@ -296,32 +288,32 @@ public class TestBulkSearchWithStringQueryDef extends AbstractFunctionalTest {
     DocumentPage page = docMgr.search(qd, 1, jh);
 
     // System.out.println(jh.get().toString());
-    assertTrue("Searh response has entry for facets", jh.get().has("facets"));
-    assertFalse("Searh response has entry for results", jh.get().has("results"));
+    assertTrue( jh.get().has("facets"));
+    assertFalse( jh.get().has("results"));
     // Issue 84 is tracking this
-    assertFalse("Searh response has entry for metrics", jh.get().has("metrics"));
+    assertFalse( jh.get().has("metrics"));
 
     docMgr.setSearchView(QueryView.RESULTS);
     page = docMgr.search(qd, 1, jh);
 
-    assertFalse("Searh response has entry for facets", jh.get().has("facets"));
-    assertTrue("Searh response has entry for results", jh.get().has("results"));
-    assertFalse("Searh response has entry for metrics", jh.get().has("metrics"));
-    // Issue 84 is tracking this                                                                     
+    assertFalse( jh.get().has("facets"));
+    assertTrue( jh.get().has("results"));
+    assertFalse( jh.get().has("metrics"));
+    // Issue 84 is tracking this
 
     docMgr.setSearchView(QueryView.METADATA);
     page = docMgr.search(qd, 1, jh);
 
-    assertFalse("Searh response has entry for facets", jh.get().has("facets"));
-    assertFalse("Searh response has entry for results", jh.get().has("results"));
-    assertTrue("Searh response has entry for metrics", jh.get().has("metrics"));
+    assertFalse( jh.get().has("facets"));
+    assertFalse( jh.get().has("results"));
+    assertTrue( jh.get().has("metrics"));
 
     docMgr.setSearchView(QueryView.ALL);
     page = docMgr.search(qd, 1, jh);
 
-    assertTrue("Searh response has entry for facets", jh.get().has("facets"));
-    assertTrue("Searh response has entry for results", jh.get().has("results"));
-    assertTrue("Searh response has entry for metrics", jh.get().has("metrics"));
+    assertTrue( jh.get().has("facets"));
+    assertTrue( jh.get().has("results"));
+    assertTrue( jh.get().has("metrics"));
 
     queryMgr.setView(QueryView.FACETS);
     queryMgr.search(qd, jh);
@@ -365,8 +357,8 @@ public class TestBulkSearchWithStringQueryDef extends AbstractFunctionalTest {
         validateRecord(rec, Format.XML);
         count++;
       }
-      assertTrue("Page has conttent :", page.hasContent());
-      assertEquals("Total search results before transaction rollback are ", "102",
+      assertTrue( page.hasContent());
+      assertEquals( "102",
           results.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total").getNodeValue());
       // System.out.println(results.get().getElementsByTagNameNS("*",
       // "response").item(0).getAttributes().getNamedItem("total").getNodeValue());
@@ -380,7 +372,7 @@ public class TestBulkSearchWithStringQueryDef extends AbstractFunctionalTest {
     DocumentPage page = docMgr.search(qd, 1, results);
     System.out.println(this.convertXMLDocumentToString(results.get()));
 
-    assertEquals("Total search results after rollback are ", results.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total").getNodeValue(),
+    assertEquals( results.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total").getNodeValue(),
         "0");
   }
 }

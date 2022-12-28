@@ -26,8 +26,9 @@ import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -35,13 +36,13 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.assertEquals;
+
 
 public class TestValueConstraint extends AbstractFunctionalTest {
 
   static final private String[] filenames = { "value-constraint-doc.xml", "value-constraint-doc2.xml" };
 
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception
   {
     deleteDocuments(connectAsAdmin());
@@ -128,7 +129,7 @@ public class TestValueConstraint extends AbstractFunctionalTest {
     }
 
     String expectedSearchMatch = "Matched 1 locations in /value-constraint/value-constraint-doc2.xml";
-    assertEquals("Search match difference", expectedSearchMatch, searchMatch);
+    assertEquals( expectedSearchMatch, searchMatch);
 
     // release client
     client.release();
@@ -215,7 +216,7 @@ public class TestValueConstraint extends AbstractFunctionalTest {
     }
 
     String expectedSearchMatch = "Matched 1 locations in /value-constraint/value-constraint-doc.xml";
-    assertEquals("Search match difference", expectedSearchMatch, searchMatch);
+    assertEquals( expectedSearchMatch, searchMatch);
 
     // release client
     client.release();

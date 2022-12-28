@@ -24,115 +24,115 @@ import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.util.RequestLogger;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DatabaseClientTest {
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
     Common.connectAdmin();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
   @Test
   public void testNewDocument() {
     GenericDocumentManager doc = Common.client.newDocumentManager();
-    assertNotNull("Client could not create generic document", doc);
+    assertNotNull( doc);
   }
 
   @Test
   public void testNewBinaryDocument() {
     BinaryDocumentManager doc = Common.client.newBinaryDocumentManager();
-    assertNotNull("Client could not create binary document", doc);
+    assertNotNull( doc);
   }
 
   @Test
   public void testNewJSONDocument() {
     JSONDocumentManager doc = Common.client.newJSONDocumentManager();
-    assertNotNull("Client could not create JSON document", doc);
+    assertNotNull( doc);
   }
 
   @Test
   public void testNewTextDocument() {
     TextDocumentManager doc = Common.client.newTextDocumentManager();
-    assertNotNull("Client could not create text document", doc);
+    assertNotNull( doc);
   }
 
   @Test
   public void testNewXMLDocument() {
     XMLDocumentManager doc = Common.client.newXMLDocumentManager();
-    assertNotNull("Client could not create XML document", doc);
+    assertNotNull( doc);
   }
 
   @Test
   public void testNewLogger() {
     RequestLogger logger = Common.client.newLogger(System.out);
-    assertNotNull("Client could not create request logger", logger);
+    assertNotNull( logger);
   }
 
   @Test
   public void testNewQueryManager() {
     QueryManager mgr = Common.client.newQueryManager();
-    assertNotNull("Client could not create query manager", mgr);
+    assertNotNull( mgr);
   }
 
   @Test
   public void testNewRuleManager() {
     RuleManager mgr = Common.client.newRuleManager();
-    assertNotNull("Client could not create rule manager", mgr);
+    assertNotNull( mgr);
   }
 
   @Test
   public void testNewPojoRepository() {
     PojoRepository<City, Integer> mgr = Common.client.newPojoRepository(City.class, Integer.class);
-    assertNotNull("Client could not create pojo repository", mgr);
+    assertNotNull( mgr);
   }
 
   @Test
   public void testNewServerEvaluationCall() {
     ServerEvaluationCall mgr = Common.client.newServerEval();
-    assertNotNull("Client could not create ServerEvaluationCall", mgr);
+    assertNotNull( mgr);
   }
 
   @Test
   public void testNewQueryOptionsManager() {
     QueryOptionsManager mgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
-    assertNotNull("Client could not create query options manager", mgr);
+    assertNotNull( mgr);
   }
 
   @Test
   public void testGetClientImplementationObject() {
     Object impl = Common.client.getClientImplementation();
-    assertNotNull("Client could not get client implementation", impl);
-    assertTrue("", impl instanceof okhttp3.OkHttpClient);
+    assertNotNull( impl);
+    assertTrue( impl instanceof okhttp3.OkHttpClient);
   }
-  
+
   @Test
   public void testCheckConnectionWithValidUser() {
-		
+
 	DatabaseClient marklogic = Common.makeNewClient(Common.HOST,
 		        Common.PORT, Common.newSecurityContext(
 				        Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS));
-  
+
     ConnectionResult connResult = marklogic.checkConnection();
     assertTrue(connResult.isConnected());
   }
-  
+
   @Test
   public void testCheckConnectionWithInvalidUser() {
 	DatabaseClient marklogic = Common.makeNewClient(Common.HOST,
 		        Common.PORT, Common.newSecurityContext("invalid", "invalid"));
-  
+
     ConnectionResult connResult = marklogic.checkConnection();
     assertFalse(connResult.isConnected());
     assertTrue(connResult.getStatusCode() == 401);
     assertTrue(connResult.getErrorMessage().equalsIgnoreCase("Unauthorized"));
   }
-  
+
 }

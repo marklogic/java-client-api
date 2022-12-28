@@ -19,9 +19,10 @@ package com.marklogic.client.fastfunctest;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-import static org.junit.Assert.assertEquals;
+
 
 public class TestWriteTextDoc extends AbstractFunctionalTest {
 
@@ -32,6 +33,6 @@ public class TestWriteTextDoc extends AbstractFunctionalTest {
         String docId = "/foo/test/myFoo.txt";
         TextDocumentManager docMgr = client.newTextDocumentManager();
         docMgr.write(docId, new StringHandle().with("This is so foo"));
-        assertEquals("Text document write difference", "This is so foo", docMgr.read(docId, new StringHandle()).get());
+        assertEquals( "This is so foo", docMgr.read(docId, new StringHandle()).get());
     }
 }

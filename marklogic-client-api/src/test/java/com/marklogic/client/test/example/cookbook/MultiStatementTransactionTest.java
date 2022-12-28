@@ -15,13 +15,11 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.example.cookbook.MultiStatementTransaction;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-
-import org.junit.Test;
-
-import com.marklogic.client.example.cookbook.MultiStatementTransaction;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MultiStatementTransactionTest {
   @Test
@@ -33,6 +31,6 @@ public class MultiStatementTransactionTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    assertTrue("MultiStatementTransaction example failed", succeeded);
+    assertTrue( succeeded);
   }
 }

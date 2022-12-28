@@ -23,14 +23,14 @@ import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.pojo.PojoRepository;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestPOJOQueryBuilderGeoQueries extends AbstractFunctionalTest {
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     client = getDatabaseClient("rest-admin", "x", getConnType());
   }
@@ -86,9 +86,9 @@ public class TestPOJOQueryBuilderGeoQueries extends AbstractFunctionalTest {
 
   public void validateArtifact(GeoSpecialArtifact art)
   {
-    assertNotNull("Artifact object should never be Null", art);
-    assertNotNull("Id should never be Null", art.id);
-    assertTrue("Inventry is always greater than 1000", art.getInventory() > 1000);
+    assertNotNull( art);
+    assertNotNull( art.id);
+    assertTrue( art.getInventory() > 1000);
   }
 
   public void loadSimplePojos(PojoRepository products)
@@ -121,7 +121,7 @@ public class TestPOJOQueryBuilderGeoQueries extends AbstractFunctionalTest {
     products.setPageLength(5);
     p = products.search(qd, 1, jh);
     System.out.println(jh.get().toString());
-    assertEquals("total no of pages", 3, p.getTotalPages());
+    assertEquals( 3, p.getTotalPages());
     System.out.println(jh.get().toString());
 
     long pageNo = 1, count = 0;
@@ -131,17 +131,17 @@ public class TestPOJOQueryBuilderGeoQueries extends AbstractFunctionalTest {
       while (p.hasNext()) {
         GeoSpecialArtifact a = p.next();
         validateArtifact(a);
-        assertTrue("Verifying document id is part of the search ids", a.getId() % 5 == 0);
-        assertEquals("Verifying Manufacurer is from state ", "Reno", a.getManufacturer().getState());
+        assertTrue( a.getId() % 5 == 0);
+        assertEquals( "Reno", a.getManufacturer().getState());
         count++;
       }
-      assertEquals("Page size", count, p.size());
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
     } while (!p.isLastPage() && pageNo <= p.getTotalSize());
-    assertEquals("page number after the loop", 3, p.getPageNumber());
-    assertEquals("total no of pages", 3, p.getTotalPages());
-    assertEquals("page length from search handle", 5, jh.get().path("page-length").asInt());
-    assertEquals("Total results from search handle", 11, jh.get().path("total").asInt());
+    assertEquals( 3, p.getPageNumber());
+    assertEquals( 3, p.getTotalPages());
+    assertEquals( 5, jh.get().path("page-length").asInt());
+    assertEquals( 11, jh.get().path("total").asInt());
 
   }
 
@@ -168,14 +168,14 @@ public class TestPOJOQueryBuilderGeoQueries extends AbstractFunctionalTest {
       while (p.hasNext()) {
         GeoSpecialArtifact a = p.next();
         validateArtifact(a);
-        assertTrue("Verifying document id is part of the search ids", a.getId() % 5 == 0);
-        assertEquals("Verifying Manufacurer is from state ", "Las Vegas", a.getManufacturer().getState());
+        assertTrue( a.getId() % 5 == 0);
+        assertEquals( "Las Vegas", a.getManufacturer().getState());
         count++;
       }
-      assertEquals("Page size", count, p.size());
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
     } while (!p.isLastPage() && pageNo <= p.getTotalSize());
-    assertEquals("Total results from search handle", 5, jh.get().path("results").size());
+    assertEquals( 5, jh.get().path("results").size());
 
   }
 
@@ -195,7 +195,7 @@ public class TestPOJOQueryBuilderGeoQueries extends AbstractFunctionalTest {
     products.setPageLength(15);
     p = products.search(qd, 1, jh);
     System.out.println(jh.get().toString());
-    assertEquals("total no of pages", 3, p.getTotalPages());
+    assertEquals( 3, p.getTotalPages());
     System.out.println(jh.get().toString());
 
     long pageNo = 1, count = 0;
@@ -205,17 +205,17 @@ public class TestPOJOQueryBuilderGeoQueries extends AbstractFunctionalTest {
       while (p.hasNext()) {
         GeoSpecialArtifact a = p.next();
         validateArtifact(a);
-        assertTrue("Verifying document id is part of the search ids", a.getId() % 2 == 0);
-        assertEquals("Verifying Manufacurer is from state ", "Los Angles", a.getManufacturer().getState());
+        assertTrue( a.getId() % 2 == 0);
+        assertEquals( "Los Angles", a.getManufacturer().getState());
         count++;
       }
-      assertEquals("Page size", count, p.size());
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
     } while (!p.isLastPage() && pageNo <= p.getTotalSize());
-    assertEquals("page number after the loop", 3, p.getPageNumber());
-    assertEquals("total no of pages", 3, p.getTotalPages());
-    assertEquals("page length from search handle", 15, jh.get().path("page-length").asInt());
-    assertEquals("Total results from search handle", 44, jh.get().path("total").asInt());
+    assertEquals( 3, p.getPageNumber());
+    assertEquals( 3, p.getTotalPages());
+    assertEquals( 15, jh.get().path("page-length").asInt());
+    assertEquals( 44, jh.get().path("total").asInt());
 
   }
 }

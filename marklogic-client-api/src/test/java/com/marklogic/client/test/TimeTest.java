@@ -15,13 +15,12 @@
  */
 package com.marklogic.client.test;
 
-import java.util.Calendar;
-import java.util.Date;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import com.marklogic.client.pojo.annotation.Id;
+
+import java.util.Calendar;
+import java.util.Date;
 
 public class TimeTest {
   @Id public String id;

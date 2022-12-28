@@ -2,10 +2,12 @@ package com.marklogic.client.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PlanRowColTypesSeqImplTest extends Assert {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+public class PlanRowColTypesSeqImplTest {
 
     @Test
     public void twoColumns() throws Exception {

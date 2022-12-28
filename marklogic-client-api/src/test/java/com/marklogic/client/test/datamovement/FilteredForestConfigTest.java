@@ -15,37 +15,23 @@
  */
 package com.marklogic.client.test.datamovement;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import org.junit.Test;
-
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.datamovement.*;
+import com.marklogic.client.datamovement.impl.ForestImpl;
+import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.test.Common;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.FilteredForestConfiguration;
-import com.marklogic.client.datamovement.Forest;
-import com.marklogic.client.datamovement.ForestConfiguration;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.datamovement.WriteEvent;
-import com.marklogic.client.datamovement.impl.ForestImpl;
-import com.marklogic.client.test.Common;
-
 import java.net.Inet4Address;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class FilteredForestConfigTest {
   private Logger logger = LoggerFactory.getLogger(FilteredForestConfigTest.class);
@@ -59,7 +45,7 @@ public class FilteredForestConfigTest {
       "forestName2", "forestId2", true, false),
     new ForestImpl("host3", null, null, "alternateHost3", "databaseName3",
       "forestName3", "forestId3", true, false),
-    new ForestImpl("host4", null, "requestHost4", null, "databaseName4", 
+    new ForestImpl("host4", null, "requestHost4", null, "databaseName4",
       "forestName4", "forestId4", true, false)
   };
 

@@ -27,20 +27,19 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class TestPatchCardinality extends AbstractFunctionalTest {
 
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception
   {
     deleteDocuments(connectAsAdmin());
@@ -79,7 +78,7 @@ public class TestPatchCardinality extends AbstractFunctionalTest {
 
     String expectedException = "Local message: write failed: Bad Request. Server Message: RESTAPI-INVALIDREQ: (err:FOER0000) Invalid request:  reason: invalid content patch operations for uri /cardinal/cardinal1.xml: invalid cardinality of 5 nodes for: /root/foo";
 
-    assertTrue("Exception is not thrown", exception.contains(expectedException));
+    assertTrue( exception.contains(expectedException));
 
     // release client
     client.release();
@@ -111,7 +110,7 @@ public class TestPatchCardinality extends AbstractFunctionalTest {
 
     System.out.println(content);
 
-    assertTrue("fragment is not inserted", content.contains("<bar>added</bar>"));
+    assertTrue( content.contains("<bar>added</bar>"));
 
     // release client
     client.release();
@@ -143,11 +142,11 @@ public class TestPatchCardinality extends AbstractFunctionalTest {
 
     System.out.println(content);
 
-    assertTrue("fragment is not inserted", content.contains("<foo>one</foo><bar>added</bar>"));
-    assertTrue("fragment is not inserted", content.contains("<foo>two</foo><bar>added</bar>"));
-    assertTrue("fragment is not inserted", content.contains("<foo>three</foo><bar>added</bar>"));
-    assertTrue("fragment is not inserted", content.contains("<foo>four</foo><bar>added</bar>"));
-    assertTrue("fragment is not inserted", content.contains("<foo>five</foo><bar>added</bar>"));
+    assertTrue( content.contains("<foo>one</foo><bar>added</bar>"));
+    assertTrue( content.contains("<foo>two</foo><bar>added</bar>"));
+    assertTrue( content.contains("<foo>three</foo><bar>added</bar>"));
+    assertTrue( content.contains("<foo>four</foo><bar>added</bar>"));
+    assertTrue( content.contains("<foo>five</foo><bar>added</bar>"));
 
     // release client
     client.release();
@@ -186,7 +185,7 @@ public class TestPatchCardinality extends AbstractFunctionalTest {
 
     String expectedException = "Local message: write failed: Bad Request. Server Message: RESTAPI-INVALIDREQ: (err:FOER0000) Invalid request:  reason: invalid content patch operations for uri /cardinal/cardinal3.xml: invalid cardinality of 0 nodes for: /root/foo";
 
-    assertTrue("Exception is not thrown", exception.contains(expectedException));
+    assertTrue( exception.contains(expectedException));
 
     // release client
     client.release();
@@ -225,7 +224,7 @@ public class TestPatchCardinality extends AbstractFunctionalTest {
 
     String expectedException = "Local message: write failed: Bad Request. Server Message: RESTAPI-INVALIDREQ: (err:FOER0000) Invalid request:  reason: invalid content patch operations for uri /cardinal/cardinal1.xml: invalid cardinality of 5 nodes for: /root/foo";
 
-    assertTrue("Exception is not thrown", exception.contains(expectedException));
+    assertTrue( exception.contains(expectedException));
 
     // release client
     client.release();
@@ -257,7 +256,7 @@ public class TestPatchCardinality extends AbstractFunctionalTest {
 
     System.out.println(content);
 
-    assertTrue("fragment is not inserted", content.contains("<foo>one</foo><bar>added</bar>"));
+    assertTrue( content.contains("<foo>one</foo><bar>added</bar>"));
 
     // release client
     client.release();
@@ -289,7 +288,7 @@ public class TestPatchCardinality extends AbstractFunctionalTest {
 
     System.out.println(content);
 
-    assertFalse("fragment is inserted", content.contains("<baz>one</baz><bar>added</bar>"));
+    assertFalse(content.contains("<baz>one</baz><bar>added</bar>"));
 
     // release client
     client.release();
@@ -321,11 +320,11 @@ public class TestPatchCardinality extends AbstractFunctionalTest {
 
     System.out.println(content);
 
-    assertTrue("fragment is not inserted", content.contains("<foo>one</foo><bar>added</bar>"));
-    assertTrue("fragment is not inserted", content.contains("<foo>two</foo><bar>added</bar>"));
-    assertTrue("fragment is not inserted", content.contains("<foo>three</foo><bar>added</bar>"));
-    assertTrue("fragment is not inserted", content.contains("<foo>four</foo><bar>added</bar>"));
-    assertTrue("fragment is not inserted", content.contains("<foo>five</foo><bar>added</bar>"));
+    assertTrue( content.contains("<foo>one</foo><bar>added</bar>"));
+    assertTrue( content.contains("<foo>two</foo><bar>added</bar>"));
+    assertTrue( content.contains("<foo>three</foo><bar>added</bar>"));
+    assertTrue( content.contains("<foo>four</foo><bar>added</bar>"));
+    assertTrue( content.contains("<foo>five</foo><bar>added</bar>"));
 
     // release client
     client.release();
@@ -375,10 +374,6 @@ public class TestPatchCardinality extends AbstractFunctionalTest {
           assertXpathEvaluatesTo("1",
               "count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='rest-writer'])", actual);
           assertXpathEvaluatesTo("1", "count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='0'])", actual);
-
-          XMLUnit.getControlDocumentBuilderFactory().setNamespaceAware(false);
-          XMLAssert.assertXpathEvaluatesTo("rest-readerread", "//permissions/permission[role-name[. = 'rest-reader'] and capability[. = 'read']]", actual);
-          XMLAssert.assertXpathEvaluatesTo("rest-writerupdate", "//permissions/permission[role-name[. = 'rest-writer'] and capability[. = 'update']]", actual);
         } catch (Exception e)
         {
           System.out.println(e.getMessage());
@@ -401,10 +396,6 @@ public class TestPatchCardinality extends AbstractFunctionalTest {
           assertXpathEvaluatesTo("1",
               "count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='rest-writer'])", actual);
           assertXpathEvaluatesTo("1", "count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='0'])", actual);
-
-          XMLUnit.getControlDocumentBuilderFactory().setNamespaceAware(false);
-          XMLAssert.assertXpathEvaluatesTo("rest-readerread", "//permissions/permission[role-name[. = 'rest-reader'] and capability[. = 'read']]", actual);
-          XMLAssert.assertXpathEvaluatesTo("rest-writerupdate", "//permissions/permission[role-name[. = 'rest-writer'] and capability[. = 'update']]", actual);
         } catch (Exception e)
         {
           System.out.println(e.getMessage());

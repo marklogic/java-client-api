@@ -15,31 +15,28 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.Calendar;
+import com.marklogic.client.impl.ValueConverter;
+import com.marklogic.client.impl.ValueConverter.ValueProcessor;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Calendar;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import com.marklogic.client.impl.ValueConverter;
-import com.marklogic.client.impl.ValueConverter.ValueProcessor;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ValueConverterTest {
   static TestProcessor processor;
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     processor = new TestProcessor();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     processor = null;
   }
@@ -87,7 +84,7 @@ public class ValueConverterTest {
   public void testConvertFromJavaByteArray() {
     byte[] b = {'a', 'b', 'c'};
     ValueConverter.convertFromJava(b, processor);
-    assertEquals("byte array type",  "xs:base64Binary", processor.type);
+    assertEquals(  "xs:base64Binary", processor.type);
     byte[] c = (byte[]) ValueConverter.convertToJava(
       processor.type, processor.value
     );
@@ -100,7 +97,7 @@ public class ValueConverterTest {
           isSame = false;
       }
     }
-    assertTrue("byte array value", isSame);
+    assertTrue( isSame);
   }
   @Test
   public void testConvertFromJavaCalendar() {
@@ -109,8 +106,8 @@ public class ValueConverterTest {
     Calendar d = (Calendar) ValueConverter.convertToJava(
       processor.type, processor.value
     );
-    assertEquals("datetime type", "xs:dateTime", processor.type);
-    assertEquals("datetime value", c.getTimeInMillis(), d.getTimeInMillis());
+    assertEquals( "xs:dateTime", processor.type);
+    assertEquals( c.getTimeInMillis(), d.getTimeInMillis());
 
     Calendar e = Calendar.getInstance();
     e.clear();
@@ -121,8 +118,8 @@ public class ValueConverterTest {
     d = (Calendar) ValueConverter.convertToJava(
       processor.type, processor.value
     );
-    assertEquals("date type", "xs:date", processor.type);
-    assertEquals("date value", e.getTimeInMillis(), d.getTimeInMillis());
+    assertEquals( "xs:date", processor.type);
+    assertEquals( e.getTimeInMillis(), d.getTimeInMillis());
 
     e = Calendar.getInstance();
     e.clear();
@@ -134,17 +131,17 @@ public class ValueConverterTest {
     d = (Calendar) ValueConverter.convertToJava(
       processor.type, processor.value
     );
-    assertEquals("time type", "xs:time", processor.type);
-    assertEquals("time hour value",
+    assertEquals( "xs:time", processor.type);
+    assertEquals(
       e.get(Calendar.HOUR_OF_DAY),
       d.get(Calendar.HOUR_OF_DAY));
-    assertEquals("time minute value",
+    assertEquals(
       e.get(Calendar.MINUTE),
       d.get(Calendar.MINUTE));
-    assertEquals("time second value",
+    assertEquals(
       e.get(Calendar.SECOND),
       d.get(Calendar.SECOND));
-    assertEquals("time millisecond value",
+    assertEquals(
       e.get(Calendar.MILLISECOND),
       d.get(Calendar.MILLISECOND));
   }
@@ -209,11 +206,8 @@ public class ValueConverterTest {
   }
 
   void checkProcessor(String type, String xsType, Object value) {
-    assertEquals(type+" type",  xsType, processor.type);
-    assertEquals(type+" value",
-      value,
-      ValueConverter.convertToJava(processor.type, processor.value)
-    );
+    assertEquals(xsType, processor.type);
+    assertEquals(value, ValueConverter.convertToJava(processor.type, processor.value));
   }
 
   static class TestProcessor implements ValueProcessor {

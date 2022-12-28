@@ -15,17 +15,18 @@
  */
 package com.marklogic.client.test;
 
+import com.marklogic.client.impl.HandleImplementation;
+import com.marklogic.client.impl.RESTServices;
+import com.marklogic.client.impl.SPARQLQueryDefinitionImpl;
+import com.marklogic.client.impl.SPARQLQueryManagerImpl;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.TriplesReadHandle;
 import com.marklogic.client.semantics.RDFMimeTypes;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
-import com.marklogic.client.impl.HandleImplementation;
-import com.marklogic.client.impl.RESTServices;
-import com.marklogic.client.impl.SPARQLQueryManagerImpl;
-import com.marklogic.client.impl.SPARQLQueryDefinitionImpl;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 /**

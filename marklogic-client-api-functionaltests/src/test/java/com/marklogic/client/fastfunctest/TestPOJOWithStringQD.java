@@ -30,17 +30,16 @@ import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.*;
-
 public class TestPOJOWithStringQD extends AbstractFunctionalTest {
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     client = getDatabaseClient("rest-admin", "x", getConnType());
   }
@@ -92,9 +91,9 @@ public class TestPOJOWithStringQD extends AbstractFunctionalTest {
 
   public void validateArtifact(Artifact art)
   {
-    assertNotNull("Artifact object should never be Null", art);
-    assertNotNull("Id should never be Null", art.id);
-    assertTrue("Inventry is always greater than 1000", art.getInventory() > 1000);
+    assertNotNull( art);
+    assertNotNull( art.id);
+    assertNotNull( art.getInventory() > 1000);
   }
 
   public void loadSimplePojos(PojoRepository products)
@@ -120,7 +119,7 @@ public class TestPOJOWithStringQD extends AbstractFunctionalTest {
 
     products.setPageLength(11);
     p = products.search(qd, 1);
-    assertEquals("total no of pages", 5, p.getTotalPages());
+    assertEquals( 5, p.getTotalPages());
     System.out.println(p.getTotalPages());
     long pageNo = 1, count = 0;
     do {
@@ -131,17 +130,17 @@ public class TestPOJOWithStringQD extends AbstractFunctionalTest {
       while (p.iterator().hasNext()) {
         Artifact a = p.iterator().next();
         validateArtifact(a);
-        assertTrue("Artifact Id is odd", a.getId() % 2 != 0);
-        assertTrue("Company name contains widgets", a.getManufacturer().getName().contains("Widgets"));
+        assertNotNull( a.getId() % 2 != 0);
+        assertNotNull( a.getManufacturer().getName().contains("Widgets"));
         count++;
         // System.out.println(a.getId()+" "+a.getManufacturer().getName()
         // +"  "+count);
       }
-      assertEquals("Page size", count, p.size());
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
     } while (!p.isLastPage() && pageNo < p.getTotalSize());
-    assertEquals("page number after the loop", 5, p.getPageNumber());
-    assertEquals("total no of pages", 5, p.getTotalPages());
+    assertEquals( 5, p.getPageNumber());
+    assertEquals( 5, p.getTotalPages());
   }
 
   @Test
@@ -155,7 +154,7 @@ public class TestPOJOWithStringQD extends AbstractFunctionalTest {
     SearchHandle results = new SearchHandle();
     products.setPageLength(11);
     p = products.search(qd, 1, results);
-    assertEquals("total no of pages", 5, p.getTotalPages());
+    assertEquals( 5, p.getTotalPages());
     System.out.println(p.getTotalPages());
     long pageNo = 1, count = 0;
     do {
@@ -165,29 +164,29 @@ public class TestPOJOWithStringQD extends AbstractFunctionalTest {
       while (p.iterator().hasNext()) {
         Artifact a = p.iterator().next();
         validateArtifact(a);
-        assertTrue("Artifact Id is even", a.getId() % 2 == 0);
-        assertTrue("Company name contains Acme", a.getManufacturer().getName().contains("Acme"));
+        assertNotNull( a.getId() % 2 == 0);
+        assertNotNull( a.getManufacturer().getName().contains("Acme"));
         count++;
         // System.out.println(a.getId()+" "+a.getManufacturer().getName()
         // +"  "+count);
       }
-      assertEquals("Page size", count, p.size());
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
       MatchDocumentSummary[] mds = results.getMatchResults();
-      assertEquals("Size of the results summary", 11, mds.length);
+      assertEquals( 11, mds.length);
       for (MatchDocumentSummary md : mds) {
-        assertTrue("every uri should contain the class name", md.getUri().contains("Artifact"));
+        assertNotNull( md.getUri().contains("Artifact"));
       }
       String[] facetNames = results.getFacetNames();
       for (String fname : facetNames) {
         System.out.println(fname);
       }
-      assertEquals("Total resulr from search handle ", 55, results.getTotalResults());
-      // assertTrue("Search Handle metric results ",results.getMetrics().getTotalTime()>0);
+      assertEquals( 55, results.getTotalResults());
+      // assertNotNull(results.getMetrics().getTotalTime()>0);
     } while (!p.isLastPage() && pageNo < p.getTotalSize());
-    assertEquals("Page start check", 45, p.getStart());
-    assertEquals("page number after the loop", 5, p.getPageNumber());
-    assertEquals("total no of pages", 5, p.getTotalPages());
+    assertEquals( 45, p.getStart());
+    assertEquals( 5, p.getPageNumber());
+    assertEquals( 5, p.getTotalPages());
   }
 
   @Test
@@ -201,7 +200,7 @@ public class TestPOJOWithStringQD extends AbstractFunctionalTest {
     JacksonHandle results = new JacksonHandle();
     p = products.search(qd, 1, results);
     products.setPageLength(11);
-    assertEquals("total no of pages", 3, p.getTotalPages());
+    assertEquals( 3, p.getTotalPages());
     // System.out.println(p.getTotalPages()+results.get().toString());
     long pageNo = 1, count = 0;
     do {
@@ -215,19 +214,19 @@ public class TestPOJOWithStringQD extends AbstractFunctionalTest {
         // System.out.println(a.getId()+" "+a.getManufacturer().getName()
         // +"  "+count);
       }
-      assertEquals("Page size", count, p.size());
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
 
-      assertEquals("Page start from search handls vs page methods", results.get().get("start").asLong(), p.getStart());
-      assertEquals("Format in the search handle", "json", results.get().withArray("results").get(1).path("format").asText());
-      assertTrue("Uri in search handle contains Artifact", results.get().withArray("results").get(1).path("uri").asText().contains("Artifact"));
+      assertEquals( results.get().get("start").asLong(), p.getStart());
+      assertEquals( "json", results.get().withArray("results").get(1).path("format").asText());
+      assertNotNull( results.get().withArray("results").get(1).path("uri").asText().contains("Artifact"));
       // System.out.println(results.get().toString());
     } while (!p.isLastPage() && pageNo < p.getTotalSize());
-    // assertTrue("search handle has metrics",results.get().has("metrics"));
-    assertEquals("Search text is", "cogs", results.get().path("qtext").asText());
-    assertEquals("Total from search handle", 110, results.get().get("total").asInt());
-    assertEquals("page number after the loop", 10, p.getPageNumber());
-    assertEquals("total no of pages", 10, p.getTotalPages());
+    // assertNotNull(results.get().has("metrics"));
+    assertEquals( "cogs", results.get().path("qtext").asText());
+    assertEquals( 110, results.get().get("total").asInt());
+    assertEquals( 10, p.getPageNumber());
+    assertEquals( 10, p.getTotalPages());
   }
 
   // Searching for Id as Number in JSON using string should not return any
@@ -252,19 +251,19 @@ public class TestPOJOWithStringQD extends AbstractFunctionalTest {
         Artifact a = p.iterator().next();
         validateArtifact(a);
       }
-      assertEquals("Page total results", 0, p.getTotalSize());
+      assertEquals( 0, p.getTotalSize());
       pageNo = pageNo + p.getPageSize();
       // System.out.println(results.get().toString());
     } while (!p.isLastPage() && pageNo < p.getTotalSize());
-    assertFalse("String handle is not empty", results.get().isEmpty());
-    assertTrue("String handle contains results", results.get().contains("results"));
-    assertFalse("String handle contains format", results.get().contains("\"format\":\"json\""));
+    assertFalse(results.get().isEmpty());
+    assertNotNull( results.get().contains("results"));
+    assertFalse(results.get().contains("\"format\":\"json\""));
 
     ObjectMapper mapper = new ObjectMapper();
     JsonNode actNode = mapper.readTree(results.get()).get("total");
     // System.out.println(expNode.equals(actNode)+"\n"+
     // expNode.toString()+"\n"+actNode.toString());
 
-    assertEquals("Total search results resulted are ", actNode.asInt(), 0);
+    assertEquals( actNode.asInt(), 0);
   }
 }

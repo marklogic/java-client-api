@@ -32,9 +32,10 @@ import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.semantics.*;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -46,7 +47,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.Map.Entry;
 
-import static org.junit.Assert.*;
+
 
 public class TestSparqlQueryManager extends AbstractFunctionalTest {
 
@@ -90,7 +91,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
         // Verify result in t2 transaction.
         boolean bAskInTransT2 = sparqlQmgrTh.executeAsk(qdefTh, t2);
         System.out.println("Method ExecuteAskSecondThreadFalse Run result is " + bAskInTransT2);
-        assertFalse("Class ExecuteAskSecondThreadFalse Run result is incorrect. No Records should be returned.", bAskInTransT2);
+        assertFalse( bAskInTransT2);
         setbCompleted(true);
 
       } catch (ForbiddenUserException e) {
@@ -144,7 +145,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
         // commited.
         boolean bAskInTransT2 = sparqlQmgrTh.executeAsk(qdefTh, t2);
         System.out.println("Method ExecuteAskSecondThreadTrue Run result is " + bAskInTransT2);
-        assertTrue("Class ExecuteAskSecondThreadTrue Run result is incorrect. Records should be returned.", bAskInTransT2);
+        assertTrue( bAskInTransT2);
         setbCompleted(true);
 
       } catch (ForbiddenUserException e) {
@@ -159,7 +160,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     }
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception
   {
     System.out.println("In SPARQL Query Manager Test setup");
@@ -259,7 +260,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     /*
      * Build custom data for Locale test. From Google translation We have Ling
      * in Chinese as 凌 We have Fei in Chinese as 飞
-     * 
+     *
      * We will have these triples in a graph called 北京 (beijing) in Chinese.
      */
     writeNTriplesFromFile("chineselocale.ttl", zhlocaleGraphName);
@@ -301,13 +302,13 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
   /*
    * This test checks a simple SPARQL query results from named graph. The
    * database should contain triples from foaf1.nt.
-   * 
+   *
    * The query should be returning two results ordered by name.
-   * 
+   *
    * Uses JacksonHandle
    */
   @Test
-  public void testNamedExecuteSelectQuery() 
+  public void testNamedExecuteSelectQuery()
   {
     System.out.println("In SPARQL Query Manager Test testNamedExecuteSelectQuery method");
     SPARQLQueryManager sparqlQmgr = readclient.newSPARQLQueryManager();
@@ -326,35 +327,35 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
 
     // Should have 2 nodes returned.
-    assertEquals("Two names not returned from testNamedExecuteSelectQuery method ", 2, jsonBindingsNodes.size());
+    assertEquals( 2, jsonBindingsNodes.size());
 
     Iterator<JsonNode> nameNodesItr = jsonBindingsNodes.elements();
     JsonNode jsonNameNode = null;
     if (nameNodesItr.hasNext()) {
       jsonNameNode = nameNodesItr.next();
       // Verify result 1's values.
-      assertEquals("Element 1 name value incorrect", "Karen Schouten", jsonNameNode.path("name").path("value").asText());
-      assertEquals("Element 1 type is incorrect", "literal", jsonNameNode.path("name").path("type").asText());
+      assertEquals( "Karen Schouten", jsonNameNode.path("name").path("value").asText());
+      assertEquals( "literal", jsonNameNode.path("name").path("type").asText());
     }
 
     if (nameNodesItr.hasNext()) {
       // Verify result 2's values.
       jsonNameNode = nameNodesItr.next();
-      assertEquals("Element 2 name value incorrect", "Nick Aster", jsonNameNode.path("name").path("value").asText());
-      assertEquals("Element 2 type is incorrect", "literal", jsonNameNode.path("name").path("type").asText());
+      assertEquals( "Nick Aster", jsonNameNode.path("name").path("value").asText());
+      assertEquals( "literal", jsonNameNode.path("name").path("type").asText());
     }
   }
 
   /*
    * This test checks a simple SPARQL query results from default graph. The
    * database should contain triples from livesIn.ttl.
-   * 
+   *
    * The query should be returning three results ordered by name.
-   * 
+   *
    * Uses JacksonHandle
    */
   @Test
-  public void testDefaultExecuteSelectQuery() 
+  public void testDefaultExecuteSelectQuery()
   {
     System.out.println("In SPARQL Query Manager Test testDefaultExecuteSelectQuery method");
     SPARQLQueryManager sparqlQmgr = readclient.newSPARQLQueryManager();
@@ -365,43 +366,43 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
 
     // Should have 3 nodes returned.
-    assertEquals("Three results not returned from testDefaultExecuteSelectQuery method ", 3, jsonBindingsNodes.size());
+    assertEquals( 3, jsonBindingsNodes.size());
 
     Iterator<JsonNode> nameNodesItr = jsonBindingsNodes.elements();
     JsonNode jsonNameNode = null;
     if (nameNodesItr.hasNext()) {
       jsonNameNode = nameNodesItr.next();
       // Verify result 1 values.
-      assertEquals("Element 1 name value incorrect", "http://example.org/ml/people/Jack_Smith", jsonNameNode.path("name").path("value").asText());
-      assertEquals("Element 1 lives is incorrect", "livesIn", jsonNameNode.path("lives").path("value").asText());
-      assertEquals("Element 1 city is incorrect", "Glasgow", jsonNameNode.path("city").path("value").asText());
+      assertEquals( "http://example.org/ml/people/Jack_Smith", jsonNameNode.path("name").path("value").asText());
+      assertEquals( "livesIn", jsonNameNode.path("lives").path("value").asText());
+      assertEquals( "Glasgow", jsonNameNode.path("city").path("value").asText());
     }
     if (nameNodesItr.hasNext()) {
       // Verify result 2 values.
       jsonNameNode = nameNodesItr.next();
-      assertEquals("Element 2 name value incorrect", "http://example.org/ml/people/Jane_Smith", jsonNameNode.path("name").path("value").asText());
-      assertEquals("Element 2 lives is incorrect", "livesIn", jsonNameNode.path("lives").path("value").asText());
-      assertEquals("Element 2 city is incorrect", "London", jsonNameNode.path("city").path("value").asText());
+      assertEquals( "http://example.org/ml/people/Jane_Smith", jsonNameNode.path("name").path("value").asText());
+      assertEquals( "livesIn", jsonNameNode.path("lives").path("value").asText());
+      assertEquals( "London", jsonNameNode.path("city").path("value").asText());
     }
     if (nameNodesItr.hasNext()) {
       // Verify result 3 values.
       jsonNameNode = nameNodesItr.next();
-      assertEquals("Element 3 name value incorrect", "http://example.org/ml/people/John_Smith", jsonNameNode.path("name").path("value").asText());
-      assertEquals("Element 3 lives is incorrect", "livesIn", jsonNameNode.path("lives").path("value").asText());
-      assertEquals("Element 3 city is incorrect", "London", jsonNameNode.path("city").path("value").asText());
+      assertEquals( "http://example.org/ml/people/John_Smith", jsonNameNode.path("name").path("value").asText());
+      assertEquals( "livesIn", jsonNameNode.path("lives").path("value").asText());
+      assertEquals( "London", jsonNameNode.path("city").path("value").asText());
     }
   }
 
   /*
    * This test checks a simple SPARQL query results from named graph in a
    * transaction. The database should contain triples from geo-states.n3.
-   * 
+   *
    * The query should be returning one result.
-   * 
+   *
    * Uses StringHandle (XMLReadHandle)
    */
   @Test
-  public void testExecuteQueryInTransaction() 
+  public void testExecuteQueryInTransaction()
   {
     System.out.println("In SPARQL Query Manager Test testExecuteQueryInTransaction method");
     Transaction t = writeclient.openTransaction();
@@ -433,12 +434,12 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       System.out.println(jsonStrResults);
       JsonNode jsonBindingsNodes = jsonNodesFromStr.path("results").path("bindings");
       // Should have 1 node returned.
-      assertEquals("Result returned from testExecuteQueryInTransaction method size is incorrect ", 1, jsonBindingsNodes.size());
+      assertEquals( 1, jsonBindingsNodes.size());
 
       // Verify results.
-      assertEquals("Element statecode value is incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/al", jsonBindingsNodes.get(0).path("stateCode").path("value").asText());
-      assertEquals("Element lives is incorrect", "4447100", jsonBindingsNodes.get(0).path("population").path("value").asText());
-      assertEquals("Element city is incorrect", "Alabama", jsonBindingsNodes.get(0).path("statename").path("value").asText());
+      assertEquals( "http://www.rdfabout.com/rdf/usgov/geo/us/al", jsonBindingsNodes.get(0).path("stateCode").path("value").asText());
+      assertEquals( "4447100", jsonBindingsNodes.get(0).path("population").path("value").asText());
+      assertEquals( "Alabama", jsonBindingsNodes.get(0).path("statename").path("value").asText());
       // Handle the transaction.
       t.commit();
       t = null;
@@ -457,14 +458,14 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
   /*
    * This test checks a simple SPARQL query pagination from named graph in a
    * transaction. The database should contain triples from geo-states.n3.
-   * 
+   *
    * The query should be returning states where population is greater than 5
    * million ordered by population count ascending.
-   * 
+   *
    * Uses StringHandle (XMLReadHandle)
    */
   @Test
-  public void testPaginationInTransaction() 
+  public void testPaginationInTransaction()
   {
     System.out.println("In SPARQL Query Manager Test testPaginationInTransaction method");
     Transaction t = writeclient.openTransaction();
@@ -498,13 +499,13 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       System.out.println(jsonStrResults);
       JsonNode jsonBindingsNodes = jsonNodesFromStr.path("results").path("bindings");
       // Should have 1 node returned. Details of State - Arizona.
-      assertEquals("Result returned from testPaginationInTransaction query 1 has incorrect size ", 1, jsonBindingsNodes.size());
+      assertEquals( 1, jsonBindingsNodes.size());
       System.out.println("testPaginationInTransaction query 1 result size is " + jsonBindingsNodes.size());
 
       // Verify results.
-      assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/az", jsonBindingsNodes.get(0).path("stateCode").path("value").asText());
-      assertEquals("Element lives is incorrect", "5130632", jsonBindingsNodes.get(0).path("population").path("value").asText());
-      assertEquals("Element city is incorrect", "Arizona", jsonBindingsNodes.get(0).path("statename").path("value").asText());
+      assertEquals( "http://www.rdfabout.com/rdf/usgov/geo/us/az", jsonBindingsNodes.get(0).path("stateCode").path("value").asText());
+      assertEquals( "5130632", jsonBindingsNodes.get(0).path("population").path("value").asText());
+      assertEquals( "Arizona", jsonBindingsNodes.get(0).path("statename").path("value").asText());
 
       // Select in a transaction with start = 2 and page length = 1.
       /*
@@ -520,13 +521,13 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       System.out.println(jsonStrResults2);
       JsonNode jsonBindingsNodes2 = jsonNodesFromStr2.path("results").path("bindings");
 
-      assertEquals("Result returned from testPaginationInTransaction query 2 has incorrect size ", 1, jsonBindingsNodes2.size());
+      assertEquals( 1, jsonBindingsNodes2.size());
       System.out.println("testPaginationInTransaction query 2 result size is " + jsonBindingsNodes2.size());
 
       // Verify results - Details of State - Maryland.
-      assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/md", jsonBindingsNodes2.get(0).path("stateCode").path("value").asText());
-      assertEquals("Element lives is incorrect", "5296486", jsonBindingsNodes2.get(0).path("population").path("value").asText());
-      assertEquals("Element city is incorrect", "Maryland", jsonBindingsNodes2.get(0).path("statename").path("value").asText());
+      assertEquals( "http://www.rdfabout.com/rdf/usgov/geo/us/md", jsonBindingsNodes2.get(0).path("stateCode").path("value").asText());
+      assertEquals( "5296486", jsonBindingsNodes2.get(0).path("population").path("value").asText());
+      assertEquals( "Maryland", jsonBindingsNodes2.get(0).path("statename").path("value").asText());
 
       // Select in a transaction with start = 2 and page length = 3.
       /*
@@ -541,32 +542,32 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       JsonNode jsonNodesFromStr3 = mapper.readTree(jsonStrResults3);
       System.out.println(jsonStrResults3);
 
-      assertEquals("Result returned from testPaginationInTransaction query 3 has incorrect size ", 3, jsonNodesFromStr3.path("results").path("bindings").size());
+      assertEquals( 3, jsonNodesFromStr3.path("results").path("bindings").size());
       System.out.println("testPaginationInTransaction query 3 result is " + jsonNodesFromStr3.path("results").path("bindings").size());
 
       Iterator<JsonNode> jsonBindingsNodesItr3 = jsonNodesFromStr3.path("results").path("bindings").elements();
       JsonNode jsonItrNode1 = jsonBindingsNodesItr3.next();
       // Verify results - Details of State - Maryland.
-      assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/md", jsonItrNode1.path("stateCode").path("value").asText());
-      assertEquals("Element lives is incorrect", "5296486", jsonItrNode1.path("population").path("value").asText());
-      assertEquals("Element city is incorrect", "Maryland", jsonItrNode1.path("statename").path("value").asText());
+      assertEquals( "http://www.rdfabout.com/rdf/usgov/geo/us/md", jsonItrNode1.path("stateCode").path("value").asText());
+      assertEquals( "5296486", jsonItrNode1.path("population").path("value").asText());
+      assertEquals( "Maryland", jsonItrNode1.path("statename").path("value").asText());
 
       JsonNode jsonItrNode2 = jsonBindingsNodesItr3.next();
       // Verify results - Details of State - Wisconsin.
-      assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/wi", jsonItrNode2.path("stateCode").path("value").asText());
-      assertEquals("Element lives is incorrect", "5363675", jsonItrNode2.path("population").path("value").asText());
-      assertEquals("Element city is incorrect", "Wisconsin", jsonItrNode2.path("statename").path("value").asText());
+      assertEquals( "http://www.rdfabout.com/rdf/usgov/geo/us/wi", jsonItrNode2.path("stateCode").path("value").asText());
+      assertEquals( "5363675", jsonItrNode2.path("population").path("value").asText());
+      assertEquals( "Wisconsin", jsonItrNode2.path("statename").path("value").asText());
 
       JsonNode jsonItrNode3 = jsonBindingsNodesItr3.next();
       // Verify results - Details of State - Wisconsin.
-      assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/mo", jsonItrNode3.path("stateCode").path("value").asText());
-      assertEquals("Element lives is incorrect", "5595211", jsonItrNode3.path("population").path("value").asText());
-      assertEquals("Element city is incorrect", "Missouri", jsonItrNode3.path("statename").path("value").asText());
+      assertEquals( "http://www.rdfabout.com/rdf/usgov/geo/us/mo", jsonItrNode3.path("stateCode").path("value").asText());
+      assertEquals( "5595211", jsonItrNode3.path("population").path("value").asText());
+      assertEquals( "Missouri", jsonItrNode3.path("statename").path("value").asText());
 
-      assertEquals("Result returned from testPaginationInTransaction Page Length incorrect", 3, sparqlQmgr.getPageLength());
+      assertEquals( 3, sparqlQmgr.getPageLength());
       // Verify clear page length.
       sparqlQmgr.clearPageLength();
-      assertEquals("Result returned from testPaginationInTransaction Page Length incorrect", -1, sparqlQmgr.getPageLength());
+      assertEquals( -1, sparqlQmgr.getPageLength());
       // Test negative cases.
 
       // Select in a transaction with (java index) start = 21 and page length =
@@ -579,12 +580,12 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       System.out.println(jsonStrResultsNeg1);
       JsonNode jsonBindingsNodesNeg1 = jsonNodesFromStrNeg1.path("results").path("bindings");
       // Should have 1 node returned. Details of United States.
-      assertEquals("Result returned from testPaginationInTransaction negative query 1 has incorrect size ", 1, jsonBindingsNodesNeg1.size());
+      assertEquals( 1, jsonBindingsNodesNeg1.size());
       System.out.println("testPaginationInTransaction negative query 1 result size is " + jsonBindingsNodesNeg1.size());
       // Verify results - Details of United States.
-      assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us", jsonBindingsNodesNeg1.get(0).path("stateCode").path("value").asText());
-      assertEquals("Element lives is incorrect", "281421906", jsonBindingsNodesNeg1.get(0).path("population").path("value").asText());
-      assertEquals("Element city is incorrect", "United States", jsonBindingsNodesNeg1.get(0).path("statename").path("value").asText());
+      assertEquals( "http://www.rdfabout.com/rdf/usgov/geo/us", jsonBindingsNodesNeg1.get(0).path("stateCode").path("value").asText());
+      assertEquals( "281421906", jsonBindingsNodesNeg1.get(0).path("population").path("value").asText());
+      assertEquals( "United States", jsonBindingsNodesNeg1.get(0).path("statename").path("value").asText());
 
       // Select in a transaction with (java index) start = 100 and page length =
       // 100.
@@ -596,7 +597,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       System.out.println(jsonStrResultsNeg2);
       JsonNode jsonBindingsNodesNeg2 = jsonNodesFromStrNeg2.path("results").path("bindings");
       // Should have 0 nodes returned.
-      assertEquals("Result returned from testPaginationInTransaction negative query 2 has incorrect size ", 0, jsonBindingsNodesNeg2.size());
+      assertEquals( 0, jsonBindingsNodesNeg2.size());
       System.out.println("testPaginationInTransaction negative query 2 result size is " + jsonBindingsNodesNeg2.size());
       // Pass negative values.
       String expectedException = "IllegalArgumentException";
@@ -610,7 +611,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
         exception = e.toString();
       }
       System.out.println("Exception thrown from testQueryBindingsNullString is \n" + exception);
-      assertTrue("Test testQueryBindingsNullString method exception is not thrown", exception.contains(expectedException));
+      assertTrue( exception.contains(expectedException));
 
       // Handle the transaction.
       t.commit();
@@ -630,13 +631,13 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
    * contain triples from foaf1.nt file. The data format in this file is XML.
    * Results are returned in a sequence of sem:triple values as triples in
    * memory.
-   * 
+   *
    * The query should be returning one result.
-   * 
+   *
    * Uses StringHandle (TriplesReadHandle)
    */
   @Test
-  public void testExecuteConstruct() 
+  public void testExecuteConstruct()
   {
     System.out.println("In SPARQL Query Manager Test testExecuteConstruct method");
     SPARQLQueryManager sparqlQmgr = readclient.newSPARQLQueryManager();
@@ -654,10 +655,10 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     String[] jsonResults = sparqlQmgr.executeConstruct(qdef, new StringHandle()).get().split(" ");
 
     // Account for the dot at the end of the triple. Hence size is 4.
-    assertEquals("Method testExecuteConstruct in-memory Triple part size is incorrect", 4, jsonResults.length);
-    assertEquals("Method testExecuteConstruct in-memory subject is incorrect", "<http://www.ucsb.edu/random-alum>", jsonResults[0]);
-    assertEquals("Method testExecuteConstruct in-memory predicate is incorrect", "<http://xmlns.com/foaf/0.1/knows>", jsonResults[1]);
-    assertEquals("Method testExecuteConstruct in-memory object is incorrect", "<1bfbfb8:ff2d706919:-7fa9>", jsonResults[2]);
+    assertEquals( 4, jsonResults.length);
+    assertEquals( "<http://www.ucsb.edu/random-alum>", jsonResults[0]);
+    assertEquals( "<http://xmlns.com/foaf/0.1/knows>", jsonResults[1]);
+    assertEquals( "<1bfbfb8:ff2d706919:-7fa9>", jsonResults[2]);
   }
 
   /*
@@ -665,14 +666,14 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
    * contain triples from foaf1.nt file. The data format in this file is XML.
    * Results are returned in a sequence of sem:triple values as triples in
    * memory.
-   * 
+   *
    * The query should be returning one result. This test also verifies Base URI
    * and Git Issue 356, 358.
-   * 
+   *
    * Uses JacksonHandle and DOMHandle
    */
   @Test
-  public void testBaseUri() 
+  public void testBaseUri()
   {
     System.out.println("In SPARQL Query Manager Test testBaseUri method");
     SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -696,10 +697,10 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode o = jsonResults.get(s).get(p);
 
     // Verify the mimetype of the handle.
-    assertEquals("Method testBaseUri MIME type is incorrect", RDFMimeTypes.RDFJSON, jh.getMimetype());
-    assertEquals("Method testBaseUri in-memory subject base URI is incorrect", "http://qa.marklogic.com/functional/tests/one/qatest1", s);
-    assertEquals("Method testBaseUri in-memory predicte base URI is incorrect", "http://qa.marklogic.com/functional/tests/one/qatest2", p);
-    assertEquals("Method testBaseUri in-memory object base URI is incorrect", "http://qa.marklogic.com/functional/tests/one/qatest3", o.path(0).path("value").asText());
+    assertEquals( RDFMimeTypes.RDFJSON, jh.getMimetype());
+    assertEquals( "http://qa.marklogic.com/functional/tests/one/qatest1", s);
+    assertEquals( "http://qa.marklogic.com/functional/tests/one/qatest2", p);
+    assertEquals( "http://qa.marklogic.com/functional/tests/one/qatest3", o.path(0).path("value").asText());
 
     // Verify if defaulting to RDFJSON when XMLHandle is used. Git Issue 356.
     DOMHandle handle = new DOMHandle();
@@ -709,11 +710,11 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
 
     String oXML = attrs.getNamedItemNS("http://www.w3.org/1999/02/22-rdf-syntax-ns#", "resource").getTextContent();
 
-    assertEquals("Method testBaseUri MIME type is incorrect", RDFMimeTypes.RDFXML, handle.getMimetype());
-    assertEquals("Method testBaseUri in-memory subject base URI is incorrect", "http://qa.marklogic.com/functional/tests/one/qatest1", description.getAttributes().item(0)
+    assertEquals( RDFMimeTypes.RDFXML, handle.getMimetype());
+    assertEquals( "http://qa.marklogic.com/functional/tests/one/qatest1", description.getAttributes().item(0)
         .getTextContent());
-    assertEquals("Method testBaseUri in-memory predicate base URI is incorrect", "qatest2", description.getFirstChild().getNodeName());
-    assertEquals("Method testBaseUri in-memory object base URI is incorrect", "http://qa.marklogic.com/functional/tests/one/qatest3", oXML);
+    assertEquals( "qatest2", description.getFirstChild().getNodeName());
+    assertEquals( "http://qa.marklogic.com/functional/tests/one/qatest3", oXML);
   }
 
   /*
@@ -721,13 +722,13 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
    * contain triples from foaf1.nt file. The data format in this file is XML.
    * Results are returned in a sequence of sem:triple values as triples in
    * memory.
-   * 
+   *
    * The query should be returning one result.
-   * 
+   *
    * Uses StringHandle (TriplesReadHandle)
    */
   @Test
-  public void testExecuteConstructInTransaction() 
+  public void testExecuteConstructInTransaction()
   {
     System.out.println("In SPARQL Query Manager Test testExecuteConstructInTransaction method");
     Transaction t = writeclient.openTransaction();
@@ -748,10 +749,10 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       String[] jsonResults = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.NTRIPLES), t).get().split(" ");
 
       // Account for the dot at the end of the triple. Hence size is 4.
-      assertEquals("Method testExecuteConstructInTransaction in-memory Triple part size is incorrect", 4, jsonResults.length);
-      assertEquals("Method testExecuteConstructInTransaction in-memory subject is incorrect", "<http://www.ucsb.edu/random-alum>", jsonResults[0]);
-      assertEquals("Method testExecuteConstructInTransaction in-memory predicate is incorrect", "<http://xmlns.com/foaf/0.1/knows>", jsonResults[1]);
-      assertEquals("Method testExecuteConstructInTransaction in-memory object is incorrect", "<1bfbfb8:ff2d706919:-7fa9>", jsonResults[2]);
+      assertEquals( 4, jsonResults.length);
+      assertEquals( "<http://www.ucsb.edu/random-alum>", jsonResults[0]);
+      assertEquals( "<http://xmlns.com/foaf/0.1/knows>", jsonResults[1]);
+      assertEquals( "<1bfbfb8:ff2d706919:-7fa9>", jsonResults[2]);
 
       // Tests for additional MIME Type.
 
@@ -763,26 +764,26 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       // Parsing results using JsonNode.
       JsonNode jsonNodesFromStr = mapper.readTree(strRDFJSON);
       String strValue = jsonNodesFromStr.path("http://www.ucsb.edu/random-alum").path("http://xmlns.com/foaf/0.1/knows").get(0).path("value").asText();
-      assertEquals("RDFJSON value output is incorrect ", "1bfbfb8:ff2d706919:-7fa9", strValue);
+      assertEquals( "1bfbfb8:ff2d706919:-7fa9", strValue);
 
       String strRDFXML = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.RDFXML), t).get().toString();
 
       System.out.println("\n RDFXML Format is " + strRDFXML);
-      assertTrue("RDFXML subject value output is incorrect ", strRDFXML.contains("rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\""));
-      assertTrue("RDFXML predicate value output is incorrect ", strRDFXML.contains("rdf:Description rdf:about=\"http://www.ucsb.edu/random-alum\""));
-      assertTrue("RDFXML object value output is incorrect ", strRDFXML.contains("knows rdf:resource=\"1bfbfb8:ff2d706919:-7fa9\""));
+      assertTrue( strRDFXML.contains("rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\""));
+      assertTrue( strRDFXML.contains("rdf:Description rdf:about=\"http://www.ucsb.edu/random-alum\""));
+      assertTrue( strRDFXML.contains("knows rdf:resource=\"1bfbfb8:ff2d706919:-7fa9\""));
 
       String strTRIPLEXML = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.TRIPLEXML), t).get().toString();
       System.out.println("\n TRIPLEXML format is " + strTRIPLEXML);
-      assertTrue("TRIPLEXML subject value output is incorrect ", strTRIPLEXML.contains("<sem:subject>http://www.ucsb.edu/random-alum</sem:subject>"));
-      assertTrue("TRIPLEXML predicate value output is incorrect ", strTRIPLEXML.contains("<sem:predicate>http://xmlns.com/foaf/0.1/knows</sem:predicate>"));
-      assertTrue("TRIPLEXML object value output is incorrect ", strTRIPLEXML.contains("<sem:object>1bfbfb8:ff2d706919:-7fa9</sem:object>"));
+      assertTrue( strTRIPLEXML.contains("<sem:subject>http://www.ucsb.edu/random-alum</sem:subject>"));
+      assertTrue( strTRIPLEXML.contains("<sem:predicate>http://xmlns.com/foaf/0.1/knows</sem:predicate>"));
+      assertTrue( strTRIPLEXML.contains("<sem:object>1bfbfb8:ff2d706919:-7fa9</sem:object>"));
 
       String strTURTLE = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.TURTLE), t).get().toString();
       System.out.println("\n TURTLE format is " + strTURTLE);
-      assertTrue("TURTLE subject value output is incorrect ", strTURTLE.contains("<http://www.ucsb.edu/random-alum>"));
-      assertTrue("TURTLE predicate value output is incorrect ", strTURTLE.contains("foaf:knows"));
-      assertTrue("TURTLE object value output is incorrect ", strTURTLE.contains("<1bfbfb8:ff2d706919:-7fa9>"));
+      assertTrue( strTURTLE.contains("<http://www.ucsb.edu/random-alum>"));
+      assertTrue( strTURTLE.contains("foaf:knows"));
+      assertTrue( strTURTLE.contains("<1bfbfb8:ff2d706919:-7fa9>"));
 
       // String strN3 = sparqlQmgr.executeConstruct(qdef, new
       // StringHandle().withMimetype(RDFMimeTypes.N3), t).get().toString();
@@ -790,9 +791,9 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
 
       String strNTriples = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.NTRIPLES), t).get().toString();
       System.out.println("\n NTRIPLES format is " + strNTriples);
-      assertTrue("NTRIPLES subject value output is incorrect ", strNTriples.contains("<http://www.ucsb.edu/random-alum>"));
-      assertTrue("NTRIPLES predicate value output is incorrect ", strNTriples.contains("<http://xmlns.com/foaf/0.1/knows>"));
-      assertTrue("NTRIPLES object value output is incorrect ", strNTriples.contains("<1bfbfb8:ff2d706919:-7fa9>"));
+      assertTrue( strNTriples.contains("<http://www.ucsb.edu/random-alum>"));
+      assertTrue( strNTriples.contains("<http://xmlns.com/foaf/0.1/knows>"));
+      assertTrue( strNTriples.contains("<1bfbfb8:ff2d706919:-7fa9>"));
 
       // Handle the transaction.
       t.commit();
@@ -811,14 +812,14 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
    * This test checks a simple SPARQL DESCRIBE results from named graph. The
    * database should contain triples from rdfjson.json. Verifies Git Issue 356,
    * 358
-   * 
+   *
    * The DESCRIBE query should be returning one result. Result includes all
    * triples which have the IRI as a subject
-   * 
+   *
    * Uses Stringhandle and JacksonHandle.
    */
   @Test
-  public void testExecuteDescribeFromRDFJSON() 
+  public void testExecuteDescribeFromRDFJSON()
   {
     System.out.println("In SPARQL Query Manager Test testExecuteDescribeFromRDFJSON method");
     SPARQLQueryManager sparqlQmgr = readclient.newSPARQLQueryManager();
@@ -829,10 +830,10 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     // Verify result 1 value.
     System.out.println(jsonResults);
     String[] resultString = jsonResults.split(" ");
-    assertEquals("Method testExecuteDescribeFromRDFJSON subject is incorrect", "<http://example.org/about>", resultString[0]);
-    assertEquals("Method testExecuteDescribeFromRDFJSON predicate is incorrect", "<http://purl.org/dc/elements/1.1/title>", resultString[1]);
+    assertEquals( "<http://example.org/about>", resultString[0]);
+    assertEquals( "<http://purl.org/dc/elements/1.1/title>", resultString[1]);
     String objectStr = resultString[2] + " " + resultString[3];
-    assertEquals("Method testExecuteDescribeFromRDFJSON object is incorrect", "\"Anna's Homepage\"", objectStr);
+    assertEquals( "\"Anna's Homepage\"", objectStr);
 
     // Verifying default mime types- Using JacksonHandle
     JacksonHandle jh = new JacksonHandle();
@@ -841,8 +842,8 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
 
     // Verify Mime type on the handle and value.
     System.out.println("testQueryOnMultibyeGraphName query result size is " + jsonNodeValue.get("value"));
-    assertEquals("Element person's value incorrect", RDFMimeTypes.RDFJSON, jh.getMimetype());
-    assertEquals("Result returned from testQueryOnMultibyeGraphName query is incorrect ", "Anna\'s Homepage", jsonNodeValue.get("value").asText());
+    assertEquals(RDFMimeTypes.RDFJSON, jh.getMimetype());
+    assertEquals( "Anna\'s Homepage", jsonNodeValue.get("value").asText());
 
     // Verifying default mime types- Using DOMHandle
     DOMHandle dh = new DOMHandle();
@@ -851,33 +852,33 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     Node description = xmlDoc.getFirstChild().getFirstChild();
     NamedNodeMap attrs = description.getFirstChild().getAttributes();
     // attrs NodeMap should have two nodes.
-    assertEquals("Attribute length value incorrect", 2, attrs.getLength());
+    assertEquals( 2, attrs.getLength());
 
     if (attrs.item(0).getNodeName().equalsIgnoreCase("rdf:datatype"))
     {
-      assertEquals("Element rdf:datatype value incorrect", "http://www.w3.org/2001/XMLSchema#string", attrs.item(0).getNodeValue());
-      assertEquals("Element xmlns data value incorrect", "http://purl.org/dc/elements/1.1/", attrs.item(1).getNodeValue());
+      assertEquals( "http://www.w3.org/2001/XMLSchema#string", attrs.item(0).getNodeValue());
+      assertEquals( "http://purl.org/dc/elements/1.1/", attrs.item(1).getNodeValue());
     }
     else if (attrs.item(0).getNodeName().equalsIgnoreCase("xmlns"))
     {
-      assertEquals("Element rdf:datatype value incorrect", "http://www.w3.org/2001/XMLSchema#string", attrs.item(1).getNodeValue());
-      assertEquals("Element xmlns data value incorrect", "http://purl.org/dc/elements/1.1/", attrs.item(0).getNodeValue());
+      assertEquals( "http://www.w3.org/2001/XMLSchema#string", attrs.item(1).getNodeValue());
+      assertEquals( "http://purl.org/dc/elements/1.1/", attrs.item(0).getNodeValue());
     }
     String value = description.getFirstChild().getFirstChild().getNodeValue();
-    assertEquals("Expected value read from DOMHandle incorrect", "Anna\'s Homepage", value);
+    assertEquals( "Anna\'s Homepage", value);
   }
 
   /*
    * This test checks a simple SPARQL DESCRIBE results from named graph in
    * transaction. The database should contain triples from geo-states.n3.
-   * 
+   *
    * The DESCRIBE query should be returning result. Result includes all triples
    * which have the IRI as a subject.
-   * 
+   *
    * Uses Stringhandle
    */
   @Test
-  public void testExecuteDescribeInTransaction() 
+  public void testExecuteDescribeInTransaction()
   {
     System.out.println("In SPARQL Query Manager Test testExecuteDescribeInTransaction method");
     Transaction t = writeclient.openTransaction();
@@ -894,7 +895,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
 
       // Verify result 1 value.
       System.out.println(jsonResults);
-      assertEquals("Method testExecuteDescribeInTransaction size is incorrect for WI", 13, jsonResults.split(" \\.").length);
+      assertEquals( 13, jsonResults.split(" \\.").length);
 
       // Negative test cases.
       // Have Invalid URI
@@ -910,7 +911,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
 
       // Verify result 0 elements exists.
       System.out.println("DESCRIBE with Invalid URI size is : " + jsonBindingsNodes.size());
-      assertEquals("Method testExecuteDescribeInTransaction size is incorrect ", 0, jsonBindingsNodes.size());
+      assertEquals( 0, jsonBindingsNodes.size());
 
       // Have missing enclosing
       StringBuffer sparqlInvalidQuery1 = new StringBuffer().append("DESCRIBE http://www.rdfabout.com/rdf/usgov/geo/us/wi");
@@ -923,7 +924,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
         exception = e.toString();
       }
       System.out.println("Exception thrown from testExecuteDescribeInTransaction is \n" + exception);
-      assertTrue("Test testExecuteDescribeInTransaction method exception is not thrown",
+      assertTrue(
           exception.contains(expectedException));
 
       // Handle the transaction.
@@ -943,13 +944,13 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
    * This test checks a simple SPARQL ASK results from named graph. The database
    * should contain triples from foaf1.nt file. The data format in this file is
    * XML.
-   * 
+   *
    * The ASK query should be returning result in boolean. Expected value True
-   * 
+   *
    * Uses Stringhandle
    */
   @Test
-  public void testExecuteAsk() 
+  public void testExecuteAsk()
   {
     System.out.println("In SPARQL Query Manager Test testExecuteAsk method");
     SPARQLQueryManager sparqlQmgr = readclient.newSPARQLQueryManager();
@@ -962,7 +963,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
 
     // Verify result 1 value.
     System.out.println("Checking for true value in testexecuteAsk method : " + bAskTrue);
-    assertTrue("Method testExecuteAsk result is incorrect. Expected true", bAskTrue);
+    assertTrue( bAskTrue);
 
     StringBuffer sparqlQueryfalse = new StringBuffer().append("PREFIX foaf: <http://xmlns.com/foaf/0.1/>");
     sparqlQueryfalse.append(newline);
@@ -972,7 +973,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
 
     // Verify result 1 value.
     System.out.println("Checking for false value in testExecuteAsk method : " + bAskFalse);
-    assertFalse("Method testExecuteAsk result is incorrect. Expected false", bAskFalse);
+    assertFalse( bAskFalse);
 
     // Negative test case - An empty ASK returns true.
     StringBuffer sparqlQueryEmpty = new StringBuffer().append("PREFIX foaf: <http://xmlns.com/foaf/0.1/>");
@@ -983,18 +984,18 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
 
     // Verify result 1 value.
     System.out.println("Checking for true value in testExecuteAsk method with empty ASK : " + bAskEmpty);
-    assertTrue("Method testExecuteAsk result is incorrect. Expected true for empty ASK query", bAskEmpty);
+    assertTrue( bAskEmpty);
   }
 
   /*
    * This test checks a simple SPARQL ASK results from named graph in a
    * transaction. The database contains triples from rdfxml1.rdf file. The data
    * format in this file is RDFXML.
-   * 
+   *
    * The ASK query should be returning result in boolean.
    */
   @Test
-  public void testExecuteAskInTransactions() 
+  public void testExecuteAskInTransactions()
   {
     System.out.println("In SPARQL Query Manager Test testExecuteAskInTransactions method");
     Transaction t1 = null;
@@ -1012,7 +1013,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
 
       // Verify result.
       System.out.println(bAskNoWrite);
-      assertFalse("Method testExecuteAskInTransactions result is incorrect. No records should be returned.", bAskNoWrite);
+      assertFalse( bAskNoWrite);
 
       // RDFXML "application/rdf+xml". Get the content into FileHandle
       File file = new File(datasource + "rdfxml1.rdf");
@@ -1028,7 +1029,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       // Verify result in t1 transaction.
       boolean bAskInTransT1 = sparqlQmgr.executeAsk(qdef, t1);
       System.out.println(bAskInTransT1);
-      assertTrue("Method testExecuteAskInTransactions result is incorrect. Records should be returned.", bAskInTransT1);
+      assertTrue( bAskInTransT1);
 
       // Thread1 should be blocked due to ML Server holding a write lock on the
       // record and returns false.
@@ -1040,7 +1041,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
 
       boolean bAskTransRolledback = sparqlQmgr.executeAsk(qdef);
       System.out.println(bAskTransRolledback);
-      assertFalse("Method testExecuteAskInTransactions result is incorrect. No records should be returned.", bAskTransRolledback);
+      assertFalse( bAskTransRolledback);
 
       // After rollback. Open another transaction and verify ASK on that
       // transaction.
@@ -1071,7 +1072,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
 
       boolean bAskAfterCommit = sparqlQmgr.executeAsk(qdef);
       System.out.println(bAskAfterCommit);
-      assertTrue("Method testExecuteAskInTransactions result is incorrect. Records should be returned.", bAskAfterCommit);
+      assertTrue( bAskAfterCommit);
 
       // After commit. Open another transaction and verify ASK on that
       // transaction.
@@ -1079,7 +1080,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       // Verify result.
       boolean bAskInAnotherTrans = sparqlQmgr.executeAsk(qdef, tAnother);
       System.out.println(bAskInAnotherTrans);
-      assertTrue("Method testExecuteAskInTransactions result is incorrect. Records should be returned.", bAskInAnotherTrans);
+      assertTrue( bAskInAnotherTrans);
 
       // Handle the transaction.
       tAnother.commit();
@@ -1105,13 +1106,13 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
   /*
    * This test checks if Exceptions are throw when qdef is null. The database
    * should contain triples from geo-states.n3.
-   * 
+   *
    * Expected Result : IllegalArgumentException Exception thrown
-   * 
+   *
    * Uses JacksonHandle
    */
   @Test
-  public void testExecuteSelectQueryNullQDEF() 
+  public void testExecuteSelectQueryNullQDEF()
   {
     System.out.println("In SPARQL Query Manager Test testExecuteSelectQueryNullQDEF method");
     SPARQLQueryManager sparqlQmgr = readclient.newSPARQLQueryManager();
@@ -1124,19 +1125,19 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       exception = e.toString();
     }
     System.out.println("Exception thrown from testExecuteSelectQueryNullQDEF is \n" + exception);
-    assertTrue(" Test testExecuteSelectQueryNullQDEF method exception is not thrown", exception.contains(expectedException));
+    assertTrue( exception.contains(expectedException));
   }
 
   /*
    * This test checks if Exceptions are throw when qdef is empty. The database
    * should contain triples from geo-states.n3.
-   * 
+   *
    * Expected Result : FailedRequestException Exception thrown
-   * 
+   *
    * Uses JacksonHandle
    */
   @Test
-  public void testExecuteEmptySelectQuery() 
+  public void testExecuteEmptySelectQuery()
   {
     System.out.println("In SPARQL Query Manager Test testExecuteEmptySelectQuery method");
     SPARQLQueryManager sparqlQmgr = readclient.newSPARQLQueryManager();
@@ -1152,16 +1153,16 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       exception = e.toString();
     }
     System.out.println("Exception thrown from testExecuteEmptySelectQuery is \n" + exception);
-    assertTrue("Test testExecuteEmptySelectQuery method exception is not thrown", exception.contains(expectedException));
+    assertTrue( exception.contains(expectedException));
   }
 
   /*
    * This test verifies query clauses with OPTIONAL and FILTER keywords on a
    * graph name with multi-byte characters. The database should contain triples
    * from multibyteGraphName graph.
-   * 
+   *
    * Expected Result : 1 solution contaiining person with id 4444
-   * 
+   *
    * Uses StringHandle (XMLReadHandle)
    */
   @Test
@@ -1197,16 +1198,16 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodes = jsonNodesFromStr.path("results").path("bindings");
     // Should have 1 node returned.
     System.out.println("testQueryOnMultibyeGraphName query result size is " + jsonBindingsNodes.size());
-    assertEquals("Result returned from testQueryOnMultibyeGraphName query is incorrect ", 1, jsonBindingsNodes.size());
-    assertEquals("Element person's value incorrect", "http://marklogicsparql.com/id#4444", jsonBindingsNodes.get(0).path("person").path("value").asText());
+    assertEquals( 1, jsonBindingsNodes.size());
+    assertEquals("http://marklogicsparql.com/id#4444", jsonBindingsNodes.get(0).path("person").path("value").asText());
   }
 
   /*
    * This test verifies query clauses with OPTIONAL and FILTER keywords. The
    * database should contain triples from testcustom graph.
-   * 
+   *
    * Expected Result : 1 solution contaiining person with id 4444
-   * 
+   *
    * Uses StringHandle (XMLReadHandle)
    */
   @Test
@@ -1242,18 +1243,18 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodes = jsonNodesFromStr.path("results").path("bindings");
     // Should have 1 node returned.
     System.out.println("testQueryClauseOptionalFilter query result size is " + jsonBindingsNodes.size());
-    assertEquals("Result returned from testQueryClauseOptionalFilter query is incorrect ", 1, jsonBindingsNodes.size());
-    assertEquals("Element person's value incorrect", "http://marklogicsparql.com/id#4444", jsonBindingsNodes.get(0).path("person").path("value").asText());
+    assertEquals( 1, jsonBindingsNodes.size());
+    assertEquals("http://marklogicsparql.com/id#4444", jsonBindingsNodes.get(0).path("person").path("value").asText());
   }
 
   /*
    * This test verifies query definition with bindings on string. The database
    * should contain triples from TestCustomeGraph.
-   * 
+   *
    * Uses JacksonHandle
    */
   @Test
-  public void testQueryBindingsOnString() 
+  public void testQueryBindingsOnString()
   {
     System.out.println("In SPARQL Query Manager Test testQueryBindingString method");
     SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1291,23 +1292,23 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     System.out.println(jsonStrResults);
 
     // Verify the bindings.
-    assertTrue("Bindings Map do not have expected key ", qdef1.getBindings().containsKey("firstname"));
+    assertTrue( qdef1.getBindings().containsKey("firstname"));
 
-    assertEquals("Result count from  testQueryBindingsOnString is incorrect", 1, jsonStrResults.path("results").path("bindings").size());
+    assertEquals( 1, jsonStrResults.path("results").path("bindings").size());
     JsonNode jsonBindingsNodes = jsonStrResults.path("results").path("bindings").get(0);
 
-    assertEquals("Element person's value incorrect", "http://marklogicsparql.com/id#4444", jsonBindingsNodes.path("person").path("value").asText());
+    assertEquals("http://marklogicsparql.com/id#4444", jsonBindingsNodes.path("person").path("value").asText());
   }
 
   /*
    * This test verifies query definition with bindings on string. Verify with
    * withBindings method The database should contain triples from
    * TestCustomeGraph.
-   * 
+   *
    * Uses JacksonHandle
    */
   @Test
-  public void testQueryWithBindingsOnString() 
+  public void testQueryWithBindingsOnString()
   {
     System.out.println("In SPARQL Query Manager Test testQueryWithBindingsOnString method");
     SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1343,12 +1344,12 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     System.out.println(jsonStrResults);
 
     // Verify the bindings.
-    assertTrue("Bindings Map do not have expected key ", qdef1.getBindings().containsKey("firstname"));
+    assertTrue( qdef1.getBindings().containsKey("firstname"));
 
-    assertEquals("Result count from  testQueryWithBindingsOnString is incorrect", 1, jsonStrResults.path("results").path("bindings").size());
+    assertEquals( 1, jsonStrResults.path("results").path("bindings").size());
     JsonNode jsonBindingsNodes = jsonStrResults.path("results").path("bindings").get(0);
 
-    assertEquals("Element person's value incorrect", "http://marklogicsparql.com/id#4444", jsonBindingsNodes.path("person").path("value").asText());
+    assertEquals("http://marklogicsparql.com/id#4444", jsonBindingsNodes.path("person").path("value").asText());
   }
 
   /*
@@ -1357,7 +1358,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
    * TestDateCustomGraph. Verifies Git Issue 378. Uses JacksonHandle
    */
   @Test
-  public void testQueryWithBindingsOnDate() 
+  public void testQueryWithBindingsOnDate()
   {
     System.out.println("In SPARQL Query Manager Test testQueryWithBindingsOnDate method");
     SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1398,22 +1399,22 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     System.out.println(jsonStrResults);
 
     // Verify the bindings.
-    assertTrue("Bindings Map do not have expected key ", qdef1.getBindings().containsKey("bdate"));
+    assertTrue( qdef1.getBindings().containsKey("bdate"));
 
-    assertEquals("Result count from  testQueryWithBindingsOnString is incorrect", 1, jsonStrResults.path("results").path("bindings").size());
+    assertEquals( 1, jsonStrResults.path("results").path("bindings").size());
     JsonNode jsonBindingsNodes = jsonStrResults.path("results").path("bindings").get(0);
 
-    assertEquals("Element person's value incorrect", "http://marklogic.com/baseball/players#7", jsonBindingsNodes.path("person").path("value").asText());
+    assertEquals("http://marklogic.com/baseball/players#7", jsonBindingsNodes.path("person").path("value").asText());
   }
 
   /*
    * This test verifies query definition with bindings on string. The database
    * should contain triples from englishLocale graph.
-   * 
+   *
    * Uses JacksonHandle. Locale language used is en.
    */
   @Test
-  public void testQueryBindingsOnStringWithENLocale() 
+  public void testQueryBindingsOnStringWithENLocale()
   {
     System.out.println("In SPARQL Query Manager Test testQueryBindingsOnStringWithENLocale method");
     SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1455,26 +1456,26 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     System.out.println(jsonStrResults);
 
     // Verify the bindings.
-    assertTrue("Bindings Map do not have expected key ", qdef1.getBindings().containsKey("firstname"));
+    assertTrue( qdef1.getBindings().containsKey("firstname"));
 
-    assertEquals("Result count from  testQueryBindingsOnStringWithENLocale is incorrect", 1, jsonStrResults.path("results").path("bindings").size());
+    assertEquals( 1, jsonStrResults.path("results").path("bindings").size());
     JsonNode jsonBindingsNodes = jsonStrResults.path("results").path("bindings").get(0);
 
-    assertEquals("Element person's value incorrect", "http://marklogicsparql.com/id#4444", jsonBindingsNodes.path("person").path("value").asText());
+    assertEquals("http://marklogicsparql.com/id#4444", jsonBindingsNodes.path("person").path("value").asText());
   }
 
   /*
    * This test verifies query definition with bindings on string with Locale.
    * Verify with withBindings method The database should contain triples from
    * zhlocaleGraphName variable's value.
-   * 
+   *
    * We have Ling in Chinese as 凌 We have Fei in Chinese as 飞
-   * 
+   *
    * We will have these triples in a graph called 北京 (beijing) in Chinese.
    * Uses JacksonHandle
    */
   @Test
-  public void testQueryWithBindingsOnMultiByteString() 
+  public void testQueryWithBindingsOnMultiByteString()
   {
     System.out.println("In SPARQL Query Manager Test testQueryWithBindingsOnMultiByteString method");
     SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1511,22 +1512,22 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     System.out.println(jsonStrResults);
 
     // Verify the bindings.
-    assertTrue("Bindings Map do not have expected key ", qdef1.getBindings().containsKey("firstname"));
+    assertTrue( qdef1.getBindings().containsKey("firstname"));
 
-    assertEquals("Result count from  testQueryWithBindingsOnMultiByteString is incorrect", 1, jsonStrResults.path("results").path("bindings").size());
+    assertEquals( 1, jsonStrResults.path("results").path("bindings").size());
     JsonNode jsonBindingsNodes = jsonStrResults.path("results").path("bindings").get(0);
 
-    assertEquals("Element person's value incorrect", "http://marklogicsparql.com/id#4444", jsonBindingsNodes.path("person").path("value").asText());
+    assertEquals("http://marklogicsparql.com/id#4444", jsonBindingsNodes.path("person").path("value").asText());
   }
 
   /*
    * This test verifies query definition with bindings on integer. The database
    * should contain triples from TestCustomeGraph.
-   * 
+   *
    * Uses JacksonHandle
    */
   @Test
-  public void testQueryBindingsOnInteger() 
+  public void testQueryBindingsOnInteger()
   {
     System.out.println("In SPARQL Query Manager Test testQueryBindingsOnInteger method");
     SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1566,18 +1567,18 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     System.out.println(jsonStrResults);
 
     // Verify the bindings.
-    assertTrue("Bindings Map do not have expected key ", qdef1.getBindings().containsKey("cost"));
-    assertEquals("Result count from  testQueryBindingsOnInteger is incorrect", 8, jsonStrResults.path("results").path("bindings").size());
+    assertTrue( qdef1.getBindings().containsKey("cost"));
+    assertEquals( 8, jsonStrResults.path("results").path("bindings").size());
   }
 
   /*
    * This test verifies ASK query definition with bindings on multiple string
    * values. The database should contain triples from TestCustomeGraph.
-   * 
+   *
    * Expected return : true Uses JacksonHandle
    */
   @Test
-  public void testQueryBindingsAskOnStrings() 
+  public void testQueryBindingsAskOnStrings()
   {
     System.out.println("In SPARQL Query Manager Test testQueryBindingsAskOnStrings method");
     SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1618,18 +1619,18 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode jsonStrResults = sparqlQmgr.executeSelect(qdef1, new JacksonHandle()).get();
     System.out.println(jsonStrResults);
     // Verify the bindings.
-    assertEquals("Bindings Map do not have expected number of values ", 1, qdef1.getBindings().entrySet().size());
-    assertEquals("Result count from  testQueryBindingsAskOnStrings is incorrect", "true", jsonStrResults.path("boolean").asText());
+    assertEquals( 1, qdef1.getBindings().entrySet().size());
+    assertEquals( "true", jsonStrResults.path("boolean").asText());
   }
 
   /*
    * This test verifies query definition with bindings on string variable with
    * null value. The database should contain triples from TestCustomeGraph.
-   * 
+   *
    * Expected result : IllegalArgumentException Uses JacksonHandle
    */
   @Test
-  public void testQueryBindingsNullString() 
+  public void testQueryBindingsNullString()
   {
     System.out.println("In SPARQL Query Manager Test testQueryBindingsNullString method");
     SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1669,18 +1670,18 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       exception = e.toString();
     }
     System.out.println("Exception thrown from testQueryBindingsNullString is \n" + exception);
-    assertTrue("Test testQueryBindingsNullString method exception is not thrown", exception.contains(expectedException));
+    assertTrue( exception.contains(expectedException));
   }
 
   /*
    * This test verifies query definition with bindings on string. The database
    * should contain triples from TestCustomeGraph.
-   * 
+   *
    * Expected result : SPARQL considers that there is no binding and all results
    * are returned. Uses JacksonHandle
    */
   @Test
-  public void testQueryBindingsDifferentVariableName() 
+  public void testQueryBindingsDifferentVariableName()
   {
     System.out.println("In SPARQL Query Manager Test testQueryBindingsDifferentVariableName method");
     SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1720,31 +1721,31 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     System.out.println(jsonStrResults);
 
     // Verify the bindings.
-    assertTrue("Bindings Map do not have expected key ", qdef1.getBindings().containsKey("blahblah"));
+    assertTrue( qdef1.getBindings().containsKey("blahblah"));
 
-    assertEquals("Result count from  testQueryBindingsDifferentVariableName is incorrect", 8, jsonStrResults.path("results").path("bindings").size());
+    assertEquals( 8, jsonStrResults.path("results").path("bindings").size());
     JsonNode jsonBindingsNodes = jsonStrResults.path("results").path("bindings");
     // The results are ordered.
-    assertEquals("First person's value incorrect", "http://marklogicsparql.com/id#3333", jsonBindingsNodes.get(0).path("person").path("value").asText());
-    assertEquals("Second person's value incorrect", "http://marklogicsparql.com/id#5555", jsonBindingsNodes.get(1).path("person").path("value").asText());
-    assertEquals("Third person's value incorrect", "http://marklogicsparql.com/id#1111", jsonBindingsNodes.get(2).path("person").path("value").asText());
-    assertEquals("Fourth person's value incorrect", "http://marklogicsparql.com/id#6666", jsonBindingsNodes.get(3).path("person").path("value").asText());
-    assertEquals("Fifth person's value incorrect", "http://marklogicsparql.com/id#8888", jsonBindingsNodes.get(4).path("person").path("value").asText());
-    assertEquals("Sixth person's value incorrect", "http://marklogicsparql.com/id#4444", jsonBindingsNodes.get(5).path("person").path("value").asText());
-    assertEquals("Seventh person's value incorrect", "http://marklogicsparql.com/id#7777", jsonBindingsNodes.get(6).path("person").path("value").asText());
-    assertEquals("Eighth person's value incorrect", "http://marklogicsparql.com/id#2222", jsonBindingsNodes.get(7).path("person").path("value").asText());
+    assertEquals("http://marklogicsparql.com/id#3333", jsonBindingsNodes.get(0).path("person").path("value").asText());
+    assertEquals("http://marklogicsparql.com/id#5555", jsonBindingsNodes.get(1).path("person").path("value").asText());
+    assertEquals("http://marklogicsparql.com/id#1111", jsonBindingsNodes.get(2).path("person").path("value").asText());
+    assertEquals( "http://marklogicsparql.com/id#6666", jsonBindingsNodes.get(3).path("person").path("value").asText());
+    assertEquals( "http://marklogicsparql.com/id#8888", jsonBindingsNodes.get(4).path("person").path("value").asText());
+    assertEquals( "http://marklogicsparql.com/id#4444", jsonBindingsNodes.get(5).path("person").path("value").asText());
+    assertEquals( "http://marklogicsparql.com/id#7777", jsonBindingsNodes.get(6).path("person").path("value").asText());
+    assertEquals( "http://marklogicsparql.com/id#2222", jsonBindingsNodes.get(7).path("person").path("value").asText());
   }
 
   /*
    * This test verifies query definition with bindings on SPARQL Update query
    * with integer data type. The database should contain triples from
    * TestCustomeGraph.
-   * 
+   *
    * Expected result : Id should have 30 in query results returned. Uses
    * JacksonHandle
    */
   @Test
-  public void testSparqlUpdateInsertDataBinding() 
+  public void testSparqlUpdateInsertDataBinding()
   {
     System.out.println("In SPARQL Query Manager Test testSparqlUpdateInsertDataBinding method");
     SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1799,10 +1800,10 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodes = sparqlQmgr.executeSelect(qdef1, new JacksonHandle()).get().path("results").path("bindings").get(0);
 
     // Should have 1 nodes returned.
-    assertEquals("Number of nodes returned from testSparqlUpdateInsertDataBinding method after query is incorrect", 3, jsonBindingsNodes.size());
-    assertEquals("Subject is incorrect", "http://marklogic.com/baseball/players#35", jsonBindingsNodes.path("s").path("value").asText());
-    assertEquals("Predicate is incorrect", "http://marklogic.com/baseball/players#playerid", jsonBindingsNodes.path("p").path("value").asText());
-    assertEquals("Object is incorrect", "30", jsonBindingsNodes.path("o").path("value").asText());
+    assertEquals( 3, jsonBindingsNodes.size());
+    assertEquals( "http://marklogic.com/baseball/players#35", jsonBindingsNodes.path("s").path("value").asText());
+    assertEquals( "http://marklogic.com/baseball/players#playerid", jsonBindingsNodes.path("p").path("value").asText());
+    assertEquals( "30", jsonBindingsNodes.path("o").path("value").asText());
 
     // Verify BaseURI - Insert triples with valid URI
     SPARQLQueryDefinition qdef2 = sparqlQmgr.newQueryDefinition(queryInsStr.toString());
@@ -1821,10 +1822,10 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodes21 = sparqlQmgr.executeSelect(qdefValid, new JacksonHandle()).get().path("results").path("bindings").get(0);
 
     // Should have 1 nodes returned.
-    assertEquals("Number of nodes returned from testSparqlUpdateInsertDataBinding method after query is incorrect", 3, jsonBindingsNodes21.size());
-    assertEquals("Subject is incorrect", "http://marklogic.com/baseball/players#35", jsonBindingsNodes21.path("s").path("value").asText());
-    assertEquals("Predicate is incorrect", "http://marklogic.com/baseball/players#playerid", jsonBindingsNodes21.path("p").path("value").asText());
-    assertEquals("Object is incorrect", "30", jsonBindingsNodes21.path("o").path("value").asText());
+    assertEquals( 3, jsonBindingsNodes21.size());
+    assertEquals( "http://marklogic.com/baseball/players#35", jsonBindingsNodes21.path("s").path("value").asText());
+    assertEquals( "http://marklogic.com/baseball/players#playerid", jsonBindingsNodes21.path("p").path("value").asText());
+    assertEquals( "30", jsonBindingsNodes21.path("o").path("value").asText());
 
     // Verify with base URI set to null;
     SPARQLQueryDefinition qdefNull = sparqlQmgr.newQueryDefinition(queryInsStr.toString());
@@ -1843,7 +1844,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodesNull = sparqlQmgr.executeSelect(qdefNullExeSel, new JacksonHandle()).get().path("results").path("bindings").get(0);
 
     // Zero nodes returned.
-    assertNull("Number of nodes returned from testSparqlUpdateInsertDataBinding method after query is incorrect", jsonBindingsNodesNull);
+    assertNull( jsonBindingsNodesNull);
 
     // Verify with base URI set to empty;
     SPARQLQueryDefinition qdefEmpty = sparqlQmgr.newQueryDefinition(queryInsStr.toString());
@@ -1867,7 +1868,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       exception = e.toString();
     }
     System.out.println(exception);
-    assertTrue("Test testSparqlUpdateInsertDataBinding: Exception is not thrown when Base URI is empty", exception.contains(expectedException));
+    assertTrue( exception.contains(expectedException));
 
     String multibyteName = new String("万里长城");
     // Verify BaseURI - Insert triples with valid base URI containing MB string
@@ -1888,22 +1889,22 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodesMB = sparqlQmgr.executeSelect(qdefValidMB, new JacksonHandle()).get().path("results").path("bindings").get(0);
 
     // Should have 1 nodes returned.
-    assertEquals("Number of nodes returned from testSparqlUpdateInsertDataBinding method after query is incorrect", 3, jsonBindingsNodesMB.size());
-    assertEquals("Subject is incorrect", "http://marklogic.com/baseball/players#35", jsonBindingsNodesMB.path("s").path("value").asText());
-    assertEquals("Predicate is incorrect", "http://marklogic.com/baseball/players#playerid", jsonBindingsNodesMB.path("p").path("value").asText());
-    assertEquals("Object is incorrect", "30", jsonBindingsNodesMB.path("o").path("value").asText());
+    assertEquals( 3, jsonBindingsNodesMB.size());
+    assertEquals( "http://marklogic.com/baseball/players#35", jsonBindingsNodesMB.path("s").path("value").asText());
+    assertEquals( "http://marklogic.com/baseball/players#playerid", jsonBindingsNodesMB.path("p").path("value").asText());
+    assertEquals( "30", jsonBindingsNodesMB.path("o").path("value").asText());
 
   }
 
   /*
    * This test verifies query definition bindings on SPARQL UPDATE command. The
    * test inserts a graph with triples and then verifies the binding value.
-   * 
+   *
    * Expected result : IllegalArgumentException and Invalid parameter: Bind
    * variable type parameter requires XSD type message Uses JacksonHandle
    */
   @Test
-  public void testQueryBindingsIncorrectDataType() 
+  public void testQueryBindingsIncorrectDataType()
   {
     System.out.println("In SPARQL Query Manager Test testQueryBindingsIncorrectDataType method");
     SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1947,8 +1948,8 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       exception = e.toString();
     }
     System.out.println("Exception thrown from testQueryBindingsIncorrectDataType is \n" + exception);
-    assertTrue("Test testQueryBindingsIncorrectDataType method exception is not thrown", exception.contains(expectedException));
-    assertTrue("Message Incorrect", exception.contains("Invalid cast: \"Ling\" cast as xs:dateTime"));
+    assertTrue( exception.contains(expectedException));
+    assertTrue( exception.contains("Invalid cast: \"Ling\" cast as xs:dateTime"));
   }
 
   /*
@@ -1956,15 +1957,15 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
    * validates SPARQL EXISTS. The test creates an empty graph first, INSERTS
    * DATA, checks for EXISTS and then tries create it again with SILENT option
    * enabled and disabled.
-   * 
+   *
    * Expected Result : When SILENT disabled error reported, if same graph is
    * created again. When SILENT enabled no error reported, if same graph is
    * created again.
-   * 
+   *
    * Uses JacksonHandle
    */
   @Test
-  public void testExecuteUpdateCreateSilent() 
+  public void testExecuteUpdateCreateSilent()
   {
     System.out.println("In SPARQL Query Manager Test testExecuteUpdateCreateSilent method");
     // Form a query
@@ -2030,12 +2031,12 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
 
     // Should have 1 node returned.
-    assertEquals("One result not returned from testExecuteUpdateCreateSilent method ", 1, jsonBindingsNodes.size());
+    assertEquals( 1, jsonBindingsNodes.size());
     Iterator<JsonNode> nameNodesItr = jsonBindingsNodes.elements();
     JsonNode jsonPersonNode = null;
     if (nameNodesItr.hasNext()) {
       jsonPersonNode = nameNodesItr.next();
-      assertEquals("Exist query solution returned is incorrect", "http://example.org/alice", jsonPersonNode.path("person").path("value").asText());
+      assertEquals( "http://example.org/alice", jsonPersonNode.path("person").path("value").asText());
     }
     qdef = null;
 
@@ -2051,7 +2052,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       exception = e.toString();
     }
     System.out.println(exception);
-    assertTrue("Test testExecuteUpdateCreateSilent exception is not thrown", exception.contains(expectedException));
+    assertTrue( exception.contains(expectedException));
 
     qdef = null;
 
@@ -2069,7 +2070,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       exceptionSilent = e.toString();
     }
 
-    assertTrue("Test testExecuteUpdateCreateSilent exception is not thrown", exceptionSilent.equals(expectedSilentException));
+    assertTrue( exceptionSilent.equals(expectedSilentException));
     qdef = null;
 
     // Verify the EXISTS again. Should have one solution returned.
@@ -2080,13 +2081,13 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodesSilent = jsonResultsSil.path("results").path("bindings");
 
     // Should have 1 node returned.
-    assertEquals("One result not returned from testExecuteUpdateCreateSilent method ", 1, jsonBindingsNodesSilent.size());
+    assertEquals( 1, jsonBindingsNodesSilent.size());
 
     Iterator<JsonNode> nameNodesSilentItr = jsonBindingsNodesSilent.elements();
     JsonNode jsonPersonNodeSilent = null;
     if (nameNodesSilentItr.hasNext()) {
       jsonPersonNodeSilent = nameNodesSilentItr.next();
-      assertEquals("Exist query solution returned is incorrect", "http://example.org/alice", jsonPersonNodeSilent.path("person").path("value").asText());
+      assertEquals( "http://example.org/alice", jsonPersonNodeSilent.path("person").path("value").asText());
     }
   }
 
@@ -2094,15 +2095,15 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
    * This test verifies sparql update DROP GRAPH. The test tries to DROP an
    * non-existent graph first, CREATES a NAMED GRAPH, INSERTS DATA, and then
    * tries drop it. DROP with SILENT option is tested.
-   * 
+   *
    * Expected Result : When SILENT disabled error reported, if non existent
    * graph is dropped. When SILENT enabled no error reported, if non existent
    * graph is dropped.
-   * 
+   *
    * Uses StringHandle (XMLReadHandle)
    */
   @Test
-  public void testExecuteUpdateDropSilent() 
+  public void testExecuteUpdateDropSilent()
   {
     System.out.println("In SPARQL Query Manager Test testExecuteUpdateDropSilent method");
     SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -2121,7 +2122,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       exception = e.toString();
     }
     System.out.println(exception);
-    assertTrue("Test testExecuteUpdateDropSilent exception is not thrown", exception.contains(expectedException));
+    assertTrue( exception.contains(expectedException));
 
     qdef = null;
 
@@ -2144,13 +2145,13 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     } catch (Exception e) {
       exception = e.toString();
     }
-    assertTrue("Test testExecuteUpdateDropSilent exception is thrown", exceptionNamed.equals(expectedNamedException));
+    assertTrue( exceptionNamed.equals(expectedNamedException));
   }
 
   /*
    * This test verifies read and write of Triples within transactions using
    * executeUpdate method.
-   * 
+   *
    * Insert data ina transaction using write client. Read using read client
    * outside - No results should be returned. Read using write client within
    * transaction (transaction object passed in) - Should have results. Read
@@ -2160,7 +2161,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
    * client. - Both returns data. Uses JacksonHandle.
    */
   @Test
-  public void testExecuteUpdateInTransactions() 
+  public void testExecuteUpdateInTransactions()
   {
     System.out.println("In SPARQL Query Manager Test testExecuteUpdateInTransactions method");
     Transaction tWrite = null;
@@ -2184,7 +2185,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
 
       // Should have 0 nodes returned.
-      assertEquals("No result should have returned from testExecuteUpdateInTransactions method on read client", 0, jsonBindingsNodes.size());
+      assertEquals( 0, jsonBindingsNodes.size());
       jsonResults = null;
       jsonBindingsNodes = null;
 
@@ -2195,7 +2196,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       jsonBindingsNodes = jsonResults.path("results").path("bindings");
 
       // Should have 1 nodes returned.
-      assertEquals("Result should have been returned from testExecuteUpdateInTransactions method ", 1, jsonBindingsNodes.size());
+      assertEquals( 1, jsonBindingsNodes.size());
       jsonResults = null;
       jsonBindingsNodes = null;
 
@@ -2205,7 +2206,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       jsonBindingsNodes = jsonResults.path("results").path("bindings");
 
       // Should have 0 nodes returned.
-      assertEquals("No result should have returned from testExecuteUpdateInTransactions method ", 0, jsonBindingsNodes.size());
+      assertEquals( 0, jsonBindingsNodes.size());
       jsonResults = null;
       jsonBindingsNodes = null;
 
@@ -2218,7 +2219,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       jsonBindingsNodes = jsonResults.path("results").path("bindings");
 
       // Should have 0 nodes returned.
-      assertEquals("No result should have returned from testExecuteUpdateInTransactions method ", 0, jsonBindingsNodes.size());
+      assertEquals( 0, jsonBindingsNodes.size());
       jsonResults = null;
       jsonBindingsNodes = null;
       tWrite = writeclient.openTransaction();
@@ -2234,10 +2235,10 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       jsonBindingsNodes = jsonResults.path("results").path("bindings");
 
       // Should have 1 nodes returned.
-      assertEquals("Result should have returned from testExecuteUpdateInTransactions method after commit for read client", 1, jsonBindingsNodes.size());
-      assertEquals("Value Data from read client is incorrect", "Bob", jsonBindingsNodes.get(0).path("s").path("value").asText());
-      assertEquals("Value Data from read client is incorrect", "LivesIn", jsonBindingsNodes.get(0).path("p").path("value").asText());
-      assertEquals("Value Data from read client is incorrect", "London", jsonBindingsNodes.get(0).path("o").path("value").asText());
+      assertEquals( 1, jsonBindingsNodes.size());
+      assertEquals( "Bob", jsonBindingsNodes.get(0).path("s").path("value").asText());
+      assertEquals( "LivesIn", jsonBindingsNodes.get(0).path("p").path("value").asText());
+      assertEquals( "London", jsonBindingsNodes.get(0).path("o").path("value").asText());
       jsonResults = null;
       jsonBindingsNodes = null;
 
@@ -2247,10 +2248,10 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       jsonBindingsNodes = jsonResults.path("results").path("bindings");
 
       // Should have 1 nodes returned.
-      assertEquals("Result should have been returned from testExecuteUpdateInTransactions method after commit for write client", 1, jsonBindingsNodes.size());
-      assertEquals("Value Data from read client is incorrect", "Bob", jsonBindingsNodes.get(0).path("s").path("value").asText());
-      assertEquals("Value Data from read client is incorrect", "LivesIn", jsonBindingsNodes.get(0).path("p").path("value").asText());
-      assertEquals("Value Data from read client is incorrect", "London", jsonBindingsNodes.get(0).path("o").path("value").asText());
+      assertEquals( 1, jsonBindingsNodes.size());
+      assertEquals( "Bob", jsonBindingsNodes.get(0).path("s").path("value").asText());
+      assertEquals( "LivesIn", jsonBindingsNodes.get(0).path("p").path("value").asText());
+      assertEquals( "London", jsonBindingsNodes.get(0).path("o").path("value").asText());
       tWrite = null;
 
       // Execute a write with Read Client to validate the error message.
@@ -2266,8 +2267,8 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
         exception = e.toString();
       }
       System.out.println(exception);
-      assertTrue("Test testExecuteUpdateInTransactions method exception is not thrown", exception.contains(expectedException));
-      assertTrue("Test testExecuteUpdateInTransactions method exception is not thrown", exception.contains(localMessage));
+      assertTrue( exception.contains(expectedException));
+      assertTrue( exception.contains(localMessage));
     } catch (Exception ex) {
       tWrite = null;
       throw ex;
@@ -2281,7 +2282,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
   /*
    * This test verifies set and get methods on SPARQLQueryDefinition class. Do a
    * COPY GRAPH and verify if values set on the original and copied Graph
-   * 
+   *
    * Uses StringHandle (XMLReadHandle)
    */
   @Test
@@ -2315,11 +2316,11 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
 
     // Verify SPARQLQueryDefinition get methods.
     for (String collections : qdef.getCollections())
-      assertTrue("QueryDefinition Collections incorrectlty set ", collections.contains("my-collections1") || collections.contains("my-collections2"));
-    assertEquals("QueryDefinition Directory incorrectlty set ", "my-Directory", qdef.getDirectory());
-    assertNull("QueryDefinition DefaultRulesets incorrectlty set. Should be Null.", qdef.getIncludeDefaultRulesets());
-    assertTrue("QueryDefinition Bindings incorrectlty set. Should be Empty.", qdef.getBindings().isEmpty());
-    assertNull("QueryDefinition Options incorrectlty set. Should be Null.", qdef.getOptionsName());
+      assertTrue( collections.contains("my-collections1") || collections.contains("my-collections2"));
+    assertEquals( "my-Directory", qdef.getDirectory());
+    assertNull( qdef.getIncludeDefaultRulesets());
+    assertTrue( qdef.getBindings().isEmpty());
+    assertNull( qdef.getOptionsName());
 
     // Now read the graph back using GraphManager and Check Permissions.
     StringHandle graphStr = graphManagerPerm.read("OriginalGraph", new StringHandle());
@@ -2336,17 +2337,17 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     }
     System.out.println("Returned permissions from OriginalGraph : " + stringPermissions);
 
-    assertTrue("Document permissions difference in size value", stringPermissions.contains("size:5"));
-    assertTrue("Document permissions difference in harmonized-updater permission", stringPermissions.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", stringPermissions.contains("harmonized-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-reader permission", stringPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", stringPermissions.contains("rest-writer:[UPDATE]"));
-    assertTrue("Document permissions difference in sem-query-role permission", stringPermissions.contains("sem-query-role:"));
+    assertTrue( stringPermissions.contains("size:5"));
+    assertTrue( stringPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( stringPermissions.contains("harmonized-reader:[READ]"));
+    assertTrue( stringPermissions.contains("rest-reader:[READ]"));
+    assertTrue( stringPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue( stringPermissions.contains("sem-query-role:"));
     // sem-query-role:[UPDATE, EXECUTE] --> Order of UPDATE, EXECUTE not
     // certain. Split on role, then pipe char and replace trailing ]
     // Better way?
     String capab = stringPermissions.split("sem-query-role:\\[")[1].split("\\|")[0].replace("]", "");
-    assertTrue("Document permissions difference in sem-query-role permission", capab.contains("UPDATE, EXECUTE") || capab.contains("EXECUTE, UPDATE"));
+    assertTrue( capab.contains("UPDATE, EXECUTE") || capab.contains("EXECUTE, UPDATE"));
 
     // Insert data into OriginalGraph.
     StringBuffer sparqlInsertData = new StringBuffer().append("PREFIX : <http://example.org/>");
@@ -2399,22 +2400,22 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
 
     System.out.println("Returned permissions from Copy graph is : " + stringPermissionsCopy);
 
-    assertTrue("Document permissions difference in size value", stringPermissions.contains("size:5"));
-    assertTrue("Document permissions difference in harmonized-updater permission", stringPermissionsCopy.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", stringPermissionsCopy.contains("harmonized-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-reader permission", stringPermissionsCopy.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", stringPermissionsCopy.contains("rest-writer:[UPDATE]"));
+    assertTrue( stringPermissions.contains("size:5"));
+    assertTrue( stringPermissionsCopy.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( stringPermissionsCopy.contains("harmonized-reader:[READ]"));
+    assertTrue( stringPermissionsCopy.contains("rest-reader:[READ]"));
+    assertTrue( stringPermissionsCopy.contains("rest-writer:[UPDATE]"));
 
     // Better way?
     String capabCpy = stringPermissionsCopy.split("sem-query-role:\\[")[1].split("\\|")[0].replace("]", "");
-    assertTrue("Document permissions difference in sem-query-role permission", capabCpy.contains("UPDATE, EXECUTE") || capabCpy.contains("EXECUTE, UPDATE"));
+    assertTrue( capabCpy.contains("UPDATE, EXECUTE") || capabCpy.contains("EXECUTE, UPDATE"));
 
     // Validate the meta data through DocumentMetadataHandle also.
     TextDocumentManager docMgr = readclient.newTextDocumentManager();
     DocumentMetadataHandle mhRead = new DocumentMetadataHandle();
     DocumentPage page = docMgr.read("CopiedGraph");
 
-    assertTrue("DocumentPage Size did not return expected value:: returned ==  " + page.size(), page.size() == 1);
+    assertTrue(page.size() == 1);
 
     while (page.hasNext()) {
       DocumentRecord rec = page.next();
@@ -2426,28 +2427,28 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
       DocumentCollections collections = mhRead.getCollections();
 
       // Properties - None.
-      assertTrue("Document properties difference in size value", properties.size() == 0);
+      assertTrue( properties.size() == 0);
 
       // Permissions
       String actualPermissions = getDocumentPermissionsString(permissions);
       System.out.println("Returned permissions from DocumentMetadataHandle : " + actualPermissions);
 
-      assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
-      assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-      assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
-      assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-      assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
+      assertTrue( actualPermissions.contains("size:5"));
+      assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+      assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
+      assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+      assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
       // Better way?
       String capabAct = actualPermissions.split("sem-query-role:\\[")[1].split("\\|")[0].replace("]", "");
-      assertTrue("Document permissions difference in sem-query-role permission", capabAct.contains("UPDATE, EXECUTE") || capabAct.contains("EXECUTE, UPDATE"));
+      assertTrue( capabAct.contains("UPDATE, EXECUTE") || capabAct.contains("EXECUTE, UPDATE"));
 
       // Collections
       String actualCollections = getDocumentCollectionsString(collections);
       System.out.println("Returned collections: " + actualCollections);
 
-      assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
-      assertTrue("Semantic Graphs not found in collections", actualCollections.contains("http://marklogic.com/semantics#graphs"));
-      assertTrue("CopiedGraph not found in collections", actualCollections.contains("CopiedGraph"));
+      assertTrue( actualCollections.contains("size:2"));
+      assertTrue( actualCollections.contains("http://marklogic.com/semantics#graphs"));
+      assertTrue( actualCollections.contains("CopiedGraph"));
     }
     // Release resources.
     deleteRESTUser("sem-query-user");
@@ -2457,12 +2458,12 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
 
   /*
    * This test verifies MarkLogic Java API support for Inference and Ruleset.
-   * 
+   *
    * No default ruleset, no inference triples Add one ruleset, verify inference
    * triples Add two rulesets, verify inference triples
    */
   @Test
-  public void testInferenceAndRuleSet() 
+  public void testInferenceAndRuleSet()
   {
     System.out.println("In SPARQL Query Manager Test testInferenceAndRuleSet method");
     SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -2490,7 +2491,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodes18 = jsonResults18.path("results").path("bindings");
 
     // Should have 18 nodes returned. No inference triples returned.
-    assertEquals("18 results not returned from testInferenceAndRuleSet method ", 18, jsonBindingsNodes18.size());
+    assertEquals( 18, jsonBindingsNodes18.size());
     qdef = null;
     jacksonHandle = null;
 
@@ -2499,9 +2500,9 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     qdef.setRulesets(SPARQLRuleset.SUBCLASS_OF);
     qdef.setIncludeDefaultRulesets(true);
     qdef.setSparql(sparqlInferQuery.toString());
-    assertEquals("One Ruleset should have been returned from testInferenceAndRuleSet method ", 1, qdef.getRulesets().length);
+    assertEquals( 1, qdef.getRulesets().length);
     SPARQLRuleset[] rulesets = qdef.getRulesets();
-    assertEquals("Ruleset name returned from testInferenceAndRuleSet method is incorrect", "subClassOf.rules", rulesets[0].getName());
+    assertEquals( "subClassOf.rules", rulesets[0].getName());
 
     // Execute with default Rulesets enabled. - We need to get Inference triples
     // now.
@@ -2510,7 +2511,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode jsonResultsSubClass = sparqlQmgr.executeSelect(qdef, jacksonHandle).get();
 
     // Should have 31 nodes returned.
-    assertEquals("31 results not returned from testInferenceAndRuleSet method ", 31, jsonResultsSubClass.path("results").path("bindings").size());
+    assertEquals( 31, jsonResultsSubClass.path("results").path("bindings").size());
 
     // Enable two rulesets
     qdef = null;
@@ -2522,30 +2523,30 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     qdef.setRulesets(SPARQLRuleset.SUBCLASS_OF, SPARQLRuleset.SUBPROPERTY_OF);
     qdef.setIncludeDefaultRulesets(true);
     qdef.setSparql(sparqlInferQuery.toString());
-    assertEquals("Two Rulesets should have been returned from testInferenceAndRuleSet method ", 2, qdef.getRulesets().length);
+    assertEquals( 2, qdef.getRulesets().length);
     // Have an ordered collection.
     Collection<SPARQLRuleset> list = Arrays.asList(qdef.getRulesets());
     // Iterate over the list two times. Items more or less, would have asserted
     // by now.
     Iterator<SPARQLRuleset> itr = list.iterator();
-    assertEquals("First Ruleset name from testInferenceAndRuleSet is incorrect", "subClassOf.rules", itr.next().getName());
-    assertEquals("Second Ruleset name from testInferenceAndRuleSet is incorrect", "subPropertyOf.rules", itr.next().getName());
+    assertEquals( "subClassOf.rules", itr.next().getName());
+    assertEquals( "subPropertyOf.rules", itr.next().getName());
     jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
     JsonNode jsonResultsTwoRules = sparqlQmgr.executeSelect(qdef, jacksonHandle).get();
 
     // Should have 44 nodes returned.
-    assertEquals("44 results not returned from testInferenceAndRuleSet method ", 44, jsonResultsTwoRules.path("results").path("bindings").size());
+    assertEquals( 44, jsonResultsTwoRules.path("results").path("bindings").size());
   }
 
   /*
    * This test verifies setConstrainingQueryDefinition method on
    * SPARQLQueryDefinition class.
-   * 
+   *
    * Uses JacksonHandle
    */
   @Test
-  public void testConstrainingQuery() 
+  public void testConstrainingQuery()
   {
     System.out.println("In SPARQL Query Manager Test testConstrainingQuery method");
     SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -2594,9 +2595,9 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode jsonBindings = jsonStrResults.path("results").path("bindings").get(0);
 
     // Verify the results.
-    assertEquals("Result value from  testConstrainingQuery is incorrect", "http://marklogicsparql.com/id#6666", jsonBindings.path("person").path("value").asText());
-    assertEquals("Result fn from  testConstrainingQuery is incorrect", "Lei", jsonBindings.path("fn").path("value").asText());
-    assertEquals("Result lastname from  testConstrainingQuery is incorrect", "Pei", jsonBindings.path("lastname").path("value").asText());
+    assertEquals( "http://marklogicsparql.com/id#6666", jsonBindings.path("person").path("value").asText());
+    assertEquals( "Lei", jsonBindings.path("fn").path("value").asText());
+    assertEquals( "Pei", jsonBindings.path("lastname").path("value").asText());
   }
 
   /*
@@ -2606,7 +2607,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
    * JacksonHandle
    */
   @Test
-  public void testConstrainingQueryNull() 
+  public void testConstrainingQueryNull()
   {
     System.out.println("In SPARQL Query Manager Test testConstrainingQueryNull method");
     SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -2653,10 +2654,10 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode jsonBindings = jsonStrResults.path("results").path("bindings");
 
     // Verify the results. Returns results.
-    assertEquals("Result size from  testConstrainingQueryNull is incorrect", 1, jsonBindings.size());
-    assertEquals("Result value from  testConstrainingQueryNull is incorrect", "http://marklogicsparql.com/id#6666", jsonBindings.get(0).path("person").path("value").asText());
-    assertEquals("Result fn from  testConstrainingQueryNull is incorrect", "Lei", jsonBindings.get(0).path("fn").path("value").asText());
-    assertEquals("Result lastname from  testConstrainingQueryNull is incorrect", "Pei", jsonBindings.get(0).path("lastname").path("value").asText());
+    assertEquals( 1, jsonBindings.size());
+    assertEquals( "http://marklogicsparql.com/id#6666", jsonBindings.get(0).path("person").path("value").asText());
+    assertEquals( "Lei", jsonBindings.get(0).path("fn").path("value").asText());
+    assertEquals( "Pei", jsonBindings.get(0).path("lastname").path("value").asText());
 
     SPARQLQueryDefinition qdef1 = sparqlQmgr.newQueryDefinition(queryStr.toString()).withConstrainingQuery(strquerydef);
     // Parsing results using JsonNode.
@@ -2666,16 +2667,16 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode jsonBindings1 = jsonStrResults1.path("results").path("bindings");
 
     // Verify the results. Returns No results.
-    assertEquals("Result size from  testConstrainingQueryNull is incorrect", 0, jsonBindings1.size());
+    assertEquals( 0, jsonBindings1.size());
   }
 
   /*
    * This test verifies SPARQL query with cts:contains
-   * 
+   *
    * Uses JacksonHandle
    */
   @Test
-  public void testSparqlQueryCtsContains() 
+  public void testSparqlQueryCtsContains()
   {
     System.out.println("In SPARQL Query Manager Test testSparqlQueryCtsContains method");
     SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -2714,11 +2715,11 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode jsonBindings2 = jsonStrResults.path("results").path("bindings").get(1);
 
     // Verify the results.
-    assertEquals("Result 1 value from  testSparqlQueryCtsContains is incorrect", "http://marklogicsparql.com/id#6666", jsonBindings1.path("person").path("value").asText());
-    assertEquals("Result 1 lastname from  testSparqlQueryCtsContains is incorrect", "Pei", jsonBindings1.path("lastname").path("value").asText());
+    assertEquals( "http://marklogicsparql.com/id#6666", jsonBindings1.path("person").path("value").asText());
+    assertEquals( "Pei", jsonBindings1.path("lastname").path("value").asText());
 
-    assertEquals("Result 2 value from  testSparqlQueryCtsContains is incorrect", "http://marklogicsparql.com/id#4444", jsonBindings2.path("person").path("value").asText());
-    assertEquals("Result 2 lastname from  testSparqlQueryCtsContains is incorrect", "Ling", jsonBindings2.path("lastname").path("value").asText());
+    assertEquals( "http://marklogicsparql.com/id#4444", jsonBindings2.path("person").path("value").asText());
+    assertEquals( "Ling", jsonBindings2.path("lastname").path("value").asText());
   }
 
   /*
@@ -2760,11 +2761,11 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
 
     // Should have 4 nodes returned.
-    assertEquals("Result should have been returned from testNamedExecuteSelectQuery method after commit for write client", 4, jsonBindingsNodes.size());
-    assertEquals("Value Data from read client is incorrect", "Ling", jsonBindingsNodes.get(0).path("name").path("value").asText());
-    assertEquals("Value Data from read client is incorrect", "Ling", jsonBindingsNodes.get(1).path("name").path("value").asText());
-    assertEquals("Value Data from read client is incorrect", "Wang", jsonBindingsNodes.get(2).path("name").path("value").asText());
-    assertEquals("Value Data from read client is incorrect", "Xiang", jsonBindingsNodes.get(3).path("name").path("value").asText());
+    assertEquals( 4, jsonBindingsNodes.size());
+    assertEquals( "Ling", jsonBindingsNodes.get(0).path("name").path("value").asText());
+    assertEquals( "Ling", jsonBindingsNodes.get(1).path("name").path("value").asText());
+    assertEquals( "Wang", jsonBindingsNodes.get(2).path("name").path("value").asText());
+    assertEquals( "Xiang", jsonBindingsNodes.get(3).path("name").path("value").asText());
 
     qdef = null;
     jacksonHandle = null;
@@ -2804,8 +2805,8 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
 
     jsonBindingsNodes = jsonResults.path("results").path("bindings");
     // Should have 1 nodes returned.
-    assertEquals("Result should have been returned from testNamedExecuteSelectQuery method after commit for write client", 1, jsonBindingsNodes.size());
-    assertEquals("Value Data from read client is incorrect", "Ling", jsonBindingsNodes.get(0).path("name").path("value").asText());
+    assertEquals( 1, jsonBindingsNodes.size());
+    assertEquals( "Ling", jsonBindingsNodes.get(0).path("name").path("value").asText());
 
     qdef = null;
     jacksonHandle = null;
@@ -2843,11 +2844,11 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
 
     jsonBindingsNodes = jsonResults.path("results").path("bindings");
     // Should have 4 nodes returned.
-    assertEquals("Result should have been returned from testNamedExecuteSelectQuery method after commit for write client", 4, jsonBindingsNodes.size());
-    assertEquals("Value Data from read client is incorrect", "John", jsonBindingsNodes.get(0).path("name").path("value").asText());
-    assertEquals("Value Data from read client is incorrect", "Lei", jsonBindingsNodes.get(1).path("name").path("value").asText());
-    assertEquals("Value Data from read client is incorrect", "Meng", jsonBindingsNodes.get(2).path("name").path("value").asText());
-    assertEquals("Value Data from read client is incorrect", "Micah", jsonBindingsNodes.get(3).path("name").path("value").asText());
+    assertEquals( 4, jsonBindingsNodes.size());
+    assertEquals( "John", jsonBindingsNodes.get(0).path("name").path("value").asText());
+    assertEquals( "Lei", jsonBindingsNodes.get(1).path("name").path("value").asText());
+    assertEquals( "Meng", jsonBindingsNodes.get(2).path("name").path("value").asText());
+    assertEquals( "Micah", jsonBindingsNodes.get(3).path("name").path("value").asText());
   }
 
   /*
@@ -2886,7 +2887,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
 
   /**
    * Write document using FileHandle
-   * 
+   *
    * @param client
    * @param directoryPath
    * @param filename
@@ -2920,7 +2921,7 @@ public class TestSparqlQueryManager extends AbstractFunctionalTest {
           + " into the database with default graph");
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception
   {
     writeclient.release();

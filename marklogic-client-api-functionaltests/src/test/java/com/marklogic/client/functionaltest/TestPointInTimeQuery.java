@@ -16,33 +16,6 @@
 
 package com.marklogic.client.functionaltest;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.Namespace;
-import org.jdom2.input.SAXBuilder;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-import org.xml.sax.SAXException;
-
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
@@ -54,17 +27,35 @@ import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
+import org.jdom2.input.SAXBuilder;
+import org.junit.jupiter.api.*;
+import org.xml.sax.SAXException;
 
-import static org.junit.Assert.*;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+import static org.junit.jupiter.api.Assertions.*;
+
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class TestPointInTimeQuery extends BasicJavaClientREST {
   private static String dbName = "TestPointInTimeQueryDB";
   private static String[] fNames = { "TestPointInTimeQuery-1" };
   private static int adminPort = 0;
   private static String appServerHostname = null;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception {
     System.out.println("In setup");
     configureRESTServer(dbName, fNames);
@@ -78,7 +69,7 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
     adminPort = getAdminPort();
   }
 
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception {
     clearDB();
     System.out.println("Running clear script");
@@ -88,10 +79,10 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
    * This test verifies if fragments are available for a document that is
    * inserted and then updated when merge time is set to 60 seconds and both
    * insert and update are within that time period.
-   * 
+   *
    * Git Issue 457 needs to be completed in order for this test to be fleshed
    * completly.
-   * 
+   *
    * Insert doc Verify fragment counts Update the document Verify read with
    * Point In Time Stamp Verify fragment counts. Update again. Verify read with
    * Point In Time Stamp again Verify fragment counts second time
@@ -123,8 +114,8 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
     System.out.println("Point in Time Stamp after the initial insert " + insTimeStamp);
     DatabaseCounts dbCounts = getDBFragmentCount();
     System.out.println("Fragment counts after initial insert: " + dbCounts);
-    assertEquals("Number of active Fragments after initial insert is incorrect", 1, dbCounts.activeFragments);
-    assertEquals("Number of deleted Fragments after initial insert is incorrect", 0, dbCounts.deletedFragments);
+    assertEquals(1, dbCounts.activeFragments);
+    assertEquals(0, dbCounts.deletedFragments);
 
     // Update the doc. Insert a fragment.
     ObjectMapper mapper = new ObjectMapper();
@@ -159,8 +150,8 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
     shReadInsTS.setPointInTimeQueryTimestamp(insTimeStamp);
     String insTS = docMgr.read(docId, shReadInsTS).get();
     System.out.println(insTS);
-    assertFalse("fragment is inserted", insTS.contains("{\"insertedKey\":9}"));
-    assertFalse("Original fragment is inserted or incorrect", insTS.contains("{\"original\":true}"));
+    assertFalse(insTS.contains("{\"insertedKey\":9}"));
+    assertFalse(insTS.contains("{\"original\":true}"));
 
     // Now read using a handle without a Point In Time value set on the handle.
     // Should return the latest document.
@@ -168,8 +159,8 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
 
     System.out.println(content);
 
-    assertTrue("fragment is not inserted", content.contains("{\"insertedKey\":9}"));
-    assertTrue("Original fragment is not inserted or incorrect", content.contains("{\"original\":true}"));
+    assertTrue(content.contains("{\"insertedKey\":9}"));
+    assertTrue(content.contains("{\"original\":true}"));
 
     // Read the document with timestamp. Todo QUERY DB for document at a Point
     // In Time. Git Issue 457
@@ -187,8 +178,8 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
     // Verify the counts
     dbCounts = getDBFragmentCount();
     System.out.println("Fragment counts after first update: " + dbCounts);
-    assertEquals("Number of active Fragments after initial insert is incorrect", 1, dbCounts.activeFragments);
-    assertEquals("Number of deleted Fragments after initial insert is incorrect", 1, dbCounts.deletedFragments);
+    assertEquals(1, dbCounts.activeFragments);
+    assertEquals(1, dbCounts.deletedFragments);
 
     // Insert / update the document again
 
@@ -199,7 +190,7 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
 
     content = docMgr.read(docId, new StringHandle()).get();
     System.out.println(content);
-    assertTrue("Modified fragment is not inserted or incorrect", content.contains("{\"modified\":false}"));
+    assertTrue(content.contains("{\"modified\":false}"));
 
     // Read the document with timestamp. Todo QUERY DB for document at a Point
     // In Time. Git Issue 457
@@ -216,8 +207,8 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
 
     dbCounts = getDBFragmentCount();
     System.out.println("Fragment counts after second update: " + dbCounts);
-    assertEquals("Number of active Fragments after initial insert is incorrect", 1, dbCounts.activeFragments);
-    assertEquals("Number of deleted Fragments after initial insert is incorrect", 2, dbCounts.deletedFragments);
+    assertEquals(1, dbCounts.activeFragments);
+    assertEquals(2, dbCounts.deletedFragments);
 
     client.release();
   }
@@ -226,17 +217,17 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
    * This test verifies if fragments are available for a document that is
    * inserted and then deleted when merge time is set to 60 seconds and both
    * insert and delete are within that time period.
-   * 
+   *
    * Git Issue 457 needs to be completed in order for this test to be fleshed
    * completly.
-   * 
+   *
    * Insert doc Read the doc and Verify fragment counts Delete the document
    * Trying reading the doc without timestamp. Verify fragment counts Verify
    * read with Point In Time Stamp now. Should be available to read original doc
    * within timestamp period. Insert same doc again. Verify read with Point In
    * Time Stamp of deletion time. Should not be able ot get document. Verify
    * fragment counts second time.
-   * 
+   *
    * Read again without timestamp. Should be able to read the document.
    */
   @Test
@@ -268,22 +259,22 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
    * This test verifies if fragments are available for a document that is
    * inserted and then deleted when merge time is set to 60 seconds and both
    * insert and delete are within that time period.
-   * 
+   *
    * 1) With Transaction commit and rollback. Verify within a transaction an
    * update and then do a rollback the steps below. 2) With Transaction commit
    * and rollback. Verify within a transaction an update and then do a commoi
    * the steps below.
-   * 
+   *
    * Git Issue 457 needs to be completed in order for this test to be fleshed
    * completly.
-   * 
+   *
    * Insert doc Read the doc and Verify fragment counts Delete the document
    * Trying reading the doc without timestamp. Verify fragment counts Verify
    * read with Point In Time Stamp now. Should be available to read original doc
    * within timestamp period. Insert same doc again. Verify read with Point In
    * Time Stamp of deletion time. Should not be able ot get document. Verify
    * fragment counts second time.
-   * 
+   *
    * Read again without timestamp. Should be able to read the document.
    */
   @Test
@@ -298,20 +289,20 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
    * This test verifies if fragments are available for a document that is
    * inserted and then deleted when merge time is set to 60 seconds and both
    * insert and delete are within that time period.
-   * 
+   *
    * 1) With Server side Transformation.
-   * 
-   * 
+   *
+   *
    * Git Issue 457 needs to be completed in order for this test to be fleshed
    * completly.
-   * 
+   *
    * Insert doc Read the doc and Verify fragment counts Delete the document
    * Trying reading the doc without timestamp. Verify fragment counts Verify
    * read with Point In Time Stamp now. Should be available to read original doc
    * within timestamp period. Insert same doc again. Verify read with Point In
    * Time Stamp of deletion time. Should not be able ot get document. Verify
    * fragment counts second time.
-   * 
+   *
    * Read again without timestamp. Should be able to read the document.
    */
   @Test
@@ -326,21 +317,21 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
    * This test verifies if fragments are available for a document that is
    * inserted and then deleted when merge time is set to 60 seconds and both
    * insert and delete are within that time period.
-   * 
+   *
    * 1) Verify results on DocumentPage.search and other methods that take a
    * PointInTime parameter.
-   * 
-   * 
+   *
+   *
    * Git Issue 457 needs to be completed in order for this test to be fleshed
    * completly.
-   * 
+   *
    * Insert doc Read the doc and Verify fragment counts Delete the document
    * Trying reading the doc without timestamp. Verify fragment counts Verify
    * read with Point In Time Stamp now. Should be available to read original doc
    * within timestamp period. Insert same doc again. Verify read with Point In
    * Time Stamp of deletion time. Should not be able ot get document. Verify
    * fragment counts second time.
-   * 
+   *
    * Read again without timestamp. Should be able to read the document.
    */
   @Test
@@ -385,7 +376,7 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
     }
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws Exception
   {
     System.out.println("In tear down");

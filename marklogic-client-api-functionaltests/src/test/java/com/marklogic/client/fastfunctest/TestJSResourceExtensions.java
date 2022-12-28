@@ -30,14 +30,16 @@ import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.util.RequestParameters;
-import org.junit.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.*;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+
 
 public class TestJSResourceExtensions extends AbstractFunctionalTest {
   ResourceExtensionsManager resourceMgr;
@@ -100,7 +102,7 @@ public class TestJSResourceExtensions extends AbstractFunctionalTest {
     public String putJSON(String docUri) {
       RequestParameters params = new RequestParameters();
       params.add("uri", docUri);
-      
+
       String input = "{\"argument1\":\"hello\", \"argument2\":\"Earth\", \"content\":\"This is a JSON document\", \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}";
       StringHandle readHandle = new StringHandle();
       // call the service
@@ -120,19 +122,19 @@ public class TestJSResourceExtensions extends AbstractFunctionalTest {
     }
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:value", "xdmp:eval", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "rest-extension-user");
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     deleteRESTUser("eval-user");
     deleteUserRole("test-eval");
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
 
     int restPort = getRestServerPort();
@@ -154,7 +156,7 @@ public class TestJSResourceExtensions extends AbstractFunctionalTest {
     resourceMgr.writeServices("simpleJSResourceModule", handle, resextMetadata, getParams);
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     resourceMgr.deleteServices("simpleJSResourceModule");
     client.release();
@@ -166,8 +168,8 @@ public class TestJSResourceExtensions extends AbstractFunctionalTest {
     JacksonHandle jh = new JacksonHandle();
     resourceMgr.listServices(jh);
 
-    assertEquals("Format on Handle", "JSON", jh.getFormat().name());
-    assertEquals("Mime Type on Handle", "application/json", jh.getMimetype());
+    assertEquals( "JSON", jh.getFormat().name());
+    assertEquals( "application/json", jh.getMimetype());
 
     String expectedList = "{\"resources\":{\"resource\":[{\"name\":\"simpleJSResourceModule\", \"source-format\":\"javascript\", \"description\":\"Testing resource extension for java script\", \"version\":\"1.0\", \"title\":\"BasicJSTest\", \"methods\":{\"method\":[{\"method-name\":\"get\", \"parameter\":[{\"parameter-name\":\"my-uri\", \"parameter-type\":\"xs:string?\"}]}, {\"method-name\":\"post\"}, {\"method-name\":\"put\"}, {\"method-name\":\"delete\"}]}, \"resource-source\":\"/v1/resources/simpleJSResourceModule\"}]}}";
     JSONAssert.assertEquals(expectedList, jh.get().toString(), false);
@@ -201,7 +203,7 @@ public class TestJSResourceExtensions extends AbstractFunctionalTest {
     JacksonHandle jh2 = new JacksonHandle();
     jh.set(jh2.getMapper().readTree(tjs.getJSON("helloJS0.json")));
 
-    assertEquals("Total documents loaded are", 150, jh.get().get("document-count").intValue());
+    assertEquals( 150, jh.get().get("document-count").intValue());
 
     String expAftrPut = "{\"argument1\":\"hello\", \"argument2\":\"Earth\", \"content\":\"This is a JSON document\", \"array\":[1, 2, 3], \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}";
     String expected = "{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\", \"database-name\":\"" + client.getDatabase() + "\", \"document-count\":0, \"content\":\"This is a JSON document\", \"document-content\":null, \"response\":[200, \"OK\"], \"outputTypes\":[\"application/json\"]}";

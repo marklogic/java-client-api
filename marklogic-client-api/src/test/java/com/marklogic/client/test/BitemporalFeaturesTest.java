@@ -15,29 +15,12 @@
  */
 package com.marklogic.client.test;
 
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
+import com.marklogic.client.document.DocumentMetadataPatchBuilder;
 import com.marklogic.client.document.DocumentPatchBuilder;
+import com.marklogic.client.document.DocumentPatchBuilder.Position;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.document.DocumentMetadataPatchBuilder;
-import com.marklogic.client.document.DocumentMetadataPatchBuilder.Cardinality;
-import com.marklogic.client.document.DocumentPatchBuilder.Position;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
@@ -45,6 +28,19 @@ import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import java.io.IOException;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BitemporalFeaturesTest {
 
@@ -65,14 +61,14 @@ public class BitemporalFeaturesTest {
   static String docId2 = "test-" + uniqueTerm2 + ".xml";
   static String docId3 = "test-" + uniqueTerm3 + ".xml";
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connectAdmin();
     docMgr = Common.adminClient.newXMLDocumentManager();
     queryMgr = Common.adminClient.newQueryManager();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() throws DatatypeConfigurationException {
     cleanUp();
   }
@@ -112,7 +108,7 @@ public class BitemporalFeaturesTest {
     query.setCollections(temporalDocument1);
     SearchHandle handle = queryMgr.search(query, new SearchHandle());
     MatchDocumentSummary[] docs = handle.getMatchResults();
-    assertEquals("Incorrect number of docs",2, docs.length);
+    assertEquals(2, docs.length);
   }
 
   @Test
@@ -159,12 +155,12 @@ public class BitemporalFeaturesTest {
     query.setCollections(temporalDocument1);
     SearchHandle handle = queryMgr.search(query, new SearchHandle());
     MatchDocumentSummary[] docs = handle.getMatchResults();
-    assertEquals("Incorrect number of docs",3, docs.length);
+    assertEquals(3, docs.length);
     query = queryMgr.newStringDefinition();
     query.setCollections(temporalDocument2);
     handle = queryMgr.search(query, new SearchHandle());
     docs = handle.getMatchResults();
-    assertEquals("Incorrect number of docs",2, docs.length);
+    assertEquals(2, docs.length);
   }
 
   @Test
@@ -244,7 +240,7 @@ public class BitemporalFeaturesTest {
     query.setCollections(logicalID);
     SearchHandle handle = queryMgr.search(query, new SearchHandle());
     MatchDocumentSummary[] docs = handle.getMatchResults();
-    assertEquals("Incorrect number of docs",0, docs.length);
+    assertEquals(0, docs.length);
   }
 
   static public void cleanUp() throws DatatypeConfigurationException {

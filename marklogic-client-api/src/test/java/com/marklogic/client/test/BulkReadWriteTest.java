@@ -15,64 +15,30 @@
  */
 package com.marklogic.client.test;
 
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.Transaction;
+import com.marklogic.client.document.*;
+import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.io.*;
+import com.marklogic.client.query.*;
+import com.marklogic.client.query.QueryManager.QueryView;
+import org.junit.jupiter.api.*;
+import org.w3c.dom.Document;
+
+import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import javax.xml.bind.JAXBException;
-import org.w3c.dom.Document;
+import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.Ignore;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.Transaction;
-import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.document.DocumentManager.Metadata;
-import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.document.DocumentRecord;
-import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.document.ServerTransform;
-import com.marklogic.client.document.TextDocumentManager;
-import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.JAXBHandle;
-import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.QueryManager.QueryView;
+import static org.junit.jupiter.api.Assertions.*;
 
 /** Loads data from cities15000.txt which contains every city above 15000 people, and adds
  * data from countryInfo.txt.
  **/
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class BulkReadWriteTest {
   private static final int BATCH_SIZE = 100;
   static final String DIRECTORY = "/cities/";
@@ -80,14 +46,14 @@ public class BulkReadWriteTest {
   private static final String CITIES_FILE = "cities_above_300K.txt";
   static final int RECORDS_EXPECTED = 1363;
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() throws JAXBException {
     Common.connect();
     DatabaseClientFactory.getHandleRegistry().register(
       JAXBHandle.newFactory(City.class)
     );
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     cleanUp();
   }
@@ -118,7 +84,7 @@ public class BulkReadWriteTest {
 
     @Override
     public void setNumRecords(int numWritten) {
-      assertEquals("Number of records not expected", RECORDS_EXPECTED, numWritten);
+      assertEquals( RECORDS_EXPECTED, numWritten);
     }
   }
 
@@ -160,13 +126,13 @@ public class BulkReadWriteTest {
   }
 
 
-  @Ignore
+  @Disabled
   @Test
   public void testA_BulkLoad() throws IOException, Exception {
     loadCities(new BulkCityWriter());
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void testB_BulkRead() {
     XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
@@ -178,18 +144,18 @@ public class BulkReadWriteTest {
         validateRecord(record);
         numRead++;
       }
-      assertEquals("Should have results", true, page.hasContent());
-      assertEquals("Failed to read number of records expected", 3, numRead);
-      assertEquals("Failed to report number of records expected", 3, page.size());
-      assertEquals("No previous page", false, page.hasPreviousPage());
-      assertEquals("Only one page", false, page.hasNextPage());
-      assertEquals("Only one page", true, page.isFirstPage());
-      assertEquals("Only one page", true, page.isLastPage());
-      assertEquals("Wrong page", 1, page.getPageNumber());
-      assertEquals("Wrong page size", 3, page.getPageSize());
-      assertEquals("Wrong start", 1, page.getStart());
-      assertEquals("Wrong totalPages", 1, page.getTotalPages());
-      assertEquals("Wrong estimate", 3, page.getTotalSize());
+      assertEquals( true, page.hasContent());
+      assertEquals( 3, numRead);
+      assertEquals( 3, page.size());
+      assertEquals( false, page.hasPreviousPage());
+      assertEquals( false, page.hasNextPage());
+      assertEquals( true, page.isFirstPage());
+      assertEquals( true, page.isLastPage());
+      assertEquals( 1, page.getPageNumber());
+      assertEquals( 3, page.getPageSize());
+      assertEquals( 1, page.getStart());
+      assertEquals( 1, page.getTotalPages());
+      assertEquals( 3, page.getTotalSize());
     } finally {
       page.close();
     }
@@ -197,9 +163,9 @@ public class BulkReadWriteTest {
     // test reading a valid plus a non-existent document
     page = docMgr.read(DIRECTORY + "1016670.xml", "nonExistant.doc");
     try {
-      assertEquals("Should have results", true, page.hasContent());
-      assertEquals("Failed to report number of records expected", 1, page.size());
-      assertEquals("Wrong only doc", DIRECTORY + "1016670.xml", page.next().getUri());
+      assertEquals( true, page.hasContent());
+      assertEquals( 1, page.size());
+      assertEquals( DIRECTORY + "1016670.xml", page.next().getUri());
     } finally {
       page.close();
     }
@@ -211,7 +177,7 @@ public class BulkReadWriteTest {
     } catch (ResourceNotFoundException e) {
       exceptionThrown = true;
     }
-    assertFalse("ResourceNotFoundException should not have been thrown", exceptionThrown);
+    assertFalse( exceptionThrown);
 
     // test reading a non-existent document (not actually a bulk operation)
     exceptionThrown = false;
@@ -220,10 +186,10 @@ public class BulkReadWriteTest {
     } catch (ResourceNotFoundException e) {
       exceptionThrown = true;
     }
-    assertTrue("ResourceNotFoundException should have been thrown", exceptionThrown);
+    assertTrue( exceptionThrown);
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void testC_BulkSearch() {
     XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
@@ -236,21 +202,21 @@ public class BulkReadWriteTest {
       for ( DocumentRecord record : page ) {
         validateRecord(record);
       }
-      assertEquals("Failed to find number of records expected", RECORDS_EXPECTED, page.getTotalSize());
-      assertEquals("SearchHandle failed to report number of records expected", RECORDS_EXPECTED, searchHandle.getTotalResults());
-      assertEquals("SearchHandle failed to report pageLength expected", pageLength, searchHandle.getPageLength());
-      assertEquals("Should have results", true, page.hasContent());
+      assertEquals( RECORDS_EXPECTED, page.getTotalSize());
+      assertEquals( RECORDS_EXPECTED, searchHandle.getTotalResults());
+      assertEquals( pageLength, searchHandle.getPageLength());
+      assertEquals( true, page.hasContent());
       int expected = RECORDS_EXPECTED > pageLength ? pageLength : RECORDS_EXPECTED;
-      assertEquals("Failed to report number of records expected", expected, page.size());
-      assertEquals("No previous page", false, page.hasPreviousPage());
-      assertEquals("Only one page", RECORDS_EXPECTED > pageLength, page.hasNextPage());
-      assertEquals("Only one page", true, page.isFirstPage());
-      assertEquals("Only one page", page.hasNextPage() == false, page.isLastPage());
-      assertEquals("Wrong page", 1, page.getPageNumber());
-      assertEquals("Wrong page size", pageLength, page.getPageSize());
-      assertEquals("Wrong start", 1, page.getStart());
+      assertEquals( expected, page.size());
+      assertEquals( false, page.hasPreviousPage());
+      assertEquals( RECORDS_EXPECTED > pageLength, page.hasNextPage());
+      assertEquals( true, page.isFirstPage());
+      assertEquals( page.hasNextPage() == false, page.isLastPage());
+      assertEquals( 1, page.getPageNumber());
+      assertEquals( pageLength, page.getPageSize());
+      assertEquals( 1, page.getStart());
       double totalPagesExpected = Math.ceil((double) RECORDS_EXPECTED/(double) pageLength);
-      assertEquals("Wrong totalPages", totalPagesExpected, page.getTotalPages(), .01);
+      assertEquals( totalPagesExpected, page.getTotalPages(), .01);
     } finally {
       page.close();
     }
@@ -283,10 +249,10 @@ public class BulkReadWriteTest {
         JacksonHandle content = record.getContent(new JacksonHandle());
         JacksonHandle metadata = record.getMetadata(new JacksonHandle());
         if ( "doc1.json".equals(record.getUri()) ) {
-          assertEquals("Failed to read document 1", "dog", content.get().get("animal").textValue());
+          assertEquals( "dog", content.get().get("animal").textValue());
         } else if ( "doc2.json".equals(record.getUri()) ) {
-          assertEquals("Failed to read document 2", "cat", content.get().get("animal").textValue());
-          assertEquals("Failed to read expected quality", 2, metadata.get().get("quality").intValue());
+          assertEquals( "cat", content.get().get("animal").textValue());
+          assertEquals( 2, metadata.get().get("quality").intValue());
         }
       }
     } finally {
@@ -295,14 +261,10 @@ public class BulkReadWriteTest {
   }
 
   private void validateRecord(DocumentRecord record) {
-    assertNotNull("DocumentRecord should never be null", record);
-    assertNotNull("Document uri should never be null", record.getUri());
-    assertTrue("Document uri should start with " + DIRECTORY, record.getUri().startsWith(DIRECTORY));
-    assertEquals("All records are expected to be XML format", Format.XML, record.getFormat());
-        /*
-        assertEquals("All records are expected to be mimetype application/xml", "application/xml", 
-          record.getMimetype());
-        */
+    assertNotNull( record);
+    assertNotNull( record.getUri());
+    assertTrue(record.getUri().startsWith(DIRECTORY));
+    assertEquals( Format.XML, record.getFormat());
     if ( record.getUri().equals(DIRECTORY + "1205733.xml") ) {
       City chittagong = record.getContentAs(City.class);
       validateChittagong(chittagong);
@@ -310,13 +272,13 @@ public class BulkReadWriteTest {
   }
 
   public static void validateChittagong(City chittagong) {
-    assertEquals("City name doesn't match", "Chittagong", chittagong.getName());
-    assertEquals("City latitude doesn't match", 22.3384, chittagong.getLatitude(), 0);
-    assertEquals("City longitude doesn't match", 91.83168, chittagong.getLongitude(), 0);
-    assertEquals("City population doesn't match", 3920222, chittagong.getPopulation());
-    assertEquals("City elevation doesn't match", 15, chittagong.getElevation());
-    assertEquals("Currency code doesn't match", "BDT", chittagong.getCurrencyCode());
-    assertEquals("Currency name doesn't match", "Taka", chittagong.getCurrencyName());
+    assertEquals( "Chittagong", chittagong.getName());
+    assertEquals( 22.3384, chittagong.getLatitude(), 0);
+    assertEquals( 91.83168, chittagong.getLongitude(), 0);
+    assertEquals( 3920222, chittagong.getPopulation());
+    assertEquals( 15, chittagong.getElevation());
+    assertEquals( "BDT", chittagong.getCurrencyCode());
+    assertEquals( "Taka", chittagong.getCurrencyName());
   }
 
   @Test
@@ -330,9 +292,9 @@ public class BulkReadWriteTest {
     writeset.add(docId[2], new StringHandle().with("This is so foo3"));
     docMgr.write(writeset);
 
-    assertEquals("Text document write difference", "This is so foo1", docMgr.read(docId[0], new StringHandle()).get());
-    assertEquals("Text document write difference", "This is so foo2", docMgr.read(docId[1], new StringHandle()).get());
-    assertEquals("Text document write difference", "This is so foo3", docMgr.read(docId[2], new StringHandle()).get());
+    assertEquals( "This is so foo1", docMgr.read(docId[0], new StringHandle()).get());
+    assertEquals( "This is so foo2", docMgr.read(docId[1], new StringHandle()).get());
+    assertEquals( "This is so foo3", docMgr.read(docId[2], new StringHandle()).get());
 
     docMgr.delete(docId[0]);
     docMgr.delete(docId[1]);
@@ -366,66 +328,66 @@ public class BulkReadWriteTest {
     String TEST_NS = "http://marklogic.com/rest-api/test/transform";
     // validate that the write tranform worked
     Document doc0 = docMgr.read(docId[0], new DOMHandle()).get();
-    assertEquals("true",doc0.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+	  assertEquals("true",doc0.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
 
-    // validate that the write transform didn't touch the text file
-    assertEquals("this is so foo", docMgr.read(docId[1], new StringHandle()).get());
+	  // validate that the write transform didn't touch the text file
+	  assertEquals("this is so foo", docMgr.read(docId[1], new StringHandle()).get());
 
-    // validate that the read transform worked
-    // without the read transform, there is no "transformed" attribute
-    Document doc2 = docMgr.read(docId[2], new DOMHandle()).get();
-    assertEquals("", doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+	  // validate that the read transform worked
+	  // without the read transform, there is no "transformed" attribute
+	  Document doc2 = docMgr.read(docId[2], new DOMHandle()).get();
+	  assertEquals("", doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
 
-    // with the read transform, this should now have the "transformed" attribute
-    doc2 = docMgr.read(docId[2], new DOMHandle(), transform).get();
-    assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+	  // with the read transform, this should now have the "transformed" attribute
+	  doc2 = docMgr.read(docId[2], new DOMHandle(), transform).get();
+	  assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
 
-    // reading with bulk API, but no read transform there is no "transformed" attribute
-    doc2 = docMgr.read(docId[2]).next().getContent(new DOMHandle()).get();
-    assertEquals("", doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+	  // reading with bulk API, but no read transform there is no "transformed" attribute
+	  doc2 = docMgr.read(docId[2]).next().getContent(new DOMHandle()).get();
+	  assertEquals("", doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
 
-    // reading with bulk API, the transform should work the same
-    docMgr.setReadTransform(transform);
-    doc2 = docMgr.read(docId[2]).next().getContent(new DOMHandle()).get();
-    assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+	  // reading with bulk API, the transform should work the same
+	  docMgr.setReadTransform(transform);
+	  doc2 = docMgr.read(docId[2]).next().getContent(new DOMHandle()).get();
+	  assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
 
-    // searching with bulk API and DocumentManager.setReadTransform,
-    // the transform should work the same on the matching documents
-    docMgr.setReadTransform(transform);
-    QueryDefinition query = new StructuredQueryBuilder().document(docId[2]);
-    try ( DocumentPage page = docMgr.search(query, 1) ) {
-      doc2 = page.next().getContent(new DOMHandle()).get();
-      assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
-    }
+	  // searching with bulk API and DocumentManager.setReadTransform,
+	  // the transform should work the same on the matching documents
+	  docMgr.setReadTransform(transform);
+	  QueryDefinition query = new StructuredQueryBuilder().document(docId[2]);
+	  try ( DocumentPage page = docMgr.search(query, 1) ) {
+		  doc2 = page.next().getContent(new DOMHandle()).get();
+		  assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+	  }
 
-    // searching with bulk API and both DocumentManager.setReadTransform
-    // and QueryDefinition.setResponseTransform,
-    // the transform should work the same on the matching documents
-    docMgr.setReadTransform(transform);
-    query.setResponseTransform(transform);
-    try ( DocumentPage page = docMgr.search(query, 1) ) {
-      doc2 = page.next().getContent(new DOMHandle()).get();
-      assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
-    }
+	  // searching with bulk API and both DocumentManager.setReadTransform
+	  // and QueryDefinition.setResponseTransform,
+	  // the transform should work the same on the matching documents
+	  docMgr.setReadTransform(transform);
+	  query.setResponseTransform(transform);
+	  try ( DocumentPage page = docMgr.search(query, 1) ) {
+		  doc2 = page.next().getContent(new DOMHandle()).get();
+		  assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+	  }
 
-    // searching with bulk API and DocumentManager.setReadTransform,
-    // the transform should work the same on the matching documents
-    docMgr.setReadTransform(null);
-    query.setResponseTransform(transform);
-    try ( DocumentPage page = docMgr.search(query, 1) ) {
-      doc2 = page.next().getContent(new DOMHandle()).get();
-      assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
-    }
+	  // searching with bulk API and DocumentManager.setReadTransform,
+	  // the transform should work the same on the matching documents
+	  docMgr.setReadTransform(null);
+	  query.setResponseTransform(transform);
+	  try ( DocumentPage page = docMgr.search(query, 1) ) {
+		  doc2 = page.next().getContent(new DOMHandle()).get();
+		  assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+	  }
 
-    // searching with bulk API, the transform should work the same on the matching documents
-    // and the search response
-    query.setResponseTransform(transform);
-    DOMHandle results = new DOMHandle();
-    try ( DocumentPage page = docMgr.search(query, 1, results) ) {
-      doc2 = page.next().getContent(new DOMHandle()).get();
-      assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
-      assertEquals("true",results.get().getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
-    }
+	  // searching with bulk API, the transform should work the same on the matching documents
+	  // and the search response
+	  query.setResponseTransform(transform);
+	  DOMHandle results = new DOMHandle();
+	  try ( DocumentPage page = docMgr.search(query, 1, results) ) {
+		  doc2 = page.next().getContent(new DOMHandle()).get();
+		  assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+		  assertEquals("true",results.get().getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+	  }
 
     docMgr.delete(docId[0]);
     docMgr.delete(docId[1]);
@@ -489,19 +451,19 @@ public class BulkReadWriteTest {
     jdm.write(batch);
 
     // Check the results
-    assertEquals("Doc1 should have the system default quality of 0", 0,
+    assertEquals( 0,
       jdm.readMetadata("doc1.json", new DocumentMetadataHandle()).getQuality());
-    assertEquals("Doc2 should use the first batch default metadata, with quality 1", defaultMetadata1.getQuality(),
+    assertEquals( defaultMetadata1.getQuality(),
       jdm.readMetadata("doc2.json", new DocumentMetadataHandle()).getQuality());
 
     DocumentMetadataHandle doc3Metadata =
       jdm.readMetadata("doc3.json", new DocumentMetadataHandle());
-    assertEquals("Doc3 should have the system default document quality (0) because quality " +
-      "was not included in the document-specific metadata.", 0, doc3Metadata.getQuality());
+    assertEquals(0, doc3Metadata.getQuality(),
+		"Doc3 should have the system default document quality (0) because quality " +
+			"was not included in the document-specific metadata.");
     Set collections = doc3Metadata.getCollections();
-    assertEquals("Doc3 should be in exactly one collection from the document-specific metadata.", 1, collections.size());
-    assertEquals("Doc3 should be in the collection \"myCollection\", from the document-specific metadata.",
-      "myCollection", collections.iterator().next());
+    assertEquals( 1, collections.size());
+    assertEquals("myCollection", collections.iterator().next());
 
     // let's check getting content with just quality in the metadata
     jdm.setMetadataCategories(Metadata.QUALITY);
@@ -511,13 +473,13 @@ public class BulkReadWriteTest {
         DocumentMetadataHandle metadata = doc.getMetadata(new DocumentMetadataHandle());
         StringHandle content = doc.getContent(new StringHandle());
         if ( "doc4.json".equals(doc.getUri()) ) {
-          assertEquals("Doc4 should also use the 1st batch default metadata, with quality 1", 1,
+          assertEquals( 1,
             metadata.getQuality());
-          assertTrue("Doc 4 contents are wrong", content.get().matches("\\{\"number\": ?4\\}"));
+          assertTrue( content.get().matches("\\{\"number\": ?4\\}"));
         } else if ( "doc5.json".equals(doc.getUri()) ) {
-          assertEquals("Doc5 should use the 2nd batch default metadata, with quality 2", 2,
+          assertEquals( 2,
             metadata.getQuality());
-          assertTrue("Doc 5 contents are wrong", content.get().matches("\\{\"number\": ?5\\}"));
+          assertTrue( content.get().matches("\\{\"number\": ?5\\}"));
         }
       }
     } finally {
@@ -530,13 +492,13 @@ public class BulkReadWriteTest {
       for ( DocumentRecord doc: documents ) {
         DocumentMetadataHandle metadata = doc.getMetadata(new DocumentMetadataHandle());
         if ( "doc6.json".equals(doc.getUri()) ) {
-          assertEquals("Doc 6 should have the system default quality of 0", 0,
+          assertEquals( 0,
             metadata.getQuality());
         } else if ( "doc7.json".equals(doc.getUri()) ) {
-          assertEquals("Doc7 should also use the 1st batch default metadata, with quality 1", 1,
+          assertEquals( 1,
             metadata.getQuality());
         } else if ( "doc8.json".equals(doc.getUri()) ) {
-          assertEquals("Doc 8 should have the system default quality of 0", 0,
+          assertEquals( 0,
             metadata.getQuality());
         }
       }
@@ -591,22 +553,22 @@ public class BulkReadWriteTest {
       docMgr.setPageLength(1);
       docMgr.setSearchView(QueryView.RESULTS);
       docMgr.setNonDocumentFormat(Format.XML);
-      assertEquals("format set on document manager","XML",docMgr.getNonDocumentFormat().toString());
-      assertEquals("Queryview set on document manager ","RESULTS" ,docMgr.getSearchView().toString());
-      assertEquals("Page length ",1,docMgr.getPageLength());
+      assertEquals("XML",docMgr.getNonDocumentFormat().toString());
+      assertEquals("RESULTS" ,docMgr.getSearchView().toString());
+      assertEquals(1,docMgr.getPageLength());
       // Search for documents where content has bar and get first result record, get search handle on it
       SearchHandle sh = new SearchHandle();
       DocumentPage page= docMgr.search(qd, 1);
       try {
         // test for page methods
-        assertEquals("Number of records",1,page.size());
-        assertEquals("Starting record in first page ",1,page.getStart());
-        assertEquals("Total number of estimated results:",11,page.getTotalSize());
-        assertEquals("Total number of estimated pages :",11,page.getTotalPages());
-        assertTrue("Is this First page :",page.isFirstPage());
-        assertFalse("Is this Last page :",page.isLastPage());
-        assertTrue("Is this First page has content:",page.hasContent());
-        assertFalse("Is first page has previous page ?",page.hasPreviousPage());
+        assertEquals(1,page.size());
+        assertEquals(1,page.getStart());
+        assertEquals(11,page.getTotalSize());
+        assertEquals(11,page.getTotalPages());
+        assertTrue(page.isFirstPage());
+        assertFalse(page.isLastPage());
+        assertTrue(page.hasContent());
+        assertFalse(page.hasPreviousPage());
       } finally {
         page.close();
       }
@@ -617,24 +579,24 @@ public class BulkReadWriteTest {
         page = docMgr.search(qd, start,sh);
         try {
           if(start >1){
-            assertFalse("Is this first Page", page.isFirstPage());
-            assertTrue("Is page has previous page ?",page.hasPreviousPage());
+            assertFalse( page.isFirstPage());
+            assertTrue(page.hasPreviousPage());
           }
           while(page.hasNext()){
             page.next();
             count++;
           }
           MatchDocumentSummary[] mds= sh.getMatchResults();
-          assertEquals("Matched document count",1,mds.length);
+          assertEquals(1,mds.length);
           //since we set the query view to get only results, facet count supposed be 0
-          assertEquals("Matched Facet count",0,sh.getFacetNames().length);
+          assertEquals(0,sh.getFacetNames().length);
 
-          assertEquals("document count", page.size(),count);
+          assertEquals( page.size(),count);
           if (page.isLastPage()) {
-            assertEquals("page count is 11 ",start, page.getTotalPages());
-            assertTrue("Page has previous page ?",page.hasPreviousPage());
-            assertEquals("page size", 1,page.getPageSize());
-            assertEquals("document count", 11,page.getTotalSize());
+            assertEquals(start, page.getTotalPages());
+            assertTrue(page.hasPreviousPage());
+            assertEquals( 1,page.getPageSize());
+            assertEquals( 11,page.getTotalSize());
           } else {
             start = start + page.getPageSize();
           }
@@ -644,7 +606,7 @@ public class BulkReadWriteTest {
       }while(!page.isLastPage());
       page= docMgr.search(qd, 12);
       try {
-        assertFalse("Page has any records ?",page.hasContent());
+        assertFalse(page.hasContent());
       } finally {
         page.close();
       }
@@ -692,12 +654,12 @@ public class BulkReadWriteTest {
 
       SearchHandle inTransactionResults    = queryMgr.search(directoryQuery, new SearchHandle(), t1);
 
-      assertEquals("Count of documents outside of the transaction",0,outOfTransactionResults.getTotalResults());
-      assertEquals("Count of documents inside of the transaction", 2,   inTransactionResults.getTotalResults());
+      assertEquals(0,outOfTransactionResults.getTotalResults());
+      assertEquals( 2,   inTransactionResults.getTotalResults());
 
       long start = 2;
       SearchHandle page2 = queryMgr.search(directoryQuery, new SearchHandle(), start, t1);
-      assertEquals("Count of documents inside the transaction on page 2", 1, page2.getMatchResults().length);
+      assertEquals( 1, page2.getMatchResults().length);
 
     }catch(Exception e){
       System.out.println(e.getMessage());
@@ -749,8 +711,8 @@ public class BulkReadWriteTest {
       SearchHandle inRuntimeDbResults = queryMgr2.search(directoryQuery, new SearchHandle());
       SearchHandle inDefaultDbResults = queryMgr1.search(directoryQuery1, new SearchHandle());
 
-      assertEquals("Count of documents in runtime db", 12, inRuntimeDbResults.getTotalResults());
-      assertEquals("Count of documents in default db", 0,  inDefaultDbResults.getTotalResults());
+      assertEquals( 12, inRuntimeDbResults.getTotalResults());
+      assertEquals( 0,  inDefaultDbResults.getTotalResults());
     }catch(Exception e){
       System.out.println(e.getMessage());
       if(! committed){
@@ -813,7 +775,7 @@ public class BulkReadWriteTest {
       writeSet.add(uri, new StringHandle(contents));
       docMgr.write(writeSet);
       DocumentPage docs = docMgr.read(new String[] {uri});
-      assertEquals("You should have one and only one doc with uri=[" + uri + "]", 1, docs.size());
+      assertEquals(1, docs.size());
       DocumentRecord doc = docs.next();
       assertEquals(uri, doc.getUri());
       assertEquals(contents, doc.getContent(new StringHandle()).get());

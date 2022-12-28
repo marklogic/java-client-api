@@ -16,18 +16,33 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.Transaction;
+import com.marklogic.client.alerting.RuleDefinition;
+import com.marklogic.client.alerting.RuleDefinitionList;
+import com.marklogic.client.alerting.RuleManager;
+import com.marklogic.client.document.*;
+import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.io.*;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentMetadataValues;
+import com.marklogic.client.query.*;
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import java.io.*;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -40,50 +55,8 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
-import javax.xml.bind.JAXBException;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
-import com.marklogic.client.DatabaseClientFactory.SecurityContext;
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.Transaction;
-import com.marklogic.client.alerting.RuleDefinition;
-import com.marklogic.client.alerting.RuleDefinitionList;
-import com.marklogic.client.alerting.RuleManager;
-import com.marklogic.client.document.DocumentManager.Metadata;
-import com.marklogic.client.document.DocumentDescriptor;
-import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.document.DocumentUriTemplate;
-import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.document.TextDocumentManager;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.JAXBHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.TuplesHandle;
-import com.marklogic.client.io.ValuesHandle;
-import com.marklogic.client.io.ValuesListHandle;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentMetadataValues;
-import com.marklogic.client.query.AggregateResult;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.SuggestDefinition;
-import com.marklogic.client.query.ValuesDefinition;
-import com.marklogic.client.query.ValuesListDefinition;
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
@@ -98,7 +71,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
   private static String UberrestServerName = "App-Services";
   private static String appServerHostname = null;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception {
     System.out.println("In setup");
     configureRESTServer(dbName, fNames);
@@ -150,7 +123,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     }
 
     String expectedException = "Client is not available - java.lang.IllegalStateException: You cannot use this connected object anymore--connection has already been released";
-    assertEquals("Exception is not thrown", expectedException, stringException);
+    assertEquals( expectedException, stringException);
   }
 
   @Test
@@ -160,7 +133,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     DatabaseClient client = getDatabaseClient("rest-reader", "x", getConnType());
     String[] stringClient = client.toString().split("@");
-    assertEquals("Object does not exist", "com.marklogic.client.impl.DatabaseClientImpl", stringClient[0]);
+    assertEquals( "com.marklogic.client.impl.DatabaseClientImpl", stringClient[0]);
 
     // release client
     client.release();
@@ -204,9 +177,9 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 	String protocol = readSecContext.getSSLContext().getProtocol();
 	boolean needClient = readSecContext.getSSLContext().getSupportedSSLParameters().getNeedClientAuth();
 
-    assertTrue("Verifier not Builtin", verifier.contains("Builtin"));
-    assertTrue("Protocol incorrect", protocol.contains("TLSv1.2"));
-    assertTrue("NeedClientAuth incorrect", needClient == false);
+    assertTrue(verifier.contains("Builtin"));
+    assertTrue(protocol.contains("TLSv1.2"));
+    assertTrue(needClient == false);
     // release client
     client.release();
   }
@@ -237,7 +210,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
       System.out.println("Exception is " + exception);
     }
 
-    assertTrue("Exception is not thrown", exception.contains(expectedException));
+    assertTrue(exception.contains(expectedException));
 
     // release client
     client.release();
@@ -265,7 +238,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     // System.out.println(exception);
 
     boolean exceptionIsThrown = exception.contains(expectedException);
-    assertTrue("Exception is not thrown", exceptionIsThrown);
+    assertTrue(exceptionIsThrown);
 
     // release client
     client.release();
@@ -293,7 +266,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     // System.out.println(exception);
 
     boolean exceptionIsThrown = exception.contains(expectedException);
-    assertTrue("Exception is not thrown", exceptionIsThrown);
+    assertTrue(exceptionIsThrown);
 
     // release client
     client.release();
@@ -324,7 +297,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     System.out.println(exception);
 
-    assertTrue("Exception is not thrown", exception.contains(expectedException));
+    assertTrue(exception.contains(expectedException));
 
     // release client
     client.release();
@@ -434,7 +407,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
       System.out.println(suggestions[i]);
     }
 
-    assertTrue("suggestion is wrong", suggestions[0].contains("上海"));
+    assertTrue(suggestions[0].contains("上海"));
     // release client
     client.release();
   }
@@ -470,7 +443,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     AggregateResult[] agg = tuplesHandle.getAggregates();
     System.out.println(agg.length);
-    assertEquals("Invalid length", 2, agg.length);
+    assertEquals(2, agg.length);
     double correlation = agg[0].get("xs:double", Double.class);
     double covariance = agg[1].get("xs:double", Double.class);
 
@@ -481,17 +454,17 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     System.out.println(roundedCorrelation);
     System.out.println(roundedCovariance);
 
-    assertEquals("Invalid correlation", "0.37", roundedCorrelation);
-    assertEquals("Invalid covariance", "0.48", roundedCovariance);
+    assertEquals( "0.37", roundedCorrelation);
+    assertEquals( "0.48", roundedCovariance);
 
     ValuesListDefinition vdef = queryMgr.newValuesListDefinition("aggregatesOpt.xml");
     ValuesListHandle results = queryMgr.valuesList(vdef, new ValuesListHandle());
     // Get the Map of lexicons sorted.
     Map<String, String> lexiconMap = results.getValuesMap();
     TreeMap<String, String> treeMap = new TreeMap<>(lexiconMap);
-    assertEquals("Map should contain three keys", treeMap.size(), 3);
-    assertEquals("First key incorrect", treeMap.firstKey(), "pop-aggr");
-    assertEquals("Last key incorrect", treeMap.lastKey(), "score-aggr");
+    assertEquals(treeMap.size(), 3);
+    assertEquals(treeMap.firstKey(), "pop-aggr");
+    assertEquals(treeMap.lastKey(), "score-aggr");
 
     // release client
     client.release();
@@ -554,18 +527,18 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
       docMgr.write(writeset, transaction);
       StringHandle wrteTransHandle = new StringHandle();
       transaction.readStatus(wrteTransHandle);
-      assertTrue("Transaction readStatus during write does not contain Database name. ", (wrteTransHandle.get()).contains(UberrestServerName));
-      assertTrue("Transaction readStatus during write does not contain Database name. ", (wrteTransHandle.get()).contains("App-Services"));
+      assertTrue((wrteTransHandle.get()).contains(UberrestServerName));
+      assertTrue((wrteTransHandle.get()).contains("App-Services"));
       transaction.commit();
 
       transaction = client.openTransaction();
 
       DocumentPage page = docMgr.read(transaction, docId[0], docId[1], docId[2]);
-      assertTrue("DocumentPage Size did not return expected value:: returned==  " + page.size(), page.size() == 3);
+      assertTrue(page.size() == 3);
       StringHandle readTransHandle = new StringHandle();
       transaction.readStatus(readTransHandle);
-      assertTrue("Transaction readStatus during read does not contain Database name. ", (readTransHandle.get()).contains(UberrestServerName));
-      assertTrue("Transaction readStatus during read does not contain Database name. ", (readTransHandle.get()).contains("App-Services"));
+      assertTrue((readTransHandle.get()).contains(UberrestServerName));
+      assertTrue((readTransHandle.get()).contains("App-Services"));
 
     } catch (Exception exp) {
       System.out.println(exp.getMessage());
@@ -645,7 +618,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     System.out.println(expected);
 
-    assertTrue("incorrect rules", expected.contains("RULE-TEST-1 - {rule-number=one}") && expected.contains("RULE-TEST-2 - {rule-number=two}"));
+    assertTrue(expected.contains("RULE-TEST-1 - {rule-number=one}") && expected.contains("RULE-TEST-2 - {rule-number=two}"));
 
     // release client
     client.release();
@@ -678,28 +651,28 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
       docMgr.write(writeset, transaction);
       StringHandle wrteTransHandle = new StringHandle();
       transaction.readStatus(wrteTransHandle);
-      assertTrue("Transaction readStatus during write does not contain Database name. ", (wrteTransHandle.get()).contains(UberrestServerName));
-      assertTrue("Transaction readStatus during write does not contain Database name. ", (wrteTransHandle.get()).contains("App-Services"));
+      assertTrue((wrteTransHandle.get()).contains(UberrestServerName));
+      assertTrue((wrteTransHandle.get()).contains("App-Services"));
       transaction.commit();
 
       transaction = client.openTransaction();
       String txId = transaction.getTransactionId();
 
       DocumentPage page = docMgr.read(transaction, docId[0], docId[1], docId[2]);
-      assertTrue("DocumentPage Size did not return expected value returned==  " + page.size(), page.size() == 3);
+      assertTrue(page.size() == 3);
       // Read back the doc contents to make sure that write succeeded.
       String strDocContent1 = docMgr.read(docId[0], new StringHandle()).get();
-      assertTrue("Text document write difference", strDocContent1.contains("Vannevar Bush wrote an article for The Atlantic Monthly"));
+      assertTrue(strDocContent1.contains("Vannevar Bush wrote an article for The Atlantic Monthly"));
       String strDocContent2 = docMgr.read(docId[1], new StringHandle()).get();
-      assertTrue("Text document write difference", strDocContent2.contains("The Bush article described a device called a Memex."));
+      assertTrue(strDocContent2.contains("The Bush article described a device called a Memex."));
       String strDocContent3 = docMgr.read(docId[2], new StringHandle()).get();
-      assertTrue("Text document write difference", strDocContent3.contains("For 1945, the thoughts expressed in The Atlantic Monthly were groundbreaking."));
+      assertTrue(strDocContent3.contains("For 1945, the thoughts expressed in The Atlantic Monthly were groundbreaking."));
 
       StringHandle readTransHandle = new StringHandle();
       transaction.readStatus(readTransHandle);
-      assertTrue("Transaction readStatus during read does not contain App Server name. ", (readTransHandle.get()).contains(UberrestServerName));
-      assertTrue("Transaction readStatus during read does not contain Database name. ", (readTransHandle.get()).contains(dbName));
-      assertTrue("Transaction readStatus during read does not contain Transaction Id name. ", (readTransHandle.get()).contains(txId));
+      assertTrue((readTransHandle.get()).contains(UberrestServerName));
+      assertTrue((readTransHandle.get()).contains(dbName));
+      assertTrue((readTransHandle.get()).contains(txId));
     } catch (Exception exp) {
       System.out.println(exp.getMessage());
       throw exp;
@@ -758,8 +731,8 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
       // Test for readRule
       RuleDefinition ruleReadDef1 = ruleReadMgr.readRule(ruleName1, new RuleDefinition());
-      assertTrue("Rule Manager readRule name method asserts", ruleName1.equalsIgnoreCase(ruleReadDef1.getName()));
-      assertTrue("Rule Manager readRule description method asserts", ruleReadDef1.getDescription().equalsIgnoreCase("rule for test1"));
+      assertTrue(ruleName1.equalsIgnoreCase(ruleReadDef1.getName()));
+      assertTrue(ruleReadDef1.getDescription().equalsIgnoreCase("rule for test1"));
       // End of Test for readRule
 
       // Test for readRuleAs
@@ -772,8 +745,8 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
         srtBuf.append(bufCurrentLine);
         System.out.println(bufCurrentLine);
       }
-      assertTrue("Rule Manager readRuleAs name method asserts", srtBuf.toString().contains(ruleName2));
-      assertTrue("Rule Manager readRuleAs description method asserts", srtBuf.toString().contains("rule for test2"));
+      assertTrue(srtBuf.toString().contains(ruleName2));
+      assertTrue(srtBuf.toString().contains("rule for test2"));
     } catch (Exception e) {
       System.out.println(e.getMessage());
     } finally {
@@ -844,7 +817,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     }
 
     System.out.println(expected);
-    assertTrue("incorrect rules", expected.contains("RULE-TEST-1 - {rule-number=one}") && expected.contains("RULE-TEST-2 - {rule-number=two}"));
+    assertTrue(expected.contains("RULE-TEST-1 - {rule-number=one}") && expected.contains("RULE-TEST-2 - {rule-number=two}"));
 
     // release client
     client.release();
@@ -876,9 +849,9 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 		  writeset.add(docId[2], new StringHandle().with("This is so foo3"));
 
 		  docMgr.write(writeset);
-		  assertEquals("Text document write difference", "This is so foo1", docMgr.read(docId[0], new StringHandle()).get());
-		  assertEquals("Text document write difference", "This is so foo2", docMgr.read(docId[1], new StringHandle()).get());
-		  assertEquals("Text document write difference", "This is so foo3", docMgr.read(docId[2], new StringHandle()).get());
+		  assertEquals( "This is so foo1", docMgr.read(docId[0], new StringHandle()).get());
+		  assertEquals( "This is so foo2", docMgr.read(docId[1], new StringHandle()).get());
+		  assertEquals( "This is so foo3", docMgr.read(docId[2], new StringHandle()).get());
 		  docMgr.delete(docId[0], docId[1], docId[2]);
 	  } catch (ResourceNotFoundException e) {
 		e.printStackTrace();
@@ -942,11 +915,11 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 		  metadataHandle.getMetadataValues().add("keyTrx1", "valueTrx1");
 		  docMgr.writeMetadata(docId, metadataHandle, t1);
 		  docMgr.readMetadata(docId, readMetadataHandle, t1);
-		  assertTrue(" metadata doesnot contain expected string valueTrx1", metadatavalues.containsValue("valueTrx1"));
+		  assertTrue( metadatavalues.containsValue("valueTrx1"));
 		  t1.rollback();
 		  docMgr.readMetadata(docId, readMetadataHandle);
 		  metadatavalues = readMetadataHandle.getMetadataValues();
-		  assertFalse(" metadata  contains unexpected string valueTrx1", metadatavalues.containsValue("valueTrx1"));
+		  assertFalse(metadatavalues.containsValue("valueTrx1"));
 
 		  // Trx with metadata values commit scenario
 		  t2 = client.openTransaction();
@@ -954,11 +927,11 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 		  DocumentDescriptor desc = docMgr.create(template, metadataHandle, contentHandle, t2);
 		  String docId1 = desc.getUri();
 		  docMgr.read(docId1, readMetadataHandle, contentHandle, t2);
-		  assertTrue(" metadata doesnot contain expected string valueTrx2", metadatavalues.containsValue("valueTrx2"));
+		  assertTrue( metadatavalues.containsValue("valueTrx2"));
 		  t2.commit();
 		  docMgr.readAs(docId1, readMetadataHandle, String.class);
 		  metadatavalues = readMetadataHandle.getMetadataValues();
-		  assertTrue(" metadata doesnot contains  string 'valueTrx2' after trx commit", metadatavalues.containsValue("valueTrx2"));
+		  assertTrue( metadatavalues.containsValue("valueTrx2"));
 		  waitForPropertyPropagate();
 
 		  t1 = t2 = null;
@@ -1035,13 +1008,13 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
       expected = expected + rule.getName() + " - " + rule.getMetadata() + " | ";
     }
     System.out.println(expected);
-    assertTrue("incorrect rules", expected.contains("RULE-TEST-1 - {rule-number=one}") && expected.contains("RULE-TEST-2 - {rule-number=two}"));
+    assertTrue( expected.contains("RULE-TEST-1 - {rule-number=one}") && expected.contains("RULE-TEST-2 - {rule-number=two}"));
 
     // release client
     client.release();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws Exception {
     System.out.println("In tear down");
 

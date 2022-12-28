@@ -5,13 +5,13 @@ import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.test.Common;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Captures what may be surprising behavior of onQueryFailure on QueryBatcher - i.e. it does not capture exceptions
@@ -44,16 +44,14 @@ public class QueryBatcherFailureTest {
             ).onQueryFailure(failure -> failureMessages.add(failure.getMessage()))
         );
 
-        assertTrue(
-            "Unexpected message: " + ex.getMessage(),
-            ex.getMessage().contains("Directory URI path must end with '/'")
+        assertTrue(ex.getMessage().contains("Directory URI path must end with '/'"),
+			"Unexpected message: " + ex.getMessage()
         );
 
-        assertEquals(
-            "Despite the name, 'onQueryFailure' does not capture exceptions based on the query failing. If the original " +
-                "query fails, then an exception will be immediately thrown by 'newQueryBatcher' - which is good! " +
-                "A user can try/catch that and act accordingly. But an onQueryFailure listener is not invoked. ",
-            0, failureMessages.size());
+        assertEquals(0, failureMessages.size(),
+			"Despite the name, 'onQueryFailure' does not capture exceptions based on the query failing. If the original " +
+				"query fails, then an exception will be immediately thrown by 'newQueryBatcher' - which is good! " +
+				"A user can try/catch that and act accordingly. But an onQueryFailure listener is not invoked. ");
     }
 
     @Test
@@ -81,10 +79,9 @@ public class QueryBatcherFailureTest {
         assertEquals(1, processedItems.size());
         assertEquals("item1", processedItems.get(0));
 
-        assertEquals(
-            "An onQueryFailure listener does not receive errors from an onUrisReady listener. Instead, " +
-                "QueryBatcherImpl simply logs these, such that they are effectively swallowed. It's up to the user " +
-                "implementing a QueryBatchListener to provide a better error-handling mechanism.",
-            0, failureMessages.size());
+        assertEquals(0, failureMessages.size(),
+			"An onQueryFailure listener does not receive errors from an onUrisReady listener. Instead, " +
+				"QueryBatcherImpl simply logs these, such that they are effectively swallowed. It's up to the user " +
+				"implementing a QueryBatchListener to provide a better error-handling mechanism.");
     }
 }

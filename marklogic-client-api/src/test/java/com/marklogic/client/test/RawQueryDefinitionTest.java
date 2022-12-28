@@ -15,32 +15,6 @@
  */
 package com.marklogic.client.test;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.StringReader;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
@@ -49,42 +23,43 @@ import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.TuplesHandle;
-import com.marklogic.client.io.ValuesHandle;
+import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.query.CountedDistinctValue;
-import com.marklogic.client.query.ExtractedItem;
-import com.marklogic.client.query.ExtractedResult;
-import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.MatchLocation;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
-import com.marklogic.client.query.RawQueryByExampleDefinition;
-import com.marklogic.client.query.RawStructuredQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.query.Tuple;
-import com.marklogic.client.query.ValuesDefinition;
+import com.marklogic.client.query.*;
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.StringReader;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RawQueryDefinitionTest {
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
     queryMgr = Common.client.newQueryManager();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     Common.client.newDocumentManager().delete("test_issue581_RawStructuredQueryFromFileHandle.xml");
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void setupTestOptions()
     throws FileNotFoundException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
   {
@@ -184,9 +159,9 @@ public class RawQueryDefinitionTest {
     assertNotNull(summaries);
     assertTrue(summaries.length > 0);
     for (MatchDocumentSummary summary : summaries) {
-      assertTrue("Mime type of document",
+      assertTrue(
         summary.getMimeType().matches("(application|text)/xml"));
-      assertEquals("Format of document", Format.XML, summary.getFormat());
+      assertEquals( Format.XML, summary.getFormat());
       Document relevanceTrace = summary.getRelevanceInfo();
       if (relevanceTrace != null) {
         assertEquals(relevanceTrace.getDocumentElement().getLocalName(),"relevance-info");
@@ -275,12 +250,12 @@ public class RawQueryDefinitionTest {
     checkResults(results);
 
     String output = queryMgr.validate(qbe, new StringHandle()).get();
-    assertNotNull("Empty XML validation", output);
+    assertNotNull( output);
     assertXMLEqual("Failed to validate QBE", output,
       "<q:valid-query xmlns:q=\"http://marklogic.com/appservices/querybyexample\"/>");
 
     output = queryMgr.convert(qbe, new StringHandle()).get();
-    assertNotNull("Empty XML conversion", output);
+    assertNotNull( output);
     assertXpathEvaluatesTo(
       "favorited",
       "string(/*[local-name()='search']/*[local-name()='query']/*[local-name()='value-query']/*[local-name()='element']/@name)",
@@ -297,8 +272,8 @@ public class RawQueryDefinitionTest {
         "}"
     );
     output = queryMgr.search(qbe, new StringHandle().withFormat(Format.JSON)).get();
-    assertNotNull("Empty JSON output", output);
-    assertTrue("Output without a match",
+    assertNotNull( output);
+    assertTrue(
       output.contains("\"results\":[{\"index\":1,"));
   }
 

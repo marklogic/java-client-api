@@ -1,27 +1,22 @@
 package com.marklogic.client.test.rows;
 
-import static org.junit.Assert.assertEquals;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.expression.PlanBuilder;
+import com.marklogic.client.io.*;
+import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.row.RawPlanDefinition;
+import com.marklogic.client.row.RowRecord;
+import com.marklogic.client.test.Common;
+import com.marklogic.client.type.PlanParamExpr;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
-
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.marker.AbstractWriteHandle;
-import com.marklogic.client.row.RawPlanDefinition;
-import com.marklogic.client.row.RowRecord;
-import com.marklogic.client.test.Common;
-import com.marklogic.client.type.PlanParamExpr;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests various scenarios involving the {@code fromParam} accessor and the need to bind a content handle as a parameter

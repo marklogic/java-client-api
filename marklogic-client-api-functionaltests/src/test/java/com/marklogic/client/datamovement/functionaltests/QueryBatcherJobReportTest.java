@@ -31,10 +31,9 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,8 +45,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 
@@ -73,7 +71,7 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 	/**
 	 * @throws Exception
 	 */
-	@BeforeClass
+	@BeforeAll
 	public static void setUpBeforeClass() throws Exception {
 		dbClient = connectAsAdmin();
 		dmManager = dbClient.newDataMovementManager();
@@ -107,7 +105,7 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 		}
 
 		ihb2.flushAndWait();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
 
 		for (int j = 0; j < 2000; j++) {
 			String uri = "/local/string-" + j;
@@ -115,7 +113,7 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 		}
 
 		ihb2.flushAndWait();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4000);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4000);
 
 		// Xquery transformation
 		TransformExtensionsManager transMgr = dbClient.newServerConfigManager().newTransformExtensionsManager();
@@ -151,13 +149,13 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 		});
 		batcher.onQueryFailure(throwable -> throwable.printStackTrace());
 		queryTicket = dmManager.startJob(batcher);
-		Assert.assertTrue("Job Id incorrect", jobId.equalsIgnoreCase(queryTicket.getJobId()));
-		Assert.assertTrue("Job Name incorrect", batcher.getJobName().trim().equalsIgnoreCase("XmlTransform"));
+		assertTrue(jobId.equalsIgnoreCase(queryTicket.getJobId()));
+		assertTrue(batcher.getJobName().trim().equalsIgnoreCase("XmlTransform"));
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(queryTicket);
 		System.out.println("Number of success batches " + dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
 		// Account for cluster env and number of forests; and/or single node env test runs.
-		Assert.assertTrue(dmManager.getJobReport(queryTicket).getSuccessBatchesCount() >= 4);
+		assertTrue(dmManager.getJobReport(queryTicket).getSuccessBatchesCount() >= 4);
 
 		batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
 				.withBatchSize(500)
@@ -169,7 +167,7 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 		queryTicket = dmManager.startJob(batcher);
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(queryTicket);
-		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessEventsCount(), 2000);
+		assertEquals(dmManager.getJobReport(queryTicket).getSuccessEventsCount(), 2000);
 
 		batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
 				.withBatchSize(500)
@@ -187,8 +185,8 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(queryTicket);
 
-		Assert.assertEquals(0, dmManager.getJobReport(queryTicket).getFailureEventsCount());
-		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), count3.get());
+		assertEquals(0, dmManager.getJobReport(queryTicket).getFailureEventsCount());
+		assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), count3.get());
 	}
 
 	@Test
@@ -200,16 +198,16 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 		WriteBatcher wbatcher = dmManager.newWriteBatcher().withBatchSize(32).withThreadCount(20);
 		try {
 			wbatcher.addAs("/nulldoc", node);
-			Assert.assertFalse("Exception was not thrown, when it should have been", 1 < 2);
+			fail("Exception was not thrown, when it should have been");
 		} catch (IllegalArgumentException e) {
-			Assert.assertTrue(e.getMessage().equals("content must not be null"));
+			assertTrue(e.getMessage().equals("content must not be null"));
 		}
 
 		try {
 			wbatcher.add("/nulldoc", jacksonHandle);
-			Assert.assertFalse("Exception was not thrown, when it should have been", 1 < 2);
+			fail("Exception was not thrown, when it should have been");
 		} catch (IllegalArgumentException e) {
-			Assert.assertTrue(e.getMessage().equals("contentHandle must not be null"));
+			assertTrue(e.getMessage().equals("contentHandle must not be null"));
 		}
 
 		QueryManager queryMgr = dbClient.newQueryManager();
@@ -219,14 +217,14 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 
 		try {
 			QueryBatcher batcher = dmManager.newQueryBatcher(querydef).withBatchSize(32).withThreadCount(20);
-			Assert.assertFalse("Exception was not thrown, when it should have been", 1 < 2);
+			fail("Exception was not thrown, when it should have been");
 		} catch (IllegalArgumentException e) {
-			Assert.assertTrue(e.getMessage().equals("query must not be null"));
+			assertTrue(e.getMessage().equals("query must not be null"));
 		}
 	}
 
 	@Test
-	@Ignore("Ignoring this test for now, as it's failing intermittently due to the bug captured at " +
+	@Disabled("Ignoring this test for now, as it's failing intermittently due to the bug captured at " +
 		"https://github.com/marklogic/java-client-api/issues/1327; did some cleanup on this before ignoring it, as " +
 		"when it passed, the onQueryFailure handler was never being invoked. So that stuff was removed. It appears " +
 		"that the intent of the test is to verify that the retry mechanism for QueryBatcher kicks in when a failure " +
@@ -267,8 +265,8 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 		batcher.awaitCompletion();
 
 		// Verify that the QueryBatcher was able to recover after the database was re-enabled
-		Assert.assertEquals(6000, dmManager.getJobReport(queryTicket).getSuccessEventsCount());
-		Assert.assertEquals(successfulBatchCount.intValue(), dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
+		assertEquals(6000, dmManager.getJobReport(queryTicket).getSuccessEventsCount());
+		assertEquals(successfulBatchCount.intValue(), dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
 	}
 
 	class DisabledDBRunnable implements Runnable {
@@ -325,9 +323,9 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 		System.out.println("Failure event: " + dmManager.getJobReport(queryTicket).getFailureEventsCount());
 		System.out.println("Failure batch: " + dmManager.getJobReport(queryTicket).getFailureBatchesCount());
 
-		Assert.assertTrue(dmManager.getJobReport(queryTicket).getSuccessEventsCount() > 40);
-		Assert.assertTrue(dmManager.getJobReport(queryTicket).getSuccessEventsCount() < 1000);
-		Assert.assertTrue(batchCount.get() == dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
+		assertTrue(dmManager.getJobReport(queryTicket).getSuccessEventsCount() > 40);
+		assertTrue(dmManager.getJobReport(queryTicket).getSuccessEventsCount() < 1000);
+		assertTrue(batchCount.get() == dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
 	}
 
 	// Making sure we can stop jobs based on the JobId.
@@ -365,9 +363,9 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 		System.out.println("Failure event: " + dmManager.getJobReport(queryTicket).getFailureEventsCount());
 		System.out.println("Failure batch: " + dmManager.getJobReport(queryTicket).getFailureBatchesCount());
 
-		Assert.assertTrue(dmManager.getJobReport(queryTicket).getSuccessEventsCount() > 40);
-		Assert.assertTrue(dmManager.getJobReport(queryTicket).getSuccessEventsCount() < 1000);
-		Assert.assertTrue(batchCount.get() == dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
+		assertTrue(dmManager.getJobReport(queryTicket).getSuccessEventsCount() > 40);
+		assertTrue(dmManager.getJobReport(queryTicket).getSuccessEventsCount() < 1000);
+		assertTrue(batchCount.get() == dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
 	}
 
 	@Test
@@ -397,10 +395,10 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 		queryTicket = dmManager.startJob(batcher);
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(queryTicket);
-		Assert.assertTrue(success.get());
-		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessEventsCount(), 2000);
-		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessEventsCount(), successCount.get());
-		Assert.assertEquals(batchCount.get(), dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
+		assertTrue(success.get());
+		assertEquals(dmManager.getJobReport(queryTicket).getSuccessEventsCount(), 2000);
+		assertEquals(dmManager.getJobReport(queryTicket).getSuccessEventsCount(), successCount.get());
+		assertEquals(batchCount.get(), dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
 
 		AtomicInteger doccount = new AtomicInteger(0);
 		QueryBatcher resultBatcher = dmManager
@@ -415,12 +413,12 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 						if(dh.get().get("c").asText().equals("new Value"))
 							doccount.incrementAndGet();
 					}
-					
+
 				});
-		dmManager.startJob(resultBatcher);				
+		dmManager.startJob(resultBatcher);
 		resultBatcher.awaitCompletion();
 
-		assertEquals("document count", 2000, doccount.get());
+		assertEquals(2000, doccount.get());
 	}
 
 	@Test
@@ -461,7 +459,7 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 		// Wait an amount of time that should result in some docs being transformed but not all
 		Thread.currentThread().sleep(500L);
 		dmManager.stopJob(queryTicket);
-		
+
 		AtomicInteger transformedCount = new AtomicInteger(0);
 		QueryBatcher resultBatcher = dmManager
 				.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
@@ -482,43 +480,44 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 							skippedApplyTransCount.incrementAndGet();
 						}
 					}
-					
+
 				});
-		dmManager.startJob(resultBatcher);				
+		dmManager.startJob(resultBatcher);
 		resultBatcher.awaitCompletion();
 
 		System.out.println("stopTransformJobTest: Success: " + successUris.size());
 		System.out.println("stopTransformJobTest: Skipped Apply Transform count : " + skippedApplyTransCount.get());
 		System.out.println("stopTransformJobTest: Skipped: " + skippedUris.size());
 		System.out.println("stopTransformJobTest : Applied Trans count " + transformedCount.get());
-		
+
 		System.out.println("stopTransformJobTest : successCount.get() " + successCount.get());
 		// This fails intermittently when the successBatch size is one less than the appliedTranscount. Interestingly,
 		// a potentially similar off-by-one error occurs with the stopTransformJob test in ApplyTransformTest
-		assertTrue("Number of docs transformed must be <= number of docs selected; " +
-			"applied count: " + transformedCount.get() + "; success batch size: " + successUris.size() + "; failed count: " + failedUris.size(),
-			transformedCount.get() <= (successUris.size() + failedUris.size()));
+		assertTrue(
+			transformedCount.get() <= (successUris.size() + failedUris.size()),
+			"Number of docs transformed must be <= number of docs selected; " +
+				"applied count: " + transformedCount.get() + "; success batch size: " + successUris.size() + "; failed count: " + failedUris.size());
 	}
-	
+
 	/* Test 1 setMaxBatches(2035) - maximum specified in advance
 	 * Test 2 setMaxBatches() -- the uris collected thus far during a job
-	 * 
+	 *
 	 */
 	@Test
 	public void testStopBeforeListenerisComplete() throws Exception {
 		ArrayList<String> urisList = new ArrayList<String>();
 		final String qMaxBatches = "fn:count(cts:uri-match('/setMaxBatches*'))";
 		try {
-			
+
 			System.out.println("In testStopBeforeListenerisComplete method");
-		
+
 			final AtomicInteger count = new AtomicInteger(0);
 			final AtomicInteger failedBatch = new AtomicInteger(0);
 			final AtomicInteger successBatch = new AtomicInteger(0);
-			
+
 			final AtomicInteger failedBatch2 = new AtomicInteger(0);
 			final AtomicInteger successBatch2 = new AtomicInteger(0);
-			
+
 			String jsonDoc = "{" +
 				    "\"employees\": [" +
 				    "{ \"firstName\":\"John\" , \"lastName\":\"Doe\" }," +
@@ -586,25 +585,25 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 			countT.join();
 
 			t1.join();
-			
+
 			int docCnt = dbClient.newServerEval().xquery(qMaxBatches).eval().next().getNumber().intValue();
 			System.out.println("Doc count is " + docCnt);
-			Assert.assertTrue(docCnt == 50000);
+			assertTrue(docCnt == 50000);
 
 			Collection<String> batchResults = new LinkedHashSet<String>();
 			QueryBatcher qb = dmManager.newQueryBatcher(urisList.iterator())
 					.withBatchSize(12)
 					.withThreadCount(1)
-					.withJobId("ListenerCompletionTest")	            
+					.withJobId("ListenerCompletionTest")
 					.onUrisReady((QueryBatch batch) -> {
 
-						for (String str : batch.getItems()) {            		
-							batchResults.add(str);	                    
+						for (String str : batch.getItems()) {
+							batchResults.add(str);
 						}
 						successBatch.addAndGet(1);
 					})
 					.onQueryFailure(throwable-> {
-						failedBatch.addAndGet(1);                
+						failedBatch.addAndGet(1);
 					});
 			// Test 1 - Set max uris that can be collected in advance of the job.
 			qb.setMaxBatches(2035);
@@ -618,8 +617,8 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-					dmManager.stopJob(qb);			
-				}			
+					dmManager.stopJob(qb);
+				}
 			}
 
 			dmManager.startJob(qb);
@@ -632,9 +631,9 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 			// Validate Test 1 setMaxBatches(2035)
 			System.out.println("Max URIs size is : " + batchResults.size());
 			/* 12 times 2035 equals 24420 with one Thread on QueryBatcher.
-			 * With thread count > 1 on QueryBatcher, batchResults size is greater than 24420. 
+			 * With thread count > 1 on QueryBatcher, batchResults size is greater than 24420.
 			 */
-			assertTrue("Stop QueryBatcher with setMaxBatches set to 2035 is incorrect", batchResults.size() >= 24420);
+			assertTrue(batchResults.size() >= 24420);
 
 			/* Test 2 setMaxBatches()
 			 */
@@ -642,19 +641,19 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 			QueryBatcher qb2 = dmManager.newQueryBatcher(urisList.iterator())
 					.withBatchSize(12)
 					.withThreadCount(20)
-					.withJobId("ListenerCompletionTest2")	            
+					.withJobId("ListenerCompletionTest2")
 					.onUrisReady((QueryBatch batch) -> {
 
-						for (String str : batch.getItems()) {            		
-							batchResults2.add(str);	                    
+						for (String str : batch.getItems()) {
+							batchResults2.add(str);
 						}
 						successBatch2.addAndGet(1);
 					})
 					.onQueryFailure(throwable-> {
-						failedBatch2.addAndGet(1);                
+						failedBatch2.addAndGet(1);
 					});
 			qb2.setMaxBatches(203);
-			
+
 			class BatchesSoFarThread implements Runnable {
 
 				@Override
@@ -665,8 +664,8 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-					qb2.setMaxBatches();					
-				}			
+					qb2.setMaxBatches();
+				}
 			}
 
 			Thread tMBStop2 = new Thread(new BatchesSoFarThread());
@@ -677,18 +676,18 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 				e.printStackTrace();
 			}
 			dmManager.startJob(qb2);
-			
+
 			int initialUrisSize = batchResults2.size();
-			
+
 			tMBStop2.start();
 			qb2.awaitCompletion();
 			dmManager.stopJob(qb2);
-			
+
 			System.out.println("Doc count in initialUrisSize " + initialUrisSize);
 			System.out.println("Doc count after setMaxBatches() is called " +  batchResults2.size());
-			
-			assertTrue("Batches of URIs collected so far", batchResults2.size() > 0);
-			assertTrue("Number of Uris collected does not fall in the range", (batchResults2.size()>initialUrisSize && batchResults2.size()<= 2436));
+
+			assertTrue(batchResults2.size() > 0);
+			assertTrue((batchResults2.size()>initialUrisSize && batchResults2.size()<= 2436));
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
@@ -711,7 +710,7 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 			deleteBatcher.awaitCompletion(2, TimeUnit.MINUTES);
 			int docCnt = dbClient.newServerEval().xquery(qMaxBatches).eval().next().getNumber().intValue();
 			System.out.println("All setMaxBatches docs should have been deleted. Count after DeleteListener job is " + docCnt);
-			Assert.assertTrue(docCnt == 0);
+			assertTrue(docCnt == 0);
 		}
 	}
 }

@@ -15,13 +15,11 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.example.cookbook.RawCombinedSearch;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-
-import org.junit.Test;
-
-import com.marklogic.client.example.cookbook.RawCombinedSearch;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RawCombinedSearchTest {
   @Test
@@ -33,6 +31,6 @@ public class RawCombinedSearchTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    assertTrue("RawCombinedSearch example failed", succeeded);
+    assertTrue( succeeded);
   }
 }

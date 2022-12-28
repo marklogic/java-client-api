@@ -12,12 +12,12 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * In addition to testing fromDocDescriptors, this class contains tests to verify that default collections and
@@ -123,11 +123,13 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
         assertEquals(1, rows.size());
         RowRecord row = rows.get(0);
         assertEquals(uri, row.getString("uri"));
-        assertEquals("Quality still exists as a column because there's no way for fromDocDescriptors to know if the " +
-            "user intentionally set quality to zero or not; however, the assertions below verify that 'quality' is " +
-            "not passed to the 'write' col because the original quality still exists", 0, rows.get(0).getInt("quality"));
+        assertEquals(0, rows.get(0).getInt("quality"),
+			"Quality still exists as a column because there's no way for fromDocDescriptors to know if the " +
+				"user intentionally set quality to zero or not; however, the assertions below verify that 'quality' is " +
+				"not passed to the 'write' col because the original quality still exists");
         assertTrue(row.containsKey("collections"));
-        assertEquals("Row is expected to contain uri, collections, and quality: " + row, 3, row.size());
+        assertEquals(3, row.size(),
+			"Row is expected to contain uri, collections, and quality: " + row);
 
         // Verify only collections were updated
         verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
@@ -228,7 +230,7 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
             assertEquals("value1", docMetadata.getMetadataValues().get("key1"));
         });
     }
-    
+
     private String writeDocWithAllMetadata() {
         final String uri = "/acme/doc1.json";
         DocumentMetadataHandle metadata = newDefaultMetadata().withCollections("custom1");
@@ -310,12 +312,13 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
             new StringHandle("<doc>1</doc>").withFormat(Format.XML));
 
         IllegalArgumentException ex = assertThrows(
-            "Only JSON content is supported for the 5.6.0 release and 11.0 release of MarkLogic",
             IllegalArgumentException.class,
-            () -> op.docDescriptors(writeSet));
-        assertEquals("Unexpected exception: " + ex.getMessage(),
+            () -> op.docDescriptors(writeSet),
+			"Only JSON content is supported for the 5.6.0 release and 11.0 release of MarkLogic");
+        assertEquals(
             "Only JSON content can be used with fromDocDescriptors; non-JSON content found for document with URI: /acme/doc1.xml",
-            ex.getMessage());
+            ex.getMessage(),
+			"Unexpected exception: " + ex.getMessage());
     }
 
     @Test
@@ -362,7 +365,8 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
         assertEquals(1, rows.size());
         assertEquals(uri, rows.get(0).getString("uri"));
         assertEquals("modified!", rows.get(0).getContentAs("doc", ObjectNode.class).get("hello").asText());
-        assertEquals("Should only have 'uri' and 'doc' since that's all that the user specified", 2, rows.get(0).size());
+        assertEquals(2, rows.get(0).size(),
+			"Should only have 'uri' and 'doc' since that's all that the user specified");
 
         // Verify only the doc was updated
         verifyJsonDoc(uri, doc -> assertEquals("modified!", doc.get("hello").asText()));

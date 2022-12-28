@@ -22,17 +22,15 @@ import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BulkOutputCallerNext {
     static ObjectNode apiObj;
@@ -43,10 +41,7 @@ public class BulkOutputCallerNext {
 
     private static final String collectionName = "bulkOutputCallerNext";
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         docMgr = IOTestUtil.db.newJSONDocumentManager();
         apiObj = IOTestUtil.readApi(apiName);
@@ -84,7 +79,7 @@ public class BulkOutputCallerNext {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
 
         QueryManager queryMgr = IOTestUtil.db.newQueryManager();

@@ -15,43 +15,32 @@
  */
 package com.marklogic.client.test.datamovement;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.datamovement.*;
+import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.test.Common;
+import org.junit.jupiter.api.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.marklogic.client.datamovement.*;
-import com.marklogic.client.io.SearchHandle;
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.StringHandle;
 import static com.marklogic.client.io.Format.JSON;
-import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StructuredQueryBuilder;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import com.marklogic.client.test.Common;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class QueryBatcherIteratorTest {
   Logger logger = LoggerFactory.getLogger(QueryBatcherIteratorTest.class);
   private static int numDocs = 500;
@@ -61,12 +50,12 @@ public class QueryBatcherIteratorTest {
   private static String qhbTestCollection = "QueryBatcherIteratorTest_" +
     new Random().nextInt(10000);
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() throws Exception {
     setup();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     QueryManager queryMgr = client.newQueryManager();
     DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
@@ -76,7 +65,7 @@ public class QueryBatcherIteratorTest {
 
   public static void setup() throws Exception {
 
-    assertEquals( "Since the doc doesn't exist, documentManager.exists() should return null",
+    assertEquals(
       null, client.newDocumentManager().exists(collection + "/doc_1.json") );
 
     WriteBatcher writeBatcher = moveMgr.newWriteBatcher()

@@ -27,21 +27,19 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.pojo.annotation.Id;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /*
  * This class has test methods that check POJO's ability to read and report errors
  * (negative test cases) when the POJO class has missing @Id on its data field
  * and getter /setter methods.
- * 
+ *
  *   NOTE: If this class is renamed, then variable docId (URI) of the POJO documents needs to changed accordingly.
  *   NOTE: Also change the type value present within the json string to proper class name.
  */
@@ -159,7 +157,7 @@ public class TestPOJOMissingIdGetSetMethod extends AbstractFunctionalTest {
     }
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     client = getDatabaseClient("rest-admin", "x", getConnType());
   }
@@ -186,12 +184,12 @@ public class TestPOJOMissingIdGetSetMethod extends AbstractFunctionalTest {
    * SmallArtifactMissingGetter.
    */
   public void validateMissingArtifactGetter(SmallArtifactMissingGetter artifact) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.id);
-    assertEquals("Id of the object is ", -99, artifact.getId());
-    assertEquals("Name of the object is ", "SmallArtifact",
+    assertNotNull(artifact);
+    assertNotNull(artifact.id);
+    assertEquals( -99, artifact.getId());
+    assertEquals( "SmallArtifact",
         artifact.getName());
-    assertEquals("Inventory of the object is ", 1000,
+    assertEquals( 1000,
         artifact.getInventory());
   }
 
@@ -200,12 +198,12 @@ public class TestPOJOMissingIdGetSetMethod extends AbstractFunctionalTest {
    * SmallArtifactMissingSetter.
    */
   public void validateMissingArtifactSetter(SmallArtifactMissingSetter artifact, String name) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.id);
-    assertEquals("Id of the object is ", -99, artifact.getId());
-    assertEquals("Name of the object is ", name,
+    assertNotNull( artifact);
+    assertNotNull( artifact.id);
+    assertEquals( -99, artifact.getId());
+    assertEquals( name,
         artifact.getName());
-    assertEquals("Inventory of the object is ", 1000,
+    assertEquals( 1000,
         artifact.getInventory());
   }
 
@@ -214,12 +212,12 @@ public class TestPOJOMissingIdGetSetMethod extends AbstractFunctionalTest {
    * SmallArtifactMissGetSet.
    */
   public void validateMissingArtifactGetSet(SmallArtifactMissGetSet artifact) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.id);
-    assertEquals("Id of the object is ", -99, artifact.getId());
-    assertEquals("Name of the object is ", "SmallArtifact",
+    assertNotNull( artifact);
+    assertNotNull( artifact.id);
+    assertEquals( -99, artifact.getId());
+    assertEquals( "SmallArtifact",
         artifact.getName());
-    assertEquals("Inventory of the object is ", 1000,
+    assertEquals( 1000,
         artifact.getInventory());
   }
 
@@ -363,9 +361,8 @@ public class TestPOJOMissingIdGetSetMethod extends AbstractFunctionalTest {
    * with valid POJO specific URI. Uses SmallArtifactMissGetSet class which has
    * no @Id on any of its class members.
    */
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testPOJOReadMissingGetterSetter() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+	@Test
+  public void testPOJOReadMissingGetterSetter() throws Exception {
 
     String docId[] = { "com.marklogic.client.functionaltest.TestPOJOMissingIdGetSetMethod$SmallArtifactMissingSetter/SmallArtifactMissGetSet.json" };
     String json1 = new String(
@@ -393,12 +390,8 @@ public class TestPOJOMissingIdGetSetMethod extends AbstractFunctionalTest {
 
     docMgr.write(writeset);
 
-    PojoRepository<SmallArtifactMissGetSet, String> pojoReposSmallArtifact = client
-        .newPojoRepository(SmallArtifactMissGetSet.class, String.class);
-    String artifactName = new String("SmallArtifact");
-
-    SmallArtifactMissGetSet artifact1 = pojoReposSmallArtifact.read(artifactName);
-    validateMissingArtifactGetSet(artifact1);
+    assertThrows(IllegalArgumentException.class, () -> client
+        .newPojoRepository(SmallArtifactMissGetSet.class, String.class));
   }
 
 }

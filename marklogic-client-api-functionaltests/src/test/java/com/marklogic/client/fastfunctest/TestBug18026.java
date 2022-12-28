@@ -30,7 +30,8 @@ import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -44,7 +45,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.assertTrue;
 
 public class TestBug18026 extends AbstractFunctionalTest {
 
@@ -168,12 +168,12 @@ public class TestBug18026 extends AbstractFunctionalTest {
 
     JsonNode contentAfter = mapper.readValue(strAfter, JsonNode.class);
 
-    assertTrue("Buffered JSON document difference", contentBefore.equals(contentAfter));
+    assertTrue( contentBefore.equals(contentAfter));
 
     // release client
     client.release();
   }
-  
+
   @Test
   public void testBug19016() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
   {
@@ -198,7 +198,7 @@ public class TestBug18026 extends AbstractFunctionalTest {
 
     System.out.println(result);
 
-    assertTrue("qtext is not correct", result.contains("<search:qtext>this\"is\"an%33odd string</search:qtext>"));
+    assertTrue( result.contains("<search:qtext>this\"is\"an%33odd string</search:qtext>"));
 
     // release client
     client.release();

@@ -16,61 +16,12 @@
 
 package com.marklogic.client.datamovement.functionaltests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.w3c.dom.Document;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.FilteredForestConfiguration;
-import com.marklogic.client.datamovement.ForestConfiguration;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.datamovement.WriteEvent;
+import com.marklogic.client.datamovement.*;
 import com.marklogic.client.datamovement.impl.WriteJobReportListener;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -83,6 +34,29 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.query.StructuredQueryBuilder;
+import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.junit.jupiter.api.*;
+import org.w3c.dom.Document;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.*;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class WriteHostBatcherTest extends BasicJavaClientREST {
 
@@ -127,13 +101,13 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	private static JobTicket testBatchJobTicket;
 	private static int forestCount = 1;
 
-	@BeforeClass
+	@BeforeAll
 	public static void setUpBeforeClass() throws Exception {
 		loadGradleProperties();
-		
+
 		server = getRestAppServerName();
 		port = getRestAppServerPort();
-		
+
         host = getRestAppServerHostName();
 		hostNames = getHosts();
 
@@ -192,7 +166,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		docMeta2.setFormat(Format.XML);
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void tearDownAfterClass() throws Exception {
 		associateRESTServerWithDB(server, "Documents");
 		for (int i = 0; i < forestCount -1 ; i++) {
@@ -204,14 +178,14 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		deleteDB(dbName);
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		if (getDocumentCount(dbName) != 0) {
 			clearDB(port);
 		}
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 
 		Map<String, String> props = new HashMap<>();
@@ -331,7 +305,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		final String query1 = "fn:count(fn:doc())";
 
 		// Test 1 few failures with add (batchSize =1)
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		replenishStream();
 		WriteBatcher ihb1 = dmManager.newWriteBatcher();
 		ihb1.withBatchSize(1);
@@ -359,21 +333,21 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		System.out.println("Success URI's: " + successBatch.toString());
 		System.out.println("Failure URI's: " + failureBatch.toString());
 
-		Assert.assertTrue(uriExists(failureBatch.toString(), "/doc/os_wrongjson"));
-		Assert.assertTrue(uriExists(failureBatch.toString(), "/doc/reader_wrongxml"));
+		assertTrue(uriExists(failureBatch.toString(), "/doc/os_wrongjson"));
+		assertTrue(uriExists(failureBatch.toString(), "/doc/reader_wrongxml"));
 
 		DocumentMetadataHandle mHandle = readMetadataFromDocument(dbClient, "/doc/string", "XML");
-		Assert.assertEquals("Sample Collection 1", mHandle.getCollections().iterator().next());
-		Assert.assertTrue(mHandle.getCollections().size() == 1);
+		assertEquals("Sample Collection 1", mHandle.getCollections().iterator().next());
+		assertTrue(mHandle.getCollections().size() == 1);
 		System.out.println("Quality of /doc/string is " + mHandle.getQuality());
-		Assert.assertEquals(1, mHandle.getQuality());
+		assertEquals(1, mHandle.getQuality());
 
 		DocumentMetadataHandle mHandle1 = readMetadataFromDocument(dbClient, "/doc/file", "XML");
-		Assert.assertEquals(0, mHandle1.getQuality());
-		Assert.assertEquals("Sample Collection 2", mHandle1.getCollections().iterator().next());
-		Assert.assertTrue(mHandle1.getCollections().size() == 1);
+		assertEquals(0, mHandle1.getQuality());
+		assertEquals("Sample Collection 2", mHandle1.getCollections().iterator().next());
+		assertTrue(mHandle1.getCollections().size() == 1);
 
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 6);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 6);
 
 		successBatch.delete(0, successBatch.length());
 		failureBatch.delete(0, failureBatch.length());
@@ -381,7 +355,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		// ISSUE # 38
 		// Test 2 All failure with add (batchSize =8)
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		replenishStream();
 		WriteBatcher ihb2 = dmManager.newWriteBatcher();
 		ihb2.withBatchSize(8);
@@ -403,15 +377,15 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 				.add("/doc/bytes", docMeta1, bytesHandle).add("/doc/dom", domHandle);
 
 		ihb2.flushAndWait();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
-		Assert.assertTrue(uriExists(failureBatch.toString(), "/doc/reader_wrongxml"));
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(uriExists(failureBatch.toString(), "/doc/reader_wrongxml"));
 
 		successBatch.delete(0, successBatch.length());
 		failureBatch.delete(0, failureBatch.length());
 		clearDB(port);
 
 		// Test 3 All success with add (batchSize =8)
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		replenishStream();
 		WriteBatcher ihb3 = dmManager.newWriteBatcher();
 		ihb3.withBatchSize(8);
@@ -436,20 +410,20 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		ihb3.flushAndWait();
 
 		System.out.println("Size is " + dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 8);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 8);
 
 		DocumentMetadataHandle mHandle2 = readMetadataFromDocument(dbClient, "/doc/reader_xml", "XML");
-		Assert.assertEquals(1, mHandle2.getQuality());
-		Assert.assertEquals("Sample Collection 1", mHandle2.getCollections().iterator().next());
-		Assert.assertTrue(mHandle2.getCollections().size() == 1);
+		assertEquals(1, mHandle2.getQuality());
+		assertEquals("Sample Collection 1", mHandle2.getCollections().iterator().next());
+		assertTrue(mHandle2.getCollections().size() == 1);
 
 		DocumentMetadataHandle mHandle3 = readMetadataFromDocument(dbClient, "/doc/jackson", "XML");
-		Assert.assertEquals(0, mHandle3.getQuality());
-		Assert.assertEquals("Sample Collection 2", mHandle3.getCollections().iterator().next());
-		Assert.assertTrue(mHandle3.getCollections().size() == 1);
+		assertEquals(0, mHandle3.getQuality());
+		assertEquals("Sample Collection 2", mHandle3.getCollections().iterator().next());
+		assertTrue(mHandle3.getCollections().size() == 1);
 
-		Assert.assertTrue(uriExists(successBatch.toString(), "/doc/os_json"));
-		Assert.assertFalse(uriExists(successBatch.toString(), "/doc/reader_wrongxml"));
+		assertTrue(uriExists(successBatch.toString(), "/doc/os_json"));
+		assertFalse(uriExists(successBatch.toString(), "/doc/reader_wrongxml"));
 
 		successBatch.delete(0, successBatch.length());
 		failureBatch.delete(0, failureBatch.length());
@@ -457,7 +431,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		// Test 4 All failures in 2 batches
 		Thread.currentThread().sleep(1500L);
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		replenishStream();
 		WriteBatcher ihb4 = dmManager.newWriteBatcher();
 		ihb4.withBatchSize(4);
@@ -483,9 +457,9 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 				.add("/doc/dom", docMeta1, domHandle);
 		ihb4.flushAndWait();
 
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
-		Assert.assertTrue(uriExists(failureBatch.toString(), "/doc/reader_wrongxml"));
-		Assert.assertTrue(uriExists(failureBatch.toString(), "/doc/os_wrongjson"));
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(uriExists(failureBatch.toString(), "/doc/reader_wrongxml"));
+		assertTrue(uriExists(failureBatch.toString(), "/doc/os_wrongjson"));
 	}
 
 	// ISSUE 60
@@ -497,7 +471,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		final String query1 = "fn:count(fn:doc())";
 
 		// Test 1 All success with addAs (batchSize =8)
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		replenishStream();
 		WriteBatcher ihb3 = dmManager.newWriteBatcher();
 		ihb3.withBatchSize(8);
@@ -520,19 +494,19 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		ihb3.flushAndWait();
 		System.out.println("Size is " + dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4);
 
 		DocumentMetadataHandle mHandle2 = readMetadataFromDocument(dbClient, "/doc/reader_xml", "XML");
-		Assert.assertEquals(1, mHandle2.getQuality());
-		Assert.assertEquals("Sample Collection 1", mHandle2.getCollections().iterator().next());
-		Assert.assertTrue(mHandle2.getCollections().size() == 1);
+		assertEquals(1, mHandle2.getQuality());
+		assertEquals("Sample Collection 1", mHandle2.getCollections().iterator().next());
+		assertTrue(mHandle2.getCollections().size() == 1);
 
 		DocumentMetadataHandle mHandle3 = readMetadataFromDocument(dbClient, "/doc/jackson", "XML");
-		Assert.assertEquals(0, mHandle3.getQuality());
-		Assert.assertEquals("Sample Collection 2", mHandle3.getCollections().iterator().next());
-		Assert.assertTrue(mHandle3.getCollections().size() == 1);
+		assertEquals(0, mHandle3.getQuality());
+		assertEquals("Sample Collection 2", mHandle3.getCollections().iterator().next());
+		assertTrue(mHandle3.getCollections().size() == 1);
 
-		Assert.assertTrue(uriExists(successBatch.toString(), "/doc/string"));
+		assertTrue(uriExists(successBatch.toString(), "/doc/string"));
 
 		successBatch.delete(0, successBatch.length());
 		failureBatch.delete(0, failureBatch.length());
@@ -548,7 +522,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		final String query1 = "fn:count(fn:doc())";
 
 		// Test 1 few failures with addAs and add(batchSize =1)
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		replenishStream();
 		WriteBatcher ihb1 = dmManager.newWriteBatcher();
 		ihb1.withBatchSize(1);
@@ -570,20 +544,20 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		ihb1.flushAndWait();
 
-		Assert.assertTrue(uriExists(failureBatch.toString(), "/doc/os_wrongjson"));
-		Assert.assertTrue(uriExists(failureBatch.toString(), "/doc/reader_wrongxml"));
+		assertTrue(uriExists(failureBatch.toString(), "/doc/os_wrongjson"));
+		assertTrue(uriExists(failureBatch.toString(), "/doc/reader_wrongxml"));
 
 		DocumentMetadataHandle mHandle = readMetadataFromDocument(dbClient, "/doc/string", "XML");
-		Assert.assertEquals(1, mHandle.getQuality());
-		Assert.assertEquals("Sample Collection 1", mHandle.getCollections().iterator().next());
-		Assert.assertTrue(mHandle.getCollections().size() == 1);
+		assertEquals(1, mHandle.getQuality());
+		assertEquals("Sample Collection 1", mHandle.getCollections().iterator().next());
+		assertTrue(mHandle.getCollections().size() == 1);
 
 		DocumentMetadataHandle mHandle1 = readMetadataFromDocument(dbClient, "/doc/file", "XML");
-		Assert.assertEquals(0, mHandle1.getQuality());
-		Assert.assertEquals("Sample Collection 2", mHandle1.getCollections().iterator().next());
-		Assert.assertTrue(mHandle1.getCollections().size() == 1);
+		assertEquals(0, mHandle1.getQuality());
+		assertEquals("Sample Collection 2", mHandle1.getCollections().iterator().next());
+		assertTrue(mHandle1.getCollections().size() == 1);
 
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 6);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 6);
 
 		successBatch.delete(0, successBatch.length());
 		failureBatch.delete(0, failureBatch.length());
@@ -591,7 +565,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		// ISSUE # 38
 		// Test 2 All failure with addAs and add(batchSize =8)
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		replenishStream();
 		WriteBatcher ihb2 = dmManager.newWriteBatcher();
 		ihb2.withBatchSize(8);
@@ -612,15 +586,15 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 				.addAs("/doc/bytes", docMeta1, bytesJson).addAs("/doc/dom", domHandle);
 
 		ihb2.flushAndWait();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
-		Assert.assertTrue(uriExists(failureBatch.toString(), "/doc/reader_wrongxml"));
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(uriExists(failureBatch.toString(), "/doc/reader_wrongxml"));
 
 		successBatch.delete(0, successBatch.length());
 		failureBatch.delete(0, failureBatch.length());
 		clearDB(port);
 
 		// Test 3 All success with addAs and add(batchSize =8)
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		replenishStream();
 		WriteBatcher ihb3 = dmManager.newWriteBatcher();
 		ihb3.withBatchSize(8);
@@ -644,27 +618,27 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		ihb3.flushAndWait();
 		System.out.println("Size is " + dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 8);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 8);
 
 		DocumentMetadataHandle mHandle2 = readMetadataFromDocument(dbClient, "/doc/reader_xml", "XML");
-		Assert.assertEquals(1, mHandle2.getQuality());
-		Assert.assertEquals("Sample Collection 1", mHandle2.getCollections().iterator().next());
-		Assert.assertTrue(mHandle2.getCollections().size() == 1);
+		assertEquals(1, mHandle2.getQuality());
+		assertEquals("Sample Collection 1", mHandle2.getCollections().iterator().next());
+		assertTrue(mHandle2.getCollections().size() == 1);
 
 		DocumentMetadataHandle mHandle3 = readMetadataFromDocument(dbClient, "/doc/jackson", "XML");
-		Assert.assertEquals(0, mHandle3.getQuality());
-		Assert.assertEquals("Sample Collection 2", mHandle3.getCollections().iterator().next());
-		Assert.assertTrue(mHandle3.getCollections().size() == 1);
+		assertEquals(0, mHandle3.getQuality());
+		assertEquals("Sample Collection 2", mHandle3.getCollections().iterator().next());
+		assertTrue(mHandle3.getCollections().size() == 1);
 
-		Assert.assertTrue(uriExists(successBatch.toString(), "/doc/os_json"));
-		Assert.assertFalse(uriExists(successBatch.toString(), "/doc/reader_wrongxml"));
+		assertTrue(uriExists(successBatch.toString(), "/doc/os_json"));
+		assertFalse(uriExists(successBatch.toString(), "/doc/reader_wrongxml"));
 
 		successBatch.delete(0, successBatch.length());
 		failureBatch.delete(0, failureBatch.length());
 		clearDB(port);
 
 		// Test 4 All failures in 2 batches
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		replenishStream();
 		WriteBatcher ihb4 = dmManager.newWriteBatcher();
 		ihb4.withBatchSize(4);
@@ -690,9 +664,9 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 				.addAs("/doc/dom", docMeta1, docContent);
 		ihb4.flushAndWait();
 
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
-		Assert.assertTrue(uriExists(failureBatch.toString(), "/doc/reader_wrongxml"));
-		Assert.assertTrue(uriExists(failureBatch.toString(), "/doc/os_wrongjson"));
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(uriExists(failureBatch.toString(), "/doc/reader_wrongxml"));
+		assertTrue(uriExists(failureBatch.toString(), "/doc/os_wrongjson"));
 	}
 
 	private boolean uriExists(String s, String in) {
@@ -718,30 +692,30 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		dmManager.startJob(ihb);
 		try {
 			ihb.withJobName("Job 2");
-			Assert.assertFalse("Exception was not thrown, when it should have been", 1 < 2);
+			fail("Expection should have been thrown");
 		} catch (Exception e) {
-			Assert.assertTrue(e instanceof IllegalStateException);
+			assertTrue(e instanceof IllegalStateException);
 		}
 
 		try {
 			ihb.withBatchSize(1);
-			Assert.assertFalse("Exception was not thrown, when it should have been", 1 < 2);
+			fail("Expection should have been thrown");
 		} catch (Exception e) {
-			Assert.assertTrue(e instanceof IllegalStateException);
+			assertTrue(e instanceof IllegalStateException);
 		}
 		ihb.add("/local/triple", stringHandle);
 		try {
 			ihb.withJobName("Job 2");
-			Assert.assertFalse("Exception was not thrown, when it should have been", 1 < 2);
+			fail("Expection should have been thrown");
 		} catch (Exception e) {
-			Assert.assertTrue(e instanceof IllegalStateException);
+			assertTrue(e instanceof IllegalStateException);
 		}
 
 		try {
 			ihb.withBatchSize(1);
-			Assert.assertFalse("Exception was not thrown, when it should have been", 1 < 2);
+			fail("Expection should have been thrown");
 		} catch (Exception e) {
-			Assert.assertTrue(e instanceof IllegalStateException);
+			assertTrue(e instanceof IllegalStateException);
 		}
 
 		TransformExtensionsManager transMgr = dbClient.newServerConfigManager().newTransformExtensionsManager();
@@ -762,9 +736,9 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		try {
 			ihb.withTransform(transform);
-			Assert.assertFalse("Exception was not thrown, when it should have been", 1 < 2);
+			fail("Expection should have been thrown");
 		} catch (Exception e) {
-			Assert.assertTrue(e instanceof IllegalStateException);
+			assertTrue(e instanceof IllegalStateException);
 		}
 
 	}
@@ -794,9 +768,9 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		}
 
 		ihb1.flushAndWait();
-		Assert.assertTrue(state.get());
+		assertTrue(state.get());
 		System.out.println(numberOfSuccessFulBatches.intValue());
-		Assert.assertTrue(numberOfSuccessFulBatches.intValue() == 21);
+		assertTrue(numberOfSuccessFulBatches.intValue() == 21);
 
 	}
 
@@ -840,14 +814,14 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		System.out.println(successPort.toString());
 		System.out.println(successDb.toString());
 
-		Assert.assertTrue(count(successPort.toString(), String.valueOf(port)) == 10);
+		assertTrue(count(successPort.toString(), String.valueOf(port)) == 10);
 		if (hostNames.length > 1 && !isLBHost()) {
-			Assert.assertTrue(count(successHost.toString(), String.valueOf(host)) != 10);
+			assertTrue(count(successHost.toString(), String.valueOf(host)) != 10);
 		}
 
-		Assert.assertTrue(count(failurePort.toString(), String.valueOf(port)) == 5);
+		assertTrue(count(failurePort.toString(), String.valueOf(port)) == 5);
 		if (hostNames.length > 1 && !isLBHost()) {
-			Assert.assertTrue(count(failureHost.toString(), String.valueOf(host)) != 5);
+			assertTrue(count(failureHost.toString(), String.valueOf(host)) != 5);
 		}
 
 	}
@@ -939,8 +913,8 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		}
 		ihb1.flushAndWait();
 		dmManager.stopJob(testBatchJobTicket);
-		Assert.assertTrue(succObj.get());
-		Assert.assertTrue(failObj.get());
+		assertTrue(succObj.get());
+		assertTrue(failObj.get());
 
 	}
 
@@ -954,34 +928,34 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		try {
 			ihb1.withBatchSize(-20);
-			Assert.assertFalse("Exception was not thrown, when it should have been", 1 < 2);
+			fail("Expection should have been thrown");
 		} catch (Exception e) {
-			Assert.assertTrue(e instanceof IllegalArgumentException);
+			assertTrue(e instanceof IllegalArgumentException);
 		}
 
 		WriteBatcher ihb2 = dmManager.newWriteBatcher();
 		try {
 			ihb2.withBatchSize(0);
-			Assert.assertFalse("Exception was not thrown, when it should have been", 1 < 2);
+			fail("Expection should have been thrown");
 		} catch (Exception e) {
-			Assert.assertTrue(e instanceof IllegalArgumentException);
+			assertTrue(e instanceof IllegalArgumentException);
 		}
 
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
 		WriteBatcher ihb3 = dmManager.newWriteBatcher();
 		try {
 			ihb3.withThreadCount(-4);
-			Assert.assertFalse("Exception was not thrown, when it should have been", 1 < 2);
+			fail("Expection should have been thrown");
 		} catch (Exception e) {
-			Assert.assertTrue(e instanceof IllegalArgumentException);
+			assertTrue(e instanceof IllegalArgumentException);
 		}
 
 		try {
 			ihb3.withThreadCount(0);
-			Assert.assertFalse("Exception was not thrown, when it should have been", 1 < 2);
+			fail("Expection should have been thrown");
 		} catch (Exception e) {
-			Assert.assertTrue(e instanceof IllegalArgumentException);
+			assertTrue(e instanceof IllegalArgumentException);
 		}
 	}
 
@@ -990,7 +964,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		System.out.println("In testflushAsync method");
 
 		final String query1 = "fn:count(fn:doc())";
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		WriteBatcher ihb1 = dmManager.newWriteBatcher();
 		ihb1.withBatchSize(25);
 		ihb1.onBatchSuccess(batch -> {
@@ -1005,24 +979,24 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		}
 
 		ihb1.flushAndWait();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
 		clearDB(port);
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		for (int i = 0; i < 1500; i++) {
 			String uri = "/local/json-" + i;
 			ihb1.add(uri, stringHandle);
 		}
 		ihb1.flushAsync();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() < 1500);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() < 1500);
 		System.out.println(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 		ihb1.awaitCompletion();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1500);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1500);
 	}
 
 	@Test
 	public void testInsertoReadOnlyForest() throws Exception {
 		System.out.println("In testInsertoReadOnlyForest method");
-		
+
 		Map<String, String> properties = new HashMap<>();
 		properties.put("updates-allowed", "read-only");
 		for (int i = 0; i < forestCount; i++)
@@ -1059,18 +1033,18 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		for (int i = 0; i < forestCount; i++)
 			changeProperty(properties, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
 
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
-		Assert.assertTrue(failState.get());
+		assertTrue(failState.get());
 
-		Assert.assertTrue(successCount.intValue() == 0);
-		Assert.assertTrue(failCount.intValue() == 20);
+		assertTrue(successCount.intValue() == 0);
+		assertTrue(failCount.intValue() == 20);
 	}
 
 	@Test
 	public void testInsertoDisabledDB() throws Exception {
 		System.out.println("In testInsertoDisabledDB method");
-		
+
 		Map<String, String> properties = new HashMap<>();
 		properties.put("enabled", "false");
 		final String query1 = "fn:count(fn:doc())";
@@ -1109,18 +1083,18 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		System.out.println("Success : " + successCount.intValue());
 		System.out.println("Count : " + dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
-		Assert.assertTrue(failState.get());
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(failState.get());
 
-		Assert.assertTrue(failCount.intValue() == 20);
+		assertTrue(failCount.intValue() == 20);
 	}
 
 	@Test
 	public void testServerXQueryTransformSuccess() throws Exception {
 		System.out.println("In testServerXQueryTransformSuccess method");
-		
+
 		final String query1 = "fn:count(fn:doc())";
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		final AtomicInteger successCount = new AtomicInteger(0);
 
 		final AtomicBoolean failState = new AtomicBoolean(false);
@@ -1191,22 +1165,21 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			if (dh.get().getElementsByTagName("foo").item(0).hasAttributes()) {
 				System.out.println(dh.get().getElementsByTagName("foo").item(0).getTextContent());
 				System.out.println(count);
-				assertEquals("Attribute value should be English", "English",
-						dh.get().getElementsByTagName("foo").item(0).getAttributes().item(0).getNodeValue());
+				assertEquals("English", dh.get().getElementsByTagName("foo").item(0).getAttributes().item(0).getNodeValue());
 				count++;
 			}
 		}
 
-		Assert.assertFalse(failState.get());
-		Assert.assertTrue(successCount.intValue() == 8);
-		Assert.assertTrue(count == 8);
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 8);
+		assertFalse(failState.get());
+		assertTrue(successCount.intValue() == 8);
+		assertTrue(count == 8);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 8);
 	}
 
 	@Test
 	public void testServerXQueryTransformFailure() throws Exception {
 		System.out.println("In testServerXQueryTransformFailure method");
-		
+
 		final String query1 = "fn:count(fn:doc())";
 		final AtomicInteger successCount = new AtomicInteger(0);
 
@@ -1263,10 +1236,10 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		}
 		// Flush
 		ihb1.flushAndWait();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4);
-		Assert.assertTrue(failState.get());
-		Assert.assertTrue(successCount.intValue() == 4);
-		Assert.assertTrue(failCount.intValue() == 4);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4);
+		assertTrue(failState.get());
+		assertTrue(successCount.intValue() == 4);
+		assertTrue(failCount.intValue() == 4);
 
 		clearDB(port);
 		failCount.set(0);
@@ -1293,10 +1266,10 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		}
 		// Flush
 		ihb2.flushAndWait();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
-		Assert.assertTrue(failState.get());
-		Assert.assertTrue(successCount.intValue() == 0);
-		Assert.assertTrue(failCount.intValue() == 4);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(failState.get());
+		assertTrue(successCount.intValue() == 0);
+		assertTrue(failCount.intValue() == 4);
 	}
 
 	// Multiple threads writing to same WHB object with unique uri's
@@ -1340,7 +1313,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		t2.join();
 		t3.join();
 		System.out.println(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-		Assert.assertEquals("300 docs expected", 300, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+		assertEquals(300, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 	}
 
 	// ISSUE 48
@@ -1390,7 +1363,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		t2.join();
 		t3.join();
 		System.out.println(eventCount.intValue());
-		Assert.assertTrue(eventCount.intValue() == 300);
+		assertTrue(eventCount.intValue() == 300);
 
 	}
 
@@ -1473,15 +1446,15 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		t2.join();
 		t3.join();
 		// Verify more than 1 thread is spawned
-		Assert.assertTrue(count.intValue() > 1);
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 15000);
+		assertTrue(count.intValue() > 1);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 15000);
 		clearDB(port);
 	}
 
 	// Multiple threads writing to same WHB object with unique uri's and with
 	// thread count =10 and txsize =3 but with small number of docs
 	// Failing intermittently with rewriteWHB branch
-	@Ignore
+	@Disabled
 	public void testAddMultiThreadedLessDocsSuccess() throws Exception {
 		System.out.println("In testAddMultiThreadedLessDocsSuccess method");
 
@@ -1556,8 +1529,8 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		t2.join();
 		t3.join();
 
-		// Assert.assertTrue(count.intValue()==10);
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 45);
+		// assertTrue(count.intValue()==10);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 45);
 		clearDB(port);
 	}
 
@@ -1567,7 +1540,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// causes forests to go to middle closing state when run against reWriteHB
 	// branch
 	// Git Issue # 62
-	@Ignore
+	@Disabled
 	public void testAddMultiThreadedwithThreadCountFailure() throws Exception {
 		System.out.println("In testAddMultiThreadedwithThreadCountFailure method");
 
@@ -1647,16 +1620,16 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		t2.join();
 		t3.join();
 
-		Assert.assertTrue(count.intValue() == 15000);
-		Assert.assertTrue(eventCount.intValue() == 10);
+		assertTrue(count.intValue() == 15000);
+		assertTrue(eventCount.intValue() == 10);
 
 	}
 
 	// ISSUE # 58
-	@Ignore
+	@Disabled
 	public void testTransactionSize() throws Exception {
 		System.out.println("In testTransactionSize method");
-		
+
 		try {
 			final String query1 = "fn:count(fn:doc())";
 
@@ -1698,7 +1671,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			System.out.println("Success : " + successCount.intValue());
 			System.out
 					.println("Count : " + dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 500);
+			assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 500);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -1708,7 +1681,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	@Test
 	public void testThreadSize() throws Exception {
 		System.out.println("In testThreadSize method");
-		
+
 		try {
 			final String query1 = "fn:count(fn:doc())";
 
@@ -1794,10 +1767,10 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			System.out
 					.println("Count : " + dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 			// Confirms that 20 threads were spawned
-			Assert.assertTrue(count.get());
+			assertTrue(count.get());
 
 			// Confirms that the number of docs inserted = 50000
-			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 25000);
+			assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 25000);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1847,10 +1820,10 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			ihb2.add("", stringHandle);
 		}
 		ihb2.flushAndWait();
-		Assert.assertTrue(failState.get());
-		Assert.assertFalse(failureListenerNpe.get());
-		Assert.assertEquals(5, failCount.get());
-		Assert.assertEquals(30, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+		assertTrue(failState.get());
+		assertFalse(failureListenerNpe.get());
+		assertEquals(5, failCount.get());
+		assertEquals(30, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 
 	}
 
@@ -1888,17 +1861,17 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			ihb2.add("", stringHandle);
 		}
 		ihb2.flushAndWait();
-		Assert.assertTrue(failState.get());
-		Assert.assertFalse(failureListenerNpe.get());
-		Assert.assertEquals(5, failCount.get());
-		Assert.assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+		assertTrue(failState.get());
+		assertFalse(failureListenerNpe.get());
+		assertEquals(5, failCount.get());
+		assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 
 	}
 
 	@Test
 	public void testEmptyFlush() throws Exception {
 		System.out.println("In testEmptyFlush method");
-		
+
 		WriteBatcher ihb2 = dmManager.newWriteBatcher();
 		ihb2.withBatchSize(5);
 
@@ -1908,10 +1881,10 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		});
 		try {
 			ihb2.flushAndWait();
-			Assert.assertFalse("Exception was not thrown, when it should have been", 1 < 2);
+			fail("Expection should have been thrown");
 		} catch (Exception e) {
 			e.printStackTrace();
-			Assert.assertTrue(e instanceof IllegalStateException);
+			assertTrue(e instanceof IllegalStateException);
 		}
 
 		JobTicket job = dmManager.startJob(ihb2);
@@ -1920,7 +1893,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		ihb2.add("/new", fileHandle);
 		dmManager.stopJob(job);
 		final String query1 = "fn:count(fn:doc())";
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 	}
 
 	@Test
@@ -1979,7 +1952,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			fail("Exception should have been thrown");
 		} catch (IllegalStateException e) {
 			System.out.println(e.getMessage());
-			Assert.assertTrue(e.getMessage().contains("This instance has been stopped"));
+			assertTrue(e.getMessage().contains("This instance has been stopped"));
 
 		}
 
@@ -1988,7 +1961,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			fail("Exception should have been thrown");
 		} catch (IllegalStateException e) {
 			System.out.println(e.getMessage());
-			Assert.assertTrue(e.getMessage().contains("This instance has been stopped"));
+			assertTrue(e.getMessage().contains("This instance has been stopped"));
 
 		}
 
@@ -1996,11 +1969,11 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		int count = dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue();
 		System.out.println(count);
-		Assert.assertTrue(count >= 80);
+		assertTrue(count >= 80);
 		// This is a arbitrary number less than 6000 confirming the job was
 		// stopped
 		// midway.
-		Assert.assertTrue(count <= 1000);
+		assertTrue(count <= 1000);
 	}
 
 	@Test
@@ -2008,7 +1981,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		System.out.println("In testAddMultiStartJob method");
 
 		final String query1 = "fn:count(fn:doc())";
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		ihbMT = dmManager.newWriteBatcher();
 		ihbMT.withBatchSize(11);
 		ihbMT.onBatchSuccess(batch -> {
@@ -2052,7 +2025,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		t1.join();
 		t2.join();
 		System.out.println(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-		Assert.assertEquals(200, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+		assertEquals(200, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 		dmManager.stopJob(writeTicket);
 	}
 
@@ -2062,7 +2035,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		System.out.println("In testInserttoDisabledAppServer method");
 
 		final String query1 = "fn:count(fn:doc())";
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		Map<String, String> properties = new HashMap<>();
 
 		WriteBatcher ihb2 = dmManager.newWriteBatcher();
@@ -2100,7 +2073,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		ihb2.awaitCompletion();
 		System.out.println("testInserttoDisabledAppServer: Size is "
 				+ dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 200);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 200);
 
 	}
 
@@ -2110,7 +2083,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		System.out.println("In testRetry method");
 
 		final String query1 = "fn:count(fn:doc())";
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		AtomicBoolean successCalled = new AtomicBoolean(false);
 		Map<String, String> properties = new HashMap<>();
 
@@ -2153,8 +2126,8 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		changeProperty(properties, "/manage/v2/databases/" + dbName + "/properties");
 		ihbMT.awaitCompletion();
 		System.out.println(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 200);
-		Assert.assertTrue(successCalled.get());
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 200);
+		assertTrue(successCalled.get());
 	}
 
 	// ea3
@@ -2192,7 +2165,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		ihb2.flushAndWait();
 		t1.join();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
 
 	}
 
@@ -2230,7 +2203,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// EA 3 - We need a better way of getting to know that DB is disabled and
 	// how
 	// to assert on counts.
-	@Ignore
+	@Disabled
 	public void testDisableDBDuringInsert() throws Exception {
 		System.out.println("In testDisableDBDuringInsert method");
 
@@ -2263,10 +2236,10 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		t1.join();
 		properties.put("enabled", "true");
 		changeProperty(properties, "/manage/v2/databases/" + dbName + "/properties");
-		Assert.assertTrue(failCheck.get());
-		Assert.assertTrue(successCount.intValue() >= 100);
-		Assert.assertTrue(successCount.intValue() < 1000);
-		Assert.assertTrue(failureCount.intValue() <= 900);
+		assertTrue(failCheck.get());
+		assertTrue(successCount.intValue() >= 100);
+		assertTrue(successCount.intValue() < 1000);
+		assertTrue(failureCount.intValue() <= 900);
 	}
 
 	class DisabledDBRunnable implements Runnable {
@@ -2293,16 +2266,16 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	}
 
 	@Test
-	public void testNoHost() throws Exception {	
-		Assume.assumeTrue(!isLBHost());
-		Assume.assumeTrue(hostNames.length > 1);
+	public void testNoHost() throws Exception {
+		Assumptions.assumeTrue(!isLBHost());
+		Assumptions.assumeTrue(hostNames.length > 1);
 		System.out.println("In testNoHost method");
 
 		final String query1 = "fn:count(fn:doc())";
 
 		try {
 			DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoHost").withQuality(0);
-			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+			assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
 			ihbMT = dmManager.newWriteBatcher();
 
@@ -2321,7 +2294,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 			ihbMT.flushAndWait();
 
-			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
+			assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
 
 			Set<String> uris = Collections.synchronizedSet(new HashSet<String>());
 			QueryBatcher getUris = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("NoHost"));
@@ -2330,18 +2303,18 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 			try {
 				getUris.withForestConfig(forestConfig);
-				Assert.assertTrue(false);
+				assertTrue(false);
 			} catch (Exception e) {
-				Assert.assertEquals("White list or black list rules are too restrictive: no valid hosts are left",
+				assertEquals("White list or black list rules are too restrictive: no valid hosts are left",
 						e.getMessage());
 			}
 
 			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList("asdf");
 			try {
 				getUris.withForestConfig(forestConfig);
-				Assert.assertTrue(false);
+				assertTrue(false);
 			} catch (Exception e) {
-				Assert.assertEquals("White list or black list rules are too restrictive: no valid hosts are left",
+				assertEquals("White list or black list rules are too restrictive: no valid hosts are left",
 						e.getMessage());
 			}
 			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList(hostNames[1]);
@@ -2353,7 +2326,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 			getUris.awaitCompletion();
 
-			Assert.assertTrue(uris.size() == 1000);
+			assertTrue(uris.size() == 1000);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -2362,12 +2335,12 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 	@Test
 	public void testNullConfig() throws Exception {
-		Assume.assumeTrue(hostNames.length > 1);
+		Assumptions.assumeTrue(hostNames.length > 1);
 		System.out.println("In testNullConfig method");
 
 		final String query1 = "fn:count(fn:doc())";
 
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
 		WriteBatcher ihb2 = dmManager.newWriteBatcher();
 		QueryBatcher qb2 = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("NoHost"));
@@ -2376,23 +2349,23 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		try {
 			ihb2.withBatchSize(50).withForestConfig(forestConfig);
-			Assert.assertTrue(false);
+			assertTrue(false);
 		} catch (IllegalArgumentException e) {
-			Assert.assertEquals("forestConfig must not be null", e.getMessage());
+			assertEquals("forestConfig must not be null", e.getMessage());
 		}
 
 		try {
 			qb2.withBatchSize(50).withForestConfig(forestConfig);
-			Assert.assertTrue(false);
+			assertTrue(false);
 		} catch (IllegalArgumentException e) {
-			Assert.assertEquals("forestConfig must not be null", e.getMessage());
+			assertEquals("forestConfig must not be null", e.getMessage());
 		}
 	}
 
 	@Test
 	public void testQBWhiteList() throws Exception {
-		Assume.assumeTrue(!isLBHost());
-		Assume.assumeTrue(hostNames.length > 1);
+		Assumptions.assumeTrue(!isLBHost());
+		Assumptions.assumeTrue(hostNames.length > 1);
 		System.out.println("In testQBWhiteList method");
 
 		final String query1 = "fn:count(fn:doc())";
@@ -2400,7 +2373,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		FilteredForestConfiguration forestConfig = null;
 		DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoHost").withQuality(0);
 
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
 		ihbMT = dmManager.newWriteBatcher();
 		ihbMT.withBatchSize(50);
@@ -2417,7 +2390,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		ihbMT.flushAndWait();
 
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
 
 		Set<String> uris = Collections.synchronizedSet(new HashSet<String>());
 		QueryBatcher qb = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("NoHost")).withBatchSize(25)
@@ -2430,18 +2403,18 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		try {
 			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList(null);
-			Assert.fail("hostnames shouldn't be null");
+			fail("hostnames shouldn't be null");
 
 		} catch (IllegalArgumentException e) {
-			Assert.assertEquals("hostNames must not be null", e.getMessage());
+			assertEquals("hostNames must not be null", e.getMessage());
 		}
 		try {
 			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList("asdf");
 			qb.withBatchSize(50).withForestConfig(forestConfig);
-			Assert.assertTrue(false);
+			assertTrue(false);
 
 		} catch (IllegalStateException e) {
-			Assert.assertEquals("White list or black list rules are too restrictive: no valid hosts are left",
+			assertEquals("White list or black list rules are too restrictive: no valid hosts are left",
 					e.getMessage());
 		}
 
@@ -2450,13 +2423,13 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		qb.withForestConfig(forestConfig);
 		dmManager.startJob(qb);
 		qb.awaitCompletion();
-		Assert.assertEquals(1000, uris.size());
+		assertEquals(1000, uris.size());
 	}
 
 	@Test
 	public void testWBWhiteList() throws Exception {
-		Assume.assumeTrue(!isLBHost());
-		Assume.assumeTrue(hostNames.length > 1);
+		Assumptions.assumeTrue(!isLBHost());
+		Assumptions.assumeTrue(hostNames.length > 1);
 		System.out.println("In testWBWhiteList method");
 
 		final String query1 = "fn:count(fn:doc())";
@@ -2464,24 +2437,24 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		FilteredForestConfiguration forestConfig = null;
 		DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoHost").withQuality(0);
 
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
 		WriteBatcher ihb2 = dmManager.newWriteBatcher();
 		try {
 			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList(null);
-			Assert.fail("hostnames shouldn't be null");
+			fail("hostnames shouldn't be null");
 
 		} catch (IllegalArgumentException e) {
-			Assert.assertEquals("hostNames must not be null", e.getMessage());
+			assertEquals("hostNames must not be null", e.getMessage());
 		}
 
 		try {
 			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList("asdf");
 			ihb2.withBatchSize(50).withForestConfig(forestConfig);
-			Assert.assertTrue(false);
+			assertTrue(false);
 
 		} catch (IllegalStateException e) {
-			Assert.assertEquals("White list or black list rules are too restrictive: no valid hosts are left",
+			assertEquals("White list or black list rules are too restrictive: no valid hosts are left",
 					e.getMessage());
 		}
 
@@ -2502,13 +2475,13 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		ihb2.flushAndWait();
 
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
 	}
 
 	@Test
 	public void testQBBlackList() throws Exception {
-		Assume.assumeTrue(!isLBHost());
-		Assume.assumeTrue(hostNames.length > 1);
+		Assumptions.assumeTrue(!isLBHost());
+		Assumptions.assumeTrue(hostNames.length > 1);
 		System.out.println("In testQBBlackList method");
 
 		final String query1 = "fn:count(fn:doc())";
@@ -2516,7 +2489,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		FilteredForestConfiguration forestConfig = null;
 		DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoHost").withQuality(0);
 
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
 		WriteBatcher ihb2 = dmManager.newWriteBatcher();
 		ihb2.withBatchSize(50);
@@ -2533,7 +2506,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		ihb2.flushAndWait();
 
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
 
 		Set<String> uris = Collections.synchronizedSet(new HashSet<String>());
 		QueryBatcher qb = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("NoHost")).withBatchSize(25)
@@ -2546,20 +2519,20 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		try {
 			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList(null);
-			Assert.fail("hostnames shouldn't be null");
+			fail("hostnames shouldn't be null");
 
 		} catch (IllegalArgumentException e) {
-			Assert.assertEquals("hostNames must not be null", e.getMessage());
+			assertEquals("hostNames must not be null", e.getMessage());
 		}
 
 		try {
 			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList(hostNames)
 					.withBlackList("localhost");
 			qb.withBatchSize(50).withForestConfig(forestConfig);
-			Assert.assertTrue(false);
+			assertTrue(false);
 
 		} catch (IllegalStateException e) {
-			Assert.assertEquals("White list or black list rules are too restrictive: no valid hosts are left",
+			assertEquals("White list or black list rules are too restrictive: no valid hosts are left",
 					e.getMessage());
 		}
 
@@ -2568,13 +2541,13 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		qb.withForestConfig(forestConfig);
 		dmManager.startJob(qb);
 		qb.awaitCompletion();
-		Assert.assertEquals(1000, uris.size());
+		assertEquals(1000, uris.size());
 	}
 
 	@Test
 	public void testWBBlackList() throws Exception {
-		Assume.assumeTrue(!isLBHost());
-		Assume.assumeTrue(hostNames.length > 1);
+		Assumptions.assumeTrue(!isLBHost());
+		Assumptions.assumeTrue(hostNames.length > 1);
 		System.out.println("In testWBBlackList method");
 
 		final String query1 = "fn:count(fn:doc())";
@@ -2582,15 +2555,15 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		FilteredForestConfiguration forestConfig = null;
 		DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoHost").withQuality(0);
 
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
 		WriteBatcher ihb2 = dmManager.newWriteBatcher();
 		try {
 			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList(null);
-			Assert.fail("hostnames shouldn't be null");
+			fail("hostnames shouldn't be null");
 
 		} catch (IllegalArgumentException e) {
-			Assert.assertEquals("hostNames must not be null", e.getMessage());
+			assertEquals("hostNames must not be null", e.getMessage());
 		}
 
 		forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList("asdf");
@@ -2600,11 +2573,11 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList(hostNames)
 					.withBlackList("localhost");
 			ihb2.withBatchSize(50).withForestConfig(forestConfig);
-			Assert.assertTrue(false);
+			assertTrue(false);
 
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
-			Assert.assertEquals("White list or black list rules are too restrictive: no valid hosts are left",
+			assertEquals("White list or black list rules are too restrictive: no valid hosts are left",
 					e.getMessage());
 		}
 
@@ -2623,13 +2596,13 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		}
 
 		ihb2.flushAndWait();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
 
 	}
 
 	@Test
 	public void testBlackWhiteList() throws Exception {
-		Assume.assumeTrue(!isLBHost());
+		Assumptions.assumeTrue(!isLBHost());
 		System.out.println("In testBlackWhiteList method");
 		FilteredForestConfiguration forestConfig = null;
 
@@ -2639,29 +2612,29 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList("localhost")
 					.withBlackList("localhost");
 			ihb2.withBatchSize(50).withForestConfig(forestConfig);
-			Assert.assertTrue(false);
+			assertTrue(false);
 
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
-			Assert.assertEquals("whiteList already initialized", e.getMessage());
+			assertEquals("whiteList already initialized", e.getMessage());
 		}
 
 		try {
 			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList("localhost")
 					.withWhiteList("localhost");
 			ihb2.withBatchSize(50).withForestConfig(forestConfig);
-			Assert.assertTrue(false);
+			assertTrue(false);
 
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
-			Assert.assertEquals("blackList already initialized", e.getMessage());
+			assertEquals("blackList already initialized", e.getMessage());
 		}
 	}
 
 	@Test
 	public void testNoServer() throws Exception {
-		Assume.assumeTrue(hostNames.length > 1);
-		Assume.assumeTrue(!isLBHost());
+		Assumptions.assumeTrue(hostNames.length > 1);
+		Assumptions.assumeTrue(!isLBHost());
 		System.out.println("In testNoServer method");
 
 		final String query1 = "fn:count(fn:doc())";
@@ -2670,7 +2643,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		try {
 			DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoServer").withQuality(0);
 
-			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+			assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
 			properties.put("group-name", "test");
 			postRequest(properties, "/manage/v2/groups");
@@ -2702,7 +2675,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 			ihb2.flushAndWait();
 			System.out.println(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
+			assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
 
 			Set<String> uris = Collections.synchronizedSet(new HashSet<String>());
 			QueryBatcher getUris = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("NoServer"))
@@ -2714,7 +2687,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 			getUris.awaitCompletion();
 
-			Assert.assertTrue(uris.size() == 1000);
+			assertTrue(uris.size() == 1000);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -2779,14 +2752,14 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		final String query1 = "fn:count(fn:doc())";
 		DatabaseClient dbClientTmp = getDatabaseClient(user, password, getConnType());
 		try {
-			
+
 			DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("Sample Collection 1")
 					.withProperty("docMeta-1", "true").withQuality(1);
 			meta6.setFormat(Format.XML);
-			Assert.assertTrue(dbClientTmp.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+			assertTrue(dbClientTmp.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
 			Thread.currentThread().sleep(5000L);
-			
+
 			DataMovementManager dmManager = dbClientTmp.newDataMovementManager();
 
 			WriteBatcher ihb2 = dmManager.newWriteBatcher();
@@ -2804,7 +2777,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 			ihb2.flushAndWait();
 
-			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
+			assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -2813,21 +2786,21 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			dbClientTmp.release();
 		}
 	}
-	
+
 	@Test
 	public void testDocumentWriteOperationAdd() throws Exception {
 		System.out.println("In testDocumentWriteOperationAdd method");
-		
+
 		final StringBuffer successBatch = new StringBuffer();
 		final StringBuffer failureBatch = new StringBuffer();
 		final String query1 = "fn:count(fn:doc())";
-		
+
 		 String docId[] = { "/foo/test/myFoo1.txt", "/foo/test/myFoo2.txt", "/foo/test/myFoo3.txt",
 			        "/foo/test/myFoo4.txt", "/foo/test/myFoo5.txt", "/foo/test/myFoo6.txt",
 			        "/foo/test/myFoo7.txt", "/foo/test/myFoo8.txt", "/foo/test/myFoo9.txt" };
 
 		// Test 1 All success with addAs (batchSize =8)
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		replenishStream();
 		WriteBatcher ihb3 = dmManager.newWriteBatcher();
 		ihb3.withBatchSize(8);
@@ -2845,7 +2818,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		});
 		dmManager.startJob(ihb3);
 		// Use DocumentWriteOperation Impl class to test Git #647
-		
+
 		// get the original metadata
 	    Document docMetadata = getXMLMetadata("metadata-original.xml");
 	    // create handle to write metadata
@@ -2855,7 +2828,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	    StringHandle contHandle1 = new StringHandle().with("This is so foo1");
 	    StringHandle contHandle2 = new StringHandle().with("This is so foo2");
 	    StringHandle contHandle3 = new StringHandle().with("This is so foo3");
-	    
+
 	    StringHandle contHandle4 = new StringHandle().with("This is so foo4");
 	    StringHandle contHandle5 = new StringHandle().with("This is so foo5");
 	    // Generate a series of DocumentWriteOperation instances.
@@ -2878,7 +2851,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	    		contHandle3
 	    		);
 	    // Use only DocumentWriteOperation
-		
+
 		ihb3.add(docWriteOpsImp1).add(docWriteOpsImp2).add(docWriteOpsImp3);
 
 		ihb3.flushAndWait();
@@ -2888,18 +2861,18 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		DocumentMetadataHandle mHandle1 = readMetadataFromDocument(dbClient, docId[0], "XML");
 		assertEquals(0, mHandle1.getQuality());
 		assertTrue(mHandle1.getCollections().iterator().next().matches("coll[1|2]"));
-		Assert.assertTrue(mHandle1.getCollections().size() == 2);
-		
+		assertTrue(mHandle1.getCollections().size() == 2);
+
 		String actualProperties = getDocumentPropertiesString(mHandle1.getProperties());
 		System.out.println("Returned properties: " + actualProperties);
-		assertTrue("Document properties difference in size value", actualProperties.contains("size:6"));
-	    assertTrue("Document property reviewed not found or not correct", actualProperties.contains("Company:Mark Logic Corporation"));
-	    assertTrue("Document property myInteger not found or not correct", actualProperties.contains("filter-capabilities:text subfiles HD-HTML"));
-	    assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("popularity:5"));	    
-	    assertTrue("Document property myString not found or not correct", actualProperties.contains("Author:MarkLogic"));
-	    assertTrue("Document property myString not found or not correct", actualProperties.contains("content-type:application/msword"));
-	    assertTrue("Document property myString not found or not correct", actualProperties.contains("AppName:Microsoft Office Word"));
-	    
+		assertTrue( actualProperties.contains("size:6"));
+	    assertTrue( actualProperties.contains("Company:Mark Logic Corporation"));
+	    assertTrue( actualProperties.contains("filter-capabilities:text subfiles HD-HTML"));
+	    assertTrue( actualProperties.contains("popularity:5"));
+	    assertTrue( actualProperties.contains("Author:MarkLogic"));
+	    assertTrue( actualProperties.contains("content-type:application/msword"));
+	    assertTrue( actualProperties.contains("AppName:Microsoft Office Word"));
+
 	    // Add to write batcher again mixture of ContentHandle and DocumentWriteOperation with default metadata instance
 	    DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
 	    metadataHandle.getCollections().addAll("my-collection1", "my-collection2");
@@ -2908,7 +2881,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	    metadataHandle.getProperties().put("myString", "foo");
 	    metadataHandle.getProperties().put("myInteger", 10);
 	    metadataHandle.getProperties().put("myDecimal", 34.56678);
-	    
+
 	    metadataHandle.setQuality(23);
 	    DocumentWriteOperationImpl docWriteOpsImp4 = new DocumentWriteOperationImpl(
 	    		OperationType.DOCUMENT_WRITE,
@@ -2916,43 +2889,43 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	    		metadataHandle,
 	    		contHandle5
 	    		);
-	    
+
 	    ihb3.add(docId[3], contHandle4).add(docWriteOpsImp4);
-	    
+
 	    ihb3.flushAndWait();
 		System.out.println("Size is " + dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 5);
-		
+
 		// Read back document from second  DocumentWriteOperation to verify meta-data.
-		DocumentMetadataHandle mHandle2 = readMetadataFromDocument(dbClient, docId[4], "XML");		
-		
-		DocumentProperties properties = mHandle2.getProperties();	    
+		DocumentMetadataHandle mHandle2 = readMetadataFromDocument(dbClient, docId[4], "XML");
+
+		DocumentProperties properties = mHandle2.getProperties();
 	    DocumentCollections collections = mHandle2.getCollections();
 
 	    // Properties
 	    String actualProperties2 = getDocumentPropertiesString(properties);
-	    System.out.println("Returned properties: " + actualProperties);	    
+	    System.out.println("Returned properties: " + actualProperties);
 
-	    assertTrue("Document properties difference in size value", actualProperties2.contains("size:4"));
-	    assertTrue("Document property reviewed not found or not correct", actualProperties2.contains("reviewed:true"));
-	    assertTrue("Document property myInteger not found or not correct", actualProperties2.contains("myInteger:10"));
-	    assertTrue("Document property myDecimal not found or not correct", actualProperties2.contains("myDecimal:34.56678"));	    
-	    assertTrue("Document property myString not found or not correct", actualProperties2.contains("myString:foo"));
-	    
+	    assertTrue( actualProperties2.contains("size:4"));
+	    assertTrue( actualProperties2.contains("reviewed:true"));
+	    assertTrue( actualProperties2.contains("myInteger:10"));
+	    assertTrue( actualProperties2.contains("myDecimal:34.56678"));
+	    assertTrue( actualProperties2.contains("myString:foo"));
+
 	    // Collections
 	    String actualCollections = getDocumentCollectionsString(collections);
 	    System.out.println("Returned collections: " + actualCollections);
 
-	    assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
-	    assertTrue("my-collection1 not found", actualCollections.contains("my-collection1"));
-	    assertTrue("my-collection2 not found", actualCollections.contains("my-collection2"));
-	    
+	    assertTrue( actualCollections.contains("size:2"));
+	    assertTrue( actualCollections.contains("my-collection1"));
+	    assertTrue( actualCollections.contains("my-collection2"));
+
 	    // Read the first document from the second batch. No Properties or collection available
-	    
+
 	 	DocumentMetadataHandle mHandle3 = readMetadataFromDocument(dbClient, docId[3], "XML");
-	 	assertTrue("Document properties difference in size value", mHandle3.getProperties().size()==0);
-	 	assertTrue("Document collections difference in size value", mHandle3.getCollections().size()==0);
-		
+	 	assertTrue( mHandle3.getProperties().size()==0);
+	 	assertTrue( mHandle3.getCollections().size()==0);
+
 		clearDB(port);
 	}
 }

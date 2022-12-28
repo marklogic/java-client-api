@@ -23,9 +23,10 @@ import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.document.*;
 import com.marklogic.client.functionaltest.Product;
 import com.marklogic.client.io.*;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import javax.xml.bind.JAXBContext;
@@ -35,11 +36,11 @@ import java.io.*;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.assertEquals;
+
 
 /*
  * This test is designed to to test simple bulk writes with different types of Managers and different content type like JSON,text,binary,XMl
- * 
+ *
  *  TextDocumentManager
  *  XMLDocumentManager
  *  BinaryDocumentManager
@@ -49,14 +50,14 @@ import static org.junit.Assert.assertEquals;
 
 public class TestBulkWriteSample1 extends AbstractFunctionalTest {
 
-  @Before
+  @BeforeEach
   public void testSetup() throws Exception
   {
     // create new connection for each test below
     client = getDatabaseClient("rest-admin", "x", getConnType());
   }
 
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception
   {
     client.release();
@@ -66,7 +67,7 @@ public class TestBulkWriteSample1 extends AbstractFunctionalTest {
   /*
    * This is cloned in github with tracking bug #27685
    * https://github.com/marklogic/java-client-api/issues/23
-   * 
+   *
    * This test uses StringHandle to load 3 text documents, writes to database
    * using bulk write set. Verified by reading individual documents
    */
@@ -85,9 +86,9 @@ public class TestBulkWriteSample1 extends AbstractFunctionalTest {
 
     docMgr.write(writeset);
 
-    assertEquals("Text document write difference", "This is so foo1", docMgr.read(docId[0], new StringHandle()).get());
-    assertEquals("Text document write difference", "This is so foo2", docMgr.read(docId[1], new StringHandle()).get());
-    assertEquals("Text document write difference", "This is so foo3", docMgr.read(docId[2], new StringHandle()).get());
+    assertEquals( "This is so foo1", docMgr.read(docId[0], new StringHandle()).get());
+    assertEquals( "This is so foo2", docMgr.read(docId[1], new StringHandle()).get());
+    assertEquals( "This is so foo3", docMgr.read(docId[2], new StringHandle()).get());
 
     // Bulk delete on TextDocumentManager
     docMgr.delete(docId[0], docId[1], docId[2]);
@@ -114,11 +115,11 @@ public class TestBulkWriteSample1 extends AbstractFunctionalTest {
     DOMHandle dh = new DOMHandle();
     docMgr.read(docId[0], dh);
 
-    assertEquals("xml document write difference", "This is so foo1", dh.get().getChildNodes().item(0).getTextContent());
+    assertEquals( "This is so foo1", dh.get().getChildNodes().item(0).getTextContent());
     docMgr.read(docId[1], dh);
-    assertEquals("xml document write difference", "This is so foo2", dh.get().getChildNodes().item(0).getTextContent());
+    assertEquals( "This is so foo2", dh.get().getChildNodes().item(0).getTextContent());
     docMgr.read(docId[2], dh);
-    assertEquals("xml document write difference", "This is so foo3", dh.get().getChildNodes().item(0).getTextContent());
+    assertEquals( "This is so foo3", dh.get().getChildNodes().item(0).getTextContent());
 
     // Bulk delete on XMLDocumentManager
     docMgr.delete(docId[0], docId[1], docId[2]);
@@ -128,8 +129,8 @@ public class TestBulkWriteSample1 extends AbstractFunctionalTest {
    * This test uses FileHandle to load 3 binary documents with same URI, writes
    * to database using bulk write set. Expecting an exception.
    */
-  @Test(expected = FailedRequestException.class)
-  public void testWriteMultipleSameBinaryDoc() throws KeyManagementException, NoSuchAlgorithmException, Exception
+  @Test
+  public void testWriteMultipleSameBinaryDoc()
   {
     String docId[] = { "Pandakarlino.jpg", "mlfavicon.png" };
 
@@ -140,9 +141,7 @@ public class TestBulkWriteSample1 extends AbstractFunctionalTest {
     FileHandle handle1 = new FileHandle(file1);
     writeset.add("/1/" + docId[0], handle1.withFormat(Format.BINARY));
     writeset.add("/1/" + docId[0], handle1.withFormat(Format.BINARY));
-
-    docMgr.write(writeset);
-
+    assertThrows(FailedRequestException.class, () -> docMgr.write(writeset));
   }
 
   /*
@@ -176,8 +175,8 @@ public class TestBulkWriteSample1 extends AbstractFunctionalTest {
     docMgr.read("/1/" + docId[1], readHandle2);
     System.out.println(file1.getName() + ":" + fsize1 + " " + readHandle1.get().getName() + ":" + readHandle1.get().length());
     System.out.println(file2.getName() + ":" + fsize2 + " " + readHandle2.get().getName() + ":" + readHandle2.get().length());
-    assertEquals("Size of the  File 1" + docId[0], fsize1, readHandle1.get().length());
-    assertEquals("Size of the  File 1" + docId[1], fsize2, readHandle2.get().length());
+    assertEquals(fsize1, readHandle1.get().length());
+    assertEquals(fsize2, readHandle2.get().length());
 
     // Bulk delete test - Git 284
     String doc0 = "/1/" + docId[0];
@@ -213,9 +212,9 @@ public class TestBulkWriteSample1 extends AbstractFunctionalTest {
     BufferedReader bfr = new BufferedReader(r1.get());
     assertEquals(json1, bfr.readLine());
     docMgr.read(docId[1], r1);
-    assertEquals("Json File Content" + docId[1], json2, new BufferedReader(r1.get()).readLine());
+    assertEquals(json2, new BufferedReader(r1.get()).readLine());
     docMgr.read(docId[2], r1);
-    assertEquals("Json File Content" + docId[2], json3, new BufferedReader(r1.get()).readLine());
+    assertEquals(json3, new BufferedReader(r1.get()).readLine());
     bfr.close();
   }
 
@@ -249,11 +248,11 @@ public class TestBulkWriteSample1 extends AbstractFunctionalTest {
     DOMHandle dh = new DOMHandle();
     docMgr.read(docId[0], dh);
 
-    assertEquals("xml document write difference", "Very cool Iphone", dh.get().getChildNodes().item(0).getChildNodes().item(1).getTextContent());
+    assertEquals( "Very cool Iphone", dh.get().getChildNodes().item(0).getChildNodes().item(1).getTextContent());
     docMgr.read(docId[1], dh);
-    assertEquals("xml document write difference", "Very cool Ipad", dh.get().getChildNodes().item(0).getChildNodes().item(1).getTextContent());
+    assertEquals( "Very cool Ipad", dh.get().getChildNodes().item(0).getChildNodes().item(1).getTextContent());
     docMgr.read(docId[2], dh);
-    assertEquals("xml document write difference", "Very cool Ipod", dh.get().getChildNodes().item(0).getChildNodes().item(1).getTextContent());
+    assertEquals( "Very cool Ipod", dh.get().getChildNodes().item(0).getChildNodes().item(1).getTextContent());
   }
 
   /*
@@ -303,21 +302,21 @@ public class TestBulkWriteSample1 extends AbstractFunctionalTest {
     FileHandle rh = new FileHandle();
 
     docMgr.read("/generic/" + docId[0], rh);
-    assertEquals("Size of the  File /generic/" + docId[0], file1.length(), rh.get().length());
+    assertEquals(file1.length(), rh.get().length());
     System.out.println(rh.get().getName() + ":" + rh.get().length() + "\n");
 
     docMgr.read("/generic/foo.xml", rh);
     BufferedReader br = new BufferedReader(new FileReader(rh.get()));
     br.readLine();
-    assertEquals("xml document write difference", "<foo>This is so foo1</foo>", br.readLine());
+    assertEquals( "<foo>This is so foo1</foo>", br.readLine());
     docMgr.read("/generic/foo1.txt", rh);
     br.close();
     br = new BufferedReader(new FileReader(rh.get()));
-    assertEquals("txt document write difference", foo1, br.readLine());
+    assertEquals( foo1, br.readLine());
     br.close();
     docMgr.read("/generic/dog.json", rh);
     br = new BufferedReader(new FileReader(rh.get()));
-    assertEquals("Json document write difference", "{\"animal\":\"dog\", \"says\":\"woof\"}", br.readLine());
+    assertEquals( "{\"animal\":\"dog\", \"says\":\"woof\"}", br.readLine());
     br.close();
     fis.close();
 
@@ -374,8 +373,8 @@ public class TestBulkWriteSample1 extends AbstractFunctionalTest {
 
   }
 
-  @Test(expected = ResourceNotFoundException.class)
-  public void testJAXBDocsBulkDelete() throws KeyManagementException, NoSuchAlgorithmException, Exception
+	@Test
+  public void testJAXBDocsBulkDelete() throws Exception
   {
     String docId[] = { "/jaxb/iphone.xml", "/jaxb/ipad.xml", "/jaxb/ipod.xml" };
     Product product1 = new Product();
@@ -403,11 +402,11 @@ public class TestBulkWriteSample1 extends AbstractFunctionalTest {
     DOMHandle dh = new DOMHandle();
     docMgr.read(docId[0], dh);
 
-    assertEquals("xml document write difference", "Very cool Iphone", dh.get().getChildNodes().item(0).getChildNodes().item(1).getTextContent());
+    assertEquals( "Very cool Iphone", dh.get().getChildNodes().item(0).getChildNodes().item(1).getTextContent());
     docMgr.read(docId[1], dh);
-    assertEquals("xml document write difference", "Very cool Ipad", dh.get().getChildNodes().item(0).getChildNodes().item(1).getTextContent());
+    assertEquals( "Very cool Ipad", dh.get().getChildNodes().item(0).getChildNodes().item(1).getTextContent());
     docMgr.read(docId[2], dh);
-    assertEquals("xml document write difference", "Very cool Ipod", dh.get().getChildNodes().item(0).getChildNodes().item(1).getTextContent());
+    assertEquals( "Very cool Ipod", dh.get().getChildNodes().item(0).getChildNodes().item(1).getTextContent());
 
     // Bulk delete on XMLDocumentManager
     docMgr.delete(docId[0], docId[1], docId[2]);
@@ -417,6 +416,6 @@ public class TestBulkWriteSample1 extends AbstractFunctionalTest {
 
     // Make sure that bulk delete indeed worked. Should throw
     // ResourceNotFoundException.
-    docMgr.read("/generic/" + docId[0], rhDeleted);
+    assertThrows(ResourceNotFoundException.class, () -> docMgr.read("/generic/" + docId[0], rhDeleted));
   }
 }

@@ -15,22 +15,18 @@
  */
 package com.marklogic.client.test.datamovement;
 
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.*;
+import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.test.Common;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.junit.Test;
-import org.junit.AfterClass;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.io.DOMHandle;
-
-import com.marklogic.client.test.Common;
-
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +36,7 @@ public class ScenariosTest {
   Logger logger = LoggerFactory.getLogger(ScenariosTest.class);
   DatabaseClient client = Common.connect();
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 

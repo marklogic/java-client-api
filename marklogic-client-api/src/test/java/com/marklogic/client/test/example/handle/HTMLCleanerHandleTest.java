@@ -15,13 +15,11 @@
  */
 package com.marklogic.client.test.example.handle;
 
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.example.handle.HTMLCleanerHandleExample;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-
-import org.junit.Test;
-
-import com.marklogic.client.example.handle.HTMLCleanerHandleExample;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class HTMLCleanerHandleTest {
   @Test
@@ -33,6 +31,6 @@ public class HTMLCleanerHandleTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    assertTrue("HTMLCleanerHandleExample failed", succeeded);
+    assertTrue( succeeded);
   }
 }

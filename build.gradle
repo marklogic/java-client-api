@@ -40,18 +40,16 @@ subprojects {
     }
 
     dependencies {
-        testImplementation group: 'junit', name: 'junit', version:'4.13'
-        testImplementation group: 'xmlunit', name: 'xmlunit', version:'1.6'
         compileOnly group: 'org.apache.commons', name: 'commons-lang3', version:'3.10'
         compileOnly group: 'org.apache.httpcomponents', name: 'httpclient', version:'4.5.12'
     }
 
-    test {
-    	systemProperty "file.encoding", "UTF-8"
-        systemProperty "javax.xml.stream.XMLOutputFactory", "com.sun.xml.internal.stream.XMLOutputFactoryImpl"
-    }
+	test {
+		systemProperty "file.encoding", "UTF-8"
+		systemProperty "javax.xml.stream.XMLOutputFactory", "com.sun.xml.internal.stream.XMLOutputFactoryImpl"
+	}
 
-    // Until we do a cleanup of javadoc errors, the build (and specifically the javadoc task) fails on Java 11
+	// Until we do a cleanup of javadoc errors, the build (and specifically the javadoc task) fails on Java 11
     // and higher. Preventing that until the cleanup can occur.
     javadoc.failOnError = false
 

@@ -3,7 +3,7 @@ package com.marklogic.client.test.datamovement;
 import com.marklogic.client.datamovement.ZipSplitter;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.io.BytesHandle;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ZipSplitterTest {
     private static final String zipFile = "src/test/resources/data" + File.separator + "pathSplitter/files.zip";

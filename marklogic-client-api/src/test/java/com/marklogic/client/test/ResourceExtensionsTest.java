@@ -15,29 +15,26 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.HashMap;
-
-import org.custommonkey.xmlunit.SimpleNamespaceContext;
-import org.custommonkey.xmlunit.XMLUnit;
-import org.custommonkey.xmlunit.XpathEngine;
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.MethodType;
 import com.marklogic.client.admin.ResourceExtensionsManager;
 import com.marklogic.client.admin.ResourceExtensionsManager.MethodParameters;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
+import org.custommonkey.xmlunit.SimpleNamespaceContext;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.custommonkey.xmlunit.XpathEngine;
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ResourceExtensionsTest {
   final static String RESOURCE_NAME = "testresource";
@@ -46,7 +43,7 @@ public class ResourceExtensionsTest {
   static private String      resourceServices;
   static private XpathEngine xpather;
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() throws IOException {
     Common.connectAdmin();
     resourceServices = Common.testFileToString(XQUERY_FILE);
@@ -65,7 +62,7 @@ public class ResourceExtensionsTest {
     xpather = XMLUnit.newXpathEngine();
     xpather.setNamespaceContext(namespaceContext);
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     resourceServices = null;
   }
@@ -103,11 +100,11 @@ public class ResourceExtensionsTest {
     extensionMgr.writeServices(RESOURCE_NAME, handle, metadata, params);
 
     extensionMgr.readServices(RESOURCE_NAME, handle);
-    assertEquals("Failed to retrieve resource services", resourceServices, handle.get());
+    assertEquals( resourceServices, handle.get());
 
     String result = extensionMgr.listServices(new StringHandle().withFormat(Format.XML), true).get();
-    assertNotNull("Failed to retrieve resource services list", result);
-    assertTrue("List without resource", xpather.getMatchingNodes(
+    assertNotNull( result);
+    assertTrue( xpather.getMatchingNodes(
       "/rapi:resources/rapi:resource/rapi:name[string(.) = 'testresource']",
       XMLUnit.buildControlDocument(result)
     ).getLength() == 1);
@@ -115,6 +112,6 @@ public class ResourceExtensionsTest {
     extensionMgr.deleteServices(RESOURCE_NAME);
 
     result = extensionMgr.readServices(RESOURCE_NAME, handle).get();
-    assertTrue("Failed to delete resource services", result == null);
+    assertTrue( result == null);
   }
 }

@@ -15,13 +15,11 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.example.cookbook.DocumentWriteServerURI;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-
-import org.junit.Test;
-
-import com.marklogic.client.example.cookbook.DocumentWriteServerURI;
 
 public class DocumentWriteServerURITest {
   @Test
@@ -33,7 +31,7 @@ public class DocumentWriteServerURITest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    assertTrue("DocumentWriteServerURI example failed", succeeded);
+    Assertions.assertTrue( succeeded);
   }
 }
 

@@ -18,25 +18,27 @@ package com.marklogic.client.fastfunctest;
 
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
+
+
+
 
 public class TestRuntimeDBselection extends AbstractFunctionalTest {
   private static String appServerHostname = null;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
     appServerHostname = getRestAppServerHostName();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     deleteRESTUser("eval-user");
     deleteUserRole("test-eval");
@@ -57,11 +59,11 @@ public class TestRuntimeDBselection extends AbstractFunctionalTest {
         client.newServerEval().xquery(insertJSON).eval();
         String query1 = "fn:count(fn:doc())";
         int response = client.newServerEval().xquery(query1).eval().next().getNumber().intValue();
-        assertEquals("count of documents ", 1, response);
+        assertEquals( 1, response);
         String query2 = "declareUpdate();xdmp.documentDelete(\"test2.json\");";
         client.newServerEval().javascript(query2).eval();
         int response2 = client.newServerEval().xquery(query1).eval().next().getNumber().intValue();
-        assertEquals("count of documents ", 0, response2);
+        assertEquals( 0, response2);
         client.release();
       } finally {
 		  setAuthentication(originalServerAuthentication, getRestServerName());
@@ -82,7 +84,7 @@ public class TestRuntimeDBselection extends AbstractFunctionalTest {
       fail("Exception should have been thrown");
     } catch (Exception e) {
       e.printStackTrace();
-      Assert.assertTrue(e instanceof com.marklogic.client.FailedRequestException);
+      assertTrue(e instanceof com.marklogic.client.FailedRequestException);
     }
       finally {
           client.release();

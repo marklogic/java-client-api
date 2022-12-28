@@ -15,37 +15,27 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.Iterator;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
-import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.Transaction;
+import com.marklogic.client.*;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.RDFMimeTypes;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import java.util.Iterator;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GraphsTest {
   private static GraphManager gmgr;
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
     gmgr = Common.client.newGraphManager();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     DatabaseClientFactory.getHandleRegistry().register(StringHandle.newFactory());
   }

@@ -15,19 +15,6 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.util.ArrayList;
-
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -38,27 +25,38 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.JacksonParserHandle;
 import com.marklogic.client.io.ReaderHandle;
-import com.marklogic.client.test.Common;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class JacksonStreamTest {
   private static final String ORDER_FILE = "sampleOrder.json";
   private static final String ORDER_URI = "sampleOrder.json";
   private static JSONDocumentManager docMgr;
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
     docMgr = Common.client.newJSONDocumentManager();
 
   }
 
-  @Before
+  @BeforeEach
   public void beforeTest() {
     docMgr.write(ORDER_URI, new ReaderHandle(Common.testFileToReader(ORDER_FILE)));
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     cleanUp();
   }
@@ -107,19 +105,19 @@ public class JacksonStreamTest {
       throw new IOException("Expected data to start with an Object");
     }
     List<OrderItem> orderItems = getOrderItems(jp);
-    assertEquals("orderItems array length is wrong", 4, orderItems.size());
-    assertEquals("OrderItem 1 productId is wrong", "widget",   orderItems.get(0).getProductId());
-    assertEquals("OrderItem 2 productId is wrong", "cog",      orderItems.get(1).getProductId());
-    assertEquals("OrderItem 3 productId is wrong", "spring",   orderItems.get(2).getProductId());
-    assertEquals("OrderItem 4 productId is wrong", "bearings", orderItems.get(3).getProductId());
-    assertEquals("OrderItem 1 quantity is wrong", 1, orderItems.get(0).getQuantity());
-    assertEquals("OrderItem 2 quantity is wrong", 5, orderItems.get(1).getQuantity());
-    assertEquals("OrderItem 3 quantity is wrong", 1, orderItems.get(2).getQuantity());
-    assertEquals("OrderItem 4 quantity is wrong", 3, orderItems.get(3).getQuantity());
-    assertEquals("OrderItem 1 itemCostUSD is wrong", 31.99, orderItems.get(0).getItemCostUSD(), 0.001);
-    assertEquals("OrderItem 2 itemCostUSD is wrong", 23.99, orderItems.get(1).getItemCostUSD(), 0.001);
-    assertEquals("OrderItem 3 itemCostUSD is wrong", 12.99, orderItems.get(2).getItemCostUSD(), 0.001);
-    assertEquals("OrderItem 4 itemCostUSD is wrong", 1.99,  orderItems.get(3).getItemCostUSD(), 0.001);
+    assertEquals( 4, orderItems.size());
+    assertEquals( "widget",   orderItems.get(0).getProductId());
+    assertEquals( "cog",      orderItems.get(1).getProductId());
+    assertEquals( "spring",   orderItems.get(2).getProductId());
+    assertEquals( "bearings", orderItems.get(3).getProductId());
+    assertEquals( 1, orderItems.get(0).getQuantity());
+    assertEquals( 5, orderItems.get(1).getQuantity());
+    assertEquals( 1, orderItems.get(2).getQuantity());
+    assertEquals( 3, orderItems.get(3).getQuantity());
+    assertEquals( 31.99, orderItems.get(0).getItemCostUSD(), 0.001);
+    assertEquals( 23.99, orderItems.get(1).getItemCostUSD(), 0.001);
+    assertEquals( 12.99, orderItems.get(2).getItemCostUSD(), 0.001);
+    assertEquals( 1.99,  orderItems.get(3).getItemCostUSD(), 0.001);
   }
 
   private List<OrderItem> getOrderItems(JsonParser parser) throws IOException {
@@ -183,11 +181,11 @@ public class JacksonStreamTest {
 
     JsonNode originalTree = docMgr.readAs(ORDER_URI, JsonNode.class);
     JsonNode streamedTree = docMgr.readAs("testWriteStream.json", JsonNode.class);
-    assertEquals("customerName fields don't match",
+    assertEquals(
       originalTree.get("customerName"), streamedTree.get("customerName"));
-    assertEquals("shipToAddress fields don't match",
+    assertEquals(
       originalTree.get("shipToAddress"), streamedTree.get("shipToAddress"));
-    assertEquals("billingAddressRequired fields don't match",
+    assertEquals(
       originalTree.get("billingAddressRequired"), streamedTree.get("billingAddressRequired"));
   }
 
@@ -224,9 +222,9 @@ public class JacksonStreamTest {
     JsonNode readTree1 = docMgr.readAs("/testWriteParser1.json", JsonNode.class);
     JsonNode readTree2 = docMgr.readAs("/testWriteParser2.json", JsonNode.class);
     JsonNode readTree3 = docMgr.readAs("/testWriteParser3.json", JsonNode.class);
-    assertEquals("readTree1 does not match writeTree", writeTree, readTree1);
-    assertEquals("readTree2 does not match writeTree", writeTree, readTree2);
-    assertEquals("readTree3 does not match writeTree", writeTree, readTree3);
+    assertEquals( writeTree, readTree1);
+    assertEquals( writeTree, readTree2);
+    assertEquals( writeTree, readTree3);
   }
 
   private static void cleanUp() {

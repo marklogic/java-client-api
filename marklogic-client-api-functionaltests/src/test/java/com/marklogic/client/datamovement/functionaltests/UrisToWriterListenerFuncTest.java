@@ -16,52 +16,32 @@
 
 package com.marklogic.client.datamovement.functionaltests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.TreeMap;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.UrisToWriterListener;
-import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.datamovement.WriteEvent;
+import com.marklogic.client.datamovement.*;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.functionaltest.Artifact;
 import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.functionaltest.Company;
 import com.marklogic.client.functionaltest.Product;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.JacksonDatabindHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
+import java.util.TreeMap;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
 
@@ -78,7 +58,7 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
   private static String uriFile2 = "testMultipleOutputListeners2.txt";
   private static FileWriter writer2 = null;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     loadGradleProperties();
     restServerPort = getRestAppServerPort();
@@ -100,7 +80,7 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
     dmManagerTmp = clientQHBTmp.newDataMovementManager();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tearDownAfterClass");
     // Release clients
@@ -114,12 +94,7 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
     deleteForest(fNames[0]);
   }
 
-  @Before
-  public void setUp() throws Exception {
-
-  }
-
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     System.out.println("In tearDown");
     clearDB(restServerPort);
@@ -128,13 +103,13 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
   /*
    * To test UriToWriterListener simple use case with multiple file types and
    * get URIs into an output file.
-   * 
+   *
    * @throws IOException
-   * 
+   *
    * @throws ParserConfigurationException
-   * 
+   *
    * @throws SAXException
-   * 
+   *
    * @throws XpathException
    */
   @Test
@@ -263,7 +238,7 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
         System.out.println("Line read from file with URIS is" + line);
         uriMap.put(line, "URI");
       }
-      assertTrue("URIs not read correctly from testMultipleFileTypes method ", expectedMap.equals(uriMap));
+      assertTrue(expectedMap.equals(uriMap));
     } catch (Exception ex) {
       System.out.println("Exceptions in testMultipleFileTypes method" + ex.getMessage());
     } finally {
@@ -286,13 +261,13 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
   /*
    * To test if URI from UriToWriterListener writer can be used to read
    * document.
-   * 
+   *
    * @throws IOException
-   * 
+   *
    * @throws ParserConfigurationException
-   * 
+   *
    * @throws SAXException
-   * 
+   *
    * @throws XpathException
    */
   @Test
@@ -384,7 +359,7 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
         System.out.println("Line read from file with URIS is" + line);
         docId = line.trim();
       }
-      assertTrue("Json URI not correct", docId.contains("product-microsoft.json"));
+      assertTrue(docId.contains("product-microsoft.json"));
       // Verify the URI from UrisToWriterListener writer by reading in the
       // document.
 
@@ -393,9 +368,9 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
       docMgr.read(docId, jacksonhandle);
       JsonNode resultNode = jacksonhandle.get();
 
-      assertEquals("Document content read back not correct in testReadbacks method ", "Windows 10", resultNode.path("name").asText());
-      assertEquals("Document content read back not correct in testReadbacks method ", "Software", resultNode.path("industry").asText());
-      assertEquals("Document content read back not correct in testReadbacks method ", "OS Server", resultNode.path("description").asText());
+      assertEquals("Windows 10", resultNode.path("name").asText());
+      assertEquals("Software", resultNode.path("industry").asText());
+      assertEquals("OS Server", resultNode.path("description").asText());
     } catch (Exception ex) {
       System.out.println("Exceptions thrown from testReadbacks method" + ex.getMessage());
     } finally {
@@ -531,7 +506,7 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
       while (reader1.readLine() != null) {
         lnCnt++;
       }
-      assertTrue("Number of URIs exported first time incorrect ", lnCnt == 4);
+      assertEquals(4, lnCnt);
       reader1.close();
       filereader1.close();
       // Use WriteBatcher2 to write files.
@@ -617,7 +592,7 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
         System.out.println("Line read from file with URIS is" + line);
         uriMap.put(line, "URI");
       }
-      assertTrue("URIs not read correctly from testWriteMultipleTimes method ", expectedMap.equals(uriMap));
+      assertTrue(expectedMap.equals(uriMap));
     } catch (Exception ex) {
       System.out.println("Exceptions thrown from testWriteMultipleTimes method " + ex.getMessage());
     } finally {
@@ -711,7 +686,7 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
         System.out.println("Line read from file with URIS is" + line);
         uriMap.put(line, "URI");
       }
-      assertTrue("URIs not read correctly from testPOJOUris method ", expectedMap.equals(uriMap));
+      assertTrue(expectedMap.equals(uriMap));
     } catch (Exception ex) {
       System.out.println("Exceptions from testPOJOUris method is" + ex.getMessage());
     } finally {
@@ -861,7 +836,7 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
         System.out.println("Line read from file with URIS is" + line);
         uriMap.put(line, "URI");
       }
-      assertTrue("URIs not read correctly from testPOJOUrisUsingDataBindHandle method ", expectedMap.equals(uriMap));
+      assertTrue(expectedMap.equals(uriMap));
       JSONDocumentManager docMgr = clientQHB.newJSONDocumentManager();
       // Read it back into JacksonDatabindHandle Product
       JacksonDatabindHandle<Product> jacksonDBReadHandle = new JacksonDatabindHandle<Product>(Product.class);
@@ -869,9 +844,9 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
       Product product2 = (Product) jacksonDBReadHandle.get();
 
       // Validate the first POJO
-      assertTrue("Did not return a iMac", product2.getName().equalsIgnoreCase("iMac"));
-      assertTrue("Did not return a Desktop", product2.getIndustry().equalsIgnoreCase("Desktop"));
-      assertTrue("Did not return a Air Book OS X", product2.getDescription().equalsIgnoreCase("Air Book OS X"));
+      assertTrue(product2.getName().equalsIgnoreCase("iMac"));
+      assertTrue(product2.getIndustry().equalsIgnoreCase("Desktop"));
+      assertTrue(product2.getDescription().equalsIgnoreCase("Air Book OS X"));
     } catch (Exception ex) {
       System.out.println("Exceptions from testPOJOUrisUsingDataBindHandle method is" + ex.getMessage());
     } finally {
@@ -971,7 +946,7 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
         System.out.println("Line read from file with URIS is " + line);
         uriMap1.put(line, "URI");
       }
-      assertTrue("URIs not read correctly from testMultipleOutputListeners method ", expectedMap1.equals(uriMap1));
+      assertTrue(expectedMap1.equals(uriMap1));
 
       // Verify the MyOutputListener (file) succeeded.
       freader2 = new FileReader(uriFile2);
@@ -980,7 +955,7 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
         System.out.println("Line read from file with MyOutputListener URIS is " + line);
         uriMap2.put(line, "URI");
       }
-      assertTrue("URIs not read correctly from testMultipleOutputListeners method ", expectedMap2.equals(uriMap2));
+      assertTrue(expectedMap2.equals(uriMap2));
     } catch (Exception ex) {
       System.out.println("Exceptions from testMultipleOutputListeners method is " + ex.getMessage());
     } finally {
@@ -1100,7 +1075,7 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
         System.out.println("Line read from file with URIS is" + line);
         docId = line.trim();
       }
-      assertTrue("Json URI not correct", docId.contains("ML9/product-microsoft.jsonGreat"));
+      assertTrue(docId.contains("ML9/product-microsoft.jsonGreat"));
     } catch (Exception ex) {
       System.out.println("Exceptions thrown from testPrefixAndSuffix method" + ex.getMessage());
     } finally {
@@ -1231,7 +1206,7 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
       }
     }
     System.out.println("Batch Failure contents are " + batchFailResults.toString());
-    assertTrue("Exception is not thrown", batchFailResults.toString().contains("QA OnBatchFailure Event"));
+    assertTrue(batchFailResults.toString().contains("QA OnBatchFailure Event"));
   }
 
   public Artifact getArtifact(int counter) {

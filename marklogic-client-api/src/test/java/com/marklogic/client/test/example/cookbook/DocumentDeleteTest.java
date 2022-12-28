@@ -15,13 +15,11 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.example.cookbook.DocumentDelete;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-
-import org.junit.Test;
-
-import com.marklogic.client.example.cookbook.DocumentDelete;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DocumentDeleteTest {
   @Test
@@ -33,6 +31,6 @@ public class DocumentDeleteTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    assertTrue("DocumentDelete example failed", succeeded);
+    assertTrue( succeeded);
   }
 }

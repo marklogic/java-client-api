@@ -15,9 +15,8 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import org.junit.Test;
-
 import com.marklogic.client.example.cookbook.datamovement.BulkExportOpticResults;
+import org.junit.jupiter.api.Test;
 
 public class BulkExportOpticResultsTest {
   @Test

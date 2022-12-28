@@ -25,11 +25,9 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.util.HashSet;
@@ -37,8 +35,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ErrorListenerOutputEndpointTest {
     static ObjectNode apiObj;
@@ -51,10 +49,7 @@ public class ErrorListenerOutputEndpointTest {
     private static final String collectionName_1 = "bulkOutputTest_1";
     private static final String collectionName_2 = "bulkOutputTest_2";
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         docMgr = IOTestUtil.db.newJSONDocumentManager();
         apiObj = IOTestUtil.readApi(apiName);
@@ -102,10 +97,10 @@ public class ErrorListenerOutputEndpointTest {
         });
 
         bulkCaller.awaitCompletion();
-        assertEquals("exceptions on calls", false, exceptional.get());
-        assertEquals("duplicate output", false, duplicated.get());
-        assertEquals("unexpected output count", 30, actual.size());
-        assertEquals("unexpected output values", expected, actual);
+        assertEquals( false, exceptional.get());
+        assertEquals( false, duplicated.get());
+        assertEquals( 30, actual.size());
+        assertEquals( expected, actual);
     }
 
     @Test
@@ -145,9 +140,9 @@ public class ErrorListenerOutputEndpointTest {
         });
 
         bulkCaller.awaitCompletion();
-        assertEquals("exceptions on calls", false, exceptional.get());
-        assertEquals("duplicate output", false, duplicated.get());
-        assertTrue("unexpected output count", actual.size() >= 20);
+        assertEquals( false, exceptional.get());
+        assertEquals( false, duplicated.get());
+        assertTrue( actual.size() >= 20);
     }
 
     @Test
@@ -187,12 +182,12 @@ public class ErrorListenerOutputEndpointTest {
         });
 
         bulkCaller.awaitCompletion();
-        assertEquals("exceptions on calls", false, exceptional.get());
-        assertEquals("duplicate output", false, duplicated.get());
-        assertTrue("unexpected output count", actual.size() < 30);
+        assertEquals( false, exceptional.get());
+        assertEquals( false, duplicated.get());
+        assertTrue( actual.size() < 30);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
 
         IOTestUtil.modMgr.delete(scriptPath, apiPath);

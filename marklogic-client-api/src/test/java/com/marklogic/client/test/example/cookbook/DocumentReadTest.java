@@ -15,15 +15,12 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
+import com.marklogic.client.example.cookbook.DocumentRead;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.xpath.XPathExpressionException;
-
-import org.junit.Test;
-
-import com.marklogic.client.example.cookbook.DocumentRead;
+import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DocumentReadTest {
   @Test
@@ -37,6 +34,6 @@ public class DocumentReadTest {
     } catch (XPathExpressionException e) {
       e.printStackTrace();
     }
-    assertTrue("DocumentRead example failed", succeeded);
+    assertTrue( succeeded);
   }
 }

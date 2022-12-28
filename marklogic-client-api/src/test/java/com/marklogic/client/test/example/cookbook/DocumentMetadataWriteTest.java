@@ -15,13 +15,11 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.example.cookbook.DocumentMetadataWrite;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-
-import org.junit.Test;
-
-import com.marklogic.client.example.cookbook.DocumentMetadataWrite;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DocumentMetadataWriteTest {
   @Test
@@ -33,6 +31,6 @@ public class DocumentMetadataWriteTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    assertTrue("DocumentMetadataWrite example failed", succeeded);
+    assertTrue( succeeded);
   }
 }

@@ -22,13 +22,13 @@ import com.marklogic.client.dataservices.InputEndpoint;
 import com.marklogic.client.dataservices.InputOutputEndpoint;
 import com.marklogic.client.dataservices.OutputEndpoint;
 import com.marklogic.client.io.JacksonHandle;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class IOCallerImplTest {
     @Test
@@ -134,9 +134,9 @@ public class IOCallerImplTest {
         return new ByteArrayInputStream(value.getBytes());
     }
     private void checkResults(String endpointState, String endpointConstants, InputStream[] results) throws IOException {
-        assertNotNull("null result Stream<InputStream>", results);
+        assertNotNull(results);
 
-        assertEquals("mismatch for result size", 3, results.length);
+        assertEquals( 3, results.length);
 
         checkNoInputState(endpointState, endpointConstants, results[0]);
         checkDoc1(results[1]);
@@ -154,9 +154,9 @@ public class IOCallerImplTest {
         checkendpointConstants(endpointConstants,           resultObj);
 
         JsonNode input = resultObj.get("input");
-        assertNotNull("null for property input", input);
-        assertTrue("property input is not array", input.isArray());
-        assertEquals("mismatch for input size", 2, input.size());
+        assertNotNull( input);
+        assertTrue( input.isArray());
+        assertEquals( 2, input.size());
         checkDoc1(input.get(0));
         checkDoc2(input.get(1));
     }
@@ -181,22 +181,22 @@ public class IOCallerImplTest {
         checkValue("docName", "beta",  doc);
     }
     private ObjectNode checkResult(InputStream result) throws IOException {
-        assertNotNull("null InputStream", result);
+        assertNotNull( result);
         return IOTestUtil.mapper.readValue(result, ObjectNode.class);
     }
     private void checkContainer(String propName, String expected, ObjectNode result) {
         JsonNode actual = result.get(propName);
-        assertNotNull("null for property "+propName, actual);
-        assertEquals("mismatch for property "+propName, expected, actual.toString());
+        assertNotNull(actual);
+        assertEquals(expected, actual.toString(), "mismatch for property "+propName);
     }
     private void checkValue(String propName, int expected, JsonNode result) {
         JsonNode actual = result.get(propName);
-        assertNotNull("null for property "+propName, actual);
-        assertEquals("mismatch for property "+propName, expected, actual.asInt());
+        assertNotNull(actual);
+        assertEquals(expected, actual.asInt());
     }
     private void checkValue(String propName, String expected, JsonNode result) {
         JsonNode actual = result.get(propName);
-        assertNotNull("null for property "+propName, actual);
-        assertEquals("mismatch for property "+propName, expected, actual.asText());
+        assertNotNull(actual);
+        assertEquals(expected, actual.asText(), "mismatch for property "+propName);
     }
 }

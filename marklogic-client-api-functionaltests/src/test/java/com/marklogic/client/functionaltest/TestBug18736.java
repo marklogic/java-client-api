@@ -16,63 +16,49 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.admin.ServerConfigurationManager;
+import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.io.*;
+import com.marklogic.client.query.*;
+import com.marklogic.client.query.StructuredQueryBuilder.Operator;
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.json.JSONException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.json.JSONException;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.ServerConfigurationManager;
-import com.marklogic.client.document.DocumentDescriptor;
-import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.XMLStreamReaderHandle;
-import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.query.ValuesDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder.Operator;
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestBug18736 extends BasicJavaClientREST {
 
   private static String dbName = "Bug18736DB";
   private static String[] fNames = { "Bug18736DB-1" };
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception
   {
     System.out.println("In setup");
     configureRESTServer(dbName, fNames);
     setupAppServicesConstraint(dbName);
   }
-  
-  @After
+
+  @AfterEach
   public void afterEach() throws Exception
   {
     System.out.println("In afterEach");
@@ -93,11 +79,11 @@ public class TestBug18736 extends BasicJavaClientREST {
      * Map<String,String> xpathNS = new HashMap<>(); xpathNS.put("",
      * "http://purl.org/dc/elements/1.1/"); SimpleNamespaceContext
      * xpathNsContext = new SimpleNamespaceContext(xpathNS);
-     * 
+     *
      * XMLUnit.setIgnoreAttributeOrder(true); XMLUnit.setIgnoreWhitespace(true);
      * XMLUnit.setNormalize(true); XMLUnit.setNormalizeWhitespace(true);
      * XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
-     * 
+     *
      * xpathEngine = XMLUnit.newXpathEngine();
      * xpathEngine.setNamespaceContext(xpathNsContext);
      */
@@ -126,7 +112,7 @@ public class TestBug18736 extends BasicJavaClientREST {
     String out = convertXMLDocumentToString(readDoc);
     System.out.println(out);
 
-    assertTrue("Unable to read doc", out.contains("0011"));
+    assertTrue(out.contains("0011"));
 
     // get xml document for expected result
     // Document expectedDoc = expectedXMLDocument(filename);
@@ -136,7 +122,7 @@ public class TestBug18736 extends BasicJavaClientREST {
     // release client
     client.release();
   }
-  
+
   @Test
   public void testDefaultFacetValue() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
       TransformerException
@@ -202,7 +188,7 @@ public class TestBug18736 extends BasicJavaClientREST {
     // release client
     client.release();
   }
-  
+
 
   @Test
   public void testBug18990() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
@@ -260,7 +246,7 @@ public class TestBug18736 extends BasicJavaClientREST {
     // release client
     client.release();
   }
-  
+
   @Test
   public void testBug19046() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
   {
@@ -288,12 +274,12 @@ public class TestBug18736 extends BasicJavaClientREST {
 
     System.out.println(exception);
 
-    assertTrue("Exception is not thrown", exception.contains(expectedException));
+    assertTrue(exception.contains(expectedException));
 
     // release client
     client.release();
   }
-  
+
   @Test
   public void testBug19092() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
   {
@@ -322,10 +308,10 @@ public class TestBug18736 extends BasicJavaClientREST {
     String output = readHandle.get();
     System.out.println(output);
 
-    assertTrue("Default term is not correct",
+    assertTrue(
         output.contains("<ns2:term-option>case-sensitive</ns2:term-option>") || output.contains("<search:term-option>case-sensitive</search:term-option>"));
-    assertFalse("Weight element exists", output.contains("<ns2:weight>0.0</ns2:weight>") || output.contains("<search:weight>0.0</search:weight>"));
-    assertFalse("Default element exists", output.contains("<ns2:default/>") || output.contains("<search:default/>"));
+    assertFalse(output.contains("<ns2:weight>0.0</ns2:weight>") || output.contains("<search:weight>0.0</search:weight>"));
+    assertFalse(output.contains("<ns2:default/>") || output.contains("<search:default/>"));
 
     // release client
     client.release();
@@ -360,12 +346,12 @@ public class TestBug18736 extends BasicJavaClientREST {
     String output = readHandle.get();
     System.out.println(output);
 
-    assertTrue("Default term is not correct", output.contains("{\"options\":{\"term\":{\"term-option\":[\"case-sensitive\"]}}}"));
+    assertTrue(output.contains("{\"options\":{\"term\":{\"term-option\":[\"case-sensitive\"]}}}"));
 
     // release client
     client.release();
   }
-  
+
   @Test
   public void testBug19140() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
   {
@@ -392,13 +378,13 @@ public class TestBug18736 extends BasicJavaClientREST {
     String output = readHandle.get();
     System.out.println(output);
 
-    assertTrue("transform-results is incorrect", output.contains("transform-results apply=\"raw\"/"));
-    assertFalse("preferred-elements is exist", output.contains("preferred-elements/"));
+    assertTrue(output.contains("transform-results apply=\"raw\"/"));
+    assertFalse(output.contains("preferred-elements/"));
 
     // release client
     client.release();
   }
-  
+
   @Test
   public void testBug19144WithJson() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
       TransformerException
@@ -478,7 +464,7 @@ public class TestBug18736 extends BasicJavaClientREST {
     // release client
     client.release();
   }
-  
+
   @Test
   public void testBug19389() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
   {
@@ -512,7 +498,7 @@ public class TestBug18736 extends BasicJavaClientREST {
 
     System.out.println(exception);
 
-    assertTrue("Exception is not thrown", exception.contains(expectedException));
+    assertTrue(exception.contains(expectedException));
 
     // release client
     client.release();
@@ -564,7 +550,7 @@ public class TestBug18736 extends BasicJavaClientREST {
     System.out.println(actual);
     System.out.println("Output is :  \n");
     System.out.println(output);
-    assertTrue("Element geo-option not available", actual.contains("<search:geo-option>type=long-lat-point</search:geo-option>"));
+    assertTrue(actual.contains("<search:geo-option>type=long-lat-point</search:geo-option>"));
 
     // release client
     client.release();
@@ -605,12 +591,12 @@ public class TestBug18736 extends BasicJavaClientREST {
     String strPlan = resultsHandle.getPlan(new StringHandle()).get();
     System.out.println(strPlan);
 
-    assertTrue("string is not matched", strPlan.contains("qry:result estimate=\"3\""));
+    assertTrue(strPlan.contains("qry:result estimate=\"3\""));
 
     // release client
     client.release();
   }
-  
+
   @Test
   public void testBug21183() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
   {
@@ -649,15 +635,15 @@ public class TestBug18736 extends BasicJavaClientREST {
       // Commenting as per Update from Bug 23788
       // assertTrue("Returned doc from SearchHandle has no namespace",
       // resultDoc1.contains("<test xmlns:myns=\"http://mynamespace.com\" xmlns:search=\"http://marklogic.com/appservices/search\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">"));
-      assertTrue("Returned doc from SearchHandle has no attribute", resultDoc1.contains("<txt att=\"1\">a</txt>"));
+      assertTrue(resultDoc1.contains("<txt att=\"1\">a</txt>"));
       System.out.println();
     }
 
     XMLStreamReaderHandle shandle = queryMgr.search(querydef, new XMLStreamReaderHandle());
     String resultDoc2 = shandle.toString();
     System.out.println(resultDoc2);
-    assertTrue("Returned doc from XMLStreamReaderHandle has no namespace", resultDoc2.contains("<test xmlns:myns=\"http://mynamespace.com\">"));
-    assertTrue("Returned doc from XMLStreamReaderHandle has no attribute", resultDoc2.contains("<txt att=\"1\">a</txt>"));
+    assertTrue(resultDoc2.contains("<test xmlns:myns=\"http://mynamespace.com\">"));
+    assertTrue(resultDoc2.contains("<txt att=\"1\">a</txt>"));
 
     // release client
     client.release();
@@ -699,8 +685,8 @@ public class TestBug18736 extends BasicJavaClientREST {
     // release client
     client.release();
   }
-  
-  @AfterClass
+
+  @AfterAll
   public static void tearDown() throws Exception
   {
     System.out.println("In tear down");

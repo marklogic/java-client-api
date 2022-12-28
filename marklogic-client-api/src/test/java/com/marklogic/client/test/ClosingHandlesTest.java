@@ -15,38 +15,20 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.Closeable;
-import java.io.IOException;
-
-import javax.xml.bind.JAXBContext;
-
-import org.junit.Test;
-
 import com.marklogic.client.extra.dom4j.DOM4JHandle;
 import com.marklogic.client.extra.gson.GSONHandle;
 import com.marklogic.client.extra.jdom.JDOMHandle;
 import com.marklogic.client.impl.HandleAccessor;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.InputSourceHandle;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.JAXBHandle;
-import com.marklogic.client.io.JacksonDatabindHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.JacksonParserHandle;
-import com.marklogic.client.io.QueryOptionsListHandle;
-import com.marklogic.client.io.ReaderHandle;
-import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.io.SourceHandle;
-import com.marklogic.client.io.TuplesHandle;
-import com.marklogic.client.io.ValuesHandle;
-import com.marklogic.client.io.ValuesListHandle;
-import com.marklogic.client.io.XMLEventReaderHandle;
-import com.marklogic.client.io.XMLStreamReaderHandle;
+import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.AbstractReadHandle;
+import org.junit.jupiter.api.Test;
+
+import javax.xml.bind.JAXBContext;
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ClosingHandlesTest {
   private static class MockInputStream extends ByteArrayInputStream {
@@ -107,7 +89,7 @@ public class ClosingHandlesTest {
     if ( handle instanceof Closeable ) {
       ((Closeable) handle).close();
     }
-    assertTrue("Handle " + handle.getClass().getName() + " did not close underlying InputStream", stream.isClosed());
+    assertTrue(stream.isClosed(), "Handle " + handle.getClass().getName() + " did not close underlying InputStream");
 
   }
 

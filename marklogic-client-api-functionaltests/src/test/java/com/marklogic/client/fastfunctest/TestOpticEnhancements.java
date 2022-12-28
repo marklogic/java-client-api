@@ -23,16 +23,15 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.type.PlanColumn;
 import com.marklogic.client.type.PlanPrefixer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class TestOpticEnhancements extends AbstractFunctionalTest {
 
@@ -41,7 +40,7 @@ public class TestOpticEnhancements extends AbstractFunctionalTest {
   private static Map<String, Object>[] storeInformation = new HashMap[4];
   private static Map<String, Object>[] internetSales = new HashMap[4];
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception {
     removeFieldIndices();
   // Install the TDE templates into schemadbName DB
@@ -195,7 +194,7 @@ public class TestOpticEnhancements extends AbstractFunctionalTest {
     internetSales[3] = row;
   }
 
-  @AfterClass
+  @AfterAll
   public static void teardown() {
     restoreFieldIndices();
   }
@@ -238,19 +237,19 @@ public class TestOpticEnhancements extends AbstractFunctionalTest {
       JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
       //System.out.println(jsonBindingsNodes);
       // Should have 7 nodes returned.
-      assertEquals("Seven nodes not returned from testRedactRegexJoinInner method", 7, jsonBindingsNodes.size());
+      assertEquals( 7, jsonBindingsNodes.size());
       JsonNode node = jsonBindingsNodes.path(0);
-      assertEquals("Row 1 rowId value incorrect", "1", node.path("rowId").path("value").asText());
-      assertEquals("Row 1 desc value incorrect", "ball", node.path("desc").path("value").asText());
-      assertEquals("Row 1 colorDesc value incorrect", "RED", node.path("colorDesc").path("value").asText());
+      assertEquals( "1", node.path("rowId").path("value").asText());
+      assertEquals( "ball", node.path("desc").path("value").asText());
+      assertEquals( "RED", node.path("colorDesc").path("value").asText());
       node = jsonBindingsNodes.path(3);
-      assertEquals("Row 4 rowId value incorrect", "4", node.path("rowId").path("value").asText());
-      assertEquals("Row 4 desc value incorrect", "hoop", node.path("desc").path("value").asText());
-      assertEquals("Row 4 colorDesc value incorrect", "RED", node.path("colorDesc").path("value").asText());
+      assertEquals( "4", node.path("rowId").path("value").asText());
+      assertEquals( "hoop", node.path("desc").path("value").asText());
+      assertEquals( "RED", node.path("colorDesc").path("value").asText());
       node = jsonBindingsNodes.path(4);
-      assertEquals("Row 5 colorDesc value incorrect", "h=O=", node.path("desc").path("value").asText());
+      assertEquals( "h=O=", node.path("desc").path("value").asText());
       node = jsonBindingsNodes.path(6);
-      assertEquals("Row 7 colorDesc value incorrect", "rameObsolatefMain", node.path("desc").path("value").asText());
+      assertEquals( "rameObsolatefMain", node.path("desc").path("value").asText());
     }
 
   @Test
@@ -290,11 +289,11 @@ public class TestOpticEnhancements extends AbstractFunctionalTest {
     rowMgr.resultDoc(output, jacksonHandle);
     JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
     //System.out.println(jsonBindingsNodes);
-    assertEquals("Two node not returned from testRedactDatetime method", 2, jsonBindingsNodes.size());
-    assertEquals("Row 1 id value incorrect", "1", jsonBindingsNodes.path(0).path("id").path("value").asText());
-    assertEquals("Row 1 date value incorrect", "Month=05 Day=12/xx 00:00:00", jsonBindingsNodes.path(0).path("date").path("value").asText());
-    assertEquals("Row 2 id value incorrect", "2", jsonBindingsNodes.path(1).path("id").path("value").asText());
-    assertEquals("Row 2 date value incorrect", "Month=04 Day=02/xx 00:00:00", jsonBindingsNodes.path(1).path("date").path("value").asText());
+    assertEquals( 2, jsonBindingsNodes.size());
+    assertEquals( "1", jsonBindingsNodes.path(0).path("id").path("value").asText());
+    assertEquals( "Month=05 Day=12/xx 00:00:00", jsonBindingsNodes.path(0).path("date").path("value").asText());
+    assertEquals( "2", jsonBindingsNodes.path(1).path("id").path("value").asText());
+    assertEquals( "Month=04 Day=02/xx 00:00:00", jsonBindingsNodes.path(1).path("date").path("value").asText());
   }
 
   @Test
@@ -342,16 +341,16 @@ public class TestOpticEnhancements extends AbstractFunctionalTest {
     Pattern patternMaster = Pattern.compile("[a-z][A-Z][0-9]");
     Pattern patternDetail = Pattern.compile("[a-z]");
 
-    assertEquals("Six node not returned from testMaskDeterministic method", 6, jsonBindingsNodes.size());
+    assertEquals( 6, jsonBindingsNodes.size());
 
     String rowOneMasterName = jsonBindingsNodes.path(0).path("MasterName").path("value").asText();
     String rowOneDetailName = jsonBindingsNodes.path(0).path("DetailName").path("value").asText();
-    assertEquals("Row 1 masterName mask length incorrect", 33, rowOneMasterName.length());
-    assertTrue("Row 1 masterName mask incorrect", patternMaster.matcher(rowOneMasterName).find());
-    assertEquals("Row 1 detailName mask length incorrect", 10, rowOneDetailName.length());
-    assertTrue("Row 1 detailName mask incorrect", patternDetail.matcher(rowOneDetailName).find());
+    assertEquals( 33, rowOneMasterName.length());
+    assertTrue( patternMaster.matcher(rowOneMasterName).find());
+    assertEquals( 10, rowOneDetailName.length());
+    assertTrue( patternDetail.matcher(rowOneDetailName).find());
 
-    assertEquals("Row 1 amount incorrect", "10.01", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.amount").path("value").asText());
+    assertEquals( "10.01", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.amount").path("value").asText());
   }
 
   @Test
@@ -385,14 +384,14 @@ public class TestOpticEnhancements extends AbstractFunctionalTest {
     Pattern patternColorId = Pattern.compile("[a-z]");
 
     // Should have 7 nodes returned.
-    assertEquals("Seven nodes not returned from testRedactRegexJoinInner method", 7, jsonBindingsNodes.size());
+    assertEquals( 7, jsonBindingsNodes.size());
     JsonNode node = jsonBindingsNodes.path(0);
     String rowOneDescName = jsonBindingsNodes.path(0).path("desc").path("value").asText();
-    assertTrue("Row 1 desc mask incorrect", patternDesc.matcher(rowOneDescName).find());
+    assertTrue( patternDesc.matcher(rowOneDescName).find());
 
     node = jsonBindingsNodes.path(3);
     String rowFourcolorId = jsonBindingsNodes.path(0).path("colorId").path("value").asText();
-    assertTrue("Row 4 color Id mask incorrect", patternColorId.matcher(rowFourcolorId).find());
+    assertTrue( patternColorId.matcher(rowFourcolorId).find());
   }
 
   @Test
@@ -458,22 +457,22 @@ public class TestOpticEnhancements extends AbstractFunctionalTest {
     Pattern patternAge = Pattern.compile("(\\d)+,(\\d)+");
 
     // Should have 2 nodes returned.
-    assertEquals("Two nodes not returned from testJoinInnerWithCondition method ", 2, jsonBindingsNodes.size());
+    assertEquals( 2, jsonBindingsNodes.size());
     JsonNode first = jsonBindingsNodes.path(0);
 
     String rowOneTeamName = jsonBindingsNodes.path(0).path("TeamName").path("value").asText();
     String rowOnePlayerAge = jsonBindingsNodes.path(0).path("PlayerAge").path("value").asText();
 
-    assertEquals("Row 1 PlayerName value incorrect", "Josh Ream", first.path("PlayerName").path("value").asText());
-    assertTrue("Row 1  Team value mask incorrect",  patternName.matcher(rowOneTeamName).find());
-    assertTrue("Row 1 PlayerAge mask incorrect", patternAge.matcher(rowOnePlayerAge).find());
+    assertEquals( "Josh Ream", first.path("PlayerName").path("value").asText());
+    assertTrue(  patternName.matcher(rowOneTeamName).find());
+    assertTrue( patternAge.matcher(rowOnePlayerAge).find());
 
     JsonNode second = jsonBindingsNodes.path(1);
     String rowTwoTeamName = jsonBindingsNodes.path(1).path("TeamName").path("value").asText();
     String rowTwoPlayerAge = jsonBindingsNodes.path(1).path("PlayerAge").path("value").asText();
 
-    assertEquals("Row 2 PlayerName value incorrect", "John Doe", second.path("PlayerName").path("value").asText());
-    assertTrue("Row 2  Team value mask value incorrect",  patternName.matcher(rowTwoTeamName).find());
-    assertTrue("Row 2 PlayerAge mask incorrect", patternAge.matcher(rowTwoPlayerAge).find());
+    assertEquals( "John Doe", second.path("PlayerName").path("value").asText());
+    assertTrue(  patternName.matcher(rowTwoTeamName).find());
+    assertTrue( patternAge.matcher(rowTwoPlayerAge).find());
   }
 }

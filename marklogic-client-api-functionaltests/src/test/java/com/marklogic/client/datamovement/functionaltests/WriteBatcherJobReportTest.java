@@ -15,52 +15,35 @@
  */
 package com.marklogic.client.datamovement.functionaltests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.w3c.dom.Document;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.DeleteListener;
-import com.marklogic.client.datamovement.JobReport;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.datamovement.*;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.functionaltest.BasicJavaClientREST;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.*;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.File;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 
@@ -93,12 +76,12 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 
 	private static JobTicket writeTicket;
 
-	@BeforeClass
+	@BeforeAll
 	public static void setUpBeforeClass() throws Exception {
 		loadGradleProperties();
 		server = getRestAppServerName();
 	    port = getRestAppServerPort();
-	    
+
 		host = getRestAppServerHostName();
 		hostNames = getHosts();
 		createDB(dbName);
@@ -153,7 +136,7 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 		docMeta2.setFormat(Format.XML);
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void tearDownAfterClass() throws Exception {
 		associateRESTServerWithDB(server, "Documents");
 		for (int i = 0; i < hostNames.length; i++) {
@@ -165,12 +148,7 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 		deleteDB(dbName);
 	}
 
-	@Before
-	public void setUp() throws Exception {
-
-	}
-
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 
 		Map<String, String> props = new HashMap<>();
@@ -196,7 +174,7 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 	public void testJobReport() throws Exception {
 
 		final String query1 = "fn:count(fn:doc())";
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
 		WriteBatcher ihb1 = dmManager.newWriteBatcher();
 
@@ -246,7 +224,7 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 
 		ihb1.flushAsync();
 		ihb1.awaitCompletion();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
 		for (int i = 0; i < 10; i++) {
 			String uri = "/local/json-" + i;
@@ -256,9 +234,9 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 		ihb1.flushAsync();
 		ihb1.awaitCompletion();
 
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 10);
-		Assert.assertTrue(success.get());
-		Assert.assertTrue(failure.get());
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 10);
+		assertTrue(success.get());
+		assertTrue(failure.get());
 
 		dmManager.stopJob(ihb1);
 		Thread.currentThread().sleep(2000L);
@@ -273,7 +251,7 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 	public void testJobReportStopJob() throws Exception {
 
 		final String query1 = "fn:count(fn:doc())";
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
 		WriteBatcher ihb1 = dmManager.newWriteBatcher();
 
@@ -310,17 +288,17 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 		ihb1.awaitCompletion();
 
 		System.out.println(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == dmManager
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == dmManager
 				.getJobReport(writeTicket).getSuccessEventsCount());
 
 		dmManager.stopJob(ihb1);
 	}
-	
+
 	@Test
 	public void testJobReportTimes() throws Exception {
 
 		final String query1 = "fn:count(fn:doc())";
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
 		WriteBatcher ihb1 = dmManager.newWriteBatcher();
 
@@ -443,15 +421,15 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 		}
 		ihb2.flushAndWait();
 
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 10);
-		Assert.assertTrue(succException.get());
-		Assert.assertTrue(failException.get());
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 10);
+		assertTrue(succException.get());
+		assertTrue(failException.get());
 	}
 
 	@Test
 	public void testServerXQueryTransformSuccess() throws Exception {
 		final String query1 = "fn:count(fn:doc())";
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
 		TransformExtensionsManager transMgr = dbClient.newServerConfigManager().newTransformExtensionsManager();
 		ExtensionMetadata metadata = new ExtensionMetadata();
@@ -521,9 +499,9 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 		}
 		// Flush
 		ihb1.flushAndWait();
-		Assert.assertTrue(success.get());
-		Assert.assertFalse(failure.get());
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 8);
+		assertTrue(success.get());
+		assertFalse(failure.get());
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 8);
 	}
 
 	// Multiple threads writing to same WHB object with unique uri's
@@ -572,10 +550,10 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 		t2.join();
 		t3.join();
 
-		Assert.assertTrue(dmManager.getJobReport(writeTicket).getSuccessEventsCount() == 300);
-		Assert.assertTrue(dmManager.getJobReport(writeTicket).getFailureEventsCount() == 0);
-		Assert.assertTrue(dmManager.getJobReport(writeTicket).getFailureBatchesCount() == 0);
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 300);
+		assertTrue(dmManager.getJobReport(writeTicket).getSuccessEventsCount() == 300);
+		assertTrue(dmManager.getJobReport(writeTicket).getFailureEventsCount() == 0);
+		assertTrue(dmManager.getJobReport(writeTicket).getFailureBatchesCount() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 300);
 	}
 
 	// ISSUE 48
@@ -627,14 +605,14 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 		t3.join();
 		System.out.println(succEvent.intValue());
 		System.out.println(failEvent.intValue());
-		Assert.assertTrue(succEvent.intValue() + failEvent.intValue() == 300);
+		assertTrue(succEvent.intValue() + failEvent.intValue() == 300);
 	}
 
 	@Test
 	public void testRetry() throws Exception {
 
 		final String query1 = "fn:count(fn:doc())";
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		AtomicBoolean successCalled = new AtomicBoolean(false);
 		Map<String, String> properties = new HashMap<>();
 		AtomicInteger successEvents = new AtomicInteger(0);
@@ -676,10 +654,10 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 		properties.put("enabled", "true");
 		changeProperty(properties, "/manage/v2/databases/" + dbName + "/properties");
 		ihbMT.awaitCompletion();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 200);
-		Assert.assertTrue(successEvents.get() == 200);
-		Assert.assertTrue(failureEvents.get() == 200);
-		Assert.assertTrue(successCalled.get());
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 200);
+		assertTrue(successEvents.get() == 200);
+		assertTrue(failureEvents.get() == 200);
+		assertTrue(successCalled.get());
 	}
 
 	@Test
@@ -780,13 +758,13 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 		}
 		// Flush
 		ihb1.flushAndWait();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4);
 
 		// Account for a delta in the events
-		Assert.assertTrue(Math.abs(succEvents.intValue()-4) <= 2);
-		Assert.assertTrue(Math.abs(succBatches.intValue()-4) <= 2);
-		Assert.assertTrue(Math.abs(failEvents.intValue()-4) <= 2);
-		Assert.assertTrue(Math.abs(failBatches.intValue()-4) <= 2);
+		assertTrue(Math.abs(succEvents.intValue()-4) <= 2);
+		assertTrue(Math.abs(succBatches.intValue()-4) <= 2);
+		assertTrue(Math.abs(failEvents.intValue()-4) <= 2);
+		assertTrue(Math.abs(failBatches.intValue()-4) <= 2);
 
 	}
 
@@ -814,10 +792,10 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 
 			ihb2.flushAndWait();
 
-			Assert.assertTrue(dmManager.getJobReport(writeTicket).getSuccessEventsCount() == 25000);
-			Assert.assertTrue(dmManager.getJobReport(writeTicket).getFailureBatchesCount() == 0);
-			Assert.assertTrue(dmManager.getJobReport(writeTicket).getFailureBatchesCount() == 0);
-			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 25000);
+			assertTrue(dmManager.getJobReport(writeTicket).getSuccessEventsCount() == 25000);
+			assertTrue(dmManager.getJobReport(writeTicket).getFailureBatchesCount() == 0);
+			assertTrue(dmManager.getJobReport(writeTicket).getFailureBatchesCount() == 0);
+			assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 25000);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -828,7 +806,7 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 	public void testAddMultiThreadedStopJob() throws Exception {
 
 		final String query1 = "fn:count(fn:doc())";
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 
 		ihbMT = dmManager.newWriteBatcher();
 		ihbMT.withBatchSize(11).withThreadCount(5);
@@ -876,7 +854,7 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 			fail("Exception should have been thrown");
 		} catch (IllegalStateException e) {
 			System.out.println(e.getMessage());
-			Assert.assertTrue(e.getMessage().contains("This instance has been stopped"));
+			assertTrue(e.getMessage().contains("This instance has been stopped"));
 
 		}
 		try {
@@ -884,7 +862,7 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 			fail("Exception should have been thrown");
 		} catch (IllegalStateException e) {
 			System.out.println(e.getMessage());
-			Assert.assertTrue(e.getMessage().contains("This instance has been stopped"));
+			assertTrue(e.getMessage().contains("This instance has been stopped"));
 
 		}
 
@@ -892,7 +870,7 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 
 		int count = dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue();
 		System.out.println(count);
-		Assert.assertTrue(count == dmManager.getJobReport(writeTicket).getSuccessEventsCount());
+		assertTrue(count == dmManager.getJobReport(writeTicket).getSuccessEventsCount());
 	}
 
 	public static Object[] getSummaryReport(JobTicket ticket) {

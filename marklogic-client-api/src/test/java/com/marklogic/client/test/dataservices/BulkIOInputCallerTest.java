@@ -20,22 +20,20 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.dataservices.IOEndpoint;
 import com.marklogic.client.dataservices.InputCaller;
 import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.impl.NodeConverter;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import static org.junit.Assert.*;
 
 public class BulkIOInputCallerTest {
 
@@ -47,7 +45,7 @@ public class BulkIOInputCallerTest {
     int counter = 0;
     static Map<String, Integer> map;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         docMgr = IOTestUtil.db.newJSONDocumentManager();
         for (int i = 0; i < apiNames.length; i++) {
@@ -90,10 +88,10 @@ public class BulkIOInputCallerTest {
         loader.awaitCompletion();
         checkDocuments("bulkInputTest_1");
         checkDocuments("bulkInputTest_2");
-        assertEquals("Expected 4 documents written, was instead: " + counter, 4, counter);
-        assertTrue("No documents written by first callContext in - bulkInputTest_1 collection.",
+        assertEquals(4, counter);
+        assertTrue(
                 map.get("bulkInputTest_1") >= 1);
-        assertTrue("No documents written by second callContext in - bulkInputTest_2 collection.",
+        assertTrue(
                 map.get("bulkInputTest_2") >= 1);
     }
 
@@ -132,14 +130,14 @@ public class BulkIOInputCallerTest {
         loader.awaitCompletion();
         checkDocuments("bulkInputTest_1");
         checkDocuments("bulkInputTest_2");
-        assertTrue("Number of documents written not as expected.", counter == 4);
-        assertTrue("No documents written by first callContext in - bulkInputTest_1 collection.",
+        assertTrue( counter == 4);
+        assertTrue(
                 map.get("bulkInputTest_1") >= 1);
-        assertTrue("No documents written by second callContext in - bulkInputTest_2 collection.",
+        assertTrue(
                 map.get("bulkInputTest_2") >= 1);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup(){
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
         for(int i=2; i<5; i++) {
@@ -156,9 +154,9 @@ public class BulkIOInputCallerTest {
             String uri = "/marklogic/ds/test/bulkInputCaller/"+collection+"/"+i+".json";
             if(docMgr.exists(uri)!=null) {
                 JsonNode doc = docMgr.read(uri, new JacksonHandle()).get();
-                assertNotNull("Could not find file "+uri, doc);
-                assertEquals("state mismatch", i, doc.get("state").get("next").asInt());
-                assertEquals("state mismatch", 6, doc.get("work").get("max").asInt());
+                assertNotNull(doc);
+                assertEquals( i, doc.get("state").get("next").asInt());
+                assertEquals( 6, doc.get("work").get("max").asInt());
                 counter++;
                 map.put(collection, map.get(collection)!=null?map.get(collection)+1:1);
             }

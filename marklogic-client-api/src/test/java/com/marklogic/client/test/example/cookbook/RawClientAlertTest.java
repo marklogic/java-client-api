@@ -15,13 +15,11 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.example.cookbook.RawClientAlert;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-
-import org.junit.Test;
-
-import com.marklogic.client.example.cookbook.RawClientAlert;
 
 public class RawClientAlertTest {
   @Test
@@ -33,6 +31,6 @@ public class RawClientAlertTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    assertTrue("RawClientAlert example failed", succeeded);
+    Assertions.assertTrue( succeeded);
   }
 }

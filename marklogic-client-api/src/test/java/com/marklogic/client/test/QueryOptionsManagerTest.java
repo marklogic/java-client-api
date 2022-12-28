@@ -15,48 +15,40 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-
-import javax.xml.bind.JAXBException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
+import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.io.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.xml.sax.SAXException;
-import com.fasterxml.jackson.databind.JsonNode;
 
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.ResourceNotResendableException;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
+import javax.xml.bind.JAXBException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings("deprecation")
 public class QueryOptionsManagerTest {
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(QueryOptionsManagerTest.class);
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connectAdmin();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -66,14 +58,14 @@ public class QueryOptionsManagerTest {
   {
     QueryOptionsManager mgr =
       Common.adminClient.newServerConfigManager().newQueryOptionsManager();
-    assertNotNull("Client could not create query options manager", mgr);
+    assertNotNull( mgr);
 
     mgr.writeOptions("testempty", new StringHandle("{\"options\":{}}").withFormat(Format.JSON));
 
     String optionsResult = mgr.readOptions("testempty", new StringHandle()).get();
     logger.debug("Empty options from server {}", optionsResult);
-    assertTrue("Empty options result not empty",optionsResult.contains("options"));
-    assertTrue("Empty options result not empty",optionsResult.contains("\"http://marklogic.com/appservices/search\"/>"));
+    assertTrue(optionsResult.contains("options"));
+    assertTrue(optionsResult.contains("\"http://marklogic.com/appservices/search\"/>"));
 
     mgr.deleteOptions("testempty");
   };
@@ -106,11 +98,11 @@ public class QueryOptionsManagerTest {
             ((DOMImplementationLS) documentBldr.getDOMImplementation()).createLSSerializer().writeToString(domDocument);
 
     String optionsString = queryOptionsMgr.readOptions(optionsName, new StringHandle()).get();
-    assertNotNull("Read null string for XML content",optionsString);
+    assertNotNull(optionsString);
     logger.debug("Two XML Strings {} and {}", domString, optionsString);
 
     Document readDoc = queryOptionsMgr.readOptions(optionsName, new DOMHandle()).get();
-    assertNotNull("Read null document for XML content",readDoc);
+    assertNotNull(readDoc);
 
   }
 
@@ -120,7 +112,7 @@ public class QueryOptionsManagerTest {
   {
     QueryOptionsManager mgr =
       Common.adminClient.newServerConfigManager().newQueryOptionsManager();
-    assertNotNull("Client could not create query options manager", mgr);
+    assertNotNull( mgr);
 
     FileHandle jsonHandle = new FileHandle(new File("src/test/resources/json-config.json"));
     jsonHandle.setFormat(Format.JSON);
@@ -128,13 +120,13 @@ public class QueryOptionsManagerTest {
 
     JsonNode options = mgr.readOptions("jsonoptions", new JacksonHandle()).get();
 
-    assertEquals("JSON options came back incorrectly", options.findPath("constraint").get(0).get("name").textValue(), "decade");
+    assertEquals( options.findPath("constraint").get(0).get("name").textValue(), "decade");
 
 
     StringHandle jsonStringHandle = new StringHandle();
     jsonStringHandle.setFormat(Format.JSON);
     mgr.readOptions("jsonoptions", jsonStringHandle);
-    assertTrue("JSON String from QueryManager must start with json options", jsonStringHandle.get().startsWith("{\"options\":"));
+    assertTrue( jsonStringHandle.get().startsWith("{\"options\":"));
 
     mgr.deleteOptions("jsonoptions");
   };

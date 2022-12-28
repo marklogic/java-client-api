@@ -15,33 +15,28 @@
  */
 package com.marklogic.client.test;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-
 import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.Format;
+import com.marklogic.client.io.*;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class QueryByExampleTest {
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
     setupData();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     cleanUpData();
   }
@@ -60,16 +55,16 @@ public class QueryByExampleTest {
     System.out.println(report.toString());
 
     SearchHandle results = qm.search(query, new SearchHandle());
-    assertEquals("6 json results should have matched", results.getTotalResults(), 6);
+    assertEquals(results.getTotalResults(), 6);
 
     DocumentPage documents = jdm.search(query, 1);
-    assertEquals("6 json documents should have matched", documents.getTotalSize(), 6);
+    assertEquals(documents.getTotalSize(), 6);
 
     documents = jdm.search(query, 1, new JacksonHandle());
-    assertEquals("6 json documents should have matched", documents.getTotalSize(), 6);
+    assertEquals(documents.getTotalSize(), 6);
 
     documents = jdm.search(query, 1, new SearchHandle());
-    assertEquals("6 json documents should have matched", documents.getTotalSize(), 6);
+    assertEquals(documents.getTotalSize(), 6);
   }
 
   @Test
@@ -89,13 +84,13 @@ public class QueryByExampleTest {
     System.out.println(report.toString());
 
     SearchHandle results = qm.search(query, new SearchHandle());
-    assertEquals("No XML results should have matched", results.getTotalResults(), 0);
+    assertEquals(results.getTotalResults(), 0);
 
     DocumentPage documents = xdm.search(query, 1);
-    assertEquals("No XML documents should have matched", documents.getTotalSize(), 0);
+    assertEquals(documents.getTotalSize(), 0);
 
     documents = xdm.search(query, 1, new DOMHandle());
-    assertEquals("No XML documents should have matched", documents.getTotalSize(), 0);
+    assertEquals(documents.getTotalSize(), 0);
   }
 
   public static void setupData() {

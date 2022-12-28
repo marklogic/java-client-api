@@ -15,34 +15,24 @@
  */
 package com.marklogic.client.test.datamovement;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.Set;
-import java.util.UUID;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.datamovement.*;
 import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
+import com.marklogic.client.datamovement.impl.QueryBatchImpl;
+import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.expression.CtsQueryBuilder;
+import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.*;
-
+import com.marklogic.client.test.Common;
 import com.marklogic.client.type.CtsQueryExpr;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -53,44 +43,25 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.document.ServerTransform;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.io.StringHandle;
-import static com.marklogic.client.io.Format.JSON;
-import static com.marklogic.client.io.Format.XML;
-import static org.junit.Assert.*;
-
-import com.marklogic.client.datamovement.ApplyTransformListener;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.DeleteListener;
-import com.marklogic.client.datamovement.ExportListener;
-import com.marklogic.client.datamovement.ExportToWriterListener;
-import com.marklogic.client.datamovement.QueryBatchListener;
-import com.marklogic.client.datamovement.UrisToWriterListener;
-import com.marklogic.client.datamovement.JobReport;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryBatch;
-import com.marklogic.client.datamovement.QueryBatchException;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.QueryFailureListener;
-import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.datamovement.impl.QueryBatchImpl;
-
-import com.marklogic.client.test.Common;
-
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static com.marklogic.client.io.Format.JSON;
+import static com.marklogic.client.io.Format.XML;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class QueryBatcherTest {
   private Logger logger = LoggerFactory.getLogger(QueryBatcherTest.class);
@@ -105,13 +76,13 @@ public class QueryBatcherTest {
   private static String qhbTestCollection = "QueryBatcherTest_" +
     new Random().nextInt(10000);
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() throws Exception {
     //((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(ch.qos.logback.classic.Level.INFO);
     setup();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     QueryManager queryMgr = client.newQueryManager();
     DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
@@ -122,7 +93,7 @@ public class QueryBatcherTest {
   }
 
   public static void setup() throws Exception {
-	  
+
 	changeAssignmentPolicy("bucket");
     WriteBatcher writeBatcher = moveMgr.newWriteBatcher();
     moveMgr.startJob(writeBatcher);
@@ -345,18 +316,18 @@ public class QueryBatcherTest {
     assertEquals(batchSize, queryBatcher.getBatchSize());
     assertEquals(threadCount, queryBatcher.getThreadCount());
     assertEquals(queryBatcherJobId, queryBatcher.getJobId());
-    assertFalse("Job should not be stopped yet", queryBatcher.isStopped());
+    assertFalse( queryBatcher.isStopped());
 
     long minTime = new Date().getTime();
-    assertFalse("Job should not be started yet", queryBatcher.isStarted());
+    assertFalse( queryBatcher.isStarted());
     moveMgr.startJob(queryBatcher);
     long reportStartTime = new Date().getTime();
     JobTicket ticket = moveMgr.getActiveJob(queryBatcherJobId);
-    assertTrue("Job should be started now", queryBatcher.isStarted());
+    assertTrue( queryBatcher.isStarted());
     assertEquals(queryBatcherJobName, ticket.getBatcher().getJobName());
 
     JobReport report = moveMgr.getJobReport(ticket);
-    //assertFalse("Job Report has incorrect job completion information", report.isJobComplete());
+    //assertFalse( report.isJobComplete());
     boolean finished = queryBatcher.awaitCompletion();
 
 
@@ -364,11 +335,11 @@ public class QueryBatcherTest {
       fail("Job did not finish, it was interrupted");
     }
 
-    assertTrue("Job Report should return null for end timestamp", report.getJobEndTime() == null);
+    assertTrue( report.getJobEndTime() == null);
     moveMgr.stopJob(ticket.getBatcher());
 
-    assertTrue("Job should be stopped now", queryBatcher.isStopped());
-    assertEquals("Batch JobTicket should match JobTicket from startJob", ticket, batchTicket.get());
+    assertTrue( queryBatcher.isStopped());
+    assertEquals( ticket, batchTicket.get());
 
     if ( failures.length() > 0 ) {
       fail(failures.toString());
@@ -380,28 +351,27 @@ public class QueryBatcherTest {
     report = moveMgr.getJobReport(ticket);
     long maxTime = new Date().getTime();
     Date batchDate = batchTimestamp.get().getTime();
-    assertTrue("Batch has incorrect timestamp=" + batchDate.getTime() + " should be between " +
-      minTime + " and " + maxTime, batchDate.getTime() >= minTime && batchDate.getTime() <= maxTime);
+    assertTrue(batchDate.getTime() >= minTime && batchDate.getTime() <= maxTime);
     Date reportDate = report.getReportTimestamp().getTime();
     Date reportStartDate = report.getJobStartTime().getTime();
     Date reportEndDate = report.getJobEndTime().getTime();
-    assertTrue("Job Report has incorrect start timestamp", reportStartDate.getTime() >= minTime &&
+    assertTrue( reportStartDate.getTime() >= minTime &&
       reportStartDate.getTime() <= reportStartTime);
-    assertTrue("Job Report has incorrect end timestamp", reportEndDate.getTime() >= reportStartDate.getTime() &&
+    assertTrue(reportEndDate.getTime() >= reportStartDate.getTime() &&
       reportEndDate.getTime() <= maxTime);
-    assertTrue("Job Report has incorrect timestamp", reportDate.getTime() >= minTime && reportDate.getTime() <= maxTime);
-    assertEquals("Job Report has incorrect successful batch counts", successfulBatchCount.get(),report.getSuccessBatchesCount());
-    assertEquals("Job Report has incorrect successful event counts", totalResults.get(),report.getSuccessEventsCount());
-    assertEquals("Job Report has incorrect failure batch counts", failureBatchCount.get(), report.getFailureBatchesCount());
-    assertEquals("Job Report has incorrect failure events counts", failureBatchCount.get(), report.getFailureEventsCount());
-    //assertEquals("Job Report has incorrect job completion information", true, report.isJobComplete());
+    assertTrue(reportDate.getTime() >= minTime && reportDate.getTime() <= maxTime);
+    assertEquals( successfulBatchCount.get(),report.getSuccessBatchesCount());
+    assertEquals( totalResults.get(),report.getSuccessEventsCount());
+    assertEquals( failureBatchCount.get(), report.getFailureBatchesCount());
+    assertEquals( failureBatchCount.get(), report.getFailureEventsCount());
+    //assertEquals( true, report.isJobComplete());
 
     if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) {
 
 // TODO: verify for the entire database instead of per forest
 
     } else if(queryBatcherChecks) {
-      assertEquals("java-unittest", batchDatabaseName.get());
+      assertEquals( "java-unittest", batchDatabaseName.get());
       // make sure we get the same number of results via search for the same query
       SearchHandle searchResults = client.newQueryManager().search(query, new SearchHandle());
       assertEquals(numExpected, searchResults.getTotalResults());
@@ -453,7 +423,7 @@ public class QueryBatcherTest {
         newQueryBatcher(query);
         fail("Query construction succeeded");
       } catch(FailedRequestException e) {
-        assertEquals("unexpected failure", "XDMP-JSONDOC", e.getServerMessageCode());
+        assertEquals( "XDMP-JSONDOC", e.getServerMessageCode());
       } catch(Throwable e) {
         fail("unexpected exception "+e.toString());
       }
@@ -596,8 +566,8 @@ public class QueryBatcherTest {
     moveMgr.startJob(queryBatcher);
     queryBatcher.awaitCompletion();
     moveMgr.stopJob(queryBatcher);
-    assertTrue("Close method is not called on QueryBatchListener", calledBatchListener.get());
-    assertTrue("Close method is not called on QueryFailureListener", calledFailureListener.get());
+    assertTrue( calledBatchListener.get());
+    assertTrue( calledFailureListener.get());
   }
 
   @Test
@@ -622,13 +592,13 @@ public class QueryBatcherTest {
           } catch (InterruptedException e) {
             logger.warn("Thread interrupted while sleeping", e);
           }
-          assertTrue("UrisReady listener is not completed yet", urisReadyFlag.get());
+          assertTrue( urisReadyFlag.get());
           jobCompletionFlag.set(true);
         });
     moveMgr.startJob(queryBatcher);
     queryBatcher.awaitCompletion();
     moveMgr.stopJob(queryBatcher);
-    assertTrue("onJobCompletionListener is not called", jobCompletionFlag.get());
+    assertTrue( jobCompletionFlag.get());
 
     urisReadyFlag.set(false);
     jobCompletionFlag.set(false);
@@ -642,12 +612,12 @@ public class QueryBatcherTest {
           urisReadyFlag.set(true);
         })
         .onJobCompletion(batcher -> {
-          assertTrue("UrisReady listener is not completed yet", urisReadyFlag.get());
+          assertTrue( urisReadyFlag.get());
           jobCompletionFlag.set(true);
         });
     moveMgr.startJob(queryBatcher2);
     Thread.sleep(1100);
-    assertTrue("onJobCompletionListener is not called", jobCompletionFlag.get());
+    assertTrue( jobCompletionFlag.get());
 
     jobCompletionFlag.set(false);
     QueryBatcher queryBatcher3 = moveMgr.newQueryBatcher(query)
@@ -655,7 +625,7 @@ public class QueryBatcherTest {
     moveMgr.startJob(queryBatcher3);
     queryBatcher3.awaitCompletion();
     moveMgr.stopJob(queryBatcher3);
-    assertTrue("onJobCompletionListener is not called", jobCompletionFlag.get());
+    assertTrue( jobCompletionFlag.get());
 
     jobCompletionFlag.set(false);
     String[] uris = new String[] {"uri1.txt", "uri2.txt", "uri3.json", "uri4.xml","uri5.png"};
@@ -672,7 +642,7 @@ public class QueryBatcherTest {
     moveMgr.startJob(queryBatcher4);
     queryBatcher4.awaitCompletion();
     moveMgr.stopJob(queryBatcher4);
-    assertTrue("onJobCompletionListener is not called", jobCompletionFlag.get());
+    assertTrue( jobCompletionFlag.get());
   }
 
   @Test
@@ -806,7 +776,7 @@ public class QueryBatcherTest {
     qb.awaitCompletion();
     moveMgr.stopJob(qb);
 
-    assertTrue(errors.toString(), "".equals(errors.toString()));
+    assertTrue("".equals(errors.toString()));
     assertEquals(uris.size(), deletedCount.get());
     assertEquals(0, queryMgr.search(collectionQuery, new SearchHandle()).getTotalResults());
   }
@@ -844,24 +814,24 @@ public class QueryBatcherTest {
     System.out.println("Failure event: "+moveMgr.getJobReport(queryTicket.get()).getFailureEventsCount());
     System.out.println("Failure batch: "+moveMgr.getJobReport(queryTicket.get()).getFailureBatchesCount());
 
-    assertNull("withConsistentSnapshot was not used, so the server timestamp should be null",
+    assertNull(
             batcher.getServerTimestamp());
     assertTrue(successCount.get() < 200);
     assertTrue(batchCount.get() == moveMgr.getJobReport(queryTicket.get()).getSuccessBatchesCount());
   }
-  
+
   @Test
   public void maxUrisTestWithIteratorTask() {
       DataMovementManager dmManager = client.newDataMovementManager();
       List<String> uris = new ArrayList<String>();
       List<String> outputUris = Collections.synchronizedList(new ArrayList<String>());
-      
+
       class Output {
           AtomicInteger counter = new AtomicInteger(0);
       }
       for(int i=0; i<40; i++)
           uris.add(UUID.randomUUID().toString());
-      
+
       QueryBatcher  queryBatcher = dmManager.newQueryBatcher(uris.iterator());
       final Output output = new Output();
       queryBatcher.setMaxBatches(2);
@@ -877,15 +847,15 @@ public class QueryBatcherTest {
           dmManager.startJob(queryBatcher);
           queryBatcher.awaitCompletion();
           dmManager.stopJob(queryBatcher);
-          assertTrue("Counter value not as expected", output.counter.get() == 2);
-          assertTrue("Output list does not contain expected number of outputs", outputUris.size() == 20);
+          assertTrue( output.counter.get() == 2);
+          assertTrue( outputUris.size() == 20);
   }
-  
+
   @Test
   public void maxUrisTestWithQueryTask() {
       DataMovementManager dmManager = client.newDataMovementManager();
       List<String> outputUris = Collections.synchronizedList(new ArrayList<String>());
-      
+
       DocumentMetadataHandle documentMetadata = new DocumentMetadataHandle().withCollections("maxUrisTest");
       WriteBatcher batcher = moveMgr.newWriteBatcher().withDefaultMetadata(documentMetadata);
       int forests = batcher.getForestConfig().listForests().length;
@@ -897,10 +867,10 @@ public class QueryBatcherTest {
 
       batcher.flushAndWait();
       moveMgr.stopJob(batcher);
-      
+
       AtomicInteger counter = new AtomicInteger(0);
       QueryBatcher  queryBatcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("maxUrisTest"));
-      
+
       int forest_count = queryBatcher.getForestConfig().listForests().length;
       queryBatcher.setMaxBatches(1);
       queryBatcher.withBatchSize(batchSize, 1)
@@ -915,12 +885,12 @@ public class QueryBatcherTest {
           dmManager.startJob(queryBatcher);
           queryBatcher.awaitCompletion();
           dmManager.stopJob(queryBatcher);
-          assertTrue("Counter value not as expected", (counter.get() >= 1) && (counter.get()<= (forest_count+1)));
-          
+          assertTrue( (counter.get() >= 1) && (counter.get()<= (forest_count+1)));
+
           // The number of documents should be more than maxBatches*batchSize but less than (batchSize*(forest_count+maxBatches))
-          assertTrue("Output list does not contain expected number of outputs", (outputUris.size() >= 10) && outputUris.size()<= (10*(forest_count+1)));
+          assertTrue( (outputUris.size() >= 10) && outputUris.size()<= (10*(forest_count+1)));
   }
-  
+
 	static void changeAssignmentPolicy(String value) throws IOException {
 
 		InputStream getResponseStream = null;

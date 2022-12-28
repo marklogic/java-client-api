@@ -28,9 +28,10 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
 import org.json.JSONException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import javax.xml.bind.JAXBException;
@@ -43,11 +44,11 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.Scanner;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestMetadata extends AbstractFunctionalTest {
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception
   {
     createRoleWithNodeUpdate("elsrole", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
@@ -102,39 +103,39 @@ public class TestMetadata extends AbstractFunctionalTest {
     String actualProperties = getDocumentPropertiesString(properties);
     System.out.println("Returned properties: " + actualProperties);
 
-    assertTrue("Document properties difference in size value", actualProperties.contains("size:5"));
-    assertTrue("Document property reviewed not found or not correct", actualProperties.contains("reviewed:true"));
-    assertTrue("Document property myInteger not found or not correct", actualProperties.contains("myInteger:10"));
-    assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("myDecimal:34.56678"));
-    assertTrue("Document property myCalendar not found or not correct", actualProperties.contains(calProperty.toString()));
-    assertTrue("Document property myString not found or not correct", actualProperties.contains("myString:foo"));
+    assertTrue( actualProperties.contains("size:5"));
+    assertTrue( actualProperties.contains("reviewed:true"));
+    assertTrue( actualProperties.contains("myInteger:10"));
+    assertTrue( actualProperties.contains("myDecimal:34.56678"));
+    assertTrue( actualProperties.contains(calProperty.toString()));
+    assertTrue( actualProperties.contains("myString:foo"));
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println("Returned permissions: " + actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
-    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
-    assertTrue("Document permissions difference in app-user permissions",
+    assertTrue( actualPermissions.contains("size:5"));
+    assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue(
         (actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions.contains("app-user:[READ, UPDATE]")));
 
     // Collections
     String actualCollections = getDocumentCollectionsString(collections);
     System.out.println("Returned collections: " + actualCollections);
 
-    assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
-    assertTrue("my-collection1 not found", actualCollections.contains("another-collection"));
-    assertTrue("my-collection2 not found", actualCollections.contains("my-collection"));
+    assertTrue( actualCollections.contains("size:2"));
+    assertTrue( actualCollections.contains("another-collection"));
+    assertTrue( actualCollections.contains("my-collection"));
 
     // Test MetaData Values
-    assertTrue("key=Name not found in metadata", metadatavalues.containsKey("Name"));
-    assertTrue("value=kiran not found in metadata", metadatavalues.containsValue("kiran"));
-    assertTrue("key=Name not found in metadata", metadatavalues.containsKey("Company"));
-    assertTrue("value=kiran not found in metadata", metadatavalues.containsValue("MarkLogic"));
-    assertFalse("NO metadat keyvalues found", metadatavalues.isEmpty());
+    assertTrue( metadatavalues.containsKey("Name"));
+    assertTrue( metadatavalues.containsValue("kiran"));
+    assertTrue( metadatavalues.containsKey("Company"));
+    assertTrue( metadatavalues.containsValue("MarkLogic"));
+    assertFalse( metadatavalues.isEmpty());
     // Update MetaData Values
     metadataHandle.getMetadataValues().remove("Name");
     metadataHandle.getMetadataValues().replace("Company", "MarkLogic", "marklogicians");
@@ -144,12 +145,12 @@ public class TestMetadata extends AbstractFunctionalTest {
     writeDocumentUsingBytesHandle(client, filename, "/write-bin-byteshandle-metadata/", metadataHandle, "Binary");
     readMetadataHandle = readMetadataFromDocument(client, "/write-bin-byteshandle-metadata/" + filename, "Binary");
     metadatavalues = readMetadataHandle.getMetadataValues();
-    assertTrue("key=HQ not found in metadata", metadatavalues.containsKey("HQ"));
-    assertTrue("value=USACA not found in metadata", metadatavalues.containsValue("USACA"));
-    assertFalse("key=Name found after removing it", metadatavalues.containsKey("Name"));
-    assertFalse("key=MarkLogic found after removing it", metadatavalues.containsValue("MarkLogic"));
-    assertTrue("value=marklogicians not found in metadata", metadatavalues.containsValue("marklogicians"));
-    assertFalse("value=SanCarlos found after removing it", metadatavalues.containsValue("SanCarlos"));
+    assertTrue( metadatavalues.containsKey("HQ"));
+    assertTrue( metadatavalues.containsValue("USACA"));
+    assertFalse( metadatavalues.containsKey("Name"));
+    assertFalse( metadatavalues.containsValue("MarkLogic"));
+    assertTrue( metadatavalues.containsValue("marklogicians"));
+    assertFalse( metadatavalues.containsValue("SanCarlos"));
 
     // patch MetaData Values
     XMLDocumentManager docManager = client.newXMLDocumentManager();
@@ -163,9 +164,9 @@ public class TestMetadata extends AbstractFunctionalTest {
     readMetadataHandle = docManager.readMetadata("/write-bin-byteshandle-metadata/" + filename, readMetadataHandle);
     metadatavalues = readMetadataHandle.getMetadataValues();
     BytesHandle contentHandle = new BytesHandle();
-    assertTrue("value=test-patch not found in metadata", metadatavalues.containsValue("test-patch"));
-    assertTrue("value=15 not found in metadata", metadatavalues.containsValue("15"));
-    assertFalse("key=HQ found after removing it", metadatavalues.containsKey("HQ"));
+    assertTrue(metadatavalues.containsValue("test-patch"));
+    assertTrue( metadatavalues.containsValue("15"));
+    assertFalse( metadatavalues.containsKey("HQ"));
 
     // read metadata values using BinaryDocumentManager ReadAs
     DocumentMetadataHandle metaHandle = new DocumentMetadataHandle();
@@ -174,8 +175,8 @@ public class TestMetadata extends AbstractFunctionalTest {
     docman.readAs("/write-bin-byteshandle-metadata/" + filename, metaHandle, byte[].class);
     docman.read("/write-bin-byteshandle-metadata/" + filename, readmetadata, contentHandle, 0, 100);
     metadatavalues = metaHandle.getMetadataValues();
-    assertTrue(" metadata doesnot contain expected string test-patch", metadatavalues.containsValue("test-patch"));
-    assertTrue(" metadata doesnot contain expected string test-patch", metadatavalues.containsValue("test-patch"));
+    assertTrue(metadatavalues.containsValue("test-patch"));
+    assertTrue(metadatavalues.containsValue("test-patch"));
 
     // release the client
     client.release();
@@ -201,7 +202,7 @@ public class TestMetadata extends AbstractFunctionalTest {
     Scanner scanner = null;
     String readContent;
     File file = null;
-    
+
 	try {
 		file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
 		fis = new FileInputStream(file);
@@ -223,11 +224,11 @@ public class TestMetadata extends AbstractFunctionalTest {
       metadataHandle.getMetadataValues().add("keyTrx1", "valueTrx1");
       docMgr.writeMetadata(docId, metadataHandle, t1);
       docMgr.readMetadata(docId, readMetadataHandle, t1);
-      assertTrue(" metadata doesnot contain expected string valueTrx1", metadatavalues.containsValue("valueTrx1"));
+      assertTrue( metadatavalues.containsValue("valueTrx1"));
       t1.rollback();
       docMgr.readMetadata(docId, readMetadataHandle);
       metadatavalues = readMetadataHandle.getMetadataValues();
-      assertFalse(" metadata  contains unexpected string valueTrx1", metadatavalues.containsValue("valueTrx1"));
+      assertFalse( metadatavalues.containsValue("valueTrx1"));
 
       // Trx with metadata values commit scenario
       t2 = client.openTransaction();
@@ -235,11 +236,11 @@ public class TestMetadata extends AbstractFunctionalTest {
       DocumentDescriptor desc = docMgr.create(template, metadataHandle, contentHandle, t2);
       String docId1 = desc.getUri();
       docMgr.read(docId1, readMetadataHandle, contentHandle, t2);
-      assertTrue(" metadata doesnot contain expected string valueTrx2", metadatavalues.containsValue("valueTrx2"));
+      assertTrue( metadatavalues.containsValue("valueTrx2"));
       t2.commit();
       docMgr.readAs(docId1, readMetadataHandle, String.class);
       metadatavalues = readMetadataHandle.getMetadataValues();
-      assertTrue(" metadata doesnot contains  string 'valueTrx2' after trx commit", metadatavalues.containsValue("valueTrx2"));
+      assertTrue(metadatavalues.containsValue("valueTrx2"));
       waitForPropertyPropagate();
 
       t1 = t2 = null;
@@ -301,36 +302,36 @@ public class TestMetadata extends AbstractFunctionalTest {
     String actualProperties = getDocumentPropertiesString(properties);
     System.out.println("Returned properties: " + actualProperties);
 
-    assertTrue("Document properties difference in size value", actualProperties.contains("size:6"));
-    assertTrue("Document property reviewed not found or not correct", actualProperties.contains("reviewed:true"));
-    assertTrue("Document property myInteger not found or not correct", actualProperties.contains("myInteger:10"));
-    assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("myDecimal:34.56678"));
-    assertTrue("Document property myCalendar not found or not correct", actualProperties.contains(calProperty.toString()));
-    assertTrue("Document property emptyProperty not found or not correct", actualProperties.contains("emptyProperty:null"));
+    assertTrue( actualProperties.contains("size:6"));
+    assertTrue( actualProperties.contains("reviewed:true"));
+    assertTrue( actualProperties.contains("myInteger:10"));
+    assertTrue( actualProperties.contains("myDecimal:34.56678"));
+    assertTrue( actualProperties.contains(calProperty.toString()));
+    assertTrue( actualProperties.contains("emptyProperty:null"));
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println("Returned permissions: " + actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
-    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
-    assertTrue("Document permissions difference in app-user permissions",
+    assertTrue( actualPermissions.contains("size:5"));
+    assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue(
         (actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions.contains("app-user:[READ, UPDATE]")));
 
     // Collections
     String actualCollections = getDocumentCollectionsString(collections);
     System.out.println("Returned collections: " + actualCollections);
 
-    assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
-    assertTrue("my-collection1 not found", actualCollections.contains("another-collection"));
-    assertTrue("my-collection2 not found", actualCollections.contains("my-collection"));
+    assertTrue( actualCollections.contains("size:2"));
+    assertTrue( actualCollections.contains("another-collection"));
+    assertTrue( actualCollections.contains("my-collection"));
 
     // Write into empty props and read again.
     DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
-    
+
     DocumentProperties properties1 = metadataHandle1.getProperties();
     properties1.put("emptyProperty", "Not Empty");
     writeDocumentUsingStringHandle(client, filename, "/write-text-stringhandle-metadata/", metadataHandle1, "Text");
@@ -346,7 +347,7 @@ public class TestMetadata extends AbstractFunctionalTest {
     // Properties
     String actualProperties1 = getDocumentPropertiesString(propertiesRead1);
     System.out.println("Returned properties: " + actualProperties1);
-    assertTrue("Document property emptyProperty not found or not correct", actualProperties1.contains("emptyProperty:Not Empty"));
+    assertTrue( actualProperties1.contains("emptyProperty:Not Empty"));
     // release the client
     client.release();
   }
@@ -399,35 +400,35 @@ public class TestMetadata extends AbstractFunctionalTest {
     String actualProperties = getDocumentPropertiesString(properties);
     System.out.println("Returned properties: " + actualProperties);
 
-    assertTrue("Document properties difference in size value", actualProperties.contains("size:5"));
-    assertTrue("Document property reviewed not found or not correct", actualProperties.contains("reviewed:true"));
-    assertTrue("Document property myInteger not found or not correct", actualProperties.contains("myInteger:10"));
-    assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("myDecimal:34.56678"));
-    assertTrue("Document property myCalendar not found or not correct", actualProperties.contains(calProperty.toString()));
-    assertTrue("Document property myString not found or not correct", actualProperties.contains("myString:foo"));
+    assertTrue( actualProperties.contains("size:5"));
+    assertTrue( actualProperties.contains("reviewed:true"));
+    assertTrue( actualProperties.contains("myInteger:10"));
+    assertTrue( actualProperties.contains("myDecimal:34.56678"));
+    assertTrue( actualProperties.contains(calProperty.toString()));
+    assertTrue( actualProperties.contains("myString:foo"));
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println("Returned permissions: " + actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
-    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
-    assertTrue("Document permissions difference in app-user permissions",
+    assertTrue( actualPermissions.contains("size:5"));
+    assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue(
         (actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions.contains("app-user:[READ, UPDATE]")));
 
     // Collections
     String actualCollections = getDocumentCollectionsString(collections);
     System.out.println("Returned collections: " + actualCollections);
 
-    assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
-    assertTrue("my-collection1 not found", actualCollections.contains("another-collection"));
-    assertTrue("my-collection2 not found", actualCollections.contains("my-collection"));
+    assertTrue( actualCollections.contains("size:2"));
+    assertTrue( actualCollections.contains("another-collection"));
+    assertTrue( actualCollections.contains("my-collection"));
 
     // metadata Values
-    assertTrue("key1 does not exist in metadata values", metadatavalues.containsKey("key1"));
+    assertTrue( metadatavalues.containsKey("key1"));
 
     // release the client
     client.release();
@@ -478,35 +479,35 @@ public class TestMetadata extends AbstractFunctionalTest {
     String actualProperties = getDocumentPropertiesString(properties);
     System.out.println("Returned properties: " + actualProperties);
 
-    assertTrue("Document properties difference in size value", actualProperties.contains("size:5"));
-    assertTrue("Document property reviewed not found or not correct", actualProperties.contains("reviewed:true"));
-    assertTrue("Document property myInteger not found or not correct", actualProperties.contains("myInteger:10"));
-    assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("myDecimal:34.56678"));
-    assertTrue("Document property myCalendar not found or not correct", actualProperties.contains(calProperty.toString()));
-    assertTrue("Document property myString not found or not correct", actualProperties.contains("myString:foo"));
+    assertTrue( actualProperties.contains("size:5"));
+    assertTrue( actualProperties.contains("reviewed:true"));
+    assertTrue( actualProperties.contains("myInteger:10"));
+    assertTrue( actualProperties.contains("myDecimal:34.56678"));
+    assertTrue( actualProperties.contains(calProperty.toString()));
+    assertTrue( actualProperties.contains("myString:foo"));
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println("Returned permissions: " + actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
-    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
-    assertTrue("Document permissions difference in app-user permissions",
+    assertTrue( actualPermissions.contains("size:5"));
+    assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue(
         (actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions.contains("app-user:[READ, UPDATE]")));
 
     // Collections
     String actualCollections = getDocumentCollectionsString(collections);
     System.out.println("Returned collections: " + actualCollections);
 
-    assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
-    assertTrue("my-collection1 not found", actualCollections.contains("another-collection"));
-    assertTrue("my-collection2 not found", actualCollections.contains("my-collection"));
+    assertTrue( actualCollections.contains("size:2"));
+    assertTrue( actualCollections.contains("another-collection"));
+    assertTrue( actualCollections.contains("my-collection"));
 
     // Metadata values
-    assertTrue("Documentdoes not contain metadatvalue::value22", metadatavalues.containsValue("value22"));
+    assertTrue( metadatavalues.containsValue("value22"));
 
     // release the client
     client.release();
@@ -543,7 +544,7 @@ public class TestMetadata extends AbstractFunctionalTest {
     String expectedProperties = "size:1|{http://www.example.com}foo:bar|";
     String actualProperties = getDocumentPropertiesString(properties);
     System.out.println(actualProperties);
-    assertEquals("Document properties difference", expectedProperties, actualProperties);
+    assertEquals( expectedProperties, actualProperties);
 
     // release the client
     client.release();
@@ -588,9 +589,9 @@ public class TestMetadata extends AbstractFunctionalTest {
       String actualPermissions = getDocumentPermissionsString(permissions);
       System.out.println("Returned permissions: " + actualPermissions);
 
-      assertTrue("Document collections difference in size value", actualCollections.contains("size:0"));
-      assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-      assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-writer:[UPDATE]"));
+      assertTrue( actualCollections.contains("size:0"));
+      assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+      assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
 
       DocumentMetadataPatchBuilder patchBldr = docMgr.newPatchBuilder(Format.JSON);
 
@@ -625,25 +626,25 @@ public class TestMetadata extends AbstractFunctionalTest {
       String patchPermStr = getDocumentPermissionsString(afterPatchperms);
       System.out.println("After patch permissions: " + patchPermStr);
 
-      assertTrue("Document collections difference in size value", patchCollStr.contains("size:2"));
-      assertTrue("JSONPatch1 not found", patchCollStr.contains("JSONPatch1"));
-      assertTrue("JSONPatch3 not found", patchCollStr.contains("JSONPatch3"));
+      assertTrue( patchCollStr.contains("size:2"));
+      assertTrue( patchCollStr.contains("JSONPatch1"));
+      assertTrue( patchCollStr.contains("JSONPatch3"));
 
-      assertTrue("Document permissions difference in size value", patchPermStr.contains("size:5"));
-      assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-      assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
-      assertTrue("Document permissions difference in rest-reader permission", patchPermStr.contains("rest-reader:[READ]"));
-      assertTrue("Document permissions difference in rest-reader permission", patchPermStr.contains("rest-writer:[UPDATE]"));
+      assertTrue( patchPermStr.contains("size:5"));
+      assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+      assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
+      assertTrue( patchPermStr.contains("rest-reader:[READ]"));
+      assertTrue( patchPermStr.contains("rest-writer:[UPDATE]"));
 
       // Should contain elsrole
-      assertTrue("Document permissions difference for role els-role1", patchPermStr.contains("elsrole"));
+      assertTrue( patchPermStr.contains("elsrole"));
       // Verify elsrole capability
       String[] elsPerms = patchPermStr.split("elsrole:\\[")[1].split("\\]")[0].split(",");
-      assertTrue("Document permissions difference in rest-writer permission - first permission",
+      assertTrue(
           elsPerms[0].contains("NODE-UPDATE") || elsPerms[1].contains("NODE-UPDATE") || elsPerms[2].contains("NODE-UPDATE"));
-      assertTrue("Document permissions difference in rest-writer permission - second permission",
+      assertTrue(
           elsPerms[0].contains("EXECUTE") || elsPerms[1].contains("EXECUTE") || elsPerms[2].contains("EXECUTE"));
-      assertTrue("Document permissions difference in rest-writer permission - third permission",
+      assertTrue(
           elsPerms[0].contains("READ") || elsPerms[1].contains("READ") || elsPerms[2].contains("READ"));
 
       // Now use elsrole to do an document update
@@ -684,24 +685,24 @@ public class TestMetadata extends AbstractFunctionalTest {
       String patchCollStr2 = getDocumentCollectionsString(afterPatchcollTwo);
       System.out.println("ELS collections: " + patchCollStr2);
 
-      assertTrue("Document collections difference in size value", patchCollStr2.contains("size:3"));
-      assertTrue("Document collections difference in size value", patchCollStr2.contains("JSONPatch1"));
-      assertTrue("Document collections difference in size value", patchCollStr2.contains("JSONPatch3"));
-      assertTrue("Document collections difference in size value", patchCollStr2.contains("NodeUpdate"));
+      assertTrue( patchCollStr2.contains("size:3"));
+      assertTrue( patchCollStr2.contains("JSONPatch1"));
+      assertTrue( patchCollStr2.contains("JSONPatch3"));
+      assertTrue( patchCollStr2.contains("NodeUpdate"));
 
       // Permissions
       String patchPermStr2 = getDocumentPermissionsString(afterPatchpermsTwo);
       System.out.println("ELS permissions: " + patchPermStr2);
 
       // Should contain elsrole
-      assertTrue("Document permissions difference for role els-role1", patchPermStr2.contains("elsrole"));
+      assertTrue( patchPermStr2.contains("elsrole"));
       // Verify elsrole capability
       String[] elsPerms2 = patchPermStr2.split("elsrole:\\[")[1].split("\\]")[0].split(",");
-      assertTrue("Document permissions difference in rest-writer permission - first permission",
+      assertTrue(
           elsPerms2[0].contains("NODE-UPDATE") || elsPerms2[1].contains("NODE-UPDATE") || elsPerms2[2].contains("NODE-UPDATE"));
-      assertTrue("Document permissions difference in rest-writer permission - second permission",
+      assertTrue(
           elsPerms2[0].contains("EXECUTE") || elsPerms2[1].contains("EXECUTE") || elsPerms2[2].contains("EXECUTE"));
-      assertTrue("Document permissions difference in rest-writer permission - third permission",
+      assertTrue(
           elsPerms2[0].contains("READ") || elsPerms2[1].contains("READ") || elsPerms2[2].contains("READ"));
     } catch (Exception ex) {
       System.out.println(ex.getMessage());
@@ -714,7 +715,7 @@ public class TestMetadata extends AbstractFunctionalTest {
     }
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws Exception
   {
     deleteRESTUser("elsuser");

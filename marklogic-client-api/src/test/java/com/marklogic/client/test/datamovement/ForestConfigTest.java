@@ -15,32 +15,27 @@
  */
 package com.marklogic.client.test.datamovement;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.ForestConfiguration;
-
+import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
 import com.marklogic.client.test.Common;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ForestConfigTest {
   private static DatabaseClient client = Common.connect();
   private DataMovementManager moveMgr = client.newDataMovementManager();
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 

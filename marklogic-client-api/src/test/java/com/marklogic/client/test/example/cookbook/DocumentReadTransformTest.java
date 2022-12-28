@@ -15,17 +15,15 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-
-import org.junit.Test;
-
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.example.cookbook.DocumentReadTransform;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DocumentReadTransformTest {
   @Test
@@ -39,6 +37,6 @@ public class DocumentReadTransformTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    assertTrue("DocumentReadTransform example failed", succeeded);
+    assertTrue( succeeded);
   }
 }

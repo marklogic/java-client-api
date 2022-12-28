@@ -21,15 +21,16 @@ import com.marklogic.client.dataservices.InputCaller;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
-import org.junit.AfterClass;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 public class ErrorListenerInputEndpointTest {
 
@@ -40,7 +41,7 @@ public class ErrorListenerInputEndpointTest {
     int counter = 0;
     JSONDocumentManager docMgr = IOTestUtil.db.newJSONDocumentManager();
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         apiObj = IOTestUtil.readApi(apiName);
         scriptPath = IOTestUtil.getScriptPath(apiObj);
@@ -93,7 +94,7 @@ public class ErrorListenerInputEndpointTest {
         loader.awaitCompletion();
         checkDocuments("bulkInputTest_1");
         checkDocuments("bulkInputTest_2");
-        assertTrue("Number of documents written not as expected." + counter, counter == 8);
+        assertTrue(counter == 8);
     }
 
     @Test
@@ -141,7 +142,7 @@ public class ErrorListenerInputEndpointTest {
         loader.awaitCompletion();
         checkDocuments("bulkInputTest_1");
         checkDocuments("bulkInputTest_2");
-        assertTrue("Number of documents written not as expected." + counter, counter >= 4);
+        assertTrue(counter >= 4);
     }
 
     @Test
@@ -189,10 +190,10 @@ public class ErrorListenerInputEndpointTest {
         loader.awaitCompletion();
         checkDocuments("bulkInputTest_1");
         checkDocuments("bulkInputTest_2");
-        assertTrue("Number of documents written not as expected." + counter, counter >= 1);
+        assertTrue(counter >= 1);
     }
 
-    @After
+    @AfterEach
     public void cleanup(){
 
         for(int i=2; i<=9; i++) {
@@ -213,7 +214,7 @@ public class ErrorListenerInputEndpointTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanupAfterClass() {
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }

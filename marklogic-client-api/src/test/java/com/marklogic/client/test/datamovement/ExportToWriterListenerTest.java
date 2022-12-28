@@ -15,31 +15,31 @@
  */
 package com.marklogic.client.test.datamovement;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.File;
-import java.io.FileWriter;
-import java.nio.file.Files;
-import java.util.concurrent.TimeUnit;
-import java.util.Random;
-
-import com.marklogic.client.datamovement.*;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.ExportToWriterListener;
+import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.test.Common;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.nio.file.Files;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
-import com.marklogic.client.test.Common;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ExportToWriterListenerTest {
   private Logger logger = LoggerFactory.getLogger(ExportToWriterListenerTest.class);
@@ -49,11 +49,11 @@ public class ExportToWriterListenerTest {
     new Random().nextInt(10000);
   private static String docContents = "doc contents";
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -74,7 +74,7 @@ public class ExportToWriterListenerTest {
     batcher.flushAndWait();
 
     // verify that the files made it to the db
-    assertEquals( "There should be 100 documents in the db",
+    assertEquals(
       100, client.newDocumentManager().read(uris).size() );
 
     // export to a csv with uri, collection, and contents columns
@@ -111,7 +111,7 @@ public class ExportToWriterListenerTest {
     try (FileReader fileReader = new FileReader(outputFile); BufferedReader reader = new BufferedReader(fileReader)) {
       int lines = 0;
       while ( reader.readLine() != null ) lines++;
-      assertEquals( "There should be 100 lines in the output file", 100, lines );
+      assertEquals(100, lines );
     }
     if(outputFile.exists()) outputFile.delete();
   }

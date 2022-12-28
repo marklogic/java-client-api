@@ -1,9 +1,10 @@
 package com.marklogic.client.test;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class MarkLogicVersionTest extends Assert {
+import static org.junit.jupiter.api.Assertions.*;
+
+public class MarkLogicVersionTest {
 
     private MarkLogicVersion version;
 

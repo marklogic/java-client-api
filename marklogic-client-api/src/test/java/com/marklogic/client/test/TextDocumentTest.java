@@ -15,29 +15,24 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
+import com.marklogic.client.document.TextDocumentManager;
+import com.marklogic.client.io.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import com.marklogic.client.document.TextDocumentManager;
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.ReaderHandle;
-import com.marklogic.client.io.StringHandle;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TextDocumentTest {
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -48,23 +43,23 @@ public class TextDocumentTest {
 
     TextDocumentManager docMgr = Common.client.newTextDocumentManager();
     docMgr.write(docId, new StringHandle().with(text));
-    assertEquals("Text document write difference",text,docMgr.read(docId, new StringHandle()).get());
+    assertEquals(text,docMgr.read(docId, new StringHandle()).get());
 
     BytesHandle bytesHandle = new BytesHandle();
     docMgr.read(docId, bytesHandle);
-    assertEquals("Text document mismatch reading bytes", bytesHandle.get().length,text.length());
+    assertEquals( bytesHandle.get().length,text.length());
 
     InputStreamHandle inputStreamHandle = new InputStreamHandle();
     docMgr.read(docId, inputStreamHandle);
     byte[] b = Common.streamToBytes(inputStreamHandle.get());
-    assertEquals("Text document mismatch reading input stream",new String(b),text);
+    assertEquals(new String(b),text);
 
     Reader reader = docMgr.read(docId, new ReaderHandle()).get();
     String s = Common.readerToString(reader);
-    assertEquals("Text document mismatch with reader",s,text);
+    assertEquals(s,text);
 
     File file = docMgr.read(docId, new FileHandle()).get();
-    assertEquals("Text document mismatch with file",text.length(),file.length());
+    assertEquals(text.length(),file.length());
   }
 
 }

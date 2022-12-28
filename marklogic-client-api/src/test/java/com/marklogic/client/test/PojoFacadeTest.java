@@ -15,24 +15,6 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -50,18 +32,26 @@ import com.marklogic.client.pojo.annotation.Id;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.test.BulkReadWriteTest.CityWriter;
+import org.junit.jupiter.api.*;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class PojoFacadeTest {
   private static final int MAX_TO_WRITE = 100;
   private static PojoRepository<City, Integer> cities;
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
     cities = Common.client.newPojoRepository(City.class, Integer.class);
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     cleanUp();
   }
@@ -80,7 +70,7 @@ public class PojoFacadeTest {
     }
     @Override
     public void setNumRecords(int numRecords) {
-      assertEquals("Number of records not expected", numRecords, BulkReadWriteTest.RECORDS_EXPECTED);
+      assertEquals( numRecords, BulkReadWriteTest.RECORDS_EXPECTED);
     }
   }
 
@@ -186,15 +176,15 @@ public class PojoFacadeTest {
     students.write(stud, "students");
 
     Student student1 = students.read(id);
-    assertEquals("Student id", student1.getStudId(), stud.getStudId());
-    assertEquals("Zip code", student1.getAddress().zip, stud.getAddress().zip);
-    assertEquals("class status", student1.getclassStatus(), stud.getclassStatus());
+    assertEquals( student1.getStudId(), stud.getStudId());
+    assertEquals( student1.getAddress().zip, stud.getAddress().zip);
+    assertEquals( student1.getclassStatus(), stud.getclassStatus());
   }
 
   @Test
   public void testA_LoadPojos() throws Exception {
     BulkReadWriteTest.loadCities(new PojoCityWriter());
-    assertEquals("total docs = MAX_TO_WRITE + Chittigong", MAX_TO_WRITE + 1, cities.count());
+    assertEquals(MAX_TO_WRITE + 1, cities.count());
   }
 
   @Test
@@ -205,15 +195,15 @@ public class PojoFacadeTest {
         validateCity(city);
         numRead++;
       }
-      assertEquals("Failed to read number of records expected", 3, numRead);
-      assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+      assertEquals( 3, numRead);
+      assertEquals( numRead, page.size());
     }
 
     // test reading a valid plus a non-existent document
     try ( PojoPage<City> page = cities.read(new Integer[]{1185098, -1}) ) {
-      assertEquals("Should have results", true, page.hasContent());
-      assertEquals("Failed to report number of records expected", 1, page.size());
-      assertEquals("Wrong only doc", 1185098, page.next().getGeoNameId());
+      assertEquals( true, page.hasContent());
+      assertEquals( 1, page.size());
+      assertEquals( 1185098, page.next().getGeoNameId());
     }
 
     // test reading only a non-existent document
@@ -225,7 +215,7 @@ public class PojoFacadeTest {
     } catch (ResourceNotFoundException e) {
       exceptionThrown = true;
     }
-    assertTrue("ResourceNotFoundException should have been thrown", exceptionThrown);
+    assertTrue( exceptionThrown);
 
     // test reading multiple non-existent documents, https://github.com/marklogic/java-client-api/issues/185
     // since this is a bulk API, we are consistent with search and no errors are thrown
@@ -237,7 +227,7 @@ public class PojoFacadeTest {
       exceptionThrown = true;
       e.printStackTrace();
     }
-    assertFalse("ResourceNotFoundException should not have been thrown", exceptionThrown);
+    assertFalse( exceptionThrown);
   }
 
   @SuppressWarnings("unused")
@@ -250,9 +240,9 @@ public class PojoFacadeTest {
     try ( PojoPage<City> page = cities.search(stringQuery, 1) ) {
       int numRead = 0;
       for ( City city : page ) numRead++;
-      assertEquals("Failed to find number of records expected", 0, numRead);
-      assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
-      assertEquals("PojoRepository.count failed to find number of records expected",
+      assertEquals( 0, numRead);
+      assertEquals( numRead, page.size());
+      assertEquals(
         numRead, cities.count(stringQuery));
     }
 
@@ -261,9 +251,9 @@ public class PojoFacadeTest {
     try ( PojoPage<City> page = cities.search(stringQuery, 1) ) {
       int numRead = 0;
       for ( City city : page ) numRead++;
-      assertEquals("Failed to find number of records expected", 3, numRead);
-      assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
-      assertEquals("PojoRepository.count failed to find number of records expected",
+      assertEquals( 3, numRead);
+      assertEquals( numRead, page.size());
+      assertEquals(
         numRead, cities.count(stringQuery));
     }
 
@@ -273,9 +263,9 @@ public class PojoFacadeTest {
     try ( PojoPage<City> page = cities.search(query, 1) ) {
       int numRead = 0;
       for ( City city : page ) numRead++;
-      assertEquals("Failed to find number of records expected", 3, numRead);
-      assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
-      assertEquals("PojoRepository.count failed to find number of records expected",
+      assertEquals( 3, numRead);
+      assertEquals( numRead, page.size());
+      assertEquals(
         numRead, cities.count(query));
     }
 
@@ -286,9 +276,9 @@ public class PojoFacadeTest {
     try ( PojoPage<City> page = cities.search(query, 1) ) {
       int numRead = 0;
       for ( City city : page ) numRead++;
-      assertEquals("Failed to find number of records expected", 1, numRead);
-      assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
-      assertEquals("PojoRepository.count failed to find number of records expected",
+      assertEquals( 1, numRead);
+      assertEquals( numRead, page.size());
+      assertEquals(
         numRead, cities.count(query));
     }
 
@@ -298,8 +288,8 @@ public class PojoFacadeTest {
     //  - first lets's see it produce inaccurate results
     query = qb.word("asciiName", new String[] {"wildcarded"}, 1, "Chittagong*");
     try ( PojoPage<City> page = cities.search(query, 1) ) {
-      assertEquals("The estimate number should match everything", 101, page.getTotalSize());
-      assertEquals("PojoRepository.count should match everything",
+      assertEquals( 101, page.getTotalSize());
+      assertEquals(
         101, cities.count(query));
     }
 
@@ -312,18 +302,18 @@ public class PojoFacadeTest {
     try ( PojoPage<City> page = cities.search(query, 1) ) {
       int numRead = 0;
       for ( City city : page ) numRead++;
-      assertEquals("Failed to find number of records expected", 1, numRead);
-      assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
-      assertEquals("The estimate number is no longer an estimate, it knows there's only 1 match",
+      assertEquals( 1, numRead);
+      assertEquals( numRead, page.size());
+      assertEquals(
         1, page.getTotalSize());
-      assertEquals("PojoRepository.count should still match everything",
+      assertEquals(
         101, cities.count(query));
     }
 
     long defaultPageLength = cities.getPageLength();
     cities.setPageLength(0);
     try ( PojoPage<City> page = cities.search(query, 1) ) {
-      assertEquals("With pageLength 0, the estimate number should again match everything",
+      assertEquals(
         101, page.getTotalSize());
     }
     cities.setPageLength(defaultPageLength);
@@ -339,9 +329,9 @@ public class PojoFacadeTest {
     try ( PojoPage<City> page = cities.search(query, 1) ) {
       int numRead = 0;
       for ( City city : page ) numRead++;
-      assertEquals("Failed to find number of records expected", 1, numRead);
-      assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
-      assertEquals("PojoRepository.count should still match everything",
+      assertEquals( 1, numRead);
+      assertEquals( numRead, page.size());
+      assertEquals(
         101, cities.count(query));
     }
 
@@ -349,11 +339,11 @@ public class PojoFacadeTest {
     try ( PojoPage<City> page = cities.search(query, 1) ) {
       int numRead = 0;
       for ( City city : page ) {
-        assertEquals("Wrong continent", "AF", city.getContinent());
+        assertEquals( "AF", city.getContinent());
         numRead++;
       }
-      assertEquals("Failed to find number of records expected", 7, numRead);
-      assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+      assertEquals( 7, numRead);
+      assertEquals( numRead, page.size());
     }
 
     query = qb.containerQuery("alternateNames", qb.term("San", "Santo"));
@@ -361,12 +351,12 @@ public class PojoFacadeTest {
       int numRead = 0;
       for ( City city : page ) {
         String alternateNames = Arrays.asList(city.getAlternateNames()).toString();
-        assertTrue("Should contain San", alternateNames.contains("San"));
+        assertTrue( alternateNames.contains("San"));
         numRead++;
       }
-      assertEquals("Failed to find number of records expected", 11, numRead);
-      assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
-      assertEquals("PojoRepository.count failed to find number of records expected",
+      assertEquals( 11, numRead);
+      assertEquals( numRead, page.size());
+      assertEquals(
         numRead, cities.count(query));
     }
 
@@ -376,11 +366,11 @@ public class PojoFacadeTest {
     try ( PojoPage<City> page = cities.search(query, 1) ) {
       int numRead = 0;
       for ( City city : page ) {
-        assertEquals("Wrong City", "Tirana", city.getName());
+        assertEquals( "Tirana", city.getName());
         numRead++;
       }
-      assertEquals("Failed to find number of records expected", 1, numRead);
-      assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+      assertEquals( 1, numRead);
+      assertEquals( numRead, page.size());
     }
 
     // test numeric (fractional) values
@@ -388,11 +378,11 @@ public class PojoFacadeTest {
     try ( PojoPage<City> page = cities.search(query, 1) ) {
       int numRead = 0;
       for ( City city : page ) {
-        assertEquals("Wrong City", "Quilmes", city.getName());
+        assertEquals( "Quilmes", city.getName());
         numRead++;
       }
-      assertEquals("Failed to find number of records expected", 1, numRead);
-      assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+      assertEquals( 1, numRead);
+      assertEquals( numRead, page.size());
     }
 
     // test null values
@@ -400,16 +390,16 @@ public class PojoFacadeTest {
     try ( PojoPage<City> page = cities.search(query, 1) ) {
       int numRead = 0;
       for ( City city : page ) numRead++;
-      assertEquals("Failed to find number of records expected", 50, numRead);
-      assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+      assertEquals( 50, numRead);
+      assertEquals( numRead, page.size());
     }
 
     query = qb.range("population", Operator.LT, 350000);
     try ( PojoPage<City> page = cities.search(query, 1) ) {
       int numRead = 0;
       for ( City city : page ) numRead++;
-      assertEquals("Failed to find number of records expected", 21, numRead);
-      assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+      assertEquals( 21, numRead);
+      assertEquals( numRead, page.size());
     }
 
     query = qb.geospatial(
@@ -419,8 +409,8 @@ public class PojoFacadeTest {
     try ( PojoPage<City> page = cities.search(query, 1) ) {
       int numRead = 0;
       for ( City city : page ) numRead++;
-      assertEquals("Failed to find number of records expected", 4, numRead);
-      assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+      assertEquals( 4, numRead);
+      assertEquals( numRead, page.size());
     }
 
     query = qb.geospatial(
@@ -430,8 +420,8 @@ public class PojoFacadeTest {
     try ( PojoPage<City> page = cities.search(query, 1) ) {
       int numRead = 0;
       for ( City city : page ) numRead++;
-      assertEquals("Failed to find number of records expected", 4, numRead);
-      assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+      assertEquals( 4, numRead);
+      assertEquals( numRead, page.size());
     }
   }
 
@@ -470,35 +460,35 @@ public class PojoFacadeTest {
     PojoQueryBuilder<Country> countriesQb = qb.containerQueryBuilder("country", Country.class);
     PojoQueryDefinition query = countriesQb.value("continent", "EU");
     try ( PojoPage<City> page = cities.search(query, 1) ) {
-      assertEquals("Should not find any countries", 0, page.getTotalSize());
+      assertEquals( 0, page.getTotalSize());
     }
 
     query = countriesQb.value("continent", "AS");
     try ( PojoPage<City> page = cities.search(query, 1) ) {
-      assertEquals("Should find two cities", 2, page.getTotalSize());
+      assertEquals( 2, page.getTotalSize());
     }
 
     query = countriesQb.range("continent", Operator.EQ, "AS");
     try ( PojoPage<City> page = cities.search(query, 1) ) {
-      assertEquals("Should find two cities", 2, page.getTotalSize());
+      assertEquals( 2, page.getTotalSize());
     }
 
     // all countries containing the term SA
     query = countriesQb.term("SA");
     try ( PojoPage<City> page = cities.search(query, 1) ) {
-      assertEquals("Should find one city", 1, page.getTotalSize());
+      assertEquals( 1, page.getTotalSize());
     }
 
     // all cities containing the term SA
     query = qb.term("SA");
     try ( PojoPage<City> page = cities.search(query, 1) ) {
-      assertEquals("Should find sixty one cities", 61, page.getTotalSize());
+      assertEquals( 61, page.getTotalSize());
     }
 
     // all countries containing the property "currencyName" with the term "peso"
     query = countriesQb.word("currencyName", "peso");
     try ( PojoPage<City> page = cities.search(query, 1) ) {
-      assertEquals("Should find one city", 1, page.getTotalSize());
+      assertEquals( 1, page.getTotalSize());
     }
   }
 
@@ -533,23 +523,23 @@ public class PojoFacadeTest {
     StringQueryDefinition query = Common.client.newQueryManager().newStringDefinition();
     query.setCriteria("1001");
     try ( PojoPage<Product1> page = products1.search(query, 1) ) {
-      assertEquals("Should not find the product by id", 0, page.getTotalSize());
+      assertEquals( 0, page.getTotalSize());
     }
 
     // though, of course, we can search on string field
     query = Common.client.newQueryManager().newStringDefinition();
     query.setCriteria("widget1");
     try ( PojoPage<Product1> page = products1.search(query, 1) ) {
-      assertEquals("Should find the product by name", 1, page.getTotalSize());
-      assertEquals("Should find the right product id", 1001, page.next().id);
+      assertEquals( 1, page.getTotalSize());
+      assertEquals( 1001, page.next().id);
     }
 
     // with the JsonSerialize annotation, the id is indexed as a string and therefore searchable
     query = Common.client.newQueryManager().newStringDefinition();
     query.setCriteria("2001");
     try ( PojoPage<Product2> page = products2.search(query, 1) ) {
-      assertEquals("Should find the product by id", 1, page.getTotalSize());
-      assertEquals("Should find the right product id", 2001, page.next().id);
+      assertEquals( 1, page.getTotalSize());
+      assertEquals( 2001, page.next().id);
     }
   }
 
@@ -564,11 +554,11 @@ public class PojoFacadeTest {
     times.write(timeTest1);
 
     TimeTest timeTest1FromDb = times.read("1");
-    assertEquals("Calendar objs should be equal", timeTest1.calendarTest,
+    assertEquals( timeTest1.calendarTest,
       timeTest1FromDb.calendarTest);
-    assertEquals("Date objs should be equal", timeTest1.dateTest,
+    assertEquals( timeTest1.dateTest,
       timeTest1FromDb.dateTest);
-    assertEquals("Epoch time should be equal", timeTest1.dateTest.getTime(),
+    assertEquals( timeTest1.dateTest.getTime(),
       timeTest1FromDb.dateTest.getTime());
 
     GregorianCalendar septThirdCET = new GregorianCalendar(TimeZone.getTimeZone("CET"));
@@ -579,14 +569,14 @@ public class PojoFacadeTest {
 
     TimeTest timeTest2FromDb = times.read("2");
         /* Jackson 2.8.3 converts all Date/Calendar to UTC, so we can't get the object in the correct timezone
-        assertEquals("Calendar objs should be equal", timeTest2.calendarTest,
+        assertEquals( timeTest2.calendarTest,
             timeTest2FromDb.calendarTestCet);
         */
-    assertEquals("Calendar objs timestamps should be equal", timeTest2.calendarTest.getTime().getTime(),
+    assertEquals( timeTest2.calendarTest.getTime().getTime(),
       timeTest2FromDb.calendarTestCet.getTime().getTime());
-    assertEquals("Date objs should be equal", timeTest2.dateTest,
+    assertEquals( timeTest2.dateTest,
       timeTest2FromDb.dateTest);
-    assertEquals("Epoch time should be equal", timeTest2.calendarTest.getTime().getTime(),
+    assertEquals( timeTest2.calendarTest.getTime().getTime(),
       timeTest2FromDb.calendarTest.getTime().getTime());
 
     // let's try to test serializing back to CET time zone
@@ -600,7 +590,7 @@ public class PojoFacadeTest {
         // re-read the object with the modified objectMapper
         timeTest2FromDb = times.read("2");
         // now validate that the object has everything including the time zone equal
-        assertEquals("Calendar objs should be equal", timeTest2.calendarTest,
+        assertEquals( timeTest2.calendarTest,
             timeTest2FromDb.calendarTest);
         */
 
@@ -615,10 +605,10 @@ public class PojoFacadeTest {
         int numRead = 0;
         for ( TimeTest time : page ) {
           numRead++;
-          assertEquals("Should find the right TimeTest id", "2", time.id);
+          assertEquals( "2", time.id);
         }
-        assertEquals("Failed to find number of records expected", 1, numRead);
-        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+        assertEquals( 1, numRead);
+        assertEquals( numRead, page.size());
       }
     }
 
@@ -632,8 +622,8 @@ public class PojoFacadeTest {
         try ( PojoPage<City> page = cities.search(query, 1) ) {
             int numRead = 0;
             for ( City city : page ) numRead++;
-            assertEquals("Failed to find number of records expected", 11, numRead);
-            assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+            assertEquals( 11, numRead);
+            assertEquals( numRead, page.size());
         }
 
     }
@@ -645,20 +635,20 @@ public class PojoFacadeTest {
     StringQueryDefinition query = Common.client.newQueryManager().newStringDefinition();
     query.setCriteria("Tungi OR Dalatando OR Chittagong");
     try ( PojoPage<City> page = cities.search(query, 1) ) {
-      assertEquals("Failed to read number of records expected", 1, page.getTotalSize());
+      assertEquals( 1, page.getTotalSize());
     }
 
     // now delete them all
     cities.deleteAll();
     long count = cities.count();
-    assertEquals("Failed to read number of records expected", 0, count);
+    assertEquals( 0, count);
   }
 
   private void validateCity(City city) {
-    assertNotNull("City should never be null", city);
-    assertNotNull("GeoNameId should never be null", city.getGeoNameId());
+    assertNotNull( city);
+    assertNotNull( city.getGeoNameId());
     if ( "Chittagong".equals(city.getName()) ) {
-      assertEquals("Chittagong should have id 1205733", 1205733, cities.getId(city).intValue());
+      assertEquals( 1205733, cities.getId(city).intValue());
       BulkReadWriteTest.validateChittagong(city);
     }
   }

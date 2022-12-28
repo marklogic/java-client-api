@@ -18,15 +18,14 @@ package com.marklogic.client.test.dataservices;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.dataservices.InputEndpoint;
 import com.marklogic.client.io.JacksonHandle;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class InputEndpointImplTest {
 
@@ -35,7 +34,7 @@ public class InputEndpointImplTest {
     static String scriptPath;
     static String apiPath;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         apiObj = IOTestUtil.readApi(apiName);
         scriptPath = IOTestUtil.getScriptPath(apiObj);
@@ -58,8 +57,8 @@ public class InputEndpointImplTest {
 
         ObjectNode resultObj = IOTestUtil.mapper.readValue(result, ObjectNode.class);
         assertNotNull(resultObj);
-        assertEquals("Endpoint value not as expected.",endpointState, resultObj.get("endpointState").toString());
-        assertEquals("Endpoint constants not as expected.",endpointConstants, resultObj.get("endpointConstants").toString());
+        assertEquals(endpointState, resultObj.get("endpointState").toString());
+        assertEquals(endpointConstants, resultObj.get("endpointConstants").toString());
         assertTrue(resultObj.get("input").get(0).toString().contains("doc1"));
         assertTrue(resultObj.get("input").get(1).toString().contains("doc2"));
     }
@@ -130,7 +129,7 @@ public class InputEndpointImplTest {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }

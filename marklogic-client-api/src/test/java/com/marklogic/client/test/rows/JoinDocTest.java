@@ -6,13 +6,13 @@ import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
 import com.marklogic.client.type.CtsReferenceExpr;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Written for bug 58069; see that description for more information.
@@ -36,7 +36,7 @@ public class JoinDocTest extends AbstractOpticUpdateTest {
      * Same as propertiesFragmentsShouldNotBeReturned, but uses fromLexicons so it can run against ML 10.
      *
      * 2022-12-12 This is now running only on ML 11, as it's consistently failing on ML 10. We have a fix slated for
-     * 11.x, and it's not clear yet if it'll be backported to ML 10. 
+     * 11.x, and it's not clear yet if it'll be backported to ML 10.
      */
     @Test
     public void propertiesFragmentShouldNotBeReturnedByFromLexicons() {
@@ -60,11 +60,12 @@ public class JoinDocTest extends AbstractOpticUpdateTest {
 
         List<RowRecord> rows = resultRows(plan);
         System.out.println(rows);
-        assertEquals("If the actual count is double the expected count, then joinDoc is erroneously pulling back " +
-            "properties fragments. These exist because the test database has the 'last modified' flag on by default, " +
-            "resulting the creation of a properties fragment for each URI. This error is very intermittent though " +
-            "and we do not have a reliable way to reproduce it. Once it happens, it will happen reliably for awhile, " +
-            "regardless of the number of URIs being returned by fromDocUris.", docCount, rows.size());
+        assertEquals(docCount, rows.size(),
+			"If the actual count is double the expected count, then joinDoc is erroneously pulling back " +
+				"properties fragments. These exist because the test database has the 'last modified' flag on by default, " +
+				"resulting the creation of a properties fragment for each URI. This error is very intermittent though " +
+				"and we do not have a reliable way to reproduce it. Once it happens, it will happen reliably for awhile, " +
+				"regardless of the number of URIs being returned by fromDocUris.");
     }
 
     private void writeDocs(int docCount) {

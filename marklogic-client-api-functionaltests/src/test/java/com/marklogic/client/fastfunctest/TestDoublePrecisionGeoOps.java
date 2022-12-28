@@ -32,8 +32,9 @@ import com.marklogic.client.query.StructuredQueryBuilder.CoordinateSystem;
 import com.marklogic.client.query.StructuredQueryBuilder.GeospatialOperator;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -45,8 +46,8 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.TreeMap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+
 
 public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
 
@@ -55,7 +56,7 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
 
   static DatabaseClient client = null;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception
   {
     // Load all necessary data / docs.
@@ -101,10 +102,10 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
     JsonNode jsonPointNodes = resultJsonNode.path("results");
 
     // Should have 2 nodes returned.
-    assertEquals("Two nodes not returned from testLinestringContainsPoint method ", 2, resultJsonNode.path("total").asInt());
-    assertTrue("URI returned from testLinestringContainsPoint method is incorrect", jsonPointNodes.get(0).path("uri").asText().contains("/Equator-json.json") ||
+    assertEquals( 2, resultJsonNode.path("total").asInt());
+    assertTrue( jsonPointNodes.get(0).path("uri").asText().contains("/Equator-json.json") ||
         jsonPointNodes.get(1).path("uri").asText().contains("/Equator-json.json"));
-    assertTrue("URI returned from testLinestringContainsPoint method is incorrect", jsonPointNodes.get(0).path("uri").asText().contains("/Equator.xml") ||
+    assertTrue( jsonPointNodes.get(0).path("uri").asText().contains("/Equator.xml") ||
         jsonPointNodes.get(1).path("uri").asText().contains("/Equator.xml"));
 
     // Verify snippets returned are correct
@@ -137,7 +138,7 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
         System.out.println("Line desc from XML file is " + linedesc);
 
         // Verify that snippets from qb and read contain the same.
-        assertTrue("Snippets from summary and from XML file are incorrect ", linedesc.contains("Linestring In Equator - South America"));
+        assertTrue( linedesc.contains("Linestring In Equator - South America"));
 
         readDoc = null;
         contentHandle = null;
@@ -151,14 +152,14 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
         System.out.println("Snippet line-desc from JSON file is " + linedesc);
 
         // Verify that snippets from qb and read contain the same.
-        assertTrue("Snippets from summary and from JSON file are incorrect ", linedesc.contains("Json Linestring In Equator - South America"));
+        assertTrue( linedesc.contains("Json Linestring In Equator - South America"));
         jacksonhandle = null;
         resultNode = null;
       }
       // Get the results into the map.
       readMap.put(docUri, linedesc);
     }
-    assertTrue("Result not returned correctly from testLinestringContainsPoint method ", expectedMap.equals(readMap));
+    assertTrue( expectedMap.equals(readMap));
   }
 
   /*
@@ -185,10 +186,10 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
     JsonNode jsonPointNodes = resultNode.path("results");
 
     // Should have 2 nodes returned.
-    assertEquals("Two nodes not returned from testCircleContainsCircle method ", 2, resultNode.path("total").asInt());
-    assertTrue("URI returned from testCircleContainsCircle method is incorrect", jsonPointNodes.get(0).path("uri").asText().contains("/Equator-json.json") ||
+    assertEquals( 2, resultNode.path("total").asInt());
+    assertTrue( jsonPointNodes.get(0).path("uri").asText().contains("/Equator-json.json") ||
         jsonPointNodes.get(1).path("uri").asText().contains("/Equator-json.json"));
-    assertTrue("URI returned from testCircleContainsCircle method is incorrect", jsonPointNodes.get(0).path("uri").asText().contains("/Equator.xml") ||
+    assertTrue( jsonPointNodes.get(0).path("uri").asText().contains("/Equator.xml") ||
         jsonPointNodes.get(1).path("uri").asText().contains("/Equator.xml"));
   }
 
@@ -216,10 +217,10 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
     JsonNode jsonPointNodes = resultNode.path("results");
 
     // Should have 2 nodes returned.
-    assertEquals("Two nodes not returned from testBoxContainsPolygon method ", 2, resultNode.path("total").asInt());
-    assertTrue("URI returned from testBoxContainsPolygon method is incorrect", jsonPointNodes.get(0).path("uri").asText().contains("/Equator-json.json") ||
+    assertEquals( 2, resultNode.path("total").asInt());
+    assertTrue( jsonPointNodes.get(0).path("uri").asText().contains("/Equator-json.json") ||
         jsonPointNodes.get(1).path("uri").asText().contains("/Equator-json.json"));
-    assertTrue("URI returned from testBoxContainsPolygon method is incorrect", jsonPointNodes.get(0).path("uri").asText().contains("/Equator.xml") ||
+    assertTrue( jsonPointNodes.get(0).path("uri").asText().contains("/Equator.xml") ||
         jsonPointNodes.get(1).path("uri").asText().contains("/Equator.xml"));
   }
 
@@ -247,20 +248,20 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
     JsonNode jsonPointNodes = resultNode.path("results");
 
     // Should have 2 nodes returned.
-    assertEquals("Two nodes not returned from testCircleIntersectsPoint method ", 2, resultNode.path("total").asInt());
-    assertTrue("URI returned from testCircleIntersectsPoint method is incorrect", jsonPointNodes.get(0).path("uri").asText().contains("/Equator-json.json") ||
+    assertEquals( 2, resultNode.path("total").asInt());
+    assertTrue( jsonPointNodes.get(0).path("uri").asText().contains("/Equator-json.json") ||
         jsonPointNodes.get(1).path("uri").asText().contains("/Equator-json.json"));
     // Verify match text in either of the two nodes returned. This is the Json
     // Point.
-    assertTrue("Match text returned from testCircleIntersectsPoint method is incorrect", jsonPointNodes.get(0).path("matches")
+    assertTrue( jsonPointNodes.get(0).path("matches")
         .get(0).path("match-text").get(0).path("highlight").asText().contains("6.897 0,-66.09375") ||
         jsonPointNodes.get(1).path("matches")
             .get(0).path("match-text").get(0).path("highlight").asText().contains("6.897 0,-66.09375"));
 
-    assertTrue("URI returned from testCircleIntersectsPoint method is incorrect", jsonPointNodes.get(0).path("uri").asText().contains("/Equator.xml") ||
+    assertTrue( jsonPointNodes.get(0).path("uri").asText().contains("/Equator.xml") ||
         jsonPointNodes.get(1).path("uri").asText().contains("/Equator.xml"));
     // Verify match text in either of the two nodes returned. XML point.
-    assertTrue("Match text returned from testCircleIntersectsPoint method is incorrect", jsonPointNodes.get(0).path("matches")
+    assertTrue( jsonPointNodes.get(0).path("matches")
         .get(0).path("match-text").get(0).path("highlight").asText().contains("6.897 0,-66.09375") ||
         jsonPointNodes.get(1).path("matches")
             .get(0).path("match-text").get(0).path("highlight").asText().contains("6.897 0,-66.09375"));
@@ -299,19 +300,19 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
     JsonNode jsonPointNodes = resultNode.path("results");
 
     // Should have 2 nodes returned.
-    assertEquals("Two nodes not returned from testcircleCoveredByPolygon method ", 2, resultNode.path("total").asInt());
+    assertEquals( 2, resultNode.path("total").asInt());
 
     // Verify match text in either of the two nodes returned. This is the Json
     // Point.
-    assertTrue("Match text returned from testcircleCoveredByPolygon method is incorrect", jsonPointNodes.get(0).path("matches")
+    assertTrue( jsonPointNodes.get(0).path("matches")
         .get(0).path("match-text").get(0).path("highlight").asText().contains("6.897 0,-66.09375") ||
         jsonPointNodes.get(1).path("matches")
             .get(0).path("match-text").get(0).path("highlight").asText().contains("6.897 0,-66.09375"));
 
-    assertTrue("URI returned from testcircleCoveredByPolygon method is incorrect", jsonPointNodes.get(0).path("uri").asText().contains("/Equator.xml") ||
+    assertTrue( jsonPointNodes.get(0).path("uri").asText().contains("/Equator.xml") ||
         jsonPointNodes.get(1).path("uri").asText().contains("/Equator.xml"));
     // Verify match text in either of the two nodes returned. XML point.
-    assertTrue("Match text returned from testcircleCoveredByPolygon method is incorrect", jsonPointNodes.get(0).path("matches")
+    assertTrue( jsonPointNodes.get(0).path("matches")
         .get(0).path("match-text").get(0).path("highlight").asText().contains("6.897 0,-66.09375") ||
         jsonPointNodes.get(1).path("matches")
             .get(0).path("match-text").get(0).path("highlight").asText().contains("6.897 0,-66.09375"));
@@ -344,7 +345,7 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
     JsonNode resultNodeJs = resultsHandleJs.get();
 
     // Should have 2 nodes returned.
-    assertEquals("Two nodes not returned from testBoxCoversPolygon method ", 2, resultNodeJs.path("total").asInt());
+    assertEquals( 2, resultNodeJs.path("total").asInt());
 
     // Verify snippets returned are correct
     SearchHandle resultsHandle = new SearchHandle();
@@ -381,7 +382,7 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
         System.out.println("Snippet from XML file is " + snippetFromRead);
 
         // Verify that snippets from qb and read contain the same.
-        assertTrue("Snippets from summary and from XML file are incorrect ", snippetFromRead.contains(snippetFromSummary));
+        assertTrue( snippetFromRead.contains(snippetFromSummary));
 
         readDoc = null;
         contentHandle = null;
@@ -396,14 +397,14 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
         System.out.println("Snippet from JSON file is " + snippetFromRead);
 
         // Verify that snippets from qb and read contain the same.
-        assertTrue("Snippets from summary and from JSON file are incorrect ", snippetFromRead.contains(snippetFromSummary));
+        assertTrue( snippetFromRead.contains(snippetFromSummary));
         jacksonhandle = null;
         resultNode = null;
       }
       // Get the results into the map.
       readMap.put(docUri, boxdesc);
     }
-    assertTrue("Result not returned correctly from testBoxCoversPolygon method ", expectedMap.equals(readMap));
+    assertTrue( expectedMap.equals(readMap));
   }
 
   /*
@@ -431,7 +432,7 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
     JsonNode resultNode = resultsHandle.get();
 
     // Should have 2 nodes returned.
-    assertEquals("Two nodes not returned from testPolygonCoversBox method ", 2, resultNode.path("total").asInt());
+    assertEquals( 2, resultNode.path("total").asInt());
 
   }
 
@@ -460,7 +461,7 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
     JsonNode resultNodeJs = resultsHandleJs.get();
 
     // Should have 2 nodes returned.
-    assertEquals("Two nodes not returned from testBoxOverlapsCircle method ", 2, resultNodeJs.path("total").asInt());
+    assertEquals( 2, resultNodeJs.path("total").asInt());
 
     // Verify snippets returned are correct
     SearchHandle resultsHandle = new SearchHandle();
@@ -497,7 +498,7 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
         System.out.println("Snippet from XML file is " + snippetFromRead);
 
         // Verify that snippets from qb and read contain the same.
-        assertTrue("Snippets from summary and from XML file are incorrect ", snippetFromRead.contains(snippetFromSummary));
+        assertTrue( snippetFromRead.contains(snippetFromSummary));
 
         readDoc = null;
         contentHandle = null;
@@ -512,14 +513,14 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
         System.out.println("Snippet from JSON file is " + snippetFromRead);
 
         // Verify that snippets from qb and read contain the same.
-        assertTrue("Snippets from summary and from JSON file are incorrect ", snippetFromRead.contains(snippetFromSummary));
+        assertTrue( snippetFromRead.contains(snippetFromSummary));
         jacksonhandle = null;
         resultNode = null;
       }
       // Get the results into the map.
       readMap.put(docUri, boxdesc);
     }
-    assertTrue("Result not returned correctly from testBoxOverlapsCircle method ", expectedMap.equals(readMap));
+    assertTrue( expectedMap.equals(readMap));
   }
 
   /*
@@ -553,7 +554,7 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
     JsonNode resultNodejh = resultsHandlejh.get();
 
     // Should have 20 nodes returned.
-    assertEquals("Twenty nodes not returned from testPolygonCoversBox method ", 20, resultNodejh.path("total").asInt());
+    assertEquals( 20, resultNodejh.path("total").asInt());
   }
 
   /*
@@ -582,7 +583,7 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
     MatchDocumentSummary matches[] = resultsHandle.getMatchResults();
 
     // Should have 18 nodes returned.
-    assertEquals("Eighteen nodes not returned from testBoxDisjointBox method ", 18, matches.length);
+    assertEquals( 18, matches.length);
 
     JSONDocumentManager docMgr = client.newJSONDocumentManager();
     TreeMap<String, String> expectedMap = new TreeMap<String, String>();
@@ -634,7 +635,7 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
       // Get the results into the map.
       readMap.put(docUri, boxDesc);
     }
-    assertTrue("Result not returned correctly from testBoxDisjointBox method ", expectedMap.equals(readMap));
+    assertTrue( expectedMap.equals(readMap));
   }
 
   /*
@@ -664,7 +665,7 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
     JsonNode resultNodejh = resultsHandlejh.get();
 
     // Should have 2 nodes returned.
-    assertEquals("Two nodes not returned from testPointEqualsPoint method ", 2, resultNodejh.path("total").asInt());
+    assertEquals( 2, resultNodejh.path("total").asInt());
 
     // Verify snippets returned are correct
     SearchHandle resultsHandle = new SearchHandle();
@@ -701,7 +702,7 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
         System.out.println("Snippet from XML file is " + snippetFromRead);
 
         // Verify that snippets from qb and read contain the same.
-        assertTrue("Snippets from summary and from XML file are incorrect ", snippetFromRead.contains(snippetFromSummary));
+        assertTrue( snippetFromRead.contains(snippetFromSummary));
 
         readDoc = null;
         contentHandle = null;
@@ -716,14 +717,14 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
         System.out.println("Snippet from JSON file is " + snippetFromRead);
 
         // Verify that snippets from qb and read contain the same.
-        assertTrue("Snippets from summary and from JSON file are incorrect ", snippetFromRead.contains(snippetFromSummary));
+        assertTrue( snippetFromRead.contains(snippetFromSummary));
         jacksonhandle = null;
         resultNode = null;
       }
       // Get the results into the map.
       readMap.put(docUri, pointdesc);
     }
-    assertTrue("Result not returned correctly from testPointEqualsPoint method ", expectedMap.equals(readMap));
+    assertTrue( expectedMap.equals(readMap));
   }
 
   /*
@@ -753,14 +754,14 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
     JsonNode jsonPointNodes = resultNode.path("results");
 
     // Should have 2 nodes returned.
-    assertEquals("Two nodes not returned from testPolygonTouchesPoint method ", 2, resultNode.path("total").asInt());
+    assertEquals( 2, resultNode.path("total").asInt());
 
     String exptdString = "POLYGON((153.65 -8.35,170.57 -26.0,162.52 -52.52,136.0 -56.35,111.0 -51.0,100.89 -26.0,108.18 1.82,136.0 10.26,153.65 -8.35))";
     String polygondesc1 = jsonPointNodes.get(0).path("matches").get(0).path("match-text").get(0).path("highlight").asText();
     String polygondesc2 = jsonPointNodes.get(1).path("matches").get(0).path("match-text").get(0).path("highlight").asText();
 
-    assertTrue("Polygon Node not returned from testPolygonTouchesPoint method ", exptdString.equalsIgnoreCase(polygondesc1));
-    assertTrue("Polygon Node not returned from testPolygonTouchesPoint method ", exptdString.equalsIgnoreCase(polygondesc2));
+    assertTrue( exptdString.equalsIgnoreCase(polygondesc1));
+    assertTrue( exptdString.equalsIgnoreCase(polygondesc2));
   }
 
   /*
@@ -789,7 +790,7 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
     JsonNode resultNodejh = resultsHandlejh.get();
 
     // Should have 2 nodes returned.
-    assertEquals("Two nodes not returned from testCircleWithinBox method ", 2, resultNodejh.path("total").asInt());
+    assertEquals( 2, resultNodejh.path("total").asInt());
 
     // Verify snippets returned are correct
     SearchHandle resultsHandle = new SearchHandle();
@@ -825,7 +826,7 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
         System.out.println("Snippet from XML file is " + snippetFromRead);
 
         // Verify that snippets from qb and read contain the same.
-        assertTrue("Snippets from summary and from XML file are incorrect ", snippetFromRead.contains(snippetFromSummary));
+        assertTrue( snippetFromRead.contains(snippetFromSummary));
 
         readDoc = null;
         contentHandle = null;
@@ -840,14 +841,14 @@ public class TestDoublePrecisionGeoOps extends AbstractFunctionalTest {
         System.out.println("Snippet from JSON file is " + snippetFromRead);
 
         // Verify that snippets from qb and read contain the same.
-        assertTrue("Snippets from summary and from JSON file are incorrect ", snippetFromRead.contains(snippetFromSummary));
+        assertTrue( snippetFromRead.contains(snippetFromSummary));
         jacksonhandle = null;
         resultNode = null;
       }
       // Get the results into the map.
       readMap.put(docUri, circledesc);
     }
-    assertTrue("Result not returned correctly from testCircleWithinBox method ", expectedMap.equals(readMap));
+    assertTrue( expectedMap.equals(readMap));
   }
 
   public static void writeGeoDoubleFilesToDB(DatabaseClient client, String filename, String uri, String type) throws IOException, ParserConfigurationException, SAXException

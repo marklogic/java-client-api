@@ -11,11 +11,11 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RemoveTest extends AbstractOpticUpdateTest {
 
@@ -128,8 +128,9 @@ public class RemoveTest extends AbstractOpticUpdateTest {
             .write(op.docCols(null, op.xs.stringSeq("uri", "doc", "temporalCollection", "permissions"))));
 
         verifyMetadata(uri, metadata -> {
-            assertTrue("The document should be in the 'latest' collection if it was correctly inserted via " +
-                "temporal.documentInsert", metadata.getCollections().contains("latest"));
+            assertTrue(metadata.getCollections().contains("latest"),
+				"The document should be in the 'latest' collection if it was correctly inserted via " +
+					"temporal.documentInsert");
             assertTrue(metadata.getCollections().contains(temporalCollection));
         });
 
@@ -140,9 +141,9 @@ public class RemoveTest extends AbstractOpticUpdateTest {
             .remove(op.col("tempColl"), op.col("uri")));
 
         verifyMetadata(uri, metadata -> {
-            assertFalse("The doc should still exist but no longer be in the 'latest' collection, as " +
-                    "temporal.documentDelete should have removed it from that collection",
-                metadata.getCollections().contains("latest"));
+            assertFalse(metadata.getCollections().contains("latest"),
+				"The doc should still exist but no longer be in the 'latest' collection, as " +
+					"temporal.documentDelete should have removed it from that collection");
             assertTrue(metadata.getCollections().contains(temporalCollection));
         });
     }

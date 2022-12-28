@@ -31,9 +31,10 @@ import com.marklogic.client.query.*;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.type.CtsQueryExpr;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -51,13 +52,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.*;
+
 
 public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
 
     private static final int BATCH_SIZE = 100;
     private static final String DIRECTORY = "/bulkSearch/";
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         createRESTUserWithPermissions("usr1", "password", getPermissionNode("flexrep-eval", Capability.READ), getCollectionNode("http://permission-collections/"), "rest-writer",
                 "rest-reader");
@@ -66,7 +67,7 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
         loadXMLDocuments();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownAfterClass() throws Exception {
         deleteRESTUser("usr1");
     }
@@ -96,10 +97,10 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
     }
 
     public void validateRecord(DocumentRecord record, Format type) {
-        assertNotNull("DocumentRecord should never be null", record);
-        assertNotNull("Document uri should never be null", record.getUri());
-        assertTrue("Document uri should start with " + DIRECTORY, record.getUri().startsWith(DIRECTORY));
-        assertEquals("All records are expected to be in same format", type, record.getFormat());
+        assertNotNull( record);
+        assertNotNull( record.getUri());
+        assertTrue(record.getUri().startsWith(DIRECTORY));
+        assertEquals( type, record.getFormat());
     }
 
     public static Document getDocContent(String xmltype) throws IOException, ParserConfigurationException, SAXException
@@ -150,32 +151,32 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
         docMgr.setPageLength(1);
         docMgr.setSearchView(QueryView.RESULTS);
         docMgr.setNonDocumentFormat(Format.XML);
-        assertEquals("format set on document manager", "XML", docMgr.getNonDocumentFormat().toString());
-        assertEquals("Queryview set on document manager ", "RESULTS", docMgr.getSearchView().toString());
-        assertEquals("Page length ", 1, docMgr.getPageLength());
+        assertEquals( "XML", docMgr.getNonDocumentFormat().toString());
+        assertEquals( "RESULTS", docMgr.getSearchView().toString());
+        assertEquals( 1, docMgr.getPageLength());
         // Search for documents where content has bar and get first result record,
         // get search handle on it
         SearchHandle sh = new SearchHandle();
         DocumentPage page = docMgr.search(qd, 0);
         // test for page methods
-        assertEquals("Number of records", 1, page.size());
-        assertEquals("Starting record in first page ", 1, page.getStart());
-        assertEquals("Total number of estimated results:", 102, page.getTotalSize());
-        assertEquals("Total number of estimated pages :", 102, page.getTotalPages());
+        assertEquals( 1, page.size());
+        assertEquals( 1, page.getStart());
+        assertEquals( 102, page.getTotalSize());
+        assertEquals( 102, page.getTotalPages());
         // till the issue #78 get fixed
-        assertTrue("Is this First page :", page.isFirstPage());// this is bug
-        assertFalse("Is this Last page :", page.isLastPage());
-        assertTrue("Is this First page has content:", page.hasContent());
+        assertTrue( page.isFirstPage());// this is bug
+        assertFalse( page.isLastPage());
+        assertTrue( page.hasContent());
         // Need the Issue #75 to be fixed
-        assertFalse("Is first page has previous page ?", page.hasPreviousPage());
+        assertFalse( page.hasPreviousPage());
         //
         long pageNo = 1;
         do {
             count = 0;
             page = docMgr.search(qd, pageNo, sh);
             if (pageNo > 1) {
-                assertFalse("Is this first Page", page.isFirstPage());
-                assertTrue("Is page has previous page ?", page.hasPreviousPage());
+                assertFalse( page.isFirstPage());
+                assertTrue( page.hasPreviousPage());
             }
             while (page.hasNext()) {
                 DocumentRecord rec = page.next();
@@ -185,21 +186,20 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
                 count++;
             }
             MatchDocumentSummary[] mds = sh.getMatchResults();
-            assertEquals("Matched document count", 1, mds.length);
+            assertEquals( 1, mds.length);
             // since we set the query view to get only results, facet count supposed
             // be 0
-            assertEquals("Matched Facet count", 0, sh.getFacetNames().length);
+            assertEquals( 0, sh.getFacetNames().length);
 
-            assertEquals("document count", page.size(), count);
-            // assertEquals("Page Number #",pageNo,page.getPageNumber());
+            assertEquals( page.size(), count);
             pageNo = pageNo + page.getPageSize();
         } while (!page.isLastPage());
 
-        assertTrue("Page has previous page ?", page.hasPreviousPage());
-        assertEquals("page size", 1, page.getPageSize());
-        assertEquals("document count", 102, page.getTotalSize());
+        assertTrue( page.hasPreviousPage());
+        assertEquals( 1, page.getPageSize());
+        assertEquals( 102, page.getTotalSize());
         page = docMgr.search(qd, 103);
-        assertFalse("Page has any records ?", page.hasContent());
+        assertFalse( page.hasContent());
     }
 
     // This test has set response to JSON and pass StringHandle with format as
@@ -225,10 +225,10 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
             DocumentRecord rec = page.next();
             validateRecord(rec, Format.JSON);
             docMgr.readMetadata(rec.getUri(), mh);
-            assertTrue("Records has permissions? ", mh.getPermissions().containsKey("flexrep-eval"));
-            assertTrue("Record has collections ?", mh.getCollections().isEmpty());
+            assertTrue( mh.getPermissions().containsKey("flexrep-eval"));
+            assertTrue( mh.getCollections().isEmpty());
         }
-        assertFalse("Search handle contains", results.get().isEmpty());
+        assertFalse( results.get().isEmpty());
     }
 
     // This test is testing SearchView options and search handle
@@ -246,30 +246,30 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
         JacksonHandle jh = new JacksonHandle();
         docMgr.search(qd, 1, jh);
 
-        assertTrue("Searh response has entry for facets", jh.get().has("facets"));
-        assertFalse("Searh response has entry for facets", jh.get().has("results"));// Issue 84 is tracking this
-        assertFalse("Searh response has entry for facets", jh.get().has("metrics"));
+        assertTrue( jh.get().has("facets"));
+        assertFalse( jh.get().has("results"));// Issue 84 is tracking this
+        assertFalse( jh.get().has("metrics"));
 
         docMgr.setSearchView(QueryView.RESULTS);
         docMgr.search(qd, 1, jh);
 
-        assertFalse("Searh response has entry for facets", jh.get().has("facets"));
-        assertTrue("Searh response has entry for facets", jh.get().has("results"));
-        assertFalse("Searh response has entry for facets", jh.get().has("metrics"));// Issue 84 is tracking this
-        
+        assertFalse( jh.get().has("facets"));
+        assertTrue( jh.get().has("results"));
+        assertFalse( jh.get().has("metrics"));// Issue 84 is tracking this
+
         docMgr.setSearchView(QueryView.METADATA);
         docMgr.search(qd, 1, jh);
 
-        assertFalse("Searh response has entry for facets", jh.get().has("facets"));
-        assertFalse("Searh response has entry for facets", jh.get().has("results"));
-        assertTrue("Searh response has entry for facets", jh.get().has("metrics"));
+        assertFalse( jh.get().has("facets"));
+        assertFalse( jh.get().has("results"));
+        assertTrue( jh.get().has("metrics"));
 
         docMgr.setSearchView(QueryView.ALL);
         docMgr.search(qd, 1, jh);
 
-        assertTrue("Searh response has entry for facets", jh.get().has("facets"));
-        assertTrue("Searh response has entry for facets", jh.get().has("results"));
-        assertTrue("Searh response has entry for facets", jh.get().has("metrics"));
+        assertTrue( jh.get().has("facets"));
+        assertTrue( jh.get().has("results"));
+        assertTrue( jh.get().has("metrics"));
 
         queryMgr.setView(QueryView.FACETS);
         queryMgr.search(qd, jh);
@@ -311,8 +311,8 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
                 validateRecord(rec, Format.XML);
                 count++;
             }
-            assertTrue("Page has conttent :", page.hasContent());
-            assertEquals("Total search results before transaction rollback are ", "102",
+            assertTrue( page.hasContent());
+            assertEquals( "102",
                     results.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total").getNodeValue());
             // System.out.println(results.get().getElementsByTagNameNS("*",
             // "response").item(0).getAttributes().getNamedItem("total").getNodeValue());
@@ -324,7 +324,7 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
         }
         docMgr.search(qd, 1, results);
         System.out.println(convertXMLDocumentToString(results.get()));
-        assertEquals("Total search results after rollback are ", results.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total").getNodeValue(),
+        assertEquals( results.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total").getNodeValue(),
                 "0");
     }
 
@@ -364,12 +364,12 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
                     validateRecord(rec, Format.JSON);
                 }
                 docMgr.readMetadata(rec.getUri(), mh);
-                assertTrue("Records has permissions? ", mh.getPermissions().containsKey("flexrep-eval"));
-                assertFalse("Record has collections ?", mh.getCollections().isEmpty());
+                assertTrue( mh.getPermissions().containsKey("flexrep-eval"));
+                assertFalse( mh.getCollections().isEmpty());
 
             }
             System.out.println(this.convertXMLDocumentToString(dh.get()));
-            assertEquals("Total search results before transaction rollback are ", "204", dh.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total")
+            assertEquals( "204", dh.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total")
                     .getNodeValue());
             count++;
         }
@@ -405,7 +405,7 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
                 // we don't test for kind because it isn't sent in this case
                 assertEquals(1, extracted.size());
                 Document item1 = extracted.next().getAs(Document.class);
-                assertEquals("This is so foo with a bar 71", item1.getFirstChild().getTextContent());
+                assertEquals( "This is so foo with a bar 71", item1.getFirstChild().getTextContent());
                 continue;
             } else if (Format.JSON == summary.getFormat()) {
                 // we don't test for kind because it isn't sent in this case
@@ -457,7 +457,7 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
                 // TODO:: Bug 33921 also add test to include-with-ancestors
                 assertEquals(0, extracted.size());
                 // Document item1 = extracted.next().getAs(Document.class);
-                // assertEquals("This is so foo with a bar 71",
+                // assertEquals(
                 // item1.getFirstChild().getTextContent());
                 continue;
             } else if (Format.JSON == summary.getFormat()) {
@@ -508,7 +508,7 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
                 // we don't test for kind because it isn't sent in this case
                 assertEquals(1, extracted.size());
                 Document item1 = extracted.next().getAs(Document.class);
-                assertEquals("This is so foo with a bar 71", item1.getFirstChild().getTextContent());
+                assertEquals( "This is so foo with a bar 71", item1.getFirstChild().getTextContent());
                 continue;
             } else if (Format.JSON == summary.getFormat()) {
                 // we don't test for kind because it isn't sent in this case
@@ -558,7 +558,7 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
                 // we don't test for kind because it isn't sent in this case
                 assertEquals(1, extracted.size());
                 Document item1 = extracted.next().getAs(Document.class);
-                assertEquals("This is so foo with a bar 71", item1.getFirstChild().getTextContent());
+                assertEquals( "This is so foo with a bar 71", item1.getFirstChild().getTextContent());
                 continue;
             } else if (Format.JSON == summary.getFormat()) {
                 // we don't test for kind because it isn't sent in this case
@@ -608,7 +608,7 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
                 // we don't test for kind because it isn't sent in this case
                 assertEquals(1, extracted.size());
                 Document item1 = extracted.next().getAs(Document.class);
-                assertEquals("This is so foo with a bar 71", item1.getFirstChild().getTextContent());
+                assertEquals( "This is so foo with a bar 71", item1.getFirstChild().getTextContent());
                 continue;
             } else if (Format.JSON == summary.getFormat()) {
                 // we don't test for kind because it isn't sent in this case
@@ -679,23 +679,23 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
                     validateRecord(rec, Format.JSON);
                 }
                 docMgr.readMetadata(rec.getUri(), mh);
-                assertTrue("Records has permissions? ", mh.getPermissions().containsKey("flexrep-eval"));
-                assertFalse("Record has collections ?", mh.getCollections().isEmpty());
+                assertTrue( mh.getPermissions().containsKey("flexrep-eval"));
+                assertFalse( mh.getCollections().isEmpty());
             }
             count++;
         }
         System.out.println(results.get().toString());
-        assertEquals("Total search results before transaction rollback are ", "204", results.get().get("total").asText());
+        assertEquals( "204", results.get().get("total").asText());
     }
 
     /*
      * Searching for boolean and string in XML element using value query. Purpose:
      * To validate QueryBuilder's new value methods (in 8.0) in XML document using
      * an element.
-     * 
+     *
      * Load a file that has a boolean value in a XML attribute and use query def
      * to search on that boolean value
-     * 
+     *
      * Methods used : value(StructuredQueryBuilder.TextIndex index, boolean)
      * value(StructuredQueryBuilder.TextIndex index, String)
      */
@@ -856,8 +856,8 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
 
         // 1 - Verify that page length from client takes precedence. Both client and
         // persisted options have page length
-        assertEquals("Page Length from client not taken", 3, nPageLen);
-        assertEquals("Summaries Length incorrect", 3, nSummariesLen);
+        assertEquals( 3, nPageLen);
+        assertEquals( 3, nSummariesLen);
 
         String optionsWithoutPageLen = "<search:options>" +
                 "<search:extract-document-data selected=\"exclude\">" +
@@ -878,7 +878,7 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
         System.out.println("Summaries Length is " + nSummariesLenNP);
         // 2 - Verify that without page length from client precedence is for Server
         // options.
-        assertTrue("Page Length from client not taken", nPageLenNP == 10);
+        assertTrue( nPageLenNP == 10);
 
         // 3 - Search with options - Persisted options take precedence
         StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
@@ -892,7 +892,7 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
 
         System.out.println("Summaries Length is " + nSummariesLenOpt);
         // Verify that page length from client options takes precedence.
-        assertTrue("Page Length from client not taken", nSummariesLenOpt == 4);
+        assertTrue( nSummariesLenOpt == 4);
 
         // 4 - Search WITHOUT options - Persisted options take precedence
         StringQueryDefinition querydefNoOpts = queryMgr.newStringDefinition();
@@ -906,7 +906,7 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
 
         System.out.println("Summaries Length is " + nSummariesLenNoOpts);
         // Verify that page length from client options takes precedence.
-        assertTrue("Page Length from Server persisted options not taken", nSummariesLenNoOpts == 4);
+        assertTrue( nSummariesLenNoOpts == 4);
     }
 
     /*
@@ -961,7 +961,7 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
         assertNotNull(summaries);
         int nSummariesLen = summaries.length;
         System.out.println("Summaries Length is " + nSummariesLen);
-        assertEquals("Summaries Length incorrect", 5, nSummariesLen);
+        assertEquals( 5, nSummariesLen);
 
         // Make sure we have proper descending sort.
         LinkedHashMap<String, String> descHashMap = new LinkedHashMap<String, String>();
@@ -991,7 +991,7 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
                 fail("unexpected search result:" + summary.getUri());
         }
 
-        assertTrue("Should have summaries returned in descending order.", descHashMap.equals(exptdHashMap));
+        assertTrue( descHashMap.equals(exptdHashMap));
 
         // 2 - Verify that without sort from client, precedence is for Server
         // options
@@ -1011,7 +1011,7 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
         assertNotNull(summariesNoSort);
         int nSummariesNoSortLen = summariesNoSort.length;
         System.out.println("Summaries Length is " + nSummariesNoSortLen);
-        assertEquals("Summaries Length incorrect", 5, nSummariesNoSortLen);
+        assertEquals( 5, nSummariesNoSortLen);
 
         // Make sure we have proper ascending sort.
         LinkedHashMap<String, String> ascHashMap = new LinkedHashMap<String, String>();
@@ -1041,7 +1041,7 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
                 fail("unexpected search result:" + summary.getUri());
         }
         // 2 - Verify server options is used - ascending
-        assertTrue("Should have summaries returned in ascending order.", ascHashMap.equals(exptdAscHashMap));
+        assertTrue( ascHashMap.equals(exptdAscHashMap));
 
         // 3 - Search with options - Persisted options take precedence
         StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
@@ -1064,7 +1064,7 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
         }
 
         // 3 - Verify server options is used - ascending
-        assertTrue("Should have summaries returned in ascending order.", WithOptionsAscHashMap.equals(exptdAscHashMap));
+        assertTrue( WithOptionsAscHashMap.equals(exptdAscHashMap));
 
         // 4 - Search without options - Persisted options take precedence
         StringQueryDefinition querydefNoOpts = queryMgr.newStringDefinition(queryOptionName);
@@ -1086,9 +1086,9 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
             }
         }
         // 4 - Verify server options is used - ascending
-        assertTrue("Should have summaries returned in ascending order.", NoOptsAscHashMap.equals(exptdAscHashMap));
+        assertTrue( NoOptsAscHashMap.equals(exptdAscHashMap));
     }
-   
+
     @Test
     public void testStartPageOnQueryManager() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
@@ -1125,10 +1125,10 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
             int nSummariesLen = summaries1.length;
             System.out.println("Summaries Length is " + nSummariesLen);
 
-            assertEquals("Summaries returned incorrect", 2, nSummariesLen);
+            assertEquals( 2, nSummariesLen);
             long nTotal = results.getTotalResults();
             System.out.println("Total # of results are " + nTotal);
-            assertEquals("Total Length incorrect", 14, nTotal);
+            assertEquals( 14, nTotal);
 
             // Make sure we have proper descending sort.
             LinkedHashMap<String, String> descHashMap = new LinkedHashMap<String, String>();
@@ -1153,7 +1153,7 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
                 else
                     fail("unexpected search result:" + summary.getUri());
             }
-            assertTrue("Should have summaries returned in descending order.", descHashMap.equals(exptdHashMap));
+            assertTrue( descHashMap.equals(exptdHashMap));
 
             t = clientTmp.openTransaction("QM");;
 
@@ -1163,11 +1163,11 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
             nSummariesLen = summaries2.length;
             System.out.println("Summaries Length is " + nSummariesLen);
 
-            assertEquals("Summaries returned incorrect", 2, nSummariesLen);
+            assertEquals( 2, nSummariesLen);
 
             nTotal = results2.getTotalResults();
             System.out.println("Total # of results are " + nTotal);
-            assertEquals("Total Length incorrect", 14, nTotal);
+            assertEquals( 14, nTotal);
 
             // Make sure we have proper descending sort.
             LinkedHashMap<String, String> descHashMap2 = new LinkedHashMap<String, String>();
@@ -1193,7 +1193,7 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
                 else
                     fail("unexpected search result:" + summary.getUri());
             }
-            assertTrue("Should have summaries returned in descending order.", descHashMap2.equals(exptdHashMap2));
+            assertTrue( descHashMap2.equals(exptdHashMap2));
         }
         catch(Exception ex) {
             System.out.println("Exception from method " + ex.getMessage());
@@ -1226,30 +1226,30 @@ public class TestBulkSearchWithStrucQueryDef extends AbstractFunctionalTest {
         docMgr.search(qd, 1, jh);
 
         // System.out.println(jh.get().toString());
-        assertTrue("Searh response has entry for facets", jh.get().has("facets"));
-        assertFalse("Searh response has entry for facets", jh.get().has("results"));// Issue 84 is tracking this
-        assertFalse("Searh response has entry for facets", jh.get().has("metrics"));
+        assertTrue( jh.get().has("facets"));
+        assertFalse( jh.get().has("results"));// Issue 84 is tracking this
+        assertFalse( jh.get().has("metrics"));
 
         docMgr.setSearchView(QueryView.RESULTS);
         docMgr.search(qd, 1, jh);
 
-        assertFalse("Searh response has entry for facets", jh.get().has("facets"));
-        assertTrue("Searh response has entry for facets", jh.get().has("results"));
-        assertFalse("Searh response has entry for facets", jh.get().has("metrics"));// Issue 84 is tracking this
+        assertFalse( jh.get().has("facets"));
+        assertTrue( jh.get().has("results"));
+        assertFalse( jh.get().has("metrics"));// Issue 84 is tracking this
 
         docMgr.setSearchView(QueryView.METADATA);
         docMgr.search(qd, 1, jh);
 
-        assertFalse("Searh response has entry for facets", jh.get().has("facets"));
-        assertFalse("Searh response has entry for facets", jh.get().has("results"));
-        assertTrue("Searh response has entry for facets", jh.get().has("metrics"));
+        assertFalse( jh.get().has("facets"));
+        assertFalse( jh.get().has("results"));
+        assertTrue( jh.get().has("metrics"));
 
         docMgr.setSearchView(QueryView.ALL);
         docMgr.search(qd, 1, jh);
 
-        assertTrue("Searh response has entry for facets", jh.get().has("facets"));
-        assertTrue("Searh response has entry for facets", jh.get().has("results"));
-        assertTrue("Searh response has entry for facets", jh.get().has("metrics"));
+        assertTrue( jh.get().has("facets"));
+        assertTrue( jh.get().has("results"));
+        assertTrue( jh.get().has("metrics"));
 
         queryMgr.setView(QueryView.FACETS);
         queryMgr.search(qd, jh);

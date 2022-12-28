@@ -15,22 +15,16 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import java.io.IOException;
-
-import javax.sql.DataSource;
-
+import com.marklogic.client.example.cookbook.Util;
+import com.marklogic.client.example.cookbook.Util.ExampleProperties;
+import com.marklogic.client.example.cookbook.datamovement.*;
 import org.hsqldb.server.Server;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
-import com.marklogic.client.example.cookbook.Util;
-import com.marklogic.client.example.cookbook.Util.ExampleProperties;
-import com.marklogic.client.example.cookbook.datamovement.BulkExportToJdbc;
-import com.marklogic.client.example.cookbook.datamovement.BulkLoadFromJdbcRaw;
-import com.marklogic.client.example.cookbook.datamovement.BulkLoadFromJdbcWithJoins;
-import com.marklogic.client.example.cookbook.datamovement.BulkLoadFromJdbcWithSimpleJoins;
-import com.marklogic.client.example.cookbook.datamovement.IncrementalLoadFromJdbc;
+import javax.sql.DataSource;
+import java.io.IOException;
 
 public class JdbcCookbookTest {
 
@@ -83,14 +77,14 @@ public class JdbcCookbookTest {
 
   private void populateDataset(Database hsqlDB) {
     hsqlDB.execute("CREATE TABLE employees (" +
-      "emp_no      INTEGER         NOT NULL," + 
-      "birth_date  DATE            NOT NULL," + 
-      "first_name  VARCHAR(14)     NOT NULL," + 
-      "last_name   VARCHAR(16)     NOT NULL," + 
-      "gender      VARCHAR(2)      NOT NULL," +     
-      "hire_date   DATE            NOT NULL," + 
+      "emp_no      INTEGER         NOT NULL," +
+      "birth_date  DATE            NOT NULL," +
+      "first_name  VARCHAR(14)     NOT NULL," +
+      "last_name   VARCHAR(16)     NOT NULL," +
+      "gender      VARCHAR(2)      NOT NULL," +
+      "hire_date   DATE            NOT NULL," +
       "PRIMARY KEY (emp_no));");
-    
+
     hsqlDB.execute("CREATE TABLE titles (" +
       "emp_no      INTEGER         NOT NULL," +
       "title       VARCHAR(50)     NOT NULL," +
@@ -98,14 +92,14 @@ public class JdbcCookbookTest {
       "to_date     DATE," +
       "FOREIGN KEY (emp_no) REFERENCES employees (emp_no) ON DELETE CASCADE," +
       "PRIMARY KEY (emp_no,title, from_date));");
-   
+
     hsqlDB.execute("CREATE TABLE salaries (" +
     "emp_no      INTEGER         NOT NULL," +
     "salary      INTEGER         NOT NULL," +
     "from_date   DATE            NOT NULL," +
     "to_date     DATE            NOT NULL," +
     "FOREIGN KEY (emp_no) REFERENCES employees (emp_no) ON DELETE CASCADE," +
-    "PRIMARY KEY (emp_no, from_date));"); 
+    "PRIMARY KEY (emp_no, from_date));");
 
     hsqlDB.execute("CREATE TABLE employees_export (" +
         "emp_no      INTEGER         NOT NULL," +

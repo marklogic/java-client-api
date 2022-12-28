@@ -25,8 +25,9 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 
 import javax.xml.transform.TransformerException;
@@ -36,12 +37,12 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+
 
 public class TestQueryByExample extends AbstractFunctionalTest {
 
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception
   {
     deleteDocuments(connectAsAdmin());
@@ -151,7 +152,6 @@ public class TestQueryByExample extends AbstractFunctionalTest {
     System.out.println("testQueryByExampleJSON Result : " + resultDoc);
 
     assertTrue(
-        "doc returned is not correct",
         resultDoc
             .contains("<search:result index=\"1\" uri=\"/qbe/constraint1.json\" path=\"fn:doc(&quot;/qbe/constraint1.json&quot;)\""));
 
@@ -280,7 +280,7 @@ public class TestQueryByExample extends AbstractFunctionalTest {
     for (MatchDocumentSummary result : results.getMatchResults())
     {
       System.out.println(result.getUri() + ": Uri");
-      assertEquals("Wrong Document Searched", result.getUri(), "/qbe/constraint1.xml");
+      assertEquals( result.getUri(), "/qbe/constraint1.xml");
     }
 
     // release client
@@ -310,7 +310,7 @@ public class TestQueryByExample extends AbstractFunctionalTest {
     RawQueryByExampleDefinition qbyex = queryMgr.newRawQueryByExampleDefinition(fileHandle.withFormat(Format.JSON));
     String resultDoc = queryMgr.search(qbyex, new StringHandle()).get();
     System.out.println(resultDoc);
-    assertTrue("Result is not proper", resultDoc.contains("/qbe/constraint1.json"));
+    assertTrue( resultDoc.contains("/qbe/constraint1.json"));
 
     // release client
     client.release();
@@ -344,7 +344,7 @@ public class TestQueryByExample extends AbstractFunctionalTest {
       for (MatchDocumentSummary result : results.getMatchResults())
       {
         System.out.println(result.getUri() + ": Uri");
-        assertEquals("Wrong Document Searched", result.getUri(), "/qbe/constraint1.xml");
+        assertEquals( result.getUri(), "/qbe/constraint1.xml");
       }
     } catch (Exception e) {
       System.out.println("Negative Test Passed of executing nonreadable file");
@@ -377,7 +377,7 @@ public class TestQueryByExample extends AbstractFunctionalTest {
       for (MatchDocumentSummary result : results.getMatchResults())
       {
         System.out.println(result.getUri() + ": Uri");
-        // assertEquals("Wrong Document Searched",result.getUri() ,
+        // assertEquals(result.getUri() ,
         // "/qbe/constraint1.xml");
       }
     } catch (FailedRequestException e) {
@@ -415,8 +415,8 @@ public class TestQueryByExample extends AbstractFunctionalTest {
 
       System.out.println(resultDoc);
 
-      assertTrue("total result is not correct", resultDoc.contains("\"total\":1"));
-      assertTrue("doc returned is not correct",
+      assertTrue( resultDoc.contains("\"total\":1"));
+      assertTrue(
           resultDoc.contains("\"metadata\":[{\"title\":\"Vannevar Bush\"},{\"id\":11},{\"p\":\"Vannevar Bush wrote an article for The Atlantic Monthly\"},{\"popularity\":5}]"));
     } catch (FailedRequestException e) {
       System.out.println("Negative test passed as JSON with invalid structure gave FailedRequestException ");
@@ -452,7 +452,7 @@ public class TestQueryByExample extends AbstractFunctionalTest {
     for (MatchDocumentSummary result : results.getMatchResults())
     {
       System.out.println(result.getUri() + ": Uri");
-      assertEquals("Wrong Document Searched", result.getUri(), "/qbe/constraint1.xml");
+      assertEquals( result.getUri(), "/qbe/constraint1.xml");
     }
     try {
       File wrongFile = new File("src/test/java/com/marklogic/client/functionaltest/qbe/WrongQbe.xml");
@@ -465,7 +465,7 @@ public class TestQueryByExample extends AbstractFunctionalTest {
       for (MatchDocumentSummary result : newResults.getMatchResults())
       {
         System.out.println(result.getUri() + ": Uri");
-        assertEquals("Wrong Document Searched", result.getUri(), "/qbe/constraint1.xml");
+        assertEquals( result.getUri(), "/qbe/constraint1.xml");
       }
     } catch (FailedRequestException e) {
       System.out.println("Negative test passed as Query with improper Xml format gave FailedRequestException ");
@@ -505,9 +505,9 @@ public class TestQueryByExample extends AbstractFunctionalTest {
 
     System.out.println("Result of Correct Query" + resultDoc);
 
-    // assertTrue("total result is not correct",
+    // assertTrue(
     // resultDoc.contains("\"total\":1"));
-    // assertTrue("doc returned is not correct",
+    // assertTrue(
     // resultDoc.contains("\"metadata\":[{\"title\":\"Vannevar Bush\"},{\"id\":11},{\"p\":\"Vannevar Bush wrote an article for The Atlantic Monthly\"},{\"popularity\":5}]"));
 
     // get the query with Wrong Format
@@ -526,8 +526,8 @@ public class TestQueryByExample extends AbstractFunctionalTest {
 
       System.out.println("Result of Wrong Query" + newResultDoc);
 
-      assertTrue("total result is not correct", resultDoc.contains("\"total\":1"));
-      assertTrue("doc returned is not correct",
+      assertTrue( resultDoc.contains("\"total\":1"));
+      assertTrue(
           resultDoc.contains("\"metadata\":[{\"title\":\"Vannevar Bush\"},{\"id\":11},{\"p\":\"Vannevar Bush wrote an article for The Atlantic Monthly\"},{\"popularity\":5}]"));
     } catch (FailedRequestException e) {
       System.out.println("Negative test passed as Query with improper JSON format gave FailedRequestException ");
