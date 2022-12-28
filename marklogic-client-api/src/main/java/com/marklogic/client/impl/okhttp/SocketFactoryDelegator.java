@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.impl;
+package com.marklogic.client.impl.okhttp;
 
 import javax.net.SocketFactory;
 import java.io.IOException;

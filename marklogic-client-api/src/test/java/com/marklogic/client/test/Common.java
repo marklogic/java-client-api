@@ -15,8 +15,12 @@
  */
 package com.marklogic.client.test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.mgmt.ManageClient;
+import com.marklogic.mgmt.ManageConfig;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -24,11 +28,13 @@ import org.w3c.dom.ls.LSException;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.net.ssl.X509TrustManager;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.cert.X509Certificate;
 
 public class Common {
   final public static String USER= "rest-writer";
@@ -55,10 +61,27 @@ public class Common {
   final public static boolean WITH_WAIT     = Boolean.parseBoolean(System.getProperty("TEST_WAIT", "false"));
   final public static int     PROPERTY_WAIT = Integer.parseInt(System.getProperty("TEST_PROPERTY_WAIT", WITH_WAIT ? "8200" : "0"));
 
+  final public static String SERVER_NAME = "java-unittest";
+
   final public static DatabaseClient.ConnectionType CONNECTION_TYPE =
       DatabaseClient.ConnectionType.valueOf(System.getProperty("TEST_CONNECT_TYPE", "DIRECT"));
 
-  public static DatabaseClient client;
+	public final static X509TrustManager TRUST_ALL_MANAGER = new X509TrustManager() {
+		@Override
+		public void checkClientTrusted(X509Certificate[] chain, String authType) {
+		}
+
+		@Override
+		public void checkServerTrusted(X509Certificate[] chain, String authType) {
+		}
+
+		@Override
+		public X509Certificate[] getAcceptedIssuers() {
+			return new X509Certificate[0];
+		}
+	};
+
+	public static DatabaseClient client;
   public static DatabaseClient adminClient;
   public static DatabaseClient serverAdminClient;
   public static DatabaseClient evalClient;
@@ -126,13 +149,6 @@ public class Common {
   /**
    * Intent is to route every call to this method so that changes to how newClient works can easily be made in the
    * future.
-   *
-   * @param host
-   * @param port
-   * @param database
-   * @param securityContext
-   * @param connectionType
-   * @return
    */
   public static DatabaseClient makeNewClient(String host, int port, String database,
                                              DatabaseClientFactory.SecurityContext securityContext,
@@ -270,4 +286,16 @@ public class Common {
       }
     }
   }
+
+	public static ManageClient newManageClient() {
+		return new ManageClient(new ManageConfig(HOST, 8002, SERVER_ADMIN_USER, SERVER_ADMIN_PASS));
+	}
+
+	public static ObjectNode newServerPayload() {
+		ObjectNode payload = new ObjectMapper().createObjectNode();
+		payload.put("server-name", SERVER_NAME);
+		payload.put("group-name", "Default");
+		return payload;
+	}
+
 }
