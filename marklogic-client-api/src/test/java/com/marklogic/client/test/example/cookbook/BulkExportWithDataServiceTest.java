@@ -17,7 +17,7 @@ package com.marklogic.client.test.example.cookbook;
 
 import com.marklogic.client.example.cookbook.datamovement.BulkExportWithDataService;
 import com.marklogic.client.test.Common;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class BulkExportWithDataServiceTest {
 
@@ -28,5 +28,5 @@ public class BulkExportWithDataServiceTest {
             Common.newEvalClient("java-unittest-modules")
         ).run();
     }
-    
+
 }

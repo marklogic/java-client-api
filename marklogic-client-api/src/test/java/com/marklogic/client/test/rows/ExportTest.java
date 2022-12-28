@@ -7,8 +7,7 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.test.Common;
 import com.marklogic.client.type.CtsReferenceExpr;
 import com.marklogic.client.type.PlanTripleOption;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;

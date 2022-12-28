@@ -18,6 +18,7 @@ package com.marklogic.client.fastfunctest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentWriteSet;
@@ -28,15 +29,13 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.pojo.annotation.Id;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class TestPOJOWithDocsStoredByOthers extends AbstractFunctionalTest {
 
@@ -187,7 +186,7 @@ public class TestPOJOWithDocsStoredByOthers extends AbstractFunctionalTest {
     }
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     client = getDatabaseClient("rest-admin", "x", getConnType());
   }
@@ -213,12 +212,12 @@ public class TestPOJOWithDocsStoredByOthers extends AbstractFunctionalTest {
    * This method is used when there is a need to validate SmallArtifact.
    */
   public void validateSmallArtifact(SmallArtifactIdInSuper artifact) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.id);
-    assertEquals("Id of the object is ", -99, artifact.getId());
-    assertEquals("Name of the object is ", "SmallArtifact",
+    assertNotNull( artifact);
+    assertNotNull( artifact.id);
+    assertEquals( -99, artifact.getId());
+    assertEquals( "SmallArtifact",
         artifact.getName());
-    assertEquals("Inventory of the object is ", 1000,
+    assertEquals( 1000,
         artifact.getInventory());
   }
 
@@ -227,14 +226,14 @@ public class TestPOJOWithDocsStoredByOthers extends AbstractFunctionalTest {
    * test annotation only in super class.
    */
   public void validateSmallArtifactSuper(SmallArtifactNoId artifact) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.getId());
-    assertEquals("Id of the object is ", 0, artifact.getId());
-    assertEquals("Name of the object is ", "SmallArtifactInSuperOnly",
+    assertNotNull( artifact);
+    assertNotNull( artifact.getId());
+    assertEquals( 0, artifact.getId());
+    assertEquals( "SmallArtifactInSuperOnly",
         artifact.getName());
-    assertEquals("Inventory of the object is ", 1000,
+    assertEquals( 1000,
         artifact.getInventory());
-    assertEquals("Country of origin of the object is ", "USA",
+    assertEquals( "USA",
         artifact.getOriginCountry());
   }
 
@@ -244,14 +243,14 @@ public class TestPOJOWithDocsStoredByOthers extends AbstractFunctionalTest {
    * class.
    */
   public void validateSmallArtifactSuperAndSub(SmallArtifactIdInSuperAndSub artifact) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.getId());
-    assertEquals("Id of the object is ", -100, artifact.getId());
-    assertEquals("Name of the object is ", "SmallArtifactInSuperAndSub",
+    assertNotNull( artifact);
+    assertNotNull( artifact.getId());
+    assertEquals( -100, artifact.getId());
+    assertEquals( "SmallArtifactInSuperAndSub",
         artifact.getName());
-    assertEquals("Inventory of the object is ", 1000,
+    assertEquals( 1000,
         artifact.getInventory());
-    assertEquals("Country of origin of the object is ", "USA",
+    assertEquals( "USA",
         artifact.getOriginCountry());
   }
 
@@ -260,14 +259,14 @@ public class TestPOJOWithDocsStoredByOthers extends AbstractFunctionalTest {
    * test annotation in super class and in sub class.
    */
   public void validateSmallArtifactDiffAccessSpec(SmallArtifactPublic artifact) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.getId());
-    assertEquals("Id of the object is ", -100, artifact.getId());
-    assertEquals("Name of the object is ", "SmallArtifactDiffAccess",
+    assertNotNull( artifact);
+    assertNotNull( artifact.getId());
+    assertEquals( -100, artifact.getId());
+    assertEquals( "SmallArtifactDiffAccess",
         artifact.getName());
-    assertEquals("Inventory of the object is ", 1000,
+    assertEquals( 1000,
         artifact.getInventory());
-    assertEquals("Country of origin of the object is ", "USA",
+    assertEquals( "USA",
         artifact.getOriginCountry());
   }
 
@@ -276,12 +275,12 @@ public class TestPOJOWithDocsStoredByOthers extends AbstractFunctionalTest {
    * to test annotation in super class and in sub class.
    */
   public void validateSubObjReferencedbySuperClassvariable(SmallArtifactIdInSuper artifact) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.getId());
-    assertEquals("Id of the object is ", -100, artifact.getId());
-    assertEquals("Name of the object is ", "SmallArtifactNoId",
+    assertNotNull( artifact);
+    assertNotNull( artifact.getId());
+    assertEquals( -100, artifact.getId());
+    assertEquals( "SmallArtifactNoId",
         artifact.getName());
-    assertEquals("Inventory of the object is ", 1000,
+    assertEquals( 1000,
         artifact.getInventory());
   }
 
@@ -291,12 +290,12 @@ public class TestPOJOWithDocsStoredByOthers extends AbstractFunctionalTest {
    * class.
    */
   public void validateSubObjReferencedbySuperClassvariableOne(SmallArtifactIdInSuperAndSub artifact) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.getId());
-    assertEquals("Id of the object is ", -100, artifact.getId());
-    assertEquals("Name of the object is ", "SmallArtifactIdInSuperAndSub",
+    assertNotNull( artifact);
+    assertNotNull( artifact.getId());
+    assertEquals( -100, artifact.getId());
+    assertEquals( "SmallArtifactIdInSuperAndSub",
         artifact.getName());
-    assertEquals("Inventory of the object is ", 1000,
+    assertEquals( 1000,
         artifact.getInventory());
   }
 
@@ -305,14 +304,14 @@ public class TestPOJOWithDocsStoredByOthers extends AbstractFunctionalTest {
    * URI and has invalid POJO collection Uses SmallArtifact class which has @Id
    * on the name methods. Test result expectations are: read should return a
    * null since the POJO internal content and document's are different.
-   * 
+   *
    * Current results (10/13/2014) are: java.lang.IllegalArgumentException:
    * Invalid type id 'junk' (for id type 'Id.class'): no such class found Issue
    * 136 might solve this also.
    */
 
-  @Test(expected = com.marklogic.client.MarkLogicIOException.class)
-  public void testPOJOReadDocStoredWithInvalidContent() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+	@Test
+  public void testPOJOReadDocStoredWithInvalidContent() throws Exception {
 
     String docId[] = { "com.marklogic.client.fastfunctest.TestPOJOWithDocsStoredByOthers$SmallArtifactIdInSuper/SmallArtifactIdInSuper.json" };
     String json1 = new String(
@@ -341,8 +340,7 @@ public class TestPOJOWithDocsStoredByOthers extends AbstractFunctionalTest {
         .newPojoRepository(SmallArtifactIdInSuper.class, String.class);
     String artifactName = new String("SmallArtifactIdInSuper");
 
-    SmallArtifactIdInSuper artifact1 = pojoReposSmallArtifact.read(artifactName);
-    validateSmallArtifact(artifact1);
+    assertThrows(MarkLogicIOException.class, () -> pojoReposSmallArtifact.read(artifactName));
   }
 
   /*
@@ -385,12 +383,12 @@ public class TestPOJOWithDocsStoredByOthers extends AbstractFunctionalTest {
 
     // Validate the SmallArtifactIdInSuper read back.
     SmallArtifactIdInSuper artifact = pojoReposSmallArtifact.read(artifactName);
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.id);
-    assertEquals("Id of the object is ", -99, artifact.getId());
-    assertEquals("Name of the object is ", "SmallArtifactIdInSuper",
+    assertNotNull( artifact);
+    assertNotNull( artifact.id);
+    assertEquals( -99, artifact.getId());
+    assertEquals( "SmallArtifactIdInSuper",
         artifact.getName());
-    assertEquals("Inventory of the object is ", 0, artifact.getInventory());
+    assertEquals( 0, artifact.getInventory());
   }
 
   /*
@@ -400,8 +398,7 @@ public class TestPOJOWithDocsStoredByOthers extends AbstractFunctionalTest {
    * expectations are: read should return ResourceNotFoundException exception.
    * Field inventory has a String
    */
-
-  @Test(expected = ResourceNotFoundException.class)
+	@Test
   public void testPOJOReadDocStoredWithInvalidDataType() throws Exception {
 
     String docId[] = { "com.marklogic.client.fastfunctest.TestPOJOWithDocsStoredByOthers$SmallArtifact/SmallArtifact.json" };
@@ -432,17 +429,15 @@ public class TestPOJOWithDocsStoredByOthers extends AbstractFunctionalTest {
 
     PojoRepository<SmallArtifactIdInSuper, String> pojoReposSmallArtifact = client
         .newPojoRepository(SmallArtifactIdInSuper.class, String.class);
-    String artifactName = new String("SmallArtifact");
-
-    @SuppressWarnings("unused")
-    SmallArtifactIdInSuper artifact1 = pojoReposSmallArtifact.read(artifactName);
+    String artifactName = "SmallArtifact";
+    assertThrows(ResourceNotFoundException.class, () -> pojoReposSmallArtifact.read(artifactName));
   }
 
   /*
    * Purpose : This test is to validate Test creating an @id in super class only
    * SmallArtifactSuper class which has @Id only on the name class member of the
    * super class SmallArtifact.
-   * 
+   *
    * Current results (10/13/2014) are: java.lang.IllegalArgumentException: Your
    * class com.marklogic.client.fastfunctest.
    * TestPOJOWithDocsStoredByOthers$SmallArtifactSuper does not have a method or
@@ -472,7 +467,7 @@ public class TestPOJOWithDocsStoredByOthers extends AbstractFunctionalTest {
    * Purpose : This test is to validate Test creating an @id in super class and
    * sub class. Both SmallArtifactSuperAndSub and SmallArtifact class have a
    * similar @Id on the name class member.
-   * 
+   *
    * Current results (10/13/2014) are: Read works fine.
    */
   @Test
@@ -499,7 +494,7 @@ public class TestPOJOWithDocsStoredByOthers extends AbstractFunctionalTest {
    * Purpose : This test is to validate creating an @id in super class and sub
    * class that has different access specifiers. Both SmallArtifactSuperAndSub
    * and SmallArtifact class have a similar @Id on the name class member.
-   * 
+   *
    * Current results (10/13/2014) are: Read works fine.
    */
   @Test
@@ -527,7 +522,7 @@ public class TestPOJOWithDocsStoredByOthers extends AbstractFunctionalTest {
    * referenced by a Super class variable type. Both SmallArtifactIdInSuper and
    * SmallArtifactNoId classes are used. POJO repository cannot read back the
    * sub class.
-   * 
+   *
    * PojoRepository is on the super class.
    */
 
@@ -556,7 +551,7 @@ public class TestPOJOWithDocsStoredByOthers extends AbstractFunctionalTest {
    * referenced by a Super class variable type. Both SmallArtifactIdInSuper and
    * SmallArtifactNoId classes are used. This is a variation of
    * testPOJOSubObjReferencedBySuperClassVariable()
-   * 
+   *
    * PojoRepository is on the sub class.
    */
 

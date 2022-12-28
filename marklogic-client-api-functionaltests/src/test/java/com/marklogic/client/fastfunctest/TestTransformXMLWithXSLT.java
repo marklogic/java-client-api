@@ -20,7 +20,8 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.SourceHandle;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamSource;
@@ -28,7 +29,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
-import static org.junit.Assert.assertTrue;
+
 
 public class TestTransformXMLWithXSLT extends AbstractFunctionalTest {
 
@@ -78,9 +79,9 @@ public class TestTransformXMLWithXSLT extends AbstractFunctionalTest {
         String readContent = scanner.next();
         // String transformedContent = readContent.replaceAll("^name$",
         // "firstname");
-        // assertEquals("XML document write difference", transformedContent,
+        // assertEquals( transformedContent,
         // readContent);
-        assertTrue("check document from DB has name element changed", readContent.contains("firstname"));
+        assertTrue( readContent.contains("firstname"));
         scanner.close();
         handle.close();
     }

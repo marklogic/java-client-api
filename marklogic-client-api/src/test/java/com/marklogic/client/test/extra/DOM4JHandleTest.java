@@ -15,29 +15,28 @@
  */
 package com.marklogic.client.test.extra;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.assertNotNull;
-
-import java.io.IOException;
-
-import org.dom4j.Document;
-import org.dom4j.DocumentFactory;
-import org.dom4j.Element;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.extra.dom4j.DOM4JHandle;
 import com.marklogic.client.test.Common;
+import org.dom4j.Document;
+import org.dom4j.DocumentFactory;
+import org.dom4j.Element;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class DOM4JHandleTest {
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -73,7 +72,7 @@ public class DOM4JHandleTest {
 
     // access the document content
     Document readDocument = readHandle.get();
-    assertNotNull("Wrote null dom4j document", readDocument);
+    assertNotNull( readDocument);
     assertXMLEqual("dom4j document not equal",
       writeDocument.asXML(), readDocument.asXML());
 

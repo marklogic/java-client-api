@@ -15,14 +15,10 @@
  */
 package com.marklogic.client.test;
 
-import javax.xml.bind.annotation.XmlRootElement;
-
-import com.marklogic.client.pojo.annotation.Id;
-import com.marklogic.client.pojo.annotation.PathIndexProperty;
+import com.marklogic.client.pojo.annotation.*;
 import com.marklogic.client.pojo.annotation.PathIndexProperty.ScalarType;
-import com.marklogic.client.pojo.annotation.GeospatialPathIndexProperty;
-import com.marklogic.client.pojo.annotation.GeospatialLatitude;
-import com.marklogic.client.pojo.annotation.GeospatialLongitude;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class City {

@@ -15,23 +15,6 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-import java.io.IOException;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.ls.DOMImplementationLS;
-
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.GenericDocumentManager;
@@ -39,15 +22,23 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
+import org.junit.jupiter.api.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.ls.DOMImplementationLS;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class DeleteSearchTest {
   private static final String directory = "/delete/test/";
   private static final String filename = "testWrite1.xml";
   private static final String docId = directory + filename;
   private static DatabaseClient client = Common.connect();
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() throws Exception {
     writeDoc();
   }
@@ -73,15 +64,15 @@ public class DeleteSearchTest {
     docMgr.write(docId, new DOMHandle().with(domDocument));
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
   @Test
-  public void test_A_Delete() throws IOException {
+  public void test_A_Delete() {
     GenericDocumentManager docMgr = client.newDocumentManager();
     DocumentDescriptor desc = docMgr.exists(docId);
-    assertNotNull("Should find document before delete", desc);
+    assertNotNull(desc);
     assertEquals(desc.getUri(), docId);
 
     QueryManager queryMgr = client.newQueryManager();
@@ -91,7 +82,7 @@ public class DeleteSearchTest {
     queryMgr.delete(qdef);
 
     desc = docMgr.exists(docId);
-    assertNull("Should not find document after delete", desc);
+    assertNull(desc);
   }
 
   @Test

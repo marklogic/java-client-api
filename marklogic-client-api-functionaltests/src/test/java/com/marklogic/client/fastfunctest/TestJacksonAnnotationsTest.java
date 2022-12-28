@@ -25,19 +25,19 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.pojo.annotation.Id;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /*
  * This test is designed to to test available Jackson Annotations.
  * Separate POJO classes with aJackson annotation will be used.
- * refer to each static class for further description of its purpose. 
+ * refer to each static class for further description of its purpose.
  */
 
 public class TestJacksonAnnotationsTest extends AbstractFunctionalTest {
@@ -47,10 +47,10 @@ public class TestJacksonAnnotationsTest extends AbstractFunctionalTest {
   /*
    * This class is similar to the SmallArtifact class. It is used to test
    * Jackson Annotation
-   * 
+   *
    * @JsonIgnoreProperties on inventory field. The field is ignored at class
    * level.
-   * 
+   *
    * Class member name has been annotated with @Id. Expected result: Field
    * inventory should not be serialized.
    */
@@ -90,9 +90,9 @@ public class TestJacksonAnnotationsTest extends AbstractFunctionalTest {
   /*
    * This class is similar to the IgnoreProperties class. It is used to test
    * Jackson Annotation
-   * 
+   *
    * @JsonIgnore on inventory field. The field is ignored at field level.
-   * 
+   *
    * Class member name has been annotated with @Id. Expected result: Field
    * inventory should not be serialized.
    */
@@ -133,9 +133,9 @@ public class TestJacksonAnnotationsTest extends AbstractFunctionalTest {
   /*
    * This class is similar to the IgnoreProperties class. It is used to test
    * Jackson Annotation
-   * 
+   *
    * @JsonProperty on different fields.
-   * 
+   *
    * Class member name has been annotated with @Id. property to serialize when
    * applied to getter method. property to de-serialize when applied to setter
    * method. Expected result: Id field is not serialized / de-serialized.
@@ -197,10 +197,10 @@ public class TestJacksonAnnotationsTest extends AbstractFunctionalTest {
   /*
    * This class is similar to the JsonPropertyCheck class. It is used to test
    * Jackson Annotation
-   * 
+   *
    * @JsonValue on a method whose return String value is used to produce JSON
    * value serialization.
-   * 
+   *
    * Class member name has been annotated with @Id. property to serialize when
    * applied to getter method. property to de-serialize when applied to setter
    * method. Expected result: Id field is not serialized / de-serialized.
@@ -272,7 +272,7 @@ public class TestJacksonAnnotationsTest extends AbstractFunctionalTest {
     return lTemp == -1 ? -1 : lTemp;
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     client = getDatabaseClient("rest-admin", "x", getConnType());
   }
@@ -298,24 +298,23 @@ public class TestJacksonAnnotationsTest extends AbstractFunctionalTest {
    * This method is used when there is a need to validate IgnoreProperties.
    */
   public void validateIgnoreProperties(IgnoreProperties artifact, long temp) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.id);
-    assertEquals("Id of the object is ", temp, artifact.getId());
-    assertEquals("Name of the object is ", "IgnoreProperties",
-        artifact.getName());
-    assertEquals("Inventory of the object is ", 0, artifact.getInventory());
+    assertNotNull(artifact);
+    assertNotNull(artifact.id);
+    assertEquals(temp, artifact.getId());
+    assertEquals( "IgnoreProperties", artifact.getName());
+    assertEquals(0, artifact.getInventory());
   }
 
   /*
    * This method is used when there is a need to validate IgnoreFields.
    */
   public void validateIgnoreFields(IgnoreFields artifact, long temp) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.id);
-    assertEquals("Id of the object is ", temp, artifact.getId());
-    assertEquals("Name of the object is ", "IgnoreFields",
+    assertNotNull( artifact);
+    assertNotNull( artifact.id);
+    assertEquals( temp, artifact.getId());
+    assertEquals( "IgnoreFields",
         artifact.getName());
-    assertEquals("Inventory of the object is ", 0, artifact.getInventory());
+    assertEquals( 0, artifact.getInventory());
   }
 
   /*
@@ -323,14 +322,14 @@ public class TestJacksonAnnotationsTest extends AbstractFunctionalTest {
    * field is not serialized and hence its default return value should be 0
    */
   public void validateJsonPropertyCheck(JsonPropertyCheck artifact, long temp) {
-    assertNotNull("Artifact object should never be Null", artifact);
-    assertNotNull("Id should never be Null", artifact.id);
-    assertEquals("Id of the object is ", 0, artifact.getId());
-    assertEquals("Name of the object is ", "JsonProperty",
+    assertNotNull( artifact);
+    assertNotNull( artifact.id);
+    assertEquals( 0, artifact.getId());
+    assertEquals( "JsonProperty",
         artifact.getName());
-    assertEquals("Batch Name of the object is ", "Batch One",
+    assertEquals( "Batch One",
         artifact.getBatch());
-    assertEquals("Inventory of the object is ", 1000,
+    assertEquals( 1000,
         artifact.getInventory());
   }
 
@@ -368,7 +367,7 @@ public class TestJacksonAnnotationsTest extends AbstractFunctionalTest {
    * instance. Uses IgnoreProperties class which has @Id on the name methods.
    * Test result expectations are: Mapper's write should not contain field -
    * inventory.
-   * 
+   *
    * Test method testPOJOJsonIgnoreProperties does a database store and then a
    * read back and in that the Java Default 0 is read back into the object.
    */
@@ -416,7 +415,7 @@ public class TestJacksonAnnotationsTest extends AbstractFunctionalTest {
    * Purpose : This test is to validate @JsonIgnore with valid POJO instance.
    * Uses IgnoreFields class which has @Id on the name methods. Test result
    * expectations are: Mapper's write should not contain field - inventory.
-   * 
+   *
    * Test method testPOJOJsonIgnoreFields does a database store and then a read
    * back and in that the Java Default 0 is read back into the object.
    */
@@ -435,7 +434,7 @@ public class TestJacksonAnnotationsTest extends AbstractFunctionalTest {
    * Purpose : This test is to validate @JsonProperty with valid POJO. Uses
    * JsonPropertyCheck class which has @Id on the name methods. Test result
    * expectations are: Java Default 0L is read back into the object.
-   * 
+   *
    * Field id is not annotation. Its Getter/Setter are also not annotated. Hence
    * that field is not serialized nor de-serialized.
    */
@@ -469,7 +468,7 @@ public class TestJacksonAnnotationsTest extends AbstractFunctionalTest {
    * Purpose : This test is to validate @JsonIgnore with valid POJO instance.
    * Uses JsonPropertyCheck class which has @Id on the name methods. Test result
    * expectations are: Mapper's write should not contain field - id.
-   * 
+   *
    * Test method testPOJOJsonIgnoreFields does a database store and then a read
    * back and in that the Java Default 0 is read back into the object.
    */

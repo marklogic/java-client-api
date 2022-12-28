@@ -16,23 +16,15 @@
 package com.marklogic.client.test;
 
 
-import java.io.BufferedReader;
-import java.io.IOException;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.geonames.Toponym;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
@@ -45,6 +37,13 @@ import com.marklogic.client.io.JacksonDatabindHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.test.BulkReadWriteTest.CityWriter;
+import org.geonames.Toponym;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import java.io.BufferedReader;
+import java.io.IOException;
 
 public class JacksonDatabindTest {
   private static final String CITIES_FILE = "cities_above_300K.txt";
@@ -52,7 +51,7 @@ public class JacksonDatabindTest {
   private static final String DIRECTORY = "/databindTest/";
   private static DatabaseClient client;
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     // demonstrate our ability to set advanced configuration on a mapper
     ObjectMapper mapper = new ObjectMapper();
@@ -68,7 +67,7 @@ public class JacksonDatabindTest {
     client = Common.newClient();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     cleanUp();
   }

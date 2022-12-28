@@ -29,9 +29,10 @@ import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.xml.sax.SAXException;
 
@@ -43,7 +44,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 
-import static org.junit.Assert.*;
+
 
 /*
  * This test is designed to to test all of bulk reads and write of JSON  with JacksonParserHandle Manager by passing set of uris
@@ -54,13 +55,13 @@ public class TestBulkReadWriteWithJacksonParserHandle extends AbstractFunctional
 
   private static final String DIRECTORY = "/";
 
-  @Before
+  @BeforeEach
   public void testSetup() throws Exception {
     // create new connection for each test below
     client = getDatabaseClient("rest-admin", "x", getConnType());
   }
 
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception {
     System.out.println("Running CleanUp script");
     // release client
@@ -95,37 +96,36 @@ public class TestBulkReadWriteWithJacksonParserHandle extends AbstractFunctional
     // "size:5|reviewed:true|myInteger:10|myDecimal:34.56678|myCalendar:2014|myString:foo|";
     String actualProperties = getDocumentPropertiesString(properties);
     boolean result = actualProperties.contains("size:5|");
-    assertTrue("Document properties count", result);
+    assertTrue( result);
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println(actualPermissions);
 
-    assertTrue("Document permissions difference in size value",
+    assertTrue(
         actualPermissions.contains("size:6"));
     // assertTrue(
     // "Document permissions difference in flexrep-eval permission",
     // actualPermissions.contains("flexrep-eval:[READ]"));
-    assertTrue("Document permissions difference in rest-reader permission",
+    assertTrue(
         actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission",
+    assertTrue(
         actualPermissions.contains("rest-writer:[UPDATE]"));
     assertTrue(
-        "Document permissions difference in app-user permissions",
         (actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions
             .contains("app-user:[READ, UPDATE]")));
-    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
+    assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
 
     // Collections
     String actualCollections = getDocumentCollectionsString(collections);
     System.out.println(collections);
 
-    assertTrue("Document collections difference in size value",
+    assertTrue(
         actualCollections.contains("size:2"));
-    assertTrue("my-collection1 not found",
+    assertTrue(
         actualCollections.contains("my-collection1"));
-    assertTrue("my-collection2 not found",
+    assertTrue(
         actualCollections.contains("my-collection2"));
   }
 
@@ -139,24 +139,24 @@ public class TestBulkReadWriteWithJacksonParserHandle extends AbstractFunctional
     String actualProperties = getDocumentPropertiesString(properties);
     boolean result = actualProperties.contains("size:0|");
     System.out.println(actualProperties + result);
-    assertTrue("Document default last modified properties count1?", result);
+    assertTrue( result);
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
-    // assertTrue("Document permissions difference in flexrep-eval permission",
+    assertTrue( actualPermissions.contains("size:5"));
+    // assertTrue(
     // actualPermissions.contains("flexrep-eval:[READ]"));
-    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
 
     // Collections
     String expectedCollections = "size:0|";
     String actualCollections = getDocumentCollectionsString(collections);
 
-    assertEquals("Document collections difference", expectedCollections, actualCollections);
+    assertEquals( expectedCollections, actualCollections);
   }
 
   /*
@@ -261,7 +261,7 @@ public class TestBulkReadWriteWithJacksonParserHandle extends AbstractFunctional
   }
 
   /*
-   * 
+   *
    * Use JacksonParserHandle to load JSON strings using bulk write set. Test
    * Bulk Read to see you can read the document specific meta-data.
    */
@@ -314,7 +314,7 @@ public class TestBulkReadWriteWithJacksonParserHandle extends AbstractFunctional
   }
 
   /*
-   * 
+   *
    * Use JacksonParserHandle to load JSON strings using bulk write set. Test
    * Bulk Read to see you can read all the documents
    */
@@ -381,15 +381,15 @@ public class TestBulkReadWriteWithJacksonParserHandle extends AbstractFunctional
     rec = page.next();
     jdm.readMetadata(rec.getUri(), mh);
     validateDefaultMetadata(mh);
-    assertEquals("default quality", 0, mh.getQuality());
+    assertEquals( 0, mh.getQuality());
 
     // Doc2 should use the first batch default meta-data, with quality 1
     page = jdm.read("doc2.json");
     rec = page.next();
     jdm.readMetadata(rec.getUri(), mh);
     System.out.print(mh.getCollections().isEmpty());
-    assertEquals("default quality", 1, mh.getQuality());
-    assertTrue("default collections reset", mh.getCollections().isEmpty());
+    assertEquals( 1, mh.getQuality());
+    assertTrue( mh.getCollections().isEmpty());
 
     // Doc3 should have the system default document quality (0) because
     // quality
@@ -401,8 +401,8 @@ public class TestBulkReadWriteWithJacksonParserHandle extends AbstractFunctional
     page = jdm.read("doc3.json");
     rec = page.next();
     jdm.readMetadata(rec.getUri(), mh);
-    assertEquals("default quality", 0, mh.getQuality());
-    assertEquals("default collection must change",
+    assertEquals( 0, mh.getQuality());
+    assertEquals(
         "[mySpecificCollection]", mh.getCollections().toString());
 
     DocumentMetadataHandle doc3Metadata = jdm.readMetadata("doc3.json",
@@ -419,13 +419,13 @@ public class TestBulkReadWriteWithJacksonParserHandle extends AbstractFunctional
     page = jdm.read("doc4.json");
     rec = page.next();
     jdm.readMetadata(rec.getUri(), mh);
-    assertEquals("default quality", 1, mh.getQuality());
-    assertTrue("default collections reset", mh.getCollections().isEmpty());
+    assertEquals( 1, mh.getQuality());
+    assertTrue( mh.getCollections().isEmpty());
     // Doc5 should use the 2nd batch default meta-data, with quality 2
     page = jdm.read("doc5.json");
     rec = page.next();
     jdm.readMetadata(rec.getUri(), mh);
-    assertEquals("default quality", 2, mh.getQuality());
+    assertEquals( 2, mh.getQuality());
     // Close handles.
     jacksonParserHandle1.close();
     jacksonParserHandle2.close();
@@ -549,8 +549,8 @@ public class TestBulkReadWriteWithJacksonParserHandle extends AbstractFunctional
       count = 0;
       page = docMgr.search(qd, pageNo, sh);
       if (pageNo > 1) {
-        assertFalse("Is this first Page", page.isFirstPage());
-        assertTrue("Is page has previous page ?", page.hasPreviousPage());
+        assertFalse( page.isFirstPage());
+        assertTrue( page.hasPreviousPage());
       }
       while (page.hasNext()) {
         DocumentRecord rec = page.next();
@@ -563,17 +563,16 @@ public class TestBulkReadWriteWithJacksonParserHandle extends AbstractFunctional
       // Add additional asserts once JacksonParserHandle is ready to handle bulk
       // Search set.
 
-      // assertTrue("Page start in results and on page",sh.get().get("start").asLong()
+      // assertTrue(sh.get().get("start").asLong()
       // == page.getStart());
-      assertEquals("document count", page.size(), count);
-      // assertEquals("Page Number #",pageNo,page.getPageNumber());
+      assertEquals( page.size(), count);
       pageNo = pageNo + page.getPageSize();
     } while (!page.isLastPage() && page.hasContent());
 
-    assertEquals("page count is  ", 1, page.getTotalPages());
-    assertFalse("Page has previous page ?", page.hasPreviousPage());
-    assertEquals("page size", 25, page.getPageSize());
-    assertEquals("document count", 1, page.getTotalSize());
+    assertEquals( 1, page.getTotalPages());
+    assertFalse( page.hasPreviousPage());
+    assertEquals( 25, page.getPageSize());
+    assertEquals( 1, page.getTotalSize());
     // Close handles.
     jacksonParserHandle1.close();
     jacksonParserHandle2.close();
@@ -582,11 +581,10 @@ public class TestBulkReadWriteWithJacksonParserHandle extends AbstractFunctional
 
   public void validateRecord(DocumentRecord record, Format type) {
 
-    assertNotNull("DocumentRecord should never be null", record);
-    assertNotNull("Document uri should never be null", record.getUri());
-    assertTrue("Document uri should start with " + DIRECTORY, record
-        .getUri().startsWith(DIRECTORY));
-    assertEquals("All records are expected to be in same format", type,
+    assertNotNull( record);
+    assertNotNull( record.getUri());
+    assertTrue(record.getUri().startsWith(DIRECTORY));
+    assertEquals( type,
         record.getFormat());
 
   }

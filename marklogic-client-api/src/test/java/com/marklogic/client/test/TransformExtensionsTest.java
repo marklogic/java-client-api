@@ -15,31 +15,28 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.HashMap;
-
-import org.custommonkey.xmlunit.SimpleNamespaceContext;
-import org.custommonkey.xmlunit.XMLUnit;
-import org.custommonkey.xmlunit.XpathEngine;
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
-import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
-import com.marklogic.client.io.Format;
+import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
+import org.custommonkey.xmlunit.SimpleNamespaceContext;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.custommonkey.xmlunit.XpathEngine;
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TransformExtensionsTest {
   final static String XQUERY_NAME = "testxqy";
@@ -51,7 +48,7 @@ public class TransformExtensionsTest {
   static private String      xslTransform;
   static private XpathEngine xpather;
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() throws IOException {
     Common.connect();
     Common.connectAdmin();
@@ -74,7 +71,7 @@ public class TransformExtensionsTest {
     xqueryTransform = Common.testFileToString(XQUERY_FILE, "UTF-8");
     xslTransform    = Common.testFileToString(XSLT_FILE, "UTF-8");
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     xqueryTransform = null;
     xslTransform    = null;
@@ -113,22 +110,22 @@ public class TransformExtensionsTest {
     writeXSLTransform(extensionMgr);
 
     extensionMgr.readXQueryTransform(XQUERY_NAME, handle);
-    assertEquals("Failed to retrieve XQuery transform", xqueryTransform, handle.get());
+    assertEquals( xqueryTransform, handle.get());
 
     String result = extensionMgr.readXSLTransform(XSLT_NAME, new StringHandle()).get();
-    assertNotNull("Failed to retrieve XSLT transform", result);
-    assertTrue("Did not recognize XSLT transform", xpather.getMatchingNodes(
+    assertNotNull( result);
+    assertTrue( xpather.getMatchingNodes(
       "/xsl:stylesheet",
       XMLUnit.buildControlDocument(result)
     ).getLength() == 1);
 
     result = extensionMgr.listTransforms(new StringHandle().withFormat(Format.XML), true).get();
-    assertNotNull("Failed to retrieve transforms list", result);
-    assertTrue("List without XQuery transform", xpather.getMatchingNodes(
+    assertNotNull( result);
+    assertTrue( xpather.getMatchingNodes(
       "/rapi:transforms/rapi:transform/rapi:name[string(.) = 'testxqy']",
       XMLUnit.buildControlDocument(result)
     ).getLength() == 1);
-    assertTrue("List without XSLT transform", xpather.getMatchingNodes(
+    assertTrue( xpather.getMatchingNodes(
       "/rapi:transforms/rapi:transform/rapi:name[string(.) = 'testxsl']",
       XMLUnit.buildControlDocument(result)
     ).getLength() == 1);
@@ -143,7 +140,7 @@ public class TransformExtensionsTest {
       transformDeleted = (result == null);
     } catch(FailedRequestException ex) {
     }
-    assertTrue("Failed to delete XQuery transform", transformDeleted);
+    assertTrue( transformDeleted);
 
     extensionMgr.deleteTransform(XSLT_NAME);
 
@@ -156,7 +153,7 @@ public class TransformExtensionsTest {
     } catch(FailedRequestException ex) {
     }
 
-    assertTrue("Failed to delete XSLT transform", transformDeleted);
+    assertTrue( transformDeleted);
   }
   public void writeXQueryTransform(TransformExtensionsManager extensionMgr)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException

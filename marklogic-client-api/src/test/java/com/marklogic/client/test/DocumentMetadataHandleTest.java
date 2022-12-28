@@ -15,51 +15,45 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.ArrayList;
-
-import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
+import com.marklogic.client.Transaction;
+import com.marklogic.client.document.BinaryDocumentManager;
+import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.DocumentMetadataHandle.*;
+import com.marklogic.client.io.FileHandle;
+import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.StringHandle;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.Transaction;
-import com.marklogic.client.document.DocumentManager.Metadata;
-import com.marklogic.client.document.BinaryDocumentManager;
-import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.DocumentMetadataHandle.Capability;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentMetadataValues;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.StringHandle;
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class DocumentMetadataHandleTest {
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -135,34 +129,34 @@ public class DocumentMetadataHandleTest {
         docMgr.writeMetadata(docId, metaWriteHandle);
         StringHandle xmlStringHandle = new StringHandle();
         String stringMetadata = docMgr.readMetadata(docId, xmlStringHandle).get();
-        assertTrue("Could not get document metadata as an XML String", stringMetadata != null && stringMetadata.length() > 0);
+        assertTrue( stringMetadata != null && stringMetadata.length() > 0);
       } else {
-        assertTrue("Test case error", false);
+        assertTrue( false);
       }
 
       DocumentMetadataHandle metaReadHandle = docMgr.readMetadata(docId, new DocumentMetadataHandle());
-      assertTrue("Could not get document metadata as a structure", metaReadHandle != null);
+      assertTrue( metaReadHandle != null);
       DocumentCollections collections = metaReadHandle.getCollections();
-      assertEquals("Collection with wrong size", 2, collections.size());
-      assertTrue("Collection with wrong values", collections.contains("/document/collection1") && collections.contains("/document/collection2"));
+      assertEquals( 2, collections.size());
+      assertTrue( collections.contains("/document/collection1") && collections.contains("/document/collection2"));
       DocumentPermissions permissions = metaReadHandle.getPermissions();
       // rest-reader and rest-writer expected
-      assertEquals("Permissions with wrong size", 5, permissions.size());
-      assertTrue("Permissions without key", permissions.containsKey("app-user"));
-      assertEquals("Permission key with wrong value size", 2, permissions.get("app-user").size());
-      assertTrue("Permission key with wrong values", permissions.get("app-user").contains(Capability.READ) && permissions.get("app-user").contains(Capability.UPDATE));
+      assertEquals( 5, permissions.size());
+      assertTrue( permissions.containsKey("app-user"));
+      assertEquals( 2, permissions.get("app-user").size());
+      assertTrue( permissions.get("app-user").contains(Capability.READ) && permissions.get("app-user").contains(Capability.UPDATE));
       DocumentProperties properties = metaReadHandle.getProperties();
-      assertTrue("Properties without first property", properties.containsKey("first"));
-      assertTrue("Properties without second property", properties.containsKey("second"));
-      assertTrue("Properties without third property", properties.containsKey("third"));
-      assertEquals("First property with wrong value", "value one", properties.get("first"));
+      assertTrue( properties.containsKey("first"));
+      assertTrue( properties.containsKey("second"));
+      assertTrue( properties.containsKey("third"));
+      assertEquals( "value one", properties.get("first"));
       if (pass==0) {
-        assertEquals("Second property with wrong value", String.valueOf(2), properties.get("second"));
+        assertEquals( String.valueOf(2), properties.get("second"));
       } else if (pass==1) {
-        assertEquals("Second property with wrong value", 2, properties.get("second"));
+        assertEquals( 2, properties.get("second"));
       }
       Object thirdValue = properties.get("third");
-      assertTrue("Third property with wrong class for value", thirdValue instanceof NodeList);
+      assertTrue( thirdValue instanceof NodeList);
       NodeList thirdNodes = (NodeList) thirdValue;
       List<Element> thirdElements = new ArrayList<>();
       for (int i=0; i < thirdNodes.getLength(); i++) {
@@ -171,17 +165,17 @@ public class DocumentMetadataHandleTest {
           continue;
         thirdElements.add((Element) thirdNode);
       }
-      assertEquals("Third property with wrong number of child nodes", thirdChildren.getLength(), thirdElements.size());
+      assertEquals( thirdChildren.getLength(), thirdElements.size());
       for (int i=0; i < thirdChildren.getLength(); i++) {
         Node    expectedNode = thirdChildren.item(i);
         Element actualNode   = thirdElements.get(i);
-        assertEquals("Third property with wrong child name "+i,  expectedNode.getNodeName(),  actualNode.getNodeName());
-        assertEquals("Third property with wrong child value "+i, expectedNode.getNodeValue(), actualNode.getNodeValue());
+        assertEquals(expectedNode.getNodeName(),  actualNode.getNodeName(), "Third property with wrong child name "+i);
+        assertEquals(expectedNode.getNodeValue(), actualNode.getNodeValue(), "Third property with wrong child value "+i);
       }
-      assertEquals("Wrong quality", 3, metaReadHandle.getQuality());
+      assertEquals( 3, metaReadHandle.getQuality());
       DocumentMetadataValues metadataValues = metaReadHandle.getMetadataValues();
-      assertEquals("Wrong value for key in the values metadata", "value1", metadataValues.get("key1"));
-      assertEquals("Wrong value for key in the values metadata", "value2", metadataValues.get("key2"));
+      assertEquals( "value1", metadataValues.get("key1"));
+      assertEquals( "value2", metadataValues.get("key2"));
     }
   }
 
@@ -194,11 +188,11 @@ public class DocumentMetadataHandleTest {
     assertEquals(Capability.NODE_UPDATE, Capability.getValueOf("node-Update"));
     assertEquals(Capability.NODE_UPDATE, Capability.getValueOf("NODE_UPDATE"));
   }
-  
+
   @Test
   public void testMetadataPropertiesExtraction() {
 	String docId = "/test.bin";
-	// Make a document manager to work with binary files 
+	// Make a document manager to work with binary files
     BinaryDocumentManager docMgr = Common.client.newBinaryDocumentManager();
     DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
     docMgr.setMetadataExtraction(BinaryDocumentManager.MetadataExtraction.PROPERTIES);
@@ -216,16 +210,16 @@ public class DocumentMetadataHandleTest {
     // Create a handle to hold string content.
     InputStreamHandle handle = new InputStreamHandle(docStream);
     docMgr.write(docId, metadataHandle, handle);
-    
+
     DocumentMetadataHandle readMetadataHandle = new DocumentMetadataHandle();
     //read only the metadata into a handle
     docMgr.readMetadata(docId, readMetadataHandle);
     QName qn = new QName("", "testId");
     readMetadataHandle.getProperties().put(qn, "123456");
     docMgr.writeMetadata(docId, readMetadataHandle);
-    
+
     readMetadataHandle = new DocumentMetadataHandle();
-    
+
     docMgr.readMetadata(docId, readMetadataHandle);
     assertEquals("123456", readMetadataHandle.getProperties().get(qn));
   }
@@ -233,7 +227,7 @@ public class DocumentMetadataHandleTest {
 
   // testing https://github.com/marklogic/java-client-api/issues/783
 //  @Test
-  @Ignore
+  @Disabled
   public void testStack20170725() throws IOException {
     XMLDocumentManager documentManager = Common.client.newXMLDocumentManager();
     Transaction transaction = Common.client.openTransaction();

@@ -23,7 +23,7 @@ import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -32,8 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestLinkResultDocuments extends AbstractFunctionalTest {
 
@@ -79,7 +78,7 @@ public class TestLinkResultDocuments extends AbstractFunctionalTest {
       System.out.println(result.getPath() + ": Path");
       System.out.println(result.getFormat() + ": Format");
       System.out.println(result.getUri() + ": Uri");
-      assertTrue("Uri is Wrong", result.getPath().contains("/mime-type/constraint4.json") || result.getPath().contains("/mime-type/constraint4.xml"));
+      assertTrue( result.getPath().contains("/mime-type/constraint4.json") || result.getPath().contains("/mime-type/constraint4.xml"));
     }
 
     XMLStreamReaderHandle shandle = queryMgr.search(querydef, new XMLStreamReaderHandle());

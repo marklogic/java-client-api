@@ -16,6 +16,24 @@
 
 package com.marklogic.client.datamovement.functionaltests;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.admin.ExtensionMetadata;
+import com.marklogic.client.admin.TransformExtensionsManager;
+import com.marklogic.client.datamovement.*;
+import com.marklogic.client.datamovement.ApplyTransformListener.ApplyResult;
+import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentRecord;
+import com.marklogic.client.document.ServerTransform;
+import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
+import com.marklogic.client.io.*;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 import java.io.File;
 import java.time.Duration;
 import java.util.*;
@@ -23,41 +41,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
-import org.apache.commons.io.FileUtils;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.admin.ExtensionMetadata;
-import com.marklogic.client.admin.TransformExtensionsManager;
-import com.marklogic.client.datamovement.ApplyTransformListener;
-import com.marklogic.client.datamovement.ApplyTransformListener.ApplyResult;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.DeleteListener;
-import com.marklogic.client.datamovement.FilteredForestConfiguration;
-import com.marklogic.client.datamovement.HostAvailabilityListener;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.document.DocumentRecord;
-import com.marklogic.client.document.ServerTransform;
-import com.marklogic.client.functionaltest.BasicJavaClientREST;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.StructuredQueryBuilder;
-
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ApplyTransformTest extends AbstractFunctionalTest {
 
@@ -91,7 +75,7 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 	/**
 	 * @throws Exception
 	 */
-	@BeforeClass
+	@BeforeAll
 	public static void setUpBeforeClass() throws Exception {
 		hostNames = getHosts();
 		dbClient = connectAsAdmin();
@@ -198,13 +182,13 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 		QueryBatcher batcher = dmManager
 				.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
 				.onUrisReady(listener);
-		
+
 		JobTicket ticket = dmManager.startJob(batcher);
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket);
-		
+
 		AtomicInteger count = new AtomicInteger(0);
-		QueryBatcher resultBatcher = 
+		QueryBatcher resultBatcher =
 				dmManager.newQueryBatcher(outputList.iterator())
 				.withBatchSize(25).withThreadCount(5)
 				.onUrisReady((batch)->{
@@ -216,13 +200,13 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 						if(dh.get().getElementsByTagName("foo").item(0).getAttributes()
 								.item(0).getNodeValue().equals("English"));
 							count.incrementAndGet();
-					}					
+					}
 				});
-		dmManager.startJob(resultBatcher);				
+		dmManager.startJob(resultBatcher);
 		resultBatcher.awaitCompletion();
-		assertEquals("document count", DOC_COUNT, count.get());
-		assertEquals("document count", DOC_COUNT, success.intValue());
-		assertEquals("document count", 0, skipped.intValue());
+		assertEquals(DOC_COUNT, count.get());
+		assertEquals(DOC_COUNT, success.intValue());
+		assertEquals(0, skipped.intValue());
 
 	}
 
@@ -250,15 +234,15 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 		Set<String> urisList = new HashSet<>();
 		urisList.add("/local/nonexistent");
 		urisList.add("/local/nonexistent-1");
-		QueryBatcher batcher = 
+		QueryBatcher batcher =
 				dmManager.newQueryBatcher(urisList.iterator()).withBatchSize(2).onUrisReady(listener);
 		JobTicket ticket = dmManager.startJob(batcher);
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket);
 
-		assertEquals("success count", 1, success.intValue());
-		assertEquals("skipped count", 1, skipped.intValue());
-		assertEquals("failure count", 0, failure.intValue());
+		assertEquals(1, success.intValue());
+		assertEquals(1, skipped.intValue());
+		assertEquals(0, failure.intValue());
 
 		DocumentPage page = dbClient.newDocumentManager()
 				.read(new String[] { "/local/nonexistent-1", "/local/nonexistent" });
@@ -266,9 +250,8 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 		while (page.hasNext()) {
 			DocumentRecord rec = page.next();
 			rec.getContent(dh);
-			assertTrue("Element has attribure ? :", dh.get()
-					.getElementsByTagName("foo").item(0).hasAttributes());
-			assertEquals("Attribute value should be English", "English",
+			assertTrue(dh.get().getElementsByTagName("foo").item(0).hasAttributes());
+			assertEquals("English",
 					dh.get().getElementsByTagName("foo").item(0).getAttributes().item(0).getNodeValue());
 
 		}
@@ -288,7 +271,7 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 		JobTicket ticket = dmManager.startJob(batcher);
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket);
-		
+
 		AtomicInteger count = new AtomicInteger(0);
 		QueryBatcher resultBatcher = dmManager
 				.newQueryBatcher(new StructuredQueryBuilder().collection("JsonTransform"))
@@ -302,11 +285,11 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 						if(dh.get().get("c").asText().equals("new Value"))
 							count.incrementAndGet();
 					}
-					
+
 				});
-		dmManager.startJob(resultBatcher);				
+		dmManager.startJob(resultBatcher);
 		resultBatcher.awaitCompletion();
-		assertEquals("document count", DOC_COUNT, count.get());
+		assertEquals(DOC_COUNT, count.get());
 	}
 
 	@Test
@@ -331,12 +314,12 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 		while (page.hasNext()) {
 			DocumentRecord rec = page.next();
 			rec.getContent(dh);
-			assertEquals("Attribute value should be JSON1", "JSON", dh.get().get("c").asText());
-			Assert.assertNotNull(dh.get().get("c"));
+			assertEquals("JSON", dh.get().get("c").asText());
+			assertNotNull(dh.get().get("c"));
 			count++;
 		}
 
-		assertEquals("match count", 1, count);
+		assertEquals(1, count);
 	}
 
 	@Test
@@ -374,7 +357,7 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 			afterTransform = dh.get().get("c").asText();
 
 		}
-		assertEquals("Values should match", beforeTransform, afterTransform);
+		assertEquals(beforeTransform, afterTransform);
 	}
 
 	@Test
@@ -418,8 +401,8 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 			afterTransform = dh.get().get("c").asText();
 
 		}
-		assertEquals("Size should be 1", 1, urisList.size());
-		assertEquals("Values should match", beforeTransform, afterTransform);
+		assertEquals(1, urisList.size());
+		assertEquals(beforeTransform, afterTransform);
 	}
 
 	@Test
@@ -436,8 +419,7 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 		while (page.hasNext()) {
 			DocumentRecord rec = page.next();
 			rec.getContent(dh);
-			assertTrue("Element has no attribures:", !dh.get().getElementsByTagName("foo")
-					.item(0).hasAttributes());
+			assertTrue(!dh.get().getElementsByTagName("foo").item(0).hasAttributes());
 		}
 		Set<String> urisList = new HashSet<>();
 
@@ -489,8 +471,7 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 		while (page.hasNext()) {
 			DocumentRecord rec = page.next();
 			rec.getContent(dh);
-			assertTrue("Element has no attribures:", !dh.get().getElementsByTagName("foo").item(0)
-					.hasAttributes());
+			assertTrue(!dh.get().getElementsByTagName("foo").item(0).hasAttributes());
 		}
 
 		uri = new String("/local/failed-1");
@@ -499,21 +480,21 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 		while (page.hasNext()) {
 			DocumentRecord rec = page.next();
 			rec.getContent(jh);
-			assertEquals("Attribute value should be v1", "v1", jh.get().get("c").asText());
+			assertEquals("v1", jh.get().get("c").asText());
 
 		}
-		assertEquals("Size should be 2", 2, urisList.size());
-		assertEquals("Size should be 2", 2, failedBatch.size());
-		assertEquals("Size should be 1", 1, failCount.get());
-		assertEquals("Size should be 0", 0, successBatch.size());
-		assertEquals("Size should be 0", 0, skippedBatch.size());
+		assertEquals(2, urisList.size());
+		assertEquals(2, failedBatch.size());
+		assertEquals(1, failCount.get());
+		assertEquals(0, successBatch.size());
+		assertEquals(0, skippedBatch.size());
 
 	}
 
 	// ISSUE # 569
 	@Test
 	public void jsMasstransformReplaceDelete() throws Exception {
-		Assume.assumeTrue(hostNames.length > 1);
+		Assumptions.assumeTrue(hostNames.length > 1);
 
 		// transform
 		ServerTransform transform = new ServerTransform("jsTransform");
@@ -573,7 +554,7 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 		dmManager.stopJob(ticket);
 
 		assertFalse(isClientNull.get());
-		assertEquals("document count", 100, count.intValue());
+		assertEquals(100, count.intValue());
 		assertFalse(isFailureCalled.get());
 		assertTrue(flag.get());
 
@@ -608,14 +589,14 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 		ApplyTransformListener listener = new ApplyTransformListener().withTransform(transform)
 				.withApplyResult(ApplyResult.REPLACE);
 		listener.onSuccess(batch -> {
-			Assert.assertEquals("/local/nomatch", batch.getItems()[0]);
+			assertEquals("/local/nomatch", batch.getItems()[0]);
 		}).onSkipped(batch -> {
 
 		});
 		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("No Match"))
 				.onUrisReady(listener).onUrisReady(batch -> {
-					Assert.assertEquals(1, batch.getItems().length);
-					Assert.assertEquals("/local/nomatch", batch.getItems()[0]);
+					assertEquals(1, batch.getItems().length);
+					assertEquals("/local/nomatch", batch.getItems()[0]);
 				});
 		JobTicket ticket = dmManager.startJob(batcher);
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
@@ -628,13 +609,13 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 		while (page.hasNext()) {
 			DocumentRecord rec = page.next();
 			rec.getContent(dh);
-			assertEquals("Attribute value should be v1", "v1", dh.get().get("k1").asText());
-			Assert.assertNotNull(dh.get().get("c"));
-			assertEquals("Attribute value should be new Value", "new Value", dh.get().get("c").asText());
+			assertEquals("v1", dh.get().get("k1").asText());
+			assertNotNull(dh.get().get("c"));
+			assertEquals("new Value", dh.get().get("c").asText());
 			count++;
 		}
 
-		assertEquals("match count", 1, count);
+		assertEquals(1, count);
 	}
 
 	// ISSUE # 106
@@ -678,7 +659,7 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 		// Wait an amount of time that should result in some docs being transformed but not all
 		Thread.currentThread().sleep(200L);
 		dmManager.stopJob(ticket);
-		batcher.awaitCompletion();	
+		batcher.awaitCompletion();
 
 		// Find how many documents were transformed
 		AtomicInteger notTransformedCount = new AtomicInteger(0);
@@ -696,7 +677,7 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 						}
 					}
 				});
-		dmManager.startJob(resultBatcher);				
+		dmManager.startJob(resultBatcher);
 		resultBatcher.awaitCompletion();
 
 		int successCount = successUris.size();
@@ -709,16 +690,16 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 		System.out.println("NOT TRANSFORMED: " + notTransformedCount.get());
 
 		assertEquals(
-			"Unexpected count; success: " + successCount + "; skipped: " + skippedCount + "; failed: " + failedCount,
-			DOC_COUNT, successCount + skippedCount + failedCount + notTransformedCount.get());
+			DOC_COUNT, successCount + skippedCount + failedCount + notTransformedCount.get(),
+			"Unexpected count; success: " + successCount + "; skipped: " + skippedCount + "; failed: " + failedCount);
 		assertEquals(
-			"Unexpected count; success: " + successCount + "; failed: " + failedCount + "; not transformed: " + notTransformedCount.get(),
-			DOC_COUNT - notTransformedCount.get() - failedCount, successCount);
+			DOC_COUNT - notTransformedCount.get() - failedCount, successCount,
+			"Unexpected count; success: " + successCount + "; failed: " + failedCount + "; not transformed: " + notTransformedCount.get());
 	}
 
 	@Test
 	public void jsMasstransformReplaceFiltered() throws Exception {
-		Assume.assumeFalse(isLBHost());
+		Assumptions.assumeFalse(isLBHost());
 		ServerTransform transform = new ServerTransform("jsTransform");
 		transform.put("newValue", "new Value");
 
@@ -768,10 +749,10 @@ public class ApplyTransformTest extends AbstractFunctionalTest {
 		while (page.hasNext()) {
 			DocumentRecord rec = page.next();
 			rec.getContent(dh);
-			assertEquals("Attribute value should be new Value", "new Value", dh.get().get("c").asText());
+			assertEquals("new Value", dh.get().get("c").asText());
 			count++;
 		}
 
-		assertEquals("document count", 1000, count);
+		assertEquals(1000, count);
 	}
 }

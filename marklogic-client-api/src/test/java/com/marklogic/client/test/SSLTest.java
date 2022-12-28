@@ -15,9 +15,12 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
+import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.document.TextDocumentManager;
+import com.marklogic.client.io.StringHandle;
+import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.*;
 import javax.security.auth.x500.X500Principal;
@@ -33,15 +36,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.marklogic.client.MarkLogicIOException;
-import org.junit.Test;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
-import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
-import com.marklogic.client.document.TextDocumentManager;
-import com.marklogic.client.io.StringHandle;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class SSLTest {
   @Test

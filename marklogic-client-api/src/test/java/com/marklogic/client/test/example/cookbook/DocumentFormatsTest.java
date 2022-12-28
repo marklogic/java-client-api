@@ -15,13 +15,11 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.example.cookbook.DocumentFormats;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-
-import org.junit.Test;
-
-import com.marklogic.client.example.cookbook.DocumentFormats;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DocumentFormatsTest {
   @Test
@@ -33,6 +31,6 @@ public class DocumentFormatsTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    assertTrue("DocumentFormats example failed", succeeded);
+    assertTrue( succeeded);
   }
 }

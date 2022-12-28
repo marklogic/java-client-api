@@ -16,12 +16,10 @@
 
 package com.marklogic.client.test.datamovement;
 
-import com.marklogic.client.datamovement.Splitter;
 import com.marklogic.client.datamovement.UnarySplitter;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.JacksonHandle;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,7 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UnarySplitterTest {
     static final private String xmlFile = "src/test/resources/data" + File.separator + "/pathSplitter/people.xml";

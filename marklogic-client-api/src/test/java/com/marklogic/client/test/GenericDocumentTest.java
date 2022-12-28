@@ -15,53 +15,39 @@
  */
 package com.marklogic.client.test;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathExists;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.Transaction;
+import com.marklogic.client.document.*;
+import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.io.*;
+import com.marklogic.client.io.DocumentMetadataHandle.Capability;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
+import com.marklogic.client.io.marker.DocumentPatchHandle;
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Random;
 
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.Transaction;
-import com.marklogic.client.document.DocumentDescriptor;
-import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.document.DocumentManager.Metadata;
-import com.marklogic.client.document.DocumentMetadataPatchBuilder;
-import com.marklogic.client.document.DocumentUriTemplate;
-import com.marklogic.client.document.GenericDocumentManager;
-import com.marklogic.client.document.TextDocumentManager;
-import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.DocumentMetadataHandle.Capability;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.marker.DocumentPatchHandle;
+import static org.custommonkey.xmlunit.XMLAssert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class GenericDocumentTest {
   static private Random seed;
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     seed = new Random();
     Common.connect();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     seed = null;
   }
@@ -75,7 +61,7 @@ public class GenericDocumentTest {
     // guarantee that a previous run didn't leave the document
     docMgr.delete(docId);
 
-    assertTrue("Non-existent document appears to exist", docMgr.exists(docId)==null);
+    assertTrue( docMgr.exists(docId)==null);
     docMgr.write(docId,new StringHandle().with("A simple text document"));
     assertTrue("Existent document doesn't appear to exist", docMgr.exists(docId)!=null);
     docMgr.delete(docId);
@@ -88,7 +74,7 @@ public class GenericDocumentTest {
     TextDocumentManager docMgr = Common.client.newTextDocumentManager();
     docMgr.write(docId, new StringHandle().with("A simple text document"));
     String text = docMgr.read(docId, new StringHandle()).get();
-    assertTrue("Could not create document for deletion", text != null && text.length() > 0);
+    assertTrue( text != null && text.length() > 0);
     docMgr.delete(docId);
     text = null;
     boolean hadException = false;
@@ -97,7 +83,7 @@ public class GenericDocumentTest {
     } catch (Exception ex) {
       hadException = true;
     }
-    assertTrue("Could not delete document", text == null && hadException);
+    assertTrue( text == null && hadException);
   }
 
   final static String content = "<?xml version='1.0' encoding='UTF-8'?>\n"+
@@ -165,20 +151,20 @@ public class GenericDocumentTest {
 
     StringHandle xmlStringHandle = new StringHandle();
     String stringMetadata = docMgr.readMetadata(docId, xmlStringHandle).get();
-    assertTrue("Could not get document metadata as an XML String", stringMetadata != null && stringMetadata.length() > 0);
+    assertTrue( stringMetadata != null && stringMetadata.length() > 0);
 
     Document domMetadata = docMgr.readMetadata(docId, new DOMHandle()).get();
-    assertTrue("Could not get document metadata as an XML document", domMetadata != null);
+    assertTrue( domMetadata != null);
 
     StringHandle jsonStringHandle = new StringHandle();
     jsonStringHandle.setFormat(Format.JSON);
     stringMetadata = docMgr.readMetadata(docId, jsonStringHandle).get();
-    assertTrue("Could not get document metadata as JSON", stringMetadata != null && stringMetadata.length() > 0);
+    assertTrue( stringMetadata != null && stringMetadata.length() > 0);
 
     String docText = docMgr.read(docId, xmlStringHandle, new StringHandle()).get();
     stringMetadata = xmlStringHandle.get();
     assertXMLEqual("Failed to read document content in single request",content,docText);
-    assertTrue("Could not read document metadata in a single request", stringMetadata != null);
+    assertTrue( stringMetadata != null);
     assertXpathEvaluatesTo("3","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",stringMetadata);
     assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='app-user'])",stringMetadata);
     assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",stringMetadata);
@@ -200,7 +186,7 @@ public class GenericDocumentTest {
 
     docMgr.writeDefaultMetadata(docId);
     stringMetadata = docMgr.readMetadata(docId, xmlStringHandle).get();
-    assertTrue("Could not read document metadata after write default", stringMetadata != null);
+    assertTrue( stringMetadata != null);
     assertXpathEvaluatesTo("0","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",stringMetadata);
     assertXpathEvaluatesTo("0","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='app-user'])",stringMetadata);
     assertXpathEvaluatesTo("0","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",stringMetadata);
@@ -273,7 +259,7 @@ public class GenericDocumentTest {
 
     transaction.commit();
 
-    assertTrue("Document 1 exists",        docMgr.exists(docId1)==null);
+    assertTrue(        docMgr.exists(docId1)==null);
     assertTrue("Document 2 doesn't exist", docMgr.exists(docId2)!=null);
 
     docMgr.delete(docId2);
@@ -294,7 +280,7 @@ public class GenericDocumentTest {
     transaction.rollback();
 
     assertTrue("Document 1 doesn't exist", docMgr.exists(docId1)!=null);
-    assertTrue("Document 2 exists",        docMgr.exists(docId2)==null);
+    assertTrue(        docMgr.exists(docId2)==null);
 
     docMgr.delete(docId1);
   }
@@ -336,10 +322,10 @@ public class GenericDocumentTest {
       assertTrue("Document doesn't exist "+docId, docMgr.exists(docId)!=null);
 
       DocumentMetadataHandle metaReadHandle = docMgr.readMetadata(docId, new DocumentMetadataHandle());
-      assertTrue("Could not get document metadata as a structure", metaReadHandle != null);
+      assertTrue( metaReadHandle != null);
 
       DocumentCollections readCollections = metaReadHandle.getCollections();
-      assertEquals("Collection with wrong size", collectionMax, readCollections.size());
+      assertEquals( collectionMax, readCollections.size());
     }
 
     docMgr.setMetadataCategories(Metadata.COLLECTIONS);
@@ -348,7 +334,7 @@ public class GenericDocumentTest {
       DocumentMetadataHandle metaReadHandle = docMgr.readMetadata(docId, new DocumentMetadataHandle());
 
       DocumentCollections readCollections = metaReadHandle.getCollections();
-      assertEquals("Collection with wrong size", 0, readCollections.size());
+      assertEquals( 0, readCollections.size());
     }
 
     for (String docId: docIds) {
@@ -365,7 +351,7 @@ public class GenericDocumentTest {
 
     DocumentDescriptor desc = docMgr.create(template, new StringHandle().with(content));
     String docId = desc.getUri();
-    assertTrue("Could not get URI assigned to created document with content only",
+    assertTrue(
       docId != null && docId.length() > 0);
 
     String docText = docMgr.read(desc, new StringHandle()).get();
@@ -379,14 +365,14 @@ public class GenericDocumentTest {
       new StringHandle().with(metadata).withFormat(Format.XML),
       new StringHandle().with(content));
     docId = desc.getUri();
-    assertTrue("Could not get URI assigned to created document with metadata and content",
+    assertTrue(
       docId != null && docId.length() > 0);
 
     String stringMetadata = docMgr.readMetadata(
       docId,
       new StringHandle().withFormat(Format.XML)
     ).get();
-    assertTrue("Failed to read metadata for created document",
+    assertTrue(
       stringMetadata != null && stringMetadata.length() > 0);
     assertXpathEvaluatesTo("3","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",stringMetadata);
     assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='app-user'])",stringMetadata);
@@ -433,7 +419,7 @@ public class GenericDocumentTest {
 
       String metadata = docMgr.readMetadata(docId, new StringHandle().withFormat(Format.XML)).get();
 
-      assertTrue("Could not read document metadata after write default", metadata != null);
+      assertTrue( metadata != null);
       assertXpathEvaluatesTo("4","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",metadata);
       assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection' and string(.)='/document/collection4after'])",metadata);
       assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission' and string(*[local-name()='role-name'])='app-user']/*[local-name()='capability'])",metadata);

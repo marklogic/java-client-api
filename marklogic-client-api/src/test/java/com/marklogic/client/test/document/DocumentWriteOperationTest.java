@@ -26,14 +26,14 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.test.Common;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DocumentWriteOperationTest {
 
@@ -62,7 +62,7 @@ public class DocumentWriteOperationTest {
     DocumentMetadataHandle defaultMetadata2 =
             new DocumentMetadataHandle().withQuality(2).withCollections(collectionName);
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         Common.connect();
         textDocumentManager = Common.client.newTextDocumentManager();
@@ -96,7 +96,7 @@ public class DocumentWriteOperationTest {
 
         Iterator<DocumentWriteOperation> itr = batch.iterator();
           while(itr.hasNext()){
-              assertEquals("Document uri not as expected", itr.next().getUri(), list.get(i));
+              assertEquals( itr.next().getUri(), list.get(i));
               i++;
           }
         textDocumentManager.write(batch);
@@ -135,33 +135,33 @@ public class DocumentWriteOperationTest {
 
         Iterator<DocumentWriteOperation> itr = batch.iterator();
         while(itr.hasNext()){
-            assertEquals("Document uri not as expected", itr.next().getUri(), list.get(i));
+            assertEquals( itr.next().getUri(), list.get(i));
             i++;
         }
         textDocumentManager.write(batch);
 
-        assertEquals("Doc 1 metadata not as expected",1,
+        assertEquals(1,
                 textDocumentManager.readMetadata("doc1.txt", new DocumentMetadataHandle()).getQuality());
 
-        assertEquals("Doc 2 metadata not as expected",2,
+        assertEquals(2,
                 textDocumentManager.readMetadata("doc2.txt", new DocumentMetadataHandle()).getQuality());
 
-        assertEquals("Doc 3 metadata not as expected",1,
+        assertEquals(1,
                 textDocumentManager.readMetadata("doc3.txt", new DocumentMetadataHandle()).getQuality());
 
-        assertEquals("Doc 4 metadata not as expected",0,
+        assertEquals(0,
                 textDocumentManager.readMetadata("doc4.txt", new DocumentMetadataHandle()).getQuality());
 
-        assertEquals("Doc 5 metadata not as expected",0,
+        assertEquals(0,
                 textDocumentManager.readMetadata("doc5.txt", new DocumentMetadataHandle()).getQuality());
 
-        assertEquals("Doc 6 metadata not as expected",0,
+        assertEquals(0,
                 textDocumentManager.readMetadata("doc6.txt", new DocumentMetadataHandle()).getQuality());
 
-        assertEquals("Doc 7 metadata not as expected",2,
+        assertEquals(2,
                 textDocumentManager.readMetadata("doc7.txt", new DocumentMetadataHandle()).getQuality());
 
-        assertEquals("Doc 8 metadata not as expected",0,
+        assertEquals(0,
                 textDocumentManager.readMetadata("doc8.txt", new DocumentMetadataHandle()).getQuality());
     }
 
@@ -194,7 +194,7 @@ public class DocumentWriteOperationTest {
 
         Iterator<DocumentWriteOperation> itr = batch.iterator();
         while(itr.hasNext()){
-            assertEquals("Document uri not as expected", itr.next().getUri(), list.get(i));
+            assertEquals( itr.next().getUri(), list.get(i));
             i++;
         }
         textDocumentManager.write(batch);
@@ -230,7 +230,7 @@ public class DocumentWriteOperationTest {
 
         Iterator<DocumentWriteOperation> itr = batch.iterator();
         while(itr.hasNext()){
-            assertEquals("Document uri not as expected", itr.next().getUri(), list.get(i));
+            assertEquals( itr.next().getUri(), list.get(i));
             i++;
         }
         textDocumentManager.write(batch);
@@ -266,7 +266,7 @@ public class DocumentWriteOperationTest {
 
         Iterator<DocumentWriteOperation> itr = batch.iterator();
         while(itr.hasNext()){
-            assertEquals("Document uri not as expected", itr.next().getUri(), list.get(i));
+            assertEquals( itr.next().getUri(), list.get(i));
             i++;
         }
         textDocumentManager.write(batch);
@@ -304,7 +304,7 @@ public class DocumentWriteOperationTest {
 
         Iterator<DocumentWriteOperation> itr = batch.iterator();
         while(itr.hasNext()){
-            assertEquals("Document uri not as expected", itr.next().getUri(), list.get(i));
+            assertEquals( itr.next().getUri(), list.get(i));
             i++;
         }
         textDocumentManager.write(batch);
@@ -358,7 +358,7 @@ public class DocumentWriteOperationTest {
         assertTrue(intersectSet.isEmpty());
     }
 
-    @AfterClass
+    @AfterAll
     public static  void cleanup() {
         QueryManager queryManager = Common.client.newQueryManager();
         DeleteQueryDefinition deletedef = queryManager.newDeleteDefinition();

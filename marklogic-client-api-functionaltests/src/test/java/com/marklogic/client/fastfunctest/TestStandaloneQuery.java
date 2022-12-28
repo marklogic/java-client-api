@@ -25,7 +25,8 @@ import com.marklogic.client.query.StructuredQueryBuilder.FragmentScope;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -37,7 +38,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertTrue;
+
 
 public class TestStandaloneQuery extends AbstractFunctionalTest {
 
@@ -78,7 +79,7 @@ public class TestStandaloneQuery extends AbstractFunctionalTest {
     System.out.println("Output of Search : " + convertXMLDocumentToString(resultDoc));
 
     assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-    assertTrue("Proper result is not returned :", convertXMLDocumentToString(resultDoc).contains("<search:highlight>0026"));
+    assertTrue( convertXMLDocumentToString(resultDoc).contains("<search:highlight>0026"));
 
     // release client
     client.release();
@@ -126,7 +127,7 @@ public class TestStandaloneQuery extends AbstractFunctionalTest {
     System.out.println(output);
     System.out.println("Search Result : " + resultDoc.getDocumentURI());
     assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-    assertTrue("Results are not proper", output.contains("uri=\"/standalone-query/constraint5.xml\""));
+    assertTrue( output.contains("uri=\"/standalone-query/constraint5.xml\""));
 
     // release client
     client.release();
@@ -517,7 +518,7 @@ public class TestStandaloneQuery extends AbstractFunctionalTest {
     System.out.println(output);
 
     assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-    assertTrue("The result is not proper", output.contains("/standalone-query/constraint5.xml"));
+    assertTrue( output.contains("/standalone-query/constraint5.xml"));
 
     // release client
     client.release();

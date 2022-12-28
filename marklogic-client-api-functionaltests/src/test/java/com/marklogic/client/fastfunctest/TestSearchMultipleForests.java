@@ -23,13 +23,14 @@ import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.assertTrue;
+
 
 public class TestSearchMultipleForests extends AbstractFunctionalTest {
 
@@ -71,18 +72,18 @@ public class TestSearchMultipleForests extends AbstractFunctionalTest {
     // Do forest specific searches.
     queryMgr.search(querydef, sHandleOnForest1, fNames[0]);
     System.out.println("Documents available on Forest 1 is " + sHandleOnForest1.getTotalResults());
-    assertTrue("Documents count on Forest 1 is ", sHandleOnForest1.getTotalResults() >= 0);
+    assertTrue( sHandleOnForest1.getTotalResults() >= 0);
 
     queryMgr.search(querydef, sHandleOnForest2, fNames[1]);
     System.out.println("Documents available on Forest 2 is " + sHandleOnForest2.getTotalResults());
-    assertTrue("Documents count on Forest 2 is ", sHandleOnForest2.getTotalResults() >= 0);
+    assertTrue( sHandleOnForest2.getTotalResults() >= 0);
 
     // Assert on the total from individual forest counts. Assignment scheme changed as of 10.0.2 ML Server.
 
-    assertTrue("Document count is incorrect", sHandleOnForest1.getTotalResults() + sHandleOnForest2.getTotalResults() == 20);
+    assertTrue( sHandleOnForest1.getTotalResults() + sHandleOnForest2.getTotalResults() == 20);
 
     System.out.println(sHandle.getTotalResults());
-    assertTrue("Document count is incorrect", sHandle.getTotalResults() == 20);
+    assertTrue( sHandle.getTotalResults() == 20);
 
     // Test other overloaded methods of QueryManager search with forest name.
 
@@ -94,13 +95,13 @@ public class TestSearchMultipleForests extends AbstractFunctionalTest {
 
     queryMgr.search(querydef, sHandleOnForest1, 2, fNames[0]);
     System.out.println("Start Page on first search on Forest 1 is " + sHandleOnForest1.getStart());
-    assertTrue("Start Page on first search on Forest 1 is incorrect", sHandleOnForest1.getStart() == 2);
+    assertTrue( sHandleOnForest1.getStart() == 2);
 
     queryMgr.search(querydef, sHandleOnForest2, 3, fNames[1]);
     System.out.println("Start Page on second search on Forest 2 is " + sHandleOnForest2.getStart());
-    assertTrue("Start Page on second search on Forest 2 is incorrect", sHandleOnForest2.getStart() == 3);
+    assertTrue( sHandleOnForest2.getStart() == 3);
 
-    assertTrue("Document count is incorrect", sHandleOnForest1.getTotalResults() + sHandleOnForest2.getTotalResults() == 20);
+    assertTrue( sHandleOnForest1.getTotalResults() + sHandleOnForest2.getTotalResults() == 20);
 
     // Verify in a transaction.
     Transaction t = client.openTransaction();
@@ -109,9 +110,9 @@ public class TestSearchMultipleForests extends AbstractFunctionalTest {
     sHandleOnForest2 = new SearchHandle();
 
     queryMgr.search(querydef, sHandleOnForest1, 0, t, fNames[0]);
-    assertTrue("Documents count on Forest 1 is ", sHandleOnForest1.getTotalResults() >= 0);
+    assertTrue( sHandleOnForest1.getTotalResults() >= 0);
     queryMgr.search(querydef, sHandleOnForest2, 0, t, fNames[1]);
-    assertTrue("Documents count on Forest 2 is ", sHandleOnForest2.getTotalResults() >= 0);
+    assertTrue( sHandleOnForest2.getTotalResults() >= 0);
     t.rollback();
 
     client.release();

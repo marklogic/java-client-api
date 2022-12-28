@@ -15,15 +15,12 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
+import com.marklogic.client.example.cookbook.JAXBDocument;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.bind.JAXBException;
-
-import org.junit.Test;
-
-import com.marklogic.client.example.cookbook.JAXBDocument;
+import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JAXBDocumentTest {
   @Test
@@ -37,6 +34,6 @@ public class JAXBDocumentTest {
     } catch (JAXBException e) {
       e.printStackTrace();
     }
-    assertTrue("JAXBDocument example failed", succeeded);
+    assertTrue( succeeded);
   }
 }

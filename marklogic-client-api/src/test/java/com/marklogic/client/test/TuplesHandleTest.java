@@ -15,20 +15,6 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
-
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
@@ -36,12 +22,18 @@ import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.TuplesHandle;
-import com.marklogic.client.query.AggregateResult;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.Tuple;
-import com.marklogic.client.query.TypedDistinctValue;
-import com.marklogic.client.query.ValuesDefinition;
-import com.marklogic.client.query.ValuesMetrics;
+import com.marklogic.client.query.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TuplesHandleTest {
 
@@ -82,13 +74,13 @@ public class TuplesHandleTest {
       "<return-values>true</return-values>" +
     "</options>";
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
     Common.connectAdmin();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -109,19 +101,19 @@ public class TuplesHandleTest {
     TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
 
     AggregateResult[] agg = t.getAggregates();
-    assertEquals("Two aggregates are expected", 2, agg.length);
+    assertEquals( 2, agg.length);
 
     double cov = t.getAggregate("covariance").get("xs:double", Double.class);
-    assertTrue("The covariance is between 1.551 and 1.552",
+    assertTrue(
       cov > 1.551 && cov < 1.552);
 
     Tuple[] tuples = t.getTuples();
-    assertEquals("Twelve tuples are expected", 12, tuples.length);
-    assertEquals("The tuples are named 'co'", "co", t.getName());
+    assertEquals( 12, tuples.length);
+    assertEquals( "co", t.getName());
 
     ValuesMetrics metrics = t.getMetrics();
-    assertTrue("The values resolution time is >= 0", metrics.getValuesResolutionTime() >= 0);
-    assertTrue("The aggregate resolution time is >= 0", metrics.getAggregateResolutionTime() >= 0);
+    assertTrue(metrics.getValuesResolutionTime() >= 0);
+    assertTrue(metrics.getAggregateResolutionTime() >= 0);
 
     optionsMgr.deleteOptions("valuesoptions2");
   }
@@ -140,11 +132,11 @@ public class TuplesHandleTest {
     TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
 
     Tuple[] tuples = t.getTuples();
-    assertEquals("Twelve tuples are expected", 12, tuples.length);
-    assertEquals("The tuples are named 'co'", "co", t.getName());
+    assertEquals( 12, tuples.length);
+    assertEquals( "co", t.getName());
 
     ValuesMetrics metrics = t.getMetrics();
-    assertTrue("The values resolution time is >= 0", metrics.getValuesResolutionTime() >= 0);
+    assertTrue(metrics.getValuesResolutionTime() >= 0);
     // Restore after bug:18747 is fixed
     // assertEquals("The aggregate resolution time is -1 (absent)", metrics.getAggregateResolutionTime(), -1);
 
@@ -165,17 +157,17 @@ public class TuplesHandleTest {
     TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
 
     Tuple[] tuples = t.getTuples();
-    assertEquals("Twelve tuples are expected", 12, tuples.length);
-    assertEquals("The tuples are named 'co'", "co", t.getName());
+    assertEquals( 12, tuples.length);
+    assertEquals( "co", t.getName());
 
     TypedDistinctValue[] dv = tuples[0].getValues();
 
-    assertEquals("Two values per tuple expected", 2, dv.length);
-    assertEquals("First is long", "xs:double",  dv[0].getType());
-    assertEquals("Second is int", "xs:int", dv[1].getType());
-    assertEquals("Frequency is 1", 1, tuples[0].getCount());
-    assertEquals("First value",  1.1, (double) dv[0].get(Double.class), 0.01);
-    assertEquals("Second value", (int) 1, (int) dv[1].get(Integer.class));
+    assertEquals( 2, dv.length);
+    assertEquals( "xs:double",  dv[0].getType());
+    assertEquals( "xs:int", dv[1].getType());
+    assertEquals( 1, tuples[0].getCount());
+    assertEquals(  1.1, (double) dv[0].get(Double.class), 0.01);
+    assertEquals( (int) 1, (int) dv[1].get(Integer.class));
 
     optionsMgr.deleteOptions("valuesoptions");
   }
@@ -194,19 +186,19 @@ public class TuplesHandleTest {
     TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
 
     Tuple[] tuples = t.getTuples();
-    assertEquals("Four tuples are expected", 4, tuples.length);
-    assertEquals("The tuples are named 'n-way'", "n-way", t.getName());
+    assertEquals( 4, tuples.length);
+    assertEquals( "n-way", t.getName());
 
     TypedDistinctValue[] dv = tuples[0].getValues();
 
-    assertEquals("Three values per tuple expected", 3, dv.length);
-    assertEquals("First is long", "xs:double",  dv[0].getType());
-    assertEquals("Second is int", "xs:int", dv[1].getType());
-    assertEquals("Third is string", "xs:string", dv[2].getType());
-    assertEquals("Frequency is 1", 1, tuples[0].getCount());
-    assertEquals("First value",  1.1, (double) dv[0].get(Double.class), 0.01);
-    assertEquals("Second value", (int) 1, (int) dv[1].get(Integer.class));
-    assertEquals("Third value", "Alaska", (String) dv[2].get(String.class));
+    assertEquals( 3, dv.length);
+    assertEquals( "xs:double",  dv[0].getType());
+    assertEquals( "xs:int", dv[1].getType());
+    assertEquals( "xs:string", dv[2].getType());
+    assertEquals( 1, tuples[0].getCount());
+    assertEquals(  1.1, (double) dv[0].get(Double.class), 0.01);
+    assertEquals( (int) 1, (int) dv[1].get(Integer.class));
+    assertEquals( "Alaska", (String) dv[2].get(String.class));
     optionsMgr.deleteOptions("valuesoptions");
   }
 
@@ -225,18 +217,18 @@ public class TuplesHandleTest {
     TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle(), 3);
 
     Tuple[] tuples = t.getTuples();
-    assertEquals("Six tuples are expected", 6, tuples.length);
+    assertEquals( 6, tuples.length);
 
     TypedDistinctValue[] values = tuples[0].getValues();
     String value = values[0].get(Double.class)+" | "+values[1].get(Integer.class);
-    assertEquals("The first tuple is '1.2 | 3'", "1.2 | 3", value);
+    assertEquals("1.2 | 3", value);
 
     values = tuples[5].getValues();
     value =
       values[0].get(Double.class).toString()
         + " | "
         + values[1].get(Integer.class).toString();
-    assertEquals("The last tuple is '2.2 | 4'", "2.2 | 4", value);
+    assertEquals("2.2 | 4", value);
 
     optionsMgr.deleteOptions("valuesoptions");
   }

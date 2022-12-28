@@ -15,7 +15,7 @@
  */
 
 /**
- * 
+ *
  */
 package com.marklogic.client.fastfunctest;
 
@@ -27,7 +27,9 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
-import org.junit.*;
+import org.junit.jupiter.api.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
@@ -37,8 +39,8 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+
 
 /*
  *         This test is test the DocumentWriteSet function public
@@ -53,14 +55,14 @@ import static org.junit.Assert.assertTrue;
  *         begining has old defaults and later have latest load third set of
  *         documents with defaultset and do a document specific metadata update
  *         and check that is updated.
- * 
+ *
  */
 public class TestBulkWriteMetadata2 extends AbstractFunctionalTest {
 
   /*
    * @throws java.lang.Exception
    */
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     System.out.println("In Setup");
     createRESTUser("app-user", "password", "rest-writer", "rest-reader");
@@ -72,7 +74,7 @@ public class TestBulkWriteMetadata2 extends AbstractFunctionalTest {
   /*
    * @throws java.lang.Exception
    */
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     setMaintainLastModified("java-functest", false);
     deleteRESTUser("app-user");
@@ -82,7 +84,7 @@ public class TestBulkWriteMetadata2 extends AbstractFunctionalTest {
   /*
    * @throws java.lang.Exception
    */
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     // create new connection for each test below
     client = getDatabaseClient("usr1", "password", getConnType());
@@ -91,7 +93,7 @@ public class TestBulkWriteMetadata2 extends AbstractFunctionalTest {
   /*
    * @throws java.lang.Exception
    */
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     client.release();
   }
@@ -121,28 +123,28 @@ public class TestBulkWriteMetadata2 extends AbstractFunctionalTest {
     // "size:5|reviewed:true|myInteger:10|myDecimal:34.56678|myCalendar:2014|myString:foo|";
     String actualProperties = getDocumentPropertiesString(properties);
     boolean result = actualProperties.contains("size:6|");
-    assertTrue("Document properties count", result);
+    assertTrue( result);
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println(actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:6"));
-    assertTrue("Document permissions difference in flexrep-eval permission", actualPermissions.contains("flexrep-eval:[READ]"));
-    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
-    assertTrue("Document permissions difference in app-user permissions",
+    assertTrue( actualPermissions.contains("size:6"));
+    assertTrue( actualPermissions.contains("flexrep-eval:[READ]"));
+    assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue(
         (actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions.contains("app-user:[READ, UPDATE]")));
-    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
+    assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
 
     // Collections
     String actualCollections = getDocumentCollectionsString(collections);
     System.out.println(collections);
 
-    assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
-    assertTrue("my-collection1 not found", actualCollections.contains("my-collection1"));
-    assertTrue("my-collection2 not found", actualCollections.contains("my-collection2"));
+    assertTrue( actualCollections.contains("size:2"));
+    assertTrue( actualCollections.contains("my-collection1"));
+    assertTrue( actualCollections.contains("my-collection2"));
   }
 
   public void validateDefaultMetadata(DocumentMetadataHandle mh) {
@@ -155,23 +157,23 @@ public class TestBulkWriteMetadata2 extends AbstractFunctionalTest {
     String actualProperties = getDocumentPropertiesString(properties);
     boolean result = actualProperties.contains("size:1|");
     System.out.println(actualProperties + result);
-    assertTrue("Document default last modified properties count1?", result);
+    assertTrue( result);
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
-    assertTrue("Document permissions difference in flexrep-eval permission", actualPermissions.contains("flexrep-eval:[READ]"));
-    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
+    assertTrue( actualPermissions.contains("size:5"));
+    assertTrue( actualPermissions.contains("flexrep-eval:[READ]"));
+    assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
 
     // Collections
     String expectedCollections = "size:1|http://permission-collections/|";
     String actualCollections = getDocumentCollectionsString(collections);
 
-    assertEquals("Document collections difference", expectedCollections, actualCollections);
+    assertEquals( expectedCollections, actualCollections);
   }
 
   @Test
@@ -355,17 +357,17 @@ public class TestBulkWriteMetadata2 extends AbstractFunctionalTest {
     rec = page.next();
     docMgr.readMetadata(rec.getUri(), mh);
     // System.out.println(rec.getUri()+mh.getQuality());
-    assertEquals("default quality", 0, mh.getQuality());
+    assertEquals( 0, mh.getQuality());
     validateDefaultMetadata(mh);
     page = docMgr.read("/2/Pandakarlino.jpg");
     rec = page.next();
     docMgr.readMetadata(rec.getUri(), mh);
-    assertEquals(" quality", 5, mh.getQuality());
+    assertEquals( 5, mh.getQuality());
 
     // Collections - Test corrected for bug fix from 32783
     /*
      * Default collections are applied only in the following cases:
-     * 
+     *
      * Creating a document with single write without specifying collections
      * Creating a document or updating document content with bulk write without
      * specifying collections Resetting collections by deleting all or
@@ -375,17 +377,17 @@ public class TestBulkWriteMetadata2 extends AbstractFunctionalTest {
     String expectedCollections = "size:1|http://permission-collections/|";
     String actualCollections = getDocumentCollectionsString(mh.getCollections());
 
-    assertEquals("Document collections difference", expectedCollections, actualCollections);
+    assertEquals( expectedCollections, actualCollections);
 
     page = docMgr.read("/1/mlfavicon.png");
     rec = page.next();
     docMgr.readMetadata(rec.getUri(), mh);
-    assertEquals("default quality", 0, mh.getQuality());
+    assertEquals( 0, mh.getQuality());
     // System.out.println(rec.getUri()+mh.getCollections().isEmpty());
     expectedCollections = "size:1|collection1|";
     actualCollections = getDocumentCollectionsString(mh.getCollections());
 
-    assertEquals("Document collections difference", expectedCollections, actualCollections);
+    assertEquals( expectedCollections, actualCollections);
 
     page = docMgr.read("/2/mlfavicon.png");
     rec = page.next();
@@ -447,18 +449,18 @@ public class TestBulkWriteMetadata2 extends AbstractFunctionalTest {
     rec = page.next();
     jdm.readMetadata(rec.getUri(), mh);
     validateDefaultMetadata(mh);
-    assertEquals("default quality", 0, mh.getQuality());
+    assertEquals( 0, mh.getQuality());
 
     // Doc2 should use the first batch default metadata, with quality 1
     page = jdm.read("doc2.json");
     rec = page.next();
     jdm.readMetadata(rec.getUri(), mh);
     System.out.print(mh.getCollections().isEmpty());
-    assertEquals("default quality", 1, mh.getQuality());
+    assertEquals( 1, mh.getQuality());
     String expectedCollections = "size:1|http://permission-collections/|";
     String actualCollections = getDocumentCollectionsString(mh.getCollections());
 
-    assertEquals("Document collections difference", expectedCollections, actualCollections);
+    assertEquals( expectedCollections, actualCollections);
 
     // Doc3 should have the system default document quality (0) because quality
     // was not included in the document-specific metadata. It should be in the
@@ -467,8 +469,8 @@ public class TestBulkWriteMetadata2 extends AbstractFunctionalTest {
     page = jdm.read("doc3.json");
     rec = page.next();
     jdm.readMetadata(rec.getUri(), mh);
-    assertEquals("default quality", 0, mh.getQuality());
-    assertEquals("default collection must change", "[mySpecificCollection]", mh.getCollections().toString());
+    assertEquals( 0, mh.getQuality());
+    assertEquals( "[mySpecificCollection]", mh.getCollections().toString());
 
     DocumentMetadataHandle doc3Metadata =
         jdm.readMetadata("doc3.json", new DocumentMetadataHandle());
@@ -476,22 +478,22 @@ public class TestBulkWriteMetadata2 extends AbstractFunctionalTest {
     expectedCollections = "size:1|mySpecificCollection|";
     actualCollections = getDocumentCollectionsString(mh.getCollections());
 
-    assertEquals("Document collections difference", expectedCollections, actualCollections);
+    assertEquals( expectedCollections, actualCollections);
 
     // Doc 4 should also use the 1st batch default metadata, with quality 1
     page = jdm.read("doc4.json");
     rec = page.next();
     jdm.readMetadata(rec.getUri(), mh);
-    assertEquals("default quality", 1, mh.getQuality());
+    assertEquals( 1, mh.getQuality());
     expectedCollections = "size:1|http://permission-collections/|";
     actualCollections = getDocumentCollectionsString(mh.getCollections());
 
-    assertEquals("Document collections difference", expectedCollections, actualCollections);
+    assertEquals( expectedCollections, actualCollections);
     // Doc5 should use the 2nd batch default metadata, with quality 2
     page = jdm.read("doc5.json");
     rec = page.next();
     jdm.readMetadata(rec.getUri(), mh);
-    assertEquals("default quality", 2, mh.getQuality());
+    assertEquals( 2, mh.getQuality());
 
   }
 
@@ -550,18 +552,18 @@ public class TestBulkWriteMetadata2 extends AbstractFunctionalTest {
     page = docMgr.read("/generic/dog.json");
     DocumentRecord rec = page.next();
     docMgr.readMetadata(rec.getUri(), mh);
-    assertEquals("default quality", 10, mh.getQuality());
+    assertEquals( 10, mh.getQuality());
 
     String expectedCollections = "size:1|http://permission-collections/|";
     String actualCollections = getDocumentCollectionsString(mh.getCollections());
 
-    assertEquals("Document collections difference", expectedCollections, actualCollections);
+    assertEquals( expectedCollections, actualCollections);
 
     page = docMgr.read("/generic/foo.xml");
     rec = page.next();
     docMgr.readMetadata(rec.getUri(), mh);
-    assertEquals("default quality", 0, mh.getQuality());
-    assertEquals("default collection must change", "[genericCollection]", mh.getCollections().toString());
+    assertEquals( 0, mh.getQuality());
+    assertEquals( "[genericCollection]", mh.getCollections().toString());
     sh.close();
   }
 }

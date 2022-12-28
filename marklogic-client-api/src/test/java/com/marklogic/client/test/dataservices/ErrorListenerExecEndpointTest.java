@@ -21,14 +21,14 @@ import com.marklogic.client.dataservices.ExecCaller;
 import com.marklogic.client.dataservices.IOEndpoint;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.JacksonHandle;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ErrorListenerExecEndpointTest {
     static ObjectNode apiObj;
@@ -39,7 +39,7 @@ public class ErrorListenerExecEndpointTest {
     static String finalStateUri1 = "/marklogic/ds/test/errorListenerbulkIOExecCallerbulkExecTest_1.json";
     static String finalStateUri2 = "/marklogic/ds/test/errorListenerbulkIOExecCallerbulkExecTest_2.json";
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         docMgr = IOTestUtil.db.newJSONDocumentManager();
         apiObj = IOTestUtil.readApi(apiName);
@@ -77,14 +77,14 @@ public class ErrorListenerExecEndpointTest {
 
         JsonNode finalState1 = docMgr.read(finalStateUri1, new JacksonHandle()).get();
         JsonNode finalState2 = docMgr.read(finalStateUri2, new JacksonHandle()).get();
-        assertEquals("finalState1 is wrong, should be 15, but " + finalState1.get("state").get("next").asText(),
+        assertEquals(
                 finalState1.get("state").get("next").asText(), "15");
-        assertEquals("finalState2 is wrong, should be 26, but " + finalState2.get("state").get("next").asText(),
+        assertEquals(
                 finalState2.get("state").get("next").asText(), "26");
-        assertNotNull("null final state", finalState1);
-        assertTrue("final state not object", finalState1.isObject());
-        assertNotNull("null final state", finalState2);
-        assertTrue("final state not object", finalState2.isObject());
+        assertNotNull( finalState1);
+        assertTrue( finalState1.isObject());
+        assertNotNull( finalState2);
+        assertTrue( finalState2.isObject());
     }
 
     @Test
@@ -115,14 +115,12 @@ public class ErrorListenerExecEndpointTest {
 
         JsonNode finalState1 = docMgr.read(finalStateUri1, new JacksonHandle()).get();
         JsonNode finalState2 = docMgr.read(finalStateUri2, new JacksonHandle()).get();
-        assertTrue("finalState1 is wrong, should less than 15, but " + finalState1.get("state").get("next").asText(),
-                Integer.valueOf(finalState1.get("state").get("next").asText()) < 15);
-        assertEquals("finalState2 is wrong, should be 26, but " + finalState2.get("state").get("next").asText(),
-                finalState2.get("state").get("next").asText(), "26");
-        assertNotNull("null final state", finalState1);
-        assertTrue("final state not object", finalState1.isObject());
-        assertNotNull("null final state", finalState2);
-        assertTrue("final state not object", finalState2.isObject());
+        assertTrue(Integer.valueOf(finalState1.get("state").get("next").asText()) < 15);
+        assertEquals(finalState2.get("state").get("next").asText(), "26");
+        assertNotNull( finalState1);
+        assertTrue( finalState1.isObject());
+        assertNotNull( finalState2);
+        assertTrue( finalState2.isObject());
     }
 
     @Test
@@ -153,23 +151,21 @@ public class ErrorListenerExecEndpointTest {
 
         JsonNode finalState1 = docMgr.read(finalStateUri1, new JacksonHandle()).get();
         JsonNode finalState2 = docMgr.read(finalStateUri2, new JacksonHandle()).get();
-        assertTrue("finalState1 is wrong, should be less than 15, but " + finalState1.get("state").get("next").asText(),
-                finalState1.get("state").get("next").asInt() <= 15);
-        assertTrue("finalState2 is wrong, should be less than 26, but " + finalState2.get("state").get("next").asText(),
-                finalState2.get("state").get("next").asInt() <= 26);
-        assertNotNull("null final state", finalState1);
-        assertTrue("final state not object", finalState1.isObject());
-        assertNotNull("null final state", finalState2);
-        assertTrue("final state not object", finalState2.isObject());
+        assertTrue(finalState1.get("state").get("next").asInt() <= 15);
+        assertTrue(finalState2.get("state").get("next").asInt() <= 26);
+        assertNotNull( finalState1);
+        assertTrue( finalState1.isObject());
+        assertNotNull( finalState2);
+        assertTrue( finalState2.isObject());
     }
 
-    @After
+    @AfterEach
     public void clean() {
         docMgr.delete(finalStateUri1);
         docMgr.delete(finalStateUri2);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }

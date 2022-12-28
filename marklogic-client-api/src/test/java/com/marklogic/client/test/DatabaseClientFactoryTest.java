@@ -15,29 +15,10 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.*;
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
-import okhttp3.OkHttpClient;
-import okhttp3.OkHttpClient.Builder;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.ClientConfigurator;
-import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.document.DocumentDescriptor;
-import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.document.DocumentPatchBuilder;
-import com.marklogic.client.document.DocumentUriTemplate;
-import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.document.*;
 import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
 import com.marklogic.client.io.Format;
@@ -46,19 +27,30 @@ import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
+import okhttp3.OkHttpClient;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DatabaseClientFactoryTest {
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connectEval();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
   @Test
   public void testConnectStringIntStringStringDigest() {
-    assertNotNull("Factory could not create client with digest connection", Common.evalClient);
+    assertNotNull( Common.evalClient);
   }
 
   @Test
@@ -69,24 +61,24 @@ public class DatabaseClientFactoryTest {
     final String SECOND_DB_NAME = "Documents";
     DatabaseClient tmpClient = Common.newEvalClient(FIRST_DB_NAME);
     try {
-      assertNotNull("Factory could not create client", tmpClient);
+      assertNotNull( tmpClient);
       String database =
         tmpClient.newServerEval()
           .xquery("xdmp:database-name(xdmp:database())")
           .evalAs(String.class);
-      assertEquals("Runtime database is wrong", FIRST_DB_NAME, database);
+      assertEquals( FIRST_DB_NAME, database);
     } finally {
       tmpClient.release();
     }
 
     tmpClient = Common.newEvalClient(SECOND_DB_NAME);
     try {
-      assertNotNull("Factory could not create client", tmpClient);
+      assertNotNull( tmpClient);
       String database =
         tmpClient.newServerEval()
           .xquery("xdmp:database-name(xdmp:database())")
           .evalAs(String.class);
-      assertEquals("Runtime database is wrong", SECOND_DB_NAME, database);
+      assertEquals( SECOND_DB_NAME, database);
 /*
       QueryManager fixupQueryMgr = tmpClient.newQueryManager();
       DeleteQueryDefinition delQuery = fixupQueryMgr.newDeleteDefinition();
@@ -111,7 +103,7 @@ public class DatabaseClientFactoryTest {
 
       // test that the doc exists via the DocumentManager api
       DocumentDescriptor existsDesc = runtimeDbDocMgr.exists(docUri);
-      assertNotNull("Doc " + docUri + " should exist in the Documents db", existsDesc);
+      assertNotNull(existsDesc);
 
       // test overwriting the contents of the doc
       String docContents2 = "<a>hello2</a>";
@@ -127,8 +119,8 @@ public class DatabaseClientFactoryTest {
       query.setCriteria("hello2");
       query.setDirectory("/test/");
       MatchDocumentSummary match = runtimeDbQueryMgr.findOne(query);
-      assertNotNull("Should get a doc back", match);
-      assertEquals("URL doesn't match", docUri, match.getUri());
+      assertNotNull( match);
+      assertEquals( docUri, match.getUri());
 
       // test patching
       String newValue = "new value";
@@ -140,8 +132,8 @@ public class DatabaseClientFactoryTest {
 
       // use bulk read to make sure the doc got the update
       DocumentPage docs = runtimeDbDocMgr.read(docUri);
-      assertNotNull("Should get a doc back", docs);
-      assertTrue("Should get a doc back", docs.hasNext());
+      assertNotNull( docs);
+      assertTrue( docs.hasNext());
       String value3 = docs.next().getContent(new StringHandle()).get();
       assertXMLEqual("Doc contents incorrect", docContents3, value3);
 
@@ -153,9 +145,9 @@ public class DatabaseClientFactoryTest {
       } catch (ResourceNotFoundException e) {
         deleted = true;
       }
-      assertTrue("Doc still exists", deleted);
+      assertTrue( deleted);
       String value4 = getHello.evalAs(String.class);
-      assertEquals("Eval response wrong", null, value4);
+      assertEquals( null, value4);
 
     } finally {
       tmpClient.release();
@@ -172,7 +164,7 @@ public class DatabaseClientFactoryTest {
     DatabaseClient client = Common.makeNewClient(
       Common.HOST, Common.PORT, Common.newSecurityContext(Common.USER, Common.PASS));
     try {
-      assertTrue("Factory did not apply custom configurator", configurator.isConfigured);
+      assertTrue( configurator.isConfigured);
       OkHttpClient okClient = (OkHttpClient) client.getClientImplementation();
       assertEquals(testConnectTimeoutMillis, okClient.connectTimeoutMillis());
     } finally {

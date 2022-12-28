@@ -15,11 +15,8 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
-
 import com.marklogic.client.example.cookbook.datamovement.WriteandReadPOJOs;
+import org.junit.jupiter.api.Test;
 
 public class WriteandReadPOJOsTest {
   @Test

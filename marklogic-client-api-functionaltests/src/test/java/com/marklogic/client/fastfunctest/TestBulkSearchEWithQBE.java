@@ -28,7 +28,10 @@ import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.*;
+import org.junit.jupiter.api.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -42,24 +45,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.*;
 
 public class TestBulkSearchEWithQBE extends AbstractFunctionalTest {
   private static final int BATCH_SIZE = 100;
   private static final String DIRECTORY = "/bulkSearch/";
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     createRESTUserWithPermissions("usr1", "password", getPermissionNode("flexrep-eval", Capability.READ),
         getCollectionNode("http://permission-collections/"), "rest-writer", "rest-reader");
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     deleteRESTUser("usr1");
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     // create new connection for each test below
     client = getDatabaseClient("usr1", "password", getConnType());
@@ -68,7 +70,7 @@ public class TestBulkSearchEWithQBE extends AbstractFunctionalTest {
     loadJSONDocuments();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     System.out.println("Running clear script");
     // release client
@@ -77,10 +79,10 @@ public class TestBulkSearchEWithQBE extends AbstractFunctionalTest {
 
   public void validateRecord(DocumentRecord record, Format type) {
 
-    assertNotNull("DocumentRecord should never be null", record);
-    assertNotNull("Document uri should never be null", record.getUri());
-    assertTrue("Document uri should start with " + DIRECTORY, record.getUri().startsWith(DIRECTORY));
-    assertEquals("All records are expected to be in same format", type, record.getFormat());
+    assertNotNull( record);
+    assertNotNull( record.getUri());
+    assertTrue(record.getUri().startsWith(DIRECTORY));
+    assertEquals(type, record.getFormat());
     // System.out.println(record.getMimetype());
 
   }
@@ -177,8 +179,8 @@ public class TestBulkSearchEWithQBE extends AbstractFunctionalTest {
       count = 0;
       page = docMgr.search(qd, pageNo, dh);
       if (pageNo > 1) {
-        assertFalse("Is this first Page", page.isFirstPage());
-        assertTrue("Is page has previous page ?", page.hasPreviousPage());
+        assertFalse(page.isFirstPage());
+        assertTrue(page.hasPreviousPage());
       }
       while (page.hasNext()) {
         DocumentRecord rec = page.next();
@@ -190,14 +192,13 @@ public class TestBulkSearchEWithQBE extends AbstractFunctionalTest {
 
       Document resultDoc = dh.get();
       assertXpathEvaluatesTo("xml", "string(//*[local-name()='result'][last()]//@*[local-name()='format'])", resultDoc);
-      assertEquals("document count", page.size(), count);
-      // assertEquals("Page Number #",pageNo,page.getPageNumber());
+      assertEquals( page.size(), count);
       pageNo = pageNo + page.getPageSize();
     } while (!page.isLastPage() && page.hasContent());
-    assertEquals("page count is 5 ", 5, page.getTotalPages());
-    assertTrue("Page has previous page ?", page.hasPreviousPage());
-    assertEquals("page size", 25, page.getPageSize());
-    assertEquals("document count", 102, page.getTotalSize());
+    assertEquals( 5, page.getTotalPages());
+    assertTrue(page.hasPreviousPage());
+    assertEquals( 25, page.getPageSize());
+    assertEquals( 102, page.getTotalSize());
 
   }
 
@@ -229,8 +230,8 @@ public class TestBulkSearchEWithQBE extends AbstractFunctionalTest {
       count = 0;
       page = docMgr.search(qd, pageNo, sh);
       if (pageNo > 1) {
-        assertFalse("Is this first Page", page.isFirstPage());
-        assertTrue("Is page has previous page ?", page.hasPreviousPage());
+        assertFalse( page.isFirstPage());
+        assertTrue(page.hasPreviousPage());
       }
       while (page.hasNext()) {
         DocumentRecord rec = page.next();
@@ -239,16 +240,15 @@ public class TestBulkSearchEWithQBE extends AbstractFunctionalTest {
         System.out.println(rec.getContent(new StringHandle()).get().toString());
         count++;
       }
-      assertTrue("Page start in results and on page", sh.get().get("start").asLong() == page.getStart());
-      assertEquals("document count", page.size(), count);
-      // assertEquals("Page Number #",pageNo,page.getPageNumber());
+      assertTrue( sh.get().get("start").asLong() == page.getStart());
+      assertEquals( page.size(), count);
       pageNo = pageNo + page.getPageSize();
     } while (!page.isLastPage() && page.hasContent());
 
-    assertEquals("page count is  ", 5, page.getTotalPages());
-    assertTrue("Page has previous page ?", page.hasPreviousPage());
-    assertEquals("page size", 25, page.getPageSize());
-    assertEquals("document count", 102, page.getTotalSize());
+    assertEquals( 5, page.getTotalPages());
+    assertTrue(page.hasPreviousPage());
+    assertEquals( 25, page.getPageSize());
+    assertEquals( 102, page.getTotalSize());
 
   }
 
@@ -298,8 +298,8 @@ public class TestBulkSearchEWithQBE extends AbstractFunctionalTest {
       count = 0;
       page = docMgr.search(qd, pageNo, dh);
       if (pageNo > 1) {
-        assertFalse("Is this first Page", page.isFirstPage());
-        assertTrue("Is page has previous page ?", page.hasPreviousPage());
+        assertFalse( page.isFirstPage());
+        assertTrue( page.hasPreviousPage());
       }
       while (page.hasNext()) {
         DocumentRecord rec = page.next();
@@ -308,15 +308,14 @@ public class TestBulkSearchEWithQBE extends AbstractFunctionalTest {
       }
       Document resultDoc = dh.get();
       assertXpathEvaluatesTo("xml", "string(//*[local-name()='result'][last()]//@*[local-name()='format'])", resultDoc);
-      assertEquals("document count", page.size(), count);
-      // assertEquals("Page Number #",pageNo,page.getPageNumber());
+      assertEquals( page.size(), count);
       pageNo = pageNo + page.getPageSize();
     } while (!page.isLastPage() && page.hasContent());
 
-    assertEquals("page count is  ", 5, page.getTotalPages());
-    assertTrue("Page has previous page ?", page.hasPreviousPage());
-    assertEquals("page size", 25, page.getPageSize());
-    assertEquals("document count", 102, page.getTotalSize());
+    assertEquals( 5, page.getTotalPages());
+    assertTrue( page.hasPreviousPage());
+    assertEquals( 25, page.getPageSize());
+    assertEquals( 102, page.getTotalSize());
 
   }
 
@@ -349,8 +348,8 @@ public class TestBulkSearchEWithQBE extends AbstractFunctionalTest {
       count = 0;
       page = docMgr.search(qd, pageNo, sh);
       if (pageNo > 1) {
-        assertFalse("Is this first Page", page.isFirstPage());
-        assertTrue("Is page has previous page ?", page.hasPreviousPage());
+        assertFalse( page.isFirstPage());
+        assertTrue( page.hasPreviousPage());
       }
       while (page.hasNext()) {
         DocumentRecord rec = page.next();
@@ -358,15 +357,15 @@ public class TestBulkSearchEWithQBE extends AbstractFunctionalTest {
         validateRecord(rec, Format.JSON);
         count++;
       }
-      assertTrue("Page start in results and on page", sh.get().get("start").asLong() == page.getStart());
-      assertEquals("document count", page.size(), count);
+      assertTrue( sh.get().get("start").asLong() == page.getStart());
+      assertEquals( page.size(), count);
       pageNo = pageNo + page.getPageSize();
     } while (!page.isLastPage() && page.hasContent());
     System.out.println(sh.get().toString());
-    assertEquals("page count is  ", 5, page.getTotalPages());
-    assertTrue("Page has previous page ?", page.hasPreviousPage());
-    assertEquals("page size", 25, page.getPageSize());
-    assertEquals("document count", 102, page.getTotalSize());
+    assertEquals( 5, page.getTotalPages());
+    assertTrue( page.hasPreviousPage());
+    assertEquals( 25, page.getPageSize());
+    assertEquals( 102, page.getTotalSize());
 
   }
 
@@ -404,8 +403,8 @@ public class TestBulkSearchEWithQBE extends AbstractFunctionalTest {
       count = 0;
       page = docMgr.search(qd, pageNo, sh);
       if (pageNo > 1) {
-        assertFalse("Is this first Page", page.isFirstPage());
-        assertTrue("Is page has previous page ?", page.hasPreviousPage());
+        assertFalse( page.isFirstPage());
+        assertTrue( page.hasPreviousPage());
       }
       while (page.hasNext()) {
         DocumentRecord rec = page.next();
@@ -415,7 +414,7 @@ public class TestBulkSearchEWithQBE extends AbstractFunctionalTest {
         count++;
       }
 
-      assertEquals("document count", page.size(), count);
+      assertEquals( page.size(), count);
       pageNo = pageNo + page.getPageSize();
     } while (!page.isLastPage() && page.hasContent());
 
@@ -425,12 +424,12 @@ public class TestBulkSearchEWithQBE extends AbstractFunctionalTest {
     JsonNode jnode = null;
     jnode = mapper.readValue(jsonParser, JsonNode.class);
 
-    assertTrue("Page start in results and on page", jnode.get("start").asLong() == page.getStart());
+    assertTrue( jnode.get("start").asLong() == page.getStart());
 
-    assertEquals("page count is  ", 5, page.getTotalPages());
-    assertTrue("Page has previous page ?", page.hasPreviousPage());
-    assertEquals("page size", 25, page.getPageSize());
-    assertEquals("document count", 102, page.getTotalSize());
+    assertEquals( 5, page.getTotalPages());
+    assertTrue(page.hasPreviousPage());
+    assertEquals( 25, page.getPageSize());
+    assertEquals( 102, page.getTotalSize());
     sh.close();
   }
 }

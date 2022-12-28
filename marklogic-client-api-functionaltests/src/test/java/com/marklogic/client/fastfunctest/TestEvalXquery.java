@@ -18,6 +18,7 @@ package com.marklogic.client.fastfunctest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResult.Type;
@@ -25,7 +26,7 @@ import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.io.*;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
-import org.junit.*;
+import org.junit.jupiter.api.*;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
@@ -39,34 +40,34 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.TimeZone;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /*
- * This test is meant for xquery to 
+ * This test is meant for xquery to
  * verify the eval api can handle all the formats of documents
  * verify eval api can handle all the return types
  * Verify eval takes all kind of variable with name spaces
  */
 public class TestEvalXquery extends AbstractFunctionalTest {
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     TestEvalXquery.createUserRolesWithPrevilages("test-eval", "xdbc:eval", "any-uri", "xdbc:invoke");
     TestEvalXquery.createRESTUser("eval-user", "x", "test-eval");
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     TestEvalXquery.deleteRESTUser("eval-user");
     TestEvalXquery.deleteUserRole("test-eval");
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     client = getDatabaseClient("eval-user", "x", getConnType());
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     client.release();
   }
@@ -84,38 +85,38 @@ public class TestEvalXquery extends AbstractFunctionalTest {
         dh = er.get(dh);
         if (dh.get().getDocumentElement().hasChildNodes()) {
           // System.out.println("Type XML  :"+convertXMLDocumentToString(dh.get()));
-          assertEquals("document has content", "<foo attr=\"attribute\"><?processing instruction?><!--comment-->test1</foo>", convertXMLDocumentToString(dh.get()));
+          assertEquals( "<foo attr=\"attribute\"><?processing instruction?><!--comment-->test1</foo>", convertXMLDocumentToString(dh.get()));
         } else {
-          assertEquals("element node ", "<test1/>", convertXMLDocumentToString(dh.get()));
+          assertEquals( "<test1/>", convertXMLDocumentToString(dh.get()));
         }
       }
       else if (er.getType().equals(Type.JSON)) {
         JacksonHandle jh = new JacksonHandle();
         jh = er.get(jh);
         // System.out.println("Type JSON :"+jh.get().toString());
-        assertTrue("document has object?", jh.get().has("test"));
+        assertTrue( jh.get().has("test"));
       }
       else if (er.getType().equals(Type.TEXTNODE)) {
-        assertTrue("document contains", er.getAs(String.class).equals("test1"));
+        assertTrue( er.getAs(String.class).equals("test1"));
         // System.out.println("type txt node :"+er.getAs(String.class));
 
       } else if (er.getType().equals(Type.BINARY)) {
         FileHandle fh = new FileHandle();
         fh = er.get(fh);
         // System.out.println("type binary :"+fh.get().length());
-        assertEquals("files size", 2, fh.get().length());
+        assertEquals( 2, fh.get().length());
       } else if (er.getType().equals(Type.BOOLEAN)) {
-        assertTrue("Documents exist?", er.getBoolean());
+        assertTrue( er.getBoolean());
         // System.out.println("type boolean:"+er.getBoolean());
       }
       else if (er.getType().equals(Type.INTEGER)) {
         // System.out.println("type Integer: "+er.getNumber().longValue());
-        assertEquals("count of documents ", 31, er.getNumber().intValue());
+        assertEquals( 31, er.getNumber().intValue());
       }
       else if (er.getType().equals(Type.STRING)) {
         // There is git issue 152
           String str = er.getString();
-        assertEquals("String?", "xml", str);
+        assertEquals( "xml", str);
         System.out.println("type string: " + str);
       } else if (er.getType().equals(Type.NULL)) {
         // There is git issue 151
@@ -124,24 +125,24 @@ public class TestEvalXquery extends AbstractFunctionalTest {
       } else if (er.getType().equals(Type.OTHER)) {
         // There is git issue 151
         // System.out.println("Testing is Others? "+er.getAs(String.class));
-        assertTrue("Returns OTHERs", er.getString().contains("PT0S"));
+        assertTrue( er.getString().contains("PT0S"));
 
       } else if (er.getType().equals(Type.ANYURI)) {
         // System.out.println("Testing is AnyUri? "+er.getAs(String.class));
-        assertEquals("Returns me a uri :", "test1.xml", er.getAs(String.class));
+        assertEquals( "test1.xml", er.getAs(String.class));
 
       } else if (er.getType().equals(Type.DATE)) {
         // Adjusted this to ignore timezone
         String val = er.getAs(String.class);
-        assertTrue("Unexpected value: " + val, val.startsWith("2002-03-07"));
+        assertTrue(val.startsWith("2002-03-07"));
       } else if (er.getType().equals(Type.DATETIME)) {
         // Adjusted this to ignore timezone
         String val = er.getAs(String.class);
-        assertTrue("Unexpected value: " + val, val.startsWith("2010-01-06T"));
-        assertTrue("Unexpected value: " + val, val.contains(":13:50.873"));
+        assertTrue(val.startsWith("2010-01-06T"));
+        assertTrue(val.contains(":13:50.873"));
       } else if (er.getType().equals(Type.DECIMAL)) {
         // System.out.println("Testing is Decimal? "+er.getAs(String.class));
-        assertEquals("Returns me a Decimal :", "10.5", er.getAs(String.class));
+        assertEquals( "10.5", er.getAs(String.class));
 
       } else if (er.getType().equals(Type.DOUBLE)) {
         // System.out.println("Testing is Double? "+er.getAs(String.class));
@@ -149,51 +150,51 @@ public class TestEvalXquery extends AbstractFunctionalTest {
 
       } else if (er.getType().equals(Type.DURATION)) {
         System.out.println("Testing is Duration? " + er.getAs(String.class));
-        // assertEquals("Returns me a Duration :",0.4903562,er.getNumber().floatValue());
+        // assertEquals(0.4903562,er.getNumber().floatValue());
       } else if (er.getType().equals(Type.FLOAT)) {
         // System.out.println("Testing is Float? "+er.getAs(String.class));
         assertEquals(20, er.getNumber().floatValue(), 0);
       } else if (er.getType().equals(Type.GDAY)) {
         // System.out.println("Testing is GDay? "+er.getAs(String.class));
-        assertEquals("Returns me a GDAY :", "---01", er.getAs(String.class));
+        assertEquals( "---01", er.getAs(String.class));
       } else if (er.getType().equals(Type.GMONTH)) {
         // System.out.println("Testing is GMonth "+er.getAs(String.class));
-        assertEquals("Returns me a GMONTH :", "--01", er.getAs(String.class));
+        assertEquals( "--01", er.getAs(String.class));
       } else if (er.getType().equals(Type.GMONTHDAY)) {
         // System.out.println("Testing is GMonthDay? "+er.getAs(String.class));
-        assertEquals("Returns me a GMONTHDAY :", "--12-25-14:00", er.getAs(String.class));
+        assertEquals( "--12-25-14:00", er.getAs(String.class));
       } else if (er.getType().equals(Type.GYEAR)) {
         // System.out.println("Testing is GYear? "+er.getAs(String.class));
-        assertEquals("Returns me a GYEAR :", "2005-12:00", er.getAs(String.class));
+        assertEquals( "2005-12:00", er.getAs(String.class));
       } else if (er.getType().equals(Type.GYEARMONTH)) {
         // System.out.println("Testing is GYearMonth?1976-02 "+er.getAs(String.class));
-        assertEquals("Returns me a GYEARMONTH :", "1976-02", er.getAs(String.class));
+        assertEquals( "1976-02", er.getAs(String.class));
       } else if (er.getType().equals(Type.HEXBINARY)) {
         // System.out.println("Testing is HEXBINARY? "+er.getAs(String.class));
-        assertEquals("Returns me a HEXBINARY :", "BEEF", er.getAs(String.class));
+        assertEquals( "BEEF", er.getAs(String.class));
       } else if (er.getType().equals(Type.QNAME)) {
           String str = er.getString();
         // System.out.println("Testing is QNAME integer"+er.getAs(String.class));
-        assertTrue("Returns me a QNAME :", str.contains("integer") || str.contains("fn:empty"));
+        assertTrue( str.contains("integer") || str.contains("fn:empty"));
       } else if (er.getType().equals(Type.TIME)) {
         // System.out.println("Testing is TIME? "+er.getAs(String.class));
-        assertEquals("Returns me a TIME :", "10:00:00", er.getAs(String.class));
+        assertEquals( "10:00:00", er.getAs(String.class));
       } else if (er.getType().equals(Type.ATTRIBUTE)) {
         // System.out.println("Testing is ATTRIBUTE? "+er.getAs(String.class));
-        assertEquals("Returns me a ATTRIBUTE :", "attribute", er.getAs(String.class));
+        assertEquals( "attribute", er.getAs(String.class));
 
       } else if (er.getType().equals(Type.PROCESSINGINSTRUCTION)) {
         // System.out.println("Testing is ProcessingInstructions? "+er.getAs(String.class));
-        assertEquals("Returns me a PROCESSINGINSTRUCTION :", "<?processing instruction?>", er.getAs(String.class));
+        assertEquals( "<?processing instruction?>", er.getAs(String.class));
       } else if (er.getType().equals(Type.COMMENT)) {
         // System.out.println("Testing is Comment node? "+er.getAs(String.class));
-        assertEquals("Returns me a COMMENT :", "<!--comment-->", er.getAs(String.class));
+        assertEquals( "<!--comment-->", er.getAs(String.class));
       } else if (er.getType().equals(Type.BASE64BINARY)) {
         // System.out.println("Testing is Base64Binary  "+er.getAs(String.class));
-        assertEquals("Returns me a BASE64BINARY :", "DEADBEEF", er.getAs(String.class));
+        assertEquals( "DEADBEEF", er.getAs(String.class));
       } else {
         System.out.println("Got something which is not belongs to anytype we support " + er.getAs(String.class));
-        assertFalse("getting in else part, missing a type  ", true);
+        fail("getting in else part, missing a type  ");
       }
     }
     evr.close();
@@ -214,25 +215,25 @@ public class TestEvalXquery extends AbstractFunctionalTest {
 
     boolean response = client.newServerEval().xquery(insertXML).eval().hasNext();
     // System.out.printlnln(response);
-    assertFalse("Insert query return empty sequence", response);
+    assertFalse( response);
     response = client.newServerEval().xquery(insertJSON).eval().hasNext();
     // System.out.printlnln(response);
-    assertFalse("Insert query return empty sequence", response);
+    assertFalse( response);
     response = client.newServerEval().xquery(insertTXT).eval().hasNext();
     // System.out.printlnln(response);
-    assertFalse("Insert query return empty sequence", response);
+    assertFalse( response);
     response = client.newServerEval().xquery(insertBinary).eval().hasNext();
     // System.out.printlnln(response);
-    assertFalse("Insert query return empty sequence", response);
+    assertFalse( response);
     boolean response1 = client.newServerEval().xquery(query1).eval().next().getBoolean();
     // System.out.printlnln(response1);
-    assertTrue("Documents exist?", response1);
+    assertTrue( response1);
     int response2 = client.newServerEval().xquery(query2).eval().next().getNumber().intValue();
     // System.out.printlnln(response2);
-    assertEquals("count of documents ", 4, response2);
+    assertEquals( 4, response2);
     String response3 = client.newServerEval().xquery(query3).evalAs(String.class);
     // System.out.printlnln(response3);
-    assertEquals("Content database?", "java-functest", response3);
+    assertEquals( "java-functest", response3);
     ServerEvaluationCall evl = client.newServerEval();
     EvalResultIterator evr = evl.xquery(readDoc).eval();
     while (evr.hasNext())
@@ -241,20 +242,20 @@ public class TestEvalXquery extends AbstractFunctionalTest {
       if (er.getType().equals(Type.XML)) {
         DOMHandle dh = new DOMHandle();
         dh = er.get(dh);
-        assertEquals("document has content", "<foo>test1</foo>", convertXMLDocumentToString(dh.get()));
+        assertEquals( "<foo>test1</foo>", convertXMLDocumentToString(dh.get()));
       }
       else if (er.getType().equals(Type.JSON)) {
         JacksonHandle jh = new JacksonHandle();
         jh = er.get(jh);
-        assertTrue("document has object?", jh.get().has("test"));
+        assertTrue( jh.get().has("test"));
       }
       else if (er.getType().equals(Type.TEXTNODE)) {
-        assertTrue("document contains", er.getAs(String.class).equals("This is a text document."));
+        assertTrue( er.getAs(String.class).equals("This is a text document."));
 
       } else if (er.getType().equals(Type.BINARY)) {
         FileHandle fh = new FileHandle();
         fh = er.get(fh);
-        assertEquals("files size", 2, fh.get().length());
+        assertEquals( 2, fh.get().length());
 
       } else {
         System.out.println("Something went wrong");
@@ -340,95 +341,75 @@ public class TestEvalXquery extends AbstractFunctionalTest {
 
           if (jh.get().isArray()) {
             // System.out.println("Type Array :"+jh.get().toString());
-            assertEquals("array value at index 0 ", 1, jh.get().get(0).asInt());
-            assertEquals("array value at index 1 ", 2, jh.get().get(1).asInt());
-            assertEquals("array value at index 2 ", 3, jh.get().get(2).asInt());
+            assertEquals( 1, jh.get().get(0).asInt());
+            assertEquals( 2, jh.get().get(1).asInt());
+            assertEquals( 3, jh.get().get(2).asInt());
           }
           else if (jh.get().isObject()) {
             System.out.println("Type Object :" + jh.get().toString());
             if (jh.get().has("foo")) {
-              assertNull("this object also has null node", jh.get().get("testNull").textValue());
+              assertNull( jh.get().get("testNull").textValue());
             } else if (jh.get().has("obj"))
             {
-              assertEquals("Value of the object is ", "value", jh.get().get("obj").asText());
+              assertEquals( "value", jh.get().get("obj").asText());
             } else {
-              assertFalse("getting a wrong object ", true);
+              fail("getting a wrong object ");
             }
 
           }
           else if (jh.get().isNumber()) {
             // System.out.println("Type Number :"+jh.get().toString());
-            assertEquals("Number value", 1, jh.get().asInt());
+            assertEquals( 1, jh.get().asInt());
           }
           else if (jh.get().isNull()) {
             // System.out.println("Type Null :"+jh.get().toString());
-            assertNull("Returned Null", jh.get().textValue());
+            assertNull( jh.get().textValue());
           }
           else if (jh.get().isBoolean()) {
             // System.out.println("Type boolean :"+jh.get().toString());
-            assertTrue("Boolean value returned false", jh.get().asBoolean());
+            assertTrue( jh.get().asBoolean());
           }
           else {
             // System.out.println("Running into different types than expected");
-            assertFalse("Running into different types than expected", true);
+            fail("Running into different types than expected");
           }
 
         }
         else if (er.getType().equals(Type.TEXTNODE)) {
-          assertTrue("document contains", er.getAs(String.class).contains("s"));
+          assertTrue( er.getAs(String.class).contains("s"));
           // System.out.println("type txt node :"+er.getAs(String.class));
         } else {
           System.out.println("No corresponding type found for :" + er.getType());
         }
       }
       evr.close();
-      
+
     } catch (Exception e) {
       throw e;
     }
   }
 
-  @Test(expected = java.lang.IllegalStateException.class)
+	@Test
   public void testMultipleXqueryfnOnServerEval() {
     String insertQuery = "xdmp:document-insert(\"test1.xml\",<foo>test1</foo>)";
     String query1 = "fn:exists(fn:doc())";
-    String query2 = "fn:count(fn:doc())";
-    String query3 = "xdmp:database-name(xdmp:database())";
-
-    boolean response1 = client.newServerEval().xquery(query1).xquery(insertQuery).eval().next().getBoolean();
-    System.out.println(response1);
-    int response2 = client.newServerEval().xquery(query2).eval().next().getNumber().intValue();
-    System.out.println(response2);
-    String response3 = client.newServerEval().xquery(query3).evalAs(String.class);
-    System.out.println(response3);
+    assertThrows(IllegalStateException.class, () ->
+		client.newServerEval().xquery(query1).xquery(insertQuery).eval().next().getBoolean());
   }
 
   // Issue 156 exist for this, have test cases where you can pass, element node,
   // text node, binary node as an external variable
-  @Test(expected = com.marklogic.client.FailedRequestException.class)
-  public void testXqueryWithExtVarAsNode() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+	@Test
+  public void testXqueryWithExtVarAsNode() throws Exception {
     DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
     InputSource is = new InputSource();
     is.setCharacterStream(new StringReader("<foo attr=\"attribute\"><?processing instruction?> <!--comment-->test1</foo>"));
     Document doc = db.parse(is);
-    try {
       String query1 = "declare variable $myXmlNode as node() external;"
           + "document{ xdmp:unquote($myXmlNode) }";
       ServerEvaluationCall evl = client.newServerEval().xquery(query1);
       evl.addVariableAs("myXmlNode", new DOMHandle(doc));
-      EvalResultIterator evr = evl.eval();
-      while (evr.hasNext())
-      {
-        EvalResult er = evr.next();
-        DOMHandle dh = new DOMHandle();
-        dh = er.get(dh);
-        // System.out.println("Type XML  :"+convertXMLDocumentToString(dh.get()));
-        assertEquals("document has content", "<foo attr=\"attribute\"><?processing instruction?><!--comment-->test1</foo>", convertXMLDocumentToString(dh.get()));
-      }
-      evr.close();
-    } catch (Exception e) {
-      throw e;
-    }
+      assertThrows(FailedRequestException.class, () -> evl.eval());
   }
 
   // Issue 156 , have test cases where you can pass, element node, text node,

@@ -22,7 +22,7 @@ import com.marklogic.client.datamovement.PathSplitter;
 import com.marklogic.client.datamovement.XMLSplitter;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.io.Format;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,8 +30,8 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class PathSplitterTest {
 

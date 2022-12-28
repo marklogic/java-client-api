@@ -19,18 +19,19 @@ package com.marklogic.client.fastfunctest;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.SuggestDefinition;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.assertTrue;
+
 
 public class TestSearchSuggestion extends AbstractFunctionalTest {
 
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception
   {
     deleteDocuments(connectAsAdmin());
@@ -65,8 +66,8 @@ public class TestSearchSuggestion extends AbstractFunctionalTest {
       System.out.println(suggestions[i]);
     }
 
-    assertTrue("suggestion is wrong", suggestions[0].contains("Vannevar Bush"));
-    assertTrue("suggestion is wrong", suggestions[1].contains("Vannevar served"));
+    assertTrue( suggestions[0].contains("Vannevar Bush"));
+    assertTrue( suggestions[1].contains("Vannevar served"));
 
     // release client
     client.release();
@@ -105,7 +106,7 @@ public class TestSearchSuggestion extends AbstractFunctionalTest {
       System.out.println(suggestions[i]);
     }
 
-    assertTrue("suggestion is wrong", suggestions[0].contains("Vannevar served"));
+    assertTrue( suggestions[0].contains("Vannevar served"));
 
     // release client
     client.release();
@@ -140,7 +141,7 @@ public class TestSearchSuggestion extends AbstractFunctionalTest {
       System.out.println(suggestions[i]);
     }
 
-    assertTrue("suggestion is wrong", suggestions[0].contains("上海"));
+    assertTrue( suggestions[0].contains("上海"));
 
     // release client
     client.release();
@@ -176,8 +177,8 @@ public class TestSearchSuggestion extends AbstractFunctionalTest {
       System.out.println(suggestions[i]);
     }
 
-    assertTrue("suggestion is wrong", suggestions[0].contains("12.34"));
-    assertTrue("suggestion is wrong", suggestions[1].contains("123.45"));
+    assertTrue( suggestions[0].contains("12.34"));
+    assertTrue( suggestions[1].contains("123.45"));
 
     // release client
     client.release();
@@ -212,7 +213,7 @@ public class TestSearchSuggestion extends AbstractFunctionalTest {
       System.out.println(suggestions[i]);
     }
 
-    assertTrue("suggestion is wrong", suggestions[0].contains("2005-01-01"));
+    assertTrue( suggestions[0].contains("2005-01-01"));
 
     // release client
     client.release();
@@ -250,9 +251,9 @@ public class TestSearchSuggestion extends AbstractFunctionalTest {
       System.out.println(suggestions[i]);
     }
 
-    assertTrue("suggestion is wrong", suggestions[0].contains("noun:actor"));
-    assertTrue("suggestion is wrong", suggestions[1].contains("noun:actress"));
-    assertTrue("suggestion is wrong", suggestions[2].contains("noun:apricott"));
+    assertTrue( suggestions[0].contains("noun:actor"));
+    assertTrue( suggestions[1].contains("noun:actress"));
+    assertTrue( suggestions[2].contains("noun:apricott"));
 
     // release client
     client.release();
@@ -289,8 +290,8 @@ public class TestSearchSuggestion extends AbstractFunctionalTest {
       System.out.println(suggestions[i]);
     }
 
-    assertTrue("suggestion is wrong", suggestions[0].contains("act"));
-    assertTrue("suggestion is wrong", suggestions[1].contains("acting"));
+    assertTrue( suggestions[0].contains("act"));
+    assertTrue( suggestions[1].contains("acting"));
 
     // release client
     client.release();

@@ -27,15 +27,15 @@ import com.marklogic.client.semantics.Capability;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.GraphPermissions;
 import com.marklogic.client.semantics.RDFMimeTypes;
-import org.junit.*;
-import org.junit.runners.MethodSorters;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.*;
 
 import java.io.*;
 import java.util.Iterator;
 
-import static org.junit.Assert.*;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class TestSemanticsGraphManager extends AbstractFunctionalTest {
 
   // private static final String DEFAULT_GRAPH =
@@ -49,13 +49,13 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
   private DatabaseClient readerClient = null;
   private static String datasource = "src/test/java/com/marklogic/client/functionaltest/data/semantics/";
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     System.out.println("In setup");
     appServerHostname = getRestAppServerHostName();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tear down");
     deleteRESTUser("eval-user");
@@ -63,7 +63,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     deleteUserRole("test-perm2");
   }
 
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception {
     deleteDocuments(connectAsAdmin());
     adminClient.release();
@@ -72,7 +72,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     System.out.println("Running clear script");
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
@@ -108,7 +108,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     } catch (Exception e) {
       exp = e;
     }
-    assertTrue("Read after detele did not throw expected Exception, Received ::" + exp,
+    assertTrue(
         exp.toString().contains("Could not read resource at graphs."));
 
     // Delete non existing graph
@@ -119,8 +119,8 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       exp = e;
     }
     assertTrue(
-        "Deleting non-existing Graph did not throw expected Exception:: http://bugtrack.marklogic.com/35064 , Received ::" + exp,
-        exp.toString().contains("Could not delete resource at graphs"));
+        exp.toString().contains("Could not delete resource at graphs"),
+		"Deleting non-existing Graph did not throw expected Exception:: http://bugtrack.marklogic.com/35064 , Received ::" + exp);
   }
 
   /*
@@ -164,8 +164,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       exp = e;
     }
     assertTrue(
-        "Unexpected Error Message, \n Expecting:: com.marklogic.client.ForbiddenUserException: Local message: User is not allowed to write resource at graphs. Server Message: "
-            + "You do not have permission to this method and URL \n BUT Received :: " + exp.toString(), exp.toString()
+        exp.toString()
             .contains(
                 "com.marklogic.client.ForbiddenUserException: Local message: User is not allowed to write resource at graphs. Server Message: "
                     + "You do not have permission to this method and URL"));
@@ -192,12 +191,11 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     }
     if (exceptionThrown)
       assertTrue(
-          "Unexpected Error Message, \n Expecting:: com.marklogic.client.ForbiddenUserException: Local message: User is not allowed to delete resource at graphs. Server Message: "
-              + "You do not have permission to this method and URL \n BUT Received :: " + exp.toString(), exp.toString()
+          exp.toString()
               .contains(
                   "com.marklogic.client.ForbiddenUserException: Local message: User is not allowed to delete resource at graphs. Server Message: "
                       + "You do not have permission to this method and URL"));
-    assertTrue("Expected Exception but Received NullPointer", exceptionThrown);
+    assertTrue( exceptionThrown);
 
   }
 
@@ -212,7 +210,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     filehandle.set(file);
     gmWriter.write("htp://test.sem.graph/n", filehandle.withMimetype("application/n-triples"));
     StringHandle handle = gmWriter.read("htp://test.sem.graph/n", new StringHandle().withMimetype(RDFMimeTypes.NTRIPLES));
-    assertTrue("Did not insert document or inserted empty doc", handle.toString().contains("<http://jibbering.com/foaf/santa.rdf#bod>"));
+    assertTrue( handle.toString().contains("<http://jibbering.com/foaf/santa.rdf#bod>"));
 
   }
 
@@ -231,7 +229,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     ReaderHandle read = gmWriter.read("http://test.reader.handle/bufferreadtrig", new ReaderHandle().withMimetype(RDFMimeTypes.RDFXML));
     Reader readFile = read.get();
     String readContent = convertReaderToString(readFile);
-    assertTrue("Did not get receive expected string content, Received:: " + readContent,
+    assertTrue(
         readContent.contains("http://www.daml.org/2001/12/factbook/vi#A113932"));
     handle.close();
     read.close();
@@ -260,7 +258,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     BytesHandle byteHandle = gmWriter.read("http://test.turtle.com/byteHandle", new BytesHandle().withMimetype(RDFMimeTypes.TURTLE));
     byte[] readInBytes = byteHandle.get();
     String readInString = new String(readInBytes);
-    assertTrue("Did not insert document or inserted empty doc", readInString.contains("#relativeIRI"));
+    assertTrue( readInString.contains("#relativeIRI"));
   }
 
   /*
@@ -281,7 +279,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     File readFile = handle.get();
     JsonNode readContent = mapper.readTree(readFile);
     // Verify read content with inserted content
-    assertTrue("Did not insert document or inserted empty doc", readContent.toString()
+    assertTrue( readContent.toString()
         .contains("http://purl.org/dc/elements/1.1/title"));
   }
 
@@ -309,11 +307,10 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
 	try {
 		 ins = new InputStreamHandle().withMimetype(RDFMimeTypes.N3);
 		 read = gmWriter.read("http://test.n3.com/byte", ins);
-	
+
     fileRead = read.get();
     String readContent = convertInputStreamToString(fileRead);
-    assertTrue("Did not find expected content after inserting the triples:: Found: " + readContent,
-        readContent.contains("/publications/journals/Journal1/1940"));
+    assertTrue(readContent.contains("/publications/journals/Journal1/1940"));
 	} catch (Exception e) {
 		e.printStackTrace();
 	}
@@ -334,7 +331,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     filehandle.set(file);
     gmWriter.write("htp://test.sem.graph/nquads", filehandle.withMimetype("application/n-quads"));
     StringHandle handle = gmWriter.read("htp://test.sem.graph/nquads", new StringHandle().withMimetype(RDFMimeTypes.NQUADS));
-    assertTrue("Did not insert document or inserted empty doc", handle.toString().contains("<#electricVehicle2>"));
+    assertTrue( handle.toString().contains("<#electricVehicle2>"));
   }
 
   /*
@@ -353,7 +350,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     FileHandle handle = gmWriter.read("htp://test.sem.graph/trig", new FileHandle());
     File readFile = handle.get();
     String expectedContent = convertFileToString(readFile);
-    assertTrue("Did not insert document or inserted empty doc",
+    assertTrue(
         expectedContent.contains("http://www.example.org/exampleDocument#Monica"));
 
   }
@@ -377,7 +374,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     gmWriter.write("htp://test.sem.graph/tripxml", filehandle.withMimetype(RDFMimeTypes.TRIPLEXML), trx);
     // Validate graph written to DB by reading within the same transaction
     StringHandle handle = gmWriter.read("htp://test.sem.graph/tripxml", new StringHandle().withMimetype(RDFMimeTypes.TRIPLEXML), trx);
-    assertTrue("Did not insert document or inserted empty doc", handle.toString().contains("Anna's Homepage"));
+    assertTrue( handle.toString().contains("Anna's Homepage"));
     // Delete Graph in the same transaction
     gmWriter.delete("htp://test.sem.graph/tripxml", trx);
     // Validate Graph is deleted
@@ -414,8 +411,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     } catch (Exception e) {
       exp = e;
     }
-    assertTrue("Did not throw expected Exception, Expecting ::XDMP-BASEURI (err:FOER0000): Undeclared base URI " + "\n Received::"
-        + exp, exp.toString().contains("XDMP-BASEURI (err:FOER0000): Undeclared base URI"));
+    assertTrue(exp.toString().contains("XDMP-BASEURI (err:FOER0000): Undeclared base URI"));
 
   }
 
@@ -437,11 +433,9 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       handle = gmWriter.read("htp://test.sem.graph/tripxmlnoniri", new StringHandle());
 
     } catch (Exception e) {
-      assertTrue("Did not receive expected Error message, Expecting ::SEM-NOTRDF \n  Received::" + e,
-          e.toString().contains("SEM-NOTRDF") && e != null);
-
+      assertTrue(e.toString().contains("SEM-NOTRDF") && e != null);
     }
-    assertTrue("Read content has un-expected content ", handle.get().toString().contains("5.11"));
+    assertTrue( handle.get().toString().contains("5.11"));
   }
 
   /*
@@ -458,11 +452,10 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
 
       handle = gmWriter.read("htp://test.sem.graph/n3noniri", new StringHandle().withMimetype(RDFMimeTypes.N3));
     } catch (Exception e) {
-      assertTrue("Did not receive expected Error message, Expecting ::SEM-NOTRDF \n  Received::" + e,
-          e.toString().contains("SEM-NOTRDF") && e != null);
+      assertTrue(e.toString().contains("SEM-NOTRDF") && e != null);
 
     }
-    assertTrue("Read content has un-expected content ", handle.get().toString().contains("p0:named_graph"));
+    assertTrue( handle.get().toString().contains("p0:named_graph"));
   }
 
   /*
@@ -476,8 +469,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     gmWriter.writeAs("htp://test.sem.graph/ntAs", filehandle.withMimetype(RDFMimeTypes.NTRIPLES));
     File read = gmWriter.readAs("htp://test.sem.graph/ntAs", File.class);
     String expectedContent = convertFileToString(read);
-    assertTrue("writeAs & readAs  test did not return expected content",
-        expectedContent.contains("http://www.w3.org/2001/sw/RDFCore/ntriples/"));
+    assertTrue(expectedContent.contains("http://www.w3.org/2001/sw/RDFCore/ntriples/"));
   }
 
   /*
@@ -495,7 +487,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     // Validate graph written to DB by reading within the same transaction
     File readFile = gmWriter.readAs("htp://test.sem.graph/ttlas", File.class, trx);
     String expectedContent = convertFileToString(readFile);
-    assertTrue("Did not insert document or inserted empty doc", expectedContent.contains("http://www.w3.org/2004/02/skos/core#Concept"));
+    assertTrue( expectedContent.contains("http://www.w3.org/2004/02/skos/core#Concept"));
     // Delete Graph in the same transaction
     gmWriter.delete("htp://test.sem.graph/ttlas", trx);
     trx.commit();
@@ -505,7 +497,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       String readContent = gmWriter.readAs("htp://test.sem.graph/ttlas", String.class, trx);
       trx.commit();
       trx = null;
-      assertTrue("Unexpected content read, expecting Resource not found exception", readContent == null);
+      assertTrue(readContent == null);
     } catch (ResourceNotFoundException e) {
       System.out.println(e);
     } finally {
@@ -536,7 +528,6 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     File readFile = handle.get();
     String expectedContent = convertFileToString(readFile);
     assertTrue(
-        "Did not insert document or inserted empty doc",
         expectedContent.contains("http://www.example.org/exampleDocument#Monica")
             && expectedContent.contains("http://purl.org/dc/elements/1.1/publisher"));
   }
@@ -559,7 +550,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     FileHandle handle = gmWriter.read("htp://test.sem.graph/trigM", new FileHandle().withMimetype(RDFMimeTypes.RDFJSON));
     File readFile = handle.get();
     String expectedContent = convertFileToString(readFile);
-    assertTrue("Did not insert document or inserted empty doc", expectedContent.contains("http://example.com/ns/person#firstName")
+    assertTrue( expectedContent.contains("http://example.com/ns/person#firstName")
         && expectedContent.contains("Anna's Homepage"));
   }
 
@@ -580,7 +571,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     gmWriter.mergeAs("htp://test.sem.graph/jsonMergeAs", graphData2);
     File readFile = gmWriter.readAs("htp://test.sem.graph/jsonMergeAs", File.class);
     String expectedContent = convertFileToString(readFile);
-    assertTrue("Did not insert document or inserted empty doc", expectedContent.contains("http://example.com/ns/person#firstName")
+    assertTrue( expectedContent.contains("http://example.com/ns/person#firstName")
         && expectedContent.contains("Anna's Homepage"));
   }
 
@@ -604,7 +595,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     gmWriter.mergeAs("htp://test.sem.graph/jsonMergeAsTrx", graphData2, trx);
     File readFile = gmWriter.readAs("htp://test.sem.graph/jsonMergeAsTrx", File.class, trx);
     String expectedContent = convertFileToString(readFile);
-    assertTrue("Did not insert document or inserted empty doc", expectedContent.contains("http://example.com/ns/person#firstName")
+    assertTrue( expectedContent.contains("http://example.com/ns/person#firstName")
         && expectedContent.contains("Anna's Homepage"));
     try {
       trx.commit();
@@ -636,7 +627,6 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     File readFile = handle.get();
     String expectedContent = convertFileToString(readFile);
     assertTrue(
-        "Did not insert document or inserted empty doc",
         expectedContent
             .equals("{\"http://example.com/ns/directory#m\":{\"http://example.com/ns/person#firstName\":[{\"value\":\"Michelle\", \""
                 + "type\":\"literal\", \"datatype\":\"http://www.w3.org/2001/XMLSchema#string\"}]}}"));
@@ -657,15 +647,15 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     File readFile = handle.get();
     String expectedContent = convertFileToString(readFile);
     try {
-      assertTrue("Did not Merge document or inserted empty doc",
+      assertTrue(
           expectedContent.contains("Michelle") && expectedContent.contains("Anna's Homepage"));
       gmWriter.delete("htp://test.sem.graph/mergetrx", trx);
       trx.commit();
       trx = null;
       StringHandle readContent = gmWriter.read("htp://test.sem.graph/mergetrx", new StringHandle(), trx);
-      assertTrue("Unexpected Content from read, expecting null", readContent == null);
+      assertTrue(readContent == null);
     } catch (Exception e) {
-      assertTrue("Unexpected Exception Thrown", e.toString().contains("ResourceNotFoundException"));
+      assertTrue( e.toString().contains("ResourceNotFoundException"));
     } finally {
       if (trx != null)
         trx.commit();
@@ -694,10 +684,8 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     File readFile = handle.get();
     String expectedContent = convertFileToString(readFile);
     System.out.println(gmWriter.listGraphUris().next().toString());
-    assertTrue("" + gmWriter.listGraphUris().next().toString(),
-        gmWriter.listGraphUris().next().toString().equals("http://marklogic.com/semantics#default-graph"));
-    assertTrue("Did not insert document or inserted empty doc",
-        expectedContent.contains("http://www.example.org/exampleDocument#Monica"));
+    assertTrue(gmWriter.listGraphUris().next().toString().equals("http://marklogic.com/semantics#default-graph"));
+    assertTrue(expectedContent.contains("http://www.example.org/exampleDocument#Monica"));
   }
 
   /*
@@ -717,21 +705,21 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     FileHandle handle = gmWriter.read(uri, new FileHandle());
     File readFile = handle.get();
     String expectedContent = convertFileToString(readFile);
-    assertTrue("Did not merge Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
+    assertTrue( expectedContent.contains("<http://example.com/mergeQuadP"));
 
     file = new File(datasource + "relative2.nq");
     gmWriter.replaceGraphs(new FileHandle(file).withMimetype(RDFMimeTypes.NQUADS));
     uri = "http://originalGraph";
     StringHandle readQuads = gmWriter.read(uri, new StringHandle());
-    assertTrue("Did not Replace Quads", readQuads.toString().contains("#electricVehicle2"));
+    assertTrue( readQuads.toString().contains("#electricVehicle2"));
     gmWriter.deleteGraphs();
 
     try {
       StringHandle readContent = gmWriter.read(uri, new StringHandle());
-      assertTrue("Unexpected content read, expecting Resource not found exception", readContent.get() == null);
+      assertTrue( readContent.get() == null);
 
     } catch (Exception e) {
-      assertTrue("Unexpected Exception Thrown", e.toString().contains("ResourceNotFoundException"));
+      assertTrue( e.toString().contains("ResourceNotFoundException"));
     }
   }
 
@@ -748,22 +736,22 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     gmWriter.replaceGraphsAs(file);
     String uri = "http://en.wikipedia.org/wiki/Alexander_I_of_Serbia?oldid=492189987#absolute-line=1";
     StringHandle readQuads = gmWriter.read(uri, new StringHandle());
-    assertTrue("Did not Replace Quads", readQuads.toString().contains("http://dbpedia.org/ontology/Monarch"));
+    assertTrue( readQuads.toString().contains("http://dbpedia.org/ontology/Monarch"));
 
     file = new File(datasource + "relative2.nq");
     gmWriter.mergeGraphsAs(file);
     uri = "http://originalGraph";
     readQuads = gmWriter.read(uri, new StringHandle());
-    assertTrue("Did not Replace Quads", readQuads.toString().contains("#electricVehicle2"));
+    assertTrue( readQuads.toString().contains("#electricVehicle2"));
 
     gmWriter.deleteGraphs();
     try {
       StringHandle readContent = gmWriter.read(uri, new StringHandle());
-      assertTrue("Unexpected content read, expecting Resource not found exception", readContent.get() == null);
+      assertTrue( readContent.get() == null);
 
     } catch (Exception e) {
 
-      assertTrue("Unexpected Exception Thrown", e.toString().contains("ResourceNotFoundException"));
+      assertTrue( e.toString().contains("ResourceNotFoundException"));
     }
   }
 
@@ -776,7 +764,6 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     gmWriter.write("http://test.things.com/", filehandle);
     String things = gmWriter.thingsAs(String.class, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
     assertTrue(
-        "Did not return Expected graph Uri's",
         things.equals("<#electricVehicle2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://people.aifb.kit.edu/awa/2011/smartgrid/schema/smartgrid#ElectricVehicle> ."));
   }
 
@@ -787,8 +774,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     File file = new File(datasource + "relative5.xml");
     gmWriter.write(tripleGraphUri, new FileHandle(file));
     TriplesReadHandle things = gmWriter.things(new StringHandle(), "about");
-    assertTrue("Things did not return expected Uri's",
-        things.toString().contains("<about> <http://purl.org/dc/elements/1.1/title> \"Anna's Homepage\" ."));
+    assertTrue(things.toString().contains("<about> <http://purl.org/dc/elements/1.1/title> \"Anna's Homepage\" ."));
     gmWriter.delete(tripleGraphUri);
   }
 
@@ -800,7 +786,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     gmWriter.write("htp://test.sem.graph/rdfjson", filehandle.withMimetype("application/rdf+json"));
     JacksonHandle handle1 = gmWriter.read("htp://test.sem.graph/rdfjson", new JacksonHandle());
     JsonNode readFile = handle1.get();
-    assertTrue("Did not insert document or inserted empty doc", readFile.toString().contains("http://purl.org/dc/elements/1.1/title"));
+    assertTrue( readFile.toString().contains("http://purl.org/dc/elements/1.1/title"));
   }
 
   @Test
@@ -810,7 +796,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     filehandle.set(file);
     gmWriter.write("htp://test.sem.graph/rdfjson", filehandle.withMimetype("application/rdf+json"));
     TriplesReadHandle handle1 = gmWriter.read("htp://test.sem.graph/rdfjson", new JacksonHandle());
-    assertTrue("Did not insert document or inserted empty doc", handle1.toString().contains("http://purl.org/dc/elements/1.1/title"));
+    assertTrue( handle1.toString().contains("http://purl.org/dc/elements/1.1/title"));
   }
 
   @Test
@@ -822,7 +808,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     Exception exp = null;
     try {
       TriplesReadHandle things = gmWriter.things(new StringHandle(), "noMatch");
-      assertTrue("Things did not return expected Uri's", things == null);
+      assertTrue(things == null);
     } catch (Exception e) {
       exp = e;
     }
@@ -839,7 +825,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     file = new File(datasource + "semantics.ttl");
     gmWriter.merge(tripleGraphUri, new FileHandle(file).withMimetype(RDFMimeTypes.TURTLE));
     StringHandle things = gmWriter.things(new StringHandle(), "http://dbpedia.org/resource/Hadoop");
-    assertTrue("Things did not return expected Uri's", things.get().contains("Apache Hadoop"));
+    assertTrue(things.get().contains("Apache Hadoop"));
     gmWriter.delete(tripleGraphUri);
   }
 
@@ -868,7 +854,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     System.out.println("Permissions after create , Should not see Execute" + gmTestPerm.getPermissions(uri));
     perms = gmTestPerm.getPermissions(uri);
     for (Capability capability : perms.get("test-perm")) {
-      assertTrue("capability should be UPDATE, not [" + capability + "]", capability == Capability.UPDATE);
+      assertTrue(capability == Capability.UPDATE);
     }
 
     // Create another Role to check for builder style permissions support.
@@ -883,24 +869,24 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     perms = gmTestPerm.getPermissions(uri);
     System.out.println("Permissions after setting execute , Should  see Execute & Update" + gmTestPerm.getPermissions(uri));
     for (Capability capability : perms.get("test-perm")) {
-      assertTrue("capability for role test-perm should be UPDATE && Execute, not [" + capability + "]", capability == Capability.UPDATE
+      assertTrue(capability == Capability.UPDATE
           || capability == Capability.EXECUTE);
     }
     for (Capability capability : perms.get("test-perm2")) {
-      assertTrue("capability for role test-perm2 should be EXECUTE && READ, not [" + capability + "]", capability == Capability.READ
+      assertTrue(capability == Capability.READ
           || capability == Capability.EXECUTE);
     }
-    assertTrue("Did not have expected capabilities", perms.get("test-perm").size() == 2);
-    assertTrue("Did not have expected capabilities", perms.get("test-perm2").size() == 2);
+    assertTrue( perms.get("test-perm").size() == 2);
+    assertTrue( perms.get("test-perm2").size() == 2);
 
     // Write Read permission to uri and validate permissions are overwritten
     // with write
     perms = gmTestPerm.permission("test-perm", Capability.READ);
     gmTestPerm.write(uri, handle.withMimetype(RDFMimeTypes.RDFXML), perms);
     for (Capability capability : perms.get("test-perm")) {
-      assertTrue("capability should be READ, not [" + capability + "]", capability == Capability.READ);
+      assertTrue(capability == Capability.READ);
     }
-    assertTrue("Did not have expected capabilities", perms.get("test-perm").size() == 1);
+    assertTrue( perms.get("test-perm").size() == 1);
 
     // Delete Permissions and Validate
     gmTestPerm.deletePermissions(uri);
@@ -918,8 +904,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       ReaderHandle read = gmTestPerm.read(uri, new ReaderHandle());
       Reader readFile = read.get();
       String readContent = convertReaderToString(readFile);
-      assertTrue("Did not get receive expected string content, Received:: " + readContent,
-          readContent.contains("http://www.daml.org/2001/12/factbook/vi#A113932"));
+      assertTrue(readContent.contains("http://www.daml.org/2001/12/factbook/vi#A113932"));
     } catch (Exception e) {
       System.out.println("Tried to Read  and validate triples, should  see this exception ::" + e);
     }
@@ -954,8 +939,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     ReaderHandle read = gmTestPerm.read(uri, new ReaderHandle());
     Reader readFile = read.get();
     String readContent = convertReaderToString(readFile);
-    assertTrue("Did not get receive expected string content, Received:: " + readContent,
-        readContent.contains("http://www.daml.org/2001/12/factbook/vi#A113932"));
+    assertTrue(readContent.contains("http://www.daml.org/2001/12/factbook/vi#A113932"));
 
     // Delete the role
     deleteUserRole("test-perm2");
@@ -995,7 +979,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       System.out.println("OUTSIDE TRX , SHOULD NOT SEE test-perm EXECUTE" + perm);
       assertNull(perm.get("test-perm"));
       perms = gmTestPerm.getPermissions(uri, trx);
-      assertTrue("Permission within trx should have Update capability", perms.get("test-perm").contains(Capability.UPDATE));
+      assertTrue( perms.get("test-perm").contains(Capability.UPDATE));
       trx.rollback();
       trx = null;
       perms = gmTestPerm.getPermissions(uri);
@@ -1038,7 +1022,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       System.out.println("Permissions after create , Should not see Execute" + gmTestPerm.getPermissions(uri, trx));
       perms = gmTestPerm.getPermissions(uri, trx);
       for (Capability capability : perms.get("test-perm")) {
-        assertTrue("capability should be UPDATE, not [" + capability + "]", capability == Capability.UPDATE);
+        assertTrue(capability == Capability.UPDATE);
       }
 
       // Set Capability for the User
@@ -1049,8 +1033,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       perms = gmTestPerm.getPermissions(uri, trx);
       System.out.println("Permissions after setting execute , Should  see Execute & Update" + gmTestPerm.getPermissions(uri, trx));
       for (Capability capability : perms.get("test-perm")) {
-        assertTrue("capability should be UPDATE && Execute, not [" + capability + "]", capability == Capability.UPDATE
-            || capability == Capability.EXECUTE);
+        assertTrue(capability == Capability.UPDATE || capability == Capability.EXECUTE);
       }
 
       // Validate write with Update and Execute permissions
@@ -1081,12 +1064,12 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       // Read and Validate triples
       try {
         ReaderHandle read = gmTestPerm.read(uri, new ReaderHandle().withMimetype(RDFMimeTypes.RDFXML), trx);
-        
-        Reader readFile = read.get();        
+
+        Reader readFile = read.get();
         StringBuilder readContentSB = new StringBuilder();
         BufferedReader br = null;
 		try {
-			br = new BufferedReader(readFile);			
+			br = new BufferedReader(readFile);
 			String line = null;
 			while ((line = br.readLine()) != null)
 				readContentSB.append(line);
@@ -1098,8 +1081,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
 		}
 		String readContent = readContentSB.toString();
 		System.out.println("Triples read back from Server is " + readContent);
-        assertTrue("Did not get receive expected string content, Received:: " + readContent,
-            readContent.contains("http://www.daml.org/2001/12/factbook/vi#A113932"));
+        assertTrue(readContent.contains("http://www.daml.org/2001/12/factbook/vi#A113932"));
       } catch (Exception e) {
         System.out.println("Tried to Read  and validate triples, should not see this exception ::" + e);
       }
@@ -1138,8 +1120,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       ReaderHandle read = gmTestPerm.read(uri, new ReaderHandle(), trx);
       Reader readFile = read.get();
       String readContent = convertReaderToString(readFile);
-      assertTrue("Did not get receive expected string content, Received:: " + readContent,
-          readContent.contains("http://www.daml.org/2001/12/factbook/vi#A113932"));
+      assertTrue(readContent.contains("http://www.daml.org/2001/12/factbook/vi#A113932"));
       trx.commit();
       trx = null;
 
@@ -1156,7 +1137,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
   /*
    * Write Triples of Type JSON Merge NTriples into the same graph and validate
    * mergeGraphs with transactions.
-   * 
+   *
    * Merge within same write transaction Write and merge Triples within
    * different transactions. Commit the merge transaction Write and merge
    * Triples within different transactions. Rollback the merge transaction Write
@@ -1183,8 +1164,8 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       FileHandle handle = gmWriter.read(uri, new FileHandle());
       File readFile = handle.get();
       String expectedContent = convertFileToString(readFile);
-      assertTrue("Did not write Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
-      assertTrue("Did not merge Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
+      assertTrue( expectedContent.contains("<http://example.com/ns/person#firstName"));
+      assertTrue( expectedContent.contains("<http://example.com/mergeQuadP"));
       trxIn = null;
       handle = null;
       readFile = null;
@@ -1207,7 +1188,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       handle = gmWriter.read(uri, new FileHandle());
       readFile = handle.get();
       expectedContent = convertFileToString(readFile);
-      assertTrue("Did not write Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
+      assertTrue( expectedContent.contains("<http://example.com/ns/person#firstName"));
       handle = null;
       readFile = null;
       expectedContent = null;
@@ -1219,8 +1200,8 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       handle = gmWriter.read(uri, new FileHandle());
       readFile = handle.get();
       expectedContent = convertFileToString(readFile);
-      assertTrue("Merge corrupted original Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
-      assertTrue("Did not merge Quad in separate transaction", expectedContent.contains("<http://example.com/mergeQuadP"));
+      assertTrue( expectedContent.contains("<http://example.com/ns/person#firstName"));
+      assertTrue( expectedContent.contains("<http://example.com/mergeQuadP"));
 
       trxIn = null;
       trxInMergeGraph = null;
@@ -1247,7 +1228,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       handle = gmWriter.read(uri, new FileHandle());
       readFile = handle.get();
       expectedContent = convertFileToString(readFile);
-      assertTrue("Did not write Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
+      assertTrue( expectedContent.contains("<http://example.com/ns/person#firstName"));
       handle = null;
       readFile = null;
       expectedContent = null;
@@ -1259,8 +1240,8 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       expectedContent = convertFileToString(readFile);
 
       // Verify if original quad is available.
-      assertTrue("Merge corrupted original Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
-      assertFalse("Did merge Quad when it should not have, since transaction was rolled back", expectedContent.contains("<http://example.com/mergeQuadP"));
+      assertTrue( expectedContent.contains("<http://example.com/ns/person#firstName"));
+      assertFalse(expectedContent.contains("<http://example.com/mergeQuadP"));
 
       trxIn = null;
       trxInMergeGraph = null;
@@ -1286,7 +1267,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       handle = gmWriter.read(uri, new FileHandle());
       readFile = handle.get();
       expectedContent = convertFileToString(readFile);
-      assertTrue("Did not write Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
+      assertTrue( expectedContent.contains("<http://example.com/ns/person#firstName"));
       handle = null;
       readFile = null;
       expectedContent = null;
@@ -1300,8 +1281,8 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       expectedContent = convertFileToString(readFile);
 
       // Verify if original quad is available.
-      assertTrue("Merge corrupted original Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
-      assertFalse("Did merge Quad when it should not have, since transaction was rolled back", expectedContent.contains("<http://example.com/mergeQuadP"));
+      assertTrue( expectedContent.contains("<http://example.com/ns/person#firstName"));
+      assertFalse(expectedContent.contains("<http://example.com/mergeQuadP"));
 
       trxIn = null;
       trxInMergeGraph = null;
@@ -1317,8 +1298,8 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       readFile = handle.get();
       expectedContent = convertFileToString(readFile);
       // Verify if original quad is available.
-      assertTrue("Merge corrupted original Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
-      assertTrue("Did not merge Quad in second commit transaction", expectedContent.contains("<http://example.com/mergeQuadP"));
+      assertTrue( expectedContent.contains("<http://example.com/ns/person#firstName"));
+      assertTrue( expectedContent.contains("<http://example.com/mergeQuadP"));
 
       // Delete Graphs inside the transaction.
       trxDelIn = writerClient.openTransaction();
@@ -1352,7 +1333,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
   /*
    * Write Triples of Type JSON replace NTriples into the same graph and
    * validate replaceGraphs with transactions.
-   * 
+   *
    * Replace within same write transaction Write and replace Triples within
    * different transactions. Commit the replace transaction Write and replace
    * Triples within different transactions. Rollback the replace transaction
@@ -1382,9 +1363,9 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       String expectedContent = convertFileToString(readFile);
 
       // Should not contain original triples
-      assertFalse("Did not replace Quad", expectedContent.contains("http://example.com/ns/person#firstName"));
+      assertFalse( expectedContent.contains("http://example.com/ns/person#firstName"));
       // Should contain new triples
-      assertTrue("Did not replace Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
+      assertTrue( expectedContent.contains("<http://example.com/mergeQuadP"));
 
       trxIn = null;
       handle = null;
@@ -1407,7 +1388,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       readFile = handle.get();
       expectedContent = convertFileToString(readFile);
       // Should contain original triples
-      assertTrue("Write Quad not successful", expectedContent.contains("http://example.com/ns/person#firstName"));
+      assertTrue( expectedContent.contains("http://example.com/ns/person#firstName"));
 
       // Replace Graphs inside another transaction.
       trxInReplaceGraph = writerClient.openTransaction();
@@ -1421,9 +1402,9 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       readFile = handle.get();
       expectedContent = convertFileToString(readFile);
       // Should not contain original triples
-      assertFalse("Did not replace Quad", expectedContent.contains("http://example.com/ns/person#firstName"));
+      assertFalse( expectedContent.contains("http://example.com/ns/person#firstName"));
       // Should contain new triples
-      assertTrue("Did not replace Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
+      assertTrue( expectedContent.contains("<http://example.com/mergeQuadP"));
 
       trxIn = null;
       trxInReplaceGraph = null;
@@ -1448,7 +1429,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       readFile = handle.get();
       expectedContent = convertFileToString(readFile);
       // Should contain original triples
-      assertTrue("Write Quad not successful", expectedContent.contains("http://example.com/ns/person#firstName"));
+      assertTrue( expectedContent.contains("http://example.com/ns/person#firstName"));
 
       handle = null;
       readFile = null;
@@ -1463,9 +1444,9 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       expectedContent = convertFileToString(readFile);
 
       // Should not contain original triples
-      assertTrue("Original Quad not available after transaction rolled back", expectedContent.contains("http://example.com/ns/person#firstName"));
+      assertTrue( expectedContent.contains("http://example.com/ns/person#firstName"));
       // Should contain new triples
-      assertFalse("Did not replace Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
+      assertFalse( expectedContent.contains("<http://example.com/mergeQuadP"));
 
       trxIn = null;
       trxInReplaceGraph = null;
@@ -1490,7 +1471,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       readFile = handle.get();
       expectedContent = convertFileToString(readFile);
       // Should contain original triples
-      assertTrue("Write Quad not successful", expectedContent.contains("http://example.com/ns/person#firstName"));
+      assertTrue( expectedContent.contains("http://example.com/ns/person#firstName"));
       handle = null;
       readFile = null;
       expectedContent = null;
@@ -1502,9 +1483,9 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       expectedContent = convertFileToString(readFile);
 
       // Should not contain original triples
-      assertTrue("Original Quad not available after transaction rolled back", expectedContent.contains("http://example.com/ns/person#firstName"));
+      assertTrue( expectedContent.contains("http://example.com/ns/person#firstName"));
       // Should contain new triples
-      assertFalse("Did not replace Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
+      assertFalse( expectedContent.contains("<http://example.com/mergeQuadP"));
 
       trxIn = null;
       trxInReplaceGraph = null;
@@ -1520,9 +1501,9 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
       readFile = handle.get();
       expectedContent = convertFileToString(readFile);
       // Should not contain original triples
-      assertFalse("Did not replace Quad", expectedContent.contains("http://example.com/ns/person#firstName"));
+      assertFalse( expectedContent.contains("http://example.com/ns/person#firstName"));
       // Should contain new triples
-      assertTrue("Did not replace Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
+      assertTrue( expectedContent.contains("<http://example.com/mergeQuadP"));
 
       // Delete Graphs inside the transaction.
       trxDelIn = writerClient.openTransaction();

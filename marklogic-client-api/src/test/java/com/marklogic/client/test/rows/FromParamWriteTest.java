@@ -14,11 +14,11 @@ import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FromParamWriteTest extends AbstractOpticUpdateTest {
 
@@ -179,14 +179,15 @@ public class FromParamWriteTest extends AbstractOpticUpdateTest {
 
         verifyJsonDoc(uri, doc -> {
             String systemEnd = doc.get("system-end").asText();
-            assertTrue("system-end should have been populated by ML: " + doc, systemEnd.startsWith("9999"));
-            assertTrue("system-start should have been populated by ML: " + doc,
-                StringUtils.isNotEmpty(doc.get("system-start").asText()));
+            assertTrue(systemEnd.startsWith("9999"), "system-end should have been populated by ML: " + doc);
+            assertTrue(
+                StringUtils.isNotEmpty(doc.get("system-start").asText()),
+				"system-start should have been populated by ML: " + doc);
         });
 
         verifyMetadata(uri, metadata -> {
-            assertTrue("The document should be in the 'latest' collection if it was correctly inserted via " +
-                "temporal.documentInsert", metadata.getCollections().contains("latest"));
+            assertTrue(metadata.getCollections().contains("latest"),
+				"The document should be in the 'latest' collection if it was correctly inserted via temporal.documentInsert");
             assertTrue(metadata.getCollections().contains(temporalCollection));
         });
 
@@ -201,7 +202,7 @@ public class FromParamWriteTest extends AbstractOpticUpdateTest {
         // Verify doc and that we now have 2 versions
         verifyJsonDoc(uri, doc -> assertEquals("world", doc.get("hello").asText()));
         List<RowRecord> rows = resultRows(op.fromDocUris(op.cts.collectionQuery(temporalCollection)));
-        assertEquals("Should have 2 versions in the temporal collection", 2, rows.size());
+        assertEquals(2, rows.size(), "Should have 2 versions in the temporal collection");
     }
 
     @Test
@@ -227,7 +228,7 @@ public class FromParamWriteTest extends AbstractOpticUpdateTest {
 
     private void verifyXmlDocContent(String uri, String expectedContent) {
         verifyXmlDoc(uri, content -> {
-            assertTrue("Unexpected content: " + content, content.contains(expectedContent));
+            assertTrue(content.contains(expectedContent), "Unexpected content: " + content);
         });
     }
 }

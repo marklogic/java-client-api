@@ -15,14 +15,26 @@
  */
 package com.marklogic.client.test;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Iterator;
+import com.marklogic.client.admin.ExtensionLibrariesManager;
+import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.document.DocumentMetadataPatchBuilder.Cardinality;
+import com.marklogic.client.document.DocumentPatchBuilder;
+import com.marklogic.client.document.DocumentPatchBuilder.Position;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.document.XMLDocumentManager.DocumentRepair;
+import com.marklogic.client.io.*;
+import com.marklogic.client.io.marker.DocumentPatchHandle;
+import com.marklogic.client.util.EditableNamespaceContext;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -41,35 +53,21 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-
-import com.marklogic.client.admin.ExtensionLibrariesManager;
-import com.marklogic.client.io.*;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
-import com.marklogic.client.document.DocumentDescriptor;
-import com.marklogic.client.document.DocumentManager.Metadata;
-import com.marklogic.client.document.DocumentMetadataPatchBuilder.Cardinality;
-import com.marklogic.client.document.DocumentPatchBuilder;
-import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.document.DocumentPatchBuilder.Position;
-import com.marklogic.client.document.XMLDocumentManager.DocumentRepair;
-import com.marklogic.client.io.marker.DocumentPatchHandle;
-import com.marklogic.client.util.EditableNamespaceContext;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class XMLDocumentTest {
 
   private static ExtensionLibrariesManager libsMgr = null;
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connectAdmin();
     // get a manager
@@ -82,7 +80,7 @@ public class XMLDocumentTest {
 
     Common.connect();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     libsMgr.delete("/ext/my-lib.xqy");
   }
@@ -112,11 +110,11 @@ public class XMLDocumentTest {
     docMgr.write(docId, new DOMHandle().with(domDocument));
 
     String docText = docMgr.read(docId, new StringHandle()).get();
-    assertNotNull("Read null string for XML content",docText);
+    assertNotNull(docText);
     assertXMLEqual("Failed to read XML document as String",domString,docText);
 
     Document readDoc = docMgr.read(docId, new DOMHandle()).get();
-    assertNotNull("Read null document for XML content",readDoc);
+    assertNotNull(readDoc);
     assertXMLEqual("Failed to read XML document as DOM",Common.testDocumentToString(readDoc),domString);
 
     String docId2 = "/test/testWrite2.xml";
@@ -126,14 +124,14 @@ public class XMLDocumentTest {
     sourceHandle.setTransformer(transformer);
     docMgr.write(docId2, docMgr.read(docId, sourceHandle));
     docText = docMgr.read(docId2, new StringHandle()).get();
-    assertNotNull("Read null document for transform result",docText);
+    assertNotNull(docText);
     assertXMLEqual("Transform result not equivalent to source",domString,docText);
 
     InputSourceHandle saxHandle = new InputSourceHandle();
     saxHandle.set(new InputSource(new StringReader(domString)));
     docMgr.write(docId, saxHandle);
     docText = docMgr.read(docId2, new StringHandle()).get();
-    assertNotNull("Read null document for SAX writer",docText);
+    assertNotNull(docText);
     assertXMLEqual("Failed to read XML document as DOM",domString,docText);
 
     final Map<String,Integer> counter = new HashMap<>();
@@ -151,7 +149,7 @@ public class XMLDocumentTest {
       }
     };
     docMgr.read(docId, saxHandle).process(handler);
-    assertTrue("Failed to process XML document with SAX",
+    assertTrue(
       counter.get("elementCount") == 2 && counter.get("attributeCount") == 2);
 
     XMLStreamReaderHandle streamReaderHandle = docMgr.read(docId, new XMLStreamReaderHandle());
@@ -167,7 +165,7 @@ public class XMLDocumentTest {
         attributeCount += elementAttributeCount;
     }
     streamReaderHandle.close();
-    assertTrue("Failed to process XML document with StAX stream reader",
+    assertTrue(
       elementCount == 2 && attributeCount == 2);
 
     XMLEventReader eventReader = docMgr.read(docId, new XMLEventReaderHandle()).get();
@@ -186,7 +184,7 @@ public class XMLDocumentTest {
       }
     }
     eventReader.close();
-    assertTrue("Failed to process XML document with StAX event reader",
+    assertTrue(
       elementCount == 2 && attributeCount == 2);
 
     String truncatedDoc ="<root><poorlyFormed></root>";
@@ -204,7 +202,7 @@ public class XMLDocumentTest {
           fail("unknown case: "+i);
       }
       docText = docMgr.read(docId, new StringHandle()).get();
-      assertNotNull("Read null document for repaired result",docText);
+      assertNotNull(docText);
       assertXMLEqual("Repaired result","<root><poorlyFormed/></root>",docText);
     }
 
@@ -215,7 +213,7 @@ public class XMLDocumentTest {
     } catch(RuntimeException ex) {
       threwException = true;
     }
-    assertTrue("Expected failure on truncated XML document with no repair", threwException);
+    assertTrue( threwException);
   }
 
   @Test
@@ -264,7 +262,7 @@ public class XMLDocumentTest {
     docMgr.write(docId, saxHandle.with(new InputSource(new StringReader(doc))));
 
     DocumentDescriptor docDesc = docMgr.exists(docId);
-    assertTrue("Write failed with valid SAX", docDesc != null);
+    assertTrue( docDesc != null);
 
     docMgr.delete(docId);
 
@@ -290,7 +288,7 @@ public class XMLDocumentTest {
     } catch(RuntimeException ex) {
       threwException = true;
     }
-    assertTrue("Expected failure for invalid SAX", threwException);
+    assertTrue( threwException);
 
     // if the error occurs in the root element, the server writes an empty document
     docDesc = docMgr.exists(docId);
@@ -326,7 +324,7 @@ public class XMLDocumentTest {
     docMgr.write(docId, streamHandle);
 
     String docOut = docMgr.read(docId, new StringHandle()).get();
-    assertNotNull("Wrote null document for StAX stream", docOut);
+    assertNotNull( docOut);
     assertXMLEqual("Failed to write StAX stream", docIn, docOut);
 
     XMLEventReaderHandle eventHandle = new XMLEventReaderHandle();
@@ -339,7 +337,7 @@ public class XMLDocumentTest {
     docMgr.write(docId, eventHandle);
 
     docOut = docMgr.read(docId, new StringHandle()).get();
-    assertNotNull("Wrote null document for StAX events", docOut);
+    assertNotNull( docOut);
     assertXMLEqual("Failed to write StAX events", docIn, docOut);
   }
 

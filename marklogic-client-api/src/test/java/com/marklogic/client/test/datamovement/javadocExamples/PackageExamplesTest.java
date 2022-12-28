@@ -16,30 +16,28 @@
 package com.marklogic.client.test.datamovement.javadocExamples;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.JobTicket;
+import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
-
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.test.Common;
-
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import java.util.Random;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PackageExamplesTest {
   private static Logger logger = LoggerFactory.getLogger(PackageExamplesTest.class);
@@ -50,11 +48,11 @@ public class PackageExamplesTest {
   private static DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(collection);
   private static StructuredQueryDefinition collectionQuery = new StructuredQueryBuilder().collection(collection);
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     DeleteQueryDefinition deleteQuery = client.newQueryManager().newDeleteDefinition();
     deleteQuery.setCollections(collection);

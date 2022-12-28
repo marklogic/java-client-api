@@ -31,9 +31,10 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonDatabindHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -41,7 +42,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+
 
 /*
  * This test is designed to to test all of bulk reads and write of JSON  with JacksonDataBindHandle Manager by passing set of uris
@@ -51,13 +52,13 @@ import static org.junit.Assert.*;
 public class TestBulkReadWriteWithJacksonDataBind extends AbstractFunctionalTest {
   private static final String DIRECTORY = "/";
 
-  @Before
+  @BeforeEach
   public void testSetup() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     // create new connection for each test below
     client = getDatabaseClient("rest-admin", "x", getConnType());
   }
 
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception {
     System.out.println("Running CleanUp script");
     // release client
@@ -92,37 +93,36 @@ public class TestBulkReadWriteWithJacksonDataBind extends AbstractFunctionalTest
     // "size:5|reviewed:true|myInteger:10|myDecimal:34.56678|myCalendar:2014|myString:foo|";
     String actualProperties = getDocumentPropertiesString(properties);
     boolean result = actualProperties.contains("size:5|");
-    assertTrue("Document properties count", result);
+    assertTrue( result);
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println(actualPermissions);
 
-    assertTrue("Document permissions difference in size value",
+    assertTrue(
         actualPermissions.contains("size:6"));
     // assertTrue(
     // "Document permissions difference in flexrep-eval permission",
     // actualPermissions.contains("flexrep-eval:[READ]"));
-    assertTrue("Document permissions difference in rest-reader permission",
+    assertTrue(
         actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission",
+    assertTrue(
         actualPermissions.contains("rest-writer:[UPDATE]"));
     assertTrue(
-        "Document permissions difference in app-user permissions",
         (actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions
             .contains("app-user:[READ, UPDATE]")));
-    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
+    assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
 
     // Collections
     String actualCollections = getDocumentCollectionsString(collections);
     System.out.println(collections);
 
-    assertTrue("Document collections difference in size value",
+    assertTrue(
         actualCollections.contains("size:2"));
-    assertTrue("my-collection1 not found",
+    assertTrue(
         actualCollections.contains("my-collection1"));
-    assertTrue("my-collection2 not found",
+    assertTrue(
         actualCollections.contains("my-collection2"));
   }
 
@@ -136,22 +136,22 @@ public class TestBulkReadWriteWithJacksonDataBind extends AbstractFunctionalTest
     String actualProperties = getDocumentPropertiesString(properties);
     boolean result = actualProperties.contains("size:0|");
     System.out.println(actualProperties + result);
-    assertTrue("Document default last modified properties count1?", result);
+    assertTrue( result);
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:2"));
-    // assertTrue("Document permissions difference in flexrep-eval permission",
+    assertTrue( actualPermissions.contains("size:2"));
+    // assertTrue(
     // actualPermissions.contains("flexrep-eval:[READ]"));
-    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
 
     // Collections
     String expectedCollections = "size:0|";
     String actualCollections = getDocumentCollectionsString(collections);
 
-    assertEquals("Document collections difference", expectedCollections, actualCollections);
+    assertEquals( expectedCollections, actualCollections);
   }
 
   /*
@@ -192,17 +192,17 @@ public class TestBulkReadWriteWithJacksonDataBind extends AbstractFunctionalTest
     docMgr.read(docId + jsonFilename3, handleRead);
     Product product3 = (Product) handleRead.get();
 
-    assertTrue("Did not return a iPhone 6", product1.getName().equalsIgnoreCase("iPhone 6"));
-    assertTrue("Did not return a Mobile Phone", product1.getIndustry().equalsIgnoreCase("Mobile Hardware"));
-    assertTrue("Did not return a Mobile Phone", product1.getDescription().equalsIgnoreCase("Bending Iphone"));
+    assertTrue( product1.getName().equalsIgnoreCase("iPhone 6"));
+    assertTrue( product1.getIndustry().equalsIgnoreCase("Mobile Hardware"));
+    assertTrue( product1.getDescription().equalsIgnoreCase("Bending Iphone"));
 
-    assertTrue("Did not return a iPhone 6", product2.getName().equalsIgnoreCase("Windows 10"));
-    assertTrue("Did not return a Mobile Phone", product2.getIndustry().equalsIgnoreCase("Software"));
-    assertTrue("Did not return a Mobile Phone", product2.getDescription().equalsIgnoreCase("OS Server"));
+    assertTrue( product2.getName().equalsIgnoreCase("Windows 10"));
+    assertTrue( product2.getIndustry().equalsIgnoreCase("Software"));
+    assertTrue( product2.getDescription().equalsIgnoreCase("OS Server"));
 
-    assertTrue("Did not return a iPhone 6", product3.getName().equalsIgnoreCase("Elite Book"));
-    assertTrue("Did not return a Mobile Phone", product3.getIndustry().equalsIgnoreCase("PC Hardware"));
-    assertTrue("Did not return a Mobile Phone", product3.getDescription().equalsIgnoreCase("Very cool laptop"));
+    assertTrue( product3.getName().equalsIgnoreCase("Elite Book"));
+    assertTrue( product3.getIndustry().equalsIgnoreCase("PC Hardware"));
+    assertTrue( product3.getDescription().equalsIgnoreCase("Very cool laptop"));
   }
 
   @Test
@@ -241,27 +241,27 @@ public class TestBulkReadWriteWithJacksonDataBind extends AbstractFunctionalTest
     docMgr.read(docId[0], jacksonDBReadHandle);
     Product product1 = (Product) jacksonDBReadHandle.get();
 
-    assertTrue("Did not return a iPhone 6", product1.getName().equalsIgnoreCase("iPhone 6"));
-    assertTrue("Did not return a Mobile Phone", product1.getIndustry().equalsIgnoreCase("Mobile Phone"));
-    assertTrue("Did not return a Mobile Phone", product1.getDescription().equalsIgnoreCase("New iPhone 6"));
+    assertTrue( product1.getName().equalsIgnoreCase("iPhone 6"));
+    assertTrue( product1.getIndustry().equalsIgnoreCase("Mobile Phone"));
+    assertTrue( product1.getDescription().equalsIgnoreCase("New iPhone 6"));
 
     docMgr.readMetadata(docId[0], mhRead);
     validateMetadata(mhRead);
 
     docMgr.read(docId[1], jacksonDBReadHandle);
     Product product2 = (Product) jacksonDBReadHandle.get();
-    assertTrue("Did not return a iMac", product2.getName().equalsIgnoreCase("iMac"));
-    assertTrue("Did not return a Desktop", product2.getIndustry().equalsIgnoreCase("Desktop"));
-    assertTrue("Did not return a Air Book OS X", product2.getDescription().equalsIgnoreCase("Air Book OS X"));
+    assertTrue( product2.getName().equalsIgnoreCase("iMac"));
+    assertTrue( product2.getIndustry().equalsIgnoreCase("Desktop"));
+    assertTrue( product2.getDescription().equalsIgnoreCase("Air Book OS X"));
 
     docMgr.readMetadata(docId[1], mhRead);
     validateMetadata(mhRead);
 
     docMgr.read(docId[2], jacksonDBReadHandle);
     Product product3 = (Product) jacksonDBReadHandle.get();
-    assertTrue("Did not return a iPad", product3.getName().equalsIgnoreCase("iPad"));
-    assertTrue("Did not return a Tablet", product3.getIndustry().equalsIgnoreCase("Tablet"));
-    assertTrue("Did not return a iPad Mini", product3.getDescription().equalsIgnoreCase("iPad Mini"));
+    assertTrue( product3.getName().equalsIgnoreCase("iPad"));
+    assertTrue( product3.getIndustry().equalsIgnoreCase("Tablet"));
+    assertTrue( product3.getDescription().equalsIgnoreCase("iPad Mini"));
 
     docMgr.readMetadata(docId[2], mhRead);
     validateMetadata(mhRead);
@@ -332,27 +332,27 @@ public class TestBulkReadWriteWithJacksonDataBind extends AbstractFunctionalTest
     docMgr.read(docId[0], jacksonDBReadHandle);
     Product product1 = (Product) jacksonDBReadHandle.get();
 
-    assertTrue("Did not return a iPhone 6", product1.getName().equalsIgnoreCase("iPhone 6"));
-    assertTrue("Did not return a Mobile Phone", product1.getIndustry().equalsIgnoreCase("Mobile Phone"));
-    assertTrue("Did not return a Mobile Phone", product1.getDescription().equalsIgnoreCase("New iPhone 6"));
+    assertTrue( product1.getName().equalsIgnoreCase("iPhone 6"));
+    assertTrue( product1.getIndustry().equalsIgnoreCase("Mobile Phone"));
+    assertTrue( product1.getDescription().equalsIgnoreCase("New iPhone 6"));
 
     docMgr.readMetadata(docId[0], mhRead);
     validateMetadata(mhRead);
 
     docMgr.read(docId[1], jacksonDBReadHandle);
     Product product2 = (Product) jacksonDBReadHandle.get();
-    assertTrue("Did not return a iMac", product2.getName().equalsIgnoreCase("iMac"));
-    assertTrue("Did not return a Desktop", product2.getIndustry().equalsIgnoreCase("Desktop"));
-    assertTrue("Did not return a Air Book OS X", product2.getDescription().equalsIgnoreCase("Air Book OS X"));
+    assertTrue( product2.getName().equalsIgnoreCase("iMac"));
+    assertTrue( product2.getIndustry().equalsIgnoreCase("Desktop"));
+    assertTrue( product2.getDescription().equalsIgnoreCase("Air Book OS X"));
 
     docMgr.readMetadata(docId[1], mhRead);
     validateMetadata(mhRead);
 
     docMgr.read(docId[2], jacksonDBReadHandle);
     Product product3 = (Product) jacksonDBReadHandle.get();
-    assertTrue("Did not return a iPad", product3.getName().equalsIgnoreCase("iPad"));
-    assertTrue("Did not return a Tablet", product3.getIndustry().equalsIgnoreCase("Tablet"));
-    assertTrue("Did not return a iPad Mini", product3.getDescription().equalsIgnoreCase("iPad Mini"));
+    assertTrue( product3.getName().equalsIgnoreCase("iPad"));
+    assertTrue( product3.getIndustry().equalsIgnoreCase("Tablet"));
+    assertTrue( product3.getDescription().equalsIgnoreCase("iPad Mini"));
 
     docMgr.readMetadata(docId[2], mhRead);
     validateMetadata(mhRead);
@@ -361,7 +361,7 @@ public class TestBulkReadWriteWithJacksonDataBind extends AbstractFunctionalTest
   /*
    * Purpose: To test Git Issue # 89. Issue Description: If you read more than
    * 100 JSON objects, the Client API stops reading them.
-   * 
+   *
    * Use one Jackson Handles instance.
    */
   @Test
@@ -413,25 +413,25 @@ public class TestBulkReadWriteWithJacksonDataBind extends AbstractFunctionalTest
     while (page.hasNext()) {
       rec = page.next();
 
-      assertNotNull("DocumentRecord should never be null", rec);
-      assertNotNull("Document uri should never be null", rec.getUri());
-      assertTrue("Document uri should start with " + DIRECTORY, rec.getUri().startsWith(DIRECTORY));
+      assertNotNull( rec);
+      assertNotNull( rec.getUri());
+      assertTrue(rec.getUri().startsWith(DIRECTORY));
 
       rec.getContent(jh);
       // Verify the contents: comparing Map with JacksonHandle's.
-      assertEquals("Comparing the content :", jsonMap.get(rec.getUri()), jh.get().toString());
+      assertEquals( jsonMap.get(rec.getUri()), jh.get().toString());
       count++;
     }
-    assertEquals("document count", 102, count);
+    assertEquals( 102, count);
     // Issue #294 DocumentPage.size() should return correct size
-    assertTrue("DocumentPage Size did not return expected value:: returned==  " + page.size(), page.size() == 102);
+    assertTrue(page.size() == 102);
 
   }
 
   /*
    * Purpose: To test Git Issue # 89. Issue Description: If you read more than
    * 100 JSON objects, the Client API stops reading them.
-   * 
+   *
    * Use multiple Jackson Handle instances.
    */
   @Test
@@ -483,16 +483,16 @@ public class TestBulkReadWriteWithJacksonDataBind extends AbstractFunctionalTest
     while (page.hasNext()) {
       rec = page.next();
 
-      assertNotNull("DocumentRecord should never be null", rec);
-      assertNotNull("Document uri should never be null", rec.getUri());
-      assertTrue("Document uri should start with " + DIRECTORY, rec.getUri().startsWith(DIRECTORY));
+      assertNotNull( rec);
+      assertNotNull( rec.getUri());
+      assertTrue(rec.getUri().startsWith(DIRECTORY));
 
       rec.getContent(jh);
       // Verify the contents: comparing Map with JacksonHandle's.
-      assertEquals("Comparing the content :", jsonMap.get(rec.getUri()), jh.get().toString());
+      assertEquals( jsonMap.get(rec.getUri()), jh.get().toString());
       count++;
     }
-    assertEquals("document count", 102, count);
+    assertEquals( 102, count);
 
   }
 }

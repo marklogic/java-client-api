@@ -15,15 +15,6 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -33,13 +24,21 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JacksonHandleTest {
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -76,9 +75,8 @@ public class JacksonHandleTest {
 
     // access the document content
     JsonNode readRoot = readHandle.get();
-    assertNotNull("Wrote null Jackson JSON structure", readRoot);
-    assertTrue("Jackson JSON structures not equal",
-      readRoot.equals(writeRoot));
+    assertNotNull(readRoot);
+    assertTrue(readRoot.equals(writeRoot));
 
     // delete the document
     docMgr.delete(docId);

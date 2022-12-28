@@ -15,25 +15,23 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.admin.NamespacesManager;
+import com.marklogic.client.util.EditableNamespaceContext;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class NamespacesManagerTest {
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connectAdmin();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -47,7 +45,7 @@ public class NamespacesManagerTest {
     nsMgr.updatePrefix("dc", "http://purl.org/dc/terms/");
 
     String nsUri = nsMgr.readPrefix("dc");
-    assertEquals("Could not read namespace", nsUri, "http://purl.org/dc/terms/");
+    assertEquals( nsUri, "http://purl.org/dc/terms/");
 
     nsMgr.updatePrefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
     nsMgr.updatePrefix("skos", "http://www.w3.org/2004/02/skos/core#");
@@ -55,30 +53,30 @@ public class NamespacesManagerTest {
     EditableNamespaceContext context = (EditableNamespaceContext) nsMgr.readAll();
 
     int initialSize = context.size();
-    assertTrue("Failed to retrieve three namespaces", initialSize >= 3);
-    assertEquals("Did not retrieve RDF namespace",
+    assertTrue( initialSize >= 3);
+    assertEquals(
       "http://purl.org/dc/terms/",
       context.get("dc"));
-    assertEquals("Did not retrieve RDF namespace",
+    assertEquals(
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
       context.get("rdf"));
-    assertEquals("Did not retrieve SKOS namespace",
+    assertEquals(
       "http://www.w3.org/2004/02/skos/core#",
       context.get("skos"));
 
     nsMgr.updatePrefix("dc", "http://diverted/category/");
 
     nsUri = nsMgr.readPrefix("dc");
-    assertEquals("Could not read namespace", nsUri, "http://diverted/category/");
+    assertEquals( nsUri, "http://diverted/category/");
 
     nsMgr.deletePrefix("dc");
     context = (EditableNamespaceContext) nsMgr.readAll();
     // assumes no concurrent deletes
-    assertEquals("Failed to delete namespace", initialSize - 1, context.size());
+    assertEquals( initialSize - 1, context.size());
 
     nsMgr.deleteAll();
     context = (EditableNamespaceContext) nsMgr.readAll();
-    assertTrue("Failed to delete all namespaces",
+    assertTrue(
       context == null || context.size() == 0);
   }
 
@@ -95,7 +93,7 @@ public class NamespacesManagerTest {
     } catch (IllegalArgumentException e) {
       illegalArgument = true;
     }
-    assertTrue("Updating default prefix did not throw illegal argument exception", illegalArgument);
+    assertTrue( illegalArgument);
 
     illegalArgument = false;
     try {
@@ -103,6 +101,6 @@ public class NamespacesManagerTest {
     } catch (IllegalArgumentException e) {
       illegalArgument = true;
     }
-    assertTrue("Adding default prefix did not throw illegal argument exception", illegalArgument);
+    assertTrue( illegalArgument);
   }
 }

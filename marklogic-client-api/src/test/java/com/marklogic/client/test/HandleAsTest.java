@@ -15,55 +15,8 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.dom.DOMSource;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.*;
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
@@ -77,13 +30,39 @@ import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
+import java.io.*;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class HandleAsTest {
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -104,15 +83,15 @@ public class HandleAsTest {
     binMgr.writeAs(binDocId, beforeBytes);
     afterText = new String(binMgr.readAs(binDocId, byte[].class), "UTF-8");
     binMgr.delete(binDocId);
-    assertEquals("byte[] difference in document read/write as", beforeText, afterText);
+    assertEquals(beforeText, afterText);
 
     binMgr.writeAs(binDocId, new ByteArrayInputStream(beforeBytes));
     try ( Reader reader = new InputStreamReader( binMgr.readAs(binDocId, InputStream.class), "UTF-8") ) {
       cnum = reader.read(cbuf);
       binMgr.delete(binDocId);
-      assertEquals("InputStream count difference in document read/write as", beforeText.length(), cnum);
+      assertEquals(beforeText.length(), cnum);
       afterText = new String(cbuf, 0, cnum);
-      assertEquals("InputStream difference in document read/write as", beforeText, afterText);
+      assertEquals(beforeText, afterText);
     }
 
     String textDocId = "/test/testAs1.txt";
@@ -121,15 +100,15 @@ public class HandleAsTest {
     textMgr.writeAs(textDocId, beforeText);
     afterText = textMgr.readAs(textDocId, String.class);
     textMgr.delete(textDocId);
-    assertEquals("String difference in document read/write as", beforeText, afterText);
+    assertEquals(beforeText, afterText);
 
     textMgr.writeAs(textDocId, new StringReader(beforeText));
     try ( Reader reader = textMgr.readAs(textDocId, Reader.class) ) {
       cnum = reader.read(cbuf);
       textMgr.delete(textDocId);
-      assertEquals("Reader count difference in document read/write as", beforeText.length(), cnum);
+      assertEquals(beforeText.length(), cnum);
       afterText = new String(cbuf, 0, cnum);
-      assertEquals("Reader difference in document read/write as", beforeText, afterText);
+      assertEquals(beforeText, afterText);
     }
 
     File beforeFile = File.createTempFile("testAs", "txt");
@@ -145,9 +124,9 @@ public class HandleAsTest {
     try ( Reader reader = new FileReader(afterFile) ) {
       cnum = reader.read(cbuf);
       afterFile.delete();
-      assertEquals("File count difference in document read/write as", beforeText.length(), cnum);
+      assertEquals(beforeText.length(), cnum);
       afterText = new String(cbuf, 0, cnum);
-      assertEquals("File difference in document read/write as", beforeText, afterText);
+      assertEquals(beforeText, afterText);
     }
 
     String xmlDocId = "/test/testAs1.xml";
@@ -168,14 +147,14 @@ public class HandleAsTest {
     xmlMgr.writeAs(xmlDocId, beforeDocument);
     afterText = xmlMgr.readAs(xmlDocId, Document.class).getDocumentElement().getTextContent();
     xmlMgr.delete(xmlDocId);
-    assertEquals("DOM difference in document read/write as", beforeText, afterText);
+    assertEquals(beforeText, afterText);
 
     xmlMgr.writeAs(xmlDocId, new InputSource(new StringReader(beforeDocStr)));
     afterText = xmlDocBldr.parse(
       xmlMgr.readAs(xmlDocId, InputSource.class)
     ).getDocumentElement().getTextContent();
     xmlMgr.delete(xmlDocId);
-    assertEquals("InputSource difference in document read/write as", beforeText, afterText);
+    assertEquals(beforeText, afterText);
 
     Transformer transformer = TransformerFactory.newInstance().newTransformer();
 
@@ -187,7 +166,7 @@ public class HandleAsTest {
     );
     xmlMgr.delete(xmlDocId);
     afterText = ((Document) afterResult.getNode()).getDocumentElement().getTextContent();
-    assertEquals("Source difference in document read/write as", beforeText, afterText);
+    assertEquals(beforeText, afterText);
 
     XMLInputFactory inputFactory = XMLInputFactory.newFactory();
 
@@ -200,7 +179,7 @@ public class HandleAsTest {
       afterEventReader.nextTag();
       afterText = afterEventReader.getElementText();
       afterEventReader.close();
-      assertEquals("EventReader difference in document read/write as", beforeText, afterText);
+      assertEquals(beforeText, afterText);
     } finally {
       afterEventReader.close();
     }
@@ -214,7 +193,7 @@ public class HandleAsTest {
       afterStreamReader.nextTag();
       afterText = afterStreamReader.getElementText();
       afterStreamReader.close();
-      assertEquals("StreamReader difference in document read/write as", beforeText, afterText);
+      assertEquals(beforeText, afterText);
     } finally {
       afterStreamReader.close();
     }
@@ -274,11 +253,11 @@ public class HandleAsTest {
     SearchHandle handle = queryMgr.search(queryDef, new SearchHandle());
 
     MatchDocumentSummary[] summaries = handle.getMatchResults();
-    assertEquals("raw query should retrieve all products", products.length, summaries.length);
+    assertEquals(products.length, summaries.length);
     for (MatchDocumentSummary summary: summaries) {
       Product product = summary.getFirstSnippetAs(Product.class);
-      assertTrue("raw product should exist", product != null);
-      assertTrue("raw product name should be preserved", prodNames.contains(product.getName()));
+      assertTrue(product != null);
+      assertTrue(prodNames.contains(product.getName()));
     }
 
     rawQuery = new StringBuilder()
@@ -300,16 +279,16 @@ public class HandleAsTest {
     handle = queryMgr.search(queryDef, new SearchHandle());
 
     summaries = handle.getMatchResults();
-    assertEquals("metadata query should retrieve all products", products.length, summaries.length);
+    assertEquals(products.length, summaries.length);
     for (MatchDocumentSummary summary: summaries) {
       Document productDoc = summary.getMetadataAs(Document.class);
 
       Element name     = (Element) productDoc.getElementsByTagName("name").item(0);
-      assertTrue("metadata product name should exist", name != null);
-      assertTrue("metadata product name should be preserved", prodNames.contains(name.getTextContent()));
+      assertTrue(name != null);
+      assertTrue(prodNames.contains(name.getTextContent()));
 
       Element industry = (Element) productDoc.getElementsByTagName("industry").item(0);
-      assertTrue("metadata product industry should exist", industry != null);
+      assertTrue(industry != null);
     }
 
     // cleanup
@@ -332,14 +311,14 @@ public class HandleAsTest {
                  : clientFactoryBean.getHandleRegistry();
 
       registry.register(new BufferHandleFactory());
-      assertTrue("Handle is not registered",registry.isRegistered(StringBuilder.class));
+      assertTrue(registry.isRegistered(StringBuilder.class));
 
       Set<Class<?>> registered = registry.listRegistered();
-      assertTrue("Handle is not in registered set",registered.contains(StringBuilder.class));
+      assertTrue(registered.contains(StringBuilder.class));
 
       ContentHandle<StringBuilder> handle = registry.makeHandle(StringBuilder.class);
-      assertNotNull("Made a null handle", handle);
-      assertEquals("Made handle with the wrong class",handle.getClass(),BufferHandle.class);
+      assertNotNull(handle);
+      assertEquals(handle.getClass(),BufferHandle.class);
 
       // instantiate a client with a copy of the registry
       DatabaseClient client =
@@ -347,7 +326,7 @@ public class HandleAsTest {
                  : clientFactoryBean.newClient();
 
       registry.unregister(StringBuilder.class);
-      assertTrue("Handle is still registered",!registry.isRegistered(StringBuilder.class));
+      assertTrue(!registry.isRegistered(StringBuilder.class));
 
       String beforeText = "A simple text document";
 
@@ -361,7 +340,7 @@ public class HandleAsTest {
       textMgr.writeAs(textDocId, buffer);
       buffer = textMgr.readAs(textDocId, StringBuilder.class);
       textMgr.delete(textDocId);
-      assertEquals("Registered handle difference in document read/write as", beforeText, buffer.toString());
+      assertEquals(beforeText, buffer.toString());
 
       boolean threwError = false;
       try {
@@ -369,7 +348,7 @@ public class HandleAsTest {
       } catch(Exception e) {
         threwError = true;
       }
-      assertTrue("No error for write of unregistered class",threwError);
+      assertTrue(threwError);
 
       threwError = false;
       try {
@@ -377,7 +356,7 @@ public class HandleAsTest {
       } catch(Exception e) {
         threwError = true;
       }
-      assertTrue("No error for read of unregistered class",threwError);
+      assertTrue(threwError);
 
       client.release();
     }

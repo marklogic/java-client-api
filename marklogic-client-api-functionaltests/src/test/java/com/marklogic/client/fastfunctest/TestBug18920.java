@@ -22,19 +22,20 @@ import com.marklogic.client.admin.ServerConfigurationManager.UpdatePolicy;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.FileHandle;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestBug18920 extends AbstractFunctionalTest {
 
   private static ServerConfigurationManager configMgr;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception
   {
     System.out.println("In setup");
@@ -94,12 +95,12 @@ public class TestBug18920 extends AbstractFunctionalTest {
     }
     System.out.println("Exception is " + exception);
     System.out.println("Status message --- codenumber are " + statusCode + " --- " + expCode);
-    assertTrue("Status code message is incorrect", statusCode.contains("RESTAPI-CONTENTNOVERSION"));
-    assertTrue("Status code is not 428", expCode == 428);
-    assertTrue("Exception is not thrown", exception.contains(expectedException));
+    assertTrue( statusCode.contains("RESTAPI-CONTENTNOVERSION"));
+    assertTrue( expCode == 428);
+    assertTrue( exception.contains(expectedException));
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws Exception {
     System.out.println("In tear down");
 

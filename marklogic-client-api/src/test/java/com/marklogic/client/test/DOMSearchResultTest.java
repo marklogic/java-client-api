@@ -15,34 +15,32 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.util.EditableNamespaceContext;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.util.EditableNamespaceContext;
-import com.marklogic.client.io.DOMHandle;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class DOMSearchResultTest {
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -56,7 +54,7 @@ public class DOMSearchResultTest {
 
     DOMHandle responseHandle = queryMgr.search(qdef, new DOMHandle());
     Document doc = responseHandle.get();
-    assertNotNull("null response document", doc);
+    assertNotNull( doc);
 
     // configure namespace bindings for the XPath processor
     EditableNamespaceContext namespaces = new EditableNamespaceContext();
@@ -65,20 +63,20 @@ public class DOMSearchResultTest {
 
     // string expression against the document
     String total = responseHandle.evaluateXPath("string(/search:response/@total)", String.class);
-    assertNotNull("null total", total);
+    assertNotNull( total);
 
     // compiled expression against the document
     XPathExpression resultsExpression = responseHandle.compileXPath("/search:response/search:result");
     NodeList resultList = responseHandle.evaluateXPath(resultsExpression, NodeList.class);
-    assertNotNull("null result list", resultList);
-    assertEquals("result count mismatch", resultList.getLength(), Integer.parseInt(total));
+    assertNotNull( resultList);
+    assertEquals( resultList.getLength(), Integer.parseInt(total));
 
     // string expression against an element
     Element firstResult = responseHandle.evaluateXPath("/search:response/search:result[1]", Element.class);
-    assertNotNull("null first result", firstResult);
+    assertNotNull( firstResult);
 
     String firstResultUri = responseHandle.evaluateXPath("string(@uri)", firstResult, String.class);
     String firstItemUri   = ((Element) resultList.item(0)).getAttribute("uri");
-    assertEquals("first uri mismatch", firstResultUri, firstItemUri);
+    assertEquals( firstResultUri, firstItemUri);
   }
 }

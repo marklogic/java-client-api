@@ -15,7 +15,7 @@
  */
 
 /**
- * 
+ *
  */
 package com.marklogic.client.fastfunctest;
 
@@ -27,7 +27,7 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
-import org.junit.*;
+import org.junit.jupiter.api.*;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
@@ -39,23 +39,24 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author skottam This test is designed to add default meta data bulk writes
  *         with different types of Managers and different content type like
  *         JSON,text,binary,XMl
- * 
+ *
  *         TextDocumentManager XMLDocumentManager BinaryDocumentManager
  *         JSONDocumentManager GenericDocumentManager
- * 
+ *
  */
 public class TestBulkWriteMetadata1 extends AbstractFunctionalTest {
 
   /**
    * @throws java.lang.Exception
    */
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     System.out.println("In Setup");
     createRESTUser("app-user", "password", "rest-writer", "rest-reader");
@@ -64,7 +65,7 @@ public class TestBulkWriteMetadata1 extends AbstractFunctionalTest {
   /**
    * @throws java.lang.Exception
    */
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     deleteRESTUser("app-user");
   }
@@ -72,7 +73,7 @@ public class TestBulkWriteMetadata1 extends AbstractFunctionalTest {
   /**
    * @throws java.lang.Exception
    */
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     // create new connection for each test below
     client = getDatabaseClient("app-user", "password", getConnType());
@@ -81,7 +82,7 @@ public class TestBulkWriteMetadata1 extends AbstractFunctionalTest {
   /**
    * @throws java.lang.Exception
    */
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     client.release();
   }
@@ -111,32 +112,32 @@ public class TestBulkWriteMetadata1 extends AbstractFunctionalTest {
     System.out.println("Returned properties: " + actualProperties);
     StringBuffer calProperty = new StringBuffer("myCalendar:").append(Calendar.getInstance().get(Calendar.YEAR));
 
-    assertTrue("Document properties difference in size value", actualProperties.contains("size:5"));
-    assertTrue("Document property reviewed not found or not correct", actualProperties.contains("reviewed:true"));
-    assertTrue("Document property myInteger not found or not correct", actualProperties.contains("myInteger:10"));
-    assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("myDecimal:34.56678"));
-    assertTrue("Document property myCalendar not found or not correct", actualProperties.contains(calProperty.toString()));
-    assertTrue("Document property myString not found or not correct", actualProperties.contains("myString:foo"));
+    assertTrue( actualProperties.contains("size:5"));
+    assertTrue( actualProperties.contains("reviewed:true"));
+    assertTrue( actualProperties.contains("myInteger:10"));
+    assertTrue( actualProperties.contains("myDecimal:34.56678"));
+    assertTrue( actualProperties.contains(calProperty.toString()));
+    assertTrue( actualProperties.contains("myString:foo"));
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println("Returned permissions: " + actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
-    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
-    assertTrue("Document permissions difference in app-user permissions",
+    assertTrue( actualPermissions.contains("size:5"));
+    assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue(
         (actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions.contains("app-user:[READ, UPDATE]")));
-    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
+    assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
 
     // Collections
     String actualCollections = getDocumentCollectionsString(collections);
     System.out.println("Returned collections: " + actualCollections);
 
-    assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
-    assertTrue("my-collection1 not found", actualCollections.contains("my-collection1"));
-    assertTrue("my-collection2 not found", actualCollections.contains("my-collection2"));
+    assertTrue( actualCollections.contains("size:2"));
+    assertTrue( actualCollections.contains("my-collection1"));
+    assertTrue( actualCollections.contains("my-collection2"));
   }
 
   @Test
@@ -182,7 +183,7 @@ public class TestBulkWriteMetadata1 extends AbstractFunctionalTest {
     docMgr.write(writeset);
 
     DocumentPage page = docMgr.read(docId);
-    assertTrue("DocumentPage Size did not return expected value:: returned==  " + page.size(), page.size() == 3);
+    assertEquals(3, page.size());
     while (page.hasNext()) {
       DocumentRecord rec = page.next();
       docMgr.readMetadata(rec.getUri(), mh);

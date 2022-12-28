@@ -15,14 +15,6 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-
-import org.junit.Test;
-
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
@@ -32,6 +24,11 @@ import com.marklogic.client.admin.ExtensionLibraryDescriptor;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
+import org.junit.jupiter.api.Test;
+
+import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ExtensionLibrariesTest {
 
@@ -52,7 +49,7 @@ public class ExtensionLibrariesTest {
     String xqueryModuleAsString = libsMgr.read(
       "/ext/my/path/to/my/module.xqy", new StringHandle()).get();
 
-    assertTrue("module read and read back", xqueryModuleAsString.startsWith("xquery version \"1.0-ml\";"));
+    assertTrue( xqueryModuleAsString.startsWith("xquery version \"1.0-ml\";"));
 
     // rewrite XQuery file to the modules database with permissions
     ExtensionLibraryDescriptor moduleDescriptor = new ExtensionLibraryDescriptor();
@@ -64,7 +61,7 @@ public class ExtensionLibrariesTest {
 
     // get the list of descriptors
     ExtensionLibraryDescriptor[] descriptors = libsMgr.list("/ext/my/path/to/my/");
-    assertEquals("number of modules installed", 1, descriptors.length);
+    assertEquals( 1, descriptors.length);
 
     for (ExtensionLibraryDescriptor descriptor : descriptors) {
       assertEquals(descriptor.getPath(), "/ext/my/path/to/my/module.xqy");
@@ -82,7 +79,7 @@ public class ExtensionLibrariesTest {
     }
 
     descriptors = libsMgr.list("/ext/my/path/to/my/");
-    assertEquals("number of modules installed", 0, descriptors.length);
+    assertEquals( 0, descriptors.length);
 
   }
 

@@ -24,8 +24,9 @@ import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -34,12 +35,11 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static junit.framework.Assert.assertEquals;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 public class TestConstraintCombination extends AbstractFunctionalTest {
 
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception
   {
     deleteDocuments(connectAsAdmin());

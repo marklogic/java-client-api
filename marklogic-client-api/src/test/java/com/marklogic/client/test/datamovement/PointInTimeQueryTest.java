@@ -15,31 +15,24 @@
  */
 package com.marklogic.client.test.datamovement;
 
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.*;
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.test.Common;
+import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StructuredQueryBuilder;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import com.marklogic.client.test.Common;
+import static org.junit.jupiter.api.Assertions.*;
 
-import static org.junit.Assert.*;
-
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class PointInTimeQueryTest {
   private static Logger logger = LoggerFactory.getLogger(PointInTimeQueryTest.class);
   private static int numDocs = 50;
@@ -48,12 +41,12 @@ public class PointInTimeQueryTest {
   private static String collection = "PointInTimeQueryTest_" +
     new Random().nextInt(10000);
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() throws Exception {
     setup();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     QueryManager queryMgr = client.newQueryManager();
     DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
@@ -138,8 +131,8 @@ public class PointInTimeQueryTest {
     // now that we're done deleting, wait for the exportBatcher to finish
     exportBatcher.awaitCompletion();
 
-    assertNotNull("withConsistentSnapshot was used, so the server timestamp should be available to the client",
-            exportBatcher.getServerTimestamp());
+    assertNotNull(exportBatcher.getServerTimestamp(),
+		"withConsistentSnapshot was used, so the server timestamp should be available to the client");
 
     // if we still got all the docs, that means our delete was ignored during the run
     assertEquals(numDocs, successDocs.get());

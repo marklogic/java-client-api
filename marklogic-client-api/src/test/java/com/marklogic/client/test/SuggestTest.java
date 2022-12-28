@@ -15,27 +15,22 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.FileNotFoundException;
-
-import org.custommonkey.xmlunit.XMLUnit;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.ResourceNotResendableException;
+import com.marklogic.client.*;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.SuggestDefinition;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.FileNotFoundException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SuggestTest {
 
@@ -45,7 +40,7 @@ public class SuggestTest {
   private static final Logger logger = (Logger) LoggerFactory
     .getLogger(SuggestTest.class);
 
-  @AfterClass
+  @AfterAll
   public static void teardown()
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
     XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
@@ -54,7 +49,7 @@ public class SuggestTest {
 
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void setup()
     throws FileNotFoundException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
     XMLUnit.setIgnoreWhitespace(true);

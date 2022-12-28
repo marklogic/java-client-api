@@ -15,41 +15,31 @@
  */
 package com.marklogic.client.test;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
-
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.MatchLocation;
-import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.query.*;
 import com.marklogic.client.util.EditableNamespaceContext;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class StructuredSearchTest {
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -67,10 +57,10 @@ public class StructuredSearchTest {
 
       MatchDocumentSummary[] summaries = results.getMatchResults();
       assertNotNull(summaries);
-      assertEquals("expected 1 result", 1, summaries.length);
+      assertEquals( 1, summaries.length);
       for (MatchDocumentSummary summary : summaries) {
         MatchLocation[] locations = summary.getMatchLocations();
-        assertEquals("expected 1 match location", 1, locations.length);
+        assertEquals( 1, locations.length);
         for (MatchLocation location : locations) {
           assertNotNull(location.getAllSnippetText());
         }
@@ -91,7 +81,7 @@ public class StructuredSearchTest {
       assertNotNull(summary);
 
       GenericDocumentManager docMgr = Common.client.newDocumentManager();
-      assertNotNull("Document exists", docMgr.exists(summary.getUri()));
+      assertNotNull( docMgr.exists(summary.getUri()));
     }
   }
 
@@ -171,7 +161,7 @@ public class StructuredSearchTest {
 
     MatchDocumentSummary[] summaries = sh.getMatchResults();
     assertNotNull(summaries);
-    assertEquals("expected 1 result", 1, summaries.length);
+    assertEquals( 1, summaries.length);
 
     MatchDocumentSummary matchResult = summaries[0];
     Document metadata = matchResult.getMetadata();

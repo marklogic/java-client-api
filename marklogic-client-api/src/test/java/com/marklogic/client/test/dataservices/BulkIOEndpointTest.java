@@ -27,7 +27,7 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +35,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BulkIOEndpointTest {
     private ObjectMapper mapper = new ObjectMapper();
@@ -67,23 +67,23 @@ public class BulkIOEndpointTest {
         JSONDocumentManager docMgr = IOTestUtil.db.newJSONDocumentManager();
 
         JsonNode finalState = docMgr.read(finalStateUri, new JacksonHandle()).get();
-        assertNotNull("null final state", finalState);
-        assertTrue("final state not object", finalState.isObject());
+        assertNotNull( finalState);
+        assertTrue( finalState.isObject());
 
         JsonNode finalNext = finalState.get("next");
-        assertNotNull("null final next", finalNext);
-        assertTrue("final next not number", finalNext.isNumber());
-        assertEquals("mismatch on final next", workMax, finalNext.asInt());
+        assertNotNull( finalNext);
+        assertTrue( finalNext.isNumber());
+        assertEquals( workMax, finalNext.asInt());
 
         JsonNode finalMax = finalState.get("workMax");
-        assertNotNull("null final max", finalMax);
-        assertTrue("final max not number", finalMax.isNumber());
-        assertEquals("mismatch on final max", workMax, finalMax.asInt());
+        assertNotNull( finalMax);
+        assertTrue( finalMax.isNumber());
+        assertEquals( workMax, finalMax.asInt());
 
         JsonNode sessionCounter = finalState.get("sessionCounter");
-        assertNotNull("null final sessionCounter", sessionCounter);
-        assertTrue("final sessionCounter not number", sessionCounter.isNumber());
-        assertEquals("mismatch on final sessionCounter", (workMax - nextStart) - 1, sessionCounter.asInt());
+        assertNotNull( sessionCounter);
+        assertTrue( sessionCounter.isNumber());
+        assertEquals( (workMax - nextStart) - 1, sessionCounter.asInt());
 
         docMgr.delete(finalStateUri);
 
@@ -137,26 +137,26 @@ public class BulkIOEndpointTest {
 
         ObjectNode finalState = mapper.readValue(callContext.getEndpointState().get(), ObjectNode.class);
 
-        assertEquals("mismatch between input and output size", input.size(), output.size());
-        assertEquals("mismatch between input and output elements", input, output);
+        assertEquals( input.size(), output.size());
+        assertEquals( input, output);
 
-        assertNotNull("null final state", finalState);
-        assertTrue("final state not object", finalState.isObject());
+        assertNotNull( finalState);
+        assertTrue( finalState.isObject());
 
         JsonNode finalNext = finalState.get("next");
-        assertNotNull("null final next", finalNext);
-        assertTrue("final next not number", finalNext.isNumber());
-        assertEquals("mismatch on final next", workMax, finalNext.asInt());
+        assertNotNull( finalNext);
+        assertTrue( finalNext.isNumber());
+        assertEquals( workMax, finalNext.asInt());
 
         JsonNode finalMax = finalState.get("workMax");
-        assertNotNull("null final max", finalMax);
-        assertTrue("final max not number", finalMax.isNumber());
-        assertEquals("mismatch on final max", workMax, finalMax.asInt());
+        assertNotNull( finalMax);
+        assertTrue( finalMax.isNumber());
+        assertEquals( workMax, finalMax.asInt());
 
         JsonNode sessionCounter = finalState.get("sessionCounter");
-        assertNotNull("null final sessionCounter", sessionCounter);
-        assertTrue("final sessionCounter not number", sessionCounter.isNumber());
-        assertEquals("mismatch on final sessionCounter", callCount - 1, sessionCounter.asInt());
+        assertNotNull( sessionCounter);
+        assertTrue( sessionCounter.isNumber());
+        assertEquals( callCount - 1, sessionCounter.asInt());
 
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
@@ -208,26 +208,26 @@ public class BulkIOEndpointTest {
 
         ObjectNode finalState = mapper.readValue(callContext.getEndpointState().get(), ObjectNode.class);
 
-        assertEquals("mismatch between input and output size", input.size(), output.size());
-        assertEquals("mismatch between input and output elements", input, output);
+        assertEquals( input.size(), output.size());
+        assertEquals( input, output);
 
-        assertNotNull("null final state", finalState);
-        assertTrue("final state not object", finalState.isObject());
+        assertNotNull( finalState);
+        assertTrue( finalState.isObject());
 
         JsonNode finalNext = finalState.get("next");
-        assertNotNull("null final next", finalNext);
-        assertTrue("final next not number", finalNext.isNumber());
-        assertEquals("mismatch on final next", workMax, finalNext.asInt());
+        assertNotNull( finalNext);
+        assertTrue( finalNext.isNumber());
+        assertEquals( workMax, finalNext.asInt());
 
         JsonNode finalMax = finalState.get("workMax");
-        assertNotNull("null final max", finalMax);
-        assertTrue("final max not number", finalMax.isNumber());
-        assertEquals("mismatch on final max", workMax, finalMax.asInt());
+        assertNotNull( finalMax);
+        assertTrue( finalMax.isNumber());
+        assertEquals( workMax, finalMax.asInt());
 
         JsonNode sessionCounter = finalState.get("sessionCounter");
-        assertNotNull("null final sessionCounter", sessionCounter);
-        assertTrue("final sessionCounter not number", sessionCounter.isNumber());
-        assertEquals("mismatch on final sessionCounter", callCount - 1, sessionCounter.asInt());
+        assertNotNull( sessionCounter);
+        assertTrue( sessionCounter.isNumber());
+        assertEquals( callCount - 1, sessionCounter.asInt());
 
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
@@ -282,8 +282,8 @@ public class BulkIOEndpointTest {
         });
         bulkCaller.awaitCompletion();
 
-        assertEquals("mismatch between input and output size"+input+":"+output, input.size(), output.size());
-        assertEquals("mismatch between input and output elements", input, output);
+        assertEquals(input.size(), output.size());
+        assertEquals( input, output);
 
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }
@@ -322,8 +322,8 @@ public class BulkIOEndpointTest {
         JSONDocumentManager docMgr = IOTestUtil.db.newJSONDocumentManager();
 
         JsonNode finalState = docMgr.read(finalStateUri, new JacksonHandle()).get();
-        assertNotNull("null final state", finalState);
-        assertTrue("final state not object", finalState.isObject());
+        assertNotNull( finalState);
+        assertTrue( finalState.isObject());
 
         docMgr.delete(finalStateUri);
 

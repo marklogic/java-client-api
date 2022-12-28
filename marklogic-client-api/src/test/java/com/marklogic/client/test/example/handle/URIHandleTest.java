@@ -15,13 +15,11 @@
  */
 package com.marklogic.client.test.example.handle;
 
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.example.handle.URIHandleExample;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-
-import org.junit.Test;
-
-import com.marklogic.client.example.handle.URIHandleExample;
 
 public class URIHandleTest {
   @Test
@@ -33,6 +31,6 @@ public class URIHandleTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    assertTrue("URIHandleExample failed", succeeded);
+    Assertions.assertTrue( succeeded);
   }
 }

@@ -34,8 +34,9 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -46,12 +47,12 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-import static org.junit.Assert.*;
+
 
 public class TestOptimisticLocking extends AbstractFunctionalTest {
 
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws Exception
   {
     DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
@@ -124,7 +125,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     }
 
     boolean isExceptionThrown = exception.contains(expectedException);
-    assertTrue("Exception is not thrown", isExceptionThrown);
+    assertTrue( isExceptionThrown);
     System.out.println(exception);
 
     // write document with unknown version
@@ -134,7 +135,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     StringHandle readHandle = new StringHandle();
     docMgr.read(desc, readHandle);
     String content = readHandle.get();
-    assertTrue("Wrong content", content.contains("<name>noodle</name>"));
+    assertTrue( content.contains("<name>noodle</name>"));
 
     // get the good version
     long goodVersion = desc.getVersion();
@@ -161,7 +162,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     }
     System.out.println(updateException);
     boolean isUpdateExceptionThrown = updateException.contains(expectedUpdateException);
-    assertTrue("Exception is not thrown", isUpdateExceptionThrown);
+    assertTrue( isUpdateExceptionThrown);
 
     // update with unknown version
     desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
@@ -177,7 +178,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
 
     boolean isUpdateUnknownExceptionThrown = updateUnknownException.contains(expectedUpdateUnknownException);
     System.out.println(updateUnknownException);
-    assertTrue("Exception is not thrown", isUpdateUnknownExceptionThrown);
+    assertTrue( isUpdateUnknownExceptionThrown);
 
     desc = docMgr.exists(docId);
     goodVersion = desc.getVersion();
@@ -191,7 +192,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     StringHandle updateReadHandle = new StringHandle();
     docMgr.read(desc, updateReadHandle);
     String updateContent = updateReadHandle.get();
-    assertTrue("Wrong content", updateContent.contains("<name>fried noodle</name>"));
+    assertTrue( updateContent.contains("<name>fried noodle</name>"));
 
     // DELETE
     // delete using bad version
@@ -208,7 +209,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
 
     boolean isDeleteExceptionThrown = deleteException.contains(expectedDeleteException);
     System.out.println("Delete exception" + deleteException);
-    assertTrue("Exception is not thrown", isDeleteExceptionThrown);
+    assertTrue( isDeleteExceptionThrown);
 
     // delete using unknown version
     desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
@@ -224,7 +225,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
 
     boolean isDeleteUnknownExceptionThrown = deleteUnknownException.contains(expectedDeleteUnknownException);
     System.out.println("Delete exception" + deleteUnknownException);
-    assertTrue("Exception is not thrown", isDeleteUnknownExceptionThrown);
+    assertTrue( isDeleteUnknownExceptionThrown);
 
     // delete using good version
     desc = docMgr.exists(docId);
@@ -245,7 +246,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     }
 
     boolean isVerifyDeleteExceptionThrown = verifyDeleteException.contains(expectedVerifyDeleteException);
-    assertTrue("Exception is not thrown", isVerifyDeleteExceptionThrown);
+    assertTrue( isVerifyDeleteExceptionThrown);
     System.out.println("Delete exception" + verifyDeleteException);
   }
 
@@ -303,7 +304,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     }
 
     boolean isExceptionThrown = exception.contains(expectedException);
-    assertTrue("Exception is not thrown", isExceptionThrown);
+    assertTrue( isExceptionThrown);
 
     // write document with unknown version
     desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
@@ -312,7 +313,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     StringHandle readHandle = new StringHandle();
     docMgr.read(desc, readHandle);
     String content = readHandle.get();
-    assertTrue("Wrong content", content.contains("John"));
+    assertTrue( content.contains("John"));
 
     // get the unknown version
     long unknownVersion = desc.getVersion();
@@ -339,7 +340,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     }
 
     boolean isUpdateExceptionThrown = updateException.contains(expectedUpdateException);
-    assertTrue("Exception is not thrown", isUpdateExceptionThrown);
+    assertTrue( isUpdateExceptionThrown);
 
     // update with unknown version
     desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
@@ -349,7 +350,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     StringHandle updateReadHandle = new StringHandle();
     docMgr.read(desc, updateReadHandle);
     String updateContent = updateReadHandle.get();
-    assertTrue("Wrong content", updateContent.contains("Aries"));
+    assertTrue( updateContent.contains("Aries"));
 
     unknownVersion = desc.getVersion();
 
@@ -360,7 +361,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     StringHandle readMatchHandle = new StringHandle();
     docMgr.read(desc, readMatchHandle);
     String readMatchContent = readMatchHandle.get();
-    assertNull("Document does not return null", readMatchContent);
+    assertNull( readMatchContent);
 
     // DELETE
     // delete using bad version
@@ -376,7 +377,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     }
 
     boolean isDeleteExceptionThrown = deleteException.contains(expectedDeleteException);
-    assertTrue("Exception is not thrown", isDeleteExceptionThrown);
+    assertTrue( isDeleteExceptionThrown);
 
     // delete using unknown version
     desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
@@ -397,7 +398,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     }
 
     boolean isVerifyDeleteExceptionThrown = verifyDeleteException.contains(expectedVerifyDeleteException);
-    assertTrue("Exception is not thrown", isVerifyDeleteExceptionThrown);
+    assertTrue( isVerifyDeleteExceptionThrown);
   }
 
   @Test
@@ -454,7 +455,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     }
 
     boolean isExceptionThrown = exception.contains(expectedException);
-    assertTrue("Exception is not thrown", isExceptionThrown);
+    assertTrue( isExceptionThrown);
 
     // write document with unknown version
     desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
@@ -463,7 +464,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     StringHandle readHandle = new StringHandle();
     docMgr.read(desc, readHandle);
     String content = readHandle.get();
-    assertTrue("Wrong content", content.contains("John"));
+    assertTrue( content.contains("John"));
 
     // get the good version
     long goodVersion = desc.getVersion();
@@ -490,7 +491,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     }
 
     boolean isUpdateExceptionThrown = updateException.contains(expectedUpdateException);
-    assertTrue("Exception is not thrown", isUpdateExceptionThrown);
+    assertTrue( isUpdateExceptionThrown);
 
     // update with good version
     desc.setVersion(goodVersion);
@@ -500,7 +501,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     StringHandle updateReadHandle = new StringHandle();
     docMgr.read(desc, updateReadHandle);
     String updateContent = updateReadHandle.get();
-    assertTrue("Wrong content", updateContent.contains("Aries"));
+    assertTrue( updateContent.contains("Aries"));
 
     goodVersion = desc.getVersion();
 
@@ -511,7 +512,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     StringHandle readMatchHandle = new StringHandle();
     docMgr.read(desc, readMatchHandle);
     String readMatchContent = readMatchHandle.get();
-    assertNull("Document does not return null", readMatchContent);
+    assertNull( readMatchContent);
 
     // DELETE
     // delete using bad version
@@ -527,7 +528,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     }
 
     boolean isDeleteExceptionThrown = deleteException.contains(expectedDeleteException);
-    assertTrue("Exception is not thrown", isDeleteExceptionThrown);
+    assertTrue( isDeleteExceptionThrown);
 
     // delete using good version
     desc.setVersion(goodVersion);
@@ -548,7 +549,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     }
 
     boolean isVerifyDeleteExceptionThrown = verifyDeleteException.contains(expectedVerifyDeleteException);
-    assertTrue("Exception is not thrown", isVerifyDeleteExceptionThrown);
+    assertTrue( isVerifyDeleteExceptionThrown);
   }
 
   @Test
@@ -601,7 +602,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     StringHandle readHandle = new StringHandle();
     docMgr.read(desc, readHandle);
     String content = readHandle.get();
-    assertTrue("Wrong content", content.contains("John"));
+    assertTrue( content.contains("John"));
 
     // UPDATE
     File updateFile = new File("src/test/java/com/marklogic/client/functionaltest/data/" + updateFilename);
@@ -618,7 +619,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     StringHandle updateReadHandle = new StringHandle();
     docMgr.read(desc, updateReadHandle);
     String updateContent = updateReadHandle.get();
-    assertTrue("Wrong content", updateContent.contains("Aries"));
+    assertTrue( updateContent.contains("Aries"));
 
     // DELETE
     // delete using bad version
@@ -637,9 +638,9 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     }
 
     boolean isVerifyDeleteExceptionThrown = verifyDeleteException.contains(expectedVerifyDeleteException);
-    assertTrue("Exception is not thrown", isVerifyDeleteExceptionThrown);
+    assertTrue( isVerifyDeleteExceptionThrown);
   }
-  
+
   @Test
   public void testAfterAndBeforeQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException
   {
@@ -649,7 +650,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
 	  String[] filenames2 = { "constraint3.xml" };
 	  String[] filenames3 = { "constraint4.xml" };
 	  String[] filenames4 = { "constraint5.xml" };
-	
+
 	  String URLprefix = "/structured-query-andnot/";
 
 	  // connect the client
@@ -701,7 +702,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
 
 	  DocumentDescriptor desc4 = docMgr.exists(URLprefix + "constraint4.xml");
 	  long constraint4 = desc4.getVersion();
-	  
+
 	  DocumentDescriptor desc5 = docMgr.exists(URLprefix + "constraint5.xml");
 	  long constraint5 = desc5.getVersion();
 
@@ -717,15 +718,15 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
 	  }
 	  catch (Exception ex) {
 		  String aftQueryExMsg = ex.getMessage();
-		  assertTrue("Exception message incorrect - afterQuery with zero timestamp", 
+		  assertTrue(
 				  aftQueryExMsg.contains("timestamp cannot be zero") );
-	  }    
+	  }
 	  try {
 		  qd = qb.beforeQuery(0L);
 	  }
 	  catch (Exception ex) {
 		  String aftQueryExMsg = ex.getMessage();
-		  assertTrue("Exception message incorrect - beforeQuery with zero timestamp", 
+		  assertTrue(
 				  aftQueryExMsg.contains("timestamp cannot be zero") );
 	  }
 	  // Search with actual constarint1 time-stamp value
@@ -736,57 +737,57 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
 		  ex.printStackTrace();
 		  fail("afterQuery with constraint1 timestamp failed");
 	  }
-	  // create handle    
+	  // create handle
 	  JacksonHandle resultsHandle = new JacksonHandle();
 	  queryMgr.search(qd, resultsHandle);
 	  JsonNode jsRes = resultsHandle.get();
 	  System.out.println("Total from results is : " + jsRes.get("total").asText());
-	  assertEquals("After Query returned incorrect value with contraint1 timestamp", "3", jsRes.get("total").asText());
+	  assertEquals( "3", jsRes.get("total").asText());
 	  jsRes = null;
 	  resultsHandle = null;
 
 	  Instant inst = Instant.ofEpochMilli(constraint1);
 	  Instant inst2 = inst.minus(1L, ChronoUnit.DAYS);
-	 
+
 	  QueryManager queryMgr2 = client.newQueryManager();
 	  StructuredQueryBuilder qb2 = queryMgr2.newStructuredQueryBuilder();
 	  // Search with constarint1 time-stamp value minus 1 day.
-	  try {		  
+	  try {
 		  qd2 = qb2.beforeQuery(inst2.getEpochSecond() * 1000);
 	  }
 	  catch (Exception ex) {
 		  ex.printStackTrace();
 		  fail("resultsHandleBef2 with constraint1 timestamp failed");
-	  } 
+	  }
 	  JacksonHandle resultsHandleBef2 = new JacksonHandle();
 	  queryMgr2.search(qd2, resultsHandleBef2);
 	  JsonNode jsRes2 = resultsHandleBef2.get();
 	  System.out.println("Total from results is on the day before: " + jsRes2.get("total").asText());
 	  // Zero documents should be available for yesterday
-	  assertEquals("Before Query returned incorrect value with contraint1 timestamp minus 1 day", "0", jsRes2.get("total").asText());
-	  
+	  assertEquals( "0", jsRes2.get("total").asText());
+
 	  inst = Instant.ofEpochMilli(constraint3);
 	  Instant inst3 = inst.plus(1L, ChronoUnit.MINUTES);
-	  
+
 	  System.out.println("inst3 " + inst3.toString());
-	 
+
 	  QueryManager queryMgr3 = client.newQueryManager();
 	  StructuredQueryBuilder qb3 = queryMgr3.newStructuredQueryBuilder();
 	  // Search with constarint3 time-stamp value plus 1 minute.
-	  try {  
+	  try {
 		  qd3 = qb3.afterQuery(inst3.getEpochSecond() * 1000);
 	  }
 	  catch (Exception ex) {
 		  ex.printStackTrace();
 		  fail("afterQuery with constraint3 timestamp failed");
-	  } 
+	  }
 	  JacksonHandle resultsHandleBef3 = new JacksonHandle();
 	  queryMgr3.search(qd3, resultsHandleBef3);
 	  JsonNode jsRes3 = resultsHandleBef3.get();
 	  System.out.println("Total from results is : " + jsRes3.get("total").asText());
 	  // Two documents should be available for the time
-	  assertEquals("After Query returned incorrect value with contraint3 timestamp", "2", jsRes3.get("total").asText());
-	  
+	  assertEquals( "2", jsRes3.get("total").asText());
+
 	  QueryManager queryMgr4 = client.newQueryManager();
 	  StructuredQueryBuilder qb4 = queryMgr4.newStructuredQueryBuilder();
 	  // Search with constarint3 time-stamp value plus 1 minute.
@@ -796,14 +797,14 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
 	  catch (Exception ex) {
 		  ex.printStackTrace();
 		  fail("beforeQuery with constraint3 timestamp failed");
-	  } 
+	  }
 	  JacksonHandle resultsHandleBef4 = new JacksonHandle();
 	  queryMgr3.search(qd4, resultsHandleBef4);
 	  JsonNode jsRes4 = resultsHandleBef4.get();
 	  System.out.println("Total from results is : " + jsRes4.get("total").asText());
 	  // Three documents should be available for the time
-	  assertEquals("Before Query returned incorrect value with contraint3 timestamp", "3", jsRes4.get("total").asText());
-	  
+	  assertEquals( "3", jsRes4.get("total").asText());
+
 	  // Test for meta data changes. First make sure after constraint5 timestamp + 1 there are no docs. Should be zero.
 	  inst = Instant.ofEpochMilli(constraint5);
 	  Instant inst5 = inst.plus(1L, ChronoUnit.MINUTES);
@@ -813,13 +814,13 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
 	  catch (Exception ex) {
 		  ex.printStackTrace();
 		  fail("afterQuery with constraint5 timestamp failed");
-	  } 
+	  }
 	  resultsHandleBef4 = new JacksonHandle();
 	  queryMgr3.search(qd4, resultsHandleBef4);
 	  jsRes4 = resultsHandleBef4.get();
 	  System.out.println("Total from results is : " + jsRes4.get("total").asText());
 	  // Zero documents should be available for the time
-	  assertEquals("Afetr Query returned incorrect value with contraint5 timestamp", "0", jsRes4.get("total").asText());
+	  assertEquals( "0", jsRes4.get("total").asText());
 	  //Now update meta data for contraint5.xml file and see if update is reflected.
 	  DocumentMetadataPatchBuilder patchBldr = docMgr.newPatchBuilder(Format.JSON);
 	  // Adding the initial meta-data, since there are none.
@@ -833,12 +834,12 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
 	  catch (Exception ex) {
 		  ex.printStackTrace();
 		  fail("afterQuery with constraint5 timestamp failed");
-	  } 
+	  }
       resultsHandleBef4 = new JacksonHandle();
       queryMgr3.search(qd4, resultsHandleBef4);
       jsRes4 = resultsHandleBef4.get();
       System.out.println("Total from results after meta-data update is : " + jsRes4.get("total").asText());
-      assertEquals("After Query returned incorrect value with contraint5 timestamp", "1", jsRes4.get("total").asText());  
+      assertEquals( "1", jsRes4.get("total").asText());
 }
 
 }

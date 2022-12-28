@@ -15,36 +15,30 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.*;
 import com.marklogic.client.query.StructuredQueryBuilder.CoordinateSystem;
 import com.marklogic.client.query.StructuredQueryBuilder.GeospatialOperator;
-import com.marklogic.client.query.StructuredQueryDefinition;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GeospatialRegionQueriesTest {
 
-  @AfterClass
+  @AfterAll
   public static void teardown() {
     deleteEnvironment();
   }
@@ -57,7 +51,7 @@ public class GeospatialRegionQueriesTest {
     Common.propertyWait();
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void setup() {
     Common.connect();
     Common.connectAdmin();
@@ -153,7 +147,7 @@ public class GeospatialRegionQueriesTest {
     Common.propertyWait();
   }
 
-  @Ignore
+  @Disabled
   public void testGeospatialRegionQuery() {
     QueryManager queryMgr = Common.client.newQueryManager();
     StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -169,7 +163,7 @@ public class GeospatialRegionQueriesTest {
     }
   }
 
-  @Ignore
+  @Disabled
   public void testFloatPrecision() {
     QueryManager queryMgr = Common.client.newQueryManager();
     StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -184,7 +178,7 @@ public class GeospatialRegionQueriesTest {
     assertEquals(2, summaries.length);
   }
 
-  @Ignore
+  @Disabled
   public void testDoublePrecision() {
     QueryManager queryMgr = Common.client.newQueryManager();
     StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -199,7 +193,7 @@ public class GeospatialRegionQueriesTest {
     assertEquals(1, summaries.length);
   }
 
-  @Ignore
+  @Disabled
   public void testGeospatialRegionDoubleQuery() {
     String options = "<options xmlns=\"http://marklogic.com/appservices/search\">"
                    + "    <search-option>filtered</search-option>"
@@ -240,7 +234,7 @@ public class GeospatialRegionQueriesTest {
     optionsMgr.deleteOptions("geodoubleoptions");
   }
 
-  @Ignore
+  @Disabled
   public void testFloatPrecisionCoordinateSystem() {
     QueryManager queryMgr = Common.client.newQueryManager();
     StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -255,7 +249,7 @@ public class GeospatialRegionQueriesTest {
     assertEquals(2, summaries.length);
   }
 
-  @Ignore
+  @Disabled
   public void testDoublePrecisionCoordinateSystem() {
     QueryManager queryMgr = Common.client.newQueryManager();
     StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -270,7 +264,7 @@ public class GeospatialRegionQueriesTest {
     assertEquals(1, summaries.length);
   }
 
-  @Ignore
+  @Disabled
   public void testGeospatialRegionQueryConstraint() {
     QueryManager queryMgr = Common.client.newQueryManager();
     StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
@@ -300,7 +294,7 @@ public class GeospatialRegionQueriesTest {
     }
   }
 
-  @Ignore
+  @Disabled
   public void testGeospatialRegionQueryOptionsConstraint() {
     String options = "<options xmlns=\"http://marklogic.com/appservices/search\">"
                    + "  <constraint name='geoo'>"

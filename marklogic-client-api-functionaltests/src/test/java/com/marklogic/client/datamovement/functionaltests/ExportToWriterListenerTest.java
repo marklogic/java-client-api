@@ -16,52 +16,34 @@
 
 package com.marklogic.client.datamovement.functionaltests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.DeleteListener;
-import com.marklogic.client.datamovement.ExportToWriterListener;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.datamovement.*;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.functionaltest.Artifact;
 import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.functionaltest.Company;
-import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.*;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentMetadataValues;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ExportToWriterListenerTest extends BasicJavaClientREST {
 
@@ -91,12 +73,12 @@ public class ExportToWriterListenerTest extends BasicJavaClientREST {
   private static String dataConfigDirPath = null;
   private static String outputFile = "/tmp/out.csv";
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     loadGradleProperties();
     server = getRestAppServerName();
     port = getRestAppServerPort();
-    
+
     dataConfigDirPath = getDataConfigDirPath();
     hostNames = getHosts();
     createDB(dbName);
@@ -161,10 +143,10 @@ public class ExportToWriterListenerTest extends BasicJavaClientREST {
     }
 
     ihb2.flushAndWait();
-    Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 30);
+    assertEquals(30, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     associateRESTServerWithDB(server, "Documents");
     for (int i = 0; i < hostNames.length; i++) {
@@ -177,14 +159,6 @@ public class ExportToWriterListenerTest extends BasicJavaClientREST {
     // Delete the output file
     File file = new File(outputFile);
     file.deleteOnExit();
-  }
-
-  @Before
-  public void setUp() throws Exception {
-  }
-
-  @After
-  public void tearDown() throws Exception {
   }
 
   @Test
@@ -228,7 +202,7 @@ public class ExportToWriterListenerTest extends BasicJavaClientREST {
       int lines = 0;
       while (reader.readLine() != null)
         lines++;
-      assertEquals("There should be 20 lines in the output file", 20, lines);
+      assertEquals(20, lines);
     }
   }
 
@@ -273,7 +247,7 @@ public class ExportToWriterListenerTest extends BasicJavaClientREST {
       int lines = 0;
       while (reader.readLine() != null)
         lines++;
-      assertEquals("There should be 20 lines in the output file", 20, lines);
+      assertEquals(20, lines);
     }
   }
 
@@ -321,7 +295,7 @@ public class ExportToWriterListenerTest extends BasicJavaClientREST {
         lines++;
         System.out.println("Line read from file with URIS is" + str);
       }
-      assertEquals("There should be 3 lines in the output file", 3, lines);
+      assertEquals(3, lines);
     }
   }
 
@@ -359,11 +333,11 @@ public class ExportToWriterListenerTest extends BasicJavaClientREST {
       while ((line = reader.readLine()) != null) {
         expLines++;
         System.out.println("Line read from file with URIS is" + line);
-        assertTrue("Export to Write - Incorrect contents", line.contains("{\"k1\":\"v1\"}") ? true :
+        assertTrue(line.contains("{\"k1\":\"v1\"}") ? true :
             line.contains("{\"a\":{\"b1\":{\"c\":\"jsonValue1\"}, \"b2\":[\"b2 val1\", \"b2 val2\"]}}") ? true : false);
-        assertTrue("Export to Write - Incorrect contents", !line.contains("/local/jsonA-1") || line.contains("/local/jsonB-1"));
+        assertTrue(!line.contains("/local/jsonA-1") || line.contains("/local/jsonB-1"));
       }
-      assertEquals("There should be 2 lines in the output file", 2, expLines);
+      assertEquals(2, expLines);
     }
   }
 
@@ -452,10 +426,10 @@ public class ExportToWriterListenerTest extends BasicJavaClientREST {
       while ((line = reader.readLine()) != null) {
         expLines++;
         System.out.println("Line read from file with URIS is " + line);
-        assertTrue("Export to Write - Incorrect collection contents", line.contains("QAKEYS") ? true : false);
-        assertTrue("Export to Write - Incorrect meta data values", line.contains("value1"));
+        assertTrue(line.contains("QAKEYS") ? true : false);
+        assertTrue(line.contains("value1"));
       }
-      assertEquals("There should be 2 lines in the output file", 2, expLines);
+      assertEquals(2, expLines);
     }
   }
 
@@ -513,13 +487,12 @@ public class ExportToWriterListenerTest extends BasicJavaClientREST {
           expLines++;
           System.out.println("Line read from file with URIS is" + line);
           // Verify that parts of the objects are avaialble in the file.
-          assertTrue("Export to Write - Incorrect contents", line.contains("\"name\":\"Cogs 1\"") ? true :
+          assertTrue(line.contains("\"name\":\"Cogs 1\"") ? true :
               line.contains("\"name\":\"Cogs 2\"") ? true : false);
-          assertTrue("Export to Write - Incorrect contents", line.contains("\"name\":\"Acme 2, Inc.\"") ? true :
+          assertTrue(line.contains("\"name\":\"Acme 2, Inc.\"") ? true :
               line.contains("\"name\":\"Widgets 1, Inc.\"") ? true : false);
         }
-        assertEquals("There should be 2 lines in the output file", 2, expLines);
-        fileReader.close();
+        assertEquals(2, expLines);
       }
     } catch (Exception ex) {
       System.out.println("Exception from method testPOJOExport " + ex.getMessage());
@@ -598,7 +571,7 @@ public class ExportToWriterListenerTest extends BasicJavaClientREST {
         throw new IllegalStateException("ERROR: Job did not finish within three minutes");
       }
     }
-    assertTrue("On Batch Failure call has issues", onBatchFailureStr.toString().contains("From onBatchFailure QA Exception"));
+    assertTrue(onBatchFailureStr.toString().contains("From onBatchFailure QA Exception"));
   }
 
   public Artifact getArtifact(int counter) {

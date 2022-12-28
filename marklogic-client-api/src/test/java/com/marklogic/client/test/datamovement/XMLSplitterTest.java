@@ -22,7 +22,7 @@ import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.stream.XMLStreamReader;
 import java.io.File;
@@ -30,7 +30,7 @@ import java.io.FileInputStream;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class XMLSplitterTest {
     static final private String xmlFile = "src/test/resources/data" + File.separator + "pathSplitter/people.xml";

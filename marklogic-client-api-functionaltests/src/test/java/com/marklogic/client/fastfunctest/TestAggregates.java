@@ -25,8 +25,9 @@ import com.marklogic.client.query.AggregateResult;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.ValuesDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -36,11 +37,9 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
 
-import static org.junit.Assert.assertEquals;
-
 public class TestAggregates extends AbstractFunctionalTest {
 
-  @After
+  @AfterEach
   public void tearDown() {
     deleteDocuments(client);
   }
@@ -76,27 +75,27 @@ public class TestAggregates extends AbstractFunctionalTest {
 
     AggregateResult[] agg = valuesHandle.getAggregates();
     System.out.println(agg.length);
-    assertEquals("Invalid length", 4, agg.length);
+    assertEquals( 4, agg.length);
     int sum = agg[0].get("xs:int", Integer.class);
     double avg = agg[1].get("xs:double", Double.class);
     int max = agg[2].get("xs:int", Integer.class);
     int min = agg[3].get("xs:int", Integer.class);
     System.out.println(sum);
-    assertEquals("Invalid sum", 22, sum);
+    assertEquals( 22, sum);
     System.out.println(avg);
-    assertEquals("Invalid avg", 4.4, avg, 0);
+    assertEquals( 4.4, avg, 0);
     System.out.println(max);
-    assertEquals("Invalid max", 5, max);
+    assertEquals( 5, max);
     System.out.println(min);
-    assertEquals("Invalid min", 3, min);
+    assertEquals( 3, min);
     System.out.println(agg[0].getValue());
-    assertEquals("Invalid sum", "22", agg[0].getValue());
+    assertEquals( "22", agg[0].getValue());
     System.out.println(agg[1].getValue());
-    assertEquals("Invalid avg", "4.4", agg[1].getValue());
+    assertEquals( "4.4", agg[1].getValue());
     System.out.println(agg[2].getValue());
-    assertEquals("Invalid max", "5", agg[2].getValue());
+    assertEquals( "5", agg[2].getValue());
     System.out.println(agg[3].getValue());
-    assertEquals("Invalid min", "3", agg[3].getValue());
+    assertEquals( "3", agg[3].getValue());
 
     QueryManager queryMgr1 = client.newQueryManager();
     // create query def
@@ -153,7 +152,7 @@ public class TestAggregates extends AbstractFunctionalTest {
 
     AggregateResult[] agg = valuesHandle.getAggregates();
     System.out.println(agg.length);
-    assertEquals("Invalid length", 4, agg.length);
+    assertEquals( 4, agg.length);
     double sum = agg[0].get("xs:double", Double.class);
     double avg = agg[1].get("xs:double", Double.class);
     double max = agg[2].get("xs:double", Double.class);
@@ -164,21 +163,21 @@ public class TestAggregates extends AbstractFunctionalTest {
     String roundedAvg = df.format(avg);
 
     System.out.println("roundedSum :" + roundedSum);
-    assertEquals("Invalid sum", "272.73", roundedSum);
+    assertEquals( "272.73", roundedSum);
     System.out.println("roundedAvg :" + roundedAvg);
-    assertEquals("Invalid avg", "54.55", roundedAvg);
+    assertEquals( "54.55", roundedAvg);
     System.out.println("Max :" + max);
-    assertEquals("Invalid max", 92.45, max, 0);
+    assertEquals( 92.45, max, 0);
     System.out.println("Min :" + min);
-    assertEquals("Invalid min", 12.34, min, 0);
+    assertEquals( 12.34, min, 0);
     System.out.println("agg[0] :" + agg[0].getValue() + " After Formatting :" + df.format(agg[0].get("xs:double", Double.class)));
-    assertEquals("Invalid sum", "272.73", df.format(agg[0].get("xs:double", Double.class)));
+    assertEquals( "272.73", df.format(agg[0].get("xs:double", Double.class)));
     System.out.println("agg[1] :" + agg[1].getValue() + " After Formatting :" + df.format(agg[1].get("xs:double", Double.class)));
-    assertEquals("Invalid avg", "54.55", df.format(agg[1].get("xs:double", Double.class)));
+    assertEquals( "54.55", df.format(agg[1].get("xs:double", Double.class)));
     System.out.println("agg[2] :" + agg[2].getValue());
-    assertEquals("Invalid max", "92.45", df.format(agg[2].get("xs:double", Double.class)));
+    assertEquals( "92.45", df.format(agg[2].get("xs:double", Double.class)));
     System.out.println("agg[3] :" + agg[3].getValue());
-    assertEquals("Invalid min", "12.34", df.format(agg[3].get("xs:double", Double.class)));
+    assertEquals( "12.34", df.format(agg[3].get("xs:double", Double.class)));
 
     // release client
     client.release();
@@ -216,7 +215,7 @@ public class TestAggregates extends AbstractFunctionalTest {
 
     AggregateResult[] agg = tuplesHandle.getAggregates();
     System.out.println(agg.length);
-    assertEquals("Invalid length", 2, agg.length);
+    assertEquals( 2, agg.length);
     double correlation = agg[0].get("xs:double", Double.class);
     double covariance = agg[1].get("xs:double", Double.class);
 
@@ -227,8 +226,8 @@ public class TestAggregates extends AbstractFunctionalTest {
     System.out.println(roundedCorrelation);
     System.out.println(roundedCovariance);
 
-    assertEquals("Invalid correlation", "0.26", roundedCorrelation);
-    assertEquals("Invalid covariance", "0.35", roundedCovariance);
+    assertEquals( "0.26", roundedCorrelation);
+    assertEquals( "0.35", roundedCovariance);
 
     // release client
     client.release();
@@ -304,7 +303,7 @@ public class TestAggregates extends AbstractFunctionalTest {
     queryMgr.values(queryDef, valuesHandle);
 
     AggregateResult[] agg = valuesHandle.getAggregates();
-    assertEquals("Wrong counting", "4", agg[0].getValue());
+    assertEquals( "4", agg[0].getValue());
 
     ValuesDefinition queryDef1 = queryMgr.newValuesDefinition("popularity", "aggregatesOpt3Occ.xml");
     queryDef1.setAggregate("correlation", "covariance");
@@ -316,7 +315,7 @@ public class TestAggregates extends AbstractFunctionalTest {
 
     AggregateResult[] aggn = tuplesHandle.getAggregates();
     System.out.println(aggn.length);
-    assertEquals("Invalid length", 2, aggn.length);
+    assertEquals( 2, aggn.length);
     double correlation = aggn[0].get("xs:double", Double.class);
     double covariance = aggn[1].get("xs:double", Double.class);
 
@@ -326,8 +325,8 @@ public class TestAggregates extends AbstractFunctionalTest {
 
     System.out.println(roundedCorrelation);
     System.out.println(roundedCovariance);
-    assertEquals("Invalid correlation", "0.43", roundedCorrelation);
-    assertEquals("Invalid covariance", "0.67", roundedCovariance);
+    assertEquals( "0.43", roundedCorrelation);
+    assertEquals( "0.67", roundedCovariance);
     // release client
     client.release();
   }

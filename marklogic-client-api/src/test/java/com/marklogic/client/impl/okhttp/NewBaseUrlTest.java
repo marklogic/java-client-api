@@ -1,20 +1,20 @@
 package com.marklogic.client.impl.okhttp;
 
 import okhttp3.HttpUrl;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.SSLContext;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class NewBaseUrlTest {
 
 	@Test
 	public void nullBasePath() {
 		HttpUrl url = HttpUrlBuilder.newBaseUrl("anyhost", 8123, null, null);
-		assertEquals("OkHttpServices has always defaulted to including /v1/ping on the base URL; other " +
-				"parts of it expect that to be present, including the code for checkConnection",
-			"http://anyhost:8123/v1/ping", url.toString());
+		assertEquals("http://anyhost:8123/v1/ping", url.toString(),
+			"OkHttpServices has always defaulted to including /v1/ping on the base URL; other " +
+				"parts of it expect that to be present, including the code for checkConnection");
 		assertEquals("http://anyhost:8123/v1/documents", url.resolve("documents").toString());
 	}
 

@@ -16,16 +16,15 @@
 
 package com.marklogic.client.datamovement.functionaltests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.*;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
@@ -54,12 +53,12 @@ public class ExportListenerTest extends BasicJavaClientREST {
   private static final String query1 = "fn:count(fn:doc())";
   private static String[] hostNames;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     loadGradleProperties();
     server = getRestAppServerName();
     port = getRestAppServerPort();
-    
+
     hostNames = getHosts();
     createDB(dbName);
     Thread.currentThread().sleep(500L);
@@ -80,7 +79,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
     dmManager = dbClient.newDataMovementManager();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     associateRESTServerWithDB(server, "Documents");
     for (int i = 0; i < hostNames.length; i++) {
@@ -91,7 +90,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
     deleteDB(dbName);
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     String jsonDoc = "{" +
         "\"employees\": [" +
@@ -116,7 +115,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
     wbatcher.flushAndWait();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     clearDB(port);
   }
@@ -204,8 +203,8 @@ public class ExportListenerTest extends BasicJavaClientREST {
     System.out.println("List size from second QueryBatcher is " + batcherList2.size());
     System.out.println("List size from Export Listener is " + docExporterList.size());
 
-    assertTrue("Docs deleted. Size incorrect", batcherList2.size() == 0);
-    assertTrue("Docs deleted. Size incorrect", docExporterList.size() == 100);
+    assertEquals(0, batcherList2.size());
+    assertEquals(100, docExporterList.size());
   }
 
   /*
@@ -252,7 +251,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
               // Verifying getServerTimestamp with withConsistentSnapshot - Git
               // Issue 629.
               System.out.println("Server Time from Batch 1 in exportBatcher is " + batch.getServerTimestamp());
-              assertTrue("Server Timestamp incorrect", batch.getServerTimestamp() > 0);
+              assertTrue(batch.getServerTimestamp() > 0);
             }
             for (String u : batch.getItems()) {
               batchResults.append(u);
@@ -267,10 +266,10 @@ public class ExportListenerTest extends BasicJavaClientREST {
               docMgr.read("firstName11.json", jacksonhandle);
               JsonNode node = jacksonhandle.get();
               // 3 nodes available
-              assertTrue("URI attempted for delete", node.path("employees").size() == 3);
-              assertEquals("Doc content incorrect", "John", node.path("employees").get(0).path("firstName").asText());
-              assertEquals("Doc content incorrect", "Ann", node.path("employees").get(1).path("firstName").asText());
-              assertEquals("Doc content incorrect", "Bob", node.path("employees").get(2).path("firstName").asText());
+              assertEquals(3, node.path("employees").size());
+              assertEquals("John", node.path("employees").get(0).path("firstName").asText());
+              assertEquals("Ann", node.path("employees").get(1).path("firstName").asText());
+              assertEquals("Bob", node.path("employees").get(2).path("firstName").asText());
             }
             try {
               Thread.sleep(5000);
@@ -288,9 +287,9 @@ public class ExportListenerTest extends BasicJavaClientREST {
           .withConsistentSnapshot()
           .withBatchSize(100)
           .onUrisReady(batch -> {
-              if (batch.getJobBatchNumber() == 1) {               
+              if (batch.getJobBatchNumber() == 1) {
                 System.out.println("Server Time from Batch 1 in deleteBatcher is " + batch.getServerTimestamp());
-                assertTrue("Server Timestamp incorrect", batch.getServerTimestamp() > 0);
+                assertTrue(batch.getServerTimestamp() > 0);
               }
             }
           )
@@ -312,8 +311,8 @@ public class ExportListenerTest extends BasicJavaClientREST {
     System.out.println("List size from QueryBatcher is " + batcherList.size());
     System.out.println("List size from Export Listener is " + docExporterList.size());
 
-    assertTrue("Docs deleted. Size incorrect", batcherList.size() == 100);
-    assertTrue("Docs deleted. Size incorrect", docExporterList.size() == 100);
+    assertEquals(100, batcherList.size());
+    assertEquals(100, docExporterList.size());
 
     // Doc count should be zero after both batchers are done.
     assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
@@ -353,7 +352,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
             System.out.println("Batch # is " + batch.getJobBatchNumber());
             System.out.println("Server Time from Batch is " + batch.getServerTimestamp());
             if (batch.getJobBatchNumber() == 1) {
-              assertTrue("Server Timestamp incorrect", batch.getServerTimestamp() < 0);
+              assertTrue(batch.getServerTimestamp() < 0);
             }
           })
           .onQueryFailure(exception -> {
@@ -419,10 +418,10 @@ public class ExportListenerTest extends BasicJavaClientREST {
               docMgr.read("firstName11.json", jacksonhandle);
               JsonNode node = jacksonhandle.get();
               // 3 nodes available
-              assertTrue("URI attempted for delete", node.path("employees").size() == 3);
-              assertEquals("Doc content incorrect", "John", node.path("employees").get(0).path("firstName").asText());
-              assertEquals("Doc content incorrect", "Ann", node.path("employees").get(1).path("firstName").asText());
-              assertEquals("Doc content incorrect", "Bob", node.path("employees").get(2).path("firstName").asText());
+              assertEquals(3, node.path("employees").size());
+              assertEquals("John", node.path("employees").get(0).path("firstName").asText());
+              assertEquals("Ann", node.path("employees").get(1).path("firstName").asText());
+              assertEquals("Bob", node.path("employees").get(2).path("firstName").asText());
             }
             try {
               Thread.sleep(1000);
@@ -457,8 +456,8 @@ public class ExportListenerTest extends BasicJavaClientREST {
     System.out.println("List size from QueryBatcher is " + batcherList.size());
     System.out.println("List size from Export Listener is " + docExporterList.size());
 
-    assertTrue("Docs deleted. Size incorrect", batcherList.size() == 100);
-    assertTrue("Docs deleted. Size incorrect", docExporterList.size() != 100);
+    assertTrue(batcherList.size() == 100);
+    assertTrue(docExporterList.size() != 100);
 
     // Doc count should be zero after both batchers are done.
     assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
@@ -538,8 +537,8 @@ public class ExportListenerTest extends BasicJavaClientREST {
     props.put("merge-timestamp", "0");
     changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
 
-    assertTrue("Docs deleted. Size incorrect", batcherList.size() != 100);
-    assertTrue("Docs deleted. Size incorrect", docExporterList.size() != 100);
+    assertTrue(batcherList.size() != 100);
+    assertTrue(docExporterList.size() != 100);
 
     // Doc count should be zero after both batchers are done.
     assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
@@ -619,6 +618,6 @@ public class ExportListenerTest extends BasicJavaClientREST {
     } finally {
     }
     System.out.println("On Batch Failure contents are " + onBatchFailureStr.toString());
-    assertTrue("On Batch Failure call has issues", onBatchFailureStr.toString().contains("From onBatchFailure QA Exception"));
+    assertTrue(onBatchFailureStr.toString().contains("From onBatchFailure QA Exception"));
   }
 }

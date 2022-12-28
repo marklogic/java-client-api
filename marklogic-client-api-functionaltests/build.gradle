@@ -1,6 +1,7 @@
 // Copyright (c) 2022 MarkLogic Corporation
 
 test {
+	useJUnitPlatform()
   testLogging{
     events 'started','passed', 'skipped'
   }
@@ -29,9 +30,12 @@ dependencies {
   implementation "com.marklogic:ml-app-deployer:4.3.6"
 
   testImplementation group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.11'
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
+	testImplementation 'org.xmlunit:xmlunit-legacy:2.9.0'
 }
 
 task runFragileTests(type: Test) {
+	useJUnitPlatform()
   description = "These are called 'fragile' because they'll pass when run by themselves, but when run as part of the " +
           "full suite, there seem to be one or more other fast functional tests that run before them and cause some of " +
           "their test methods to break. The Jenkinsfile thus calls these first before running the other functional " +
@@ -42,6 +46,7 @@ task runFragileTests(type: Test) {
 }
 
 task runFastFunctionalTests(type: Test) {
+	useJUnitPlatform()
   description = "Run all fast functional tests that don't setup/teardown custom app servers / databases"
   include "com/marklogic/client/fastfunctest/**"
   // Exclude the "fragile" ones
@@ -51,6 +56,7 @@ task runFastFunctionalTests(type: Test) {
 }
 
 task runSlowFunctionalTests(type: Test) {
+	useJUnitPlatform()
   description = "Run slow functional tests; i.e. those that setup/teardown custom app servers / databases"
   include "com/marklogic/client/datamovement/functionaltests/**"
   include "com/marklogic/client/functionaltest/**"

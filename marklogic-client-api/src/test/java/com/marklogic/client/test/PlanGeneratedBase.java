@@ -15,26 +15,6 @@
  */
 package com.marklogic.client.test;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.MarkLogicIOException;
@@ -43,8 +23,24 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
-import com.marklogic.client.type.ServerExpression;
 import com.marklogic.client.type.PlanExprCol;
+import com.marklogic.client.type.ServerExpression;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PlanGeneratedBase {
   protected static RowManager             rowMgr = null;
@@ -52,7 +48,7 @@ public class PlanGeneratedBase {
   protected static PlanBuilder.AccessPlan lit    = null;
 
   @SuppressWarnings("unchecked")
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
     rowMgr = Common.client.newRowManager();
@@ -65,7 +61,7 @@ public class PlanGeneratedBase {
     lit = p.fromLiterals(new Map[]{row});
 
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     lit    = null;
     p      = null;
@@ -93,14 +89,14 @@ public class PlanGeneratedBase {
 
     RowSet<RowRecord>   rowSet = rowMgr.resultRows(plan);
     Iterator<RowRecord> rowItr = rowSet.iterator();
-    assertTrue("no row to test for: "+testName, rowItr.hasNext());
+    assertTrue(rowItr.hasNext());
 
     RowRecord row = rowItr.next();
 
     if (expected == null) {
-      assertEquals(testName, RowRecord.ColumnKind.NULL, row.getKind("t"));
+      assertEquals(RowRecord.ColumnKind.NULL, row.getKind("t"));
     } else if (isVolatile) {
-      assertFalse(testName, row.getKind("t") == RowRecord.ColumnKind.NULL);
+      assertFalse(row.getKind("t") == RowRecord.ColumnKind.NULL);
     } else if (format != null) {
       switch (format) {
         case JSON:
@@ -114,11 +110,11 @@ public class PlanGeneratedBase {
       }
     } else {
       String actualVal = row.getString("t");
-      assertEquals(testName, expected.trim(), actualVal.trim());
+      assertEquals(expected.trim(), actualVal.trim());
 // TODO: assertions on type if set, allowing for fallback to base type
     }
 
-    assertFalse("too many results for: "+testName, rowItr.hasNext());
+    assertFalse(rowItr.hasNext());
     try {
       rowSet.close();
     } catch(IOException e) {
@@ -128,15 +124,15 @@ public class PlanGeneratedBase {
   private void checkJSON(String testName, String kind, String expectedRaw, RowRecord row) {
     try {
 // TODO: assertions on kind if set
-      assertEquals(testName, Format.JSON, row.getContentFormat("t"));
-      assertEquals(testName, "application/json", row.getContentMimetype("t"));
+      assertEquals(Format.JSON, row.getContentFormat("t"));
+      assertEquals("application/json", row.getContentMimetype("t"));
       if (expectedRaw.length() > 2) {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode expected = mapper.readTree(expectedRaw);
         JsonNode actual   = row.getContentAs("t", JsonNode.class);
-        assertEquals(testName, expected, actual);
+        assertEquals(expected, actual);
       } else {
-        assertEquals(testName, expectedRaw, row.getContentAs("t", String.class).trim());
+        assertEquals(expectedRaw, row.getContentAs("t", String.class).trim());
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -145,8 +141,8 @@ public class PlanGeneratedBase {
   private void checkXML(String testName, String kind, String expectedRaw, RowRecord row) {
     try {
 // TODO: assertions on kind if set
-      assertEquals(testName, Format.XML, row.getContentFormat("t"));
-      assertEquals(testName, "application/xml", row.getContentMimetype("t"));
+      assertEquals(Format.XML, row.getContentFormat("t"));
+      assertEquals("application/xml", row.getContentMimetype("t"));
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       factory.setCoalescing(true);
       factory.setNamespaceAware(true);

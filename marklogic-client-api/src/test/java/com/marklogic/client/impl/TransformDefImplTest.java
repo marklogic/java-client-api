@@ -4,10 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.expression.TransformDef;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TransformDefImplTest extends Assert {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class TransformDefImplTest {
 
     @Test
     public void paramsWithPlanColumn() throws Exception {

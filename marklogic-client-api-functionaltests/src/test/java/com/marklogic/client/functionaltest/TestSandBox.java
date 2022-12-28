@@ -16,30 +16,6 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.xml.bind.DatatypeConverter;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.*;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -49,39 +25,44 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
-import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.document.*;
 import com.marklogic.client.document.DocumentManager.Metadata;
-import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.document.DocumentRecord;
-import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.*;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonDatabindHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawQueryByExampleDefinition;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.query.*;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.RDFMimeTypes;
 import com.marklogic.client.type.CtsReferenceExpr;
 import com.marklogic.client.type.XsStringSeqVal;
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.jupiter.api.*;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
-@Ignore("Ignored because it was previously ignored in build.gradle though without explanation")
+import javax.xml.bind.DatatypeConverter;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import java.io.File;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.jupiter.api.Assertions.*;
+
+@Disabled("Ignored because it was previously ignored in build.gradle though without explanation")
 public class TestSandBox extends BasicJavaClientREST {
 
   private static String dbName = "TestSandBox";
@@ -115,7 +96,7 @@ public class TestSandBox extends BasicJavaClientREST {
   private static int restPort = 0;
   private static String datasource = null;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     System.out.println("In setup");
     configureRESTServer(dbName, fNames);
@@ -285,7 +266,7 @@ public class TestSandBox extends BasicJavaClientREST {
     client.release();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tear down");
 
@@ -309,7 +290,7 @@ public class TestSandBox extends BasicJavaClientREST {
     deleteForest(schemafNames[0]);
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in",
         "xdmp:eval-in", "any-uri", "xdbc:invoke",
@@ -323,7 +304,7 @@ public class TestSandBox extends BasicJavaClientREST {
         dbName, "eval-user", "x", getConnType());
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     //clearDB();
   }
@@ -365,7 +346,7 @@ public class TestSandBox extends BasicJavaClientREST {
 
     // Setup for JSON document
     /**
-     * 
+     *
      { "System": { systemStartERIName : "", systemEndERIName : "", }, "Valid":
      * { validStartERIName: "2001-01-01T00:00:00", validEndERIName:
      * "2011-12-31T23:59:59" }, "Address": "999 Skyway Park", "uri":
@@ -446,7 +427,6 @@ public class TestSandBox extends BasicJavaClientREST {
           + str.toString());
     }
     assertTrue(
-        "Doc should not be updated",
         str.toString().contains(
             "The document javaSingleJSONDoc.json is protected noUpdate"));
     try {
@@ -459,7 +439,7 @@ public class TestSandBox extends BasicJavaClientREST {
       JSONDocumentManager jsonDocMgr = writerClient.newJSONDocumentManager();
       DocumentPage readResults = jsonDocMgr.read(t1, docId);
       System.out.println("Number of results = " + readResults.size());
-      assertEquals("Wrong number of results", 1, readResults.size());
+      assertEquals( 1, readResults.size());
 
       QueryManager queryMgr = writerClient.newQueryManager();
 
@@ -473,7 +453,7 @@ public class TestSandBox extends BasicJavaClientREST {
       DocumentPage termQueryResults = docMgr.search(termQuery, start, t2);
       System.out.println("Number of results = "
           + termQueryResults.getTotalSize());
-      assertEquals("Wrong number of results", 4,
+      assertEquals( 4,
           termQueryResults.getTotalSize());
     } catch (Exception e) {
       System.out.println("Exception when update within 30 sec is "
@@ -594,7 +574,7 @@ public class TestSandBox extends BasicJavaClientREST {
     String filename3 = "property3.xml";
     String queryOptionName = "propertiesSearchWordOpt.xml";
     DatabaseClient client = null;
-    
+
     try {
 
       client = getDatabaseClient("rest-admin", "x", getConnType());
@@ -709,9 +689,8 @@ public class TestSandBox extends BasicJavaClientREST {
 
       JsonNode jsonBindingsNodes = jsonResults.path("rows");
       assertTrue(
-          "Number of Elements after plan execution is incorrect. Should be 1",
           1 == jsonBindingsNodes.size());
-      assertEquals("Row 1 myCity.city value incorrect", "new york",
+      assertEquals( "new york",
           jsonBindingsNodes.path(0).path("myCity.city").path("value").asText());
     }
     catch(Exception ex) {
@@ -721,7 +700,7 @@ public class TestSandBox extends BasicJavaClientREST {
       client.release();
     }
   }
-  
+
   @Test
   public void testWriteMultiJSONFilesDefaultMetadata() throws KeyManagementException, NoSuchAlgorithmException, Exception
   {
@@ -791,7 +770,7 @@ public class TestSandBox extends BasicJavaClientREST {
   /*
    * Write Triples of Type JSON Merge NTriples into the same graph and validate
    * mergeGraphs with transactions.
-   * 
+   *
    * Merge within same write transaction Write and merge Triples within
    * different transactions. Commit the merge transaction Write and merge
    * Triples within different transactions. Rollback the merge transaction Write
@@ -824,9 +803,9 @@ public class TestSandBox extends BasicJavaClientREST {
       FileHandle handle = gmWriter.read(uri, new FileHandle());
       File readFile = handle.get();
       String expectedContent = convertFileToString(readFile);
-      assertTrue("Did not write Quad in transaction",
+      assertTrue(
           expectedContent.contains("<http://example.com/ns/person#firstName"));
-      assertTrue("Did not merge Quad",
+      assertTrue(
           expectedContent.contains("<http://example.com/mergeQuadP"));
       trxIn = null;
       handle = null;
@@ -850,7 +829,7 @@ public class TestSandBox extends BasicJavaClientREST {
       handle = gmWriter.read(uri, new FileHandle());
       readFile = handle.get();
       expectedContent = convertFileToString(readFile);
-      assertTrue("Did not write Quad in transaction",
+      assertTrue(
           expectedContent.contains("<http://example.com/ns/person#firstName"));
       handle = null;
       readFile = null;
@@ -865,9 +844,9 @@ public class TestSandBox extends BasicJavaClientREST {
       handle = gmWriter.read(uri, new FileHandle());
       readFile = handle.get();
       expectedContent = convertFileToString(readFile);
-      assertTrue("Merge corrupted original Quad in transaction",
+      assertTrue(
           expectedContent.contains("<http://example.com/ns/person#firstName"));
-      assertTrue("Did not merge Quad in separate transaction",
+      assertTrue(
           expectedContent.contains("<http://example.com/mergeQuadP"));
 
       trxIn = null;
@@ -895,7 +874,7 @@ public class TestSandBox extends BasicJavaClientREST {
       handle = gmWriter.read(uri, new FileHandle());
       readFile = handle.get();
       expectedContent = convertFileToString(readFile);
-      assertTrue("Did not write Quad in transaction",
+      assertTrue(
           expectedContent.contains("<http://example.com/ns/person#firstName"));
       handle = null;
       readFile = null;
@@ -910,10 +889,9 @@ public class TestSandBox extends BasicJavaClientREST {
       expectedContent = convertFileToString(readFile);
 
       // Verify if original quad is available.
-      assertTrue("Merge corrupted original Quad in transaction",
+      assertTrue(
           expectedContent.contains("<http://example.com/ns/person#firstName"));
       assertFalse(
-          "Did merge Quad when it should not have, since transaction was rolled back",
           expectedContent.contains("<http://example.com/mergeQuadP"));
 
       trxIn = null;
@@ -940,7 +918,7 @@ public class TestSandBox extends BasicJavaClientREST {
       handle = gmWriter.read(uri, new FileHandle());
       readFile = handle.get();
       expectedContent = convertFileToString(readFile);
-      assertTrue("Did not write Quad in transaction",
+      assertTrue(
           expectedContent.contains("<http://example.com/ns/person#firstName"));
       handle = null;
       readFile = null;
@@ -957,10 +935,9 @@ public class TestSandBox extends BasicJavaClientREST {
       expectedContent = convertFileToString(readFile);
 
       // Verify if original quad is available.
-      assertTrue("Merge corrupted original Quad in transaction",
+      assertTrue(
           expectedContent.contains("<http://example.com/ns/person#firstName"));
       assertFalse(
-          "Did merge Quad when it should not have, since transaction was rolled back",
           expectedContent.contains("<http://example.com/mergeQuadP"));
 
       trxIn = null;
@@ -979,9 +956,9 @@ public class TestSandBox extends BasicJavaClientREST {
       readFile = handle.get();
       expectedContent = convertFileToString(readFile);
       // Verify if original quad is available.
-      assertTrue("Merge corrupted original Quad in transaction",
+      assertTrue(
           expectedContent.contains("<http://example.com/ns/person#firstName"));
-      assertTrue("Did not merge Quad in second commit transaction",
+      assertTrue(
           expectedContent.contains("<http://example.com/mergeQuadP"));
 
       // Delete Graphs inside the transaction.
@@ -1011,7 +988,7 @@ public class TestSandBox extends BasicJavaClientREST {
       }
     }
   }
-  
+
   @Test
   public void testPOJOSearchWithJacksonHandle() throws KeyManagementException, NoSuchAlgorithmException, IOException {
     DatabaseClient client = null;
@@ -1028,7 +1005,7 @@ public class TestSandBox extends BasicJavaClientREST {
       JacksonHandle results = new JacksonHandle();
       p = products.search(qd, 1, results);
       products.setPageLength(11);
-      assertEquals("total no of pages", 3, p.getTotalPages());
+      assertEquals( 3, p.getTotalPages());
       // System.out.println(p.getTotalPages()+results.get().toString());
       long pageNo = 1, count = 0;
       do {
@@ -1042,20 +1019,20 @@ public class TestSandBox extends BasicJavaClientREST {
           // System.out.println(a.getId()+" "+a.getManufacturer().getName()
           // +"  "+count);
         }
-        assertEquals("Page size", count, p.size());
+        assertEquals( count, p.size());
         pageNo = pageNo + p.getPageSize();
 
-        assertEquals("Page start from search handls vs page methods", results.get().get("start").asLong(), p.getStart());
-        assertEquals("Format in the search handle", "json", results.get().withArray("results").get(1).path("format").asText());
-        assertTrue("Uri in search handle contains Artifact", results.get().withArray("results").get(1).path("uri").asText().contains("Artifact"));
+        assertEquals( results.get().get("start").asLong(), p.getStart());
+        assertEquals( "json", results.get().withArray("results").get(1).path("format").asText());
+        assertTrue( results.get().withArray("results").get(1).path("uri").asText().contains("Artifact"));
         // System.out.println(results.get().toString());
       } while (!p.isLastPage() && pageNo < p.getTotalSize());
-      // assertTrue("search handle has metrics",results.get().has("metrics"));
-      assertEquals("Search text is", "cogs", results.get().path("qtext").asText());
-      assertEquals("Total from search handle", 110, results.get().get("total").asInt());
-      assertEquals("page number after the loop", 10, p.getPageNumber());
-      assertEquals("total no of pages", 10, p.getTotalPages());
-    }  
+      // assertTrue(results.get().has("metrics"));
+      assertEquals( "cogs", results.get().path("qtext").asText());
+      assertEquals( 110, results.get().get("total").asInt());
+      assertEquals( 10, p.getPageNumber());
+      assertEquals( 10, p.getTotalPages());
+    }
     catch(Exception ex) {
       System.out.println("Exceptions" + ex.getStackTrace());
     }
@@ -1066,7 +1043,7 @@ public class TestSandBox extends BasicJavaClientREST {
 
   /**
    * Write document using DOMHandle
-   * 
+   *
    * @param client
    * @param filename
    * @param uri
@@ -1104,7 +1081,7 @@ public class TestSandBox extends BasicJavaClientREST {
 
   /**
    * Function to select and create document manager based on the type
-   * 
+   *
    * @param client
    * @param docMgr
    * @param type
@@ -1135,7 +1112,7 @@ public class TestSandBox extends BasicJavaClientREST {
     }
     return docMgr;
   }
-  
+
   public DocumentMetadataHandle setMetadata() {
     // create and initialize a handle on the meta-data
     DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
@@ -1149,7 +1126,7 @@ public class TestSandBox extends BasicJavaClientREST {
     metadataHandle.setQuality(23);
     return metadataHandle;
   }
-  
+
   public void validateMetadata(DocumentMetadataHandle mh) {
     // get meta-data values
     DocumentProperties properties = mh.getProperties();
@@ -1161,36 +1138,36 @@ public class TestSandBox extends BasicJavaClientREST {
     // "size:5|reviewed:true|myInteger:10|myDecimal:34.56678|myCalendar:2014|myString:foo|";
     String actualProperties = getDocumentPropertiesString(properties);
     boolean result = actualProperties.contains("size:5|");
-    assertTrue("Document properties count", result);
+    assertTrue( result);
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println(actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
-    // assertTrue("Document permissions difference in flexrep-eval permission",
+    assertTrue( actualPermissions.contains("size:5"));
+    // assertTrue(
     // actualPermissions.contains("flexrep-eval:[READ]"));
-    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
-    assertTrue("Document permissions difference in app-user permissions",
+    assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue(
         (actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions.contains("app-user:[READ, UPDATE]")));
 
     // Collections
     String actualCollections = getDocumentCollectionsString(collections);
     System.out.println(collections);
 
-    assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
-    assertTrue("my-collection1 not found", actualCollections.contains("my-collection1"));
-    assertTrue("my-collection2 not found", actualCollections.contains("my-collection2"));
+    assertTrue( actualCollections.contains("size:2"));
+    assertTrue( actualCollections.contains("my-collection1"));
+    assertTrue( actualCollections.contains("my-collection2"));
   }
-  
+
   public void validateArtifact(Artifact art)
   {
-    assertNotNull("Artifact object should never be Null", art);
-    assertNotNull("Id should never be Null", art.id);
-    assertTrue("Inventry is always greater than 1000", art.getInventory() > 1000);
+    assertNotNull(art);
+    assertNotNull(art.id);
+    assertTrue( art.getInventory() > 1000);
   }
-  
+
   public void loadSimplePojos(PojoRepository products)
   {
     for (int i = 1; i < 111; i++) {
@@ -1202,7 +1179,7 @@ public class TestSandBox extends BasicJavaClientREST {
       }
     }
   }
-  
+
   public Artifact getArtifact(int counter) {
 
     Artifact cogs = new Artifact();

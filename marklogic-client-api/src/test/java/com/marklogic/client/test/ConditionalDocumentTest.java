@@ -15,40 +15,34 @@
  */
 package com.marklogic.client.test;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.*;
+import com.marklogic.client.admin.ServerConfigurationManager;
+import com.marklogic.client.admin.ServerConfigurationManager.UpdatePolicy;
+import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentRecord;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.impl.FailedRequest;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.document.DocumentRecord;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.ResourceNotResendableException;
-import com.marklogic.client.admin.ServerConfigurationManager;
-import com.marklogic.client.admin.ServerConfigurationManager.UpdatePolicy;
-import com.marklogic.client.document.DocumentDescriptor;
-import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.impl.FailedRequest;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.StringHandle;
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ConditionalDocumentTest {
   static DatabaseClient adminClient = Common.connectAdmin();
   static ServerConfigurationManager serverConfig;
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass()
     throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException
   {
@@ -61,7 +55,7 @@ public class ConditionalDocumentTest {
 
     Common.connect();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass()
     throws FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException
   {
@@ -101,9 +95,9 @@ public class ConditionalDocumentTest {
         statusCode = failreq.getStatusCode();
       ex = e;
     }
-    assertTrue("Write with bad version succeeded", ex != null);
-    assertTrue("Write with bad version had wrong error", statusCode == 412);
-    assertTrue("Write with no version had misleading message",
+    assertTrue( ex != null);
+    assertTrue( statusCode == 412);
+    assertTrue(
       ex.getMessage().contains("Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /test/conditional1.xml doesn't match if-match: 11111"));
 
 
@@ -112,15 +106,15 @@ public class ConditionalDocumentTest {
 
     String result = docMgr.read(desc, new StringHandle()).get();
     long goodVersion = desc.getVersion();
-    assertTrue("Failed to read version", goodVersion != DocumentDescriptor.UNKNOWN_VERSION);
+    assertTrue( goodVersion != DocumentDescriptor.UNKNOWN_VERSION);
     assertXMLEqual("Failed to read document content",result,GenericDocumentTest.content);
 
     desc.setVersion(badVersion);
-    assertTrue("Read with bad version did not get content",
+    assertTrue(
       docMgr.read(desc, new StringHandle()).get() != null);
 
     desc.setVersion(goodVersion);
-    assertTrue("Read with good version did not skip content",
+    assertTrue(
       docMgr.read(desc, new StringHandle()) == null);
 
     ex = null;
@@ -135,9 +129,9 @@ public class ConditionalDocumentTest {
         statusCode = failreq.getStatusCode();
       ex = e;
     }
-    assertTrue("Overwrite without version succeeded", ex != null);
-    assertEquals("Write with no version had wrong error", 428, statusCode);
-    assertEquals("Write with no version had misleading message",
+    assertTrue( ex != null);
+    assertEquals( 428, statusCode);
+    assertEquals(
       "Local message: Content version required to write document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /test/conditional1.xml",
       ex.getMessage());
 
@@ -152,17 +146,17 @@ public class ConditionalDocumentTest {
         statusCode = failreq.getStatusCode();
       ex = e;
     }
-    assertTrue("Overwrite with bad version succeeded", ex != null);
-    assertEquals("Write with bad version had wrong error", 412, statusCode);
-    assertTrue("Write with no version had misleading message",
+    assertTrue( ex != null);
+    assertEquals( 412, statusCode);
+    assertTrue(
       ex.getMessage().contains("Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /test/conditional1.xml has current version"));
 
     desc.setVersion(goodVersion);
     docMgr.write(desc, contentHandle);
 
     desc = docMgr.exists(docId);
-    assertTrue("Exists did not get version", desc.getVersion() != DocumentDescriptor.UNKNOWN_VERSION);
-    assertTrue("Overwrite did not change version", goodVersion != desc.getVersion());
+    assertTrue( desc.getVersion() != DocumentDescriptor.UNKNOWN_VERSION);
+    assertTrue( goodVersion != desc.getVersion());
     goodVersion = desc.getVersion();
 
     ex = null;
@@ -176,8 +170,8 @@ public class ConditionalDocumentTest {
         statusCode = failreq.getStatusCode();
       ex = e;
     }
-    assertTrue("Delete without version succeeded", ex != null);
-    assertEquals("Delete without version had wrong error", 428, statusCode);
+    assertTrue( ex != null);
+    assertEquals( 428, statusCode);
 
     ex = null;
     // TODO: statusCode
@@ -187,15 +181,15 @@ public class ConditionalDocumentTest {
     } catch (FailedRequestException e) {
       ex = e;
     }
-    assertTrue("Delete with bad version succeeded", ex != null);
+    assertTrue( ex != null);
 
     try {
       docMgr.delete(documentUri); // internal documentdescriptor
     } catch (FailedRequestException e) {
       ex = e;
     }
-    assertTrue("Delete with no version succeeded", ex != null);
-    assertEquals("Delete with no version had misleading message",
+    assertTrue( ex != null);
+    assertEquals(
       "Local message: Content version required to delete document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /test/conditional1.xml",
       ex.getMessage());
 
@@ -221,11 +215,11 @@ public class ConditionalDocumentTest {
   void verifyDescriptors(List<String> docList, DocumentPage page) {
     for (DocumentRecord record: page) {
       DocumentDescriptor desc = record.getDescriptor();
-      assertTrue("bad document URI when reading multiple descriptors", docList.contains(desc.getUri()));
-      assertEquals("bad content format when reading multiple descriptors", Format.XML, desc.getFormat());
-      assertTrue("bad content mime type when reading multiple descriptors", desc.getMimetype().startsWith("application/xml"));
-      assertTrue("bad content length when reading multiple descriptors", desc.getByteLength() >= 0);
-      assertTrue("bad content version when reading multiple descriptors", desc.getVersion() >= -1);
+      assertTrue( docList.contains(desc.getUri()));
+      assertEquals( Format.XML, desc.getFormat());
+      assertTrue( desc.getMimetype().startsWith("application/xml"));
+      assertTrue( desc.getByteLength() >= 0);
+      assertTrue( desc.getVersion() >= -1);
     }
   }
 }

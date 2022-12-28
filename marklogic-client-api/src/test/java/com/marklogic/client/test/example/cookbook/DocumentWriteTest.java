@@ -15,13 +15,11 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.example.cookbook.DocumentWrite;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-
-import org.junit.Test;
-
-import com.marklogic.client.example.cookbook.DocumentWrite;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DocumentWriteTest {
   @Test
@@ -33,6 +31,6 @@ public class DocumentWriteTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    assertTrue("DocumentWrite example failed", succeeded);
+    assertTrue( succeeded);
   }
 }

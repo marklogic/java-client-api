@@ -31,30 +31,32 @@ import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
-import org.junit.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.*;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+
 
 /**
- * 
+ *
  * This test is designed to update meta-data bulk writes and reads with one type
  * of Manager and one content type text.
- * 
+ *
  * TextDocumentManager
- * 
+ *
  */
 public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
 
   /**
    * @throws java.lang.Exception
    */
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     createRESTUser("app-user", "password", "rest-writer", "rest-reader");
   }
@@ -62,7 +64,7 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
   /**
    * @throws java.lang.Exception
    */
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     deleteRESTUser("app-user");
   }
@@ -70,7 +72,7 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
   /**
    * @throws java.lang.Exception
    */
-  @Before
+  @BeforeEach
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     // create new connection for each test below
     client = getDatabaseClient("app-user", "password", getConnType());
@@ -79,7 +81,7 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
   /**
    * @throws java.lang.Exception
    */
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     System.out.println("Running clear script");
     // release client
@@ -138,32 +140,32 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
     System.out.println("Returned properties: " + actualProperties);
     StringBuffer calProperty = new StringBuffer("myCalendar:").append(Calendar.getInstance().get(Calendar.YEAR));
 
-    assertTrue("Document properties difference in size value", actualProperties.contains("size:5"));
-    assertTrue("Document property reviewed not found or not correct", actualProperties.contains("reviewed:true"));
-    assertTrue("Document property myInteger not found or not correct", actualProperties.contains("myInteger:10"));
-    assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("myDecimal:34.56678"));
-    assertTrue("Document property myCalendar not found or not correct", actualProperties.contains(calProperty.toString()));
-    assertTrue("Document property myString not found or not correct", actualProperties.contains("myString:foo"));
+    assertTrue( actualProperties.contains("size:5"));
+    assertTrue( actualProperties.contains("reviewed:true"));
+    assertTrue( actualProperties.contains("myInteger:10"));
+    assertTrue( actualProperties.contains("myDecimal:34.56678"));
+    assertTrue( actualProperties.contains(calProperty.toString()));
+    assertTrue( actualProperties.contains("myString:foo"));
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println("Returned permissions: " + actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
-    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
-    assertTrue("Document permissions difference in app-user permissions",
+    assertTrue( actualPermissions.contains("size:5"));
+    assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue(
         (actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions.contains("app-user:[READ, UPDATE]")));
-    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
+    assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
 
     // Collections
     String actualCollections = getDocumentCollectionsString(collections);
     System.out.println("Returned collections: " + actualCollections);
 
-    assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
-    assertTrue("my-collection1 not found", actualCollections.contains("my-collection1"));
-    assertTrue("my-collection2 not found", actualCollections.contains("my-collection2"));
+    assertTrue( actualCollections.contains("size:2"));
+    assertTrue( actualCollections.contains("my-collection1"));
+    assertTrue( actualCollections.contains("my-collection2"));
   }
 
   public void validateUpdatedMetadataProperties(DocumentMetadataHandle mh) {
@@ -177,32 +179,32 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
     System.out.println("Returned properties after Meta-data only update: " + actualProperties);
     StringBuffer calProperty = new StringBuffer("myCalendar:").append(Calendar.getInstance().get(Calendar.YEAR));
 
-    assertTrue("Document properties difference in size value", actualProperties.contains("size:5"));
-    assertTrue("Document property reviewed not found or not correct", actualProperties.contains("reviewed:true"));
-    assertTrue("Document property myInteger not found or not correct", actualProperties.contains("myInteger:10"));
-    assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("myDecimal:34.56678"));
-    assertTrue("Document property myCalendar not found or not correct", actualProperties.contains(calProperty.toString()));
-    assertTrue("Document property myString not found or not correct", actualProperties.contains("myString:foo"));
+    assertTrue( actualProperties.contains("size:5"));
+    assertTrue( actualProperties.contains("reviewed:true"));
+    assertTrue( actualProperties.contains("myInteger:10"));
+    assertTrue( actualProperties.contains("myDecimal:34.56678"));
+    assertTrue( actualProperties.contains(calProperty.toString()));
+    assertTrue( actualProperties.contains("myString:foo"));
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println("Returned permissions: " + actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
-    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
-    assertTrue("Document permissions difference in app-user permissions",
+    assertTrue( actualPermissions.contains("size:5"));
+    assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue(
         (actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions.contains("app-user:[READ, UPDATE]")));
-    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
+    assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
 
     // Collections
     String actualCollections = getDocumentCollectionsString(collections);
     System.out.println("Returned collections: " + actualCollections);
 
-    assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
-    assertTrue("my-collection1 not found", actualCollections.contains("my-collection1"));
-    assertTrue("my-collection2 not found", actualCollections.contains("my-collection2"));
+    assertTrue( actualCollections.contains("size:2"));
+    assertTrue( actualCollections.contains("my-collection1"));
+    assertTrue( actualCollections.contains("my-collection2"));
   }
 
   public void validateUpdatedMetadataCollections(DocumentMetadataHandle mh) {
@@ -216,32 +218,32 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
     System.out.println("Returned properties: " + actualProperties);
     StringBuffer calProperty = new StringBuffer("myCalendar:").append(Calendar.getInstance().get(Calendar.YEAR));
 
-    assertTrue("Document properties difference in size value", actualProperties.contains("size:5"));
-    assertTrue("Document property reviewed not found or not correct", actualProperties.contains("reviewed:true"));
-    assertTrue("Document property myInteger not found or not correct", actualProperties.contains("myInteger:10"));
-    assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("myDecimal:34.56678"));
-    assertTrue("Document property myCalendar not found or not correct", actualProperties.contains(calProperty.toString()));
-    assertTrue("Document property myString not found or not correct", actualProperties.contains("myString:foo"));
+    assertTrue( actualProperties.contains("size:5"));
+    assertTrue( actualProperties.contains("reviewed:true"));
+    assertTrue( actualProperties.contains("myInteger:10"));
+    assertTrue( actualProperties.contains("myDecimal:34.56678"));
+    assertTrue( actualProperties.contains(calProperty.toString()));
+    assertTrue( actualProperties.contains("myString:foo"));
 
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println("Returned permissions: " + actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
-    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
-    assertTrue("Document permissions difference in app-user permissions",
+    assertTrue( actualPermissions.contains("size:5"));
+    assertTrue( actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue( actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue(
         (actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions.contains("app-user:[READ, UPDATE]")));
-    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
-    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
+    assertTrue( actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue( actualPermissions.contains("harmonized-reader:[READ]"));
 
     // Collections
     String actualCollections = getDocumentCollectionsString(collections);
     System.out.println("Returned collections: " + actualCollections);
 
-    assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
-    assertTrue("my-collection1 not found", actualCollections.contains("my-collection3"));
-    assertTrue("my-collection2 not found", actualCollections.contains("my-collection4"));
+    assertTrue( actualCollections.contains("size:2"));
+    assertTrue( actualCollections.contains("my-collection3"));
+    assertTrue( actualCollections.contains("my-collection4"));
   }
 
   /*
@@ -270,7 +272,7 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
     System.out.println(sh.get());
     DocumentPage page = docMgr.read(docId);
     // Issue #294 DocumentPage.size() should return correct size
-    assertTrue("DocumentPage Size did not return expected value:: returned==  " + page.size(), page.size() == 3);
+    assertTrue(page.size() == 3);
 
     while (page.hasNext()) {
       DocumentRecord rec = page.next();
@@ -380,7 +382,7 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
 
       DocumentPage page = docMgr.read(transaction, docId[0], docId[1], docId[2]);
       // Issue #294 DocumentPage.size() should return correct size
-      assertTrue("DocumentPage Size did not return expected value:: returned==  " + page.size(), page.size() == 3);
+      assertTrue(page.size() == 3);
 
       while (page.hasNext()) {
         DocumentRecord rec = page.next();
@@ -467,7 +469,7 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
 
     DocumentPage page = docMgr.readMetadata(docId[0], docId[1], docId[2]);
     // Issue #294 DocumentPage.size() should return correct size
-    assertTrue("DocumentPage Size did not return expected value:: returned==  " + page.size(), page.size() == 3);
+    assertTrue(page.size() == 3);
 
     while (page.hasNext()) {
       DocumentRecord rec = page.next();
@@ -506,7 +508,7 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
 
     DocumentPage page = docMgr.read(docId);
     // Issue #294 DocumentPage.size() should return correct size
-    assertTrue("DocumentPage Size did not return expected value:: returned==  " + page.size(), page.size() == 3);
+    assertTrue(page.size() == 3);
 
     DocumentMetadataHandle metadataHandleRead = new DocumentMetadataHandle();
 
@@ -543,7 +545,7 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
       docMgr.write(writeset);
 
       StringHandle sh = docMgr.read(docId[0], new StringHandle());
-      assertEquals("Doc content incorrect", "This is so foo1", sh.get());
+      assertEquals( "This is so foo1", sh.get());
       docMgr.readMetadata(docId[0], mhRead);
 
       DocumentCollections collections = mhRead.getCollections();
@@ -551,7 +553,7 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
       System.out.println(actualCollections);
 
       String expectedCollections1 = "size:1|specificDocCollection|";
-      assertEquals("Document collections difference", expectedCollections1, actualCollections);
+      assertEquals( expectedCollections1, actualCollections);
 
       // Verify that docId[1] does not have specificDoccollection
       mhRead = new DocumentMetadataHandle();
@@ -561,7 +563,7 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
       System.out.println(actualCollections);
 
       String expectedCollections2 = "size:1|groupCollections|";
-      assertEquals("Document collections difference", expectedCollections2, actualCollections);
+      assertEquals( expectedCollections2, actualCollections);
       // Reset metadata
       docMgr.writeDefaultMetadata(docId);
       Thread.sleep(5000);
@@ -572,7 +574,7 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
       actualCollections = getDocumentCollectionsString(collections);
       System.out.println(actualCollections);
       String expectedCollections3 = "size:0|";
-      assertEquals("Document collections difference", expectedCollections3, actualCollections);
+      assertEquals( expectedCollections3, actualCollections);
 
       // Call in a writeDefaultMetadata transaction
       String docIdTx[] = {"/foo/test/myFoo4.txt", "/foo/test/myFoo5.txt"};
@@ -591,7 +593,7 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
       t1 = null;
 
       sh = docMgrTx.read(docIdTx[0], new StringHandle());
-      assertEquals("Doc content incorrect", "This is so foo4", sh.get());
+      assertEquals( "This is so foo4", sh.get());
       docMgrTx.readMetadata(docIdTx[0], mhRead);
 
       collections = mhRead.getCollections();
@@ -599,7 +601,7 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
       System.out.println(actualCollections);
 
       String expectedCollections4 = "size:1|TransSpecificDocCollection|";
-      assertEquals("Document collections difference", expectedCollections4, actualCollections);
+      assertEquals( expectedCollections4, actualCollections);
 
       tReset = client.openTransaction();
       docMgrTx.writeDefaultMetadata(tReset, docIdTx);
@@ -612,7 +614,7 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
       System.out.println(actualCollections);
 
       expectedCollections4 = "size:1|TransSpecificDocCollection|";
-      assertEquals("Document collections difference", expectedCollections4, actualCollections);
+      assertEquals( expectedCollections4, actualCollections);
 
       // Now commit transaction and verify if collections reset.
       tReset.commit();
@@ -626,7 +628,7 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
       actualCollections = getDocumentCollectionsString(collections);
       System.out.println(actualCollections);
       String expectedCollections5 = "size:0|";
-      assertEquals("Document collections difference", expectedCollections5, actualCollections);
+      assertEquals( expectedCollections5, actualCollections);
 
       // Negative case - Call with empty args
       StringBuilder negStr = new StringBuilder();
@@ -638,12 +640,12 @@ public class TestBulkReadWriteMetaDataChange extends AbstractFunctionalTest {
         negStr.append(e.getMessage());
       }
       finally {
-        assertTrue("Negative case failure", negStr.toString().contains("Resetting document metadata with empty identifier list"));
+        assertTrue( negStr.toString().contains("Resetting document metadata with empty identifier list"));
       }
     }
     catch (Exception ex) {
       System.out.println("Exceptions thrown" + ex.getStackTrace());
-      Assert.fail("Test failed due to exceptions");
+      fail("Test failed due to exceptions");
     }
     finally {
         if (t1 != null) {

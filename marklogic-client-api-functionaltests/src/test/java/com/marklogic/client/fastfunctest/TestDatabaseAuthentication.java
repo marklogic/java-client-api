@@ -16,21 +16,20 @@
 
 package com.marklogic.client.fastfunctest;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.mgmt.resource.appservers.ServerManager;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+
 
 /*
  * The tests here run against normal a no SSL enabled REST Server.
@@ -43,12 +42,12 @@ public class TestDatabaseAuthentication extends AbstractFunctionalTest {
   private static String restServerName = "java-functest";
   private String originalServerAuthentication;
 
-  @Before
+  @BeforeEach
   public void before() {
 	  originalServerAuthentication = getServerAuthentication(restServerName);
   }
 
-  @After
+  @AfterEach
   public void teardown() throws Exception {
     setAuthentication(originalServerAuthentication, restServerName);
     setDefaultUser("nobody", restServerName);
@@ -69,7 +68,7 @@ public class TestDatabaseAuthentication extends AbstractFunctionalTest {
       } catch (Exception ex) {
         str.append(ex.getMessage());
       }
-      assertEquals("Write Text difference", "makeSecurityContext should only be called with BASIC or DIGEST Authentication",
+      assertEquals( "makeSecurityContext should only be called with BASIC or DIGEST Authentication",
           str.toString().trim());
     }
   }
@@ -102,7 +101,7 @@ public class TestDatabaseAuthentication extends AbstractFunctionalTest {
 
       String expectedContent = "hello world, welcome to java API";
 
-      assertEquals("Write Text difference", expectedContent.trim(), readContent.trim());
+      assertEquals( expectedContent.trim(), readContent.trim());
 
       // release client
       client.release();

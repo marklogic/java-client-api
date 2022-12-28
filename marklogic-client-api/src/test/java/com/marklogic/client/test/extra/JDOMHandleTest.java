@@ -15,28 +15,27 @@
  */
 package com.marklogic.client.test.extra;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.assertNotNull;
-
-import java.io.IOException;
-
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.extra.jdom.JDOMHandle;
 import com.marklogic.client.test.Common;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class JDOMHandleTest {
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -70,7 +69,7 @@ public class JDOMHandleTest {
 
     // access the document content
     Document readDocument = readHandle.get();
-    assertNotNull("Wrote null JDOM document", readDocument);
+    assertNotNull( readDocument);
     assertXMLEqual("JDOM document not equal",
       writeHandle.toString(), readHandle.toString());
 

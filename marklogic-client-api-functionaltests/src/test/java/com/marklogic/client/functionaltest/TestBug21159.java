@@ -16,26 +16,6 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
@@ -43,20 +23,30 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.TuplesHandle;
 import com.marklogic.client.io.ValuesHandle;
-import com.marklogic.client.query.CountedDistinctValue;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
-import com.marklogic.client.query.RawCtsQueryDefinition;
-import com.marklogic.client.query.Tuple;
-import com.marklogic.client.query.TypedDistinctValue;
-import com.marklogic.client.query.ValuesDefinition;
+import com.marklogic.client.query.*;
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import java.io.File;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestBug21159 extends BasicJavaClientREST {
 
   private static String dbName = "TestTuplesRawCombinedQueryDB";
   private static String[] fNames = { "TestTuplesRawCombinedQueryDB-1" };
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception
   {
     System.out.println("In setup");
@@ -165,7 +155,7 @@ public class TestBug21159 extends BasicJavaClientREST {
     // release client
     client.release();
   }
-  
+
   @Test
   public void testTuplesWithRawCtsQueryDefinition() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
       TransformerException
@@ -183,7 +173,7 @@ public class TestBug21159 extends BasicJavaClientREST {
     srvMgr.writeConfiguration();
     QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
     StringHandle Opthandle = new StringHandle();
-    String options = "<options xmlns=\"http://marklogic.com/appservices/search\"> " + 
+    String options = "<options xmlns=\"http://marklogic.com/appservices/search\"> " +
             "<tuples name=\"n-way\">" +
             "<range type=\"xs:double\"> " +
             "<element ns=\"\" name=\"double\"/> " +
@@ -211,8 +201,8 @@ public class TestBug21159 extends BasicJavaClientREST {
     // create a search definition
     String wordQuery = "<cts:word-query xmlns:cts=\"http://marklogic.com/cts\">" +
             "<cts:text>Alaska</cts:text>" +
-            "</cts:word-query>"; 
-           
+            "</cts:word-query>";
+
     ValuesDefinition valuesDef = queryMgr.newValuesDefinition("n-way", queryOptionName);
 
     StringHandle handle = new StringHandle().with(wordQuery).withFormat(Format.XML);
@@ -224,27 +214,27 @@ public class TestBug21159 extends BasicJavaClientREST {
     Tuple[] distinctValues = tHandle.getTuples();
 
     System.out.println("TuplesHandle length is " + distinctValues.length);
-    assertEquals("TuplesHandle length is incorrect", 2, distinctValues.length);
+    assertEquals(2, distinctValues.length);
     TypedDistinctValue[] firstdistinctValues = distinctValues[0].getValues();
     TypedDistinctValue[] seconddistinctValues = distinctValues[1].getValues();
-    
+
     // Sort the distinct values present inside as array elements in each TypedDistinctValue instance.
-    ArrayList<Double> arr = new ArrayList<Double>(); 
+    ArrayList<Double> arr = new ArrayList<Double>();
     arr.add(firstdistinctValues[0].get(Double.class));
     arr.add(seconddistinctValues[0].get(Double.class));
     arr.sort(null);
 
     System.out.println("TuplesHandle name is " + tHandle.getName().toString());
-    assertTrue("TuplesHandle name is incorrect", tHandle.getName().toString().trim().contains("n-way"));
-    
+    assertTrue(tHandle.getName().toString().trim().contains("n-way"));
+
     assertEquals(1.1, arr.get(0), 0.0);
     assertEquals(1.2, arr.get(1), 0.0);
-    assertTrue("TuplesHandle element 1 is incorrect", firstdistinctValues[2].get(String.class).trim().contains("Alaska"));
-    assertTrue("TuplesHandle element 2 is incorrect", seconddistinctValues[2].get(String.class).trim().contains("Alaska"));
+    assertTrue(firstdistinctValues[2].get(String.class).trim().contains("Alaska"));
+    assertTrue(seconddistinctValues[2].get(String.class).trim().contains("Alaska"));
     // release client
     client.release();
   }
-  
+
   @Test
   public void testTuplesWithRawCombinedCtsQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
       TransformerException
@@ -259,7 +249,7 @@ public class TestBug21159 extends BasicJavaClientREST {
     srvMgr.setQueryOptionValidation(true);
     srvMgr.writeConfiguration();
     StringHandle Opthandle = new StringHandle();
-    String options = "<options xmlns=\"http://marklogic.com/appservices/search\"> " + 
+    String options = "<options xmlns=\"http://marklogic.com/appservices/search\"> " +
             "<tuples name=\"n-way\">" +
             "<range type=\"xs:double\"> " +
             "<element ns=\"\" name=\"double\"/> " +
@@ -289,7 +279,7 @@ public class TestBug21159 extends BasicJavaClientREST {
             "</cts:word-query>"+
             options +
             "</search:search>";
-    
+
     ValuesDefinition valuesDef = queryMgr.newValuesDefinition("n-way");
 
     StringHandle handle = new StringHandle().with(wordQuery).withFormat(Format.XML);
@@ -301,28 +291,28 @@ public class TestBug21159 extends BasicJavaClientREST {
     Tuple[] distinctValues = tHandle.getTuples();
 
     System.out.println("TuplesHandle length is " + distinctValues.length);
-    assertEquals("TuplesHandle length is incorrect", 2, distinctValues.length);
+    assertEquals(2, distinctValues.length);
     TypedDistinctValue[] firstdistinctValues = distinctValues[0].getValues();
     TypedDistinctValue[] seconddistinctValues = distinctValues[1].getValues();
-    
+
     // Sort the distinct values present inside as array elements in each TypedDistinctValue instance.
-    ArrayList<Double> arr = new ArrayList<Double>(); 
+    ArrayList<Double> arr = new ArrayList<Double>();
     arr.add(firstdistinctValues[0].get(Double.class));
     arr.add(seconddistinctValues[0].get(Double.class));
     arr.sort(null);
 
     System.out.println("TuplesHandle name is " + tHandle.getName().toString());
-    assertTrue("TuplesHandle name is incorrect", tHandle.getName().toString().trim().contains("n-way"));
-    
+    assertTrue(tHandle.getName().toString().trim().contains("n-way"));
+
     assertEquals(1.1, arr.get(0), 0.0);
     assertEquals(1.2, arr.get(1), 0.0);
-    assertTrue("TuplesHandle element 1 is incorrect", firstdistinctValues[2].get(String.class).trim().contains("Alaska"));
-    assertTrue("TuplesHandle element 2 is incorrect", seconddistinctValues[2].get(String.class).trim().contains("Alaska"));
+    assertTrue(firstdistinctValues[2].get(String.class).trim().contains("Alaska"));
+    assertTrue(seconddistinctValues[2].get(String.class).trim().contains("Alaska"));
     // release client
     client.release();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws Exception
   {
     System.out.println("In tear down");

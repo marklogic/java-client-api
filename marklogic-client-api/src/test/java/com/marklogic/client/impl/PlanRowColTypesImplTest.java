@@ -2,10 +2,11 @@ package com.marklogic.client.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;import static org.junit.jupiter.api.Assertions.*;
 
-public class PlanRowColTypesImplTest extends Assert {
+import static org.junit.jupiter.api.Assertions.*;
+
+public class PlanRowColTypesImplTest {
 
     @Test
     public void columnOnly() {

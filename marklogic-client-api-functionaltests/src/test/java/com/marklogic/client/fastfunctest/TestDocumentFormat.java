@@ -25,9 +25,10 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.GenericReadHandle;
 import com.marklogic.client.io.marker.GenericWriteHandle;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -37,12 +38,12 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+
 
 public class TestDocumentFormat extends AbstractFunctionalTest {
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception {
     // Create a user with minimal privs and test doc exists in a transaction.
     createRESTUser("userInTrans", "x", "rest-writer");
@@ -78,7 +79,7 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
       String expectedUri1 = uri1 + filename;
 
       String docUri1 = docMgr1.exists(expectedUri1, t1).getUri();
-      assertEquals("URI is not found", expectedUri1, docUri1);
+      assertEquals( expectedUri1, docUri1);
       t1.rollback();
     }
     catch(Exception ex) {
@@ -120,7 +121,7 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
 
       String expectedUri2 = uri2 + filename;
       String docUri2 = docMgr2.exists(expectedUri2, t2).getUri();
-      assertEquals("URI is not found", expectedUri2, docUri2);
+      assertEquals( expectedUri2, docUri2);
       t2.rollback();
     }
     catch(Exception ex) {
@@ -161,7 +162,7 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // release the client
     client.release();
@@ -202,7 +203,7 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
     }
 
     boolean isExceptionThrown = exception.contains(expectedException);
-    assertTrue("Exception is not thrown", isExceptionThrown);
+    assertTrue( isExceptionThrown);
 
     // release the client
     client.release();
@@ -237,7 +238,7 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // release the client
     client.release();
@@ -272,7 +273,7 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // release the client
     client.release();
@@ -307,7 +308,7 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // release the client
     client.release();
@@ -342,7 +343,7 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // release the client
     client.release();
@@ -377,7 +378,7 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // release the client
     client.release();
@@ -412,7 +413,7 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // release the client
     client.release();
@@ -447,7 +448,7 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // release the client
     client.release();
@@ -487,7 +488,7 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
       exception = e.toString();
     }
     boolean isExceptionThrown = exception.contains(expectedException);
-    assertTrue("Exception is not thrown", isExceptionThrown);
+    assertTrue( isExceptionThrown);
 
     // release the client
     client.release();
@@ -528,7 +529,7 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
     }
 
     boolean isExceptionThrown = exception.contains(expectedException);
-    assertTrue("Exception is not thrown", isExceptionThrown);
+    assertTrue( isExceptionThrown);
 
     // release the client
     client.release();
@@ -569,7 +570,7 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
     }
 
     boolean isExceptionThrown = exception.contains(expectedException);
-    assertTrue("Exception is not thrown", isExceptionThrown);
+    assertTrue( isExceptionThrown);
 
     // release the client
     client.release();
@@ -604,7 +605,7 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // release the client
     client.release();
@@ -639,7 +640,7 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // release the client
     client.release();
@@ -680,7 +681,7 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
     }
 
     boolean isExceptionThrown = exception.contains(expectedException);
-    assertTrue("Exception is not thrown", isExceptionThrown);
+    assertTrue( isExceptionThrown);
 
     // release the client
     client.release();
@@ -715,7 +716,7 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
 
     String expectedUri = uri + filename;
     String docUri = docMgr.exists(expectedUri).getUri();
-    assertEquals("URI is not found", expectedUri, docUri);
+    assertEquals( expectedUri, docUri);
 
     // release the client
     client.release();
@@ -752,13 +753,13 @@ public class TestDocumentFormat extends AbstractFunctionalTest {
     }
 
     boolean isExceptionThrown = exception.contains(expectedException);
-    assertTrue("Wrong exception", isExceptionThrown);
+    assertTrue( isExceptionThrown);
 
     // release the client
     client.release();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws Exception
   {
     deleteRESTUser("userInTrans");

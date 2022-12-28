@@ -21,18 +21,14 @@ import com.marklogic.client.dataservices.InputCaller;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
-import org.hamcrest.core.StringContains;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.internal.matchers.ThrowableMessageMatcher;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import java.io.*;
+import java.io.InputStream;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BulkInputCallerTest {
     static ObjectNode apiObj;
@@ -43,10 +39,7 @@ public class BulkInputCallerTest {
     static int startValue = 1;
     static JSONDocumentManager docMgr;
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         docMgr = IOTestUtil.db.newJSONDocumentManager();
         apiObj = IOTestUtil.readApi(apiName);
@@ -79,17 +72,17 @@ public class BulkInputCallerTest {
             int endNext=startNext+1;
             String uri = "/marklogic/ds/test/bulkInputCaller/"+endNext+".json";
             JsonNode doc = docMgr.read(uri, new JacksonHandle()).get();
-            assertNotNull("Could not find file "+uri, doc);
-            assertEquals("state mismatch", endNext, doc.get("state").get("next").asInt());
-            assertEquals("state mismatch", workMax, doc.get("work").get("max").asInt());
+            assertNotNull(doc, "Could not find file "+uri);
+            assertEquals(endNext, doc.get("state").get("next").asInt());
+            assertEquals(workMax, doc.get("work").get("max").asInt());
             JsonNode inputs = doc.get("inputs");
             int docCount = (endNext == workMax) ? 1 : 2;
-            assertEquals("inputs mismatch", docCount, inputs.size());
+            assertEquals(docCount, inputs.size());
             for (int j=0; j < docCount; j++) {
                 int offset = j + (startNext * 2) - 1;
                 JsonNode inputDoc = inputs.get(j);
-                assertEquals("docNum mismatch", offset, inputDoc.get("docNum").asInt());
-                assertEquals("docName mismatch", "doc"+offset, inputDoc.get("docName").asText());
+                assertEquals(offset, inputDoc.get("docNum").asInt());
+                assertEquals("doc"+offset, inputDoc.get("docName").asText());
             }
         }
     }
@@ -123,15 +116,10 @@ public class BulkInputCallerTest {
 
         input.forEach(loader::accept);
         loader.interrupt();
-
-        expectedException.expect(IllegalStateException.class);
-        expectedException.expect(new ThrowableMessageMatcher(new StringContains(
-                "can only accept input when initializing or running and not when input is interrupting"
-        )));
-        input2.forEach(loader::accept);
+        assertThrows(IllegalStateException.class, () -> input2.forEach(loader::accept));
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
         for(int i=startValue+1; i<workMax; i++) {

@@ -26,8 +26,9 @@ import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -40,12 +41,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+
 
 public class TestStructuredQuery extends AbstractFunctionalTest {
 
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception {
     deleteDocuments(connectAsAdmin());
   }
@@ -246,7 +247,7 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
 
     assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
     assertXpathEvaluatesTo("0113", "string(//*[local-name()='result']//*[local-name()='id'])", resultDoc);
-    
+
     // To test Git issue 908
     StructuredQueryDefinition termQuery11 = qb.term("Pacific");
     StructuredQueryDefinition termQuery21 = qb.term("Yearly");
@@ -263,8 +264,8 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
     }
     long res = results.getTotalResults();
     System.out.println("No query results available. Total Results should be zero: " + res);
-    assertTrue("Exception should not have been thrown when no query results are available", searchHandleEx.toString().isEmpty());
-    assertEquals("No query results available. Should be zero.", 0, res);
+    assertTrue( searchHandleEx.toString().isEmpty());
+    assertEquals( 0, res);
 
     // release client
     client.release();
@@ -538,7 +539,7 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
    * string query by calling setCriteria and withCriteria Make sure a query
    * using those query definitions selects only documents that match both the
    * query definition and the string query
-   * 
+   *
    * Uses setCriteria. Uses valueConstraintWildCardOpt.xml options file QD and
    * string query (Memex) should return 1 URI in the response.
    */
@@ -577,8 +578,8 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
     JacksonHandle results = queryMgr.search(strutdDef, strHandle.withFormat(Format.JSON));
 
     JsonNode node = results.get();
-    assertEquals("Number of results returned incorrect in response", "1", node.path("total").asText());
-    assertEquals("Result returned incorrect in response", "/structured-query/constraint2.xml", node.path("results").get(0).path("uri").asText());
+    assertEquals( "1", node.path("total").asText());
+    assertEquals( "/structured-query/constraint2.xml", node.path("results").get(0).path("uri").asText());
 
     // With multiple setCriteria - positive
     StructuredQueryDefinition strutdDefPos = qb.valueConstraint("id", "0012");
@@ -591,8 +592,8 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
 
     JsonNode nodePos = resultsPos.get();
     // Return 1 node - constraint2.xml
-    assertEquals("Number of results returned incorrect in response", "1", nodePos.path("total").asText());
-    assertEquals("Result returned incorrect in response", "/structured-query/constraint2.xml", nodePos.path("results").get(0).path("uri").asText());
+    assertEquals( "1", nodePos.path("total").asText());
+    assertEquals( "/structured-query/constraint2.xml", nodePos.path("results").get(0).path("uri").asText());
 
     // With setCriteria AND - positive
     StructuredQueryDefinition strutdDefPosAnd = qb.valueConstraint("id", "0012");
@@ -604,9 +605,9 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
 
     JsonNode nodePosAnd = resultsPosAnd.get();
     // Return 1 node - constraint2.xml
-    assertEquals("Number of results returned incorrect in response", "1", nodePosAnd.path("total").asText());
-    assertEquals("Result returned incorrect in response", "/structured-query/constraint2.xml", nodePosAnd.path("results").get(0).path("uri").asText());
-    assertEquals("Get Criteria returned incorrect", "Memex AND described", strutdDefPosAnd.getCriteria());
+    assertEquals( "1", nodePosAnd.path("total").asText());
+    assertEquals( "/structured-query/constraint2.xml", nodePosAnd.path("results").get(0).path("uri").asText());
+    assertEquals( "Memex AND described", strutdDefPosAnd.getCriteria());
 
     // With multiple setCriteria - negative
     StructuredQueryDefinition strutdDefNeg = qb.valueConstraint("id", "0012");
@@ -619,7 +620,7 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
 
     JsonNode nodeNeg = resultsNeg.get();
     // Return 0 nodes
-    assertEquals("Number of results returned incorrect in response", "0", nodeNeg.path("total").asText());
+    assertEquals( "0", nodeNeg.path("total").asText());
     // release client
     client.release();
   }
@@ -629,7 +630,7 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
    * string query by calling setCriteria and withCriteria Make sure a query
    * using those query definitions selects only documents that match both the
    * query definition and the string query
-   * 
+   *
    * Uses withCriteria. Uses valueConstraintPopularityOpt.xml options file QD
    * and string query (Vannevar) should return 2 URIs in the response.
    * constraint1.xml and constraint4.xml
@@ -668,10 +669,10 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
     JacksonHandle results = queryMgr.search(strutdDef, strHandle.withFormat(Format.JSON));
 
     JsonNode node = results.get();
-    assertEquals("Number of results returned incorrect in response", "2", node.path("total").asText());
-    assertTrue("Results returned incorrect in response", node.path("results").get(0).path("uri").asText().contains("/structured-query/constraint1.xml") ||
+    assertEquals( "2", node.path("total").asText());
+    assertTrue( node.path("results").get(0).path("uri").asText().contains("/structured-query/constraint1.xml") ||
         node.path("results").get(1).path("uri").asText().contains("/structured-query/constraint1.xml"));
-    assertTrue("Results returned incorrect in response", node.path("results").get(0).path("uri").asText().contains("/structured-query/constraint4.xml") ||
+    assertTrue( node.path("results").get(0).path("uri").asText().contains("/structured-query/constraint4.xml") ||
         node.path("results").get(1).path("uri").asText().contains("/structured-query/constraint4.xml"));
     // With multiple withCriteria - positive
     StructuredQueryDefinition strutdDefPos = (qb.valueConstraint("popularity", "5")).withCriteria("Vannevar").withCriteria("Atlantic").withCriteria("intellectual");
@@ -682,9 +683,9 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
 
     JsonNode nodePos = resultsPos.get();
     // Return 2 nodes.
-    assertEquals("Number of results returned incorrect in response", "1", nodePos.path("total").asText());
-    assertTrue("Results returned incorrect in response", nodePos.path("results").get(0).path("uri").asText().contains("/structured-query/constraint4.xml"));
-    
+    assertEquals( "1", nodePos.path("total").asText());
+    assertTrue( nodePos.path("results").get(0).path("uri").asText().contains("/structured-query/constraint4.xml"));
+
     // With multiple withCriteria - negative
     StructuredQueryDefinition strutdDefNeg = (qb.valueConstraint("popularity", "5")).withCriteria("Vannevar").withCriteria("England");
 
@@ -694,8 +695,8 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
 
     JsonNode nodeNeg = resultsNeg.get();
     // Return 0 nodes.
-    assertEquals("Number of results returned incorrect in response", "0", nodeNeg.path("total").asText());
-    assertEquals("Get Criteria returned incorrect in response", "England", strutdDefNeg.getCriteria());
+    assertEquals( "0", nodeNeg.path("total").asText());
+    assertEquals( "England", strutdDefNeg.getCriteria());
 
     // create query def2 with both criteria methods and check fluent return
 
@@ -708,13 +709,13 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
 
     JsonNode node2 = results2.get();
     // Returns 1 node. constraint1.xml
-    assertEquals("Number of results returned incorrect in response", "1", node2.path("total").asText());
-    assertEquals("Result returned incorrect in response", "/structured-query/constraint1.xml", node2.path("results").get(0).path("uri").asText());
-    assertEquals("Get Criteria returned incorrect in response", "Bush", strutdDef2.getCriteria());
+    assertEquals( "1", node2.path("total").asText());
+    assertEquals( "/structured-query/constraint1.xml", node2.path("results").get(0).path("uri").asText());
+    assertEquals( "Bush", strutdDef2.getCriteria());
     // release client
     client.release();
   }
-  
+
   /*
    * Test to verify minimum distance parameter in near method. - Git issue 722
    * One word distance - q1 = The  q 2 = Atlantic :as in The Atlantic
@@ -731,7 +732,7 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
    * Near query on last word min distance = 0 q1 = Monthly and q2 (nothing)  :as in Vannevar Bush wrote an article for The Atlantic Monthly
    * Partial word min distance = 1  - q1 = Th  q 2 = lant :as in The Atlantic
    */
-  
+
   @Test
   public void testNearQueryMinimumDistance() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
       TransformerException
@@ -761,7 +762,7 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
     StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(queryOptionName);
     StructuredQueryDefinition termQuery1 = qb.term("The");
     StructuredQueryDefinition termQuery2 = qb.term("Atlantic");
-    
+
     StructuredQueryDefinition nearQuery1 = qb.near(1, 6, 1.0, StructuredQueryBuilder.Ordering.ORDERED, termQuery1, termQuery2);
     JacksonHandle resultsHandle = new JacksonHandle();
     queryMgr.search(nearQuery1, resultsHandle);
@@ -769,14 +770,14 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
     // get the Result
     JsonNode result = resultsHandle.get();
     System.out.println("nearQuery1 Results " + result.toString());
-    
-    assertTrue("Search Results total incorrect", result.path("total").asInt() == 2);
-    
+
+    assertTrue( result.path("total").asInt() == 2);
+
     String uri1 = result.path("results").get(0).path("uri").asText().trim();
     String uri2 = result.path("results").get(1).path("uri").asText().trim();
-    assertTrue("URI returned incorrect", uri1.contains("/min-dist/constraint1.xml"));
-    assertTrue("URI returned incorrect", uri2.contains("/min-dist/constraint3.xml"));
-    
+    assertTrue( uri1.contains("/min-dist/constraint1.xml"));
+    assertTrue( uri2.contains("/min-dist/constraint3.xml"));
+
     // create handle - Zero word distance - q1 = The  q 2 = Atlantic :as in The Atlantic
     StructuredQueryDefinition nearQuery2 = qb.near(0, 6, 1.0, StructuredQueryBuilder.Ordering.ORDERED, termQuery1, termQuery2);
 
@@ -787,18 +788,18 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
     // get the Result
     JsonNode result2 = resultsHandle2.get();
     System.out.println("nearQuery2 Results " + result2.toString());
-    
-    assertTrue("Search Results total incorrect", result2.path("total").asInt() == 2);
+
+    assertTrue( result2.path("total").asInt() == 2);
     uri1 = result2.path("results").get(0).path("uri").asText().trim();
     uri2 = result2.path("results").get(1).path("uri").asText().trim();
-    assertTrue("URI returned incorrect", uri1.contains("/min-dist/constraint1.xml"));
-    assertTrue("URI returned incorrect", uri2.contains("/min-dist/constraint3.xml"));
-    
+    assertTrue( uri1.contains("/min-dist/constraint1.xml"));
+    assertTrue( uri2.contains("/min-dist/constraint3.xml"));
+
     //Reverse One word distance - q1 = Atlantic q2 = The :as in  The Atlantic
-    
+
     StructuredQueryDefinition RevtermQuery1 = qb.term("Atlantic");
     StructuredQueryDefinition RevtermQuery2 = qb.term("The");
-    
+
     StructuredQueryDefinition RevnearQuery = qb.near(0, 6, 1.0, StructuredQueryBuilder.Ordering.ORDERED, RevtermQuery1, RevtermQuery2);
 
     // create handle
@@ -808,13 +809,13 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
     // get the Result should be 0
     JsonNode RevResult = RevResultsHandle.get();
     System.out.println("RevnearQuery Results " + RevResult.toString());
-    
-    assertTrue("Search Results total incorrect", RevResult.path("total").asInt() == 0);
-    
+
+    assertTrue( RevResult.path("total").asInt() == 0);
+
     // > 1 min distance  and max distance(2) is less than the actual words in between - q1 = prominent and q2 = intellectual :as Vannevar served as a prominent policymaker and public intellectual
     StructuredQueryDefinition MaxtermQuery1 = qb.term("prominent");
     StructuredQueryDefinition MaxtermQuery2 = qb.term("intellectual");
-   
+
     StructuredQueryDefinition maxnearQuery = qb.near(1, 2, 1.0, StructuredQueryBuilder.Ordering.ORDERED, MaxtermQuery1, MaxtermQuery2);
 
     // create handle
@@ -824,9 +825,9 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
     // get the Result - Should be 0.
     JsonNode resultMax = maxResultsHandle.get();
     System.out.println("maxnearQuery Results " + resultMax.toString());
-    
-    assertTrue("Search Results total incorrect", resultMax.path("total").asInt() == 0);
-    
+
+    assertTrue( resultMax.path("total").asInt() == 0);
+
     // > 1 min distance  and max distance (4) is equal to the actual words in between - q1 = prominent and q2 = intellectual :as Vannevar served as a prominent policymaker and public intellectual
     StructuredQueryDefinition maxnearQuery2 = qb.near(1, 4, 1.0, StructuredQueryBuilder.Ordering.ORDERED, MaxtermQuery1, MaxtermQuery2);
     // create handle
@@ -836,11 +837,11 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
     // get the Result - Should be 0.
     JsonNode resultMax2 = maxResultsHandle2.get();
     System.out.println("maxnearQuery2 Results " + resultMax2.toString());
-    
-    assertTrue("Search Results total incorrect", resultMax2.path("total").asInt() == 1);
+
+    assertTrue( resultMax2.path("total").asInt() == 1);
     uri1 = resultMax2.path("results").get(0).path("uri").asText().trim();
-    assertTrue("URI returned incorrect", uri1.contains("/min-dist/constraint4.xml"));
-    
+    assertTrue( uri1.contains("/min-dist/constraint4.xml"));
+
     // < 1 min distance  and max distance (2) is less than the actual words in between - q1 = prominent and q2 = intellectual :as Vannevar served as a prominent policymaker and public intellectual
     StructuredQueryDefinition NegMinxnearQuery = qb.near(-1, 2, 1.0, StructuredQueryBuilder.Ordering.ORDERED, MaxtermQuery1, MaxtermQuery2);
 
@@ -851,9 +852,9 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
     // get the Result - Should be 0.
     JsonNode ResultNegMin = NegMinxResultsHandle.get();
     System.out.println("NegMinxnearQuery Results " + ResultNegMin.toString());
-    
-    assertTrue("Search Results total incorrect", ResultNegMin.path("total").asInt() == 0);
-    
+
+    assertTrue( ResultNegMin.path("total").asInt() == 0);
+
     // < 1 min distance  and max distance (4) is equal to the actual words in between - q1 = prominent and q2 = intellectual :as Vannevar served as a prominent policymaker and public intellectual
     StructuredQueryDefinition NegMinxnearQuery2 = qb.near(-2, 4, 1.0, StructuredQueryBuilder.Ordering.ORDERED, MaxtermQuery1, MaxtermQuery2);
     // create handle
@@ -863,9 +864,9 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
     // get the Result - Should be 0.
     JsonNode resultNegMin2 = NegMinxResultsHandle2.get();
     System.out.println("NegMinxnearQuery2 Results " + resultNegMin2.toString());
-    assertTrue("Search Results total incorrect", resultNegMin2.path("total").asInt() == 1);
+    assertTrue( resultNegMin2.path("total").asInt() == 1);
     uri1 = resultNegMin2.path("results").get(0).path("uri").asText().trim();
-    assertTrue("URI returned incorrect", uri1.contains("/min-dist/constraint4.xml"));
+    assertTrue( uri1.contains("/min-dist/constraint4.xml"));
 
     // 0 min distance  and 0 max distance words in between - q1 = prominent and q2 = intellectual :as Vannevar served as a prominent policymaker and public intellectual
     StructuredQueryDefinition zeroMinxnearQuery = qb.near(0, 0, 1.0, StructuredQueryBuilder.Ordering.ORDERED, MaxtermQuery1, MaxtermQuery2);
@@ -876,10 +877,10 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
     // get the Result - Should be 0.
     JsonNode ResultZero = zeroMinxResultsHandle.get();
     System.out.println("zeroMinxnearQuery Results " + ResultZero.toString());
-    assertTrue("Search Results total incorrect", ResultZero.path("total").asInt() == 0);
-    
+    assertTrue( ResultZero.path("total").asInt() == 0);
+
     // Same queries One word distance - q1 = Atlantic  q 2 = Atlantic :as in For 1945, the thoughts expressed in The Atlantic Monthly were groundbreaking.
-    
+
     StructuredQueryDefinition SamenearQuery = qb.near(0, 6, 1.0, StructuredQueryBuilder.Ordering.ORDERED, termQuery2, termQuery2);
 
     // create handle
@@ -889,17 +890,17 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
     // get the Result should be 0
     JsonNode SameResult = SameResultsHandle.get();
     System.out.println("SamenearQuery Results " + SameResult.toString());
-    
-    assertTrue("Search Results total incorrect", SameResult.path("total").asInt() == 2);
+
+    assertTrue( SameResult.path("total").asInt() == 2);
     uri1 = SameResult.path("results").get(0).path("uri").asText().trim();
     uri2 = SameResult.path("results").get(1).path("uri").asText().trim();
-    assertTrue("URI returned incorrect", uri1.contains("/min-dist/constraint1.xml"));
-    assertTrue("URI returned incorrect", uri2.contains("/min-dist/constraint3.xml"));
-    
+    assertTrue( uri1.contains("/min-dist/constraint1.xml"));
+    assertTrue( uri2.contains("/min-dist/constraint3.xml"));
+
     // Random queries One word distance - q1 = AAA  q 2 = BBB
     StructuredQueryDefinition randomQuery1 = qb.term("AAA");
     StructuredQueryDefinition randomQuery2 = qb.term("BBB");
-    
+
     StructuredQueryDefinition RandomnearQuery = qb.near(1, 6, 1.0, StructuredQueryBuilder.Ordering.ORDERED, randomQuery1, randomQuery2);
 
     // create handle
@@ -908,13 +909,13 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
 
     // get the Result should be 0
     JsonNode randomResult = RandomResultsHandle.get();
-    System.out.println("RandomenearQuery Results " + randomResult.toString());    
-    assertTrue("Search Results total incorrect", randomResult.path("total").asInt() == 0);
-    
+    System.out.println("RandomenearQuery Results " + randomResult.toString());
+    assertTrue( randomResult.path("total").asInt() == 0);
+
     // Near query on first word min distance = 1 q1 = Vannevar and q2 = wrote :as in Vannevar Bush wrote an article for The Atlantic Monthly
     StructuredQueryDefinition firstQuery1 = qb.term("Vannevar");
     StructuredQueryDefinition firstQuery2 = qb.term("wrote");
-    
+
     StructuredQueryDefinition firstnearQuery = qb.near(1, 6, 1.0, StructuredQueryBuilder.Ordering.ORDERED, firstQuery1, firstQuery2);
 
     // create handle
@@ -923,14 +924,14 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
 
     // get the Result should be 1
     JsonNode firstResult = firstResultsHandle.get();
-    System.out.println("firstnearQuery Results " + firstResult.toString());    
-    assertTrue("Search Results total incorrect", firstResult.path("total").asInt() == 1);
+    System.out.println("firstnearQuery Results " + firstResult.toString());
+    assertTrue( firstResult.path("total").asInt() == 1);
     uri1 = firstResult.path("results").get(0).path("uri").asText().trim();
-    assertTrue("URI returned incorrect", uri1.contains("/min-dist/constraint1.xml"));
-    
+    assertTrue( uri1.contains("/min-dist/constraint1.xml"));
+
     // Near query on last word min distance = 0 q1 = Monthly and q2 (nothing)  :as in Vannevar Bush wrote an article for The Atlantic Monthly
     StructuredQueryDefinition lastQuery1 = qb.term("Monthly");
-    
+
     StructuredQueryDefinition lastnearQuery = qb.near(0, 0, 1.0, StructuredQueryBuilder.Ordering.ORDERED, lastQuery1);
 
     // create handle
@@ -939,17 +940,17 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
 
     // get the Result should be 2
     JsonNode lastResult = lastResultsHandle.get();
-    System.out.println("lastnearQuery Results " + lastResult.toString());    
-    assertTrue("Search Results total incorrect", lastResult.path("total").asInt() == 2);
+    System.out.println("lastnearQuery Results " + lastResult.toString());
+    assertTrue( lastResult.path("total").asInt() == 2);
     uri1 = lastResult.path("results").get(0).path("uri").asText().trim();
     uri2 = lastResult.path("results").get(1).path("uri").asText().trim();
-    assertTrue("URI returned incorrect", uri1.contains("/min-dist/constraint1.xml"));
-    assertTrue("URI returned incorrect", uri2.contains("/min-dist/constraint3.xml"));
-    
+    assertTrue( uri1.contains("/min-dist/constraint1.xml"));
+    assertTrue( uri2.contains("/min-dist/constraint3.xml"));
+
     // Partial word min distance = 1  - q1 = Th  q 2 = lant :as in The Atlantic
     StructuredQueryDefinition PartialQuery1 = qb.term("Th");
     StructuredQueryDefinition PartialQuery2 = qb.term("lant");
-    
+
     StructuredQueryDefinition PartialNearQuery = qb.near(1, 6, 1.0, StructuredQueryBuilder.Ordering.ORDERED, PartialQuery1, PartialQuery2);
     JacksonHandle PartialResultsHandle = new JacksonHandle();
     queryMgr.search(PartialNearQuery, PartialResultsHandle);
@@ -957,9 +958,9 @@ public class TestStructuredQuery extends AbstractFunctionalTest {
     // get the Result - Should be 0
     JsonNode resultpartial = PartialResultsHandle.get();
     System.out.println("PartialNearQuery Results " + resultpartial.toString());
-    
-    assertTrue("Search Results total incorrect", resultpartial.path("total").asInt() == 0);
-    
+
+    assertTrue( resultpartial.path("total").asInt() == 0);
+
     // release client
     client.release();
   }

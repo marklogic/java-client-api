@@ -15,7 +15,10 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -28,7 +31,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestSplitters  extends BasicJavaClientREST {
     private static String dbName = "TestSplittersDB";
@@ -43,7 +46,7 @@ public class TestSplitters  extends BasicJavaClientREST {
     private static String password = "admin";
     private static String delim;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Exception {
         System.out.println("In setup");
         delim = System.lineSeparator();
@@ -56,69 +59,12 @@ public class TestSplitters  extends BasicJavaClientREST {
         dmManager = client.newDataMovementManager();
     }
 
-    @AfterClass
+    @AfterAll
     public static void testCleanUp() throws Exception {
         associateRESTServerWithDB(getRestServerName(), "Documents");
         deleteDB(dbName);
         deleteForest(fNames[0]);
         System.out.println("Running clear script");
-    }
-
-    @Test
-    public void testBasicLineSplitInJson() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
-            TransformerException, KeyManagementException, NoSuchAlgorithmException {
-        System.out.println("Running testBasicLineSplitInJson");
-        FileInputStream jsonfs = null;
-        String fileName1 = "json-splitter-1.json";
-        String docIdPrefix = "/LS-DocMgr-";
-        String dmsdkIdPrefix = "/LS-DMDSK-";
-        AtomicInteger id = new AtomicInteger(0);
-        AtomicInteger cnt1 = new AtomicInteger(0);
-        DocumentManager docMgr = client.newJSONDocumentManager();
-        DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
-        DocumentMetadataHandle dmsdkMeta = new DocumentMetadataHandle().withCollections("LS-DMSDK").withProperty("docMeta-1", "true");
-
-        WriteBatcher wbatcher = dmManager.newWriteBatcher();
-        wbatcher.withBatchSize(1);
-        metadataHandle1.getCollections().addAll("LS-DocMgr");
-        docMgr.setContentFormat(Format.JSON);
-        try {
-            jsonfs = new FileInputStream(datasource + fileName1);
-            LineSplitter splitter = new LineSplitter();
-            Stream<StringHandle> contentStream = splitter.split(jsonfs);
-            WriteBatcher batcher = dmManager.newWriteBatcher();
-            batcher.withBatchSize(5);
-            contentStream.forEach(s -> {
-                // Doc Manager write
-                //System.out.println("handle is " + s);
-                docMgr.write(docIdPrefix + id.addAndGet(1), metadataHandle1, s);
-                // Batcher add
-                batcher.add(dmsdkIdPrefix + id.get(), dmsdkMeta, s);
-            });
-            dmManager.startJob(batcher);
-            batcher.flushAndWait();
-            // Verify docs
-            QueryBatcher queryBatcherdMgr = dmManager.newQueryBatcher(
-                    new StructuredQueryBuilder().collection("LS-DMSDK"))
-                    .withBatchSize(20)
-                    .withThreadCount(1)
-                    .onUrisReady((batch) -> {
-                        // Should be getting all docs in a batch
-                        cnt1.set(batch.getItems().length);
-                    });
-            dmManager.startJob(queryBatcherdMgr);
-            queryBatcherdMgr.awaitCompletion();
-            assertEquals(7, cnt1.get());
-        } catch (Exception ex) {
-            System.out.println("Exceptions thrown from testBasicLineSplitInJson " + ex.getMessage());
-        } finally {
-            try {
-                clearDB();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            jsonfs.close();
-        }
     }
 
     @Test
@@ -212,6 +158,63 @@ public class TestSplitters  extends BasicJavaClientREST {
             }
         }
     }
+
+	@Test
+	public void testBasicLineSplitInJson() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+		TransformerException, KeyManagementException, NoSuchAlgorithmException {
+		System.out.println("Running testBasicLineSplitInJson");
+		FileInputStream jsonfs = null;
+		String fileName1 = "json-splitter-1.json";
+		String docIdPrefix = "/LS-DocMgr-";
+		String dmsdkIdPrefix = "/LS-DMDSK-";
+		AtomicInteger id = new AtomicInteger(0);
+		AtomicInteger cnt1 = new AtomicInteger(0);
+		DocumentManager docMgr = client.newJSONDocumentManager();
+		DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
+		DocumentMetadataHandle dmsdkMeta = new DocumentMetadataHandle().withCollections("LS-DMSDK").withProperty("docMeta-1", "true");
+
+		WriteBatcher wbatcher = dmManager.newWriteBatcher();
+		wbatcher.withBatchSize(1);
+		metadataHandle1.getCollections().addAll("LS-DocMgr");
+		docMgr.setContentFormat(Format.JSON);
+		try {
+			jsonfs = new FileInputStream(datasource + fileName1);
+			LineSplitter splitter = new LineSplitter();
+			Stream<StringHandle> contentStream = splitter.split(jsonfs);
+			WriteBatcher batcher = dmManager.newWriteBatcher();
+			batcher.withBatchSize(5);
+			contentStream.forEach(s -> {
+				// Doc Manager write
+				//System.out.println("handle is " + s);
+				docMgr.write(docIdPrefix + id.addAndGet(1), metadataHandle1, s);
+				// Batcher add
+				batcher.add(dmsdkIdPrefix + id.get(), dmsdkMeta, s);
+			});
+			dmManager.startJob(batcher);
+			batcher.flushAndWait();
+			// Verify docs
+			QueryBatcher queryBatcherdMgr = dmManager.newQueryBatcher(
+					new StructuredQueryBuilder().collection("LS-DMSDK"))
+				.withBatchSize(20)
+				.withThreadCount(1)
+				.onUrisReady((batch) -> {
+					// Should be getting all docs in a batch
+					cnt1.set(batch.getItems().length);
+				});
+			dmManager.startJob(queryBatcherdMgr);
+			queryBatcherdMgr.awaitCompletion();
+			assertEquals(7, cnt1.get());
+		} catch (Exception ex) {
+			System.out.println("Exceptions thrown from testBasicLineSplitInJson " + ex.getMessage());
+		} finally {
+			try {
+				clearDB();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			jsonfs.close();
+		}
+	}
 
     @Test
     public void testCharSetWithJson() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,

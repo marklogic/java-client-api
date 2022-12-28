@@ -34,9 +34,9 @@ import com.marklogic.client.row.RowManager;
 import com.marklogic.client.test.Common;
 import com.marklogic.client.type.PlanColumn;
 import com.marklogic.client.type.PlanSystemColumn;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -52,7 +52,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RowBatcherTest {
     private final static String TEST_DIR = "/test/rowbatch/unit/";
@@ -70,7 +70,7 @@ public class RowBatcherTest {
     private static Set<String>   expectedFull = new HashSet<>();
     private static Set<JsonNode> expectedDoc  = new HashSet<>();
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         setupIndex();
         setupDocuments();
@@ -169,7 +169,7 @@ public class RowBatcherTest {
         docMetaHndl.getCollections().add(TEST_COLLECTION);
         return docMetaHndl;
     }
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         QueryManager queryMgr = db.newQueryManager();
         DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
@@ -349,22 +349,23 @@ public class RowBatcherTest {
         // System.out.println("stopped="+rowBatcher.isStopped());
 
         if (consistentSnapshot) {
-            assertNotNull("The RowBatcher should make the timestamp available so that the client can perform " +
-                            "additional operations using that timestamp after the job has completed. For example, " +
-                            "the client may wish to lookup the highest dateTime value in an index at the timestamp " +
-                            "so that a future job can constrain to documents with a dateTime greater than the " +
-                            "looked-up value, thus allowing for a 'Only process new records' feature.",
-                    rowBatcher.getServerTimestamp());
+            assertNotNull(rowBatcher.getServerTimestamp(),
+				"The RowBatcher should make the timestamp available so that the client can perform " +
+					"additional operations using that timestamp after the job has completed. For example, " +
+					"the client may wish to lookup the highest dateTime value in an index at the timestamp " +
+					"so that a future job can constrain to documents with a dateTime greater than the " +
+					"looked-up value, thus allowing for a 'Only process new records' feature.");
             docMgr.delete(addedDocUri);
         } else {
-            assertNull("If withConsistentSnapshot is not used, getServerTimestamp() should return null since no " +
-                    "server timestamp would have been captured", rowBatcher.getServerTimestamp());
+            assertNull(rowBatcher.getServerTimestamp(),
+				"If withConsistentSnapshot is not used, getServerTimestamp() should return null since no " +
+					"server timestamp would have been captured");
         }
 
-        assertEquals("test execution failed", false, failed.get());
-        assertEquals("mismatch on row estimate", expectedFull.size(), rowBatcher.getRowEstimate());
-        assertEquals("mismatch on actual rows size", expectedFull.size(), actual.size());
-        assertEquals("mismatch on actual rows", expectedFull, actual);
+        assertEquals( false, failed.get());
+        assertEquals( expectedFull.size(), rowBatcher.getRowEstimate());
+        assertEquals( expectedFull.size(), actual.size());
+        assertEquals( expectedFull, actual);
     }
     private void runDocsTest(RowBatcher<JsonNode> rowBatcher) throws Exception {
         RowManager rowMgr = rowBatcher.getRowManager();
@@ -423,10 +424,10 @@ public class RowBatcherTest {
         rowBatcher.awaitCompletion();
         // System.out.println("stopped="+rowBatcher.isStopped());
 
-        assertEquals("test failed with exception", false, failed.get());
-        assertEquals("mismatch on row estimate", expectedDoc.size(), rowBatcher.getRowEstimate());
-        assertEquals("mismatch on actual rows size", expectedDoc.size(), actual.size());
-        assertEquals("mismatch on actual docs", expectedDoc, actual);
+        assertEquals( false, failed.get());
+        assertEquals( expectedDoc.size(), rowBatcher.getRowEstimate());
+        assertEquals( expectedDoc.size(), actual.size());
+        assertEquals( expectedDoc, actual);
     }
     private void runXmlRowsTest(RowBatcher<Document> rowBatcher) throws Exception {
         RowManager rowMgr = rowBatcher.getRowManager();
@@ -530,10 +531,10 @@ public class RowBatcherTest {
         rowBatcher.awaitCompletion();
         // System.out.println("stopped="+rowBatcher.isStopped());
 
-        assertEquals("test execution failed", false, failed.get());
-        assertEquals("mismatch on row estimate", expectedFull.size(), rowBatcher.getRowEstimate());
-        assertEquals("mismatch on actual rows size", expectedFull.size(), actual.size());
-        assertEquals("mismatch on actual rows", expectedFull, actual);
+        assertEquals( false, failed.get());
+        assertEquals( expectedFull.size(), rowBatcher.getRowEstimate());
+        assertEquals( expectedFull.size(), actual.size());
+        assertEquals( expectedFull, actual);
     }
     private void runCsvRowsTest(RowBatcher<String> rowBatcher) throws Exception {
         RowManager rowMgr = rowBatcher.getRowManager();
@@ -620,9 +621,9 @@ public class RowBatcherTest {
         rowBatcher.awaitCompletion();
         // System.out.println("stopped="+rowBatcher.isStopped());
 
-        assertEquals("test execution failed", false, failed.get());
-        assertEquals("mismatch on row estimate", expectedFull.size(), rowBatcher.getRowEstimate());
-        assertEquals("mismatch on actual rows size", expectedFull.size(), actual.size());
-        assertEquals("mismatch on actual rows", expectedFull, actual);
+        assertEquals( false, failed.get());
+        assertEquals( expectedFull.size(), rowBatcher.getRowEstimate());
+        assertEquals( expectedFull.size(), actual.size());
+        assertEquals( expectedFull, actual);
     }
 }

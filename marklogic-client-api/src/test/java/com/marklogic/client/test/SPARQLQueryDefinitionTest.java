@@ -15,23 +15,16 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.semantics.GraphManager;
-import com.marklogic.client.semantics.RDFTypes;
-import com.marklogic.client.semantics.SPARQLBindings;
-import com.marklogic.client.semantics.SPARQLQueryDefinition;
-import com.marklogic.client.semantics.SPARQLQueryManager;
+import com.marklogic.client.semantics.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SPARQLQueryDefinitionTest {
 
@@ -92,7 +85,7 @@ public class SPARQLQueryDefinitionTest {
     + ":o3 { :p4 rdfs:subPropertyOf :p1 .  } "
     + ":o4 { :p5 rdfs:range :c2 .  } ";
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
     gmgr = Common.client.newGraphManager();
@@ -101,7 +94,7 @@ public class SPARQLQueryDefinitionTest {
     smgr = Common.client.newSPARQLQueryManager();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     Common.connect();
     gmgr = Common.client.newGraphManager();
@@ -355,7 +348,7 @@ public class SPARQLQueryDefinitionTest {
     askQuery.withBinding("o", "2", RDFTypes.ANYURI);
     assertFalse(smgr.executeAsk(askQuery));
     bindings.clear();
-    
+
     askQuery.withBinding("o", "en", RDFTypes.LANGUAGE);
     assertTrue(smgr.executeAsk(askQuery));
     bindings.clear();
@@ -408,16 +401,16 @@ public class SPARQLQueryDefinitionTest {
     JsonNode rdf = smgr.executeConstruct(qdef, new JacksonHandle()).get();
 
     String subject = rdf.fieldNames().next();
-    assertEquals("base uri plus relative subject uri",
+    assertEquals(
       "http://marklogic.com/SPARQLQDefTest/relative1", subject);
 
     String predicate = rdf.get(subject).fieldNames().next();
-    assertEquals("base uri plus relative predicate uri",
+    assertEquals(
       "http://marklogic.com/SPARQLQDefTest/relative2", predicate);
 
     JsonNode objects = rdf.get(subject).get(predicate);
     assertEquals(1, objects.size());
-    assertEquals("base uri plus relative uri",
+    assertEquals(
       "http://marklogic.com/SPARQLQDefTest/relative3", objects.path(0).path("value").asText());
   }
 
@@ -435,12 +428,12 @@ public class SPARQLQueryDefinitionTest {
 
     qdef.setDefaultGraphUris("http://marklogic.com/SPARQLQDefTest/g4");
     bindings = executeAndExtractBindings(qdef);
-    assertEquals("Single graphs has one assertion", 1, bindings.size());
+    assertEquals( 1, bindings.size());
 
     qdef.setDefaultGraphUris("http://marklogic.com/SPARQLQDefTest/g4",
       "http://marklogic.com/SPARQLQDefTest/g2");
     bindings = executeAndExtractBindings(qdef);
-    assertEquals("Union two default graphs has two assertions", 2,
+    assertEquals( 2,
       bindings.size());
   }
 
@@ -451,15 +444,15 @@ public class SPARQLQueryDefinitionTest {
     qdef.setIncludeDefaultRulesets(false);
     qdef.setNamedGraphUris("http://marklogic.com/SPARQLQDefTest/g3");
     ArrayNode bindings = executeAndExtractBindings(qdef);
-    assertEquals("From named 0 result assertions", 0, bindings.size());
+    assertEquals( 0, bindings.size());
 
     qdef.setNamedGraphUris("http://marklogic.com/SPARQLQDefTest/g4");
     bindings = executeAndExtractBindings(qdef);
-    assertEquals("From named 1 result assertions", 1, bindings.size());
+    assertEquals( 1, bindings.size());
 
     qdef.setNamedGraphUris("http://marklogic.com/SPARQLQDefTest/g4", "http://marklogic.com/SPARQLQDefTest/g2");
     bindings = executeAndExtractBindings(qdef);
-    assertEquals("From named 1 result assertions", 2, bindings.size());
+    assertEquals( 2, bindings.size());
   }
 
   @Test
@@ -525,13 +518,13 @@ public class SPARQLQueryDefinitionTest {
     assertFalse(qdef.getIncludeDefaultRulesets());
     JacksonHandle handle = smgr.executeSelect(qdef, new JacksonHandle());
     JsonNode results = handle.get();
-    assertEquals("Size of results with no inference", 1,
+    assertEquals( 1,
       results.get("results").get("bindings").size());
 
     qdef.setIncludeDefaultRulesets(true);
     handle = smgr.executeSelect(qdef, new JacksonHandle());
     results = handle.get();
-    assertEquals("Size of results with default inference", 3,
+    assertEquals( 3,
       results.get("results").get("bindings").size());
 
     qdef = smgr

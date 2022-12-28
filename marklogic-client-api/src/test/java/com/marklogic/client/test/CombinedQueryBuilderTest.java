@@ -15,22 +15,6 @@
  */
 package com.marklogic.client.test;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
 import com.marklogic.client.impl.CombinedQueryBuilderImpl;
 import com.marklogic.client.impl.CombinedQueryDefinition;
 import com.marklogic.client.impl.XmlFactories;
@@ -41,15 +25,25 @@ import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
+import org.junit.jupiter.api.*;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class CombinedQueryBuilderTest {
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 

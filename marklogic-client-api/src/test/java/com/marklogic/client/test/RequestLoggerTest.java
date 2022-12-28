@@ -15,28 +15,6 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.StringReader;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.ls.DOMImplementationLS;
-
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.impl.OutputStreamTee;
 import com.marklogic.client.io.DOMHandle;
@@ -46,13 +24,26 @@ import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.util.RequestLogger;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.ls.DOMImplementationLS;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RequestLoggerTest {
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -71,9 +62,9 @@ public class RequestLoggerTest {
     StringReader mainReader = new StringReader(expectedString);
     Reader copyReader = logger.copyContent(mainReader);
     String copyString = Common.readerToString(copyReader);
-    assertEquals("Copy reader failed to read", expectedString, copyString);
+    assertEquals( expectedString, copyString);
     outString = new String(out.toByteArray());
-    assertEquals("Out failed to read", expectedString, outString);
+    assertEquals( expectedString, outString);
 
     out = new ByteArrayOutputStream();
     logger = Common.client.newLogger(out);
@@ -83,9 +74,9 @@ public class RequestLoggerTest {
       new ByteArrayInputStream(expectedString.getBytes());
     InputStream copyInputStream = logger.copyContent(mainInputStream);
     byte[] copyBytes = Common.streamToBytes(copyInputStream);
-    assertEquals("Copy input stream failed to read", expectedString, new String(copyBytes));
+    assertEquals( expectedString, new String(copyBytes));
     outString = new String(out.toByteArray());
-    assertEquals("Out failed to read", expectedString, outString);
+    assertEquals( expectedString, outString);
 
     out = new ByteArrayOutputStream();
     logger = Common.client.newLogger(out);
@@ -95,9 +86,9 @@ public class RequestLoggerTest {
     OutputStream tee = new OutputStreamTee(mainOutputStream, out, Long.MAX_VALUE);
     tee.write(expectedString.getBytes());
     byte[] mainBytes = mainOutputStream.toByteArray();
-    assertEquals("Main output stream failed to read", expectedString, new String(mainBytes));
+    assertEquals( expectedString, new String(mainBytes));
     outString = new String(out.toByteArray());
-    assertEquals("Out failed to read", expectedString, outString);
+    assertEquals( expectedString, outString);
     tee.close();
   }
 
@@ -134,7 +125,7 @@ public class RequestLoggerTest {
 
     docMgr.write(docId, new DOMHandle().with(domDocument));
     outString = new String(out.toByteArray());
-    assertTrue("Write failed to log output", outString.contains(domString));
+    assertTrue( outString.contains(domString));
 
     out = new ByteArrayOutputStream();
     logger = Common.client.newLogger(out);
@@ -143,7 +134,7 @@ public class RequestLoggerTest {
 
     String docText = docMgr.read(docId, new StringHandle()).get();
     outString = new String(out.toByteArray());
-    assertTrue("Read failed to log output", outString.contains(docText));
+    assertTrue( outString.contains(docText));
 
     out = new ByteArrayOutputStream();
     logger = Common.client.newLogger(out);
@@ -152,9 +143,9 @@ public class RequestLoggerTest {
 
     docMgr.exists(docId);
     outString = new String(out.toByteArray());
-    assertTrue("Exists logged null output",  outString != null);
+    assertTrue(  outString != null);
     if (outString != null)
-      assertTrue("Exists logged empty output", outString.length() > 0);
+      assertTrue( outString.length() > 0);
 
     out = new ByteArrayOutputStream();
     logger = Common.client.newLogger(out);
@@ -163,7 +154,7 @@ public class RequestLoggerTest {
 
     docMgr.delete(docId);
     outString = new String(out.toByteArray());
-    assertTrue("Delete failed to log output", outString != null && outString.length() > 0);
+    assertTrue( outString != null && outString.length() > 0);
 
   }
 
@@ -183,7 +174,7 @@ public class RequestLoggerTest {
 
     qMgr.search(querydef, new SearchHandle());
     outString = new String(out.toByteArray());
-    assertTrue("Search failed to log output", outString != null && outString.length() > 0);
+    assertTrue( outString != null && outString.length() > 0);
 
     out = new ByteArrayOutputStream();
     logger = Common.client.newLogger(out);
@@ -195,7 +186,7 @@ public class RequestLoggerTest {
 
     qMgr.delete(deleteDef);
     outString = new String(out.toByteArray());
-    assertTrue("SearchDelete failed to log output", outString != null && outString.length() > 0);
+    assertTrue( outString != null && outString.length() > 0);
 
 
   }

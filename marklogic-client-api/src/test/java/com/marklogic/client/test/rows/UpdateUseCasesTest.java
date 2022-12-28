@@ -11,14 +11,14 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
 import com.marklogic.client.type.PlanSystemColumn;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Intended to capture interesting use cases, particularly those called out in the functional spec.
@@ -64,7 +64,7 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
 
         verifyJsonDoc(firstUri, doc -> assertEquals("modified", doc.get("hello").asText()));
         verifyMetadata(firstUri, metadata -> {
-            assertTrue("The collection in the initial insert should have been retained",
+            assertTrue(
                 metadata.getCollections().contains("test1"));
         });
         assertNull(Common.client.newDocumentManager().exists(missingUri));
@@ -98,8 +98,9 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
             .write();
 
         List<RowRecord> rows = resultRows(plan);
-        assertEquals("Only doc2 should be returned; doc1 should have been filtered out by the notExistsJoin " +
-            "since it already exists", 1, rows.size());
+        assertEquals(1, rows.size(),
+			"Only doc2 should be returned; doc1 should have been filtered out by the notExistsJoin " +
+				"since it already exists");
         assertEquals("/acme/doc2.json", rows.get(0).getString("uri"));
 
         // doc1 should not have been modified since it was filtered out from the plan
@@ -132,9 +133,8 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
 
         rowManager.execute(plan);
 
-        verifyJsonDoc(duplicateUri, doc -> assertEquals(
-            "The first writeOp with the duplicate URI should have been retained via groupBy and written",
-            1, doc.get("value").asInt()));
+        verifyJsonDoc(duplicateUri, doc -> assertEquals(1, doc.get("value").asInt(),
+			"The first writeOp with the duplicate URI should have been retained via groupBy and written"));
         verifyJsonDoc("/acme/a2.json", doc -> assertEquals(2, doc.get("value").asInt()));
     }
 
@@ -213,7 +213,7 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
         assertEquals("/acme/Davis.json", rows.get(1).getString("uri"));
 
         verifyJsonDoc("/acme/Coltrane.json", doc -> {
-            assertEquals("This is added by the transform", "world", doc.get("hello").asText());
+            assertEquals("world", doc.get("hello").asText(), "This is added by the transform");
             assertEquals("John", doc.get("theDoc").get("musician").get("firstName").asText());
         });
 
@@ -257,7 +257,8 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
             .write();
 
         List<RowRecord> rows = resultRows(plan);
-        assertEquals("Should contain 1 row for the audit log doc since that was the result of the last write", 1, rows.size());
+        assertEquals(1, rows.size(),
+			"Should contain 1 row for the audit log doc since that was the result of the last write");
 
         // Verify the 3 audited docs
         assertEquals(3, getCollectionSize("audited-doc"));

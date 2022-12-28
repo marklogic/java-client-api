@@ -23,7 +23,8 @@ import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.util.EditableNamespaceContext;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -35,7 +36,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertEquals;
+
 
 public class TestStructuredSearchGeo extends AbstractFunctionalTest {
 
@@ -141,7 +142,7 @@ public class TestStructuredSearchGeo extends AbstractFunctionalTest {
 
     StructuredQueryDefinition geoQuery = qb.geospatial(qb.geoPath(qb.pathIndex("/doc/g-elem-point")), qb.box(-12, -5, -11, -4));
     Collection<String> nameSpaceCollection = qb.getNamespaces().getAllPrefixes();
-    assertEquals("getNamespace failed ", false, nameSpaceCollection.isEmpty());
+    assertEquals( false, nameSpaceCollection.isEmpty());
     for (String prefix : nameSpaceCollection) {
       System.out.println("Prefixes : " + prefix);
       System.out.println(qb.getNamespaces().getNamespaceURI(prefix));

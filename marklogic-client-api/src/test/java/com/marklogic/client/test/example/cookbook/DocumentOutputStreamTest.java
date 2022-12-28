@@ -15,13 +15,11 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.example.cookbook.DocumentOutputStream;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-
-import org.junit.Test;
-
-import com.marklogic.client.example.cookbook.DocumentOutputStream;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DocumentOutputStreamTest {
   @Test
@@ -33,6 +31,6 @@ public class DocumentOutputStreamTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    assertTrue("DocumentOutputStream example failed", succeeded);
+    assertTrue( succeeded);
   }
 }

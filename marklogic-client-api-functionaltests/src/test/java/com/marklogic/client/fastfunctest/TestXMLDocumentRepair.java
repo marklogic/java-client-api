@@ -20,7 +20,8 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager.DocumentRepair;
 import com.marklogic.client.io.FileHandle;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -28,7 +29,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 
-import static org.junit.Assert.assertEquals;
+
 
 public class TestXMLDocumentRepair extends AbstractFunctionalTest {
 
@@ -92,7 +93,7 @@ public class TestXMLDocumentRepair extends AbstractFunctionalTest {
 
         Scanner scanner = new Scanner(fileRead).useDelimiter("\\Z");
         String readContent = scanner.next();
-        assertEquals("XML document write difference", repairedContent, readContent);
+        assertEquals( repairedContent, readContent);
         scanner.close();
 
         // release the client

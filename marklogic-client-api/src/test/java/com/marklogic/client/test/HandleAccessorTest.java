@@ -15,26 +15,17 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.impl.HandleAccessor;
+import com.marklogic.client.io.*;
+import org.junit.jupiter.api.Test;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 
-import org.junit.Test;
-
-import com.marklogic.client.impl.HandleAccessor;
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.ReaderHandle;
-import com.marklogic.client.io.StringHandle;
-import java.io.InputStream;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 public class HandleAccessorTest {
   public static boolean fileInputStreamWasClosed;
 
@@ -44,16 +35,16 @@ public class HandleAccessorTest {
     // charset issues
     String hola = "¡Hola!";
     System.out.println("Default Java Charset: " + Charset.defaultCharset());
-    assertEquals("String content mismatch", hola,
+    assertEquals( hola,
       HandleAccessor.contentAsString(new StringHandle(hola)));
-    assertEquals("byte[] content mismatch", hola,
+    assertEquals(hola,
       HandleAccessor.contentAsString(new BytesHandle(hola.getBytes("UTF-8"))));
     URL filePath = this.getClass().getClassLoader().getResource("hola.txt");
-    assertEquals("Reader content mismatch", hola,
+    assertEquals( hola,
       HandleAccessor.contentAsString(new ReaderHandle(new StringReader(hola))));
-    assertEquals("File content mismatch", hola,
+    assertEquals( hola,
       HandleAccessor.contentAsString(new FileHandle(new File(filePath.toURI()))));
-    assertEquals("InputStream content mismatch", hola,
+    assertEquals( hola,
       HandleAccessor.contentAsString(new InputStreamHandle(filePath.openStream())));
 
     InputStream fileInputStream = new FileInputStream(new File(filePath.toURI())) {
@@ -63,7 +54,7 @@ public class HandleAccessorTest {
           HandleAccessorTest.fileInputStreamWasClosed = true;
       }
     };
-    assertEquals("InputStream content mismatch", hola,
+    assertEquals( hola,
       HandleAccessor.contentAsString(new InputStreamHandle(fileInputStream)));
     assertTrue(this.fileInputStreamWasClosed);
   }

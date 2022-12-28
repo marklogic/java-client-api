@@ -15,16 +15,14 @@
  */
 package com.marklogic.client.test.example.extension;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-
-import org.junit.Test;
-
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.example.extension.BatchManagerExample;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
 
 public class BatchManagerTest {
   @Test
@@ -38,6 +36,6 @@ public class BatchManagerTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    assertTrue("BatchExample failed", succeeded);
+    Assertions.assertTrue( succeeded);
   }
 }

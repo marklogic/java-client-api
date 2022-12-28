@@ -16,25 +16,6 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
-
-import com.marklogic.client.io.*;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentWriteSet;
@@ -44,20 +25,35 @@ import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResult.Type;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.eval.ServerEvaluationCall;
+import com.marklogic.client.io.BytesHandle;
+import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.InputStreamHandle;
+import org.junit.jupiter.api.*;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /*
- * This test is intended for 
+ * This test is intended for
  * looping eval query for more than 100 times
  * Eval with transactions
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
   private static String dbName = "TestEvalXqueryWithTransDB";
   private static String[] fNames = { "TestEvalXqueryWithTransDB-1" };
 
   private DatabaseClient client;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     System.out.println("In setup");
     configureRESTServer(dbName, fNames);
@@ -65,7 +61,7 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tear down");
     cleanupRESTServer(dbName, fNames);
@@ -73,12 +69,12 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
     deleteUserRole("test-eval");
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     client = getDatabaseClient("eval-user", "x", getConnType());
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     clearDB();
     client.release();
@@ -109,12 +105,12 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
         while (evr.hasNext()) {
           EvalResult er = evr.next();
           if (er.getType().equals(Type.INTEGER)) {
-            assertEquals("itration number", i, er.getNumber().intValue());
+            assertEquals(i, er.getNumber().intValue());
           } else if (er.getType().equals(Type.BINARY)) {
             byte[] bytes = er.get(new BytesHandle()).get();
             assertEquals(binaryLength, bytes.length);
           } else if (er.getType().equals(Type.STRING)) {
-            assertEquals("database name ", "TestEvalXqueryWithTransDB", er.getString());
+            assertEquals("TestEvalXqueryWithTransDB", er.getString());
           } else {
             fail("Getting incorrect type");
           }
@@ -153,10 +149,10 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
           + "(fn:count(fn:doc()))";
       ServerEvaluationCall evl = client.newServerEval().xquery(query);
       EvalResultIterator evr = evl.eval();
-      assertEquals("Count of documents outside of the transaction", 0, evr.next().getNumber().intValue());
+      assertEquals(0, evr.next().getNumber().intValue());
       evl = client.newServerEval().xquery(query).transaction(t1);
       evr = evl.eval();
-      assertEquals("Count of documents outside of the transaction", 102, evr.next().getNumber().intValue());
+      assertEquals(102, evr.next().getNumber().intValue());
     } catch (Exception e) {
       System.out.println(e.getMessage());
       tstatus = true;
@@ -201,10 +197,10 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
           + "(fn:count(fn:doc()))";
       ServerEvaluationCall evl = client2.newServerEval().xquery(query);
       EvalResultIterator evr = evl.eval();
-      assertEquals("Count of documents outside of the transaction", 0, evr.next().getNumber().intValue());
+      assertEquals(0, evr.next().getNumber().intValue());
       evl = client2.newServerEval().xquery(query).transaction(t1);
       evr = evl.eval();
-      assertEquals("Count of documents outside of the transaction", 102, evr.next().getNumber().intValue());
+      assertEquals(102, evr.next().getNumber().intValue());
     } catch (Exception e) {
       System.out.println(e.getMessage());
       tstatus = true;

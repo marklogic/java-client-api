@@ -24,16 +24,16 @@ import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+
 
 public class TestCRUDModulesDb extends AbstractFunctionalTest {
 
@@ -53,7 +53,7 @@ public class TestCRUDModulesDb extends AbstractFunctionalTest {
 
         // read it back
         String xqueryModuleAsString = libsMgr.read(Path, new StringHandle()).get();
-        assertTrue("module read and read back", xqueryModuleAsString.startsWith("xquery version \"1.0-ml\";"));
+        assertTrue( xqueryModuleAsString.startsWith("xquery version \"1.0-ml\";"));
 
         // write Duplicate XQuery file to the modules database with different
         // content
@@ -61,11 +61,11 @@ public class TestCRUDModulesDb extends AbstractFunctionalTest {
 
         // read it back to check overwritten
         String xqueryModuleAsDuplicateString = libsMgr.read(Path, new StringHandle()).get();
-        assertTrue("module read and read back", xqueryModuleAsDuplicateString.startsWith("xquery version \"1.0-ml\";"));
+        assertTrue( xqueryModuleAsDuplicateString.startsWith("xquery version \"1.0-ml\";"));
 
         // get the list of descriptors
         ExtensionLibraryDescriptor[] descriptors = libsMgr.list();
-        assertEquals("number of modules installed", descriptors.length, 1);
+        assertEquals( descriptors.length, 1);
 
         for (ExtensionLibraryDescriptor descriptor : descriptors) {
             assertEquals(descriptor.getPath(), Path);
@@ -100,15 +100,15 @@ public class TestCRUDModulesDb extends AbstractFunctionalTest {
 
         // read 1st file back
         String xqueryModuleAsString = libsMgr.read(firstPath, new StringHandle()).get();
-        assertTrue("module read and read back", xqueryModuleAsString.startsWith("xquery version \"1.0-ml\";"));
+        assertTrue( xqueryModuleAsString.startsWith("xquery version \"1.0-ml\";"));
 
         // read 2nd file back
         String xqueryModuleAsString1 = libsMgr.read(secondPath, new StringHandle()).get();
-        assertTrue("module read and read back", xqueryModuleAsString1.startsWith("xquery version \"1.0-ml\";"));
+        assertTrue( xqueryModuleAsString1.startsWith("xquery version \"1.0-ml\";"));
 
         // get the list of descriptors
         ExtensionLibraryDescriptor[] descriptors = libsMgr.list();
-        assertEquals("number of modules installed", descriptors.length, 2);
+        assertEquals( descriptors.length, 2);
         assertEquals(descriptors[0].getPath(), firstPath);
         assertEquals(descriptors[1].getPath(), secondPath);
 
@@ -146,7 +146,7 @@ public class TestCRUDModulesDb extends AbstractFunctionalTest {
 
         // get the list of descriptors
         ExtensionLibraryDescriptor[] descriptors = libsMgr.list();
-        assertEquals("number of modules installed", descriptors.length, 1);
+        assertEquals( descriptors.length, 1);
 
         for (ExtensionLibraryDescriptor descriptor : descriptors) {
             assertEquals(descriptor.getPath(), Path);
@@ -179,11 +179,11 @@ public class TestCRUDModulesDb extends AbstractFunctionalTest {
 
         // read it back
         String xqueryModuleAsString = libsMgr.read(Path, new StringHandle()).get();
-        assertTrue("module read and read back", xqueryModuleAsString.startsWith("Copyright (c) 2022 MarkLogic Corporation"));
+        assertTrue( xqueryModuleAsString.startsWith("Copyright (c) 2022 MarkLogic Corporation"));
 
         // get the list of descriptors
         ExtensionLibraryDescriptor[] descriptors = libsMgr.list();
-        assertEquals("number of modules installed", descriptors.length, 1);
+        assertEquals( descriptors.length, 1);
 
         for (ExtensionLibraryDescriptor descriptor : descriptors) {
             assertEquals(descriptor.getPath(), Path);
@@ -221,7 +221,7 @@ public class TestCRUDModulesDb extends AbstractFunctionalTest {
 
         // get the list of descriptors
         ExtensionLibraryDescriptor[] descriptors = libsMgr.list();
-        assertEquals("number of modules installed", descriptors.length, 1);
+        assertEquals( descriptors.length, 1);
 
         for (ExtensionLibraryDescriptor descriptor : descriptors) {
             assertEquals(descriptor.getPath(), Path);
@@ -256,11 +256,11 @@ public class TestCRUDModulesDb extends AbstractFunctionalTest {
         // read it back
 
         String xqueryModuleAsString = libsMgr.read(Path, new StringHandle()).get();
-        assertTrue("module read and read back", xqueryModuleAsString.contains("let $x := (1,2,3,4,5)"));
+        assertTrue( xqueryModuleAsString.contains("let $x := (1,2,3,4,5)"));
 
         // get the list of descriptors
         ExtensionLibraryDescriptor[] descriptors = libsMgr.list();
-        assertEquals("number of modules installed", descriptors.length, 1);
+        assertEquals( descriptors.length, 1);
 
         for (ExtensionLibraryDescriptor descriptor : descriptors) {
             assertEquals(descriptor.getPath(), Path);
@@ -303,11 +303,11 @@ public class TestCRUDModulesDb extends AbstractFunctionalTest {
         // read it back
 
         String xqueryModuleAsString = libsMgr.read(Path, new StringHandle()).get();
-        assertTrue("module read and read back", xqueryModuleAsString.contains("let $x := (1,2,3,4,5)"));
+        assertTrue( xqueryModuleAsString.contains("let $x := (1,2,3,4,5)"));
 
         // get the list of descriptors
         ExtensionLibraryDescriptor[] descriptors = libsMgr.list();
-        assertEquals("number of modules installed", descriptors.length, 1);
+        assertEquals( descriptors.length, 1);
 
         for (ExtensionLibraryDescriptor descriptor : descriptors) {
             descriptor.setPath("/ext/my/path/to/my/new/module.xqy");
@@ -349,7 +349,7 @@ public class TestCRUDModulesDb extends AbstractFunctionalTest {
         // write XQuery file to the modules database
         try {
             libsMgr.write(Path, f);
-            Assert.assertTrue("Exception was not thrown", false);
+            assertTrue( false);
         } catch (IllegalArgumentException e) {
             // Issue 210 logged for meaningful error
             assertEquals("libraryPath (the modules database path under which you install an asset) must begin with /ext/", e.getMessage());
@@ -357,7 +357,7 @@ public class TestCRUDModulesDb extends AbstractFunctionalTest {
         // delete it
         try {
             libsMgr.delete(Path);
-            Assert.assertTrue("Exception was not thrown", false);
+            assertTrue( false);
         } catch (IllegalArgumentException e) {
             assertEquals("libraryPath (the modules database path under which you install an asset) must begin with /ext/", e.getMessage());
         }

@@ -15,40 +15,30 @@
  */
 package com.marklogic.client.test;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.*;
+import com.marklogic.client.document.*;
+import com.marklogic.client.document.BinaryDocumentManager.MetadataExtraction;
+import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.io.*;
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
 
+import javax.xml.bind.DatatypeConverter;
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 
-import javax.xml.bind.DatatypeConverter;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.w3c.dom.Document;
-
-import com.marklogic.client.document.DocumentDescriptor;
-import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.document.DocumentRecord;
-import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.document.DocumentManager.Metadata;
-import com.marklogic.client.document.BinaryDocumentManager;
-import com.marklogic.client.document.BinaryDocumentManager.MetadataExtraction;
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.InputStreamHandle;
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BinaryDocumentTest {
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -79,22 +69,21 @@ public class BinaryDocumentTest {
         }
 
         DocumentDescriptor desc = docMgr.exists(docId);
-        assertTrue("Binary exists did not get number of bytes",
-                desc.getByteLength() != DocumentDescriptor.UNKNOWN_LENGTH);
-        assertEquals("Binary exists got wrong number of bytes", BYTES_BINARY.length, desc.getByteLength());
+        assertTrue(desc.getByteLength() != DocumentDescriptor.UNKNOWN_LENGTH);
+        assertEquals(BYTES_BINARY.length, desc.getByteLength());
 
         byte[] buf = docMgr.read(docId, new BytesHandle()).get();
-        assertEquals("Binary document read wrong number of bytes", BYTES_BINARY.length, buf.length);
+        assertEquals(BYTES_BINARY.length, buf.length);
 
         buf = Common.streamToBytes(docMgr.read(docId, new InputStreamHandle()).get());
-        assertTrue("Binary document read binary empty input stream",buf.length > 0);
+        assertTrue(buf.length > 0);
 
         switch (i) {
             case 0:
                 handle = new BytesHandle();
                 buf = docMgr.read(docId, handle, 9, 10).get();
-                assertEquals("Binary range read wrong number of bytes", 10, buf.length);
-                assertEquals("Binary range did not set length in handle", 10, handle.getByteLength());
+                assertEquals(10, buf.length);
+                assertEquals(10, handle.getByteLength());
                 break;
             case 1:
                 break;
@@ -113,7 +102,7 @@ public class BinaryDocumentTest {
   }
 
   @Test
-  public void test_issue_758() throws Exception {
+  public void test_issue_758() {
    BinaryDocumentManager docMgr = Common.client.newBinaryDocumentManager();
    DocumentWriteSet writeset = docMgr.newWriteSet();
    FileHandle h1 = new FileHandle(new File(
@@ -126,7 +115,7 @@ public class BinaryDocumentTest {
    docMgr.write(writeset);
    DocumentPage page = docMgr.read(uri);
    DocumentRecord rec = page.next();
-   assertNotNull("DocumentRecord should never be null", rec);
+   assertNotNull(rec);
    assertEquals(rec.getFormat(),Format.BINARY);
   }
 }

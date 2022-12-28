@@ -10,11 +10,9 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.util.HashSet;
@@ -22,8 +20,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BulkIOOutputCallerTest {
     static ObjectNode[] apiObj = new ObjectNode[2];
@@ -36,10 +33,7 @@ public class BulkIOOutputCallerTest {
     private static final String collectionName_1 = "bulkOutputTest_1";
     private static final String collectionName_2 = "bulkOutputTest_2";
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         docMgr = IOTestUtil.db.newJSONDocumentManager();
         for (int i = 0; i < apiNames.length; i++) {
@@ -86,10 +80,10 @@ public class BulkIOOutputCallerTest {
         });
 
         bulkCaller.awaitCompletion();
-        assertEquals("exceptions on calls", false, exceptional.get());
-        assertEquals("duplicate output", false, duplicated.get());
-        assertEquals("unexpected output count", expected.size(), actual.size());
-        assertEquals("unexpected output values", expected, actual);
+        assertEquals( false, exceptional.get());
+        assertEquals( false, duplicated.get());
+        assertEquals( expected.size(), actual.size());
+        assertEquals( expected, actual);
     }
 
     @Test
@@ -125,12 +119,12 @@ public class BulkIOOutputCallerTest {
         });
 
         bulkCaller.awaitCompletion();
-        assertEquals("exceptions on calls", false, exceptional.get());
-        assertEquals("duplicate output", false, duplicated.get());
-        assertEquals("unexpected output count", expected.size(), actual.size());
+        assertEquals( false, exceptional.get());
+        assertEquals( false, duplicated.get());
+        assertEquals( expected.size(), actual.size());
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
 
         IOTestUtil.modMgr.delete(scriptPath, apiPath);

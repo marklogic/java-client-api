@@ -15,15 +15,6 @@
  */
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Stream;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -32,10 +23,6 @@ import com.marklogic.client.DatabaseClient.ConnectionType;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.dataservices.*;
-import com.marklogic.client.dataservices.ExecEndpoint.BulkExecCaller;
-import com.marklogic.client.dataservices.InputEndpoint.BulkInputCaller;
-import com.marklogic.client.dataservices.InputOutputEndpoint.BulkInputOutputCaller;
-import com.marklogic.client.dataservices.OutputEndpoint.BulkOutputCaller;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.*;
@@ -44,14 +31,16 @@ import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
+import org.junit.jupiter.api.*;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BulkIOCallersFnTest extends BasicJavaClientREST {
     private static String dbName = "DynamicIngestServicesDB";
@@ -124,7 +113,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
     // Annotation size endpoint URI
     private static String BulkSizeCheckURI = "/dynamic/fntest/BulkSizeVerify/json/";
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Exception {
         System.out.println("In setup");
         loadGradleProperties();
@@ -333,13 +322,13 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
         handle = null;
     }
 
-    @Before
+    @BeforeEach
     public void before() throws Exception {
         System.out.println("In before");
         dbclient = DatabaseClientFactory.newClient(host, restTestport, secContext, ConnectionType.DIRECT);
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         System.out.println("In after");
         // Delete all docs
@@ -347,7 +336,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
         dbclient.release();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownAfterClass() throws Exception {
         System.out.println("In tear down");
 
@@ -464,13 +453,13 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
             // # of root elements should be 5.
             System.out.println("Batch results from TestIngestEgressOnJsonDocs " + res);
 
-            assertTrue("No of docs egressed incorrect. Expected 5.", (res.split("\\btitle\\b").length -1) == 5);
-            assertTrue("No of docs egressed incorrect. Expected only 1 wrote word.", (res.split("\\bwrote\\b").length - 1) == 1);
-            assertTrue("No of docs egressed incorrect. Expected only 1 described word.", (res.split("\\bdescribed\\b").length - 1) == 1);
-            assertTrue("No of docs egressed incorrect. Expected only 1 groundbreaking word.", (res.split("\\bgroundbreaking\\b").length - 1) == 1);
-            assertTrue("No of docs egressed incorrect. Expected only 1 intellectual word.", (res.split("\\bintellectual\\b").length - 1) == 1);
-            assertTrue("No of docs egressed incorrect. Expected only 1 unfortunately word.", (res.split("\\bunfortunately\\b").length - 1) == 1);
-            assertTrue("Unexpected Errors during egress. Should not have any errors.", err.toString().isEmpty());
+            assertTrue((res.split("\\btitle\\b").length -1) == 5);
+            assertTrue((res.split("\\bwrote\\b").length - 1) == 1);
+            assertTrue((res.split("\\bdescribed\\b").length - 1) == 1);
+            assertTrue((res.split("\\bgroundbreaking\\b").length - 1) == 1);
+            assertTrue((res.split("\\bintellectual\\b").length - 1) == 1);
+            assertTrue((res.split("\\bunfortunately\\b").length - 1) == 1);
+            assertTrue(err.toString().isEmpty());
             System.out.println("End of TestIngestEgressOnJsonDocs");
         }
     }
@@ -542,9 +531,9 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
             String res = batchResults.toString();
             System.out.println(res);
 
-            assertTrue("Document returned from egressed incorrect.", res.contains("This is the return doc content"));
-            assertTrue("Document returned from egressed incorrect.", res.contains("Java Client API"));
-            assertTrue("Unexpected Errors during egress. ", err.toString().isEmpty());
+            assertTrue(res.contains("This is the return doc content"));
+            assertTrue(res.contains("Java Client API"));
+            assertTrue(err.toString().isEmpty());
 
             QueryManager queryMgr = dbclient.newQueryManager();
             StructuredQueryBuilder qb =  new StructuredQueryBuilder();
@@ -556,7 +545,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
             // get the result
             JsonNode resultDoc = resultsHandle.get();
             int total = resultDoc.get("total").asInt();
-            assertTrue("No of Documents returned from egressed collection incorrect.", total == 5);
+            assertTrue(total == 5);
 
             System.out.println("End of TestIngestEgressSessionFields");
         }
@@ -597,7 +586,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
             // Assert
             int docCnt = dbclient.newServerEval().xquery(query1).eval().next().getNumber().intValue();
             System.out.println("TestIngestEgressOnLargeNumJsonDocs - Doc count is " + docCnt);
-            Assert.assertTrue(docCnt == maxDocSize + 1);
+            assertTrue(docCnt == maxDocSize + 1);
 
             // Verify the Annotation value stored within a doc.
             JSONDocumentManager mgr = dbclient.newJSONDocumentManager();
@@ -606,7 +595,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
             int nAnnotValue =  jh.get().get("length").asInt();
             // 100 is default value .api -> inputBatchSize property
             System.out.println("TestIngestEgressOnLargeNumJsonDocs - inputBatchSize property value is " + nAnnotValue);
-            Assert.assertTrue(nAnnotValue == 100);
+            assertTrue(nAnnotValue == 100);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -655,7 +644,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
 
             int docCnt = dbclient.newServerEval().xquery(query1).eval().next().getNumber().intValue();
             System.out.println("No. of Xml docs is " + docCnt);
-            Assert.assertTrue(docCnt == 5);
+            assertTrue(docCnt == 5);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -697,7 +686,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
             input.forEach(inputbulkCaller::accept);
             inputbulkCaller.awaitCompletion();
 
-            Assert.assertTrue(dbclient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 5);
+            assertTrue(dbclient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 5);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -751,8 +740,8 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
             inputbulkCaller.awaitCompletion();
             String errStr = errorBuf.toString();
             //System.out.println("Error buffer when STOP_ALL_CALLS " + errorBuf.toString());
-            Assert.assertTrue(!errStr.contains("Exception"));
-            Assert.assertTrue(errStr.isEmpty());
+            assertTrue(!errStr.contains("Exception"));
+            assertTrue(errStr.isEmpty());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -795,7 +784,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
             input.forEach(inputbulkCaller::accept);
             inputbulkCaller.awaitCompletion();
 
-            Assert.assertTrue(dbclient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 5);
+            assertTrue(dbclient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 5);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -869,7 +858,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
             JsonNode results = resultsHandle.get();
             int total = results.get("total").asInt();
 
-            assertEquals("Incorrect exec. Total from query search incorrect." ,5, total);
+            assertEquals(5, total);
 
             Set<String> uriResulttSet = new TreeSet<String>();
             Set<String> uriExptdSet = new TreeSet<String>();
@@ -885,7 +874,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
             uriResulttSet.add(results.get("results").get(2).get("uri").asText());
             uriResulttSet.add(results.get("results").get(3).get("uri").asText());
             uriResulttSet.add(results.get("results").get(4).get("uri").asText());
-            assertTrue("Incorrect exec. URIs returned mismatch.",uriExptdSet.containsAll(uriResulttSet));
+            assertTrue(uriExptdSet.containsAll(uriResulttSet));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -898,7 +887,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
     // Use /dynamic/fntest/DynamicIngestServices/json/DynamicIngestServicesForJson.sjs endpoint to test JSON Documents ingest
     // The api file contents are in a JSON node; not in a file.
     @Test
-    public void TestBulkAnnotationSize() throws Exception {
+    public void TestBulkAnnotationSize() {
         System.out.println("Running TestBulkAnnotationSize");
         try {
             int startBatchIdx = 0;
@@ -930,7 +919,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
             int docCnt = dbclient.newServerEval().xquery(query1).eval().next().getNumber().intValue();
             System.out.println("TestBulkAnnotationSize - Doc count is " + docCnt);
             // One additional document holds the $bulk annotation value.
-            Assert.assertTrue(docCnt == maxDocSize + 1);
+            assertTrue(docCnt == maxDocSize + 1);
 
             // Verify the Annotation value stored within a doc.
             JSONDocumentManager mgr = dbclient.newJSONDocumentManager();
@@ -939,7 +928,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
             int nAnnotValue =  jh.get().get("length").asInt();
             // 8 is stored in BulkSizeCheckForJson.api -> inputBatchSize property
             System.out.println("TestBulkAnnotationSize - inputBatchSize property value is " + nAnnotValue);
-            Assert.assertTrue(nAnnotValue == 8);
+            assertTrue(nAnnotValue == 8);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -1035,7 +1024,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
             e.printStackTrace();
         }
         finally {
-            assertTrue("Error returned incorrect", retryBuf.toString().contains("Internal Server Error."));
+            assertTrue(retryBuf.toString().contains("Internal Server Error."));
             System.out.println("Error buffer is " + retryBuf.toString());
             System.out.println("Unloader completed in TestIngestEgressOnJsonDocsError");
         }
@@ -1214,18 +1203,18 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
             JsonNode resultDoc = resultsHandle.get();
             System.out.println(resultDoc.asText());
             int total = resultDoc.get("total").asInt();
-            assertTrue("No of Documents returned from egressed collection incorrect.", total == 5);
+            assertTrue(total == 5);
 
-            assertTrue("No of Json docs egressed incorrect. Expected 5.", (resJson.split("\\btitle\\b").length -1) == 5);
-            assertTrue("No of Json docs egressed incorrect. Expected only 1 wrote word.", (resJson.split("\\bwrote\\b").length - 1) == 1);
-            assertTrue("No of Json docs egressed incorrect. Expected only 1 described word.", (resJson.split("\\bdescribed\\b").length - 1) == 1);
-            assertTrue("No of Json docs egressed incorrect. Expected only 1 groundbreaking word.", (resJson.split("\\bgroundbreaking\\b").length - 1) == 1);
-            assertTrue("No of Json docs egressed incorrect. Expected only 1 intellectual word.", (resJson.split("\\bintellectual\\b").length - 1) == 1);
-            assertTrue("No of Json docs egressed incorrect. Expected only 1 unfortunately word.", (resJson.split("\\bunfortunately\\b").length - 1) == 1);
+            assertTrue((resJson.split("\\btitle\\b").length -1) == 5);
+            assertTrue((resJson.split("\\bwrote\\b").length - 1) == 1);
+            assertTrue((resJson.split("\\bdescribed\\b").length - 1) == 1);
+            assertTrue((resJson.split("\\bgroundbreaking\\b").length - 1) == 1);
+            assertTrue((resJson.split("\\bintellectual\\b").length - 1) == 1);
+            assertTrue((resJson.split("\\bunfortunately\\b").length - 1) == 1);
 
-            assertTrue("Xml docs egressed incorrect.", resXml.contains("baz"));
-            assertTrue("Xml docs egressed incorrect.", resXml.contains("three"));
-            assertTrue("Unexpected Errors during egress. Should not have any errors.", err.toString().isEmpty());
+            assertTrue(resXml.contains("baz"));
+            assertTrue(resXml.contains("three"));
+            assertTrue(err.toString().isEmpty());
             System.out.println("End of TestIngestEgressOnAnyDocument");
         }
     }

@@ -22,7 +22,8 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.*;
 import com.marklogic.client.query.*;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -36,7 +37,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertEquals;
+
 
 public class TestSearchOnProperties extends AbstractFunctionalTest {
 
@@ -127,20 +128,20 @@ public class TestSearchOnProperties extends AbstractFunctionalTest {
     queryMgr.search(queryDef, resultsHandle);
 
     long totalResults = resultsHandle.getTotalResults();
-    assertEquals("Total results difference", 1, totalResults);
+    assertEquals( 1, totalResults);
 
     // iterate over the result documents
     MatchDocumentSummary[] docSummaries = resultsHandle.getMatchResults();
 
     int docSummaryLength = docSummaries.length;
-    assertEquals("Document summary list difference", 1, docSummaryLength);
+    assertEquals( 1, docSummaryLength);
 
     for (MatchDocumentSummary docSummary : docSummaries) {
       String uri = docSummary.getUri();
 
       // iterate over the match locations within a result document
       MatchLocation[] locations = docSummary.getMatchLocations();
-      assertEquals("Document location difference", "/searchOnProps/" + file.getPath(), uri);
+      assertEquals( "/searchOnProps/" + file.getPath(), uri);
 
       for (MatchLocation location : locations) {
 
@@ -153,7 +154,7 @@ public class TestSearchOnProperties extends AbstractFunctionalTest {
           highlightedText = highlightedText + snippet.getText();
           highlightedText = highlightedText + "]";
 
-          assertEquals("Document highlight snippet difference", "[embarcadero]", highlightedText);
+          assertEquals( "[embarcadero]", highlightedText);
         }
       }
     }

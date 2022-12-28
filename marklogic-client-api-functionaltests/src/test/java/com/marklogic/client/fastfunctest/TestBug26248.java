@@ -20,7 +20,8 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

@@ -15,32 +15,7 @@
  */
 package com.marklogic.client.test;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-
-import javax.xml.namespace.QName;
-import javax.xml.parsers.ParserConfigurationException;
-
-import com.marklogic.client.DatabaseClient;
-import org.custommonkey.xmlunit.XMLUnit;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.ResourceNotResendableException;
+import com.marklogic.client.*;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.alerting.RuleDefinition;
@@ -49,16 +24,27 @@ import com.marklogic.client.alerting.RuleDefinitionList;
 import com.marklogic.client.alerting.RuleManager;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.*;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
 import com.marklogic.client.query.StructuredQueryDefinition;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import javax.xml.namespace.QName;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AlertingTest {
 
@@ -69,7 +55,7 @@ public class AlertingTest {
   private static DatabaseClient adminClient = Common.connectAdmin();
   private static final String RULE_NAME_WRITE_RULE_AS_TEST = "writeRuleAsTest";
 
-  @AfterClass
+  @AfterAll
   public static void teardown()
     throws ForbiddenUserException, FailedRequestException, ResourceNotFoundException
   {
@@ -83,7 +69,7 @@ public class AlertingTest {
     transformManager.deleteTransform("ruleTransform");
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void setup()
     throws FileNotFoundException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
   {
@@ -363,22 +349,18 @@ public class AlertingTest {
     RuleDefinitionList answer = ruleManager.match(docs,
       new RuleDefinitionList());
 
-    assertEquals(
-      "One answer for first match scenario, favorite against all rules",
-      1, answer.size());
+    assertEquals(1, answer.size(), "One answer for first match scenario, favorite against all rules");
 
     RuleDefinition ruleMatch = answer.iterator().next();
     assertEquals("favorites", ruleMatch.getName());
 
     answer = ruleManager.match(docs, candidates, answer, null);
-    assertEquals(
-      "Zero answers for second match scenario, favorites against false rule ",
-      0, answer.size());
+    assertEquals(0, answer.size(), "Zero answers for second match scenario, favorites against false rule ");
 
     docs = new String[] { "/alert/first.xml", "/alert/third.xml" };
 
     answer = ruleManager.match(docs, answer);
-    assertEquals("One answer for first match scenario", 1, answer.size());
+    assertEquals(1, answer.size());
 
     RuleDefinition match = answer.iterator().next();
     assertEquals("notfavorited", match.getName());
@@ -394,20 +376,19 @@ public class AlertingTest {
 
     RuleDefinitionList answer = ruleManager.match(qtext,
       new RuleDefinitionList());
-    assertEquals("One answer", 1, answer.size());
+    assertEquals(1, answer.size());
 
     qtext.setCriteria("favorited:false");
     answer = ruleManager.match(qtext, 1L, 10L, new String[] { "favorites",
       "notfavorited" }, answer);
-    assertEquals("One answer", answer.size(), 1);
-    assertEquals("Right answer", "notfavorited", answer.iterator().next()
-      .getName());
+    assertEquals(answer.size(), 1);
+    assertEquals("notfavorited", answer.iterator().next().getName());
     answer = ruleManager.match(qtext, 1L, 0L, new String[] { "favorites",
       "notfavorited" }, answer);
-    assertEquals("Zero answers (pageLength 0)", answer.size(), 0);
+    assertEquals(answer.size(), 0, "Zero answers (pageLength 0)");
     answer = ruleManager.match(qtext, 3L, QueryManager.DEFAULT_PAGE_LENGTH, new String[] { "favorites",
       "notfavorited" }, answer);
-    assertEquals("Zero answers (default pageLength, but start beyond result size)", answer.size(), 0);
+    assertEquals(answer.size(), 0, "Zero answers (default pageLength, but start beyond result size)");
   }
 
   @Test
@@ -469,14 +450,14 @@ public class AlertingTest {
 
     RuleDefinitionList ans1 = ruleManager.match(new StringHandle(
       docToMatch1).withFormat(Format.XML), new RuleDefinitionList());
-    assertEquals("doc match 1 count", 1, ans1.size());
-    assertEquals("doc match 1", "favorites", ans1.iterator().next()
+    assertEquals(1, ans1.size());
+    assertEquals("favorites", ans1.iterator().next()
       .getName());
 
     RuleDefinitionList ans2 = ruleManager.match(new StringHandle(
       docToMatch2).withFormat(Format.XML), new RuleDefinitionList());
-    assertEquals("doc match 2 count", 1, ans2.size());
-    assertEquals("doc match 2", "notfavorited", ans2.iterator().next()
+    assertEquals(1, ans2.size());
+    assertEquals("notfavorited", ans2.iterator().next()
       .getName());
 
   }
@@ -493,6 +474,6 @@ public class AlertingTest {
     definition.importQueryDefinition(textQuery);
 
     ruleManager.writeRuleAs(RULE_NAME_WRITE_RULE_AS_TEST, definition);
-    assertTrue("Rule was written with the name provided", ruleManager.exists(RULE_NAME_WRITE_RULE_AS_TEST));
+    assertTrue(ruleManager.exists(RULE_NAME_WRITE_RULE_AS_TEST));
   }
 }

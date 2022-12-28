@@ -15,21 +15,14 @@
 */
 package com.marklogic.client.datamovement.functionaltests;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
+import com.marklogic.client.datamovement.*;
+import com.marklogic.client.eval.EvalResultIterator;
+import com.marklogic.client.functionaltest.BasicJavaClientREST;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.StringHandle;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -37,29 +30,19 @@ import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.SecurityContext;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.FilteredForestConfiguration;
-import com.marklogic.client.datamovement.Forest;
-import com.marklogic.client.datamovement.ForestConfiguration;
-import com.marklogic.client.datamovement.HostAvailabilityListener;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.NoResponseListener;
-import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.eval.EvalResultIterator;
-import com.marklogic.client.functionaltest.BasicJavaClientREST;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.StringHandle;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class WBFailover extends BasicJavaClientREST {
 	private static String dbName = "WBFailover";
@@ -80,7 +63,7 @@ public class WBFailover extends BasicJavaClientREST {
 	final String query1 = "fn:count(fn:doc())";
 	private static List<String> hostLists;
 
-	@BeforeClass
+	@BeforeAll
 	public static void setUpBeforeClass() throws Exception {
 		loadGradleProperties();
 		host = getRestAppServerHostName();
@@ -108,7 +91,7 @@ public class WBFailover extends BasicJavaClientREST {
 			}
 			hostLists.add("localhost");
 			// Assuming the tests are run on 3 node cluster.
-			Assert.assertEquals(hostLists.size(), 7);
+			assertEquals(hostLists.size(), 7);
 
 			int index = new Random().nextInt(hostLists.size());
 			dbClient = getDatabaseClientOnDatabase(hostLists.get(index), port, dbName, user, password,
@@ -211,7 +194,7 @@ public class WBFailover extends BasicJavaClientREST {
 		return true;
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void tearDownAfterClass() throws Exception {
 		// Perform the setup on multiple nodes only.
 		if (hostNames.length > 1) {
@@ -231,7 +214,7 @@ public class WBFailover extends BasicJavaClientREST {
 		}
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		// Perform the setup on multiple nodes only.
 		if (hostNames.length > 1) {
@@ -239,9 +222,9 @@ public class WBFailover extends BasicJavaClientREST {
 			Forest[] f = fc.listForests();
 			f = (Forest[]) Arrays.stream(f).filter(x -> x.getDatabaseName().equals(dbName)).collect(Collectors.toList())
 					.toArray(new Forest[hostNames.length]);
-			Assert.assertEquals(f.length, hostNames.length);
-			Assert.assertEquals(f.length, 3L);
-			Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+			assertEquals(f.length, hostNames.length);
+			assertEquals(f.length, 3L);
+			assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		} else {
 			System.out.println("Test skipped -  setUp");
 		}
@@ -285,7 +268,7 @@ public class WBFailover extends BasicJavaClientREST {
 		}
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		// Perform the setup on multiple nodes only.
 		if (hostNames.length > 1) {
@@ -294,7 +277,7 @@ public class WBFailover extends BasicJavaClientREST {
 				System.out.println("Restarting server " + hostNames[i]);
 				serverStartStop(hostNames[i], "start");
 				Thread.sleep(2000L);
-				Assert.assertTrue(isRunning(hostNames[i]));
+				assertTrue(isRunning(hostNames[i]));
 			}
 			waitForForest("after");
 			clearForests();
@@ -315,7 +298,7 @@ public class WBFailover extends BasicJavaClientREST {
 					changeProperty(props, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "-replica" + "/properties");
 				}
 				waitForForest("after");
-				Assert.assertTrue("open".equals(getForestState(dbName + "-" + (i + 1)).toLowerCase()));
+				assertTrue("open".equals(getForestState(dbName + "-" + (i + 1)).toLowerCase()));
 			}
 		} else {
 			System.out.println("Test skipped -  tearDown");
@@ -323,9 +306,9 @@ public class WBFailover extends BasicJavaClientREST {
 		Thread.sleep(5000L);
 	}
 
-	@Test(timeout = 350000)
+	@Test
 	public void testBlackListHost() throws Exception {
-		Assume.assumeTrue(hostNames.length > 1);
+		Assumptions.assumeTrue(hostNames.length > 1);
 
 		try {
 			System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -362,22 +345,22 @@ public class WBFailover extends BasicJavaClientREST {
 			}
 			ihb2.flushAndWait();
 
-			Assert.assertFalse(failState.get());
-			Assert.assertFalse(containsBLHost.get());
-			Assert.assertEquals(10000, successCount.get());
-			Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 10000);
+			assertFalse(failState.get());
+			assertFalse(containsBLHost.get());
+			assertEquals(10000, successCount.get());
+			assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 10000);
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	@Test(timeout = 350000)
+	@Test
 	public void testStopOneNode() throws Exception {
-		Assume.assumeTrue(hostNames.length > 1);
+		Assumptions.assumeTrue(hostNames.length > 1);
 
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
-		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		final AtomicInteger successCount = new AtomicInteger(0);
 		final AtomicBoolean failState = new AtomicBoolean(false);
 		final AtomicInteger failCount = new AtomicInteger(0);
@@ -412,8 +395,8 @@ public class WBFailover extends BasicJavaClientREST {
 			}
 			ihb2.flushAndWait();
 			Thread.sleep(2000L);
-			Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
-			Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
+			assertTrue(isRunning(hostNames[hostNames.length - 3]));
+			assertTrue(isRunning(hostNames[hostNames.length - 2]));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -421,15 +404,15 @@ public class WBFailover extends BasicJavaClientREST {
 		System.out.println("Fail : " + failCount.intValue());
 		System.out.println("Success : " + successCount.intValue());
 		System.out.println("Count : " + evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 50000);
+		assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 50000);
 	}
 
-	@Test(timeout = 350000)
+	@Test
 	public void testStopOneNodeLongDuration() throws Exception {
-		Assume.assumeTrue(hostNames.length > 1);
+		Assumptions.assumeTrue(hostNames.length > 1);
 
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
-		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		final AtomicInteger successCount = new AtomicInteger(0);
 		final AtomicBoolean failState = new AtomicBoolean(false);
 		final AtomicInteger failCount = new AtomicInteger(0);
@@ -468,20 +451,20 @@ public class WBFailover extends BasicJavaClientREST {
 			e.printStackTrace();
 		}
 		Thread.sleep(2000L);
-		Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
-		Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
+		assertTrue(isRunning(hostNames[hostNames.length - 3]));
+		assertTrue(isRunning(hostNames[hostNames.length - 2]));
 		System.out.println("Fail : " + failCount.intValue());
 		System.out.println("Success : " + successCount.intValue());
 		System.out.println("Count : " + evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 50000);
+		assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 50000);
 	}
 
-	@Test(timeout = 350000)
+	@Test
 	public void testStopOneNodeShortDuration() throws Exception {
-		Assume.assumeTrue(hostNames.length > 1);
+		Assumptions.assumeTrue(hostNames.length > 1);
 
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
-		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		final AtomicInteger successCount = new AtomicInteger(0);
 		final AtomicBoolean failState = new AtomicBoolean(false);
 		final AtomicInteger failCount = new AtomicInteger(0);
@@ -520,20 +503,20 @@ public class WBFailover extends BasicJavaClientREST {
 			e.printStackTrace();
 		}
 		Thread.sleep(2000L);
-		Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
-		Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
+		assertTrue(isRunning(hostNames[hostNames.length - 3]));
+		assertTrue(isRunning(hostNames[hostNames.length - 2]));
 		System.out.println("Fail : " + failCount.intValue());
 		System.out.println("Success : " + successCount.intValue());
 		System.out.println("Count : " + evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 50000);
+		assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 50000);
 	}
 
-	@Test(timeout = 350000)
+	@Test
 	public void testRestart() throws Exception {
-		Assume.assumeTrue(hostNames.length > 1);
+		Assumptions.assumeTrue(hostNames.length > 1);
 
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
-		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		final AtomicInteger successCount = new AtomicInteger(0);
 		final AtomicBoolean failState = new AtomicBoolean(false);
 		final AtomicInteger failCount = new AtomicInteger(0);
@@ -575,17 +558,17 @@ public class WBFailover extends BasicJavaClientREST {
 			e.printStackTrace();
 		}
 		Thread.sleep(2000L);
-		Assert.assertTrue(isRunning(hostNames[hostNames.length - 1]));
+		assertTrue(isRunning(hostNames[hostNames.length - 1]));
 
 		System.out.println("Fail : " + failCount.intValue());
 		System.out.println("Success : " + successCount.intValue());
 		System.out.println("Count : " + evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 40000);
+		assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 40000);
 	}
 
-	@Test(timeout = 350000)
+	@Test
 	public void testRepeatedStopOneNode() throws Exception {
-		Assume.assumeTrue(hostNames.length > 1);
+		Assumptions.assumeTrue(hostNames.length > 1);
 
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
@@ -633,23 +616,23 @@ public class WBFailover extends BasicJavaClientREST {
 			}
 			ihb2.flushAndWait();
 			Thread.sleep(2000L);
-			Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
-			Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
+			assertTrue(isRunning(hostNames[hostNames.length - 3]));
+			assertTrue(isRunning(hostNames[hostNames.length - 2]));
 			System.out.println("Fail : " + failCount.intValue());
 			System.out.println("Success : " + successCount.intValue());
 			System.out.println(
 					"Count : " + evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 
-			Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 40000);
+			assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 40000);
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	@Test(timeout = 350000)
+	@Test
 	public void testStopTwoNodes() throws Exception {
-		Assume.assumeTrue(hostNames.length > 1);
+		Assumptions.assumeTrue(hostNames.length > 1);
 
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
@@ -698,14 +681,14 @@ public class WBFailover extends BasicJavaClientREST {
 
 			ihb2.flushAndWait();
 			Thread.sleep(2000L);
-			Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
-			Assert.assertTrue(isRunning(hostNames[hostNames.length - 1]));
+			assertTrue(isRunning(hostNames[hostNames.length - 3]));
+			assertTrue(isRunning(hostNames[hostNames.length - 1]));
 			System.out.println("Fail : " + failCount.intValue());
 			System.out.println("Success : " + successCount.intValue());
 			System.out.println(
 					"Count : " + evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 
-			Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 40000);
+			assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 40000);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -713,9 +696,9 @@ public class WBFailover extends BasicJavaClientREST {
 
 	}
 
-	@Test(timeout = 350000)
+	@Test
 	public void testMinHosts() throws Exception {
-		Assume.assumeTrue(hostNames.length > 1);
+		Assumptions.assumeTrue(hostNames.length > 1);
 
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		final AtomicInteger successCount = new AtomicInteger(0);
@@ -752,31 +735,31 @@ public class WBFailover extends BasicJavaClientREST {
 		Thread.currentThread().sleep(2000L);
 		serverStartStop(hostNames[hostNames.length - 1], "start");
 		Thread.currentThread().sleep(5000L);
-		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() > 13);
-		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() < 20000);
+		assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() > 13);
+		assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() < 20000);
 		System.out.println("Count : " + evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 		System.out.println("Ending min test");
 	}
 
-	@Test(timeout = 350000)
+	@Test
 	public void testWhiteBlackListNPE() throws Exception {
-		Assume.assumeTrue(hostNames.length > 1);
+		Assumptions.assumeTrue(hostNames.length > 1);
 
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
 			FilteredForestConfiguration forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig())
 					.withBlackList(null);
-			Assert.assertTrue(1 > 2);
+			assertTrue(1 > 2);
 		} catch (Exception e) {
-			Assert.assertTrue(e instanceof java.lang.IllegalArgumentException);
+			assertTrue(e instanceof java.lang.IllegalArgumentException);
 		}
 
 		try {
 			FilteredForestConfiguration forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig())
 					.withWhiteList(null);
-			Assert.assertTrue(1 > 2);
+			assertTrue(1 > 2);
 		} catch (Exception e) {
-			Assert.assertTrue(e instanceof java.lang.IllegalArgumentException);
+			assertTrue(e instanceof java.lang.IllegalArgumentException);
 		}
 	}
 

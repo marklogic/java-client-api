@@ -15,31 +15,16 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.semantics.Capability;
-import com.marklogic.client.semantics.GraphManager;
-import com.marklogic.client.semantics.GraphPermissions;
-import com.marklogic.client.semantics.RDFMimeTypes;
-import com.marklogic.client.semantics.SPARQLQueryDefinition;
-import com.marklogic.client.semantics.SPARQLQueryManager;
+import com.marklogic.client.semantics.*;
+import org.junit.jupiter.api.*;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+import static org.junit.jupiter.api.Assertions.*;
+
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class SemanticsPermissionsTest {
   private static GraphManager gmgr;
   private static String graphUri = "SemanticsPermissionsTest";
@@ -48,7 +33,7 @@ public class SemanticsPermissionsTest {
   private static DatabaseClient writePrivilegedClient = Common.makeNewClient(
     Common.HOST, Common.PORT, Common.newSecurityContext(Common.WRITE_PRIVILIGED_USER, Common.WRITE_PRIVILIGED_PASS));
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
     gmgr = Common.client.newGraphManager();
@@ -58,7 +43,7 @@ public class SemanticsPermissionsTest {
     gmgr.write(graphUri, new StringHandle(triple).withMimetype(RDFMimeTypes.NTRIPLES), perms);
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     GraphManager gmgr = Common.client.newGraphManager();
     gmgr.delete(graphUri);

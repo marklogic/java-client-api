@@ -24,7 +24,8 @@ import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.FragmentScope;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -35,7 +36,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertTrue;
+
 
 public class TestStandaloneGeoQuery extends AbstractFunctionalTest {
 
@@ -74,7 +75,7 @@ public class TestStandaloneGeoQuery extends AbstractFunctionalTest {
     Document resultDoc = resultsHandle.get();
     String result = convertXMLDocumentToString(resultDoc);
     System.out.println(result);
-    assertTrue("Results are not proper", result.contains("start=\"1\" total=\"5\""));
+    assertTrue( result.contains("start=\"1\" total=\"5\""));
 
     // release client
     client.release();
@@ -372,7 +373,7 @@ public class TestStandaloneGeoQuery extends AbstractFunctionalTest {
     Document resultDoc = resultsHandle.get();
     System.out.println("Results of Box :" + convertXMLDocumentToString(resultDoc));
     assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-    assertTrue("Result returned is wrong", convertXMLDocumentToString(resultDoc).contains("beijing city in china bangkok city in thailand norh pole place where Santa lives"));
+    assertTrue( convertXMLDocumentToString(resultDoc).contains("beijing city in china bangkok city in thailand norh pole place where Santa lives"));
 
     // Circle Query
     QueryManager queryMgr1 = client.newQueryManager();
@@ -386,7 +387,7 @@ public class TestStandaloneGeoQuery extends AbstractFunctionalTest {
     // get the result
     Document resultDoc1 = resultsHandle1.get();
     System.out.println("Results of Circle :" + convertXMLDocumentToString(resultDoc1));
-    assertTrue("Result returned is wrong", convertXMLDocumentToString(resultDoc1).contains("beijing city in china bangkok city in thailand norh pole place where Santa lives"));
+    assertTrue( convertXMLDocumentToString(resultDoc1).contains("beijing city in china bangkok city in thailand norh pole place where Santa lives"));
     // Polygon Query
     QueryManager queryMgr2 = client.newQueryManager();
     // create query def
@@ -399,7 +400,7 @@ public class TestStandaloneGeoQuery extends AbstractFunctionalTest {
     // get the result
     Document resultDoc2 = resultsHandle2.get();
     System.out.println("Results of Polygon :" + convertXMLDocumentToString(resultDoc2));
-    assertTrue("Result returned is wrong", convertXMLDocumentToString(resultDoc2).contains("beijing city in china bangkok city in thailand norh pole place where Santa lives"));
+    assertTrue( convertXMLDocumentToString(resultDoc2).contains("beijing city in china bangkok city in thailand norh pole place where Santa lives"));
     // release client
     client.release();
   }

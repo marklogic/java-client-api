@@ -15,22 +15,11 @@
  */
 package com.marklogic.client.test.datamovement;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Iterator;
-import java.util.stream.Stream;
-
-import com.marklogic.client.datamovement.*;
-import com.marklogic.client.test.Common;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.JacksonCSVSplitter;
+import com.marklogic.client.datamovement.Splitter;
+import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteOperation.OperationType;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
@@ -39,38 +28,49 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.test.Common;
 import com.opencsv.CSVReader;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Iterator;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JacksonCSVSplitterTest {
-    
+
     static final private String csvFile = "src/test/resources/data/pathSplitter" + File.separator + "test.csv";
     private DatabaseClient client;
     private DataMovementManager moveMgr;
-    
-    @Before
+
+    @BeforeEach
     public void setUp() {
         client = Common.makeNewClient(Common.HOST, Common.PORT, Common.newSecurityContext("rest-admin", "x"));
         moveMgr = client.newDataMovementManager();
     }
-    
+
     @Test
     public void testSplitter() throws Exception {
 
         JacksonCSVSplitter splitter = new JacksonCSVSplitter();
         Stream<JacksonHandle> contentStream = splitter.split(new FileInputStream(csvFile));
         assertNotNull(contentStream);
-        
+
         JacksonHandle[] result = contentStream.toArray(size -> new JacksonHandle[size]);
         assertNotNull(result);
         assertTrue(result.length == (Files.lines(Paths.get(csvFile)).count()-1));
-        
+
         FileReader fileReader = new FileReader(csvFile);
         CSVReader csvReader = new CSVReader(fileReader);
         String[] headerValues = csvReader.readNext();
-        
+
         for(int i=0; i<result.length; i++) {
             assertNotNull(result[i].get());
             assertNotNull(result[i].get().fields());
@@ -262,15 +262,15 @@ public class JacksonCSVSplitterTest {
         fileReader.close();
         csvReader.close();
     }
-    
+
     @Test
     public void testDocumentWriteOperation() throws Exception {
         Stream<StringHandle> strStream = Stream.of(new StringHandle("first"), new StringHandle("second"));
-       
+
         Stream<DocumentWriteOperation> documentStream =  DocumentWriteOperation.from(
                 strStream, DocumentWriteOperation.uriMaker("/sample/directory/%s.json")
                 );
-        
+
         assertNotNull(documentStream);
         String[] stringHandleValues = {"first", "second"};
         Iterator<DocumentWriteOperation> itr = documentStream.iterator();
@@ -281,7 +281,7 @@ public class JacksonCSVSplitterTest {
             assertTrue(docOp.getContent().toString().equals(stringHandleValues[i]));
         }
     }
-    
+
     @Test
     public void testBatcher() throws Exception {
         try {
@@ -305,8 +305,8 @@ public class JacksonCSVSplitterTest {
             queryMgr.delete(deleteDef);
         }
     }
-    
-    @After
+
+    @AfterEach
     public void closeSetUp() {
         client.release();
     }

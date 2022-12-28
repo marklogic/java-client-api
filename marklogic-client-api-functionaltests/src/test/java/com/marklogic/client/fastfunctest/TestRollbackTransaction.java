@@ -25,7 +25,8 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -37,7 +38,7 @@ import java.security.NoSuchAlgorithmException;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertTrue;
+
 
 public class TestRollbackTransaction extends AbstractFunctionalTest {
 
@@ -155,7 +156,7 @@ public class TestRollbackTransaction extends AbstractFunctionalTest {
     // get expected contents
     JsonNode expectedContent = expectedJSONDocument(filename);
 
-    assertTrue("Rollback on document update failed", readContent.equals(expectedContent));
+    assertTrue( readContent.equals(expectedContent));
 
     // release client
     client.release();
@@ -290,7 +291,7 @@ public class TestRollbackTransaction extends AbstractFunctionalTest {
       exception = e.toString();
     }
 
-    assertTrue("Exception is not thrown", exception.contains(expectedException));
+    assertTrue( exception.contains(expectedException));
 
     // release client
     client.release();

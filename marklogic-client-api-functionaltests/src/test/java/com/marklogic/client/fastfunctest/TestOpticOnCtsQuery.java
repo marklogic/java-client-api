@@ -26,8 +26,9 @@ import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.*;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -38,11 +39,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import static org.junit.Assert.*;
-
 public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception {
       // Install the TDE templates
       // loadFileToDB(client, filename, docURI, collection, document format)
@@ -81,7 +80,7 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
    * jsonPropertyWordQuery on fromViews. plan1 uses fromView plan2 use fromView
    */
   @Test
-  public void testJsonPropertyWordQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  public void testJsonPropertyWordQuery()
   {
     System.out.println("In testJsonPropertyWordQuery method");
 
@@ -104,16 +103,16 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
 
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
-    assertTrue("Number of Elements after plan execution is incorrect. Should be 3", 3 == jsonBindingsNodes.size());
-    assertEquals("Row 1 opticFunctionalTest4.detail4.id value incorrect", "100", jsonBindingsNodes.path(0).path("opticFunctionalTest4.detail4.id").path("value").asText());
-    assertEquals("Row 1 opticFunctionalTest4.master4.name value incorrect", "Master 100", jsonBindingsNodes.path(0).path("opticFunctionalTest4.master4.name").path("value")
+    assertTrue( 3 == jsonBindingsNodes.size());
+    assertEquals( "100", jsonBindingsNodes.path(0).path("opticFunctionalTest4.detail4.id").path("value").asText());
+    assertEquals( "Master 100", jsonBindingsNodes.path(0).path("opticFunctionalTest4.master4.name").path("value")
         .asText());
-    assertEquals("Row 2 opticFunctionalTest4.detail4.name value incorrect", "Detail 200", jsonBindingsNodes.path(1).path("opticFunctionalTest4.detail4.name").path("value")
+    assertEquals( "Detail 200", jsonBindingsNodes.path(1).path("opticFunctionalTest4.detail4.name").path("value")
         .asText());
-    assertEquals("Row 2 opticFunctionalTest4.master4.date value incorrect", "2016-04-02", jsonBindingsNodes.path(1).path("opticFunctionalTest4.master4.date").path("value")
+    assertEquals( "2016-04-02", jsonBindingsNodes.path(1).path("opticFunctionalTest4.master4.date").path("value")
         .asText());
-    assertEquals("Row 3 opticFunctionalTest4.detail4.amount value incorrect", "72.9", jsonBindingsNodes.path(2).path("opticFunctionalTest4.detail4.amount").path("value").asText());
-    assertEquals("Row 3 opticFunctionalTest4.detail4.color value incorrect", "yellow", jsonBindingsNodes.path(2).path("opticFunctionalTest4.detail4.color").path("value").asText());
+    assertEquals( "72.9", jsonBindingsNodes.path(2).path("opticFunctionalTest4.detail4.amount").path("value").asText());
+    assertEquals( "yellow", jsonBindingsNodes.path(2).path("opticFunctionalTest4.detail4.color").path("value").asText());
   }
 
   /*
@@ -135,7 +134,7 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
      * p.cts.jsonPropertyReference("date")); index1.put("distance",
      * p.cts.jsonPropertyReference("distance")); index1.put("point",
      * p.cts.jsonPropertyReference("latLonPoint"));
-     * 
+     *
      * Map<String, CtsReferenceExpr>index2 = new HashMap<String,
      * CtsReferenceExpr>(); index2.put("uri2", p.cts.uriReference());
      * index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
@@ -146,26 +145,26 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
      * // plan2 - fromLexicons ModifyPlan plan2 = p.fromLexicons(index2,
      * "myTeam", p.fragmentIdCol("fragId2"),
      * p.cts.jsonPropertyValueQuery("cityTeam", p.xs.string("yankee")));
-     * 
+     *
      * ModifyPlan output2 = plan1.joinInner(plan2)
      * .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
      * .orderBy(p.asc(p.col("date")));
-     * 
+     *
      * JacksonHandle jacksonHandle = new JacksonHandle();
      * jacksonHandle.setMimetype("application/json"); rowMgr.resultDoc(output2,
      * jacksonHandle); JsonNode jsonResults = jacksonHandle.get();
-     * 
+     *
      * JsonNode jsonBindingsNodes = jsonResults.path("rows");
-     * 
+     *
      * assertTrue(
      * "Number of Elements after plan execution is incorrect. Should be 1", 1 ==
      * jsonBindingsNodes.size());
-     * assertEquals("Row 1 myCity.city value incorrect", "new york",
+     * assertEquals( "new york",
      * jsonBindingsNodes.path(0).path("myCity.city").path("value").asText());
-     * assertEquals("Row 1 myCity.point value incorrect",
+     * assertEquals(
      * "40.709999,-74.009995",
      * jsonBindingsNodes.path(0).path("myCity.point").path("value").asText());
-     * assertEquals("Row 1 myTeam.uri2 value incorrect",
+     * assertEquals(
      * "/optic/lexicon/test/city2.json",
      * jsonBindingsNodes.path(0).path("myTeam.uri2").path("value").asText());
      */
@@ -179,7 +178,7 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
   public void testJsonPropertyGeospatialQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
   {/*
     * System.out.println("In testJsonPropertyGeospatialQuery method");
-    * 
+    *
     * // Create a new Plan. RowManager rowMgr = client.newRowManager();
     * PlanBuilder p = rowMgr.newPlanBuilder(); Map<String,
     * CtsReferenceExpr>index1 = new HashMap<String, CtsReferenceExpr>();
@@ -189,37 +188,37 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
     * p.cts.jsonPropertyReference("date")); index1.put("distance",
     * p.cts.jsonPropertyReference("distance")); index1.put("point",
     * p.cts.jsonPropertyReference("latLonPoint"));
-    * 
+    *
     * Map<String, CtsReferenceExpr>index2 = new HashMap<String,
     * CtsReferenceExpr>(); index2.put("uri2", p.cts.uriReference());
     * index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
     * index2.put("cityTeam", p.cts.jsonPropertyReference("cityTeam"));
-    * 
+    *
     * // plan1 - fromLexicons PlanSystemColumn fIdCol1 =
     * p.fragmentIdCol("fragId1"); PlanSystemColumn fIdCol2 =
     * p.fragmentIdCol("fragId2"); QualifiedPlan plan1 = p.fromLexicons(index1,
     * "myCity", fIdCol1, p.cts.jsonPropertyGeospatialQuery("latLonPoint",
     * p.cts.box(49.16, -13.41, 60.85, 1.76))); // plan2 - fromLexicons
     * QualifiedPlan plan2 = p.fromLexicons(index2, "myTeam", fIdCol2, null);
-    * 
+    *
     * ModifyPlan output = plan1.joinInner(plan2) .where(p.eq(p.viewCol("myCity",
     * "city"), p.col("cityName"))) .orderBy(p.asc(p.col("date")));
-    * 
+    *
     * JacksonHandle jacksonHandle = new JacksonHandle();
     * jacksonHandle.setMimetype("application/json");
-    * 
+    *
     * rowMgr.resultDoc(output, jacksonHandle); JsonNode jsonResults =
     * jacksonHandle.get();
-    * 
+    *
     * JsonNode jsonBindingsNodes = jsonResults.path("rows");
     * assertTrue("Number of Elements after plan execution is incorrect. Should be 1"
     * , 1 == jsonBindingsNodes.size());
-    * assertEquals("Row 1 myCity.city value incorrect", "london",
+    * assertEquals( "london",
     * jsonBindingsNodes.path(0).path("myCity.city").path("value").asText());
-    * assertEquals("Row 1 myCity.uri1 value incorrect",
+    * assertEquals(
     * "/optic/lexicon/test/doc1.json",
     * jsonBindingsNodes.path(0).path("myCity.uri1").path("value").asText());
-    * assertEquals("Row 1 myTeam.uri2 value incorrect",
+    * assertEquals(
     * "/optic/lexicon/test/city1.json",
     * jsonBindingsNodes.path(0).path("myTeam.uri2").path("value").asText());
     */
@@ -233,44 +232,44 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
   public void testWordQueryPropertyValueQueryFromViews() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
   {/*
     * System.out.println("In testWordQueryPropertyValueQueryFromViews method");
-    * 
+    *
     * // Create a new Plan. RowManager rowMgr = client.newRowManager();
     * PlanBuilder p = rowMgr.newPlanBuilder(); PlanPrefixer bb =
     * p.prefixer("http://marklogic.com/baseball/players");
-    * 
+    *
     * // plan1 - fromView ModifyPlan plan1 = p.fromView("opticFunctionalTest4",
     * "detail4", null, null, p.cts.jsonPropertyValueQuery("id",
     * p.xs.string("600")) ); // plan2 - fromView ModifyPlan plan2 =
     * p.fromView("opticFunctionalTest4", "master4", null, null,
     * p.cts.wordQuery("Master 100") );
-    * 
+    *
     * ModifyPlan output = plan1.joinInner(plan2,
     * p.on(p.schemaCol("opticFunctionalTest4", "detail4", "masterId"),
     * p.schemaCol("opticFunctionalTest4", "master4", "id")))
     * .orderBy(p.schemaCol("opticFunctionalTest4", "detail4", "id"));
-    * 
+    *
     * JacksonHandle jacksonHandle = new JacksonHandle();
     * jacksonHandle.setMimetype("application/json");
-    * 
+    *
     * rowMgr.resultDoc(output, jacksonHandle); JsonNode jsonResults =
     * jacksonHandle.get();
-    * 
+    *
     * JsonNode jsonBindingsNodes = jsonResults.path("rows");
     * assertTrue("Number of Elements after plan execution is incorrect. Should be 3"
     * , 3 == jsonBindingsNodes.size());
-    * assertEquals("Row 1 opticFunctionalTest4.detail4.id value incorrect",
+    * assertEquals(
     * "400",
     * jsonBindingsNodes.path(0).path("opticFunctionalTest4.detail4.id").path
     * ("value").asText());
-    * assertEquals("Row 1 opticFunctionalTest4.master4.name value incorrect",
+    * assertEquals(
     * "Master 200",
     * jsonBindingsNodes.path(0).path("opticFunctionalTest4.master4.name"
     * ).path("value").asText());
-    * assertEquals("Row 3 opticFunctionalTest4.detail4.id value incorrect",
+    * assertEquals(
     * "600",
     * jsonBindingsNodes.path(2).path("opticFunctionalTest4.detail4.id").path
     * ("value").asText());
-    * assertEquals("Row 3 opticFunctionalTest4.master4.name value incorrect",
+    * assertEquals(
     * "Master 100",
     * jsonBindingsNodes.path(2).path("opticFunctionalTest4.master4.name"
     * ).path("value").asText());
@@ -320,10 +319,10 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
 
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
-    assertEquals("Unexpected result: " + jsonBindingsNodes.toPrettyString(), 1, jsonBindingsNodes.size());
-    assertEquals("Row 1 myCity.city value incorrect", "london", jsonBindingsNodes.path(0).path("myCity.city").path("value").asText());
-    assertEquals("Row 1 myCity.uri1 value incorrect", "/optic/lexicon/test/doc1.json", jsonBindingsNodes.path(0).path("myCity.uri1").path("value").asText());
-    assertEquals("Row 1 myTeam.uri2 value incorrect", "/optic/lexicon/test/city1.json", jsonBindingsNodes.path(0).path("myTeam.uri2").path("value").asText());
+    assertEquals(1, jsonBindingsNodes.size(), "Unexpected result: " + jsonBindingsNodes.toPrettyString());
+    assertEquals("london", jsonBindingsNodes.path(0).path("myCity.city").path("value").asText());
+    assertEquals("/optic/lexicon/test/doc1.json", jsonBindingsNodes.path(0).path("myCity.uri1").path("value").asText());
+    assertEquals("/optic/lexicon/test/city1.json", jsonBindingsNodes.path(0).path("myTeam.uri2").path("value").asText());
   }
 
   /*
@@ -368,8 +367,8 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
     System.out.println("Results are " + jsonBindingsNodes.toString());
 
-    assertEquals("Number of Elements after plan execution is incorrect: " + jsonBindingsNodes.toPrettyString(), 1, jsonBindingsNodes.size());
-    assertEquals("Row 1 myCity.city value incorrect", "new york", jsonBindingsNodes.path(0).path("myCity.city").path("value").asText());
+    assertEquals(1, jsonBindingsNodes.size(), "Number of Elements after plan execution is incorrect: " + jsonBindingsNodes.toPrettyString());
+    assertEquals("new york", jsonBindingsNodes.path(0).path("myCity.city").path("value").asText());
   }
 
   /*
@@ -406,12 +405,12 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
 
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
-    assertTrue("Number of Elements after plan execution is incorrect. Should be 3", 3 == jsonBindingsNodes.size());
-    assertEquals("Row 1 opticFunctionalTest4.detail4.id value incorrect", "400", jsonBindingsNodes.path(0).path("opticFunctionalTest4.detail4.id").path("value").asText());
-    assertEquals("Row 1 opticFunctionalTest4.master4.name value incorrect", "Master 200", jsonBindingsNodes.path(0).path("opticFunctionalTest4.master4.name").path("value")
+    assertTrue( 3 == jsonBindingsNodes.size());
+    assertEquals( "400", jsonBindingsNodes.path(0).path("opticFunctionalTest4.detail4.id").path("value").asText());
+    assertEquals( "Master 200", jsonBindingsNodes.path(0).path("opticFunctionalTest4.master4.name").path("value")
         .asText());
-    assertEquals("Row 3 opticFunctionalTest4.detail4.id value incorrect", "600", jsonBindingsNodes.path(2).path("opticFunctionalTest4.detail4.id").path("value").asText());
-    assertEquals("Row 3 opticFunctionalTest4.master4.name value incorrect", "Master 100", jsonBindingsNodes.path(2).path("opticFunctionalTest4.master4.name").path("value")
+    assertEquals( "600", jsonBindingsNodes.path(2).path("opticFunctionalTest4.detail4.id").path("value").asText());
+    assertEquals( "Master 100", jsonBindingsNodes.path(2).path("opticFunctionalTest4.master4.name").path("value")
         .asText());
   }
 
@@ -464,19 +463,19 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
     boolean isML11OrHigher = MarkLogicVersion.getMarkLogicVersion(client).getMajor() >= 11;
-    assertTrue("Number of Elements after plan execution is incorrect. Should be 3", 3 == jsonBindingsNodes.size());
-    assertEquals("Row 1 myCity.city value incorrect", "beijing", jsonBindingsNodes.path(0).path("myCity.city").path("value").asText());
-    assertEquals("Row 1 myCity.point value incorrect", toWKT(isML11OrHigher, "39.900002,116.4"), jsonBindingsNodes.path(0).path("myCity.point").path("value").asText());
-    assertEquals("Row 2 myCity.city value incorrect", "cape town", jsonBindingsNodes.path(1).path("myCity.city").path("value").asText());
-    assertEquals("Row 2 myCity.point value incorrect", toWKT(isML11OrHigher, "-33.91,18.42"), jsonBindingsNodes.path(1).path("myCity.point").path("value").asText());
-    assertEquals("Row 3 myCity.city value incorrect", "london", jsonBindingsNodes.path(2).path("myCity.city").path("value").asText());
-    assertEquals("Row 3 myCity.point value incorrect", toWKT(isML11OrHigher, "51.5,-0.12"), jsonBindingsNodes.path(2).path("myCity.point").path("value").asText());
+    assertTrue( 3 == jsonBindingsNodes.size());
+    assertEquals( "beijing", jsonBindingsNodes.path(0).path("myCity.city").path("value").asText());
+    assertEquals( toWKT(isML11OrHigher, "39.900002,116.4"), jsonBindingsNodes.path(0).path("myCity.point").path("value").asText());
+    assertEquals( "cape town", jsonBindingsNodes.path(1).path("myCity.city").path("value").asText());
+    assertEquals( toWKT(isML11OrHigher, "-33.91,18.42"), jsonBindingsNodes.path(1).path("myCity.point").path("value").asText());
+    assertEquals( "london", jsonBindingsNodes.path(2).path("myCity.city").path("value").asText());
+    assertEquals( toWKT(isML11OrHigher, "51.5,-0.12"), jsonBindingsNodes.path(2).path("myCity.point").path("value").asText());
 
     // Verify exported string with QNAME - with random checks
-    assertTrue("Function not available fromLexicons in exported plan", str.contains("\"fn\":\"from-lexicons\""));
-    assertTrue("Function not available fromLexicons in exported plan",
+    assertTrue( str.contains("\"fn\":\"from-lexicons\""));
+    assertTrue(
         str.contains("\"fn\":\"fragment-id-col\", \"args\":[{\"ns\":\"xs\", \"fn\":\"string\", \"args\":[\"fragId1\"]"));
-    assertTrue("Function not available fromLexicons in exported plan", str.contains("\"fn\":\"QName\", \"args\":[\"metro\"]"));
+	  assertTrue(str.contains("\"fn\":\"QName\", \"args\":[\"metro\"]"));
   }
 
   private String toWKT(boolean isML11OrHigher, String latLon) {
@@ -534,7 +533,7 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
         System.out.println("Exception message is " + strNull.toString());
      }
      // Should have NullPointerException.
-    assertTrue("Exceptions not found", strNull.toString().contains("null"));
+    assertTrue( strNull.toString().contains("null"));
   }
 
   /*
@@ -580,12 +579,12 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
 
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
-    assertTrue("Number of Elements after plan execution is incorrect. Should be 3", 3 == jsonBindingsNodes.size());
-    assertEquals("Row 1 opticFunctionalTest4.detail4.id value incorrect", "400", jsonBindingsNodes.path(0).path("opticFunctionalTest4.detail4.id").path("value").asText());
-    assertEquals("Row 1 opticFunctionalTest4.master4.name value incorrect", "Master 200", jsonBindingsNodes.path(0).path("opticFunctionalTest4.master4.name").path("value")
+    assertTrue( 3 == jsonBindingsNodes.size());
+    assertEquals( "400", jsonBindingsNodes.path(0).path("opticFunctionalTest4.detail4.id").path("value").asText());
+    assertEquals( "Master 200", jsonBindingsNodes.path(0).path("opticFunctionalTest4.master4.name").path("value")
         .asText());
-    assertEquals("Row 3 opticFunctionalTest4.detail4.id value incorrect", "600", jsonBindingsNodes.path(2).path("opticFunctionalTest4.detail4.id").path("value").asText());
-    assertEquals("Row 3 opticFunctionalTest4.master4.name value incorrect", "Master 100", jsonBindingsNodes.path(2).path("opticFunctionalTest4.master4.name").path("value")
+    assertEquals( "600", jsonBindingsNodes.path(2).path("opticFunctionalTest4.detail4.id").path("value").asText());
+    assertEquals( "Master 100", jsonBindingsNodes.path(2).path("opticFunctionalTest4.master4.name").path("value")
         .asText());
   }
 
@@ -627,7 +626,7 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
 
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
     // Make sure that nested and queries do not blow up the plan.
-    assertTrue("Number of Elements after plan execution is incorrect. Should be 6", 6 == jsonBindingsNodes.size());
+    assertTrue( 6 == jsonBindingsNodes.size());
   }
 
   /*
@@ -660,18 +659,18 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
     while (rowItr.hasNext()) {
       rCount++;
       record = rowItr.next();
-      assertTrue("Element 1 RowSet Iterator value incorrect", record.getInt("score") > 0);
-      assertEquals("Element 1 RowSet Iterator value incorrect", 100, record.getInt("masterId"));
-      assertEquals("Element 1 RowSet Iterator value incorrect", "white", record.getString("color"));
-      assertEquals("Element 1 RowSet Iterator value incorrect", "Detail 600", record.getString("name"));
-      assertEquals("Element 1 RowSet Iterator value incorrect", 600, record.getInt("id"));
-      assertEquals("Element 1 RowSet Iterator value incorrect", "/optic/view/test/masterDetail5.json", record.getString("uri"));
+      assertTrue( record.getInt("score") > 0);
+      assertEquals(100, record.getInt("masterId"));
+      assertEquals("white", record.getString("color"));
+      assertEquals("Detail 600", record.getString("name"));
+      assertEquals(600, record.getInt("id"));
+      assertEquals("/optic/view/test/masterDetail5.json", record.getString("uri"));
     }
     if (rCount == 0) {
       fail("Could not traverse Iterator<RowRecord> in testfromSearch method");
     }
     else {
-      assertEquals("Incorrect count of records", 1, rCount);
+      assertEquals(1, rCount);
     }
   }
 
@@ -731,13 +730,13 @@ public class TestOpticOnCtsQuery extends AbstractFunctionalTest {
       score = record.getContainer("score").asInt();
 
       System.out.println("Results " + record.toString());
-      assertTrue("Element score RowSet Iterator value incorrect", score > 0);
-      assertEquals("Element masterId of RowSet incorrect", masterid[rCount], record.getInt("opticFunctionalTest.detail.masterId"));
-      assertEquals("Element detailId of RowSet incorrect", detailid[rCount], record.getInt("opticFunctionalTest.detail.id"));
+      assertTrue( score > 0);
+      assertEquals(masterid[rCount], record.getInt("opticFunctionalTest.detail.masterId"));
+      assertEquals(detailid[rCount], record.getInt("opticFunctionalTest.detail.id"));
 
-      assertEquals("Element color of RowSet incorrect", color[rCount], record.getString("opticFunctionalTest.detail.color"));
-      assertEquals("Element name of RowSet incorrect", detname[rCount], record.getString("opticFunctionalTest.detail.name"));
-      assertEquals("Element color of RowSet incorrect", amount[rCount], record.getDouble("opticFunctionalTest.detail.amount"), 0.0);
+      assertEquals(color[rCount], record.getString("opticFunctionalTest.detail.color"));
+      assertEquals(detname[rCount], record.getString("opticFunctionalTest.detail.name"));
+      assertEquals(amount[rCount], record.getDouble("opticFunctionalTest.detail.amount"), 0.0);
 
       rCount++;
     }

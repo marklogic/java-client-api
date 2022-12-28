@@ -15,17 +15,6 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-
-import javax.xml.namespace.QName;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.w3c.dom.Document;
-
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
@@ -37,12 +26,19 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.ValuesDefinition;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+
+import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TransformTest {
   final static public String JS_NAME = "testsjs";
@@ -57,7 +53,7 @@ public class TransformTest {
   static private ExtensionLibrariesManager libMgr;
 
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass()
     throws IOException, FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
     Common.connect();
@@ -102,7 +98,7 @@ public class TransformTest {
     );
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass()
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
     confMgr.newQueryOptionsManager().deleteOptions(optionsName);
@@ -193,7 +189,7 @@ public class TransformTest {
     docMgr.write(docId, new StringHandle().with("<document/>"));
     Document result = docMgr.read(docId, new DOMHandle(), transform).get();
     String value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");
-    assertEquals("Document read transform failed","true",value);
+    assertEquals("true",value);
 
     //docMgr.delete(docId);
 
@@ -201,7 +197,7 @@ public class TransformTest {
     docMgr.write(docId, new StringHandle().with("<document/>"), transform);
     result = docMgr.read(docId, new DOMHandle()).get();
     value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");
-    assertEquals("Document write transform failed",value,"true");
+    assertEquals(value,"true");
 
     //docMgr.delete(docId);
 
@@ -213,7 +209,7 @@ public class TransformTest {
 
     result = queryMgr.search(stringQuery, new DOMHandle()).get();
     value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");
-    assertEquals("String query read transform failed","true",value);
+    assertEquals("true",value);
 
     ValuesDefinition vdef =
       queryMgr.newValuesDefinition("double", optionsName);
@@ -224,7 +220,7 @@ public class TransformTest {
     vdef.setQueryDefinition(stringQuery);
     result = queryMgr.values(vdef, new DOMHandle()).get();
     value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");
-    assertEquals("Values query read transform failed",value,"true");
+    assertEquals(value,"true");
 
 // TODO: QBE tests with XQuery and XSLT
   }

@@ -20,27 +20,27 @@ import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.PlanExprCol;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PlanExpressionTest {
     protected static RowManager rowMgr = null;
     protected static PlanBuilder p = null;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         Common.connect();
         rowMgr = Common.client.newRowManager();
         p      = rowMgr.newPlanBuilder();
     }
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         p      = null;
         rowMgr = null;
@@ -53,7 +53,7 @@ public class PlanExpressionTest {
 
        RowSet<RowRecord> rowSet = rowMgr.resultRows(plan);
        Iterator<RowRecord> rowItr = rowSet.iterator();
-       assertTrue("no row to test for "+testName, rowItr.hasNext());
+       assertTrue(rowItr.hasNext());
 
        return rowItr.next();
    }

@@ -18,7 +18,8 @@ package com.marklogic.client.fastfunctest;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.DOMHandle;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -28,7 +29,7 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.assertEquals;
+
 
 public class TestXMLMultiByte extends AbstractFunctionalTest {
 
@@ -55,16 +56,16 @@ public class TestXMLMultiByte extends AbstractFunctionalTest {
     // get xml document for expected result
     Document expectedDoc = expectedXMLDocument(filename);
 
-    assertEquals("Incorrect yen value", readDoc.getElementsByTagName("yen").item(0).getFirstChild().getNodeValue(),
+    assertEquals( readDoc.getElementsByTagName("yen").item(0).getFirstChild().getNodeValue(),
         expectedDoc.getElementsByTagName("yen").item(0).getFirstChild().getNodeValue());
 
-    assertEquals("Incorrect haba value", readDoc.getElementsByTagName("haba").item(0).getFirstChild().getNodeValue(),
+    assertEquals( readDoc.getElementsByTagName("haba").item(0).getFirstChild().getNodeValue(),
         expectedDoc.getElementsByTagName("haba").item(0).getFirstChild().getNodeValue());
 
-    assertEquals("Incorrect chinese value", readDoc.getElementsByTagName("chinese").item(0).getFirstChild().getNodeValue(),
+    assertEquals( readDoc.getElementsByTagName("chinese").item(0).getFirstChild().getNodeValue(),
         expectedDoc.getElementsByTagName("chinese").item(0).getFirstChild().getNodeValue());
 
-    assertEquals("Incorrect trademark value", readDoc.getElementsByTagName("trademark").item(0).getFirstChild().getNodeValue(),
+    assertEquals( readDoc.getElementsByTagName("trademark").item(0).getFirstChild().getNodeValue(),
         expectedDoc.getElementsByTagName("trademark").item(0).getFirstChild().getNodeValue());
 
     // update the doc
@@ -81,19 +82,19 @@ public class TestXMLMultiByte extends AbstractFunctionalTest {
     // get xml document for expected result
     Document expectedDocUpdate = expectedXMLDocument(updateFilename);
 
-    assertEquals("Incorrect yen value", readDocUpdate.getElementsByTagName("yen").item(0).getFirstChild().getNodeValue(),
+    assertEquals( readDocUpdate.getElementsByTagName("yen").item(0).getFirstChild().getNodeValue(),
         expectedDocUpdate.getElementsByTagName("yen").item(0).getFirstChild().getNodeValue());
 
-    assertEquals("Incorrect haba value", readDocUpdate.getElementsByTagName("haba").item(0).getFirstChild().getNodeValue(),
+    assertEquals( readDocUpdate.getElementsByTagName("haba").item(0).getFirstChild().getNodeValue(),
         expectedDocUpdate.getElementsByTagName("haba").item(0).getFirstChild().getNodeValue());
 
-    assertEquals("Incorrect chinese value", readDocUpdate.getElementsByTagName("chinese").item(0).getFirstChild().getNodeValue(),
+    assertEquals( readDocUpdate.getElementsByTagName("chinese").item(0).getFirstChild().getNodeValue(),
         expectedDocUpdate.getElementsByTagName("chinese").item(0).getFirstChild().getNodeValue());
 
-    assertEquals("Incorrect trademark value", readDocUpdate.getElementsByTagName("trademark").item(0).getFirstChild().getNodeValue(),
+    assertEquals( readDocUpdate.getElementsByTagName("trademark").item(0).getFirstChild().getNodeValue(),
         expectedDocUpdate.getElementsByTagName("trademark").item(0).getFirstChild().getNodeValue());
 
-    assertEquals("Incorrect kanji value", readDocUpdate.getElementsByTagName("kanji").item(0).getFirstChild().getNodeValue(),
+    assertEquals( readDocUpdate.getElementsByTagName("kanji").item(0).getFirstChild().getNodeValue(),
         expectedDocUpdate.getElementsByTagName("kanji").item(0).getFirstChild().getNodeValue());
 
     // delete the document

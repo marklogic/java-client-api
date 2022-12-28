@@ -26,29 +26,30 @@ import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryDefinition;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.*;
+
 
 public class TestPOJOQueryBuilderValueQuery extends AbstractFunctionalTest {
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     setDatabaseProperties(DB_NAME, "trailing-wildcard-searches", false);
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     setDatabaseProperties(DB_NAME, "trailing-wildcard-searches", true);
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     client = getDatabaseClient("rest-admin", "x", getConnType());
 
@@ -100,9 +101,9 @@ public class TestPOJOQueryBuilderValueQuery extends AbstractFunctionalTest {
   }
 
   public void validateArtifact(Artifact art) {
-    assertNotNull("Artifact object should never be Null", art);
-    assertNotNull("Id should never be Null", art.id);
-    assertTrue("Inventry is always greater than 1000", art.getInventory() > 1000);
+    assertNotNull( art);
+    assertNotNull( art.id);
+    assertTrue( art.getInventory() > 1000);
   }
 
   public void loadSimplePojos(PojoRepository products) {
@@ -132,7 +133,7 @@ public class TestPOJOQueryBuilderValueQuery extends AbstractFunctionalTest {
     JacksonHandle jh = new JacksonHandle();
     products.setPageLength(5);
     p = products.search(qd, 1, jh);
-    assertEquals("total no of pages", 5, p.getTotalPages());
+    assertEquals( 5, p.getTotalPages());
     System.out.println(jh.get().toString());
     long pageNo = 1, count = 0;
     do {
@@ -141,16 +142,16 @@ public class TestPOJOQueryBuilderValueQuery extends AbstractFunctionalTest {
       while (p.hasNext()) {
         Artifact a = p.next();
         validateArtifact(a);
-        assertTrue("Verifying document id is part of the search ids", a.getId() % 5 == 0);
+        assertTrue( a.getId() % 5 == 0);
         count++;
       }
-      assertEquals("Page size", count, p.size());
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
     } while (!p.isLastPage() && pageNo < p.getTotalSize());
-    assertEquals("page number after the loop", 5, p.getPageNumber());
-    assertEquals("total no of pages", 5, p.getTotalPages());
-    assertEquals("page length from search handle", 5, jh.get().path("page-length").asInt());
-    assertEquals("Total results from search handle", 22, jh.get().path("total").asInt());
+    assertEquals( 5, p.getPageNumber());
+    assertEquals( 5, p.getTotalPages());
+    assertEquals( 5, jh.get().path("page-length").asInt());
+    assertEquals( 22, jh.get().path("total").asInt());
   }
 
   // Below scenario is to test value query with wild cards in strings
@@ -175,16 +176,16 @@ public class TestPOJOQueryBuilderValueQuery extends AbstractFunctionalTest {
       while (p.hasNext()) {
         Artifact a = p.next();
         validateArtifact(a);
-        assertTrue("Verifying document id is part of the search ids", a.getId() % 5 == 0);
-        assertTrue("Verifying document name has Acme/Wigets special",
+        assertTrue( a.getId() % 5 == 0);
+        assertTrue(
             a.getManufacturer().getName().contains("Acme special") || a.getManufacturer().getName().contains("Widgets special"));
         count++;
         System.out.println(a.getId());
       }
-      assertEquals("Page size", count, p.size());
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
     } while (!p.isLastPage() && pageNo <= p.getTotalSize());
-    assertEquals("page length from search handle", 5, jh.get().path("results").size());
+    assertEquals( 5, jh.get().path("results").size());
   }
 
   // Below scenario is verifying value query from PojoBuilder that matches to no
@@ -205,7 +206,7 @@ public class TestPOJOQueryBuilderValueQuery extends AbstractFunctionalTest {
     p = products.search(qd, 1, jh);
     setupServerRequestLogging(client, false);
     System.out.println(jh.get().toString());
-    assertEquals("total no of pages", 0, p.getTotalPages());
+    assertEquals( 0, p.getTotalPages());
 
     long pageNo = 1, count = 0;
     do {
@@ -214,16 +215,16 @@ public class TestPOJOQueryBuilderValueQuery extends AbstractFunctionalTest {
       while (p.hasNext()) {
         Artifact a = p.next();
         validateArtifact(a);
-        assertTrue("Verifying document id is part of the search ids", a.getId() % 5 == 0);
+        assertTrue( a.getId() % 5 == 0);
         count++;
         System.out.println(a.getId());
       }
-      assertEquals("Page size", count, p.size());
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
     } while (!p.isLastPage() && pageNo <= p.getTotalSize());
-    assertEquals("page number after the loop", 1, p.getPageNumber());
-    assertEquals("total no of pages", 0, p.getTotalPages());
-    assertEquals("page length from search handle", 5, jh.get().path("page-length").asInt());
+    assertEquals( 1, p.getPageNumber());
+    assertEquals( 0, p.getTotalPages());
+    assertEquals( 5, jh.get().path("page-length").asInt());
   }
 
   // Below scenario is to test word query without options
@@ -239,7 +240,7 @@ public class TestPOJOQueryBuilderValueQuery extends AbstractFunctionalTest {
     products.setPageLength(5);
     p = products.search(qd, 1, jh);
     System.out.println(jh.get().toString());
-    assertEquals("total no of pages", 5, p.getTotalPages());
+    assertEquals( 5, p.getTotalPages());
 
     long pageNo = 1, count = 0;
     do {
@@ -248,18 +249,18 @@ public class TestPOJOQueryBuilderValueQuery extends AbstractFunctionalTest {
       while (p.hasNext()) {
         Artifact a = p.next();
         validateArtifact(a);
-        assertTrue("Verifying document id is part of the search ids", a.getId() % 5 == 0);
-        assertTrue("Verifying document has word counter", a.getManufacturer().getName().contains("counter") || a.getManufacturer().getName().contains("special"));
+        assertTrue( a.getId() % 5 == 0);
+        assertTrue( a.getManufacturer().getName().contains("counter") || a.getManufacturer().getName().contains("special"));
         count++;
         System.out.println(a.getId());
       }
-      assertEquals("Page size", count, p.size());
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
     } while (!p.isLastPage() && pageNo <= p.getTotalSize());
-    assertEquals("page number after the loop", 5, p.getPageNumber());
-    assertEquals("total no of pages", 5, p.getTotalPages());
-    assertEquals("page length from search handle", 5, jh.get().path("page-length").asInt());
-    assertEquals("Total results from search handle", 22, jh.get().path("total").asInt());
+    assertEquals( 5, p.getPageNumber());
+    assertEquals( 5, p.getTotalPages());
+    assertEquals( 5, jh.get().path("page-length").asInt());
+    assertEquals( 22, jh.get().path("total").asInt());
   }
 
   // Below scenario is verifying word query from PojoBuilder with options
@@ -287,16 +288,16 @@ public class TestPOJOQueryBuilderValueQuery extends AbstractFunctionalTest {
       while (p.hasNext()) {
         Artifact a = p.next();
         validateArtifact(a);
-        assertTrue("Verifying document id is part of the search ids", a.getId() % 5 == 0);
-        assertTrue("Verifying document has word counter", a.getManufacturer().getName().contains("counter"));
+        assertTrue( a.getId() % 5 == 0);
+        assertTrue( a.getManufacturer().getName().contains("counter"));
         count++;
       }
       System.out.println(jh.get().toString());
-      assertEquals("Page size", count, p.size());
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
     } while (!p.isLastPage() && pageNo <= p.getTotalSize());
     System.out.println(p.getPageNumber());
-    assertEquals("page length from search handle", 5, jh.get().path("page-length").asInt());
+    assertEquals( 5, jh.get().path("page-length").asInt());
   }
 
   /*
@@ -315,61 +316,61 @@ public class TestPOJOQueryBuilderValueQuery extends AbstractFunctionalTest {
     PojoQueryDefinition qd1 = qb.value("name", searchOptions, 100.0, searchNames);
     long cnt1 = products.count(qd1);
     System.out.println("Count returned from PojoRepository is " + cnt1);
-    assertEquals("Number of results returned incorrect in response", 110, cnt1);
+    assertEquals( 110, cnt1);
     JacksonHandle jh = new JacksonHandle();
     products.setPageLength(5);
     p = products.search(qd1, 1, jh);
 
     JsonNode nodePos = jh.get();
     // Return 1 node - constraint2.xml
-    assertEquals("Number of results returned incorrect in response", "110", nodePos.path("total").asText());
+    assertEquals( "110", nodePos.path("total").asText());
 
     PojoQueryDefinition qd2 = qb.value("name", searchOptions, 100.0, searchNames).withCriteria("Cogs 101");
     long cnt2 = products.count(qd2);
     System.out.println("Count returned from PojoRepository is " + cnt2);
-    assertEquals("Number of results returned incorrect in response", 1, cnt2);
+    assertEquals( 1, cnt2);
 
     String[] searchNames3 = { "Cogs 101", "Cogs 110", "Cogs 3" };
     PojoQueryDefinition qd3 = qb.value("name", searchOptions, 100.0, searchNames3);
     long cnt3 = products.count(qd3);
     System.out.println("Count returned from PojoRepository is " + cnt3);
-    assertEquals("Number of results returned incorrect in response", 2, cnt3);
+    assertEquals( 2, cnt3);
 
     String[] searchNames4 = { "Cogs 3" };
     PojoQueryDefinition qd4 = qb.value("name", searchOptions, 100.0, searchNames4);
     long cnt4 = products.count(qd4);
     System.out.println("Count returned from PojoRepository is " + cnt4);
-    assertEquals("Number of results returned incorrect in response", 1, cnt4);
+    assertEquals( 1, cnt4);
 
     String[] searchNames5 = { "12345" };
     PojoQueryDefinition qd5 = qb.value("name", searchOptions, 100.0, searchNames5);
     long cnt5 = products.count(qd5);
     System.out.println("Count returned from PojoRepository is " + cnt5);
-    assertEquals("Number of results returned incorrect in response", 0, cnt5);
+    assertEquals( 0, cnt5);
 
     String[] searchNames6 = { "*" };
     PojoQueryDefinition qd6 = qb.value("name", searchOptions, 100.0, searchNames6);
     long cnt6 = products.count(qd6);
     System.out.println("Count returned from PojoRepository is " + cnt6);
-    assertEquals("Number of results returned incorrect in response", 110, cnt6);
+    assertEquals( 110, cnt6);
 
     String[] searchNames7 = { " " };
     PojoQueryDefinition qd7 = qb.value("name", searchOptions, 100.0, searchNames7);
     long cnt7 = products.count(qd7);
     System.out.println("Count returned from PojoRepository is " + cnt7);
-    assertEquals("Number of results returned incorrect in response", 0, cnt7);
+    assertEquals( 0, cnt7);
 
     String[] searchNames8 = { "" };
     PojoQueryDefinition qd8 = qb.value("name", searchOptions, 100.0, searchNames8);
     long cnt8 = products.count(qd8);
     System.out.println("Count returned from PojoRepository is " + cnt8);
-    assertEquals("Number of results returned incorrect in response", 0, cnt8);
+    assertEquals( 0, cnt8);
 
     String[] searchNames9 = { " ", "Cogs 3" };
     PojoQueryDefinition qd9 = qb.value("name", searchOptions, 100.0, searchNames9);
     long cnt9 = products.count(qd9);
     System.out.println("Count returned from PojoRepository is " + cnt9);
-    assertEquals("Number of results returned incorrect in response", 1, cnt9);
+    assertEquals( 1, cnt9);
   }
 
   /*
@@ -394,8 +395,8 @@ public class TestPOJOQueryBuilderValueQuery extends AbstractFunctionalTest {
     JsonNode nodePos = jh.get();
     System.out.println(nodePos);
     // Return 1 node - constraint2.xml
-    assertEquals("Number of results returned incorrect in response", "1", nodePos.path("total").asText());
-    assertEquals("Result returned incorrect in response", "com.marklogic.client.functionaltest.Artifact/101.json", nodePos.path("results").get(0).path("uri").asText());
+    assertEquals( "1", nodePos.path("total").asText());
+    assertEquals( "com.marklogic.client.functionaltest.Artifact/101.json", nodePos.path("results").get(0).path("uri").asText());
   }
 
   @Test
@@ -418,7 +419,7 @@ public class TestPOJOQueryBuilderValueQuery extends AbstractFunctionalTest {
 
     JsonNode nodePos = jh.get();
     // Return 1 node - constraint2.xml
-    assertEquals("Number of results returned incorrect in response", "1", nodePos.path("total").asText());
-    assertEquals("Result returned incorrect in response", "com.marklogic.client.functionaltest.Artifact/101.json", nodePos.path("results").get(0).path("uri").asText());
+    assertEquals( "1", nodePos.path("total").asText());
+    assertEquals( "com.marklogic.client.functionaltest.Artifact/101.json", nodePos.path("results").get(0).path("uri").asText());
   }
 }

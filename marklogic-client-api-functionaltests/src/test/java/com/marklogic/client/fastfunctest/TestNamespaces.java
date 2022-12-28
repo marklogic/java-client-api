@@ -25,7 +25,7 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.namespace.NamespaceContext;
 import java.io.IOException;
@@ -33,8 +33,8 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestNamespaces extends AbstractFunctionalTest {
 
@@ -61,26 +61,26 @@ public class TestNamespaces extends AbstractFunctionalTest {
 
     NamespaceContext nsContext = nsMgr.readAll();
 
-    assertEquals("Prefix is not equal", "foo", nsContext.getPrefix("http://example.com"));
-    assertEquals("Namespace URI is not equal", "http://example.com", nsContext.getNamespaceURI("foo"));
+    assertEquals( "foo", nsContext.getPrefix("http://example.com"));
+    assertEquals( "http://example.com", nsContext.getNamespaceURI("foo"));
 
     // update prefix
     nsMgr.updatePrefix("foo", "http://exampleupdated.com");
     nsContext = nsMgr.readAll();
-    assertEquals("Updated Namespace URI is not equal", "http://exampleupdated.com", nsContext.getNamespaceURI("foo"));
+    assertEquals( "http://exampleupdated.com", nsContext.getNamespaceURI("foo"));
 
     // stop logging
     nsMgr.stopLogging();
 
     String expectedLogContentMax = "9223372036854775807";
-    assertEquals("Content log is not equal", expectedLogContentMax, Long.toString(logger.getContentMax()));
+    assertEquals( expectedLogContentMax, Long.toString(logger.getContentMax()));
 
     // delete prefix
     nsMgr.deletePrefix("foo");
-    assertTrue("Namespace URI is not deleted", nsMgr.readPrefix("foo") == null);
+    assertTrue( nsMgr.readPrefix("foo") == null);
 
     nsMgr.deleteAll();
-    assertTrue("Namespace URI is not deleted", nsMgr.readPrefix("foo") == null);
+    assertTrue( nsMgr.readPrefix("foo") == null);
 
     // release client
     client.release();
@@ -107,21 +107,21 @@ public class TestNamespaces extends AbstractFunctionalTest {
     // set default namespace
     nsMgr.updatePrefix("defaultns", "http://baz.com");
     String defaultNsUri = nsMgr.readPrefix("defaultns");
-    assertEquals("Default NS is wrong", "http://baz.com", defaultNsUri);
+    assertEquals( "http://baz.com", defaultNsUri);
 
     // delete namespace
     nsMgr.deletePrefix("baz");
     nsMgr.readAll();
 
     // get default namespace
-    assertEquals("Default NS is wrong", "http://baz.com", nsMgr.readPrefix("defaultns"));
+    assertEquals( "http://baz.com", nsMgr.readPrefix("defaultns"));
 
     nsMgr.deleteAll();
     nsMgr.readAll();
-    assertTrue("Namespace URI is not deleted", nsMgr.readPrefix("ns1") == null);
-    assertTrue("Namespace URI is not deleted", nsMgr.readPrefix("ns2") == null);
-    assertTrue("Namespace URI is not deleted", nsMgr.readPrefix("ns3") == null);
-    assertTrue("Namespace URI is not deleted", nsMgr.readPrefix("defaultns") == null);
+    assertTrue( nsMgr.readPrefix("ns1") == null);
+    assertTrue( nsMgr.readPrefix("ns2") == null);
+    assertTrue( nsMgr.readPrefix("ns3") == null);
+    assertTrue( nsMgr.readPrefix("defaultns") == null);
 
     // release client
     client.release();
@@ -145,7 +145,7 @@ public class TestNamespaces extends AbstractFunctionalTest {
 
     // get namespaces
     Collection<String> nameSpaceCollection = patchBldr.getNamespaces().getAllPrefixes();
-    assertEquals("getNamespace failed ", false, nameSpaceCollection.isEmpty());
+    assertEquals(false, nameSpaceCollection.isEmpty());
     for (String prefix : nameSpaceCollection) {
       System.out.println("Prefixes : " + prefix);
       System.out.println(patchBldr.getNamespaces().getNamespaceURI(prefix));
@@ -158,7 +158,7 @@ public class TestNamespaces extends AbstractFunctionalTest {
         + "\n Next xs : " + patchBldr.getNamespaces().getNamespaceURI("xs") + "\n Next xsi : " + patchBldr.getNamespaces().getNamespaceURI("xsi") + "\n Next rapi : "
         + patchBldr.getNamespaces().getNamespaceURI("rapi") + "\n Next new : " + patchBldr.getNamespaces().getNamespaceURI("new"));
     String content = docMgr.read(docId, new StringHandle()).get();
-    assertTrue("setNamespace didn't worked", patchBldr.getNamespaces().getNamespaceURI("new").contains("www.marklogic.com"));
+    assertTrue(patchBldr.getNamespaces().getNamespaceURI("new").contains("www.marklogic.com"));
     System.out.println(content);
 
     // release client

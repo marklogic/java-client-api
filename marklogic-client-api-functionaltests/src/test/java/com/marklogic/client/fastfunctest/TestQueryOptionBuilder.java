@@ -27,10 +27,11 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.*;
 import com.marklogic.client.query.*;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -46,24 +47,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+
 
 public class TestQueryOptionBuilder extends AbstractFunctionalTest {
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception {
     createUserRolesWithPrevilages("evalSearchRole", "eval-search-string", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("evalSearchUser", "evalSearch", "tde-admin", "tde-view", "evalSearchRole", "rest-admin", "rest-writer",
             "rest-reader", "rest-extension-user", "manage-user");
   }
 
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception {
     deleteDocuments(connectAsAdmin());
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws Exception {
     deleteUserRole("evalSearchRole");
     deleteRESTUser("evalSearchUser");
@@ -564,38 +565,38 @@ public class TestQueryOptionBuilder extends AbstractFunctionalTest {
    * TransformerException, ParserConfigurationException, SAXException,
    * IOException {
    * System.out.println("testExtractMetadataWithStructuredSearchAndConstraint");
-   * 
+   *
    * String filename = "xml-original.xml"; String uri = "/extract-metadata/";
-   * 
+   *
    * DatabaseClient client = getDatabaseClient("rest-admin", "x",
    * getConnType());
-   * 
+   *
    * ServerConfigurationManager scMgr = client.newServerConfigManager();
    * scMgr.setServerRequestLogging(true); scMgr.writeConfiguration();
-   * 
+   *
    * // get the original metadata Document docMetadata =
    * getXMLMetadata("metadata-original.xml");
-   * 
+   *
    * // create doc manager XMLDocumentManager docMgr =
    * client.newXMLDocumentManager();
-   * 
+   *
    * // write the doc writeDocumentUsingInputStreamHandle(client, filename, uri,
    * "XML");
-   * 
+   *
    * // create handle to write metadata DOMHandle writeMetadataHandle = new
    * DOMHandle(); writeMetadataHandle.set(docMetadata);
-   * 
+   *
    * // create doc id String docId = uri + filename;
-   * 
+   *
    * // write metadata docMgr.writeMetadata(docId, writeMetadataHandle);
-   * 
+   *
    * // create query options manager QueryOptionsManager optionsMgr =
    * client.newServerConfigManager().newQueryOptionsManager();
-   * 
+   *
    * // create query options String opts1 = new QueryOptionsBuilder();
-   * 
+   *
    * // create query options handle StringHandle handle = new StringHandle();
-   * 
+   *
    * // build query options
    * handle.withConfiguration(builder.configure().fragmentScope
    * (FragmentScope.PROPERTIES));
@@ -603,13 +604,13 @@ public class TestQueryOptionBuilder extends AbstractFunctionalTest {
    * QName("", "Author")), builder.constraintValue("appname")));
    * handle.withConstraints(builder.constraint("appname",
    * builder.word(builder.elementTermIndex(new QName("AppName")))));
-   * 
+   *
    * // write query options
    * optionsMgr.writeOptions("ExtractMetadataWithStructuredSearchAndConstraint",
    * handle);
-   * 
+   *
    * // create query manager QueryManager queryMgr = client.newQueryManager();
-   * 
+   *
    * // create query def StructuredQueryBuilder qb =
    * queryMgr.newStructuredQueryBuilder
    * ("ExtractMetadataWithStructuredSearchAndConstraint");
@@ -617,19 +618,19 @@ public class TestQueryOptionBuilder extends AbstractFunctionalTest {
    * StructuredQueryDefinition queryWord = qb.wordConstraint("appname",
    * "Microsoft"); StructuredQueryDefinition queryFinal = qb.and(queryTerm,
    * queryWord);
-   * 
+   *
    * // create handle DOMHandle resultsHandle = new DOMHandle();
    * queryMgr.search(queryFinal, resultsHandle);
-   * 
+   *
    * // get the result Document resultDoc = resultsHandle.get();
    * System.out.println(convertXMLDocumentToString(resultDoc));
-   * 
+   *
    * //assertXpathEvaluatesTo("MarkLogic",
    * "string(//*[local-name()='result']//*[local-name()='metadata']/*[local-name()='Author'])"
    * , resultDoc); //assertXpathEvaluatesTo("Microsoft Office Word",
    * "string(//*[local-name()='result']//*[local-name()='metadata']/*[local-name()='AppName'])"
    * , resultDoc);
-   * 
+   *
    * // release client client.release(); }
    */
 
@@ -1552,9 +1553,9 @@ public class TestQueryOptionBuilder extends AbstractFunctionalTest {
       JsonNode result1 = results.get(0).get("uri");
       JsonNode result2 = results.get(1).get("uri");
       System.out.println("Testing eval-string privilege without searchable-expression");
-      assertTrue("Row 1 uri value incorrect",  result1.asText().contains("/search-expr-func/constraint1.xml")
+      assertTrue(  result1.asText().contains("/search-expr-func/constraint1.xml")
               || result1.asText().contains("/search-expr-func/constraint3.xml"));
-      assertTrue("Row 1 uri value incorrect",  result2.asText().contains("/search-expr-func/constraint1.xml")
+      assertTrue(  result2.asText().contains("/search-expr-func/constraint1.xml")
               || result2.asText().contains("/search-expr-func/constraint3.xml"));
     }
     catch(Exception ex) {
@@ -1845,7 +1846,7 @@ public class TestQueryOptionBuilder extends AbstractFunctionalTest {
     // System.out.println(resultDoc);
     System.out.println(jn.get("results").findValue("uri").textValue());
 
-    assertTrue("Result is wrong", jn.get("results").findValue("uri").textValue().contains("/trans-res-with-snip-func/constraint3.xml"));
+    assertTrue( jn.get("results").findValue("uri").textValue().contains("/trans-res-with-snip-func/constraint3.xml"));
 
     // release client
     client.release();
@@ -1963,7 +1964,7 @@ public class TestQueryOptionBuilder extends AbstractFunctionalTest {
     String outputPOJO = readHandle.toString();
 
     boolean isQueryOptionsSame = output.equals(outputPOJO);
-    assertTrue("Query options is not the same", isQueryOptionsSame);
+    assertTrue( isQueryOptionsSame);
 
     QueryManager queryMgr = client.newQueryManager();
 
@@ -2034,7 +2035,7 @@ public class TestQueryOptionBuilder extends AbstractFunctionalTest {
     System.out.println(outputPOJO);
 
     boolean isQueryOptionsSame = output.equals(outputPOJO);
-    assertTrue("Query options is not the same", isQueryOptionsSame);
+    assertTrue( isQueryOptionsSame);
 
     QueryManager queryMgr = client.newQueryManager();
 
@@ -2105,7 +2106,7 @@ public class TestQueryOptionBuilder extends AbstractFunctionalTest {
     System.out.println(outputPOJO);
 
     boolean isQueryOptionsSame = output.equals(outputPOJO);
-    assertTrue("Query options is not the same", isQueryOptionsSame);
+    assertTrue( isQueryOptionsSame);
 
     QueryManager queryMgr = client.newQueryManager();
 

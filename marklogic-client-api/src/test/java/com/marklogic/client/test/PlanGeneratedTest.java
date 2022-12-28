@@ -16,10 +16,9 @@
 
 package com.marklogic.client.test;
 
-import org.junit.Test;
-
 import com.marklogic.client.io.Format;
 import com.marklogic.client.type.ServerExpression;
+import org.junit.jupiter.api.Test;
 
 // IMPORTANT: Do not edit. This file is generated.
 // Exception - some of these tests cannot pass on ML <= 10. Those have been modified to not run unless ML is >= 11.

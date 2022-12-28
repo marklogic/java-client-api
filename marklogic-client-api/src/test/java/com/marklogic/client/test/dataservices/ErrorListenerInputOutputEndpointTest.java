@@ -22,17 +22,16 @@ import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.impl.NodeConverter;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ErrorListenerInputOutputEndpointTest {
     static ObjectNode apiObj;
@@ -41,7 +40,7 @@ public class ErrorListenerInputOutputEndpointTest {
     static String apiPath;
     static JSONDocumentManager docMgr;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         docMgr = IOTestUtil.db.newJSONDocumentManager();
         apiObj = IOTestUtil.readApi(apiName);
@@ -107,9 +106,9 @@ public class ErrorListenerInputOutputEndpointTest {
         input.stream().forEach(value -> bulkCaller.accept(IOTestUtil.asInputStream(value)));
         bulkCaller.awaitCompletion();
 
-        assertEquals("mismatch between input and output size"+input+":"+output, input.size(), output.size());
-        assertEquals("mismatch between input and output elements", input, output);
-        assertTrue("wrong output size", output.size() == 16);
+        assertEquals(input.size(), output.size());
+        assertEquals( input, output);
+        assertTrue( output.size() == 16);
     }
 
     @Test
@@ -163,7 +162,7 @@ public class ErrorListenerInputOutputEndpointTest {
 
         input.stream().forEach(value -> bulkCaller.accept(IOTestUtil.asInputStream(value)));
         bulkCaller.awaitCompletion();
-        assertTrue("wrong output size, output = " + output, output.size() < 16 && output.size() >= 8);
+        assertTrue(output.size() < 16 && output.size() >= 8, "wrong output size, output = " + output);
     }
 
     @Test
@@ -217,10 +216,10 @@ public class ErrorListenerInputOutputEndpointTest {
 
         input.stream().forEach(value -> bulkCaller.accept(IOTestUtil.asInputStream(value)));
         bulkCaller.awaitCompletion();
-        assertTrue("wrong output size, output = " + output, output.size() < 16 && output.size() >= 0);
+        assertTrue(output.size() < 16 && output.size() >= 0, "wrong output size, output = " + output);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         IOTestUtil.modMgr.delete(scriptPath, apiPath);
     }

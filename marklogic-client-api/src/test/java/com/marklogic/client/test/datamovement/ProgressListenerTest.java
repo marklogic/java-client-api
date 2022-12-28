@@ -17,18 +17,19 @@ package com.marklogic.client.test.datamovement;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.*;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class ProgressListenerTest extends Assert {
+import static org.junit.jupiter.api.Assertions.*;
+
+public class ProgressListenerTest {
 
 	private ProgressListener listener;
-	private TestConsumer consumer = new TestConsumer();
+	private final TestConsumer consumer = new TestConsumer();
 
 	@Test
 	public void batchesInOrder() throws Exception {
@@ -79,8 +80,8 @@ public class ProgressListenerTest extends Assert {
 		listener.processEvent(new FakeQueryBatch(2));
 
 		assertTrue(consumer.texts.get(0).startsWith("Progress: 4 of 4"));
-		assertEquals("The second batch is ignored because its jobResultsSoFar value is less than what the listener has seen so far",
-			1, consumer.texts.size());
+		assertEquals(1, consumer.texts.size(),
+			"The second batch is ignored because its jobResultsSoFar value is less than what the listener has seen so far");
 	}
 
 	@Test
@@ -103,8 +104,8 @@ public class ProgressListenerTest extends Assert {
 		listener.processEvent(new FakeQueryBatch(2));
 		listener.processEvent(new FakeQueryBatch(4));
 
-		assertEquals("Verifying that the TestConsumer still got updates, even though the first consumer kept throwing exceptions",
-			2, consumer.texts.size());
+		assertEquals(2, consumer.texts.size(),
+			"Verifying that the TestConsumer still got updates, even though the first consumer kept throwing exceptions");
 	}
 
 	@Test
@@ -115,10 +116,10 @@ public class ProgressListenerTest extends Assert {
 		listener.processEvent(new FakeQueryBatch(4));
 
 		assertEquals(2, consumer.texts.size());
-		assertTrue("On the first batch, the listener doesn't yet know that the total results is too low",
-			consumer.texts.get(0).startsWith("Progress: 2 of 3; time "));
-		assertTrue("But on the second batch, the listener should realize that the initial total results value was incorrect and adjust it",
-			consumer.texts.get(1).startsWith("Progress: 4 of 4; time "));
+		assertTrue(consumer.texts.get(0).startsWith("Progress: 2 of 3; time "),
+			"On the first batch, the listener doesn't yet know that the total results is too low");
+		assertTrue(consumer.texts.get(1).startsWith("Progress: 4 of 4; time "),
+			"But on the second batch, the listener should realize that the initial total results value was incorrect and adjust it");
 	}
 }
 
@@ -144,7 +145,7 @@ class ExceptionThrowingConsumer implements Consumer<ProgressListener.ProgressUpd
 
 class FakeQueryBatch implements QueryBatch {
 
-	private long jobResultsSoFar;
+	private final long jobResultsSoFar;
 
 	public FakeQueryBatch(long jobResultsSoFar) {
 		this.jobResultsSoFar = jobResultsSoFar;

@@ -27,9 +27,10 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -41,18 +42,18 @@ import java.security.NoSuchAlgorithmException;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathNotExists;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+
 
 public class TestAppServerConstraints extends AbstractFunctionalTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Exception {
         System.out.println("In setup");
         client = getDatabaseClient("rest-admin", "x", getConnType());
     }
 
-    @After
+    @AfterEach
     public void testCleanUp() throws Exception {
         deleteDocuments(connectAsAdmin());
     }
@@ -456,7 +457,7 @@ public class TestAppServerConstraints extends AbstractFunctionalTest {
             e.toString();
         }
 
-        assertTrue("Expected Warning message is not thrown",
+        assertTrue(
                 result.contains("<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>"));
     }
 
@@ -645,7 +646,7 @@ public class TestAppServerConstraints extends AbstractFunctionalTest {
             e.toString();
         }
 
-        assertTrue("Expected Warning message is not thrown",
+        assertTrue(
                 result.contains("<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>"));
     }
 
@@ -843,7 +844,7 @@ public class TestAppServerConstraints extends AbstractFunctionalTest {
             e.toString();
         }
 
-        assertTrue("Expected Warning message is not thrown",
+        assertTrue(
                 result.contains("<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>"));
     }
 
@@ -1039,7 +1040,7 @@ public class TestAppServerConstraints extends AbstractFunctionalTest {
             e.toString();
         }
 
-        assertTrue("Expected Warning message is not thrown",
+        assertTrue(
                 result.contains("<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '-12,A'.]</search:warning>"));
     }
 
@@ -1213,9 +1214,9 @@ public class TestAppServerConstraints extends AbstractFunctionalTest {
      * "com.marklogic.client.FailedRequestException: Local message: search failed: Internal Server ErrorServer Message: XDMP-ELEMRIDXNOTFOUND"
      * ;
      *
-     * //assertEquals("Wrong exception", expectedException, exception); boolean
+     * //assertEquals( expectedException, exception); boolean
      * exceptionIsThrown = exception.contains(expectedException);
-     * assertTrue("Exception is not thrown", exceptionIsThrown);
+     * assertTrue( exceptionIsThrown);
      *
      * // release client
      * //client.release(); }
@@ -1256,9 +1257,9 @@ public class TestAppServerConstraints extends AbstractFunctionalTest {
 
         String expectedException = "com.marklogic.client.FailedRequestException: Local message: search failed: Bad Request. Server Message: XDMP-ELEMRIDXNOTFOUND";
 
-        // assertEquals("Wrong exception", expectedException, exception);
+        // assertEquals( expectedException, exception);
         boolean exceptionIsThrown = exception.contains(expectedException);
-        assertTrue("Exception is not thrown", exceptionIsThrown);
+        assertTrue( exceptionIsThrown);
     }
     // End of TestAppServicesRangeConstraint
 
@@ -1734,7 +1735,7 @@ public class TestAppServerConstraints extends AbstractFunctionalTest {
         String expectedSearchResult = "|Matched 1 locations in /range-constraint/bbq4.xml|Matched 1 locations in /range-constraint/bbq3.xml";
         System.out.println(searchResult);
 
-        assertEquals("Search result difference", expectedSearchResult, searchResult);
+        assertEquals( expectedSearchResult, searchResult);
     }
     // End of TestRangeConstraint
 
@@ -1761,7 +1762,7 @@ public class TestAppServerConstraints extends AbstractFunctionalTest {
         // search result
         String result = "Matched " + resultsHandle.getTotalResults();
         String expectedResult = "Matched 5";
-        assertEquals("Document match difference", expectedResult, result);
+        assertEquals( expectedResult, result);
     }
     // End of TestRangeConstraintRelativeBucket
 
@@ -1788,7 +1789,7 @@ public class TestAppServerConstraints extends AbstractFunctionalTest {
         String searchResult = returnSearchResult(resultsHandle);
 
         String expectedSearchResult = "|Matched 1 locations in /range-constraint-abs-bucket/bbq1.xml|Matched 1 locations in /range-constraint-abs-bucket/bbq3.xml|Matched 1 locations in /range-constraint-abs-bucket/bbq5.xml";
-        assertEquals("Search result difference", expectedSearchResult, searchResult);
+        assertEquals( expectedSearchResult, searchResult);
     }
     // End of TestRangeConstraintAbsoluteBucket
 

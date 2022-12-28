@@ -32,10 +32,10 @@ import com.marklogic.client.row.RowRecord.ColumnKind;
 import com.marklogic.client.test.Common;
 import com.marklogic.client.type.*;
 import com.marklogic.client.util.EditableNamespaceContext;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -54,7 +54,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RowManagerTest {
   private static String[]             uris           = null;
@@ -67,7 +67,7 @@ public class RowManagerTest {
   private static RowSetPart[]         datatypeStyles = null;
 
   @SuppressWarnings("unchecked")
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() throws IOException, InterruptedException {
     uris = new String[]{"/rowtest/docJoin1.json", "/rowtest/docJoin1.xml", "/rowtest/docJoin1.txt", "/rowtest/embedded.xml"};
     docs = new String[]{
@@ -196,7 +196,7 @@ public class RowManagerTest {
     deleteQuery.setDirectory("/testFromDocUrisWithDirectoryQueryNew/");
     queryMgr.delete(deleteQuery);
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -230,11 +230,11 @@ public class RowManagerTest {
               try (LineNumberReader lineReader = new LineNumberReader(readerHandle.get())) {
                 String line = lineReader.readLine();
                 String[] cols = line.split(",");
-                assertArrayEquals("unexpected header", cols, new String[]{"rowNum","temp"});
+                assertArrayEquals( cols, new String[]{"rowNum","temp"});
 
                 line = lineReader.readLine();
                 cols = line.split(",");
-                assertArrayEquals("unexpected data", cols, new String[]{"2","72"});
+                assertArrayEquals( cols, new String[]{"2","72"});
               }
             }
           }
@@ -243,20 +243,20 @@ public class RowManagerTest {
 // domHandle.write(System.out);
 
           NodeList testList = domHandle.evaluateXPath("/table:table/table:columns/table:column", NodeList.class);
-          assertEquals("unexpected header count in XML", 2, testList.getLength());
+          assertEquals( 2, testList.getLength());
           Element testElement = (Element) testList.item(0);
-          assertEquals("unexpected first header name in XML", "rowNum", testElement.getAttribute("name"));
+          assertEquals( "rowNum", testElement.getAttribute("name"));
           if (datatypeStyle == RowSetPart.HEADER) {
-            assertEquals("unexpected first header type in XML",  "xs:integer", testElement.getAttribute("type"));
+            assertEquals(  "xs:integer", testElement.getAttribute("type"));
           }
           testElement = (Element) testList.item(1);
-          assertEquals("unexpected second header name in XML", "temp", testElement.getAttribute("name"));
+          assertEquals( "temp", testElement.getAttribute("name"));
           if (datatypeStyle == RowSetPart.HEADER) {
-            assertEquals("unexpected second header type in XML",  "xs:string", testElement.getAttribute("type"));
+            assertEquals(  "xs:string", testElement.getAttribute("type"));
           }
 
           testList = domHandle.evaluateXPath("/table:table/table:rows/table:row", NodeList.class);
-          assertEquals("unexpected row count in XML", 1, testList.getLength());
+          assertEquals( 1, testList.getLength());
 
           testList = domHandle.evaluateXPath("/table:table/table:rows/table:row[1]/table:cell", NodeList.class);
           checkSingleRow(testList, datatypeStyle);
@@ -272,7 +272,7 @@ public class RowManagerTest {
               checkHeader(testNode.findValue("columns"), datatypeStyle);
 
               rowsNode = testNode.findValue("rows");
-              assertEquals("unexpected row count in JSON", 1, rowsNode.size());
+              assertEquals( 1, rowsNode.size());
 
               checkSingleRow(rowsNode.get(0), rowstruct, datatypeStyle);
               break;
@@ -280,7 +280,7 @@ public class RowManagerTest {
               checkHeader(testNode.get(0), datatypeStyle);
 
               rowsNode = testNode.get(1);
-              assertEquals("unexpected row count in JSON", 2, rowsNode.size());
+              assertEquals( 2, rowsNode.size());
 
               checkSingleRow(rowsNode, rowstruct, datatypeStyle);
               break;
@@ -313,8 +313,7 @@ public class RowManagerTest {
                     break;
                 }
               }
-              assertEquals("expected one row for json-seq using: "
-                +rowstruct+", "+datatypeStyle, 2, i);
+              assertEquals(2, i);
             }
           }
         }
@@ -347,10 +346,10 @@ public class RowManagerTest {
             checkHeader("XML", xmlRowSet, datatypeStyle);
 
             Iterator<DOMHandle> xmlRowItr = xmlRowSet.iterator();
-            assertTrue("no XML row to iterate", xmlRowItr.hasNext());
+            assertTrue( xmlRowItr.hasNext());
             DOMHandle xmlRow = initNamespaces(xmlRowItr.next());
             checkSingleRow(xmlRow.evaluateXPath("/table:row/table:cell", NodeList.class), datatypeStyle);
-            assertFalse("expected one XML row", xmlRowItr.hasNext());
+            assertFalse( xmlRowItr.hasNext());
 
             xmlRowSet.close();
           }
@@ -360,10 +359,10 @@ public class RowManagerTest {
             checkHeader("XML", xmlRowSetAs, datatypeStyle);
 
             Iterator<Document> xmlRowItrAs = xmlRowSetAs.iterator();
-            assertTrue("no XML rows as to iterate", xmlRowItrAs.hasNext());
+            assertTrue( xmlRowItrAs.hasNext());
             DOMHandle xmlRow = initNamespaces(new DOMHandle().with(xmlRowItrAs.next()));
             checkSingleRow(xmlRow.evaluateXPath("/table:row/table:cell", NodeList.class), datatypeStyle);
-            assertFalse("expected one XML row", xmlRowItrAs.hasNext());
+            assertFalse( xmlRowItrAs.hasNext());
 
             xmlRowSetAs.close();
           }
@@ -373,12 +372,12 @@ public class RowManagerTest {
             checkHeader("JSON", jsonRowSet, datatypeStyle);
 
             Iterator<JacksonHandle> jsonRowItr = jsonRowSet.iterator();
-            assertTrue("no JSON row to iterate", jsonRowItr.hasNext());
+            assertTrue( jsonRowItr.hasNext());
             JacksonHandle jsonRow = jsonRowItr.next();
 // jsonRow.write(System.out);
 
             checkSingleRow(jsonRow.get(), rowstruct, datatypeStyle);
-            assertFalse("expected one JSON row", jsonRowItr.hasNext());
+            assertFalse( jsonRowItr.hasNext());
 
             jsonRowSet.close();
           }
@@ -388,9 +387,9 @@ public class RowManagerTest {
             checkHeader("JSON", jsonRowSetAs, datatypeStyle);
 
             Iterator<JsonNode> jsonRowItrAs = jsonRowSetAs.iterator();
-            assertTrue("no JSON row to iterate", jsonRowItrAs.hasNext());
+            assertTrue( jsonRowItrAs.hasNext());
             checkSingleRow(jsonRowItrAs.next(), rowstruct, datatypeStyle);
-            assertFalse("expected one JSON row", jsonRowItrAs.hasNext());
+            assertFalse( jsonRowItrAs.hasNext());
 
             jsonRowSetAs.close();
           }
@@ -398,10 +397,10 @@ public class RowManagerTest {
           rowrecord: {
             RowSet<RowRecord> recordRowSet = rowMgr.resultRows(plan);
             Iterator<RowRecord> recordRowItr = recordRowSet.iterator();
-            assertTrue("no record row to iterate", recordRowItr.hasNext());
+            assertTrue( recordRowItr.hasNext());
             RowRecord recordRow = recordRowItr.next();
             checkSingleRow(recordRow);
-            assertFalse("expected one record row", recordRowItr.hasNext());
+            assertFalse( recordRowItr.hasNext());
 
             recordRowSet.close();
           }
@@ -470,12 +469,12 @@ public class RowManagerTest {
 
     int rowNum = 0;
     for (RowRecord row: rows) {
-      assertEquals("unexpected lastName value in row record "+rowNum,  lastName[rowNum],  row.getString("lastName"));
-      assertEquals("unexpected firstName value in row record "+rowNum, firstName[rowNum], row.getString("firstName"));
-      assertEquals("unexpected dob value in row record "+rowNum,       dob[rowNum],       row.getString("dob"));
+      assertEquals(lastName[rowNum],  row.getString("lastName"));
+      assertEquals(firstName[rowNum], row.getString("firstName"));
+      assertEquals(dob[rowNum],       row.getString("dob"));
       rowNum++;
     }
-    assertEquals("unexpected count of result records", 2, rowNum);
+    assertEquals( 2, rowNum);
   }
 
   @Test
@@ -529,30 +528,31 @@ public class RowManagerTest {
     RowManager rowManager = Common.client.newRowManager();
     PlanBuilder.ModifyPlan plan = rowManager.newPlanBuilder().fromSql(validQueryThatEventuallyThrowsAnError);
 
-    FailedRequestException ex = assertThrows(
-        "The SQL query is designed to not immediately fail - it will immediately return a 200 status code to the " +
-            "Java Client because the query itself can be executed - but will fail later as it streams rows; " +
-            "specifically, it will fail on the fourth row, which is the 'Davis' row. " +
-            "If chunking is configured correctly for the /v1/rows requests - i.e. if the " +
-            "'TE' header is present - then ML should return trailers in the HTTP response named 'ml-error-code' and " +
-            "'ml-error-message'. Those are intended to indicate that while a 200 was returned, an error occurred later " +
-            "while streaming data back. The Java Client is then expected to detect those trailers and throw a " +
-            "FailedRequestException. If the Java Client does not do that, then no exception will be thrown and this " +
-            "assertion will fail.", FailedRequestException.class, () -> rowManager.resultRows(plan));
+    FailedRequestException ex = assertThrows(FailedRequestException.class, () -> rowManager.resultRows(plan),
+		"The SQL query is designed to not immediately fail - it will immediately return a 200 status code to the " +
+			"Java Client because the query itself can be executed - but will fail later as it streams rows; " +
+			"specifically, it will fail on the fourth row, which is the 'Davis' row. " +
+			"If chunking is configured correctly for the /v1/rows requests - i.e. if the " +
+			"'TE' header is present - then ML should return trailers in the HTTP response named 'ml-error-code' and " +
+			"'ml-error-message'. Those are intended to indicate that while a 200 was returned, an error occurred later " +
+			"while streaming data back. The Java Client is then expected to detect those trailers and throw a " +
+			"FailedRequestException. If the Java Client does not do that, then no exception will be thrown and this " +
+			"assertion will fail.");
 
-    assertEquals("A 500 is expected, even though ML immediately returned a 200 before it started streaming any data " +
-        "back; a 500 is used instead of a 400 here as we don't have a reliable way of knowing if the error " +
-        "occurred due to a bad request by the user, since the query was valid in the sense that it could be " +
-        "executed", 500, ex.getServerStatusCode());
+    assertEquals(500, ex.getServerStatusCode(),
+		"A 500 is expected, even though ML immediately returned a 200 before it started streaming any data " +
+			"back; a 500 is used instead of a 400 here as we don't have a reliable way of knowing if the error " +
+			"occurred due to a bad request by the user, since the query was valid in the sense that it could be " +
+			"executed");
 
-    assertEquals("The server error message is expected to be the value of the 'ml-error-message' trailer",
-        "SQL-TABLENOTFOUND", ex.getServerMessage());
+    assertEquals("SQL-TABLENOTFOUND", ex.getServerMessage(),
+		"The server error message is expected to be the value of the 'ml-error-message' trailer");
 
     assertEquals(
-        "The exception message is expected to be a formatted message containing the values of the 'ml-error-code' and " +
-            "'ml-error-message' trailers",
         "Local message: failed to apply resource at rows: SQL-TABLENOTFOUND, Internal Server Error. Server Message: SQL-TABLENOTFOUND",
-        ex.getMessage());
+        ex.getMessage(),
+		"The exception message is expected to be a formatted message containing the values of the 'ml-error-code' and " +
+			"'ml-error-message' trailers");
   }
 
   @Test
@@ -576,15 +576,15 @@ public class RowManagerTest {
     int rowNum = 0;
     for (RowRecord row: rowMgr.resultRows(builtPlan)) {
 // System.out.println(row.toString());
-      assertEquals("unexpected lastName value in row record "+rowNum,  lastName[rowNum],  row.getString("lastName"));
-      assertEquals("unexpected firstName value in row record "+rowNum, firstName[rowNum], row.getString("firstName"));
+      assertEquals(lastName[rowNum],  row.getString("lastName"));
+      assertEquals(firstName[rowNum], row.getString("firstName"));
 
       double score = row.getDouble("score");
-      assertTrue("unexpected score value of "+score+" in row record "+rowNum, score > 0);
+      assertTrue(score > 0);
 
       rowNum++;
     }
-    assertEquals("unexpected count of result records", 2, rowNum);
+    assertEquals( 2, rowNum);
   }
   @Test
   public void testSearchDocs() {
@@ -601,21 +601,21 @@ public class RowManagerTest {
     for (RowRecord row: rowMgr.resultRows(builtPlan)) {
 // System.out.println(row.toString());
       double score = row.getDouble("score");
-      assertTrue("unexpected score value of "+score+" in row record "+rowNum, score > 0);
-      assertTrue(lastScore+" not greater than "+score+" in row record "+rowNum, lastScore >= score);
+      assertTrue(score > 0);
+      assertTrue(lastScore >= score);
       lastScore = score;
 
       String uri = row.getString("uri");
-      assertNotNull("empty URI", uri);
-      assertTrue("not a musician uri "+uri+" in row record "+rowNum, uri.matches("^/optic/test/musician[0-9]+.json$"));
+      assertNotNull( uri);
+      assertTrue(uri.matches("^/optic/test/musician[0-9]+.json$"));
 
       JsonNode doc = row.getContent("doc", new JacksonHandle()).get();
-      assertNotNull("empty document", doc);
-      assertTrue("not a musician document for uri "+uri+" in row record "+rowNum, doc.has("musician"));
+      assertNotNull( doc);
+      assertTrue(doc.has("musician"));
 
       rowNum++;
     }
-    assertEquals("unexpected count of result records", 2, rowNum);
+    assertEquals( 2, rowNum);
   }
   @Test
   public void testJoinSrcDoc() throws IOException {
@@ -638,15 +638,15 @@ public class RowManagerTest {
 
     int rowNum = 0;
     for (RowRecord row: rowMgr.resultRows(builtPlan)) {
-      assertEquals("unexpected lastName value in row record "+rowNum,  lastName[rowNum],  row.getString("lastName"));
-      assertEquals("unexpected firstName value in row record "+rowNum, firstName[rowNum], row.getString("firstName"));
+      assertEquals(lastName[rowNum],  row.getString("lastName"));
+      assertEquals(firstName[rowNum], row.getString("firstName"));
 
       String instruments = row.getString("instruments");
-      assertNotNull("null instruments value in row record "+rowNum,    instruments);
-      assertTrue("unexpected instruments value in row record "+rowNum, instruments.contains("trumpet"));
+      assertNotNull(instruments);
+      assertTrue(instruments.contains("trumpet"));
       rowNum++;
     }
-    assertEquals("unexpected count of result records", 2, rowNum);
+    assertEquals( 2, rowNum);
   }
   @Test
   public void testJoinDocUri() throws IOException {
@@ -667,12 +667,12 @@ public class RowManagerTest {
 
     int rowNum = 0;
     for (RowRecord row: rowMgr.resultRows(builtPlan)) {
-      assertEquals("unexpected lastName value in row record "+rowNum,       lastName[rowNum],       row.getString("lastName"));
-      assertEquals("unexpected firstName value in row record "+rowNum,      firstName[rowNum],      row.getString("firstName"));
-      assertEquals("unexpected musicianDocUri value in row record "+rowNum, musicianDocUri[rowNum], row.getString("musicianDocUri"));
+      assertEquals(lastName[rowNum],       row.getString("lastName"));
+      assertEquals(firstName[rowNum],      row.getString("firstName"));
+      assertEquals(musicianDocUri[rowNum], row.getString("musicianDocUri"));
       rowNum++;
     }
-    assertEquals("unexpected count of result records", 2, rowNum);
+    assertEquals( 2, rowNum);
   }
   @Test
   public void testTriples() {
@@ -705,11 +705,11 @@ public class RowManagerTest {
         case 1: testRow = 2; break;
       }
 
-      assertEquals("unexpected subject value in row record "+rowNum, triples[testRow][0], row.getString("subject"));
-      assertEquals("unexpected object  value in row record "+rowNum, triples[testRow][2], row.getString("object"));
+      assertEquals(triples[testRow][0], row.getString("subject"));
+      assertEquals(triples[testRow][2], row.getString("object"));
       rowNum++;
     }
-    assertEquals("unexpected count of result records", 2, rowNum);
+    assertEquals( 2, rowNum);
   }
   @Test
   public void testLexicons() throws IOException, XPathExpressionException {
@@ -751,11 +751,11 @@ public class RowManagerTest {
 
     int rowNum = 0;
     for (RowRecord row: rowMgr.resultRows(plan)) {
-      assertEquals("unexpected int value in row record "+rowNum, expectedInts[rowNum], row.getInt("int"));
-      assertEquals("unexpected uri value in row record "+rowNum, expectedUris[rowNum], row.getString("uri"));
+      assertEquals(expectedInts[rowNum], row.getInt("int"));
+      assertEquals(expectedUris[rowNum], row.getString("uri"));
       rowNum++;
     }
-    assertEquals("unexpected count of result records", expectedInts.length, rowNum);
+    assertEquals( expectedInts.length, rowNum);
   }
   @Test
   public void testGroupByUnionWithGroup() {
@@ -842,15 +842,15 @@ public class RowManagerTest {
     int rowNum = 0;
     for (RowRecord row: rowMgr.resultRows(builtPlan)) {
 // System.out.println(row.toString());
-      assertEquals("", c1Flag[rowNum], row.getInt("c1Flag"));
-      assertEquals("", c2Flag[rowNum], row.getInt("c2Flag"));
-      assertEquals("", c1[rowNum], row.getString("c1"));
-      assertEquals("", c2[rowNum], row.getString("c2"));
-      assertEquals("", count[rowNum], row.getInt("count"));
-      assertEquals("", sum[rowNum], row.getInt("sum"));
+      assertEquals( c1Flag[rowNum], row.getInt("c1Flag"));
+      assertEquals( c2Flag[rowNum], row.getInt("c2Flag"));
+      assertEquals( c1[rowNum], row.getString("c1"));
+      assertEquals( c2[rowNum], row.getString("c2"));
+      assertEquals( count[rowNum], row.getInt("count"));
+      assertEquals( sum[rowNum], row.getInt("sum"));
       rowNum++;
     }
-    assertEquals("unexpected count of result records", count.length, rowNum);
+    assertEquals( count.length, rowNum);
   }
   @Test
   public void testArrayContainer() {
@@ -875,9 +875,9 @@ public class RowManagerTest {
                      p.arrayAggregate("va",  "v")));
 
     Iterator<RowRecord> rows = rowMgr.resultRows(builtPlan).iterator();
-    assertTrue("no rows", rows.hasNext());
+    assertTrue( rows.hasNext());
     RowRecord row = rows.next();
-    assertFalse("too many rows", rows.hasNext());
+    assertFalse( rows.hasNext());
 // System.out.println(row);
 
     arrayTestimpl("c1 unequal", c1Expect, row, "c1a");
@@ -892,7 +892,7 @@ public class RowManagerTest {
   private void arrayTestimpl(String msg, Set<String> expect, JsonNode arrayNode) {
     Set<String> actual = new HashSet<>();
     arrayNode.iterator().forEachRemaining(node -> actual.add(node.textValue()));
-    assertEquals(msg, expect, actual);
+    assertEquals(expect, actual, msg);
   }
   @Test
   public void testObjectContainer() {
@@ -915,7 +915,7 @@ public class RowManagerTest {
       objectTestimpl(groupableRows[rowNum], row, "o");
       rowNum++;
     }
-    assertEquals("number of rows unequal", groupableRows.length, rowNum);
+    assertEquals( groupableRows.length, rowNum);
   }
   private void objectTestimpl(Map<String,Object> expected, RowRecord row, String objectName) {
     objectTestimpl(expected, row.getContainer(objectName));
@@ -923,9 +923,9 @@ public class RowManagerTest {
     objectTestimpl(expected, row.getContainerAs(objectName, JsonNode.class));
   }
   private void objectTestimpl(Map<String,Object> expected, JsonNode actual) {
-    assertEquals("c1 unequal", expected.get("c1"), actual.get("c1p").textValue());
-    assertEquals("c2 unequal", expected.get("c2"), actual.get("c2p").textValue());
-    assertEquals("v unequal", expected.get("v"), actual.get("vp").textValue());
+    assertEquals( expected.get("c1"), actual.get("c1p").textValue());
+    assertEquals( expected.get("c2"), actual.get("c2p").textValue());
+    assertEquals( expected.get("v"), actual.get("vp").textValue());
   }
   @Test
   public void testGroupToArrays() {
@@ -947,9 +947,9 @@ public class RowManagerTest {
                 ));
 
     Iterator<RowRecord> rows = rowMgr.resultRows(builtPlan).iterator();
-    assertTrue("no rows", rows.hasNext());
+    assertTrue( rows.hasNext());
     RowRecord row = rows.next();
-    assertFalse("too many rows", rows.hasNext());
+    assertFalse( rows.hasNext());
 // System.out.println(row);
 
     ObjectMapper mapper = new ObjectMapper();
@@ -959,7 +959,7 @@ public class RowManagerTest {
                   .add(mapper.createObjectNode()
                              .put("count", 3).put("sum", 6));
     JsonNode actual = row.getContainer("empty");
-    assertEquals("empty group unequal", expect, actual);
+    assertEquals( expect, actual);
 
     expect = mapper.createArrayNode()
                    .add(mapper.createObjectNode()
@@ -967,7 +967,7 @@ public class RowManagerTest {
                    .add(mapper.createObjectNode()
                               .put("c1", "12").put("count", 2).put("sum", 4));
     actual = row.getContainer("group1");
-    assertEquals("group1 unequal", expect, actual);
+    assertEquals( expect, actual);
 
     expect = mapper.createArrayNode()
                    .add(mapper.createObjectNode()
@@ -975,7 +975,7 @@ public class RowManagerTest {
                    .add(mapper.createObjectNode()
                               .put("c2", "22").put("count", 1).put("sum", 2));
     actual = row.getContainer("group2");
-    assertEquals("group2 unequal", expect, actual);
+    assertEquals( expect, actual);
 
     expect = mapper.createArrayNode()
                    .add(mapper.createObjectNode()
@@ -988,7 +988,7 @@ public class RowManagerTest {
                               .put("c1", "12").put("c2", "22")
                               .put("count", 1).put("sum", 2));
     actual = row.getContainer("all");
-    assertEquals("all group unequal", expect, actual);
+    assertEquals( expect, actual);
   }
   @Test
   public void testFacetBy() {
@@ -1002,9 +1002,9 @@ public class RowManagerTest {
             .facetBy(p.colSeq("c1", "c2"));
 
     Iterator<RowRecord> rows = rowMgr.resultRows(builtPlan).iterator();
-    assertTrue("no rows", rows.hasNext());
+    assertTrue( rows.hasNext());
     RowRecord row = rows.next();
-    assertFalse("too many rows", rows.hasNext());
+    assertFalse( rows.hasNext());
 // System.out.println(row);
 
     ObjectMapper mapper = new ObjectMapper();
@@ -1014,13 +1014,13 @@ public class RowManagerTest {
                    .add(mapper.createObjectNode().put("c1", "11").put("count", 1))
                    .add(mapper.createObjectNode().put("c1", "12").put("count", 2));
     JsonNode actual = row.getContainer("group0");
-    assertEquals("group0 unequal", expect, actual);
+    assertEquals( expect, actual);
 
     expect = mapper.createArrayNode()
                    .add(mapper.createObjectNode().put("c2", "21").put("count", 2))
                    .add(mapper.createObjectNode().put("c2", "22").put("count", 1));
     actual = row.getContainer("group1");
-    assertEquals("group1 unequal", expect, actual);
+    assertEquals( expect, actual);
   }
   @Test
   public void testBindAs() {
@@ -1038,16 +1038,16 @@ public class RowManagerTest {
             .bindAs("concatted", p.fn.concat(p.col("city"), p.xs.string(", WA")));
 
     Iterator<RowRecord> rows = rowMgr.resultRows(plan).iterator();
-    assertTrue("no rows", rows.hasNext());
+    assertTrue( rows.hasNext());
     RowRecord row = rows.next();
-    assertFalse("too many rows", rows.hasNext());
+    assertFalse( rows.hasNext());
 // System.out.println(row.toString());
-    assertEquals("unexpected rowNum",           2,             row.getInt("rowNum"));
-    assertEquals("unexpected city",             "Seattle",     row.getString("city"));
-    assertEquals("unexpected temp",             "72",          row.getString("temp"));
-    assertEquals("unexpected divided column",   8,             row.getInt("divided"));
-    assertEquals("unexpected compared column",  true,          row.getBoolean("compared"));
-    assertEquals("unexpected concatted column", "Seattle, WA", row.getString("concatted"));
+    assertEquals(           2,             row.getInt("rowNum"));
+    assertEquals(             "Seattle",     row.getString("city"));
+    assertEquals(             "72",          row.getString("temp"));
+    assertEquals(   8,             row.getInt("divided"));
+    assertEquals(  true,          row.getBoolean("compared"));
+    assertEquals( "Seattle, WA", row.getString("concatted"));
   }
   @Test
   public void testParams() throws IOException, XPathExpressionException {
@@ -1070,10 +1070,10 @@ public class RowManagerTest {
     );
 
     Iterator<RowRecord> recordRowItr = recordRowSet.iterator();
-    assertTrue("no record row to iterate", recordRowItr.hasNext());
+    assertTrue( recordRowItr.hasNext());
     RowRecord recordRow = recordRowItr.next();
     checkSingleRow(recordRow);
-    assertFalse("expected one record row", recordRowItr.hasNext());
+    assertFalse( recordRowItr.hasNext());
 
     recordRowSet.close();
   }
@@ -1097,22 +1097,22 @@ public class RowManagerTest {
     RowSet<RowRecord> recordRowSet = rowMgr.resultRows(builtPlan);
 
     Iterator<RowRecord> recordRowItr = recordRowSet.iterator();
-    assertTrue("no first node row", recordRowItr.hasNext());
+    assertTrue( recordRowItr.hasNext());
     RowRecord recordRow = recordRowItr.next();
-    assertEquals("first row num", 1,           recordRow.getInt("rowNum"));
-    assertEquals("first cased",   "otherwise", recordRow.getString("cased"));
+    assertEquals( 1,           recordRow.getInt("rowNum"));
+    assertEquals(   "otherwise", recordRow.getString("cased"));
 
-    assertTrue("no second node row", recordRowItr.hasNext());
+    assertTrue( recordRowItr.hasNext());
     recordRow = recordRowItr.next();
-    assertEquals("second row num", 2,        recordRow.getInt("rowNum"));
-    assertEquals("second cased",   "second", recordRow.getString("cased"));
+    assertEquals( 2,        recordRow.getInt("rowNum"));
+    assertEquals(   "second", recordRow.getString("cased"));
 
-    assertTrue("no third node row", recordRowItr.hasNext());
+    assertTrue( recordRowItr.hasNext());
     recordRow = recordRowItr.next();
-    assertEquals("third row num", 3,       recordRow.getInt("rowNum"));
-    assertEquals("third cased",   "third", recordRow.getString("cased"));
+    assertEquals( 3,       recordRow.getInt("rowNum"));
+    assertEquals(   "third", recordRow.getString("cased"));
 
-    assertFalse("expected three record rows", recordRowItr.hasNext());
+    assertFalse( recordRowItr.hasNext());
 
     recordRowSet.close();
   }
@@ -1147,34 +1147,34 @@ public class RowManagerTest {
     RowSet<RowRecord> recordRowSet = rowMgr.resultRows(builtPlan);
 
     Iterator<RowRecord> recordRowItr = recordRowSet.iterator();
-    assertTrue("no JSON node row", recordRowItr.hasNext());
+    assertTrue( recordRowItr.hasNext());
     RowRecord recordRow = recordRowItr.next();
-    assertTrue("no JSON node value", recordRow.containsKey("node"));
-    assertEquals("wrong JSON kind", RowRecord.ColumnKind.CONTENT, recordRow.getKind("node"));
-    assertEquals("no JSON mime type", "application/json", recordRow.getContentMimetype("node"));
+    assertTrue( recordRow.containsKey("node"));
+    assertEquals( RowRecord.ColumnKind.CONTENT, recordRow.getKind("node"));
+    assertEquals( "application/json", recordRow.getContentMimetype("node"));
     JacksonHandle jsonNode = recordRow.getContent("node", new JacksonHandle());
     JsonNode jsonRoot = jsonNode.get();
-    assertEquals("constructed JSON property p1", "s", jsonRoot.findValue("p1").asText());
-    assertEquals("constructed JSON property p2", "New York", jsonRoot.findValue("p2").get(0).asText());
-    assertTrue("no JSON XPath value", recordRow.containsKey("jxpath"));
-    assertEquals("wrong JSON XPathValue", "New York", recordRow.getContentAs("jxpath", String.class));
-    assertEquals("wrong XML XPathValue", RowRecord.ColumnKind.NULL, recordRow.getKind("xxpath"));
+    assertEquals( "s", jsonRoot.findValue("p1").asText());
+    assertEquals( "New York", jsonRoot.findValue("p2").get(0).asText());
+    assertTrue( recordRow.containsKey("jxpath"));
+    assertEquals( "New York", recordRow.getContentAs("jxpath", String.class));
+    assertEquals( RowRecord.ColumnKind.NULL, recordRow.getKind("xxpath"));
 
-    assertTrue("no XML node row", recordRowItr.hasNext());
+    assertTrue( recordRowItr.hasNext());
     recordRow = recordRowItr.next();
-    assertTrue("no XML node value", recordRow.containsKey("node"));
-    assertEquals("wrong XML kind", RowRecord.ColumnKind.CONTENT, recordRow.getKind("node"));
-    assertEquals("no XML mime type", "application/xml", recordRow.getContentMimetype("node"));
+    assertTrue( recordRow.containsKey("node"));
+    assertEquals( RowRecord.ColumnKind.CONTENT, recordRow.getKind("node"));
+    assertEquals( "application/xml", recordRow.getContentMimetype("node"));
     DOMHandle xmlNode = recordRow.getContent("node", new DOMHandle());
     Element xmlRoot = xmlNode.get().getDocumentElement();
-    assertEquals("constructed XML element name", "e", xmlRoot.getLocalName());
-    assertEquals("constructed XML attribute", "s", xmlRoot.getAttribute("a"));
-    assertEquals("constructed XML text", "Seattle", xmlRoot.getTextContent());
-    assertEquals("wrong JSON XPathValue", RowRecord.ColumnKind.NULL, recordRow.getKind("jxpath"));
-    assertTrue("no XML XPath value", recordRow.containsKey("xxpath"));
-    assertEquals("wrong XML XPathValue", "Seattle", recordRow.getContentAs("xxpath", String.class));
+    assertEquals( "e", xmlRoot.getLocalName());
+    assertEquals( "s", xmlRoot.getAttribute("a"));
+    assertEquals( "Seattle", xmlRoot.getTextContent());
+    assertEquals( RowRecord.ColumnKind.NULL, recordRow.getKind("jxpath"));
+    assertTrue( recordRow.containsKey("xxpath"));
+    assertEquals( "Seattle", recordRow.getContentAs("xxpath", String.class));
 
-    assertFalse("expected two rows", recordRowItr.hasNext());
+    assertFalse( recordRowItr.hasNext());
 
     recordRowSet.close();
   }
@@ -1227,16 +1227,16 @@ public class RowManagerTest {
     RowSet<RowRecord> recordRowSet = rowMgr.resultRows(builtPlan);
 
     Iterator<RowRecord> recordRowItr = recordRowSet.iterator();
-    assertTrue("no first group row", recordRowItr.hasNext());
+    assertTrue( recordRowItr.hasNext());
     RowRecord recordRow = recordRowItr.next();
-    assertEquals("first group", 1,     recordRow.getInt("group"));
-    assertEquals("first vals",  "a-b", recordRow.getString("vals"));
+    assertEquals( 1,     recordRow.getInt("group"));
+    assertEquals(  "a-b", recordRow.getString("vals"));
 
     recordRow = recordRowItr.next();
-    assertEquals("second group", 2,     recordRow.getInt("group"));
-    assertEquals("second vals",  "c-d", recordRow.getString("vals"));
+    assertEquals( 2,     recordRow.getInt("group"));
+    assertEquals(  "c-d", recordRow.getString("vals"));
 
-    assertFalse("expected two rows", recordRowItr.hasNext());
+    assertFalse( recordRowItr.hasNext());
 
     recordRowSet.close();
   }
@@ -1255,10 +1255,10 @@ public class RowManagerTest {
 
     int rowNum = 0;
     for (RowRecord row: rowMgr.resultRows(builtPlan)) {
-      assertNotNull("null rowNum value in row record "+rowNum, row.getInt("rowNum"));
-      assertNotNull("null city value in row record "+rowNum, row.getString("city"));
+      assertNotNull(row.getInt("rowNum"));
+      assertNotNull(row.getString("city"));
       int seconds = row.getInt("seconds");
-      assertTrue("unexpected seconds value in row record "+rowNum,  0 <= seconds && seconds < 60);
+      assertTrue(0 <= seconds && seconds < 60);
       rowNum++;
     }
 
@@ -1274,10 +1274,10 @@ public class RowManagerTest {
 
     rowNum = 0;
     for (RowRecord row: rowMgr.resultRows(builtPlan)) {
-      assertNotNull("null rowNum value in row record "+rowNum, row.getInt("rowNum"));
-      assertNotNull("null city value in row record "+rowNum, row.getString("city"));
+      assertNotNull(row.getInt("rowNum"));
+      assertNotNull(row.getString("city"));
       int seconds = row.getInt("seconds");
-      assertTrue("unexpected seconds value in row record "+rowNum,  0 <= seconds && seconds < 60);
+      assertTrue(0 <= seconds && seconds < 60);
       rowNum++;
     }
   }
@@ -1306,8 +1306,8 @@ public class RowManagerTest {
     String stringHandleResult = rowMgr.columnInfo(builtPlan, new StringHandle()).get();
     String stringResult = rowMgr.columnInfoAs(builtPlan, String.class);
     for (String columnInfo : expectedColumnInfos) {
-      assertTrue("Did not find " + columnInfo + " in result: " + stringHandleResult, stringHandleResult.contains(columnInfo));
-      assertTrue("Did not find " + columnInfo + " in result: " + stringResult, stringResult.contains(columnInfo));
+      assertTrue(stringHandleResult.contains(columnInfo));
+      assertTrue(stringResult.contains(columnInfo));
     }
   }
 
@@ -1392,9 +1392,11 @@ public class RowManagerTest {
     List<RowRecord> rows = rowMgr.resultRows(builtPlan).stream().collect(Collectors.toList());
 
     if (Common.markLogicIsVersion11OrHigher()) {
-      assertEquals("Starting in ML 11, dedup is off by default, so 18 rows are expected", 18, rows.size());
+      assertEquals(18, rows.size(),
+		  "Starting in ML 11, dedup is off by default, so 18 rows are expected");
     } else {
-      assertEquals("In ML 10, dedup is on by default, so only 2 rows are expected", 2, rows.size());
+      assertEquals(2, rows.size(),
+		  "In ML 10, dedup is on by default, so only 2 rows are expected");
     }
 
     String stringRoot = rowMgr.explain(builtPlan, new StringHandle()).get();
@@ -1435,8 +1437,8 @@ public class RowManagerTest {
 
     JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
     JsonNode node = jsonBindingsNodes.path(0);
-    assertEquals(" nodes not returned from fromSparql method", 6, jsonBindingsNodes.size());
-    assertEquals("Row 1  value incorrect", "Jim", node.path("sparql.firstName").path("value").asText());
+    assertEquals( 6, jsonBindingsNodes.size());
+    assertEquals( "Jim", node.path("sparql.firstName").path("value").asText());
   }
   @Test
   public void testSampleBy() throws IOException {
@@ -1451,7 +1453,7 @@ public class RowManagerTest {
 
     RowSet<RowRecord> rows = rowMgr.resultRows(builtPlan);
     long count = rows.stream().count();
-    assertEquals("count doesn't match", 2, count);
+    assertEquals(2, count);
   }
   @Test
   public void testSampleByNoArg() throws IOException {
@@ -1465,11 +1467,11 @@ public class RowManagerTest {
 
     RowSet<RowRecord> rows = rowMgr.resultRows(builtPlan);
     long count = rows.stream().count();
-    assertEquals("count doesn't match", 4, count);
+    assertEquals(4, count);
   }
 
   @Test
-  @Ignore("Waiting on a fix for https://bugtrack.marklogic.com/58233")
+  @Disabled("Waiting on a fix for https://bugtrack.marklogic.com/58233")
   public void testBug58233() {
     RowManager rowMgr = Common.client.newRowManager();
 
@@ -1504,9 +1506,9 @@ public class RowManagerTest {
             );
 
     Iterator<RowRecord> rows = rowMgr.resultRows(builtPlan).iterator();
-    assertTrue("no rows", rows.hasNext());
+    assertTrue( rows.hasNext());
     RowRecord row = rows.next();
-    assertFalse("too many rows", rows.hasNext());
+    assertFalse( rows.hasNext());
 
     ObjectMapper mapper = new ObjectMapper();
 
@@ -1517,7 +1519,7 @@ public class RowManagerTest {
                     .add(mapper.createObjectNode()
                             .put("r_bucket", 2).put("numRows", 2));
     JsonNode actual = row.getContainer("r");
-    assertEquals("group unequal", expect, actual);
+    assertEquals( expect, actual);
   }
 
   @Test
@@ -1574,34 +1576,34 @@ public class RowManagerTest {
   }
 
   private void checkSingleRow(NodeList row, RowSetPart datatypeStyle) {
-    assertEquals("unexpected column count in XML", 2, row.getLength());
+    assertEquals( 2, row.getLength());
     Element testElement = (Element) row.item(0);
-    assertEquals("unexpected first binding name in XML",  "rowNum", testElement.getAttribute("name"));
+    assertEquals(  "rowNum", testElement.getAttribute("name"));
     if (datatypeStyle == RowSetPart.ROWS) {
-      assertEquals("unexpected first binding type in XML",  "xs:integer", testElement.getAttribute("type"));
+      assertEquals(  "xs:integer", testElement.getAttribute("type"));
     }
-    assertEquals("unexpected first binding value in XML", "2",      testElement.getTextContent());
+    assertEquals( "2",      testElement.getTextContent());
     testElement = (Element) row.item(1);
-    assertEquals("unexpected second binding name in XML",  "temp", testElement.getAttribute("name"));
+    assertEquals(  "temp", testElement.getAttribute("name"));
     if (datatypeStyle == RowSetPart.ROWS) {
-      assertEquals("unexpected second binding type in XML",  "xs:string", testElement.getAttribute("type"));
+      assertEquals(  "xs:string", testElement.getAttribute("type"));
     }
-    assertEquals("unexpected second binding value in XML", "72",   testElement.getTextContent());
+    assertEquals( "72",   testElement.getTextContent());
   }
   private void checkHeader(String format, RowSet<?> rowset, RowSetPart datatypeStyle) {
     String[] columnNames = rowset.getColumnNames();
-    assertEquals("unexpected column name count in "+format, 2, columnNames.length);
+    assertEquals(2, columnNames.length);
     checkFirstHeader(  format, columnNames[0] );
     checkSecondHeader( format, columnNames[1] );
     if (datatypeStyle == RowSetPart.HEADER) {
       String[] columnTypes = rowset.getColumnTypes();
-      assertEquals("unexpected column type count in "+format, 2, columnTypes.length);
+      assertEquals(2, columnTypes.length);
       checkFirstType(  format, columnTypes[0] );
       checkSecondType( format, columnTypes[1] );
     }
   }
   private void checkHeader(JsonNode header, RowSetPart datatypeStyle) {
-    assertEquals("unexpected header count in JSON", 2, header.size());
+    assertEquals( 2, header.size());
 
     switch(datatypeStyle) {
       case ROWS:
@@ -1671,10 +1673,10 @@ public class RowManagerTest {
     checkSecondHeader("JSON", colNode.get("name").asText());
   }
   private void checkFirstHeader(String format, String name) {
-    assertEquals("unexpected first header name in "+format,  "rowNum", name);
+    assertEquals("rowNum", name, "unexpected first header name in "+format);
   }
   private void checkSecondHeader(String format, String name) {
-    assertEquals("unexpected second header name in "+format, "temp",  name);
+    assertEquals("temp",  name, "unexpected second header name in "+format);
   }
   private void checkFirstObject(JsonNode object) {
     checkFirstType("JSON", object.get("type").asText());
@@ -1685,24 +1687,24 @@ public class RowManagerTest {
     checkSecondValue("JSON", object.get("value").asText());
   }
   private void checkFirstType(String format, String type) {
-    assertEquals("unexpected first binding type in "+format, "xs:integer",  type);
+    assertEquals("xs:integer",  type, "unexpected first binding type in "+format);
   }
   private void checkFirstValue(String format, String value) {
-    assertEquals("unexpected first binding value in "+format, "2",  value);
+    assertEquals("2",  value, "unexpected first binding value in "+format);
   }
   private void checkSecondType(String format, String type) {
-    assertEquals("unexpected second binding type in "+format, "xs:string",  type);
+    assertEquals("xs:string",  type, "unexpected second binding type in "+format);
   }
   private void checkSecondValue(String format, String value) {
-    assertEquals("unexpected second binding value in "+format, "72",  value);
+    assertEquals("72",  value, "unexpected second binding value in "+format);
   }
   private void checkSingleRow(RowRecord row) {
-    assertEquals("unexpected first binding value in row record", "2",  row.getString("rowNum"));
+    assertEquals( "2",  row.getString("rowNum"));
 
-    assertEquals("unexpected first binding value in row record", "72", row.getString("temp"));
+    assertEquals( "72", row.getString("temp"));
   }
   private void checkColumnNames(String[] colNames, RowSet<?> rowSet) {
-    assertArrayEquals("unmatched column names", colNames, rowSet.getColumnNames());
+    assertArrayEquals( colNames, rowSet.getColumnNames());
   }
   private void checkXMLDocRows(RowSet<DOMHandle> rowSet)
     throws XPathExpressionException, TransformerConfigurationException, TransformerException, TransformerFactoryConfigurationError, SAXException, IOException
@@ -1715,27 +1717,27 @@ public class RowManagerTest {
 
       rowCount++;
 
-      assertEquals("unexpected column count in XML", 3, row.getLength());
+      assertEquals( 3, row.getLength());
 
       Element testElement = (Element) row.item(0);
-      assertEquals("unexpected first binding name in XML", "rowNum",  testElement.getAttribute("name"));
-      assertEquals("unexpected first binding value in XML", String.valueOf(rowCount), testElement.getTextContent());
+      assertEquals( "rowNum",  testElement.getAttribute("name"));
+      assertEquals( String.valueOf(rowCount), testElement.getTextContent());
 
       testElement = (Element) row.item(1);
-      assertEquals("unexpected second binding name in XML", "uri",               testElement.getAttribute("name"));
-      assertEquals("unexpected second binding value in XML", uris[rowCount - 1], testElement.getTextContent());
+      assertEquals( "uri",               testElement.getAttribute("name"));
+      assertEquals( uris[rowCount - 1], testElement.getTextContent());
 
       testElement = (Element) row.item(2);
-      assertEquals("unexpected third binding name in XML", "doc", testElement.getAttribute("name"));
+      assertEquals( "doc", testElement.getAttribute("name"));
       if (uris[rowCount - 1].endsWith(".xml")) {
         assertXMLEqual("unexpected third binding value in XML",
           docs[rowCount - 1], nodeToString(testElement.getElementsByTagName("a").item(0))
         );
       } else {
-        assertEquals("unexpected third binding value in XML", docs[rowCount - 1], testElement.getTextContent());
+        assertEquals( docs[rowCount - 1], testElement.getTextContent());
       }
     }
-    assertEquals("row count for XML document join", 3, rowCount);
+    assertEquals( 3, rowCount);
   }
   private void checkJSONDocRows(RowSet<JacksonHandle> rowSet) {
     int rowCount = 0;
@@ -1745,51 +1747,51 @@ public class RowManagerTest {
       rowCount++;
 
       String value = row.findValue("rowNum").findValue("value").asText();
-      assertEquals("unexpected first binding value in JSON", String.valueOf(rowCount), value);
+      assertEquals( String.valueOf(rowCount), value);
 
       value = row.findValue("uri").findValue("value").asText();
-      assertEquals("unexpected second binding value in JSON", uris[rowCount - 1], value);
+      assertEquals( uris[rowCount - 1], value);
 
       if (uris[rowCount - 1].endsWith(".json")) {
         value = row.findValue("doc").findValue("value").toString();
-        assertEquals("unexpected third binding value in JSON", docs[rowCount - 1].replace(" ", ""), value);
+        assertEquals( docs[rowCount - 1].replace(" ", ""), value);
       } else {
         value = row.findValue("doc").findValue("value").asText();
-        assertEquals("unexpected third binding value in JSON", docs[rowCount - 1], value);
+        assertEquals( docs[rowCount - 1], value);
       }
     }
-    assertEquals("row count for JSON document join", 3, rowCount);
+    assertEquals( 3, rowCount);
   }
   private void checkRecordDocRows(RowSet<RowRecord> rowSet) throws SAXException, IOException {
     int rowCount = 0;
     for (RowRecord row: rowSet) {
       rowCount++;
 
-      assertEquals("unexpected first binding kind in row record", ColumnKind.ATOMIC_VALUE, row.getKind("rowNum"));
-      assertEquals("unexpected first binding datatype in row record", "xs:integer", row.getDatatype("rowNum"));
-      assertEquals("unexpected first binding value in row record", rowCount, row.getInt("rowNum"));
+      assertEquals( ColumnKind.ATOMIC_VALUE, row.getKind("rowNum"));
+      assertEquals( "xs:integer", row.getDatatype("rowNum"));
+      assertEquals( rowCount, row.getInt("rowNum"));
 
-      assertEquals("unexpected second binding kind in row record", ColumnKind.ATOMIC_VALUE, row.getKind("uri"));
-      assertEquals("unexpected second binding datatype in row record", "xs:string", row.getDatatype("uri"));
-      assertEquals("unexpected second binding value in row record", uris[rowCount - 1], row.getString("uri"));
+      assertEquals( ColumnKind.ATOMIC_VALUE, row.getKind("uri"));
+      assertEquals( "xs:string", row.getDatatype("uri"));
+      assertEquals( uris[rowCount - 1], row.getString("uri"));
 
-      assertEquals("unexpected third binding kind in row record", ColumnKind.CONTENT, row.getKind("doc"));
+      assertEquals( ColumnKind.CONTENT, row.getKind("doc"));
       String doc = row.getContent("doc", new StringHandle()).get();
       if (uris[rowCount - 1].endsWith(".json")) {
-        assertEquals("unexpected third binding format in row record",     Format.JSON,        row.getContentFormat("doc"));
-        assertEquals("unexpected third binding mimetype in row record",   "application/json", row.getContentMimetype("doc"));
-        assertEquals("unexpected third binding JSON value in row record", docs[rowCount - 1], doc);
+        assertEquals(     Format.JSON,        row.getContentFormat("doc"));
+        assertEquals(   "application/json", row.getContentMimetype("doc"));
+        assertEquals( docs[rowCount - 1], doc);
       } else if (uris[rowCount - 1].endsWith(".xml")) {
-        assertEquals("unexpected third binding format in row record",      Format.XML,         row.getContentFormat("doc"));
-        assertEquals("unexpected third binding mimetype in row record",    "application/xml",  row.getContentMimetype("doc"));
+        assertEquals(      Format.XML,         row.getContentFormat("doc"));
+        assertEquals(    "application/xml",  row.getContentMimetype("doc"));
         assertXMLEqual("unexpected third binding XML value in row record", docs[rowCount - 1], doc);
       } else {
-        assertEquals("unexpected third binding format in row record",   Format.TEXT,        row.getContentFormat("doc"));
-        assertEquals("unexpected third binding mimetype in row record", "text/plain",       row.getContentMimetype("doc"));
-        assertEquals("unexpected third binding value in row record",    docs[rowCount - 1], doc);
+        assertEquals(   Format.TEXT,        row.getContentFormat("doc"));
+        assertEquals( "text/plain",       row.getContentMimetype("doc"));
+        assertEquals(    docs[rowCount - 1], doc);
       }
     }
-    assertEquals("row count for record document join", 3, rowCount);
+    assertEquals( 3, rowCount);
   }
   private String nodeToString(Node node) throws TransformerException, TransformerFactoryConfigurationError
   {

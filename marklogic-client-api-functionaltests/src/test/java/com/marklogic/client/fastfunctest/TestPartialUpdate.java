@@ -33,23 +33,24 @@ import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.query.*;
 import org.json.JSONException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.io.File;
 import java.io.IOException;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+
+
 
 public class TestPartialUpdate extends AbstractFunctionalTest {
   private static String dbName = "java-functest";
   private static int uberPort;
   private static String appServerHostname = null;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception {
     System.out.println("In setup");
 	// Don't know why this was called "uberPort" or why it defaulted to 8000 before
@@ -87,7 +88,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     System.out.println(content);
 
-    assertTrue("fragment is not inserted", content.contains("<modified>2013-03-21</modified></root>"));
+    assertTrue( content.contains("<modified>2013-03-21</modified></root>"));
 
     // Check boolean replaces with XML documents.
     String xmlDocId = "/replaceBoolXml";
@@ -106,7 +107,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     // Read it back to make sure the write worked.
     String contentXml = docMgr.read(xmlDocId, new StringHandle()).get();
 
-    assertTrue("XML Replace fragment is not inserted", contentXml.contains(xmlStr2));
+    assertTrue( contentXml.contains(xmlStr2));
 
     DocumentPatchBuilder patchBldrBool = docMgr.newPatchBuilder();
     patchBldrBool.pathLanguage(PathLanguage.XPATH);
@@ -123,7 +124,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     System.out.println(content1);
     String xmlStr2Mod = new String("<resources><screen name=\"screen_small\">false</screen><screen name=\"adjust_view_bounds\">true</screen></resources>");
 
-    assertTrue("XML fragment is not replaced", content1.contains(xmlStr2Mod));
+    assertTrue( content1.contains(xmlStr2Mod));
     // release client
     client.release();
   }
@@ -134,8 +135,8 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
    * Message : Local message: write failed: Unauthorized. Server Message:
    * Unauthorized
    */
-  @Test(expected = FailedRequestException.class)
-  public void testJSONParserException() throws IOException
+	@Test
+  public void testJSONParserException()
   {
     System.out.println("Running testPartialUpdateJSON");
 
@@ -146,7 +147,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     // write docs
     for (String filename : filenames) {
-      writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
+      assertThrows(FailedRequestException.class, () -> writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON"));
     }
     // release client
     client.release();
@@ -198,9 +199,9 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     System.out.println(content);
 
-    assertTrue("fragment is not inserted", content.contains("{\"insertedKey\":9}"));
-    assertTrue("Original fragment is not inserted or incorrect", content.contains("{\"original\":true}"));
-    assertTrue("Modified fragment is not inserted or incorrect", content.contains("{\"modified\":false}"));
+    assertTrue( content.contains("{\"insertedKey\":9}"));
+    assertTrue( content.contains("{\"original\":true}"));
+    assertTrue( content.contains("{\"modified\":false}"));
 
     // Test for replaceValue with booleans.
     DocumentPatchBuilder patchBldrBool = docMgr.newPatchBuilder();
@@ -218,8 +219,8 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     System.out.println(content1);
     // Make sure the inserted content is present.
-    assertTrue("Original fragment is not replaced", content1.contains("{\"original\":false}"));
-    assertTrue("Modified fragment is not replaced", content1.contains("{\"modified\":true}"));
+    assertTrue( content1.contains("{\"original\":false}"));
+    assertTrue( content1.contains("{\"modified\":true}"));
 
     // release client
     client.release();
@@ -266,7 +267,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     System.out.println("After Updating" + contentAfter);
 
-    assertTrue("fragment is not inserted", contentAfter.contains("<modified>2012-11-5</modified></root>"));
+    assertTrue( contentAfter.contains("<modified>2012-11-5</modified></root>"));
 
     // //
     // Updating Doc Element
@@ -281,7 +282,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     System.out.println("After Updating" + contentAfter);
 
     // Check
-    assertTrue("Element Value has not Changed", contentAfter.contains("<popularity>10</popularity>"));
+    assertTrue( contentAfter.contains("<popularity>10</popularity>"));
 
     // //
     // Updating Doc Attribute
@@ -299,7 +300,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     System.out.println("After Updating" + contentAfter);
     // Check
-    assertTrue("Value of amt has not Changed", contentAfter.contains("<price amt=\"0.5\" xmlns=\"http://cloudbank.com\"/>"));
+    assertTrue( contentAfter.contains("<price amt=\"0.5\" xmlns=\"http://cloudbank.com\"/>"));
 
     // //
     // Updating Doc Namespace
@@ -315,7 +316,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     System.out.println("After Updating" + contentAfter);
     // Check
-    assertTrue("Element Value has not Changed", contentAfter.contains("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2006-02-02</date>"));
+    assertTrue( contentAfter.contains("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2006-02-02</date>"));
 
     // release client
     client.release();
@@ -355,12 +356,12 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
       waitForPropertyPropagate();
     } catch (Exception e) {
       System.out.println(e.toString());
-      assertTrue("Haven't deleted Invalid path", e.toString().contains(" invalid path: //InvalidPath"));
+      assertTrue(e.toString().contains(" invalid path: //InvalidPath"));
     }
     String contentAfter = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println("After Updating" + contentAfter);
-    assertFalse("Element is not Deleted", contentAfter.contains("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2005-01-01</date>"));
+    assertFalse( contentAfter.contains("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2005-01-01</date>"));
 
     // release client
     client.release();
@@ -396,10 +397,10 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     System.out.println(content);
 
-    assertTrue("fragment is not inserted Before", content.contains("<start>Hi</start>"));
-    assertTrue("fragment is not inserted After", content.contains("<modified>2013-03-21</modified>"));
-    assertTrue("fragment is not inserted as Last Child", content.contains("<End>bye</End>"));
-    assertFalse("fragment with invalid path has entered", content.contains("<false>Entry</false>"));
+    assertTrue( content.contains("<start>Hi</start>"));
+    assertTrue( content.contains("<modified>2013-03-21</modified>"));
+    assertTrue( content.contains("<End>bye</End>"));
+    assertFalse( content.contains("<false>Entry</false>"));
     // release client
     client.release();
   }
@@ -432,9 +433,9 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     System.out.println(content);
 
-    assertTrue("fragment is not Replaced", content.contains("<replaced>foo</replaced>"));
-    assertFalse("fragment is not Replaced", content.contains("<replaced>FalseEntry</replaced>"));
-    assertTrue("replaceInsertFragment has Failed", content.contains("<foo>bar</foo>"));
+    assertTrue( content.contains("<replaced>foo</replaced>"));
+    assertFalse( content.contains("<replaced>FalseEntry</replaced>"));
+    assertTrue( content.contains("<foo>bar</foo>"));
     // release client
     client.release();
   }
@@ -466,9 +467,9 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     System.out.println(content);
 
-    assertTrue("replaceInsertFragment Failed at Position.LAST_CHILD", content.contains("<foo>LastChild</foo>"));
-    assertTrue("replaceInsertFragment Failed at Position.BEFORE", content.contains("<foo>Before</foo>"));
-    assertTrue("replaceInsertFragment Failed at Position.AFTER", content.contains("<foo>After</foo>"));
+    assertTrue(content.contains("<foo>LastChild</foo>"));
+    assertTrue( content.contains("<foo>Before</foo>"));
+    assertTrue( content.contains("<foo>After</foo>"));
 
     // release client
     client.release();
@@ -516,17 +517,17 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     System.out.println("After Update" + content);
     // Check
-    assertTrue("Add Failed", content.contains("<add>15</add>"));
-    assertTrue("Subtract Failed", content.contains("<subtract>3</subtract>"));
-    assertTrue("Multiplication Failed", content.contains("<multiply>4</multiply>"));
-    assertTrue("Division Failed", content.contains("<divide>10</divide>"));
-    assertTrue("concatenateAfter Failed", content.contains("<concatenateAfter>Hi ML7</concatenateAfter>"));
-    assertTrue("concatenateBefore Failed", content.contains("<concatenateBefore>ML 7</concatenateBefore>"));
-    assertTrue("substringAfter Failed", content.contains(" <substringAfter> 7</substringAfter>"));
-    assertTrue("substringBefore Failed", content.contains("<substringBefore>ML </substringBefore>"));
-    assertTrue("concatenateBetween Failed", content.contains("<concatenateBetween>ML Version 7</concatenateBetween>"));
-    assertTrue("Ragex Failed", content.contains("<replaceRegex>C111nt</replaceRegex>"));
-    assertTrue("Apply Library Fragments Failed ", content.contains("<applyLibrary>APIAPI</applyLibrary>"));
+    assertTrue( content.contains("<add>15</add>"));
+    assertTrue( content.contains("<subtract>3</subtract>"));
+    assertTrue( content.contains("<multiply>4</multiply>"));
+    assertTrue( content.contains("<divide>10</divide>"));
+    assertTrue( content.contains("<concatenateAfter>Hi ML7</concatenateAfter>"));
+    assertTrue( content.contains("<concatenateBefore>ML 7</concatenateBefore>"));
+    assertTrue( content.contains(" <substringAfter> 7</substringAfter>"));
+    assertTrue( content.contains("<substringBefore>ML </substringBefore>"));
+    assertTrue( content.contains("<concatenateBetween>ML Version 7</concatenateBetween>"));
+    assertTrue( content.contains("<replaceRegex>C111nt</replaceRegex>"));
+    assertTrue( content.contains("<applyLibrary>APIAPI</applyLibrary>"));
 
     String docId2 = "/partial-update/constraint6.json";
 
@@ -544,7 +545,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     waitForPropertyPropagate();
     String content1 = xmlDocMgr.read(docId2, new StringHandle()).get();
     System.out.println("After Update on divide with fn() values " + content1);
-    assertTrue("Division Failed", content1.contains("\"divide\":18"));
+    assertTrue( content1.contains("\"divide\":18"));
 
     // Work on the different element with different values and another patch update
     DocumentPatchBuilder patchBldrSJS1 = jdm.newPatchBuilder();
@@ -555,7 +556,6 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     		patchBldrSJS1.call().applyLibraryValues("Mymin", -12, 21));
     ObjectMapper mapper = new ObjectMapper();
     ObjectNode fragmentNode = mapper.createObjectNode();
-    fragmentNode = mapper.createObjectNode();
     fragmentNode.put("modulo", 2);
     String fragment = mapper.writeValueAsString(fragmentNode);
     patchBldrSJS1.insertFragment("root.divide", Position.AFTER, fragment);
@@ -567,8 +567,8 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     waitForPropertyPropagate();
     String content2 = xmlDocMgr.read(docId2, new StringHandle()).get();
     System.out.println("After Update on add with fn() values " + content2);
-    assertTrue("Add Failed", content2.contains("\"add\":-12"));
-    assertTrue("Modulo Failed", content2.contains("\"modulo\":2"));
+    assertTrue( content2.contains("\"add\":-12"));
+    assertTrue( content2.contains("\"modulo\":2"));
 
     // Error condition checks
     DocumentPatchBuilder patchBldrSJSErr = jdm.newPatchBuilder();
@@ -591,7 +591,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     waitForPropertyPropagate();
     String content3 = xmlDocMgr.read(docId2, new StringHandle()).get();
     System.out.println("After Update on divide with fn() values " + content3);
-    assertTrue("No exception should be available", strErr.toString().isEmpty());
+    assertTrue( strErr.toString().isEmpty());
 
     // release client
     libsMgr.delete("/ext/patch/custom-lib.xqy");
@@ -624,9 +624,9 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     System.out.println(" After Updating " + content);
     // Check
-    assertTrue("Multiplication Failed", content.contains("<popularity>10</popularity>"));
-    assertFalse("Deletion Failed", content.contains("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2005-01-01</date>"));
-    assertTrue("Insertion Failed", content.contains("<modified>2012-11-5</modified>"));
+    assertTrue( content.contains("<popularity>10</popularity>"));
+    assertFalse( content.contains("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2005-01-01</date>"));
+    assertTrue( content.contains("<modified>2012-11-5</modified>"));
     // release client
     client.release();
   }
@@ -661,9 +661,9 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     System.out.println(" After Updating " + content);
 
     // Check
-    assertTrue("Multiplication Failed", content.contains("<popularity>10</popularity>"));
-    assertFalse("Deletion Failed", content.contains("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2005-01-01</date>"));
-    assertTrue("Insertion Failed", content.contains("<modified>2012-11-5</modified>"));
+    assertTrue( content.contains("<popularity>10</popularity>"));
+    assertFalse( content.contains("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2005-01-01</date>"));
+    assertTrue( content.contains("<modified>2012-11-5</modified>"));
 
     // release client
     client.release();
@@ -754,9 +754,9 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     System.out.println("After" + content);
 
-    assertTrue("fragment is not inserted", content.contains("{\"insertedKey\":9}"));
-    assertTrue("fragment is not inserted", content.contains("{\"firstName\":\"AnnHi\", \"lastName\":\"Smith\"}"));
-    assertFalse("fragment is not deleted", content.contains("{\"firstName\":\"Bob\", \"lastName\":\"Foo\"}"));
+    assertTrue( content.contains("{\"insertedKey\":9}"));
+    assertTrue( content.contains("{\"firstName\":\"AnnHi\", \"lastName\":\"Smith\"}"));
+    assertFalse( content.contains("{\"firstName\":\"Bob\", \"lastName\":\"Foo\"}"));
 
     // release client
     client.release();
@@ -790,9 +790,9 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     System.out.println(" After Changing " + contentMetadata1);
 
     // Check
-    assertTrue("Collection not added", contentMetadata1.contains("<rapi:collection>/document/collection3</rapi:collection>"));
-    assertTrue("Permission not added", contentMetadata1.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
-    assertTrue("Property not added", contentMetadata1.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
+    assertTrue( contentMetadata1.contains("<rapi:collection>/document/collection3</rapi:collection>"));
+    assertTrue( contentMetadata1.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
+    assertTrue( contentMetadata1.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
 
     // //
     // replacing Metadata Values
@@ -808,9 +808,9 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     System.out.println(" After Updating " + contentMetadataRep);
 
     // Check
-    assertTrue("Collection not added", contentMetadataRep.contains("<rapi:collection>/document/collection4</rapi:collection>"));
-    assertTrue("Permission not added", contentMetadata1.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
-    assertTrue("Property not added", contentMetadataRep.contains("<Hello xsi:type=\"xs:string\">Bye</Hello>"));
+    assertTrue( contentMetadataRep.contains("<rapi:collection>/document/collection4</rapi:collection>"));
+    assertTrue( contentMetadata1.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
+    assertTrue( contentMetadataRep.contains("<Hello xsi:type=\"xs:string\">Bye</Hello>"));
 
     // //
     // Deleting Metadata Values
@@ -826,9 +826,9 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     System.out.println(" After Deleting " + contentMetadataDel);
 
     // Check
-    assertFalse("Collection not deleted", contentMetadataDel.contains("<rapi:collection>/document/collection4</rapi:collection>"));
-    assertFalse("Permission not deleted", contentMetadataDel.contains("<rapi:role-name>admin</rapi:role-name>"));
-    assertFalse("Property not deleted", contentMetadataDel.contains("<Hello xsi:type=\"xs:string\">Bye</Hello>"));
+    assertFalse( contentMetadataDel.contains("<rapi:collection>/document/collection4</rapi:collection>"));
+    assertFalse( contentMetadataDel.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertFalse( contentMetadataDel.contains("<Hello xsi:type=\"xs:string\">Bye</Hello>"));
 
     // release client
     client.release();
@@ -865,7 +865,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     System.out.println("After" + content);
 
-    assertTrue("fragment is not inserted", content.contains("<modified>2013-03-21</modified></root>"));
+    assertTrue( content.contains("<modified>2013-03-21</modified></root>"));
 
     // release client
     client.release();
@@ -910,7 +910,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     System.out.println("After" + content);
 
-    assertTrue("fragment is not inserted", content.contains("{\"insertedKey\":9}]"));
+    assertTrue( content.contains("{\"insertedKey\":9}]"));
 
     // release client
     client.release();
@@ -949,7 +949,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     System.out.println("After" + content);
 
-    assertTrue("fragment is not inserted", content.contains("<modified>2013-03-21</modified></root>"));
+    assertTrue( content.contains("<modified>2013-03-21</modified></root>"));
 
     // release client
     client.release();
@@ -994,7 +994,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     System.out.println("After" + content);
 
-    assertTrue("fragment is not inserted", content.contains("{\"insertedKey\":9}]"));
+    assertTrue( content.contains("{\"insertedKey\":9}]"));
 
     // release client
     client.release();
@@ -1027,7 +1027,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     String contentBefore = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println(" Content after Updating with Cardinality.ONE : " + contentBefore);
-    assertTrue("Insertion Failed ", contentBefore.contains("</modified></root>"));
+    assertTrue( contentBefore.contains("</modified></root>"));
     // Updating again
     DocumentPatchBuilder xmlPatchBldr = xmlDocMgr.newPatchBuilder();
     DocumentPatchHandle xmlPatchForNode = xmlPatchBldr.insertFragment("/root/id", Position.BEFORE, Cardinality.ONE_OR_MORE, "<modified>1989-04-06</modified>").build();
@@ -1036,7 +1036,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     String contentAfter = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println("Content after Updating with Cardinality.ONE_OR_MORE" + contentAfter);
-    assertTrue("Insertion Failed ", contentAfter.contains("1989-04-06"));
+    assertTrue( contentAfter.contains("1989-04-06"));
     // Updating again
     DocumentPatchBuilder xmlPatchBldr1 = xmlDocMgr.newPatchBuilder();
     DocumentPatchHandle xmlPatchForNode1 = xmlPatchBldr1.insertFragment("/root/id", Position.AFTER, Cardinality.ZERO_OR_ONE, "<modified>2013-07-29</modified>").build();
@@ -1045,7 +1045,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     contentAfter = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println("Content after Updating with Cardinality.ZERO_OR_ONE" + contentAfter);
-    assertTrue("Insertion Failed ", contentAfter.contains("</id><modified>2013-07-29"));
+    assertTrue( contentAfter.contains("</id><modified>2013-07-29"));
 
     // release client
     client.release();
@@ -1351,7 +1351,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
               for (ExtractedItem item : extracted) {
                   String extractItem = item.getAs(String.class);
                   System.out.println("Extracted item from Number node element search " + extractItem);
-                  assertTrue("Extracted Number node items incorrect", extractItem.matches("\\{\"Pop\":328\\}"));
+                  assertTrue( extractItem.matches("\\{\"Pop\":328\\}"));
               }
           }
       }
@@ -1371,7 +1371,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
       // Verify the results again. Poppulation should be 500 for second document
       String content = docMgr.read(docId, new StringHandle()).get();
       System.out.println("Patched Number node element is " + content);
-      assertTrue("Patched Number node element incorrect", content.contains("\"Pop\":500"));
+      assertTrue( content.contains("\"Pop\":500"));
   }
 
   /*
@@ -1426,9 +1426,9 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     String actualCollections = getDocumentCollectionsString(collections);
     System.out.println("Returned collections: " + actualCollections);
 
-    assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
-    assertTrue("JSONPatch1 not found", actualCollections.contains("JSONPatch1"));
-    assertTrue("JSONPatch3 not found", actualCollections.contains("JSONPatch3"));
+    assertTrue( actualCollections.contains("size:2"));
+    assertTrue( actualCollections.contains("JSONPatch1"));
+    assertTrue( actualCollections.contains("JSONPatch3"));
 
     // Construct a Patch From Raw JSON
     /*
@@ -1460,7 +1460,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     client.release();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws Exception {
     deleteRESTUser("eval-user");
     deleteUserRole("test-eval");

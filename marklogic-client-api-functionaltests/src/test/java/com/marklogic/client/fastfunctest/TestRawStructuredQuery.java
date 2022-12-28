@@ -23,8 +23,9 @@ import com.marklogic.client.io.*;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -36,11 +37,11 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+
 
 public class TestRawStructuredQuery extends AbstractFunctionalTest {
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception {
     deleteDocuments(connectAsAdmin());
   }
@@ -137,7 +138,7 @@ public class TestRawStructuredQuery extends AbstractFunctionalTest {
 
     System.out.println(resultDoc);
 
-    assertTrue("document is not returned", resultDoc.contains("/raw-combined-query/constraint5.xml"));
+    assertTrue( resultDoc.contains("/raw-combined-query/constraint5.xml"));
 
     // release client
     client.release();
@@ -241,7 +242,7 @@ public class TestRawStructuredQuery extends AbstractFunctionalTest {
 
     System.out.println(resultDoc);
 
-    assertTrue("document is not returned", resultDoc.contains("/raw-combined-query/constraint1.xml"));
+    assertTrue( resultDoc.contains("/raw-combined-query/constraint1.xml"));
 
     // release client
     client.release();
@@ -468,7 +469,7 @@ public class TestRawStructuredQuery extends AbstractFunctionalTest {
    * setCriteria and withCriteria Make sure a query using those query
    * definitions selects only documents that match both the query definition and
    * the string query
-   * 
+   *
    * Uses setCriteria. Uses combinedQueryOption.xml options file QD and string
    * query should return 1 URI in the response. constraint5.xml positive case
    */
@@ -511,8 +512,8 @@ public class TestRawStructuredQuery extends AbstractFunctionalTest {
 
     JsonNode node = results.get();
     // Return 1 node
-    assertEquals("Number of results returned incorrect in response", "1", node.path("total").asText());
-    assertTrue("Results returned incorrect in response", node.path("results").get(0).path("uri").asText().contains("/raw-combined-query/constraint5.xml"));
+    assertEquals( "1", node.path("total").asText());
+    assertTrue( node.path("results").get(0).path("uri").asText().contains("/raw-combined-query/constraint5.xml"));
 
     // Multiple setCriteria on query def
     RawStructuredQueryDefinition querydef2 = queryMgr.newRawStructuredQueryDefinition(rawHandle);
@@ -525,8 +526,8 @@ public class TestRawStructuredQuery extends AbstractFunctionalTest {
 
     JsonNode node2 = results2.get();
     // Return 1 node
-    assertEquals("Number of results returned incorrect in response", "1", node2.path("total").asText());
-    assertTrue("Results returned incorrect in response", node2.path("results").get(0).path("uri").asText().contains("/raw-combined-query/constraint5.xml"));
+    assertEquals( "1", node2.path("total").asText());
+    assertTrue( node2.path("results").get(0).path("uri").asText().contains("/raw-combined-query/constraint5.xml"));
 
     // setCriteria on query def - negative
     RawStructuredQueryDefinition querydefNeg = queryMgr.newRawStructuredQueryDefinition(rawHandle);
@@ -538,7 +539,7 @@ public class TestRawStructuredQuery extends AbstractFunctionalTest {
 
     JsonNode nodeNeg = resultsNeg.get();
     // Return 0 nodes
-    assertEquals("Number of results returned incorrect in response", "0", nodeNeg.path("total").asText());
+    assertEquals( "0", nodeNeg.path("total").asText());
 
     // Multiple setCriteria on query def - negative
     RawStructuredQueryDefinition querydefNeg2 = queryMgr.newRawStructuredQueryDefinition(rawHandle);
@@ -551,7 +552,7 @@ public class TestRawStructuredQuery extends AbstractFunctionalTest {
 
     JsonNode nodeNeg2 = resultsNeg2.get();
     // Return 0 node
-    assertEquals("Number of results returned incorrect in response", "0", nodeNeg2.path("total").asText());
+    assertEquals( "0", nodeNeg2.path("total").asText());
 
     // release client
     client.release();
@@ -562,7 +563,7 @@ public class TestRawStructuredQuery extends AbstractFunctionalTest {
    * setCriteria and withCriteria Make sure a query using those query
    * definitions selects only documents that match both the query definition and
    * the string query
-   * 
+   *
    * Uses withCriteria. Uses combinedQueryPopularityOption.xml options file
    */
 
@@ -602,10 +603,10 @@ public class TestRawStructuredQuery extends AbstractFunctionalTest {
     JacksonHandle results = queryMgr.search(querydef1, strHandle.withFormat(Format.JSON));
 
     JsonNode node = results.get();
-    assertEquals("Number of results returned incorrect in response", "2", node.path("total").asText());
-    assertTrue("Results returned incorrect in response", node.path("results").get(0).path("uri").asText().contains("/raw-combined-query/constraint1.xml") ||
+    assertEquals( "2", node.path("total").asText());
+    assertTrue( node.path("results").get(0).path("uri").asText().contains("/raw-combined-query/constraint1.xml") ||
         node.path("results").get(1).path("uri").asText().contains("/raw-combined-query/constraint1.xml"));
-    assertTrue("Results returned incorrect in response", node.path("results").get(0).path("uri").asText().contains("/raw-combined-query/constraint4.xml") ||
+    assertTrue( node.path("results").get(0).path("uri").asText().contains("/raw-combined-query/constraint4.xml") ||
         node.path("results").get(1).path("uri").asText().contains("/raw-combined-query/constraint4.xml"));
 
     /*
@@ -622,8 +623,8 @@ public class TestRawStructuredQuery extends AbstractFunctionalTest {
 
     JsonNode nodePos = resultsPos.get();
     // Return 2 nodes.
-    assertEquals("Number of results returned incorrect in response", "1", nodePos.path("total").asText());
-    assertTrue("Results returned incorrect in response", nodePos.path("results").get(0).path("uri").asText().contains("/raw-combined-query/constraint4.xml"));
+    assertEquals( "1", nodePos.path("total").asText());
+    assertTrue( nodePos.path("results").get(0).path("uri").asText().contains("/raw-combined-query/constraint4.xml"));
 
     /*
      * With multiple withCriteria - negativeThis is an invalid scenario--you can
@@ -638,7 +639,7 @@ public class TestRawStructuredQuery extends AbstractFunctionalTest {
 
     JsonNode nodeNeg = resultsNeg.get();
     // Return 0 nodes.
-    assertEquals("Number of results returned incorrect in response", "0", nodeNeg.path("total").asText());
+    assertEquals( "0", nodeNeg.path("total").asText());
 
     // create query def2 with both criteria methods and check fluent return
 
@@ -651,8 +652,8 @@ public class TestRawStructuredQuery extends AbstractFunctionalTest {
 
     JsonNode node2 = results2.get();
     // Returns 1 node. constraint1.xml
-    assertEquals("Number of results returned incorrect in response", "1", node2.path("total").asText());
-    assertEquals("Result returned incorrect in response", "/raw-combined-query/constraint1.xml", node2.path("results").get(0).path("uri").asText());
+    assertEquals( "1", node2.path("total").asText());
+    assertEquals( "/raw-combined-query/constraint1.xml", node2.path("results").get(0).path("uri").asText());
 
     // release client
     client.release();

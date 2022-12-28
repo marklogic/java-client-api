@@ -22,14 +22,15 @@ import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.type.*;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+
 
 /* The tests here are for sanity checks when we have plans from different sources
  * such as fromLexicons and fromtriples.
@@ -37,7 +38,7 @@ import static org.junit.Assert.assertTrue;
 
 public class TestOpticOnMixedViews extends AbstractFunctionalTest {
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws Exception
   {
     // Install the TDE templates
@@ -134,7 +135,7 @@ public class TestOpticOnMixedViews extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
 
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
-    assertTrue("Number of Elements after plan execution is incorrect. Should be 3", 3 == jsonBindingsNodes.size());
+    assertTrue( 3 == jsonBindingsNodes.size());
   }
 
   /*
@@ -206,7 +207,7 @@ public class TestOpticOnMixedViews extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
 
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
-    assertTrue("Number of Elements after plan execution is incorrect. Should be 5", 5 == jsonBindingsNodes.size());
+    assertTrue( 5 == jsonBindingsNodes.size());
   }
 
   /*
@@ -243,7 +244,7 @@ public class TestOpticOnMixedViews extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
 
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
-    assertTrue("Number of Elements after plan execution is incorrect. Should be 2", 2 == jsonBindingsNodes.size());
+    assertTrue( 2 == jsonBindingsNodes.size());
   }
 
   /*
@@ -286,8 +287,8 @@ public class TestOpticOnMixedViews extends AbstractFunctionalTest {
     row.put("colorId", 4);
     row.put("colorDesc", "yellow");
     literals2[3] = row;
-    
-    PlanTriplePatternSeq playerSeq = p.patternSeq( 
+
+    PlanTriplePatternSeq playerSeq = p.patternSeq(
     		p.pattern(playerIdCol, bb.iri("age"), playerAgeCol),
             p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
             p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
@@ -315,11 +316,11 @@ public class TestOpticOnMixedViews extends AbstractFunctionalTest {
     JsonNode jsonResults = jacksonHandle.get();
 
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
-    assertTrue("Number of Elements after plan execution is incorrect. Should be 2", 2 == jsonBindingsNodes.size());
-    assertEquals("Row 1 player_name value incorrect", "Matt Rose", jsonBindingsNodes.path(0).path("player_name").path("value").asText());
-    assertEquals("Row 1 colorDesc value incorrect", "red", jsonBindingsNodes.path(0).path("colorDesc").path("value").asText());
-    assertEquals("Row 2 player_name value incorrect", "Matt Rose", jsonBindingsNodes.path(1).path("player_name").path("value").asText());
-    assertEquals("Row 2 colorDesc value incorrect", "yellow", jsonBindingsNodes.path(1).path("colorDesc").path("value").asText());
+    assertTrue( 2 == jsonBindingsNodes.size());
+    assertEquals("Matt Rose", jsonBindingsNodes.path(0).path("player_name").path("value").asText());
+    assertEquals( "red", jsonBindingsNodes.path(0).path("colorDesc").path("value").asText());
+    assertEquals("Matt Rose", jsonBindingsNodes.path(1).path("player_name").path("value").asText());
+    assertEquals( "yellow", jsonBindingsNodes.path(1).path("colorDesc").path("value").asText());
   }
 
   /*
@@ -361,7 +362,7 @@ public class TestOpticOnMixedViews extends AbstractFunctionalTest {
     row.put("colorId", 4);
     row.put("colorDesc", "yellow");
     literals2[3] = row;
-    PlanTriplePatternSeq playerSeq = p.patternSeq( 
+    PlanTriplePatternSeq playerSeq = p.patternSeq(
     		p.pattern(playerIdCol, bb.iri("age"), playerAgeCol),
             p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
             p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
@@ -392,8 +393,8 @@ public class TestOpticOnMixedViews extends AbstractFunctionalTest {
 
     JsonNode jsonBindingsNodes = jsonResults.path("rows");
 
-    assertTrue("Number of Elements after plan execution is incorrect. Should be 2", 2 == jsonBindingsNodes.size());
-    assertEquals("Row 1 colorDesc value incorrect", "1", jsonBindingsNodes.path(0).path("myResults").path("value").path("myRows").path(0).asText());
-    assertEquals("Row 1 colorDesc value incorrect", "4", jsonBindingsNodes.path(1).path("myResults").path("value").path("myRows").path(0).asText());
+    assertTrue( 2 == jsonBindingsNodes.size());
+    assertEquals( "1", jsonBindingsNodes.path(0).path("myResults").path("value").path("myRows").path(0).asText());
+    assertEquals( "4", jsonBindingsNodes.path(1).path("myResults").path("value").path("myRows").path(0).asText());
   }
 }

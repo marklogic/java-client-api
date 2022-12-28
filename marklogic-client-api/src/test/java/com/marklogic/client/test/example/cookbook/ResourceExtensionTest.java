@@ -15,16 +15,14 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-
-import org.junit.Test;
-
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.example.cookbook.ResourceExtension;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ResourceExtensionTest {
   @Test
@@ -38,6 +36,6 @@ public class ResourceExtensionTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    assertTrue("ResourceExtension example failed", succeeded);
+    assertTrue( succeeded);
   }
 }

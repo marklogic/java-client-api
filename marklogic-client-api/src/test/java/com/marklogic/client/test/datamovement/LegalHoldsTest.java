@@ -15,37 +15,28 @@
  */
 package com.marklogic.client.test.datamovement;
 
-import com.marklogic.client.datamovement.FilteredForestConfiguration;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static org.junit.Assert.fail;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.QueryBatcher;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.marklogic.client.DatabaseClient;
-
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.admin.ExtensionLibrariesManager;
+import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
-
-import static com.marklogic.client.query.StructuredQueryBuilder.Operator;
-
+import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.test.Common;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import javax.xml.bind.DatatypeConverter;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,7 +46,8 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.xml.bind.DatatypeConverter;
+import static com.marklogic.client.query.StructuredQueryBuilder.Operator;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class LegalHoldsTest {
   private Logger logger = LoggerFactory.getLogger(LegalHoldsTest.class);
@@ -66,7 +58,7 @@ public class LegalHoldsTest {
   private static DatabaseClient evalClient = Common.connectEval();
   private static DatabaseClient adminClient = Common.connectAdmin();
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() throws Exception {
     // install the filterUrisReferencedByHolds module
     installModule();
@@ -75,7 +67,7 @@ public class LegalHoldsTest {
     // upload sample json docs.  Only file5.json matches all criteria.
     uploadData();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() throws Exception {
     cleanup(adminClient);
   }

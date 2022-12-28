@@ -28,8 +28,7 @@ import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.io.*;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
-import org.junit.*;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.*;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
@@ -41,22 +40,22 @@ import java.io.StringReader;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /*
- * This test is meant for javascript to 
+ * This test is meant for javascript to
  * verify the eval api can handle all the formats of documents
  * verify eval api can handle all the return types
  * Verify eval takes all kind of variables
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class TestEvalJavaScript extends AbstractFunctionalTest {
   private static String appServerHostname = null;
   private String dbName = "java-functest";
 
   private DatabaseClient client;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     TestEvalXquery.createUserRolesWithPrevilages("test-js-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "xdmp:invoke-in", "xdmp:invoke", "xdbc:invoke-in", "any-uri",
         "xdbc:invoke");
@@ -64,13 +63,13 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
     appServerHostname = getRestAppServerHostName();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     TestEvalXquery.deleteRESTUser("eval-userJS");
     TestEvalXquery.deleteUserRole("test-js-eval");
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     int restPort = getRestServerPort();
     client = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-userJS", "x", getConnType());
@@ -91,42 +90,41 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
 
         if (jh.get().isArray()) {
           System.out.println("Type Array :" + jh.get().toString());
-          assertEquals("array value at index 0 ", 1, jh.get().get(0)
+          assertEquals( 1, jh.get().get(0)
               .asInt());
-          assertEquals("array value at index 1 ", 2, jh.get().get(1)
+          assertEquals( 2, jh.get().get(1)
               .asInt());
-          assertEquals("array value at index 2 ", 3, jh.get().get(2)
+          assertEquals( 3, jh.get().get(2)
               .asInt());
         } else if (jh.get().isObject()) {
           System.out.println("Type Object :" + jh.get().toString());
           if (jh.get().has("foo")) {
-            assertNull("this object also has null node", jh.get()
+            assertNull( jh.get()
                 .get("testNull").textValue());
           } else if (jh.get().has("obj")) {
-            assertEquals("Value of the object is ", "value", jh
+            assertEquals( "value", jh
                 .get().get("obj").asText());
           } else {
-            assertFalse("getting a wrong object ", true);
+            fail("getting a wrong object ");
           }
 
         } else if (jh.get().isNumber()) {
           System.out.println("Type Number :" + jh.get().toString());
-          assertEquals("Number value", 1, jh.get().asInt());
+          assertEquals( 1, jh.get().asInt());
         } else if (jh.get().isNull()) {
           System.out.println("Type Null :" + jh.get().toString());
-          assertNull("Returned Null", jh.get().textValue());
+          assertNull( jh.get().textValue());
         } else if (jh.get().isBoolean()) {
           System.out.println("Type boolean :" + jh.get().toString());
-          assertTrue("Boolean value returned false", jh.get()
+          assertTrue( jh.get()
               .asBoolean());
         } else {
           // System.out.println("Running into different types than expected");
-          assertFalse("Running into different types than expected",
-              true);
+          fail("Running into different types than expected");
         }
 
       } else if (er.getType().equals(Type.TEXTNODE)) {
-        assertTrue("document contains",
+        assertTrue(
             er.getAs(String.class).equals("test1"));
         // System.out.println("type txt node :"+er.getAs(String.class));
 
@@ -134,20 +132,20 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
         FileHandle fh = new FileHandle();
         fh = er.get(fh);
         // System.out.println("type binary :"+fh.get().length());
-        assertEquals("files size", 2, fh.get().length());
+        assertEquals( 2, fh.get().length());
       } else if (er.getType().equals(Type.BOOLEAN)) {
-        assertTrue("Documents exist?", er.getBoolean());
+        assertTrue(er.getBoolean());
         // System.out.println("type boolean:"+er.getBoolean());
       } else if (er.getType().equals(Type.INTEGER)) {
         System.out.println("type Integer: "
             + er.getNumber().longValue());
-        assertEquals("count of documents ", 31, er.getNumber()
+        assertEquals( 31, er.getNumber()
             .intValue());
       } else if (er.getType().equals(Type.STRING)) {
           String str = er.getString();
         // There is git issue 152
         System.out.println("type string: " + str );
-        assertTrue("String?", str.contains("true") || str.contains("xml")
+        assertTrue(str.contains("true") || str.contains("xml")
             || str.contains("31") || str.contains("1.0471975511966"));
 
       } else if (er.getType().equals(Type.NULL)) {
@@ -159,25 +157,24 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
         // There is git issue 151
         System.out.println("Testing is Others? "
             + er.getAs(String.class));
-        // assertEquals("Returns OTHERs","xdmp:forest-restart#1",er.getString());
 
       } else if (er.getType().equals(Type.ANYURI)) {
         // System.out.println("Testing is AnyUri? "+er.getAs(String.class));
-        assertEquals("Returns me a uri :", "test1.xml",
+        assertEquals( "test1.xml",
             er.getAs(String.class));
 
       } else if (er.getType().equals(Type.DATE)) {
         // System.out.println("Testing is DATE? "+er.getAs(String.class));
-        assertEquals("Returns me a date :", "2002-03-07-07:00",
+        assertEquals( "2002-03-07-07:00",
             er.getAs(String.class));
       } else if (er.getType().equals(Type.DATETIME)) {
         // System.out.println("Testing is DATETIME? "+er.getAs(String.class));
-        assertEquals("Returns me a dateTime :",
+        assertEquals(
             "2010-01-06T18:13:50.874-07:00", er.getAs(String.class));
 
       } else if (er.getType().equals(Type.DECIMAL)) {
         // System.out.println("Testing is Decimal? "+er.getAs(String.class));
-        assertEquals("Returns me a Decimal :", "1.0471975511966",
+        assertEquals( "1.0471975511966",
             er.getAs(String.class));
 
       } else if (er.getType().equals(Type.DOUBLE)) {
@@ -187,64 +184,64 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
       } else if (er.getType().equals(Type.DURATION)) {
         System.out.println("Testing is Duration? "
             + er.getAs(String.class));
-        // assertEquals("Returns me a Duration :",0.4903562,er.getNumber().floatValue());
+        // assertEquals(0.4903562,er.getNumber().floatValue());
       } else if (er.getType().equals(Type.FLOAT)) {
         // System.out.println("Testing is Float? "+er.getAs(String.class));
         assertEquals(20, er.getNumber().floatValue(), 0);
       } else if (er.getType().equals(Type.GDAY)) {
         // System.out.println("Testing is GDay? "+er.getAs(String.class));
-        assertEquals("Returns me a GDAY :", "---01",
+        assertEquals( "---01",
             er.getAs(String.class));
       } else if (er.getType().equals(Type.GMONTH)) {
         // System.out.println("Testing is GMonth "+er.getAs(String.class));
-        assertEquals("Returns me a GMONTH :", "--01",
+        assertEquals( "--01",
             er.getAs(String.class));
       } else if (er.getType().equals(Type.GMONTHDAY)) {
         // System.out.println("Testing is GMonthDay? "+er.getAs(String.class));
-        assertEquals("Returns me a GMONTHDAY :", "--12-25-14:00",
+        assertEquals( "--12-25-14:00",
             er.getAs(String.class));
       } else if (er.getType().equals(Type.GYEAR)) {
         // System.out.println("Testing is GYear? "+er.getAs(String.class));
-        assertEquals("Returns me a GYEAR :", "2005-12:00",
+        assertEquals( "2005-12:00",
             er.getAs(String.class));
       } else if (er.getType().equals(Type.GYEARMONTH)) {
         // System.out.println("Testing is GYearMonth?1976-02 "+er.getAs(String.class));
-        assertEquals("Returns me a GYEARMONTH :", "1976-02",
+        assertEquals( "1976-02",
             er.getAs(String.class));
       } else if (er.getType().equals(Type.HEXBINARY)) {
         // System.out.println("Testing is HEXBINARY? "+er.getAs(String.class));
-        assertEquals("Returns me a HEXBINARY :", "BEEF",
+        assertEquals( "BEEF",
             er.getAs(String.class));
       } else if (er.getType().equals(Type.QNAME)) {
         // System.out.println("Testing is QNAME integer"+er.getAs(String.class));
-        assertEquals("Returns me a QNAME :", "integer",
+        assertEquals( "integer",
             er.getAs(String.class));
       } else if (er.getType().equals(Type.TIME)) {
         // System.out.println("Testing is TIME? "+er.getAs(String.class));
-        assertEquals("Returns me a TIME :", "10:00:00",
+        assertEquals( "10:00:00",
             er.getAs(String.class));
       } else if (er.getType().equals(Type.ATTRIBUTE)) {
         // System.out.println("Testing is ATTRIBUTE? "+er.getAs(String.class));
-        assertEquals("Returns me a ATTRIBUTE :", "attribute",
+        assertEquals( "attribute",
             er.getAs(String.class));
 
       } else if (er.getType().equals(Type.PROCESSINGINSTRUCTION)) {
         // System.out.println("Testing is ProcessingInstructions? "+er.getAs(String.class));
-        assertEquals("Returns me a PROCESSINGINSTRUCTION :",
+        assertEquals(
             "<?processing instruction?>", er.getAs(String.class));
       } else if (er.getType().equals(Type.COMMENT)) {
         // System.out.println("Testing is Comment node? "+er.getAs(String.class));
-        assertEquals("Returns me a COMMENT :", "<!--comment-->",
+        assertEquals( "<!--comment-->",
             er.getAs(String.class));
       } else if (er.getType().equals(Type.BASE64BINARY)) {
         // System.out.println("Testing is Base64Binary  "+er.getAs(String.class));
-        assertEquals("Returns me a BASE64BINARY :", "DEADBEEF",
+        assertEquals( "DEADBEEF",
             er.getAs(String.class));
       } else {
         System.out
             .println("Got something which is not belongs to anytype we support "
                 + er.getAs(String.class));
-        assertFalse("getting in else part, missing a type  ", true);
+        fail("getting in else part, missing a type  ");
       }
     }
   }
@@ -274,31 +271,31 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
     boolean response = client.newServerEval().javascript(insertXML).eval()
         .hasNext();
 
-    assertFalse("Insert query return empty sequence", response);
+    assertFalse( response);
     response = client.newServerEval().javascript(insertJSON).eval()
         .hasNext();
 
-    assertFalse("Insert query return empty sequence", response);
+    assertFalse( response);
     response = client.newServerEval().javascript(insertTXT).eval()
         .hasNext();
 
-    assertFalse("Insert query return empty sequence", response);
+    assertFalse( response);
     response = client.newServerEval().javascript(insertBinary).eval()
         .hasNext();
 
-    assertFalse("Insert query return empty sequence", response);
+    assertFalse( response);
     boolean response1 = client.newServerEval().javascript(query1).eval()
         .next().getBoolean();
 
-    assertTrue("Documents exist?", response1);
+    assertTrue(response1);
     int response2 = client.newServerEval().javascript(query2).eval().next()
         .getNumber().intValue();
 
-    assertEquals("count of documents ", 4, response2);
+    assertEquals( 4, response2);
     String response3 = client.newServerEval().javascript(query3)
         .evalAs(String.class);
 
-    assertEquals("Content database?", dbName, response3);
+    assertEquals( dbName, response3);
     ServerEvaluationCall evl = client.newServerEval();
     EvalResultIterator evr = evl.javascript(readDoc).eval();
     while (evr.hasNext()) {
@@ -306,22 +303,21 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
       if (er.getType().equals(Type.XML)) {
         DOMHandle dh = new DOMHandle();
         dh = er.get(dh);
-        assertEquals("document has content", "<foo>test1</foo>",
+        assertEquals( "<foo>test1</foo>",
             convertXMLDocumentToString(dh.get()));
       } else if (er.getType().equals(Type.JSON)) {
         JacksonHandle jh = new JacksonHandle();
         jh = er.get(jh);
-        assertTrue("document has object?", jh.get().has("test"));
+        assertTrue(jh.get().has("test"));
       } else if (er.getType().equals(Type.TEXTNODE)) {
         assertTrue(
-            "document contains",
             er.getAs(String.class).equals(
                 "This is a text document."));
 
       } else if (er.getType().equals(Type.BINARY)) {
         FileHandle fh = new FileHandle();
         fh = er.get(fh);
-        assertEquals("files size", 2, fh.get().length());
+        assertEquals( 2, fh.get().length());
 
       } else {
         System.out.println("Something went wrong");
@@ -348,20 +344,20 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
         if (er.getType().equals(Type.XML)) {
           DOMHandle dh = new DOMHandle();
           dh = er.get(dh);
-          assertEquals("document has content", "<foo>test1</foo>",
+          assertEquals( "<foo>test1</foo>",
               convertXMLDocumentToString(dh.get()));
         } else if (er.getType().equals(Type.JSON)) {
           JacksonHandle jh = new JacksonHandle();
           jh = er.get(jh);
-          assertTrue("document has object?", jh.get().has("test"));
+          assertTrue(jh.get().has("test"));
         } else if (er.getType().equals(Type.TEXTNODE)) {
-          assertTrue("document contains", er.getAs(String.class)
+          assertTrue( er.getAs(String.class)
               .equals("This is a text document."));
 
         } else if (er.getType().equals(Type.BINARY)) {
           FileHandle fh = new FileHandle();
           fh = er.get(fh);
-          assertEquals("files size", 2, fh.get().length());
+          assertEquals( 2, fh.get().length());
 
         } else {
           System.out.println("Something went wrong");
@@ -379,20 +375,19 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
    * Test is intended to test different types of variable passed to Javascript
    * from java and check return types,data types, there is a bug log against
    * REST 30209
-   * 
+   *
    * Expected Result : JS variable myJsonNull in this test has JsonNode object
    * of Type NullNode and its value not null. Hence we expect an Exception from
    * JerseyServices. See Git issue # 317 for further explanation.
    */
-  @Test(expected = IllegalArgumentException.class)
-  public void testJSDifferentVariableTypes() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-	System.out.println("Running testJSDifferentVariableTypes"); 
+	@Test
+  public void testJSDifferentVariableTypes() throws Exception {
+	System.out.println("Running testJSDifferentVariableTypes");
     DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
     InputSource is = new InputSource();
     is.setCharacterStream(new StringReader("<foo attr=\"attribute\"><?processing instruction?><!--comment-->test1</foo>"));
     Document doc = db.parse(is);
     System.out.println(this.convertXMLDocumentToString(doc));
-    try {
       String query1 = " var results = [];"
           + "var myString;"
           + "var myBool ;"
@@ -415,19 +410,14 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
           .addVariableAs("myJsonArray", new ObjectMapper().createArrayNode().add(1).add(2).add(3))
           .addVariableAs("myJsonNull", new ObjectMapper().createObjectNode().nullNode());
       System.out.println(new ObjectMapper().createObjectNode().nullNode().toString());
-      EvalResultIterator evr = evl.eval();
-      this.validateReturnTypes(evr);
-      evr.close();
-    } catch (Exception e) {
-      throw e;
-    }
+      assertThrows(IllegalArgumentException.class, () -> evl.eval());
   }
 
   /*
    * Test is intended to test different types of variable passed to javascript
    * from java and check return types,data types, there is a bug log against
    * REST 30209
-   * 
+   *
    * Expected Result : JS variable myJsonNull in this test has value set to
    * null. See Git issue # 317 for further explanation.
    */
@@ -514,23 +504,13 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
     }
   }
 
-  @Test(expected = java.lang.IllegalStateException.class)
+  @Test
   public void testMultipleJSfnOnServerEval() {
 	System.out.println("Running testMultipleJSfnOnServerEval");
     String insertQuery = "xdmp.document-insert(\"test1.xml\",<foo>test1</foo>)";
     String query1 = "fn.exists(fn:doc())";
-    String query2 = "fn.count(fn:doc())";
-    String query3 = "xdmp.database-name(xdmp.database())";
-
-    boolean response1 = client.newServerEval().javascript(query1)
-        .javascript(insertQuery).eval().next().getBoolean();
-    System.out.println(response1);
-    int response2 = client.newServerEval().xquery(query2).eval().next()
-        .getNumber().intValue();
-    System.out.println(response2);
-    String response3 = client.newServerEval().xquery(query3)
-        .evalAs(String.class);
-    System.out.println(response3);
+    assertThrows(IllegalStateException.class, () -> client.newServerEval().javascript(query1)
+        .javascript(insertQuery).eval().next().getBoolean());
   }
 
   // Issue 30209 ,external variable passing is not working so I have test cases
@@ -557,7 +537,7 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
       InputSource is = new InputSource();
       is.setCharacterStream(new StringReader(
           "<foo attr=\"attribute\"><?processing instruction?><!--comment-->test1</foo>"));
-   
+
       ServerEvaluationCall evl = client.newServerEval().modulePath(
           "/data/javascriptQueries.sjs");
 
@@ -567,20 +547,20 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
         if (er.getType().equals(Type.XML)) {
           DOMHandle dh = new DOMHandle();
           dh = er.get(dh);
-          assertEquals("document has content", "<foo>test1</foo>",
+          assertEquals( "<foo>test1</foo>",
               convertXMLDocumentToString(dh.get()));
         } else if (er.getType().equals(Type.JSON)) {
           JacksonHandle jh = new JacksonHandle();
           jh = er.get(jh);
-          assertTrue("document has object?", jh.get().has("test"));
+          assertTrue(jh.get().has("test"));
         } else if (er.getType().equals(Type.TEXTNODE)) {
-          assertTrue("document contains", er.getAs(String.class)
+          assertTrue( er.getAs(String.class)
               .equals("This is a text document."));
 
         } else if (er.getType().equals(Type.BINARY)) {
           FileHandle fh = new FileHandle();
           fh = er.get(fh);
-          assertEquals("files size", 2, fh.get().length());
+          assertEquals( 2, fh.get().length());
 
         } else {
           System.out.println("Something went wrong");
@@ -596,73 +576,73 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
       moduleClient.release();
     }
   }
-  
+
   /*
-   * Test is intended to test ServerEvaluationCall.evalAs(Class<T>) closing underlying streams prematurely 
+   * Test is intended to test ServerEvaluationCall.evalAs(Class<T>) closing underlying streams prematurely
    * Git Issue 725
    */
   @Test
   public void testStreamClosingWithEvalAs() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 	  System.out.println("Running testStreamClosingWithEvalAs");
 	  try {
-      String query1 = 
+      String query1 =
            "var phrase = 'MarkLogic Corp';"
           + "var repeat = 10;"
           + "for (var i = 0; i < repeat; i++) {"
           + "phrase += phrase.concat(phrase);"
-          + "}"          
+          + "}"
           + "phrase;";
-      
-      String query2 = 
+
+      String query2 =
               "var phrase2 = 'Java Client API';"
              + "var repeat = 10;"
              + "for (var i = 0; i < repeat; i++) {"
              + "phrase2 += phrase2.concat(phrase2);"
-             + "}"          
+             + "}"
              + "var jsStr = JSON.stringify(phrase2);"
              + "jsStr;";
 
       ServerEvaluationCall evl = client.newServerEval().javascript(query1);
-      
+
       // Using evalAs(String.class)
       String evr = evl.evalAs(String.class);
-      
+
       int nLen = evr.length();
       String firstFiftyChars = evr.substring(0, 50);
       String lastTenChars = evr.substring(evr.length() - 10);
-      
+
       // Make sure we can access results that are greater than 17,400 chars. See Git Issue 725.
       System.out.println("String length is " + nLen);
       System.out.println("First Fifty String output is " + firstFiftyChars);
       System.out.println("Last Ten String output is " + lastTenChars);
-      
-      assertTrue("String length incorrect", nLen==826686);
-      assertTrue("First Fifty String output incorrect ", firstFiftyChars.equalsIgnoreCase("MarkLogic CorpMarkLogic CorpMarkLogic CorpMarkLogi"));
-      assertTrue("Last Ten String output incorrect ", lastTenChars.equalsIgnoreCase("Logic Corp"));
-      
+
+      assertTrue( nLen==826686);
+      assertTrue( firstFiftyChars.equalsIgnoreCase("MarkLogic CorpMarkLogic CorpMarkLogic CorpMarkLogi"));
+      assertTrue( lastTenChars.equalsIgnoreCase("Logic Corp"));
+
       // Using evalAs(JsonNode.class)
       ServerEvaluationCall ev2 = client.newServerEval().javascript(query2);
       JsonNode jNode = ev2.evalAs(JsonNode.class);
-      
+
       String jsonStr = jNode.asText();
       int nJLen = jsonStr.length();
       String firstFiftyCharsJson = jsonStr.substring(0, 50);
       String lastTenCharsJson = jsonStr.substring(jsonStr.length() - 10);
-      
+
       // Make sure we can access results that are greater than 17,400 chars. See Git Issue 725.
       System.out.println("JSON String length is " + nJLen);
       System.out.println("First Fifty String JSON output is " + firstFiftyCharsJson);
       System.out.println("Last Ten String JSON output is " + lastTenCharsJson);
-      
-      assertTrue("JSON String length incorrect", nJLen==885735);
-      assertTrue("First Fifty JSON String output incorrect ", firstFiftyCharsJson.equalsIgnoreCase("Java Client APIJava Client APIJava Client APIJava "));
-      assertTrue("Last Ten JSON String output incorrect ", lastTenCharsJson.equalsIgnoreCase("Client API"));
-      
+
+      assertTrue( nJLen==885735);
+      assertTrue( firstFiftyCharsJson.equalsIgnoreCase("Java Client APIJava Client APIJava Client APIJava "));
+      assertTrue( lastTenCharsJson.equalsIgnoreCase("Client API"));
+
     } catch (Exception e) {
       throw e;
     }
   }
-  
+
   // Making sure that mjs modules can be used in eval.
   @Test
   public void testJavaScriptModules() throws KeyManagementException, NoSuchAlgorithmException, Exception {
@@ -675,7 +655,7 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
 		  moduleClient = getDatabaseClientOnDatabase(appServerHostname, restPort, ("java-unittest-modules"),
               getAdminUser(), getAdminPassword(), getConnType());
 		  String mjsString = "import sr from '/MarkLogic/jsearch';" +
-	              "var output =" + 
+	              "var output =" +
 	              " sr.documents()" +
 	              "  .where(cts.directoryQuery('/test/words/'))" +
 	              "  .orderBy('city')" +
@@ -695,7 +675,7 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
 
 		  StringBuilder sb1 = new StringBuilder(
 				  "{" +
-						  "    \"city\": \"london\"," + 
+						  "    \"city\": \"london\"," +
 						  "    \"distance\": 50.4," +
 						  "    \"srchDate\": \"2007-01-01\"," +
 						  "    \"metro\": true," +
@@ -719,7 +699,7 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
 
 		  StringBuilder sb2 = new StringBuilder(
 				  "{ " +
-						  "    \"city\": \"new york\"," + 
+						  "    \"city\": \"new york\"," +
 						  "    \"distance\": 23.3," +
 						  "    \"srchDate\": \"2006-06-23\"," +
 						  "    \"metro\": true," +
@@ -744,7 +724,7 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
 
 		  StringBuilder sb3 = new StringBuilder(
 				  "  {" +
-						  "    \"city\": \"new jersey\"," + 
+						  "    \"city\": \"new jersey\"," +
 						  "    \"distance\": 12.9," +
 						  "    \"srchDate\": \"1971-12-23\"," +
 						  "    \"metro\": false," +
@@ -768,7 +748,7 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
 				  );
 		  StringBuilder sb4 = new StringBuilder(
 				  "<doc>" +
-	              "    <city>beijing</city>" + 
+	              "    <city>beijing</city>" +
 	              "    <distance direction=\"east\">134.5</distance>" +
 	              "    <srchDate>1981-11-09</srchDate>" +
 	              "    <metro rate=\"3\">true</metro>" +
@@ -793,7 +773,7 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
 				  );
 		  StringBuilder sb5 = new StringBuilder(
 				  "<doc>" +
-	              "    <city>cape town</city>" + 
+	              "    <city>cape town</city>" +
 	              "    <distance direction=\"south\">377.9</distance>" +
 	              "    <srchDate>1999-04-22</srchDate>" +
 	              "    <metro rate=\"2\">true</metro>" +
@@ -828,16 +808,16 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
 
 		  // Using evalAs(JsonNode.class)
 		  JsonNode jNode = evl.evalAs(JsonNode.class);
-		  
-		  assertTrue("Module Eval incorrect", jNode.get("results").get(0).get("uri").asText()
+
+		  assertTrue( jNode.get("results").get(0).get("uri").asText()
 				                              .equalsIgnoreCase("/test/words/wd4.xml"));
-		  assertTrue("Module Eval incorrect", jNode.get("results").get(1).get("uri").asText()
+		  assertTrue( jNode.get("results").get(1).get("uri").asText()
                   .equalsIgnoreCase("/test/words/wd5.xml"));
-		  assertTrue("Module Eval incorrect", jNode.get("results").get(2).get("uri").asText()
+		  assertTrue( jNode.get("results").get(2).get("uri").asText()
                   .equalsIgnoreCase("/test/words/wd1.json"));
-		  assertTrue("Module Eval incorrect", jNode.get("results").get(3).get("uri").asText()
+		  assertTrue( jNode.get("results").get(3).get("uri").asText()
                   .equalsIgnoreCase("/test/words/wd3.json"));
-		  assertTrue("Module Eval incorrect", jNode.get("results").get(4).get("uri").asText()
+		  assertTrue( jNode.get("results").get(4).get("uri").asText()
                   .equalsIgnoreCase("/test/words/wd2.json"));
 
 	  } catch (Exception e) {

@@ -15,40 +15,11 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.math.BigInteger;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TimeZone;
-
-import javax.xml.bind.DatatypeConverter;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.admin.ExtensionLibrariesManager;
@@ -58,17 +29,30 @@ import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.impl.HandleAccessor;
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.ReaderHandle;
-import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.*;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
-import static org.junit.Assert.*;
+import javax.xml.bind.DatatypeConverter;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.math.BigInteger;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.TimeZone;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class EvalTest {
@@ -76,7 +60,7 @@ public class EvalTest {
   private static ExtensionLibrariesManager libMgr;
   private static DatabaseClient adminClient = Common.connectAdmin();
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     libMgr = adminClient.newServerConfigManager().newExtensionLibrariesManager();
     Common.connectEval();
@@ -84,7 +68,7 @@ public class EvalTest {
     septFirst.set(2014, Calendar.SEPTEMBER, 1, 0, 0, 0);
     septFirst.set(Calendar.MILLISECOND, 0);
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -93,7 +77,7 @@ public class EvalTest {
     // javascript hello world and response determined by implicit StringHandle which registered with String.class
     ServerEvaluationCall query = Common.evalClient.newServerEval().javascript("'hello world'");
     String response = query.evalAs(String.class);
-    assertEquals("Return should be 'hello world'", "hello world", response);
+    assertEquals( "hello world", response);
 
     // xquery hello world with a variable and response explicit set to StringHandle
     query = Common.evalClient.newServerEval()
@@ -101,7 +85,7 @@ public class EvalTest {
         "'hello world from ' || $planet")
       .addVariable("planet", "Mars");
     StringHandle strResponse = query.eval(new StringHandle());
-    assertEquals("Return should be 'hello world from Mars'", "hello world from Mars", strResponse.get());
+    assertEquals( "hello world from Mars", strResponse.get());
   }
 
   @Test
@@ -177,22 +161,22 @@ public class EvalTest {
       .addVariable("myNull", (String) null);
 
     try (EvalResultIterator results = call.eval()) {
-      assertEquals("myString looks wrong", "Mars", results.next().getAs(String.class));
-      assertEquals("myArray looks wrong",
+      assertEquals( "Mars", results.next().getAs(String.class));
+      assertEquals(
         new ObjectMapper().readTree("[\"item1\",\"item2\"]"),
         results.next().getAs(JsonNode.class));
-      assertEquals("myObject looks wrong",
+      assertEquals(
         new ObjectMapper().readTree("{\"item1\":\"value1\"}"),
         results.next().getAs(JsonNode.class));
-      assertEquals("myBool looks wrong", true, results.next().getBoolean());
-      assertEquals("myInteger looks wrong", 123,
+      assertEquals( true, results.next().getBoolean());
+      assertEquals( 123,
         results.next().getNumber().intValue());
-      assertEquals("myDouble looks wrong", 1.1,
+      assertEquals( 1.1,
         results.next().getNumber().doubleValue(), .001);
       // the same format we sent in (from javax.xml.datatype.XMLGregorianCalendar.toString())
-      assertEquals("myDate looks wrong", "2014-09-01T00:00:00.000+02:00",
+      assertEquals( "2014-09-01T00:00:00.000+02:00",
         results.next().getString());
-      assertEquals("myNull looks wrong", null, results.next().getString());
+      assertEquals( null, results.next().getString());
     }
 
   }
@@ -204,26 +188,26 @@ public class EvalTest {
       .addVariable("myNull", (String) null);
 
     try (EvalResultIterator results = call.eval()) {
-       assertEquals("myNull looks wrong", null, results.next().getString());
+       assertEquals( null, results.next().getString());
     }
 
     try (EvalResultIterator results = call.eval()) {
-      assertEquals("myNull looks wrong", null, results.next().get(new StringHandle()).get());
+      assertEquals( null, results.next().get(new StringHandle()).get());
     }
 
     try (EvalResultIterator results = call.eval()) {
-      assertEquals("myNull looks wrong", null, results.next().get(new BytesHandle()).get());
+      assertEquals( null, results.next().get(new BytesHandle()).get());
     }
 
     try (EvalResultIterator results = call.eval()) {
       NullNode jsonNullNode = new ObjectMapper().createObjectNode().nullNode();
-      assertEquals("myNull looks wrong", jsonNullNode, results.next().get(new JacksonHandle()).get());
+      assertEquals( jsonNullNode, results.next().get(new JacksonHandle()).get());
     }
 
     try (EvalResultIterator results = call.eval()) {
       ReaderHandle valueReader = results.next().get(new ReaderHandle());
       String value = HandleAccessor.contentAsString(valueReader);
-      assertEquals("myNull looks wrong", "null", value);
+      assertEquals( "null", value);
     }
   }
 
@@ -272,144 +256,143 @@ public class EvalTest {
 
     try (EvalResultIterator results = call.eval()) {
       EvalResult result = results.next();
-      assertEquals("myString should = 'Mars'", "Mars", result.getAs(String.class));
-      assertEquals("myString should be Type.STRING", EvalResult.Type.STRING, result.getType());
-      assertEquals("myString should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals("Mars", result.getAs(String.class));
+      assertEquals( EvalResult.Type.STRING, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myArray should = [\"item1\",\"item2\"]",
+      assertEquals(
         new ObjectMapper().readTree("[\"item1\",\"item2\"]"),
         result.getAs(JsonNode.class));
-      assertEquals("myArray should be Type.JSON", EvalResult.Type.JSON, result.getType());
-      assertEquals("myArray should be Format.JSON", Format.JSON, result.getFormat());
+      assertEquals( EvalResult.Type.JSON, result.getType());
+      assertEquals( Format.JSON, result.getFormat());
       result = results.next();
-      assertEquals("myObject should = {\"item1\":\"value1\"}",
+      assertEquals(
         new ObjectMapper().readTree("{\"item1\":\"value1\"}"),
         result.getAs(JsonNode.class));
-      assertEquals("myObject should be Type.JSON", EvalResult.Type.JSON, result.getType());
-      assertEquals("myObject should be Format.JSON", Format.JSON, result.getFormat());
+      assertEquals( EvalResult.Type.JSON, result.getType());
+      assertEquals( Format.JSON, result.getFormat());
       result = results.next();
-      assertEquals("myAnyUri looks wrong", "http://marklogic.com/a", result.getString());
-      assertEquals("myAnyUri should be Type.ANYURI", EvalResult.Type.ANYURI, result.getType());
-      assertEquals("myAnyUri should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( "http://marklogic.com/a", result.getString());
+      assertEquals( EvalResult.Type.ANYURI, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myBinary looks wrong", ",", result.getString());
-      assertEquals("myBinary should be Type.BINARY", EvalResult.Type.BINARY, result.getType());
-      assertEquals("myBinary should be Format.BINARY", Format.BINARY, result.getFormat());
+      assertEquals( ",", result.getString());
+      assertEquals( EvalResult.Type.BINARY, result.getType());
+      assertEquals( Format.BINARY, result.getFormat());
       result = results.next();
-      assertArrayEquals("myBase64Binary should = 1, 2, 3", new byte[] {1, 2, 3},
+      assertArrayEquals(new byte[] {1, 2, 3},
         DatatypeConverter.parseBase64Binary(result.getString()));
-      assertEquals("myBase64Binary should be Type.BASE64BINARY", EvalResult.Type.BASE64BINARY, result.getType());
-      assertEquals("myBase64Binary should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( EvalResult.Type.BASE64BINARY, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertArrayEquals("myHexBinary should = 1, 2, 3", new byte[] {1, 2, 3},
+      assertArrayEquals(new byte[] {1, 2, 3},
         DatatypeConverter.parseHexBinary(result.getString()));
-      assertEquals("myHexBinary should be Type.HEXBINARY", EvalResult.Type.HEXBINARY, result.getType());
-      assertEquals("myHexBinary should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( EvalResult.Type.HEXBINARY, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myDuration should = P100D", "P100D", result.getString());
-      assertEquals("myDuration should be Type.DURATION", EvalResult.Type.DURATION, result.getType());
-      assertEquals("myDuration should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals("P100D", result.getString());
+      assertEquals( EvalResult.Type.DURATION, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myQName doesn't look right", "myPrefix:a", result.getString());
-      assertEquals("myQName should be Type.QNAME", EvalResult.Type.QNAME, result.getType());
-      assertEquals("myQName should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( "myPrefix:a", result.getString());
+      assertEquals( EvalResult.Type.QNAME, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myDocument doesn't look right",
+      assertEquals(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
           "<search:options xmlns:search=\"http://marklogic.com/appservices/search\"/>",
         result.getString());
-      assertEquals("myDocument should be Type.XML", EvalResult.Type.XML, result.getType());
-      assertEquals("myDocument should be Format.XML", Format.XML, result.getFormat());
+      assertEquals( EvalResult.Type.XML, result.getType());
+      assertEquals( Format.XML, result.getFormat());
       result = results.next();
-      assertEquals("myAttribute looks wrong", "a", result.getString());
-      assertEquals("myAttribute should be Type.ATTRIBUTE", EvalResult.Type.ATTRIBUTE, result.getType());
-      assertEquals("myAttribute should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( "a", result.getString());
+      assertEquals( EvalResult.Type.ATTRIBUTE, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myComment should = <!--a-->", "<!--a-->", result.getString());
-      assertEquals("myComment should be Type.COMMENT", EvalResult.Type.COMMENT, result.getType());
-      assertEquals("myComment should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals("<!--a-->", result.getString());
+      assertEquals( EvalResult.Type.COMMENT, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myElement looks wrong", "<a a=\"a\"/>", result.getString());
-      assertEquals("myElement should be Type.XML", EvalResult.Type.XML, result.getType());
-      assertEquals("myElement should be Format.XML", Format.XML, result.getFormat());
+      assertEquals( "<a a=\"a\"/>", result.getString());
+      assertEquals( EvalResult.Type.XML, result.getType());
+      assertEquals( Format.XML, result.getFormat());
       result = results.next();
-      assertEquals("myProcessingInstruction should = <?a?>", "<?a?>", result.getString());
-      assertEquals("myProcessingInstruction should be Type.PROCESSINGINSTRUCTION",
+      assertEquals("<?a?>", result.getString());
+      assertEquals(
         EvalResult.Type.PROCESSINGINSTRUCTION, result.getType());
-      assertEquals("myProcessingInstruction should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myText should = a", "a", result.getString());
-      assertEquals("myText should be Type.TEXTNODE", EvalResult.Type.TEXTNODE, result.getType());
-      assertEquals("myText should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals("a", result.getString());
+      assertEquals( EvalResult.Type.TEXTNODE, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myBool should = true", true, result.getBoolean());
-      assertEquals("myBool should be Type.BOOLEAN", EvalResult.Type.BOOLEAN, result.getType());
-      assertEquals("myBool should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals(true, result.getBoolean());
+      assertEquals( EvalResult.Type.BOOLEAN, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myInteger should = 1234567890123456789l", 1234567890123456789l,
+      assertEquals(1234567890123456789l,
         result.getNumber().longValue());
-      assertEquals("myInteger should be Type.INTEGER", EvalResult.Type.INTEGER, result.getType());
-      assertEquals("myInteger should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( EvalResult.Type.INTEGER, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myBigInteger looks wrong", new BigInteger("123456789012345678901234567890"),
+      assertEquals( new BigInteger("123456789012345678901234567890"),
         new BigInteger(result.getString()));
-      assertEquals("myBigInteger should be Type.STRING", EvalResult.Type.STRING, result.getType());
-      assertEquals("myBigInteger should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( EvalResult.Type.STRING, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myDecimal looks wrong", 1111111111111111111.9,
+      assertEquals( 1111111111111111111.9,
         result.getNumber().doubleValue(), .001);
-      assertEquals("myDecimal should be Type.DECIMAL", EvalResult.Type.DECIMAL, result.getType());
-      assertEquals("myDecimal should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( EvalResult.Type.DECIMAL, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myDouble looks wrong", 1.11111111111111E19,
+      assertEquals( 1.11111111111111E19,
         result.getNumber().doubleValue(), .001);
-      assertEquals("myDouble should be Type.DOUBLE", EvalResult.Type.DOUBLE, result.getType());
-      assertEquals("myDouble should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( EvalResult.Type.DOUBLE, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myFloat looks wrong", 1.1, result.getNumber().floatValue(), .001);
-      assertEquals("myFloat should be Type.FLOAT", EvalResult.Type.FLOAT, result.getType());
-      assertEquals("myFloat should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( 1.1, result.getNumber().floatValue(), .001);
+      assertEquals( EvalResult.Type.FLOAT, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myGDay looks wrong", "---01", result.getString());
-      assertEquals("myGDay should be Type.GDAY", EvalResult.Type.GDAY, result.getType());
-      assertEquals("myGDay should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( "---01", result.getString());
+      assertEquals( EvalResult.Type.GDAY, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myGMonth looks wrong", "--01", result.getString());
-      assertEquals("myGMonth should be Type.GMONTH", EvalResult.Type.GMONTH, result.getType());
-      assertEquals("myGMonth should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( "--01", result.getString());
+      assertEquals( EvalResult.Type.GMONTH, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myGMonthDay looks wrong", "--01-01", result.getString());
-      assertEquals("myGMonthDay should be Type.GMONTHDAY", EvalResult.Type.GMONTHDAY, result.getType());
-      assertEquals("myGMonthDay should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( "--01-01", result.getString());
+      assertEquals( EvalResult.Type.GMONTHDAY, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myGYear looks wrong", "1901", result.getString());
-      assertEquals("myGYear should be Type.GYEAR", EvalResult.Type.GYEAR, result.getType());
-      assertEquals("myGYear should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( "1901", result.getString());
+      assertEquals( EvalResult.Type.GYEAR, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myGYearMonth looks wrong", "1901-01", result.getString());
-      assertEquals("myGYearMonth should be Type.GYEARMONTH", EvalResult.Type.GYEARMONTH, result.getType());
-      assertEquals("myGYearMonth should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( "1901-01", result.getString());
+      assertEquals( EvalResult.Type.GYEARMONTH, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
       // the lexical format MarkLogic uses to serialize a date
-      assertEquals("myDate should = '2014-09-01", "2014-09-01", result.getString());
-      assertEquals("myDate should be Type.DATE", EvalResult.Type.DATE, result.getType());
-      assertEquals("myDate should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals("2014-09-01", result.getString());
+      assertEquals( EvalResult.Type.DATE, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
       // the lexical format MarkLogic uses to serialize a dateTime
-      assertEquals("myDateTime should = '2014-09-01T00:00:00+02:00'", "2014-09-01T00:00:00+02:00",
-        result.getString());
-      assertEquals("myDateTime should be Type.DATETIME", EvalResult.Type.DATETIME, result.getType());
-      assertEquals("myDateTime should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals("2014-09-01T00:00:00+02:00", result.getString());
+      assertEquals( EvalResult.Type.DATETIME, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myTime looks wrong", "00:01:01", result.getString());
-      assertEquals("myTime should be Type.TIME", EvalResult.Type.TIME, result.getType());
-      assertEquals("myTime should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( "00:01:01", result.getString());
+      assertEquals( EvalResult.Type.TIME, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myCtsQuery should be Type.OTHER", EvalResult.Type.OTHER, result.getType());
-      assertEquals("myCtsQuery should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( EvalResult.Type.OTHER, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
       result = results.next();
-      assertEquals("myFunction should be Type.OTHER", EvalResult.Type.OTHER, result.getType());
-      assertEquals("myFunction should be Format.TEXT", Format.TEXT, result.getFormat());
+      assertEquals( EvalResult.Type.OTHER, result.getType());
+      assertEquals( Format.TEXT, result.getFormat());
     }
   }
 
@@ -447,11 +430,11 @@ public class EvalTest {
       String query = "(fn:count(xdmp:directory('" + directory + "')))";
       ServerEvaluationCall evl= client.newServerEval().xquery(query);
       try (EvalResultIterator evr = evl.eval()) {
-        assertEquals("Count of documents outside of the transaction", 0, evr.next().getNumber().intValue());
+        assertEquals( 0, evr.next().getNumber().intValue());
       }
       evl = client.newServerEval().xquery(query).transaction(t1);
       try (EvalResultIterator evr = evl.eval()) {
-        assertEquals("Count of documents outside of the transaction", 2, evr.next().getNumber().intValue());
+        assertEquals( 2, evr.next().getNumber().intValue());
       }
     } catch(Exception e) {
       System.out.println(e.getMessage());
@@ -498,34 +481,32 @@ public class EvalTest {
     assertEquals(expectedOutput.toString(), strVal);
   }
 
-  @Test(expected = RuntimeException.class)
-  public void test_issue874() {
-    try (EvalResultIterator iterator =
-             new EvalResultIterator() {
+	@Test
+	public void test_issue874() {
+		assertThrows(RuntimeException.class, () -> {
+			try (EvalResultIterator iterator = new EvalResultIterator() {
+				@Override
+				public void close() throws RuntimeException {
+					throw new RuntimeException("test close() from try-with-resources");
+				}
 
-              @Override
-              public void close() throws RuntimeException {
-                throw new RuntimeException("test close() from try-with-resources");
-              }
+				public java.util.Iterator<com.marklogic.client.eval.EvalResult> iterator() {
+					return this;
+				}
 
-              public java.util.Iterator<com.marklogic.client.eval.EvalResult> iterator() {
-                return this;
-              }
+				@Override
+				public boolean hasNext() {
+					return false;
+				}
 
-              @Override
-              public boolean hasNext() {
-                return false;
-              }
-
-              @Override
-              public EvalResult next() {
-                throw new UnsupportedOperationException();
-              }
-            }
-    ) {
-      assertFalse(iterator.hasNext());
-    }
-    fail("Should not get here. Close method should have been invoked, throwing an exception");
-  }
+				@Override
+				public EvalResult next() {
+					throw new UnsupportedOperationException();
+				}
+			}) {
+				iterator.hasNext();
+			}
+		});
+	}
 
 }

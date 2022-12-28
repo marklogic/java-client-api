@@ -20,22 +20,18 @@ import com.marklogic.client.dataservices.OutputCaller;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
-import org.hamcrest.core.StringContains;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.internal.matchers.ThrowableMessageMatcher;
-import org.junit.rules.ExpectedException;
+import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.QueryManager;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.QueryManager;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BulkOutputCallerTest {
     static ObjectNode apiObj;
@@ -47,10 +43,7 @@ public class BulkOutputCallerTest {
 
     private static final String collectionName = "bulkOutputTest";
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         docMgr = IOTestUtil.db.newJSONDocumentManager();
         apiObj = IOTestUtil.readApi(apiName);
@@ -63,10 +56,7 @@ public class BulkOutputCallerTest {
     public void bulkOutputCallerWithNullConsumer() {
         OutputCaller<InputStream> loadEndpt = OutputCaller.on(IOTestUtil.db, new JacksonHandle(apiObj), new InputStreamHandle());
         OutputCaller.BulkOutputCaller<InputStream> loader = loadEndpt.bulkCaller(loadEndpt.newCallContext());
-
-        expectedException.expect(IllegalStateException.class);
-        expectedException.expect(new ThrowableMessageMatcher(new StringContains("Output consumer is null")));
-        loader.awaitCompletion();
+        assertThrows(IllegalStateException.class, () -> loader.awaitCompletion());
     }
 
     @Test
@@ -110,7 +100,7 @@ public class BulkOutputCallerTest {
        assertTrue(output.counter == count);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         QueryManager queryMgr = IOTestUtil.db.newQueryManager();
         DeleteQueryDefinition deletedef = queryMgr.newDeleteDefinition();

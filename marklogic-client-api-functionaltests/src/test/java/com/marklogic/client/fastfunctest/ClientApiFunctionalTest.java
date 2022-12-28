@@ -21,17 +21,18 @@ import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 
@@ -70,7 +71,7 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 	- TestClientQAServer
 	- TestRESTServerOnAPI
 	 */
-	@BeforeClass
+	@BeforeAll
 	public static void setUp() throws Exception {
 		createUserRolesWithPrevilages("apiRole", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke", "xdmp:eval", "xdmp:eval-in", "xdmp:invoke", "xdmp:invoke-in");
 		createRESTUser("apiUser", "ap1U53r", "apiRole", "rest-admin", "rest-writer", "rest-reader",
@@ -169,7 +170,7 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		docMgr.write(endPointURI_12+".api", metadataHandle, handle);
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void tearDownAfterClass() throws Exception {
 
 		System.out.println("In tear down");
@@ -211,12 +212,12 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		// Integer.MAX_VALUE
 		double responseBack6 = TestE2EIntegerParaReturnDouble.on(dbclient).TestE2EItemPrice(Integer.MAX_VALUE);
 		System.out.println("Expected Integer.MAX_VALUE.  Response from the Client API call is " + responseBack6);
-		assertTrue("Expected value not returned", String.valueOf(responseBack6).contains("2.147483648E9"));
+		assertTrue(String.valueOf(responseBack6).contains("2.147483648E9"));
 
 		// Integer.MIN_VALUE
 		double responseBack7 = TestE2EIntegerParaReturnDouble.on(dbclient).TestE2EItemPrice(Integer.MIN_VALUE);
 		System.out.println("Expected Integer.MIN_VALUE.  Response from the Client API call is " + responseBack7);
-		assertTrue("Expected value not returned", String.valueOf(responseBack7).contains("-2.147483647E9"));
+		assertTrue( String.valueOf(responseBack7).contains("-2.147483647E9"));
 
 		// Expecting incorrect data type from module
 		double responseBack8 = 0.0;
@@ -225,7 +226,7 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		} catch (Exception ex) {
 			System.out.println("Expecting 0. Response from the Client API call is " + responseBack8);
 			System.out.println("Exception response from the Client API call is " + ex);
-			assertTrue("Exception message incorrect", ex.toString().contains("java.lang.IllegalArgumentException: Could not convert to double: String10"));
+			assertTrue( ex.toString().contains("java.lang.IllegalArgumentException: Could not convert to double: String10"));
 			assertEquals(0.0, responseBack8, 0.00);
 		}
 
@@ -252,11 +253,11 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		// Invoke the function
 		String responseBack1 = TestE2EModuleXQY.on(dbclient).xqyfunction("MAGLITE");
 		System.out.println("Response from the Client API call is " + responseBack1);
-		assertTrue("Response when valid parameter passed incorrect", responseBack1.contains("QA Module Returns MAGLITE"));
+		assertTrue( responseBack1.contains("QA Module Returns MAGLITE"));
 		// Pass null for parameter
 		String responseBack2 = TestE2EModuleXQY.on(dbclient).xqyfunction(null);
 		System.out.println("Response from the Client API call is " + responseBack2);
-		assertTrue("Response when null parameter passed incorrect", responseBack2.contains("QA Module Returns Passed in null parameter."));
+		assertTrue( responseBack2.contains("QA Module Returns Passed in null parameter."));
 	}
 
 		// This test requires TestE2ERequiredParam.api Fn Decl file
@@ -271,8 +272,8 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		} catch (Exception ex) {
 			msg = ex.toString();
 			System.out.println("Exception response from the Client API call is " + ex);
-			assertTrue("Expected exception type not returned", msg.contains("RequiredParamException"));
-			assertTrue("Expected exception returned", msg.contains("null value for required parameter: items"));
+			assertTrue( msg.contains("RequiredParamException"));
+			assertTrue( msg.contains("null value for required parameter: items"));
 		}
 	}
 
@@ -285,7 +286,7 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 			TestE2EIntegerParaReturnDouble.on(dbForbiddenclient).TestE2EItemPriceErrorCond(10, 50);
 		} catch (FailedRequestException ex) {
 			msg = ex.getMessage();
-			assertTrue("Unexpected exception: " + msg,
+			assertTrue(
 				msg.contains("failed to POST at") &&
 					msg.contains("/ext/TestE2EIntegerParamReturnDouble/TestE2EIntegerParamReturnDoubleErrorCond.sjs"));
 		}
@@ -301,9 +302,9 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		} catch (Exception ex) {
 			msg = ex.toString();
 			System.out.println("Exception response from the Client API call is " + ex);
-			assertTrue("Expected exception type not returned",
+			assertTrue(
 					msg.contains("com.marklogic.client.FailedRequestException"));
-			assertTrue("Unexpected message: " + msg,
+			assertTrue(
 				msg.contains("failed to POST at ") &&
 				msg.contains("/ext/TestE2EModuleNotFound/TestE2EModuleNotFound.sjs"));
 		}
@@ -356,7 +357,7 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		} finally {
 			modifyConcurrentUsersOnHttpServer(serverName, 0);
 			System.out.println("Exception from API responses of call are " + msgEx);
-			assertTrue("Unexpected error message: " + msgEx,
+			assertTrue(
 				msgEx.toString().contains("Local message: failed to POST at") &&
 				msgEx.toString().contains("/ext/TestE2EIntegerParamReturnDouble/TestE2EIntegerParamReturnDoubleErrorCond.sjs"));
 		}
@@ -375,7 +376,7 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 			TestE2EIntegerParaReturnDouble.on(dbSecondClient).TestE2EItemPriceErrorCond(10, 50);
 		} catch (Exception ex) {
 			msg = ex.getMessage();
-			assertTrue("Unexpected exception: " + msg,
+			assertTrue(
 				msg.contains("failed to POST at") &&
 				msg.contains("ext/TestE2EIntegerParamReturnDouble/TestE2EIntegerParamReturnDoubleErrorCond.sjs"));
 		}
@@ -402,7 +403,7 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		try {
 			outputStrSeq = TestE2EMultipleStringsInMultipleStringsout.on(dbclient).stringsInAndStringOutAsArray(inputFiles, uris, searchItem);
 			System.out.println("outputStrSeq " + outputStrSeq.toString());
-			assertTrue("Correct URI not returned", outputStrSeq.get(0).asText().contains("constraint1.json"));
+			assertTrue( outputStrSeq.get(0).asText().contains("constraint1.json"));
 		} catch (Exception ex) {
 			System.out.println("Exception response from the Client API call is " + ex);
 		}
@@ -430,7 +431,7 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		docMgr.read("/session1.json", jh);
 		String nodeStr = jh.get().get("value").asText();
 		System.out.println("JacksonHandle 1: " + jh);
-		assertTrue("Server module returned false. session1.json not inserted? See Logs", nodeStr.contains("Checking first sessions") );
+		assertTrue( nodeStr.contains("Checking first sessions") );
 
 		// Try multiple calls sequentially - same session
 		SessionState apiSession4 = TestE2ESession.on(dbclient).newSessionState();
@@ -444,7 +445,7 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		docMgr.read("/session5.json", jh);
 		nodeStr = jh.get().get("value").asText();
 		System.out.println("JacksonHandle 5 " + jh);
-		assertTrue("Server module returned false. session5.json not inserted? See Logs",
+		assertTrue(
 				nodeStr.contains("Checking sessions 5"));
 
 		// Use null session
@@ -455,8 +456,8 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		} catch (Exception ex) {
 			String msg = ex.toString();
 			System.out.println("Exception - session6.json - Client API call is " + msg);
-			assertTrue("Exception incorrect - when sessions is null",msg.contains("RequiredParamException"));
-			assertTrue("Exception incorrect - when sessions is null",msg.contains("null value for required session parameter: api_session"));
+			assertTrue(msg.contains("RequiredParamException"));
+			assertTrue(msg.contains("null value for required session parameter: api_session"));
 		}
 
 		// Use session with cleared cookies
@@ -474,7 +475,7 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		docMgr.read("/session7.json", jh);
 		nodeStr = jh.get().get("value").asText();
 		System.out.println("JacksonHandle 7 " + jh);
-		assertTrue("Server module returned false. session7.json not inserted? See Logs",
+		assertTrue(
 				nodeStr.contains("Checking sessions 7"));
 	}
 
@@ -510,8 +511,8 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		JsonNode jsNode = mapper.readTree(respStr);
 		System.out.println(respStr);
 
-		assertTrue("OpenAPI response in TestOpenApiParamInParamOut incorrect", jsNode.path("openapi").asText().contains("3.0.0"));
-		assertTrue("OpenAPI response in TestOpenApiParamInParamOut incorrect", jsNode.path("info").path("title").asText().contains("TestE2EIntegerParamReturnDouble.sjs services"));
+		assertTrue( jsNode.path("openapi").asText().contains("3.0.0"));
+		assertTrue( jsNode.path("info").path("title").asText().contains("TestE2EIntegerParamReturnDouble.sjs services"));
 	}
 
 	private String makeCall(OkHttpClient client, Request request) throws IOException {
@@ -546,8 +547,8 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		JsonNode jsNode = mapper.readTree(respStr);
 		System.out.println(respStr);
 
-		assertTrue("OpenAPI response in TestOpenApiParamInDocOut incorrect", jsNode.path("openapi").asText().contains("3.0.0"));
-		assertTrue("OpenAPI response in TestOpenApiParamInDocOut incorrect", jsNode.path("info").path("title").asText().contains("TestOpenApiParamsInDocOut.sjs services"));
+		assertTrue( jsNode.path("openapi").asText().contains("3.0.0"));
+		assertTrue( jsNode.path("info").path("title").asText().contains("TestOpenApiParamsInDocOut.sjs services"));
 	}
 
 	//Test Open API docs for Param In and returns none from module function
@@ -574,8 +575,8 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		JsonNode jsNode = mapper.readTree(respStr);
 		System.out.println(respStr);
 
-		assertTrue("OpenAPI response in TestOpenApiParamInReturnsNone incorrect", jsNode.path("openapi").asText().contains("3.0.0"));
-		assertTrue("OpenAPI response in TestOpenApiParamInReturnsNone incorrect", jsNode.path("info").path("title").asText().contains("TestOpenApiParamInReturnsNone.sjs services"));
+		assertTrue( jsNode.path("openapi").asText().contains("3.0.0"));
+		assertTrue( jsNode.path("info").path("title").asText().contains("TestOpenApiParamInReturnsNone.sjs services"));
 	}
 
 	//Test Open API docs for Param In and returns "$javaClass" from module function
@@ -602,8 +603,8 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		JsonNode jsNode = mapper.readTree(respStr);
 		System.out.println(respStr);
 
-		assertTrue("OpenAPI response in TestOpenApiParamInReturnsJavaClass incorrect", jsNode.path("openapi").asText().contains("3.0.0"));
-		assertTrue("OpenAPI response in TestOpenApiParamInReturnsJavaClass incorrect", jsNode.path("info").path("title").asText().contains("TestE2EJsonStringsInStringsOut.sjs services"));
+		assertTrue( jsNode.path("openapi").asText().contains("3.0.0"));
+		assertTrue( jsNode.path("info").path("title").asText().contains("TestE2EJsonStringsInStringsOut.sjs services"));
 	}
 
 	//Test Open API docs for directory
@@ -630,8 +631,8 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		JsonNode jsNode = mapper.readTree(respStr);
 		System.out.println(respStr);
 
-		assertTrue("OpenAPI response in TestOpenApiDirectory incorrect", jsNode.path("openapi").asText().contains("3.0.0"));
-		assertTrue("OpenAPI response in TestOpenApiDirectory incorrect", jsNode.path("info").path("title").asText().contains("/ext/TestOpenApi services"));
+		assertTrue( jsNode.path("openapi").asText().contains("3.0.0"));
+		assertTrue( jsNode.path("info").path("title").asText().contains("/ext/TestOpenApi services"));
 	}
 
 	public static void modifyConcurrentUsersOnHttpServer(String restServerName, int numberOfUsers) {

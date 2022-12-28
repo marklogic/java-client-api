@@ -15,35 +15,6 @@
  */
 package com.marklogic.client.test;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.StringReader;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import com.marklogic.client.impl.HandleAccessor;
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
@@ -51,41 +22,36 @@ import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.XMLStreamReaderHandle;
+import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.CtsQueryWriteHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.query.CountedDistinctValue;
-import com.marklogic.client.query.ExtractedItem;
-import com.marklogic.client.query.ExtractedResult;
-import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.MatchLocation;
-import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
-import com.marklogic.client.query.RawCtsQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.query.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RawCtsQueryDefinitionTest {
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
     queryMgr = Common.client.newQueryManager();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     Common.client.newDocumentManager().delete("testRawCtsQueryFromFileHandle.xml");
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void setupTestOptions()
     throws FileNotFoundException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException,
            ResourceNotResendableException
@@ -153,9 +119,8 @@ public class RawCtsQueryDefinitionTest {
     assertNotNull(summaries);
     assertTrue(summaries.length > 0);
     for (MatchDocumentSummary summary : summaries) {
-      assertTrue("Mime type of document",
-        summary.getMimeType().matches("(application|text)/xml"));
-      assertEquals("Format of document", Format.XML, summary.getFormat());
+      assertTrue(summary.getMimeType().matches("(application|text)/xml"));
+      assertEquals(Format.XML, summary.getFormat());
       MatchLocation[] locations = summary.getMatchLocations();
       for (MatchLocation location : locations) {
         assertNotNull(location.getAllSnippetText());

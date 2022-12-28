@@ -27,7 +27,7 @@ import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCtsQueryDefinition;
-import org.junit.*;
+import org.junit.jupiter.api.*;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
@@ -41,8 +41,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
   private static final int BATCH_SIZE = 100;
@@ -50,20 +50,20 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
 
   private static String appServerHostname = null;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     System.out.println("In setup");
     appServerHostname = getRestAppServerHostName();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tear down");
     deleteRESTUser("eval-user");
     deleteUserRole("test-eval");
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     // create new connection for each test below
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
@@ -76,7 +76,7 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     }
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     client.release();
   }
@@ -115,15 +115,15 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     docMgr.read(docId[0], dh);
     scanner = new Scanner(dh.get()).useDelimiter("\\Z");
     String readContent = scanner.next();
-    assertTrue("xml document contains firstname", readContent.contains("firstname"));
+    assertTrue( readContent.contains("firstname"));
     docMgr.read(docId[1], dh);
     sc1 = new Scanner(dh.get()).useDelimiter("\\Z");
     readContent = sc1.next();
-    assertTrue("xml document contains firstname", readContent.contains("firstname"));
+    assertTrue( readContent.contains("firstname"));
     docMgr.read(docId[2], dh);
     sc2 = new Scanner(dh.get()).useDelimiter("\\Z");
     readContent = sc2.next();
-    assertTrue("xml document contains firstname", readContent.contains("firstname"));
+    assertTrue( readContent.contains("firstname"));
     }
     catch (Exception e) {
     	e.printStackTrace();
@@ -181,10 +181,10 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     while (page.hasNext()) {
       DocumentRecord rec = page.next();
       rec.getContent(dh);
-      assertTrue("Element has attribure ? :", dh.get().getElementsByTagName("foo").item(0).hasAttributes());
+      assertTrue( dh.get().getElementsByTagName("foo").item(0).hasAttributes());
       count++;
     }
-    assertEquals("document count", 102, count);
+    assertEquals(102, count);
   }
 
   @Test
@@ -236,14 +236,14 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     while (page.hasNext()) {
       DocumentRecord rec = page.next();
       rec.getContent(dh);
-      assertTrue("Element has attribure ? :", dh.get().getElementsByTagName("foo").item(0).hasAttributes());
+      assertTrue( dh.get().getElementsByTagName("foo").item(0).hasAttributes());
       count++;
     }
 
-    assertEquals("Document count", 10, count);
+    assertEquals(10, count);
     DOMHandle readHandle = readDocumentUsingDOMHandle(client, uris[0], "XML");
     attribute = readHandle.get().getDocumentElement().getAttributes().getNamedItem("Land").toString();
-    assertTrue("Attribute value incorrect : ", attribute.contains("Land=\"USA\""));
+    assertTrue( attribute.contains("Land=\"USA\""));
 
     // Do a read transform
     count = 0;
@@ -277,13 +277,13 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     while (pageRd.hasNext()) {
       DocumentRecord recRd = pageRd.next();
       recRd.getContent(dhRd);
-      assertTrue("Element has attribure ? :", dhRd.get().getElementsByTagName("foo").item(0).hasAttributes());
+      assertTrue( dhRd.get().getElementsByTagName("foo").item(0).hasAttributes());
       attribute = dhRd.get().getDocumentElement().getAttributes().getNamedItem("Place").toString();
-      assertTrue("Attribute value incorrect :", attribute.contains("Place=\"England\""));
+      assertTrue( attribute.contains("Place=\"England\""));
       count++;
     }
 
-    assertEquals("Document count", 10, count);
+    assertEquals(10, count);
 
     // Test for multiple Read transforms on same URI.
     ServerTransform transformRd1 = new ServerTransform("add-attr-xquery-transform");
@@ -299,7 +299,7 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     recRd1.getContent(dhRd1);
     attribute = dhRd1.get().getDocumentElement().getAttributes().getNamedItem("Country").toString();
 
-    assertTrue("Attribute value incorrect :", attribute.contains("Country=\"GB\""));
+    assertTrue( attribute.contains("Country=\"GB\""));
 
     // Test for Read and Write transforms on same URI.
     docMgrRd1.setReadTransform(null);
@@ -314,9 +314,9 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     DocumentRecord recRdMul = pageMul.next();
     recRdMul.getContent(dhRdMul);
     attribute = dhRdMul.get().getDocumentElement().getAttributes().getNamedItem("Country").toString();
-    assertTrue("Attribute value incorrect :", attribute.contains("Country=\"GB\""));
+    assertTrue( attribute.contains("Country=\"GB\""));
     attribute = dhRdMul.get().getDocumentElement().getAttributes().getNamedItem("Land").toString();
-    assertTrue("Attribute value incorrect :", attribute.contains("Land=\"USA\""));
+    assertTrue( attribute.contains("Land=\"USA\""));
 
     // Negative test - Use null Transforms
     docMgrRd1.setReadTransform(null);
@@ -331,7 +331,7 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     recRdNull.getContent(dhRdNull);
     String content = dhRdNull.toString();
 
-    assertTrue("Attribute value incorrect :", content.contains("<foo>This is so foo Multiple</foo>"));
+    assertTrue( content.contains("<foo>This is so foo Multiple</foo>"));
 
     // Git Issue 639 - Case 1: Test using documentManager.setReadTransform and passing in a SearchReadHandle
     // to verify it gets transformed .
@@ -360,8 +360,8 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     recSrch.getContent(dhSrch);
     attribute = dhSrch.get().getDocumentElement().getAttributes().getNamedItem("Domicile").toString();
 
-    assertTrue("Transform value incorrect :", attribute.contains("Domicile=\"USA\""));
-    assertTrue("URI value incorrect :", recSrch.getUri().trim().contains("/bulkTransform/MarkLogic9.0.xml"));
+    assertTrue( attribute.contains("Domicile=\"USA\""));
+    assertTrue( recSrch.getUri().trim().contains("/bulkTransform/MarkLogic9.0.xml"));
 
     // Test search() with SearchReadHandle
     // create result handle
@@ -373,8 +373,8 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     recSrchHandle.getContent(resultsDOMHandle);
     attribute = resultsDOMHandle.get().getDocumentElement().getAttributes().getNamedItem("Domicile").toString();
 
-    assertTrue("Transform value incorrect :", attribute.contains("Domicile=\"USA\""));
-    assertTrue("URI value incorrect :", recSrch.getUri().trim().contains("/bulkTransform/MarkLogic9.0.xml"));
+    assertTrue( attribute.contains("Domicile=\"USA\""));
+    assertTrue( recSrch.getUri().trim().contains("/bulkTransform/MarkLogic9.0.xml"));
 
     // Test with documentManager.setReadTransform and queryDefinition.setResponseTransform set to different transforms.
     // Case 1 : Transform applies to same location
@@ -392,8 +392,8 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     System.out.println("DOMHandle multiple Transforms " + dhSrch2.toString());
     attribute = dhSrch2.get().getDocumentElement().getAttributes().getNamedItem("Continent").toString();
 
-    assertTrue("Transform value incorrect :", attribute.contains("Continent=\"North America\""));
-    assertTrue("URI value incorrect :", recSrch.getUri().trim().contains("/bulkTransform/MarkLogic9.0.xml"));
+    assertTrue( attribute.contains("Continent=\"North America\""));
+    assertTrue( recSrch.getUri().trim().contains("/bulkTransform/MarkLogic9.0.xml"));
 
     // Case 2 : Apply different transforms. QueryDef has add element transformation
     // throws java.lang.IllegalStateException
@@ -428,7 +428,7 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     catch(Exception ex /* throws java.lang.IllegalStateException */) {
         actualMsg = ex.getMessage();
     }
-    assertTrue("Exception message incorrect :", actualMsg.contains(strExptdMsg));
+    assertTrue( actualMsg.contains(strExptdMsg));
   }
 
   /*
@@ -482,7 +482,7 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
         // Verify rollback on DocumentManager write method with transform.
         tRollback.rollback();
         DocumentPage pageRollback = docMgr.read(uris);
-        assertEquals("Document count is not zero. Transaction did not rollback", 0, pageRollback.size());
+        assertEquals(pageRollback.size(), 0, "Document count is not zero. Transaction did not rollback");
 
         // Perform write with a commit.
         Transaction tCommit = client.openTransaction();
@@ -508,16 +508,16 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
         while (page.hasNext()) {
             DocumentRecord rec = page.next();
             rec.getContent(dh);
-            assertTrue("Element has attribure ? :", dh.get().getElementsByTagName("foo").item(0).hasAttributes());
+            assertTrue( dh.get().getElementsByTagName("foo").item(0).hasAttributes());
             verifyAttrValue = dh.get().getElementsByTagName("foo").item(0).getAttributes().getNamedItem("Lang").getNodeValue();
-            assertTrue("Server Transform did not go through ", verifyAttrValue.equalsIgnoreCase("testBulkXQYTransformWithTrans"));
+            assertTrue( verifyAttrValue.equalsIgnoreCase("testBulkXQYTransformWithTrans"));
             count++;
         }
     } catch (Exception e) {
       System.out.println(e.getMessage());
       throw e;
     }
-    assertEquals("document count", 102, count);
+    assertEquals(102, count);
   }
 
 //Refer to BT 52461. Having bulk write with transform (no meta-data on the transform itself) used to throw
@@ -563,10 +563,10 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
    while (page.hasNext()) {
      DocumentRecord rec = page.next();
      rec.getContent(dh);
-     assertTrue("Element has attribure ? :", dh.get().getElementsByTagName("foo").item(0).hasAttributes());
+     assertTrue( dh.get().getElementsByTagName("foo").item(0).hasAttributes());
      count++;
    }
-   assertEquals("document count", 102, count);
+   assertEquals(102, count);
  }
 
   @Test
@@ -613,9 +613,9 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     while (page.hasNext()) {
       DocumentRecord rec = page.next();
       rec.getContent(dh);
-      assertTrue("Element has attribure ? :", dh.get().getElementsByTagName("foo").item(0).hasAttributes());
+      assertTrue( dh.get().getElementsByTagName("foo").item(0).hasAttributes());
       count++;
     }
-    assertEquals("document count", 102, count);
+    assertEquals(102, count);
   }
 }

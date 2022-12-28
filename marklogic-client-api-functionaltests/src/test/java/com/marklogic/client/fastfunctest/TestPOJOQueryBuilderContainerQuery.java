@@ -24,17 +24,18 @@ import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.pojo.PojoQueryBuilder.Operator;
 import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.pojo.PojoRepository;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.*;
+
 
 public class TestPOJOQueryBuilderContainerQuery extends AbstractFunctionalTest {
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     client = getDatabaseClient("rest-admin", "x", getConnType());
 
@@ -87,9 +88,9 @@ public class TestPOJOQueryBuilderContainerQuery extends AbstractFunctionalTest {
 
   public void validateArtifact(Artifact art)
   {
-    assertNotNull("Artifact object should never be Null", art);
-    assertNotNull("Id should never be Null", art.id);
-    assertTrue("Inventry is always greater than 1000", art.getInventory() > 1000);
+    assertNotNull( art);
+    assertNotNull( art.id);
+    assertTrue( art.getInventory() > 1000);
   }
 
   public void loadSimplePojos(PojoRepository products)
@@ -116,7 +117,7 @@ public class TestPOJOQueryBuilderContainerQuery extends AbstractFunctionalTest {
     JacksonHandle jh = new JacksonHandle();
     products.setPageLength(5);
     p = products.search(qd, 1, jh);
-    assertEquals("total no of pages", 3, p.getTotalPages());
+    assertEquals( 3, p.getTotalPages());
     System.out.println(jh.get().toString());
 
     long pageNo = 1, count = 0;
@@ -126,18 +127,18 @@ public class TestPOJOQueryBuilderContainerQuery extends AbstractFunctionalTest {
       while (p.hasNext()) {
         Artifact a = p.next();
         validateArtifact(a);
-        assertTrue("Verifying document id is part of the search ids", a.getId() % 5 == 0);
-        assertTrue("Verifying Manufacurer has term counter", a.getManufacturer().getName().contains("counter"));
+        assertTrue( a.getId() % 5 == 0);
+        assertTrue( a.getManufacturer().getName().contains("counter"));
         count++;
         System.out.println(a.getManufacturer().getName());
       }
-      assertEquals("Page size", count, p.size());
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
     } while (!p.isLastPage() && pageNo <= p.getTotalSize());
-    assertEquals("page number after the loop", 3, p.getPageNumber());
-    assertEquals("total no of pages", 3, p.getTotalPages());
-    assertEquals("page length from search handle", 5, jh.get().path("page-length").asInt());
-    assertEquals("Total results from search handle", 11, jh.get().path("total").asInt());
+    assertEquals( 3, p.getPageNumber());
+    assertEquals( 3, p.getTotalPages());
+    assertEquals( 5, jh.get().path("page-length").asInt());
+    assertEquals( 11, jh.get().path("total").asInt());
 
   }
 
@@ -156,8 +157,8 @@ public class TestPOJOQueryBuilderContainerQuery extends AbstractFunctionalTest {
     JacksonHandle jh = new JacksonHandle();
     products.setPageLength(11);
     p = products.search(qd, 1, jh);
-    assertEquals("page number after the loop", 1, p.getPageNumber());
-    // assertEquals("total no of pages",1,p.getTotalPages());
+    assertEquals( 1, p.getPageNumber());
+    // assertEquals(1,p.getTotalPages());
     long pageNo = 1, count = 0, total = 0;
     do {
       count = 0;
@@ -165,19 +166,19 @@ public class TestPOJOQueryBuilderContainerQuery extends AbstractFunctionalTest {
       while (p.hasNext()) {
         Artifact a = p.next();
         validateArtifact(a);
-        assertTrue("Verifying document id is part of the search ids", a.getId() % 5 == 0);
-        assertTrue("Verifying name is part of the search", a.getManufacturer().getName().contains("special"));
+        assertTrue( a.getId() % 5 == 0);
+        assertTrue( a.getManufacturer().getName().contains("special"));
         count++;
         total++;
         System.out.println(a.getName());
       }
-      assertEquals("Page size", count, p.size());
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
     } while (!p.isLastPage() && pageNo <= p.getTotalSize());
-    // assertEquals("page number after the loop",2,p.getPageNumber());
-    // assertEquals("total no of pages",0,p.getTotalPages());
-    assertEquals("page length from search handle", 11, jh.get().path("page-length").asInt());
-    assertEquals("Total results from search handle", 11, total);
+    // assertEquals(2,p.getPageNumber());
+    // assertEquals(0,p.getTotalPages());
+    assertEquals( 11, jh.get().path("page-length").asInt());
+    assertEquals( 11, total);
   }
 
   // Below scenario is verifying range query from PojoBuilder
@@ -192,7 +193,7 @@ public class TestPOJOQueryBuilderContainerQuery extends AbstractFunctionalTest {
     JacksonHandle jh = new JacksonHandle();
     products.setPageLength(56);
     p = products.search(qd, 1, jh);
-    assertEquals("total no of pages", 1, p.getTotalPages());
+    assertEquals( 1, p.getTotalPages());
 
     long pageNo = 1, count = 0;
     do {
@@ -201,16 +202,16 @@ public class TestPOJOQueryBuilderContainerQuery extends AbstractFunctionalTest {
       while (p.hasNext()) {
         Artifact a = p.next();
         validateArtifact(a);
-        assertTrue("Verifying document id is part of the search ids", a.getId() >= 55);
+        assertTrue( a.getId() >= 55);
         count++;
       }
-      assertEquals("Page size", count, p.size());
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
     } while (!p.isLastPage() && pageNo <= p.getTotalSize());
-    assertEquals("page number after the loop", 1, p.getPageNumber());
-    assertEquals("total no of pages", 1, p.getTotalPages());
-    assertEquals("page length from search handle", 56, jh.get().path("page-length").asInt());
-    assertEquals("Total results from search handle", 56, jh.get().path("total").asInt());
+    assertEquals( 1, p.getPageNumber());
+    assertEquals( 1, p.getTotalPages());
+    assertEquals( 56, jh.get().path("page-length").asInt());
+    assertEquals( 56, jh.get().path("total").asInt());
   }
 
   // Below scenario is to test range query with options
@@ -227,7 +228,7 @@ public class TestPOJOQueryBuilderContainerQuery extends AbstractFunctionalTest {
     products.setPageLength(55);
     p = products.search(qd, 1, jh);
     System.out.println(jh.get().toString());
-    assertEquals("total no of pages", 1, p.getTotalPages());
+    assertEquals( 1, p.getTotalPages());
 
     long pageNo = 1, count = 0;
     do {
@@ -236,16 +237,16 @@ public class TestPOJOQueryBuilderContainerQuery extends AbstractFunctionalTest {
       while (p.hasNext()) {
         Artifact a = p.next();
         validateArtifact(a);
-        assertTrue("Verifying document id is part of the search ids", a.getId() <= 54);
+        assertTrue( a.getId() <= 54);
         count++;
       }
-      assertEquals("Page size", count, p.size());
+      assertEquals( count, p.size());
       pageNo = pageNo + p.getPageSize();
     } while (!p.isLastPage() && pageNo <= p.getTotalSize());
-    assertEquals("page number after the loop", 1, p.getPageNumber());
-    assertEquals("total no of pages", 1, p.getTotalPages());
-    assertEquals("page length from search handle", 55, jh.get().path("page-length").asInt());
-    assertEquals("Total results from search handle", 54, jh.get().path("total").asInt());
+    assertEquals( 1, p.getPageNumber());
+    assertEquals( 1, p.getTotalPages());
+    assertEquals( 55, jh.get().path("page-length").asInt());
+    assertEquals( 54, jh.get().path("total").asInt());
   }
 
   // Below scenario is verifying and query with all pojo builder methods
@@ -275,14 +276,14 @@ public class TestPOJOQueryBuilderContainerQuery extends AbstractFunctionalTest {
       while (p.hasNext()) {
         Artifact a = p.next();
         validateArtifact(a);
-        assertTrue("Verifying document id is part of the search ids", a.getId() < 1101);
-        assertFalse("Verifying document has word counter", a.getManufacturer().getName().contains("special"));
-        assertTrue("Verifying document has Name Acme", a.getManufacturer().getName().contains("Acme"));
+        assertTrue( a.getId() < 1101);
+        assertFalse( a.getManufacturer().getName().contains("special"));
+        assertTrue( a.getManufacturer().getName().contains("Acme"));
         count++;
         total++;
 
       }
-      assertEquals("Page size", count, p.size());
+      assertEquals( count, p.size());
 
       if (p.size() <= 0) {
         System.out.println(p.getTotalSize() + " " + p.isLastPage() + "page size" + p.size());
@@ -291,10 +292,10 @@ public class TestPOJOQueryBuilderContainerQuery extends AbstractFunctionalTest {
       pageNo = pageNo + p.getPageSize();
     } while (p.size() > 0 && p.hasNextPage());
     System.out.println(pageNo);
-    assertEquals("page has results", 25, jh.get().path("results").size());
-    assertEquals("Page no after the loop", 51, pageNo);
-    assertEquals("page length from search handle", 25, jh.get().path("page-length").asInt());
-    assertEquals("Total results from search handle", 40, total);
+    assertEquals( 25, jh.get().path("results").size());
+    assertEquals( 51, pageNo);
+    assertEquals( 25, jh.get().path("page-length").asInt());
+    assertEquals( 40, total);
   }
 
 }

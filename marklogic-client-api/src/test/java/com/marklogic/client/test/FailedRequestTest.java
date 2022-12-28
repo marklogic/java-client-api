@@ -16,25 +16,20 @@
 package com.marklogic.client.test;
 
 import com.marklogic.client.*;
+import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.Format;
-import org.junit.Test;
-import org.junit.Ignore;
+import com.marklogic.client.io.StringHandle;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
-import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.ServerConfigurationManager;
-import com.marklogic.client.io.StringHandle;
-
-import java.io.StringWriter;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import java.io.StringWriter;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FailedRequestTest {
   private static final Logger logger = LoggerFactory.getLogger(FailedRequestTest.class);
@@ -49,7 +44,7 @@ public class FailedRequestTest {
 
     try {
       mgr.writeOptions("testempty", new StringHandle("<options xmlns=\"http://marklogic.com/appservices/search\"/>"));
-//      assertFalse("expected options write to fail because forbidden", true);
+//      assertFalse( true);
     } catch (ForbiddenUserException e) {
       assertEquals(
           "Local message: User is not allowed to write /config/query. Server Message: You do not have permission to this method and URL.",
@@ -88,7 +83,7 @@ public class FailedRequestTest {
     logger.debug(xml.toString());
     try {
       mgr.writeOptions("testempty", new StringHandle(xml.toString()));
-//      assertFalse("expected options write to fail because empty", true);
+//      assertFalse( true);
     } catch (FailedRequestException e) {
       assertEquals(
         "Local message: /config/query write failed: Bad Request. Server Message: RESTAPI-INVALIDCONTENT: (err:FOER0000) Invalid content: Operation results in invalid Options: Operator or constraint name \"blah\" is used more than once (must be unique).",

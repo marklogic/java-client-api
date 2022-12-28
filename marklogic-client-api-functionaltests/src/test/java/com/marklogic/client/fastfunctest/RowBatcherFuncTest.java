@@ -7,20 +7,18 @@ import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.type.CtsReferenceExpr;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.*;
 import java.util.stream.Stream;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class RowBatcherFuncTest extends AbstractFunctionalTest {
 
     private static DataMovementManager dmManager = null;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         // Install the TDE templates into schemadbName DB
         // loadFileToDB(client, filename, docURI, collection, document format)
@@ -252,7 +250,7 @@ public class RowBatcherFuncTest extends AbstractFunctionalTest {
         rowsBatcherOfJsonObj.awaitCompletion();
 
         Stream.of("new jersey", "cape town", "beijing", "new york", "london").forEach(city -> {
-            assertTrue("Did not find " + city + " in " + citiesFound, citiesFound.contains(city));
+            assertTrue(citiesFound.contains(city), "Did not find " + city + " in " + citiesFound);
         });
         assertEquals(5, citiesFound.size());
     }
@@ -363,7 +361,7 @@ public class RowBatcherFuncTest extends AbstractFunctionalTest {
             exBuf = ex.getMessage();
         }
         finally {
-            assertTrue("Exception message incorrect", exBuf.contains("First operation in Optic plan must be fromView()"));
+            assertTrue(exBuf.contains("First operation in Optic plan must be fromView()"));
         }
     }
 

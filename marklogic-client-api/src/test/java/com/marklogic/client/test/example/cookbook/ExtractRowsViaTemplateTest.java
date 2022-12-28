@@ -15,9 +15,8 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import org.junit.Test;
-
 import com.marklogic.client.example.cookbook.datamovement.ExtractRowsViaTemplate;
+import org.junit.jupiter.api.Test;
 
 public class ExtractRowsViaTemplateTest {
   @Test

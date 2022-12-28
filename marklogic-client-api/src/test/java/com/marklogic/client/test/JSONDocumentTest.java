@@ -15,42 +15,35 @@
  */
 package com.marklogic.client.test;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.nio.charset.Charset;
-
-import com.marklogic.client.admin.ExtensionLibrariesManager;
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.marklogic.client.admin.ExtensionLibrariesManager;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentMetadataPatchBuilder.Cardinality;
 import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.DocumentPatchBuilder.PathLanguage;
 import com.marklogic.client.document.DocumentPatchBuilder.Position;
 import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.io.BytesHandle;
+import com.marklogic.client.io.*;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.ReaderHandle;
-import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.charset.Charset;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JSONDocumentTest {
 
@@ -73,7 +66,7 @@ public class JSONDocumentTest {
   static final private Logger logger = LoggerFactory
     .getLogger(JSONDocumentTest.class);
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connectAdmin();
     // get a manager
@@ -87,7 +80,7 @@ public class JSONDocumentTest {
     Common.connect();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     libsMgr.delete("/ext/my-lib.xqy");
   }
@@ -103,31 +96,31 @@ public class JSONDocumentTest {
     docMgr.write(docId, new StringHandle().with(content));
 
     String docText = docMgr.read(docId, new StringHandle()).get();
-    assertNotNull("Read null string for JSON content", docText);
+    assertNotNull( docText);
     JsonNode readNode = mapper.readTree(docText);
-    assertTrue("Failed to read JSON document as String",
+    assertTrue(
       sourceNode.equals(readNode));
 
     BytesHandle bytesHandle = new BytesHandle();
     docMgr.read(docId, bytesHandle);
     readNode = mapper.readTree(bytesHandle.get());
-    assertTrue("JSON document mismatch reading bytes",
+    assertTrue(
       sourceNode.equals(readNode));
 
     InputStreamHandle inputStreamHandle = new InputStreamHandle();
     docMgr.read(docId, inputStreamHandle);
     readNode = mapper.readTree(inputStreamHandle.get());
-    assertTrue("JSON document mismatch reading input stream",
+    assertTrue(
       sourceNode.equals(readNode));
 
     Reader reader = docMgr.read(docId, new ReaderHandle()).get();
     readNode = mapper.readTree(reader);
-    assertTrue("JSON document mismatch with reader",
+    assertTrue(
       sourceNode.equals(readNode));
 
     File file = docMgr.read(docId, new FileHandle()).get();
     readNode = mapper.readTree(file);
-    assertTrue("JSON document mismatch with file",
+    assertTrue(
       sourceNode.equals(readNode));
   }
 
@@ -205,14 +198,14 @@ public class JSONDocumentTest {
     expectedNode.put("numberKey3" , 18);
 
     String docText = docMgr.read(docId, new StringHandle()).get();
-    assertNotNull("Read null string for patched JSON content", docText);
+    assertNotNull( docText);
 
     logger.debug("Before1:" + content);
     logger.debug("After1:"+docText);
     logger.debug("Expected1:" + mapper.writeValueAsString(expectedNode));
 
     JsonNode readNode = mapper.readTree(docText);
-    assertTrue("Patched JSON document without expected result",
+    assertTrue(
       expectedNode.equals(readNode));
 
   }
@@ -261,10 +254,10 @@ public class JSONDocumentTest {
       new StringHandle().withFormat(Format.XML)).get();
 
     logger.debug("After2:" + metadata);
-    assertTrue("Could not read document metadata after write default",
+    assertTrue(
       metadata != null);
 
-    assertTrue("Could not read document metadata after write default", metadata != null);
+    assertTrue( metadata != null);
     assertXpathEvaluatesTo("3","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",metadata);
     assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection' and string(.)='collection4after'])",metadata);
     assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission' and string(*[local-name()='role-name'])='app-user']/*[local-name()='capability'])",metadata);
@@ -354,14 +347,14 @@ public class JSONDocumentTest {
 
     String docText = docMgr.read(docId, new StringHandle()).get();
 
-    assertNotNull("Read null string for patched JSON content", docText);
+    assertNotNull( docText);
     JsonNode readNode = mapper.readTree(docText);
 
     logger.debug("Before3:" + content);
     logger.debug("After3:"+docText);
     logger.debug("Expected3:" + mapper.writeValueAsString(expectedNode));
 
-    assertTrue("Patched JSON document without expected result",
+    assertTrue(
       expectedNode.equals(readNode));
 
     docMgr.delete(docId);
@@ -418,10 +411,10 @@ public class JSONDocumentTest {
     logger.debug("After4: "+ jsonMetadata);
 
 
-    assertTrue("Could not read document metadata after write default",
+    assertTrue(
       metadata != null);
 
-    assertTrue("Could not read document metadata after write default", metadata != null);
+    assertTrue( metadata != null);
     assertXpathEvaluatesTo("4","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",metadata);
     assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection' and string(.)='collection4after'])",metadata);
     assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission' and string(*[local-name()='role-name'])='app-user']/*[local-name()='capability'])",metadata);

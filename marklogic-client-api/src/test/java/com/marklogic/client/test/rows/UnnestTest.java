@@ -5,15 +5,15 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Test demonstrates the primary use case for unnest, which is, for a given row, to create N rows based on a column in
@@ -26,7 +26,7 @@ public class UnnestTest extends AbstractOpticUpdateTest {
     /**
      * Inserts a test document for testing with the unnestSchema/unnestView view.
      */
-    @Before
+    @BeforeEach
     public void insertTestDocument() {
         if (!Common.markLogicIsVersion11OrHigher()) {
             return;
@@ -76,9 +76,9 @@ public class UnnestTest extends AbstractOpticUpdateTest {
         List<RowRecord> rows = resultRows(plan);
         assertEquals(3, rows.size());
         assertEquals("Alice", rows.get(0).getString(SINGLE_NAME_COLUMN));
-        assertEquals(
-            "The ordinality column is expected to capture the index of the value in the array that it came from, " +
-                "where the index is 1-based, not 0-based", 2, rows.get(0).getInt("index"));
+        assertEquals(2, rows.get(0).getInt("index"),
+			"The ordinality column is expected to capture the index of the value in the array that it came from, " +
+				"where the index is 1-based, not 0-based");
         assertEquals("Bob", rows.get(1).getString(SINGLE_NAME_COLUMN));
         assertEquals(1, rows.get(1).getInt("index"));
         assertEquals("Cindy", rows.get(2).getString(SINGLE_NAME_COLUMN));

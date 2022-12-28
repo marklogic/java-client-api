@@ -4,7 +4,7 @@ import com.marklogic.client.datamovement.LineSplitter;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,7 +16,7 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LineSplitterTest {
     static final private String jsonlFile = "src/test/resources/data" + File.separator + "pathSplitter/line-delimited.jsonl";

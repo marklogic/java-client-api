@@ -1,8 +1,5 @@
 package com.marklogic.client.impl;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -13,8 +10,12 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
+import org.junit.jupiter.api.Test;import static org.junit.jupiter.api.Assertions.*;
 
-public class PlanDocDescriptorImplTest extends Assert {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+public class PlanDocDescriptorImplTest {
 
     @Test
     public void minimalWriteOp() {
@@ -22,7 +23,7 @@ public class PlanDocDescriptorImplTest extends Assert {
                 "/test.json", new StringHandle("{\"hello\":1}").withFormat(Format.JSON)));
         assertEquals("/test.json", plan.get("uri").asText());
         assertEquals(1, plan.get("doc").get("hello").asInt());
-        assertEquals("Expecting only 'uri' and 'doc'", 2, plan.size());
+        assertEquals(2, plan.size(), "Expecting only 'uri' and 'doc'");
     }
 
     @Test
@@ -48,17 +49,17 @@ public class PlanDocDescriptorImplTest extends Assert {
         assertEquals("value1", plan.get("metadata").get("key1").asText());
         assertEquals("value2", plan.get("metadata").get("key2").asText());
 
-        assertEquals("Expecting uri, temporalCollection, doc, quality, collections, permissions, and metadata; "
-                + "document properties are not yet supported", 7, plan.size());
+        assertEquals(7, plan.size(),
+			"Expecting uri, temporalCollection, doc, quality, collections, permissions, and metadata; "
+				+ "document properties are not yet supported");
     }
 
     @Test
     public void nonJsonContent() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> export(
                 new DocumentWriteOperationImpl("/test.xml", new StringHandle("<test/>").withFormat(Format.XML))));
-        assertEquals(
-                "Only JSON content can be used with fromDocDescriptors; non-JSON content found for document with URI: /test.xml",
-                ex.getMessage());
+        assertEquals(ex.getMessage(),
+                "Only JSON content can be used with fromDocDescriptors; non-JSON content found for document with URI: /test.xml");
     }
 
     private ObjectNode export(DocumentWriteOperation writeOp) {

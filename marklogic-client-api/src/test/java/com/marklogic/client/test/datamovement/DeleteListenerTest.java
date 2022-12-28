@@ -15,18 +15,16 @@
  */
 package com.marklogic.client.test.datamovement;
 
-import static org.junit.Assert.assertEquals;
-
-import com.marklogic.client.datamovement.*;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.datamovement.*;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.query.StructuredQueryBuilder;
-
 import com.marklogic.client.test.Common;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DeleteListenerTest {
   private static DatabaseClient client = Common.connect();
@@ -34,11 +32,11 @@ public class DeleteListenerTest {
   private static String collection = "DeleteListenerTest";
   private static String docContents = "doc contents";
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -57,8 +55,7 @@ public class DeleteListenerTest {
     writeBatcher.flushAndWait();
 
     // verify that the files made it to the db
-    assertEquals( "There should be 100 documents in the db",
-      100, client.newDocumentManager().read(uris).size() );
+    assertEquals(100, client.newDocumentManager().read(uris).size() );
 
     QueryBatcher queryBatcher = moveMgr.newQueryBatcher(
         new StructuredQueryBuilder().collection(collection)
@@ -71,7 +68,6 @@ public class DeleteListenerTest {
     moveMgr.stopJob(ticket);
 
     // validate that the docs were deleted
-    assertEquals( "There should be 0 documents in the db",
-      0, client.newDocumentManager().read(uris).size() );
+    assertEquals(0, client.newDocumentManager().read(uris).size() );
   }
 }

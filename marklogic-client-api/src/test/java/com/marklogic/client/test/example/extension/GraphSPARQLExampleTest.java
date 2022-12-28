@@ -15,14 +15,12 @@
  */
 package com.marklogic.client.test.example.extension;
 
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.example.extension.GraphSPARQLExample;
+import com.marklogic.client.test.Common;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-
-import org.junit.Test;
-
-import com.marklogic.client.test.Common;
-import com.marklogic.client.example.extension.GraphSPARQLExample;
 
 public class GraphSPARQLExampleTest {
 
@@ -36,7 +34,7 @@ public class GraphSPARQLExampleTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    assertTrue("GraphSPARQLExample failed", succeeded);
+    Assertions.assertTrue( succeeded);
   }
 
 }

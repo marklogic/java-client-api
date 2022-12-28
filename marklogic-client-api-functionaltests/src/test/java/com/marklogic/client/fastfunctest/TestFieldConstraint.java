@@ -18,14 +18,15 @@ package com.marklogic.client.fastfunctest;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.SearchHandle;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.junit.Assert.assertEquals;
+
 
 public class TestFieldConstraint extends AbstractFunctionalTest {
   static String filenames[] = { "bbq1.xml", "bbq2.xml", "bbq3.xml", "bbq4.xml", "bbq5.xml" };
@@ -33,7 +34,7 @@ public class TestFieldConstraint extends AbstractFunctionalTest {
   private static String dbName = "FieldConstraintDB";
   private static String[] fNames = { "FieldConstraintDB-1" };
 
-  @After
+  @AfterEach
   public void testCleanUp() throws Exception
   {
     deleteDocuments(connectAsAdmin());
@@ -59,12 +60,12 @@ public class TestFieldConstraint extends AbstractFunctionalTest {
     // search result
     String matchResult = "Matched " + resultsHandle.getTotalResults();
     String expectedMatchResult = "Matched 1";
-    assertEquals("Match results difference", expectedMatchResult, matchResult);
+    assertEquals( expectedMatchResult, matchResult);
 
     String result = returnSearchResult(resultsHandle);
     String expectedResult = "|Matched 3 locations in /field-constraint/bbq3.xml";
 
-    assertEquals("Results difference", expectedResult, result);
+    assertEquals( expectedResult, result);
 
     // release client
     client.release();

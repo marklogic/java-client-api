@@ -15,26 +15,23 @@
  */
 package com.marklogic.client.test.extra;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.extra.gson.GSONHandle;
 import com.marklogic.client.test.Common;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class GSONHandleTest {
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     Common.connect();
   }
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
   }
 
@@ -70,8 +67,8 @@ public class GSONHandleTest {
 
     // access the document content
     JsonObject readRoot = readHandle.get().getAsJsonObject();
-    assertNotNull("Wrote null JSON structure", readRoot);
-    assertTrue("JSON structures not equal",
+    Assertions.assertNotNull( readRoot);
+    Assertions.assertTrue(
       readRoot.equals(writeRoot));
 
     // delete the document

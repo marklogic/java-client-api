@@ -15,18 +15,15 @@
  */
 package com.marklogic.client.test.example.extension;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.junit.Test;
-
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.example.extension.OpenCSVBatcherExample;
+import org.junit.jupiter.api.Test;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class OpenCSVBatcherTest {
   @Test
@@ -42,6 +39,6 @@ public class OpenCSVBatcherTest {
     } catch (ParserConfigurationException e) {
       e.printStackTrace();
     }
-    assertTrue("OpenCSVSplitterExample failed", succeeded);
+    assertTrue( succeeded);
   }
 }

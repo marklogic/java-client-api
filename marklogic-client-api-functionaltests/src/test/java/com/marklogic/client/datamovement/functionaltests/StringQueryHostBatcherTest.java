@@ -15,10 +15,10 @@
  */
 package com.marklogic.client.datamovement.functionaltests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,17 +37,13 @@ import com.marklogic.client.expression.CtsQueryBuilder;
 import com.marklogic.client.query.*;
 import com.marklogic.client.type.CtsQueryExpr;
 import com.marklogic.client.util.EditableNamespaceContext;
-import org.junit.*;
+import org.junit.jupiter.api.*;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.TransformExtensionsManager;
@@ -88,7 +84,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   /**
    * @throws java.lang.Exception
    */
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     loadGradleProperties();
     restServerPort = getRestAppServerPort();
@@ -131,7 +127,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   /**
    * @throws java.lang.Exception
    */
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tearDownAfterClass");
     // Release clients
@@ -145,7 +141,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     deleteForest(fNames[0]);
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception  {
     System.out.println("In setup");
     client = getDatabaseClient("eval-user", "x", getConnType());
@@ -155,7 +151,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   /**
    * @throws java.lang.Exception
    */
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     System.out.println("In tearDown");
     client.release();
@@ -165,13 +161,13 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   /*
    * To test String query with Document Manager (Java Client API write method)
    * and WriteBatcher.
-   * 
+   *
    * @throws IOException
-   * 
+   *
    * @throws ParserConfigurationException
-   * 
+   *
    * @throws SAXException
-   * 
+   *
    * @throws XpathException
    */
   @Test
@@ -204,8 +200,8 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       assertEquals(1, searchResult.get("index").asInt());
       assertEquals("/abs-range-constraint/constraint4.xml", searchResult.get("uri").asText());
       String contents = searchResult.get("content").asText();
-      assertTrue("Expected String not available", contents.contains("Vannevar served"));
-      assertTrue("Expected amt not available", contents.contains("12.34"));
+      assertTrue( contents.contains("Vannevar served"));
+      assertTrue( contents.contains("12.34"));
 
       // Use WriteBatcher to write the same files.
       WriteBatcher batcher = dmManager.newWriteBatcher();
@@ -270,9 +266,9 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
         // Verify the batch results now.
         String[] res = batchResults.toString().split("\\|");
 
-        assertTrue("URI returned not correct", res[0].contains("/abs-range-constraint/batcher-contraints4.xml"));
+        assertTrue( res[0].contains("/abs-range-constraint/batcher-contraints4.xml"));
         // Verify Forest Name.
-        assertTrue("Forest name not correct", forestResults.toString().contains(fNames[0]));
+        assertTrue( forestResults.toString().contains(fNames[0]));
       }
       else {
     	  fail("testAndWordQuery test failed");
@@ -291,7 +287,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       } catch (Exception ex) {
         batchIllegalState.append(ex.getMessage());
         System.out.println("Exceptions buffer from empty withCriteria : " + batchIllegalState.toString());
-        assertTrue("Exception message incorrect", batchIllegalState.toString().contains("Criteria cannot be an empty string"));
+        assertTrue( batchIllegalState.toString().contains("Criteria cannot be an empty string"));
       }
       } catch (Exception e) {
       System.out.print(e.getMessage());
@@ -299,13 +295,13 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     	clearDB();
     }
   }
- 
+
   /*
    * To test that RawStructuredQueryDefinition can be used withQueryBatcher
    * Store options from a file to server. Read a query from a file into a handle
    * Create a RawCombinedQueryDefinition from handle and options, to be used in
    * QueryBatcher Job.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -392,8 +388,8 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
         // Verify the batch results now.
         String[] res = batchResults.toString().split("\\|");
-        assertEquals("Number of reults returned is incorrect", 1, res.length);
-        assertTrue("URI returned not correct", res[0].contains(filenames[4]));
+        assertEquals(1, res.length);
+        assertTrue( res[0].contains(filenames[4]));
 
         // Read the document and assert on the value
         DOMHandle contentHandle = new DOMHandle();
@@ -401,9 +397,9 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
         Document readDoc = contentHandle.get();
         System.out.println(convertXMLDocumentToString(readDoc));
 
-        assertTrue("Document content returned not correct", readDoc.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
-        assertTrue("Document content returned not correct", readDoc.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
-        assertTrue("Document content returned not correct", readDoc.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));
+        assertTrue( readDoc.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
+        assertTrue( readDoc.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
+        assertTrue( readDoc.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));
       }
     } catch (Exception e) {
       System.out.println("Exceptions thrown from testRawCombinedQueryXMLWithWriteOptions");
@@ -419,7 +415,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    * To test that RawStructuredQueryDefinition can be used withQueryBatcher -
    * JSON file Read a query from a combined file into a handle.
    * combinedQueryOptionJSON.json contains query, options in JSON format.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -501,8 +497,8 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
         // Verify the batch results now.
         String[] res = batchResults.toString().split("\\|");
-        assertEquals("Number of reults returned is incorrect", 1, res.length);
-        assertTrue("URI returned not correct", res[0].contains(filenames[4]));
+        assertEquals(1, res.length);
+        assertTrue( res[0].contains(filenames[4]));
 
         // Read the document and assert on the value
         DOMHandle contentHandle = new DOMHandle();
@@ -510,9 +506,9 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
         Document readDoc = contentHandle.get();
         System.out.println(convertXMLDocumentToString(readDoc));
 
-        assertTrue("Document content returned not correct", readDoc.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
-        assertTrue("Document content returned not correct", readDoc.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
-        assertTrue("Document content returned not correct", readDoc.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));
+        assertTrue( readDoc.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
+        assertTrue( readDoc.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
+        assertTrue( readDoc.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));
       }
     } catch (Exception e) {
       System.out.println("Exceptions thrown from testRawCombinedQueryJSONWithWriteOptions");
@@ -528,7 +524,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    * To test that RawStructuredQueryDefinition can be used withQueryBatcher -
    * Combined file Read a query from a combined file into a handle. Create a
    * RawCombinedQueryDefinition from handle, to be used in QueryBatcher Job.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -562,7 +558,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       wbatcher.add(filenames[0], contentHandle1);
       wbatcher.add(filenames[1], contentHandle2);
 
-      wbatcher.flushAndWait();     
+      wbatcher.flushAndWait();
       // get the combined query
       File file = new File(combQueryFileDir + combinedQueryFileName);
 
@@ -573,7 +569,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
       StringBuilder batchResults = new StringBuilder();
-      StringBuilder batchFailResults = new StringBuilder();   
+      StringBuilder batchFailResults = new StringBuilder();
 
       // Run a QueryBatcher on the new URIs.
       QueryBatcher queryBatcher1 = dmManagerTmp.newQueryBatcher(querydef);
@@ -605,9 +601,9 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
         // Verify the batch results now.
         String[] res = batchResults.toString().split("\\|");
-        assertEquals("Number of results returned is incorrect", 2, res.length);
-        assertTrue("URI returned not correct", res[0].contains("pathindex1.xml") ? true : (res[1].contains("pathindex1.xml") ? true : false));
-        assertTrue("URI returned not correct", res[0].contains("pathindex2.xml") ? true : (res[1].contains("pathindex2.xml") ? true : false));
+        assertEquals(2, res.length);
+        assertTrue( res[0].contains("pathindex1.xml") ? true : (res[1].contains("pathindex1.xml") ? true : false));
+        assertTrue( res[0].contains("pathindex2.xml") ? true : (res[1].contains("pathindex2.xml") ? true : false));
       }
     } catch (Exception e) {
       System.out.println("Exceptions thrown from testRawCombinedQueryPathIndex");
@@ -618,7 +614,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       clearDB();
     }
   }
-  
+
   @Test
   public void testRawCtsQuery() throws IOException, InterruptedException {
     System.out.println("Running testRawCtsQuery");
@@ -686,7 +682,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
       System.out.println("Batch Results are : " + batchResults.toString());
       System.out.println("File name is : " + filenames[4]);
-      assertTrue("URI returned not correct", batchResults.toString().contains("cts-" + filenames[4]));
+      assertTrue( batchResults.toString().contains("cts-" + filenames[4]));
 
       // Read the document and assert on the value
       DOMHandle contentHandle = new DOMHandle();
@@ -698,10 +694,10 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
         e.printStackTrace();
       }
 
-      assertTrue("Document content returned not correct", readDoc.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
-      assertTrue("Document content returned not correct", readDoc.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
+      assertTrue( readDoc.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
+      assertTrue( readDoc.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
 
-      assertTrue("Document content returned not correct", readDoc.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));
+      assertTrue( readDoc.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));
 
       // Run a QueryBatcher with CtsQueryBuilder.
       CtsQueryBuilder ctsQueryBuilder = queryMgr.newCtsSearchBuilder();
@@ -734,7 +730,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
       System.out.println("Batch Results are : " + batchResults2.toString());
       System.out.println("File name is : " + filenames[4]);
-      assertTrue("URI returned not correct", batchResults2.toString().contains("cts-" + filenames[4]));
+      assertTrue( batchResults2.toString().contains("cts-" + filenames[4]));
 
       // Read the document and assert on the value
       Document readDoc2 = null;
@@ -747,10 +743,10 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
         e.printStackTrace();
       }
 
-      assertTrue("Document content returned not correct", readDoc2.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
-      assertTrue("Document content returned not correct", readDoc2.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
+      assertTrue( readDoc2.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
+      assertTrue( readDoc2.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
 
-      assertTrue("Document content returned not correct", readDoc2.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));
+      assertTrue( readDoc2.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));
     } catch (DOMException e) {
       e.printStackTrace();
       fail("testRawCtsQuery method failed");
@@ -763,17 +759,17 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		}
 	}
   }
-  
+
   /*
    * To test query by example with WriteBatcher and QueryBatcher with Query
    * Failure (incorrect query syntax).
-   * 
+   *
    * @throws IOException
-   * 
+   *
    * @throws InterruptedException
    */
   // EA 3 Modify the test for batch failure results. Remove the fail.
-  @Ignore
+  @Disabled
   public void testQueryBatcherQueryFailures() throws IOException, InterruptedException
   {
     System.out.println("Running testQueryBatcherQueryFailures");
@@ -884,9 +880,9 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   /*
    * To test QueryBatcher's callback support by invoking the client object to do
    * a lookup Insert only one document to validate the functionality
-   * 
+   *
    * @throws IOException
-   * 
+   *
    * @throws InterruptedException
    */
   @Test
@@ -950,7 +946,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		  }
 		  System.out.println("Contents from the callback are : " + ccBuf.toString());
 		  // Verify the Callback contents.
-		  assertTrue("Lookup for a document from Callback using the client failed", ccBuf.toString().contains(expectedStr));
+		  assertTrue( ccBuf.toString().contains(expectedStr));
 		}
 		else {
 			fail("testQueryBatcherCallbackClient method failed");
@@ -966,7 +962,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 			e.printStackTrace();
 		}
 	}
-    
+
   }
 
   /*
@@ -1006,7 +1002,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		boolean isstopped = queryBatcherNoResult.awaitCompletion(30, TimeUnit.SECONDS);
 
 		if (isstopped) {
-		  assertTrue("Query returned no results when there is no data", batchNoResults.toString().isEmpty());
+		  assertTrue( batchNoResults.toString().isEmpty());
 		}
 		else {
 			fail("testQueryBatcherWithNoData method failed");
@@ -1027,10 +1023,10 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   /*
    * To test query with WriteBatcher and QueryBatcher 1) Verify batch
    * size on QueryBatcher.
-   * 
-   * 
+   *
+   *
    * @throws IOException
-   * 
+   *
    * @throws InterruptedException
    */
   @Test
@@ -1109,7 +1105,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		  System.out.println("Duration is ===== " + queryJobTimeoutValue);
 		  System.out.println(batchResults.toString());
 
-		  assertEquals("Number of batches should have been 50", batchResults.toString().split("\\|").length, 50);
+		  assertEquals(batchResults.toString().split("\\|").length, 50);
 		}
 		// Clear the contents for next query host batcher object results.
 		batchResults.delete(0, (batchResults.capacity() - 1));
@@ -1133,10 +1129,10 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		queryBatcherSmallTimeout.awaitCompletion(5, TimeUnit.MILLISECONDS);
 		if (queryBatcherSmallTimeout.isStopped()) {
 		  System.out.println(batchResults.toString());
-		  assertNotEquals("Number of batches should not have been 1", batchResults.toString().split("\\|").length, 5);
+		  assertNotEquals(batchResults.toString().split("\\|").length, 5);
 		}
 		if (batchFailResults != null && !batchFailResults.toString().isEmpty()) {
-		  assertTrue("Exceptions not found when query time out value reached", batchFailResults.toString().contains("Test has Exceptions"));
+		  assertTrue( batchFailResults.toString().contains("Test has Exceptions"));
 		}
 	} catch (Exception e) {
 		e.printStackTrace();
@@ -1154,10 +1150,10 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   /*
    * To test query by example with WriteBatcher and QueryBatcher 1) Verify
    * awaitTermination method on QueryBatcher.
-   * 
-   * 
+   *
+   *
    * @throws IOException
-   * 
+   *
    * @throws InterruptedException
    */
   @Test
@@ -1236,7 +1232,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		if (queryBatcherAwait.isStopped()) {
 		  System.out.println("Duration is " + quertJobTimeoutValue);
 		  if (quertJobTimeoutValue >= 30 && quertJobTimeoutValue < 35) {
-		    assertTrue("Job termination with awaitTermination passed within specified time", quertJobTimeoutValue >= 30 && quertJobTimeoutValue < 35);
+		    assertTrue( quertJobTimeoutValue >= 30 && quertJobTimeoutValue < 35);
 		  } else if (quertJobTimeoutValue > 35) {
 		    fail("Job termination with awaitTermination failed");
 		  }
@@ -1335,15 +1331,15 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
         while (!queryBatcher1.isStopped()) {
         // Do nothing. Wait for batcher to complete.
         }
-		
+
 		if (queryBatcher1.isStopped()) {
 		  // Verify the batch results now.
 		  String[] res = batchResults.toString().split("\\|");
-		  assertEquals("Query results URI list length returned after transformation incorrect", res.length, 20);
+		  assertEquals(res.length, 20);
 
 		  // Get a random URI, since the URIs returned are not ordered. Get the 3rd
 		  // URI.
-		  assertTrue("URI returned not correct", res[2].contains("foo") || res[2].contains("bar"));
+		  assertTrue( res[2].contains("foo") || res[2].contains("bar"));
 
 		  // do a lookup with the first URI using the client to verify transforms
 		  // are done.
@@ -1354,8 +1350,8 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
 		  System.out.println("Contents are : " + contents);
 		  System.out.println("Contents are : " + attribute);
-		  assertTrue("Lookup for a document from Callback using the client failed", xmlStr1.contains(contents) || xmlStr2.contains(contents));
-		  assertTrue("Server transform failed", attribute.equalsIgnoreCase("English"));
+		  assertTrue( xmlStr1.contains(contents) || xmlStr2.contains(contents));
+		  assertTrue( attribute.equalsIgnoreCase("English"));
 		}
 		else {
 			fail("testServerXQueryTransform method failed");
@@ -1376,9 +1372,9 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   /*
    * To test QueryBatcher functionality (errors if any) when a Forest is being
    * removed and added during a start job.
-   * 
+   *
    * @throws IOException
-   * 
+   *
    * @throws InterruptedException
    */
   @Test
@@ -1457,12 +1453,12 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
           System.out.print("Results from onUrisReady === ");
           System.out.print(batchResults.toString());
           // We should be having 10 batches numbered 1 to 10.
-          assertTrue("Batches not complete in results", batchResults.toString().contains("10"));
+          assertTrue( batchResults.toString().contains("10"));
         }
         if (batchFailResults != null && !batchFailResults.toString().isEmpty()) {
           System.out.print("Results from onQueryFailure === ");
           System.out.print(batchFailResults.toString());
-          assertTrue("Exceptions not found when forest added", batchFailResults.toString().contains("Test has Exceptions"));
+          assertTrue( batchFailResults.toString().contains("Test has Exceptions"));
         }
       }
 
@@ -1503,12 +1499,12 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
           // We should be having 10 batches numbered 1 to 10.
           // TODO Add rest of the validations when feature complete.
           System.out.print(batchResultsRem.toString());
-          assertTrue("Batches not complete in results when forest removed", batchResultsRem.toString().contains("10"));
+          assertTrue( batchResultsRem.toString().contains("10"));
         }
         if (batchFailResultsRem != null && !batchFailResultsRem.toString().isEmpty()) {
           System.out.print("Results from onQueryFailure === ");
           System.out.print(batchFailResultsRem.toString());
-          assertTrue("Exceptions not found when forest removed", batchFailResultsRem.toString().contains("Test has Exceptions"));
+          assertTrue( batchFailResultsRem.toString().contains("Test has Exceptions"));
         }
       }
     } catch (Exception e) {
@@ -1540,9 +1536,9 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    * To test QueryBatcher's callback support with long lookup time for the client
    * object to do a lookup Insert documents to validate the functionality.
    * Induce a long pause which exceeds awaitTermination time.
-   * 
+   *
    * @throws IOException
-   * 
+   *
    * @throws InterruptedException
    */
   @Test
@@ -1634,10 +1630,10 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
         if (batchFailResults != null && !batchFailResults.toString().isEmpty()) {
           System.out.print("Results from onQueryFailure === ");
           System.out.print(batchFailResults.toString());
-          assertTrue("Exceptions not found when forest added", batchFailResults.toString().contains("Test has Exceptions"));
+          assertTrue( batchFailResults.toString().contains("Test has Exceptions"));
         }
       }
-      assertTrue("Batches are available in results when they should not be.", batchResults.toString().isEmpty());
+      assertTrue( batchResults.toString().isEmpty());
     } catch (Exception e) {
       System.out.print(e.getMessage());
       fail("testBatchClientLookupTimeout method failed");
@@ -1658,9 +1654,9 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   /*
    * To test QueryBatcher when WriteBatcher writes same document. Simulate a
    * deadlock / resource contention.
-   * 
+   *
    * @throws IOException
-   * 
+   *
    * @throws InterruptedException
    */
 
@@ -1669,13 +1665,13 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    * InterruptedException {
    * System.out.println("Running testSimultaneousBothBatcherAccess");
    * clearDB(restServerPort);
-   * 
+   *
    * String[] filenames = {"constraint1.json", "constraint2.json",
    * "constraint3.json", "constraint4.json", "constraint5.json"}; WriteBatcher
    * batcher = dmManager.newWriteBatcher();
-   * 
+   *
    * batcher.withBatchSize(2);
-   * 
+   *
    * InputStreamHandle contentHandle1 = new InputStreamHandle();
    * contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
    * InputStreamHandle contentHandle2 = new InputStreamHandle();
@@ -1686,61 +1682,61 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    * contentHandle4.set(new FileInputStream(dataFileDir + filenames[3]));
    * InputStreamHandle contentHandle5 = new InputStreamHandle();
    * contentHandle5.set(new FileInputStream(dataFileDir + filenames[4]));
-   * 
+   *
    * StringBuilder writebatchResults = new StringBuilder();
    * batcher.add("/batcher-contraints1.json", contentHandle1);
    * batcher.add("/batcher-contraints2.json", contentHandle2);
    * batcher.add("/batcher-contraints3.json", contentHandle3);
    * batcher.add("/batcher-contraints4.json", contentHandle4);
    * batcher.add("/batcher-contraints5.json", contentHandle5);
-   * 
+   *
    * // Flush batcher.flushAndWait();
-   * 
+   *
    * StringBuffer querybatchResults = new StringBuffer(); StringBuilder
    * querybatchFailResults = new StringBuilder();
-   * 
+   *
    * // get the query File file = new File(dataConfigDirPath + "qbe1.json");
    * FileHandle fileHandle = new FileHandle(file);
-   * 
+   *
    * QueryManager queryMgr = client.newQueryManager();
    * RawQueryByExampleDefinition qbyexDef =
    * queryMgr.newRawQueryByExampleDefinition
    * (fileHandle.withFormat(Format.JSON));
-   * 
+   *
    * // Run a QueryBatcher. QueryBatcher queryBatcher1 =
    * dmManager.newQueryBatcher(qbyexDef); queryBatcher1.onUrisReady(batch-> {
-   * 
+   *
    * for (String str : batch.getItems()) { querybatchResults.append(str)
    * .append('|'); }
-   * 
+   *
    * querybatchResults.append(batch.getForestResultsSoFar()) .append('|')
    * .append(batch.getForest().getForestName()) .append('|')
    * .append(batch.getJobBatchNumber()) .append('|');
-   * 
+   *
    * }); queryBatcher1.onQueryFailure(throwable-> {
    * System.out.println("Exceptions thrown from callback onQueryFailure");
    * throwable.printStackTrace();
    * querybatchFailResults.append("Test has Exceptions");
    * querybatchFailResults.append(throwable.getMessage()); } );
-   * 
+   *
    * // Trying to use a WriteBatcher on the same docId. WriteBatcher batcherTwo
    * = dmManager.newWriteBatcher(); String jsonDoc = "{" + "\"employees\": [" +
    * "{ \"firstName\":\"John\" , \"lastName\":\"Doe\" }," +
    * "{ \"firstName\":\"Ann\" , \"lastName\":\"Smith\" }," +
    * "{ \"firstName\":\"Bob\" , \"lastName\":\"Foo\" }]" + "}"; StringHandle
    * handle = new StringHandle(); handle.set(jsonDoc);
-   * 
+   *
    * // Update contents to same doc uri. batcherTwo.withBatchSize(1);
    * batcherTwo.add("/batcher-contraints11.json", handle);
    * batcherTwo.flushAndWait();
-   * 
+   *
    * JobTicket jobTicketWriteTwo = dmManager.startJob(batcherTwo);
-   * 
+   *
    * JobTicket jobTicket = dmManager.startJob(queryBatcher1);
    * queryBatcher1.awaitTermination(1, TimeUnit.MINUTES);
-   * 
+   *
    * if (queryBatcher1.isStopped()) {
-   * 
+   *
    * if( !querybatchFailResults.toString().isEmpty() &&
    * querybatchFailResults.toString().contains("Exceptions")) {
    * System.out.println("Query Batch Failed - Buffer Contents are:" +
@@ -1748,8 +1744,8 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    * if( querybatchResults != null && !querybatchResults.toString().isEmpty()) {
    * // Verify the batch results now. String[] res =
    * querybatchResults.toString().split("\\|");
-   * 
-   * assertTrue("URI returned not correct",
+   *
+   * assertTrue(
    * res[0].contains("/batcher-contraints1.json"));
    * assertEquals("Bytes Moved","0", res[1]); assertEquals("Batch Number","0",
    * res[3]); } } }
@@ -1763,7 +1759,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
     try {
       System.out.println("Running testQueryBatcherJobDetails");
-      
+
       addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
       Thread.sleep(10000);
 
@@ -1842,9 +1838,9 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       JobTicket jobTicket = dmManagerTmp.startJob(queryBatcher1);
       String jobId = jobTicket.getJobId();
       String jobName = jobTicket.getJobType().name();
-      
-      assertTrue("Job Id is null or empty", !jobId.isEmpty());
-      assertTrue("Job Type name incorrect", jobName.equalsIgnoreCase("QUERY_BATCHER"));
+
+      assertTrue( !jobId.isEmpty());
+      assertTrue( jobName.equalsIgnoreCase("QUERY_BATCHER"));
 
       boolean bJobFinished = queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);
 
@@ -1855,21 +1851,21 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
         // Verify the batch results now.
         String[] res = batchResults.toString().split("\\|");
-        assertEquals("Number of reults returned is incorrect", 1, res.length);
-        assertTrue("URI returned not correct", res[0].contains("/abs-range-constraint/batcher-contraints2.xml"));
+        assertEquals(1, res.length);
+        assertTrue( res[0].contains("/abs-range-constraint/batcher-contraints2.xml"));
 
         // verify the Job and batch get method values.
         String[] batchDetailsArray = batchDetails.toString().split("\\|");
 
-        assertTrue("Job Batch Number not correct", Long.parseLong(batchDetailsArray[0]) > 0);
-        assertTrue("Job Results So Far Number not correct", Long.parseLong(batchDetailsArray[1]) > 0);
-        assertTrue("Forest Batch Number not correct", Long.parseLong(batchDetailsArray[2]) > 0);
+        assertTrue( Long.parseLong(batchDetailsArray[0]) > 0);
+        assertTrue( Long.parseLong(batchDetailsArray[1]) > 0);
+        assertTrue( Long.parseLong(batchDetailsArray[2]) > 0);
 
         // verify the forest get method values.
         String[] forestDetailsArray = forestDetails.toString().split("\\|");
-        assertTrue("Database name returned from batch is not correct", forestDetailsArray[0].equalsIgnoreCase(dbName));
-        assertTrue("Forest name returned from batch is not correct", forestDetailsArray[2].contains(dbName));
-  
+        assertTrue( forestDetailsArray[0].equalsIgnoreCase(dbName));
+        assertTrue( forestDetailsArray[2].contains(dbName));
+
       }
     } catch (Exception e) {
       System.out.println("Exceptions thrown from Test testAndWordQueryWithMultipleForests");
@@ -1955,7 +1951,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       });
       dmManagerTmp.startJob(queryBatcher1);
       boolean bJobFinished = queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);
-     
+
       if (bJobFinished) {
 
         if (!batchWordFailResults.toString().isEmpty() && batchWordFailResults.toString().contains("Exceptions")) {
@@ -1964,8 +1960,8 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
         // Verify the batch results now.
         String[] res = batchWordResults.toString().split("\\|");
-        assertEquals("Number of reults returned is incorrect", 1, res.length);
-        assertTrue("URI returned not correct", res[0].contains("/abs-range-constraint/batcher-contraints5.xml"));
+        assertEquals(1, res.length);
+        assertTrue( res[0].contains("/abs-range-constraint/batcher-contraints5.xml"));
       }
 
       // Run a range query.
@@ -1994,11 +1990,11 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
         }
 
         // Verify the batch results now.
-        assertTrue("No of documents returned in range query not correct", batchRangeResults.size() == 4);
-        assertTrue("URI returned not correct", batchRangeResults.contains("/abs-range-constraint/batcher-contraints1.xml"));
-        assertTrue("URI returned not correct", batchRangeResults.contains("/abs-range-constraint/batcher-contraints2.xml"));
-        assertTrue("URI returned not correct", batchRangeResults.contains("/abs-range-constraint/batcher-contraints4.xml"));
-        assertTrue("URI returned not correct", batchRangeResults.contains("/abs-range-constraint/batcher-contraints5.xml"));
+        assertTrue( batchRangeResults.size() == 4);
+        assertTrue( batchRangeResults.contains("/abs-range-constraint/batcher-contraints1.xml"));
+        assertTrue( batchRangeResults.contains("/abs-range-constraint/batcher-contraints2.xml"));
+        assertTrue( batchRangeResults.contains("/abs-range-constraint/batcher-contraints4.xml"));
+        assertTrue( batchRangeResults.contains("/abs-range-constraint/batcher-contraints5.xml"));
       }
 
       // Run a ValueQueryOnAttribute query.
@@ -2020,15 +2016,15 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       });
       dmManagerTmp.startJob(queryBatcher3);
       bJobFinished = queryBatcher3.awaitCompletion(3, TimeUnit.MINUTES);
-      
+
       if (bJobFinished) {
         if (!batchvalueFailResults.toString().isEmpty() && batchvalueFailResults.toString().contains("Exceptions")) {
           fail("Test failed due to exceptions in testDifferentQueryTypes - Word Query");
         }
 
         // Verify the batch results now.
-        assertTrue("No of documents returned in range query not correct", batchValueResults.size() == 1);
-        assertTrue("URI returned not correct", batchRangeResults.contains("/abs-range-constraint/batcher-contraints1.xml"));
+        assertTrue( batchValueResults.size() == 1);
+        assertTrue( batchRangeResults.contains("/abs-range-constraint/batcher-contraints1.xml"));
       }
     } catch (Exception e) {
       System.out.println("Exceptions thrown from Test testDifferentQueryTypes");
@@ -2039,7 +2035,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       clearDB();
     }
   }
-  
+
   @Test
   public void testMinHostWithHostAvailabilityListener() throws Exception
   {
@@ -2083,12 +2079,12 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		  finally {
 			  client.release();
 			  System.out.println("Exception Message is " + batchFailResults.toString());
-			  assertTrue("Exception incorrect", batchFailResults.toString().contains("numHosts must be less than or equal to the number of hosts in the cluster"));
+			  assertTrue( batchFailResults.toString().contains("numHosts must be less than or equal to the number of hosts in the cluster"));
 			  clearDB();
 		  }
 	  }
   }
-  
+
   @Test
   public void testProgressListener() throws Exception {
 	  DatabaseClient clientTmp = null;
@@ -2141,7 +2137,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
 		  dmManager.startJob(batcher6000);
 		  batcher6000.awaitCompletion();
-          assertTrue("Progress Update incorrect", progressSet.toString().contains("Progress: 6000 results"));
+          assertTrue( progressSet.toString().contains("Progress: 6000 results"));
 
 		  // Read in smaller batches and monitor progress
           Set<String> progressSet60 = Collections.synchronizedSet(new HashSet<>());
@@ -2167,9 +2163,9 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		  batcher60.awaitCompletion();
 
 		  // Make sure all updates are available
-          assertTrue("Progress Update Batch 1 incorrect", progressSet60.toString().contains("Progress: 60 results"));
-		  assertTrue("Progress Update Batch 5940 incorrect", progressSet60.toString().contains("Progress: 5940 results"));
-		  assertTrue("Progress Update incorrect", progressSet60.toString().contains("Progress: 6000 results"));
+          assertTrue( progressSet60.toString().contains("Progress: 60 results"));
+		  assertTrue( progressSet60.toString().contains("Progress: 5940 results"));
+		  assertTrue( progressSet60.toString().contains("Progress: 6000 results"));
 		  // Batches read are uneven and with multiple threads
 
           Set<String> progressSet33 = Collections.synchronizedSet(new HashSet<>());
@@ -2193,12 +2189,12 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		  batcher33.awaitCompletion();
 
 		  // Make sure all updates are available
-		  assertTrue("Progress Update Batch 1 incorrect", progressSet33.toString().contains("Progress: 33 results"));
-		  assertTrue("Progress Update Batch 5973 incorrect", progressSet33.toString().contains("Progress: 5973 results"));
-		  assertTrue("Progress Update incorrect", progressSet33.toString().contains("Progress: 6000 results"));
+		  assertTrue( progressSet33.toString().contains("Progress: 33 results"));
+		  assertTrue( progressSet33.toString().contains("Progress: 5973 results"));
+		  assertTrue( progressSet33.toString().contains("Progress: 6000 results"));
 
 		  // Batches read errors
-		  StringBuilder strErr = new StringBuilder();	  
+		  StringBuilder strErr = new StringBuilder();
 		  StringQueryDefinition querydefErr = queryMgr.newStringDefinition();
 		  querydefErr.setCriteria("Jhn AND BAA");
 
@@ -2207,7 +2203,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 				  new ProgressListener()
 				  .onProgressUpdate(progressUpdate -> {
 					  System.out.println("From ProgressListener (From Batch Err): " + progressUpdate.getProgressAsString());
-					  strErr.append(progressUpdate.getProgressAsString());	  
+					  strErr.append(progressUpdate.getProgressAsString());
 				  }))
 		  .onQueryFailure((throwable) -> {
 			  System.out.println("queryFailures Err: ");
@@ -2223,7 +2219,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
 		  System.out.println("From buffer Err: " + strErr.toString());
 		  // No updates are available
-		  assertTrue("Progress Update Batch 1 incorrect", strErr.toString().isEmpty());	  
+		  assertTrue( strErr.toString().isEmpty());
 	  }
 	  catch (Exception ex) {
 		  ex.printStackTrace();
@@ -2234,7 +2230,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		  clearDB();
 	  }
   }
-  
+
   @Test
   public void testQueryBatcherWithIterator() throws Exception {
 	  DatabaseClient clientTmp = null;
@@ -2258,7 +2254,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		  wbatcher.onBatchFailure((batch, throwable) -> throwable.printStackTrace());
 		  StringHandle handle = new StringHandle();
 		  handle.set(jsonDoc);
-		  
+
 		  // Insert 6 K documents
 		  for (int i = 0; i < 6000; i++) {
 			  uri = "/QBIteratorTest" + i + ".json";
@@ -2271,7 +2267,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
 		  wbatcher.flushAndWait();
 		  // Read all 6000 docs in a batch using an iterator.
-		  
+
 		  QueryBatcher queryBatcher = dmManager.newQueryBatcher(uris.iterator())
 				                               .withBatchSize(20)
 				                               .withThreadCount(1);
@@ -2292,12 +2288,12 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 			  throwable.printStackTrace();
 
 		  });
-		  
+
 		  dmManager.startJob(queryBatcher);
 		  queryBatcher.awaitCompletion();
 		  System.out.println("First batch comprisions");
-		  
-		  assertTrue("Batch 1 incorrect", batchValueResults.equals(uris20));		    
+
+		  assertTrue( batchValueResults.equals(uris20));
 	  }
 	  catch (Exception ex) {
 	  ex.printStackTrace();
@@ -2390,8 +2386,8 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
             // Verify the batch results now.
             String[] res = batchResults.toString().split("\\|");
-            assertEquals("Number of reults returned is incorrect", 1, res.length);
-            assertTrue("URI returned not correct", res[0].trim().contains("/CXXXX_Ü_testqa.xml"));
+            assertEquals(1, res.length);
+            assertTrue( res[0].trim().contains("/CXXXX_Ü_testqa.xml"));
 
             // Read the document and assert on the value
             DOMHandle contentHandle = new DOMHandle();
@@ -2399,9 +2395,9 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
             Document readDoc = contentHandle.get();
             System.out.println(convertXMLDocumentToString(readDoc));
 
-            assertTrue("Document content returned not correct", readDoc.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
-            assertTrue("Document content returned not correct", readDoc.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
-            assertTrue("Document content returned not correct", readDoc.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));
+            assertTrue( readDoc.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
+            assertTrue( readDoc.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
+            assertTrue( readDoc.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));
           }
         } catch (Exception e) {
           System.out.println("Exceptions thrown from testUTF8InUri");
@@ -2535,11 +2531,11 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
         if (! failStr.toString().isEmpty()) {
           fail("QueryBatcher failed to query required docs.");
         }
-        assertEquals("Number of docs returned incorrect", 3, ndocs);
+        assertEquals(3, ndocs);
         String res = resultUris.toString();
-        assertTrue("Doc 1 returned incorrect", res.contains("/testdoc/doc3.xml"));
-        assertTrue("Doc 2 returned incorrect", res.contains("/testdoc/doc4.xml"));
-        assertTrue("Doc 3 returned incorrect", res.contains("/testdoc/doc5.xml"));
+        assertTrue( res.contains("/testdoc/doc3.xml"));
+        assertTrue( res.contains("/testdoc/doc4.xml"));
+        assertTrue( res.contains("/testdoc/doc5.xml"));
       }
 
     } catch (Exception e) {

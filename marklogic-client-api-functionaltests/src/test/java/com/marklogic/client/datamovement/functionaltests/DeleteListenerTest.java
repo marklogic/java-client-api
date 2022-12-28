@@ -15,54 +15,23 @@
  */
 package com.marklogic.client.datamovement.functionaltests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.ConcurrentModificationException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.DeleteListener;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.UrisToWriterListener;
-import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.datamovement.*;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.functionaltest.BasicJavaClientREST;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.*;
 import com.marklogic.client.query.StructuredQueryBuilder;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.*;
+
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DeleteListenerTest extends BasicJavaClientREST {
 
@@ -87,14 +56,14 @@ public class DeleteListenerTest extends BasicJavaClientREST {
   private static JsonNode jsonNode;
   private static final String query1 = "fn:count(fn:doc())";
   private static String[] hostNames;
-  private static int forestCount = 1; 
+  private static int forestCount = 1;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     loadGradleProperties();
     server = getRestAppServerName();
     port = getRestAppServerPort();
-    
+
     host = getRestAppServerHostName();
     hostNames = getHosts();
     createDB(dbName);
@@ -138,7 +107,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     fileHandle.setFormat(Format.JSON);
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownAfterClass() throws Exception {
     associateRESTServerWithDB(server, "Documents");
     for (int i = 0; i < forestCount -1; i++) {
@@ -150,7 +119,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     deleteDB(dbName);
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     Thread.currentThread().sleep(1000L);
     WriteBatcher ihb2 = dmManager.newWriteBatcher();
@@ -172,11 +141,10 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     }
 
     ihb2.flushAndWait();
-    Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
-
+    assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     clearDB(port);
   }
@@ -185,8 +153,8 @@ public class DeleteListenerTest extends BasicJavaClientREST {
   public void massDeleteSingleThread() throws Exception {
     HashSet<String> urisList = new HashSet<>();
 
-    Assert.assertTrue(urisList.isEmpty());
-    Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
+    assertTrue(urisList.isEmpty());
+    assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
 
     QueryBatcher queryBatcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("DeleteListener"))
         .withBatchSize(11, 1)
@@ -207,7 +175,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     dmManager.stopJob(ticket);
 
     Thread.currentThread().sleep(2000L);
-    Assert.assertTrue(urisList.size() == 2000);
+    assertTrue(urisList.size() == 2000);
 
     AtomicInteger successDocs = new AtomicInteger();
     HashSet<String> uris2 = new HashSet<>();
@@ -230,7 +198,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
 
     if (failures2.length() > 0)
       fail(failures2.toString());
-    Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+    assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
   }
 
   @Test
@@ -258,7 +226,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     queryBatcher.awaitCompletion();
     dmManager.stopJob(ticket);
 
-    Assert.assertTrue(urisList.size() == 2000);
+    assertTrue(urisList.size() == 2000);
 
     AtomicInteger successDocs = new AtomicInteger();
     HashSet<String> uris2 = new HashSet<>();
@@ -281,7 +249,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
 
     if (failures2.length() > 0)
       fail(failures2.toString());
-    Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+    assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
   }
 
   @Test
@@ -341,7 +309,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
 
     if (failures2.length() > 0)
       fail(failures2.toString());
-    Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
+    assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
   }
 
   // ISSUE 94
@@ -412,8 +380,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     if (failures2.length() > 0)
       fail(failures2.toString());
 
-    assertEquals("There should be 0 documents in the db",
-        0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+    assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 
     DocumentPage page = dbClient.newDocumentManager().read("/local/json-1998");
     JacksonHandle dh = new JacksonHandle();
@@ -452,171 +419,8 @@ public class DeleteListenerTest extends BasicJavaClientREST {
 
     if (failures2.length() > 0)
       fail(failures2.toString());
-    Assert.assertTrue(successDocs.intValue() == 0);
-    Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
-  }
-
-  @Ignore
-  public void testModifyIteratorAdd() throws Exception {
-
-    HashSet<String> urisList = new HashSet<>();
-
-    AtomicInteger successDocs = new AtomicInteger();
-    StringBuffer failures2 = new StringBuffer();
-
-    class MyRunnable1 implements Runnable {
-
-      @Override
-      public void run() {
-
-        for (int j = 0; j < 1000; j++) {
-          String uri = "/local/json-" + j;
-          urisList.add(uri);
-          if (j % 100 == 0) {
-            try {
-              Thread.currentThread().sleep(50L);
-            } catch (InterruptedException e) {
-              e.printStackTrace();
-            }
-
-          }
-        }
-      }
-    }
-
-    class MyRunnable2 implements Runnable {
-
-      @Override
-      public void run() {
-
-        for (int j = 1000; j < 2000; j++) {
-          String uri = "/local/json-" + j;
-          urisList.add(uri);
-          if (j % 100 == 0) {
-            try {
-              Thread.currentThread().sleep(30L);
-            } catch (InterruptedException e) {
-              e.printStackTrace();
-            }
-
-          }
-        }
-      }
-
-    }
-    Thread t1, t2;
-    t1 = new Thread(new MyRunnable1());
-    t1.setName("Addition Thread 1");
-
-    t2 = new Thread(new MyRunnable2());
-    t1.setName("Addition Thread 2");
-
-    t1.start();
-    Thread.currentThread().sleep(10L);
-
-    QueryBatcher deleteBatcher = dmManager.newQueryBatcher(urisList.iterator())
-        .onUrisReady(new DeleteListener())
-        .onUrisReady(batch -> {
-          System.out.println("Items in batch " + batch.getItems().length);
-          successDocs.addAndGet(batch.getItems().length);
-        }
-        )
-        .onQueryFailure(throwable -> {
-          System.out.println("Query Failed");
-          throwable.printStackTrace();
-          failures2.append("ERROR:[" + throwable + "]\n");
-        })
-        .withBatchSize(9)
-        .withThreadCount(3);
-
-    t2.start();
-    Thread.currentThread().sleep(30L);
-
-    JobTicket delTicket = null;
-    try {
-      System.out.println("Job starting: urisList Size is " + urisList.size());
-      delTicket = dmManager.startJob(deleteBatcher);
-      deleteBatcher.awaitCompletion();
-      System.out.println("Succes Docs " + successDocs.intValue());
-      System.out.println("DB size: " + dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-      Assert.assertFalse("Exception was not thrown, when it should have been", 1 < 2);
-    } catch (Exception e) {
-      Assert.assertTrue(e instanceof ConcurrentModificationException);
-    }
-
-    dmManager.stopJob(delTicket);
-    t1.join();
-    t2.join();
-  }
-
-  @Ignore
-  public void testModifyIteratorRemove() throws Exception {
-
-    HashSet<String> urisList = new HashSet<>();
-    String uris[] = new String[2000];
-    for (int i = 0; i < 2000; i++) {
-      String uri = new String("/local/json-" + i);
-      uris[i] = uri;
-      urisList.add(uri);
-    }
-
-    AtomicInteger successDocs = new AtomicInteger();
-
-    class MyRunnable1 implements Runnable {
-
-      @Override
-      public void run() {
-
-        for (int j = 1999; j > 1000; j--) {
-          urisList.remove(uris[j]);
-          if (j % 100 == 0) {
-            try {
-              Thread.currentThread().sleep(100L);
-            } catch (InterruptedException e) {
-              e.printStackTrace();
-            }
-
-          }
-        }
-      }
-    }
-
-    Thread t1;
-    t1 = new Thread(new MyRunnable1());
-    t1.setName("Deletion Thread");
-
-    QueryBatcher deleteBatcher = dmManager.newQueryBatcher(urisList.iterator())
-        .onUrisReady(new DeleteListener())
-        .onUrisReady(batch -> {
-          System.out.println("Items in batch " + batch.getItems().length);
-          successDocs.addAndGet(batch.getItems().length);
-        }
-        )
-        .onQueryFailure(throwable -> {
-          System.out.println("Query Failed");
-          throwable.getLocalizedMessage();
-          for (StackTraceElement ste : throwable.getStackTrace())
-          {
-            System.out.println(ste.getClassName());
-          }
-        })
-        .withBatchSize(7)
-        .withThreadCount(3);
-
-    t1.start();
-    Thread.currentThread().sleep(50L);
-    System.out.println("urisList Size is " + urisList.size());
-    JobTicket delTicket = null;
-    try {
-      delTicket = dmManager.startJob(deleteBatcher);
-      Assert.assertFalse("Exception was not thrown, when it should have been", 1 < 2);
-    } catch (Exception e) {
-      Assert.assertTrue(e instanceof ConcurrentModificationException);
-    }
-
-    dmManager.stopJob(delTicket);
-    t1.join();
-
+    assertTrue(successDocs.intValue() == 0);
+    assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
   }
 
   @Test

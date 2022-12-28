@@ -15,10 +15,9 @@
  */
 package com.marklogic.client.test.util;
 
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class Refers {
