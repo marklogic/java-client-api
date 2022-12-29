@@ -60,7 +60,7 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
 
   @BeforeAll
   public static void setUpBeforeClass() throws Exception {
-    loadGradleProperties();
+    loadTestProperties();
     restServerPort = getRestAppServerPort();
 
     restServerName = getRestAppServerName();

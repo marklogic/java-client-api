@@ -86,7 +86,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    */
   @BeforeAll
   public static void setUpBeforeClass() throws Exception {
-    loadGradleProperties();
+    loadTestProperties();
     restServerPort = getRestAppServerPort();
 
     restServerName = getRestAppServerName();

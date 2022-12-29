@@ -102,7 +102,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
   @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     System.out.println("In setup");
-    loadGradleProperties();
+    loadTestProperties();
     appServerHostName = getRestAppServerHostName();
 
     setupJavaRESTServer(dbName, fNames[0], appServerName, appServerHostPort);

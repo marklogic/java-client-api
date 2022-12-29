@@ -60,7 +60,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
 
   @BeforeAll
   public static void setUpBeforeClass() throws Exception {
-    loadGradleProperties();
+    loadTestProperties();
     server = getRestAppServerName();
     port = getRestAppServerPort();
 

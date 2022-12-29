@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClient.ConnectionType;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.impl.OkHttpServices;
@@ -35,8 +34,6 @@ import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.ManageConfig;
 import com.marklogic.mgmt.resource.appservers.ServerManager;
 import com.marklogic.mgmt.resource.databases.DatabaseManager;
-import com.marklogic.mgmt.resource.security.RoleManager;
-import com.marklogic.mgmt.resource.security.UserManager;
 import okhttp3.*;
 import org.json.JSONObject;
 
@@ -50,6 +47,8 @@ import java.security.cert.X509Certificate;
 import java.util.*;
 
 public abstract class ConnectedRESTQA {
+
+	protected static Properties testProperties = null;
 
 	protected static String securityContextType;
 	protected static String restServerName = null;
@@ -1848,6 +1847,15 @@ public abstract class ConnectedRESTQA {
 		);
 	}
 
+	public static void setAuthenticationAndDefaultUser(String restServerName, String authentication, String defaultUser) {
+		new ServerManager(newManageClient()).save(
+			newServerPayload(restServerName)
+				.put("authentication", authentication)
+				.put("default-user", defaultUser)
+				.toString()
+		);
+	}
+
 	public static String getServerAuthentication(String serverName) {
 		String json = new ServerManager(newManageClient()).getPropertiesAsJson(serverName);
 		try {
@@ -1855,12 +1863,6 @@ public abstract class ConnectedRESTQA {
 		} catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	public static void setDefaultUser(String username, String restServerName) {
-		new ServerManager(newManageClient()).save(
-			newServerPayload(restServerName).put("default-user", username).toString()
-		);
 	}
 
 	public static void setupServerRequestLogging(DatabaseClient client, boolean flag) throws Exception {
@@ -1981,7 +1983,7 @@ public abstract class ConnectedRESTQA {
 	 * @throws Exception
 	 */
 	public static void configureRESTServer(String dbName, String[] fNames) throws Exception {
-		loadGradleProperties();
+		loadTestProperties();
 		if (IsSecurityEnabled())
 			setupJavaRESTServer(dbName, fNames[0], restSslServerName, getRestServerPort());
 		else
@@ -1997,7 +1999,7 @@ public abstract class ConnectedRESTQA {
 
 	//Configure a SSL or non SSL enabled REST Server based on the build.gradle
 	public static void configureRESTServer(String dbName, String[] fNames, boolean bAssociateDB) throws Exception {
-		loadGradleProperties();
+		loadTestProperties();
 		if (IsSecurityEnabled())
 			setupJavaRESTServer(dbName, fNames[0], restSslServerName, getRestServerPort(), bAssociateDB);
 		else
@@ -2023,14 +2025,6 @@ public abstract class ConnectedRESTQA {
 		return bSecurityEnabled;
 	}
 
-	public static DatabaseClient newClient(String host, int port, String database, SecurityContext securityContext) {
-		return newClient(host, port, database, securityContext, null);
-	}
-
-	public static DatabaseClient newClient(String host, int port, SecurityContext securityContext, ConnectionType connectionType) {
-		return newClient(host, port, null, securityContext, connectionType);
-	}
-
 	/**
 	 * Intent is for every functional test to create a client ultimately via this method so that basePath can be
 	 * applied in one place.
@@ -2048,54 +2042,69 @@ public abstract class ConnectedRESTQA {
 		return DatabaseClientFactory.newClient(host, port, basePath, database, securityContext, connectionType);
 	}
 
-	public static DatabaseClient getDatabaseClient(String user, String password, ConnectionType connType)
-			throws KeyManagementException, NoSuchAlgorithmException, IOException {
-		SSLContext sslcontext = null;
-		SecurityContext secContext = newSecurityContext(user,password);
-		if (IsSecurityEnabled()) {
-			try {
-				sslcontext = getSslContext();
-			} catch (UnrecoverableKeyException | KeyStoreException | CertificateException e) {
-				e.printStackTrace();
-			}
-			secContext = secContext.withSSLContext(sslcontext).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
-		}
-		return newClient(getRestServerHostName(), getRestServerPort(), null, secContext, connType);
+	public static DatabaseClient newClientAsUser(String username, String password) {
+		Properties props = new Properties(testProperties);
+		props.setProperty("marklogic.connection.username", username);
+		props.setProperty("marklogic.connection.password", password);
+		return newClient(props);
 	}
 
-	/*
-	 * To provide DatabaseClient instance in the following cases. Access a
-	 * specific database on non uber port i.e., 8012 Access a specific database
-	 * through uber server on port (specifically port 8000)
+	public static DatabaseClient newClientForDatabase(String database) {
+		Properties props = new Properties(testProperties);
+		props.setProperty("marklogic.connection.database", database);
+		return newClient(props);
+	}
+
+	public static DatabaseClient newAdminModulesClient() {
+		Properties props = new Properties(testProperties);
+		props.setProperty("marklogic.connection.username", getAdminUser());
+		props.setProperty("marklogic.connection.password", getAdminPassword());
+		props.setProperty("marklogic.connection.database", "java-unittest-modules");
+		return newClient(props);
+	}
+
+	public static DatabaseClient newClientAsUser(String username, String password, String securityContextType) {
+		Properties props = new Properties(testProperties);
+		props.setProperty("marklogic.connection.username", username);
+		props.setProperty("marklogic.connection.password", password);
+		props.setProperty("marklogic.connection.securityContextType", securityContextType);
+		return newClient(props);
+	}
+
+	/**
+	 * Can also use this method as it's expected that basePath will exist in the Properties object if it needs to be
+	 * set.
+	 *
+	 * @param props
+	 * @return
 	 */
-	public static DatabaseClient getDatabaseClientOnDatabase(String hostName, int port, String databaseName,
-			String user, String password, ConnectionType connType)
+	public static DatabaseClient newClient(Properties props) {
+		return DatabaseClientFactory.newClient(propertyName -> props.getProperty(propertyName));
+	}
+
+	public static DatabaseClient getDatabaseClient(String user, String password, ConnectionType connType)
 			throws KeyManagementException, NoSuchAlgorithmException, IOException {
-		try {
-			SSLContext sslcontext = null;
-			// Enable secure access on non 8000 port. Uber servers on port 8000
-			// aren't
-			// security enabled as of now.
+		Properties props = new Properties(testProperties);
+		props.setProperty("marklogic.connection.username", user);
+		props.setProperty("marklogic.connection.password", password);
+		props.setProperty("marklogic.connection.type", connType.name());
+		return newClient(props);
+	}
 
-			if (IsSecurityEnabled() && port != 8000) {
-
-				sslcontext = getSslContext();
-				if (hostName.equalsIgnoreCase(host_name))
-					hostName = getSslServer();
-
-				SecurityContext secContext = newSecurityContext(user,password);
-				secContext.withSSLContext(sslcontext).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
-
-				return newClient(hostName, port, databaseName, secContext, connType);
-			} else {
-				SecurityContext secContext = newSecurityContext(user,password);
-				if (hostName.equalsIgnoreCase(host_name))
-					hostName = getServer();
-				return newClient(hostName, port, databaseName, secContext, connType);
-			}
-		} catch (Exception ex) {
-			throw new RuntimeException("Unable to create DatabaseClient", ex);
-		}
+	/**
+	 * Only use this in "slow" functional tests until they're converted over to fast.
+	 */
+	@Deprecated
+	public static DatabaseClient getDatabaseClientOnDatabase(String hostName, int port, String databaseName,
+			String user, String password, ConnectionType connType) {
+		Properties props = new Properties(testProperties);
+		props.setProperty("marklogic.connection.host", hostName);
+		props.setProperty("marklogic.connection.port", port + "");
+		props.setProperty("marklogic.connection.username", user);
+		props.setProperty("marklogic.connection.password", password);
+		props.setProperty("marklogic.connection.database", databaseName);
+		props.setProperty("marklogic.connection.type", connType.name());
+		return newClient(props);
 	}
 
 	//Return a Server name. For SSL runs returns value in restSslServerName For
@@ -2128,16 +2137,16 @@ public abstract class ConnectedRESTQA {
 		if ("true".equals(System.getProperty("TEST_USE_REVERSE_PROXY_SERVER"))) {
 			System.out.println("TEST_USE_REVERSE_PROXY_SERVER is true, so overriding properties to use reverse proxy server");
 			testProperties.setProperty("httpPort", "8020");
-			testProperties.setProperty("fastHttpPort", "8020");
-			testProperties.setProperty("basePath", "testFunctional");
-			testProperties.setProperty("securityContextType", "basic");
+			testProperties.setProperty("marklogic.connection.port", "8020");
+			testProperties.setProperty("marklogic.connection.basePath", "testFunctional");
+			testProperties.setProperty("marklogic.connection.securityContextType", "basic");
 		}
 	}
 
 	/**
 	 * This must be invoked before any test class extending this tries to connect to MarkLogic.
 	 */
-	public static void loadGradleProperties() {
+	public static void loadTestProperties() {
 		Properties properties = new Properties();
 
 		try (InputStream input = ConnectedRESTQA.class.getResourceAsStream("/test.properties")) {
@@ -2148,18 +2157,18 @@ public abstract class ConnectedRESTQA {
 
 		overrideTestPropertiesWithSystemProperties(properties);
 
-		securityContextType = properties.getProperty("securityContextType");
+		securityContextType = properties.getProperty("marklogic.connection.securityContextType");
 		restServerName = properties.getProperty("mlAppServerName");
 		restSslServerName = properties.getProperty("mlAppServerSSLName");
 
 		https_port = properties.getProperty("httpsPort");
 		http_port = properties.getProperty("httpPort");
-		fast_http_port = properties.getProperty("fastHttpPort");
-		admin_port = properties.getProperty("adminPort");
-		basePath = properties.getProperty("basePath");
+		fast_http_port = properties.getProperty("marklogic.connection.port");
+		admin_port = "8002"; // No need yet for a property for this
+		basePath = properties.getProperty("marklogic.connection.basePath");
 
 		// Machine names where ML Server runs
-		host_name = properties.getProperty("restHost");
+		host_name = properties.getProperty("marklogic.connection.host");
 		ssl_host_name = properties.getProperty("restSSLHost");
 
 		// Users
@@ -2180,8 +2189,10 @@ public abstract class ConnectedRESTQA {
 		ml_certificate_password = properties.getProperty("ml_certificate_password");
 		ml_certificate_file = properties.getProperty("ml_certificate_file");
 		mlDataConfigDirPath = properties.getProperty("mlDataConfigDirPath");
-		isLBHost = Boolean.parseBoolean(properties.getProperty("lbHost"));
+		isLBHost = "gateway".equalsIgnoreCase(properties.getProperty("marklogic.connection.type"));
 		PROPERTY_WAIT = Integer.parseInt(isLBHost ? "15000" : "0");
+
+		testProperties = properties;
 
 		System.out.println("For 'slow' tests, will connect to: " + host_name + ":" + http_port + "; basePath: " +  basePath +
 			"; auth: " + securityContextType);
@@ -2202,22 +2213,6 @@ public abstract class ConnectedRESTQA {
 
 	public static String getAdminPassword() {
 		return admin_password;
-	}
-
-	public static String getRestWriterUser() {
-		return mlRestWriteUser;
-	}
-
-	public static String getRestWriterPassword() {
-		return mlRestWritePassword;
-	}
-
-	public static String getRestAdminUser() {
-		return mlRestAdminUser;
-	}
-
-	public static String getRestAdminPassword() {
-		return mlRestAdminPassword;
 	}
 
 	public static String getRestReaderUser() {

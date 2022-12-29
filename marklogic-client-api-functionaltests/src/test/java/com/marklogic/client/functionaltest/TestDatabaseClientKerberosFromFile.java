@@ -114,7 +114,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
   @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     System.out.println("In setup");
-    loadGradleProperties();
+    loadTestProperties();
     appServerHostName = getRestAppServerHostName();
 
     // Modify default location if needed for services.keytab file. Jenkins job passes in the services.keytab file.

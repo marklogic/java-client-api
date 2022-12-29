@@ -42,18 +42,11 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
   // "http://replace.defaultGraphValue.here/";
   private static GraphManager gmWriter;
   private static GraphManager gmReader;
-  private static String appServerHostname = null;
 
   private DatabaseClient adminClient = null;
   private DatabaseClient writerClient = null;
   private DatabaseClient readerClient = null;
   private static String datasource = "src/test/java/com/marklogic/client/functionaltest/data/semantics/";
-
-  @BeforeAll
-  public static void setUpBeforeClass() throws Exception {
-    System.out.println("In setup");
-    appServerHostname = getRestAppServerHostName();
-  }
 
   @AfterAll
   public static void tearDownAfterClass() throws Exception {
@@ -76,10 +69,9 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
   public void setUp() throws Exception {
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
-    int restPort = getRestServerPort();
-    adminClient = getDatabaseClientOnDatabase(appServerHostname, restPort, DB_NAME, "rest-admin", "x", getConnType());
-    writerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, DB_NAME, "rest-writer", "x", getConnType());
-    readerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, DB_NAME, "rest-reader", "x", getConnType());
+    adminClient = newClientAsUser("rest-admin", "x");
+    writerClient = newClientAsUser("rest-writer", "x");
+    readerClient = newClientAsUser("rest-reader", "x");
     gmWriter = writerClient.newGraphManager();
     gmReader = readerClient.newGraphManager();
   }
@@ -91,7 +83,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
    * doesn't exist in DB
    */
   @Test
-  public void testListUris_readUser() throws Exception {
+  public void testListUris_readUser() {
     Exception exp = null;
     String ntriple5 = "<http://example.org/s5> <http://example.com/p2> <http://example.org/o2> .";
     gmWriter.write("htp://test.sem.graph/G1", new StringHandle(ntriple5).withMimetype("application/n-triples"));
@@ -840,9 +832,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     createUserRolesWithPrevilages("test-perm");
     // Create User with Above Role
     createRESTUser("perm-user", "x", "test-perm");
-    // Create Client with above User
-    int restPort = getRestServerPort();
-    DatabaseClient permUser = getDatabaseClientOnDatabase(appServerHostname, restPort, DB_NAME, "perm-user", "x", getConnType());
+    DatabaseClient permUser = newClientAsUser("perm-user", "x");
     // Create GraphManager with Above client
     GraphManager gmTestPerm = permUser.newGraphManager();
     // Set Update Capability for the Created User
@@ -959,9 +949,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     createUserRolesWithPrevilages("test-perm");
     // Create User with Above Role
     createRESTUser("perm-user", "x", "test-perm");
-    // Create Client with above User
-    int restPort = getRestServerPort();
-    DatabaseClient permUser = getDatabaseClientOnDatabase(appServerHostname, restPort, DB_NAME, "perm-user", "x", getConnType());
+    DatabaseClient permUser = newClientAsUser("perm-user", "x");
     // Create GraphManager with Above client
 
     Transaction trx = permUser.openTransaction();
@@ -1006,9 +994,7 @@ public class TestSemanticsGraphManager extends AbstractFunctionalTest {
     createUserRolesWithPrevilages("test-perm");
     // Create User with Above Role
     createRESTUser("perm-user", "x", "test-perm");
-    // Create Client with above User
-    int restPort = getRestServerPort();
-    DatabaseClient permUser = getDatabaseClientOnDatabase(appServerHostname, restPort, DB_NAME, "perm-user", "x", getConnType());
+    DatabaseClient permUser = newClientAsUser("perm-user", "x");
 
     // Create GraphManager with Above client
     Transaction trx = permUser.openTransaction();

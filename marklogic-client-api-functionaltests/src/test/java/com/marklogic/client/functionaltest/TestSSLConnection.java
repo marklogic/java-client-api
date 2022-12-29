@@ -51,7 +51,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
     addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
     addFieldExcludeRoot(dbName, "para");
     includeElementFieldWithWeight(dbName, "para", "", "p", 5, "", "", "");
-    loadGradleProperties();
+    loadTestProperties();
     appServerHostname = getRestAppServerHostName();
   }
 

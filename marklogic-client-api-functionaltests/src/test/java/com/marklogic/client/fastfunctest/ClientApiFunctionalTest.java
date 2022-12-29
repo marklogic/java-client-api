@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.SessionState;
 import com.marklogic.client.document.JSONDocumentManager;
@@ -36,10 +35,6 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 	private final static String serverName = "java-functest";
 
 	private static DatabaseClient dbclient = null;
-	private static String host;
-	private static int port;
-	private static int restTestport;
-
 
 	// Create an identifier for modules document - Client API call will be to endpoint
 	private final static String endPointURI_1 = "/ext/TestE2EIntegerParamReturnDouble/TestE2EIntegerParamReturnDouble";
@@ -80,9 +75,6 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 				"manage-user");
 		dbclient = client;
 		DatabaseClient modulesClient = adminModulesClient;
-		host = getServer();
-		port = getRestServerPort();
-		restTestport = getRestServerPort();
 
 		TextDocumentManager docMgr = modulesClient.newTextDocumentManager();
 		File file = new File(
@@ -277,7 +269,7 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 	@Test
 	public void TestE2EUnAuthorizedUser() {
 		System.out.println("Running TestE2EUnAuthorizedUser");
-		DatabaseClient dbForbiddenclient = newClient(host, port, newSecurityContext("ForbiddenUser", "ap1U53r"), getConnType());
+		DatabaseClient dbForbiddenclient = newClientAsUser("ForbiddenUser", "ap1U53r");
 		String msg;
 		try {
 			TestE2EIntegerParaReturnDouble.on(dbForbiddenclient).TestE2EItemPriceErrorCond(10, 50);
@@ -370,8 +362,7 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		// Used this test to verify ResourceNotFoundException when sjs module is installed with incorrect doc URI
 
 		System.out.println("Running TestE2EuserWithInvalidRole");
-		SecurityContext secContext = newSecurityContext("secondApiUser", "ap1U53r");
-		DatabaseClient dbSecondClient = newClient(host, port, secContext, getConnType());
+		DatabaseClient dbSecondClient = newClientAsUser("secondApiUser", "ap1U53r");
 		String msg;
 		try {
 			TestE2EIntegerParaReturnDouble.on(dbSecondClient).TestE2EItemPriceErrorCond(10, 50);
@@ -424,7 +415,7 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 		SessionState apiSession3 = TestE2ESession.on(dbclient).newSessionState();
 		TestE2ESession.on(dbclient).SessionChecks(apiSession3, "/session3.json", "{\"value\":\"Checking sessions 3\"}");
 
-		DatabaseClient dbclientRest = newClient(host, restTestport, newSecurityContext("apiUser", "ap1U53r"), getConnType());
+		DatabaseClient dbclientRest = newClientAsUser("apiUser", "ap1U53r");
 		waitForPropertyPropagate();
 		JSONDocumentManager docMgr = dbclientRest.newJSONDocumentManager();
 		JacksonHandle jh = new JacksonHandle();
@@ -481,7 +472,7 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 	}
 
 	private String buildUrl(String path) {
-		String url = "http://" + host + ":" + restTestport;
+		String url = "http://" + getServer() + ":" + getRestServerPort();
 		if (StringUtils.hasText(basePath)) {
 			url += "/" + basePath;
 		}

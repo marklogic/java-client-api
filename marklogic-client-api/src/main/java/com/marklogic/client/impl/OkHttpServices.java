@@ -18,13 +18,7 @@ package com.marklogic.client.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.*;
 import com.marklogic.client.DatabaseClient.ConnectionResult;
-import com.marklogic.client.DatabaseClientFactory.BasicAuthContext;
-import com.marklogic.client.DatabaseClientFactory.CertificateAuthContext;
 import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
-import com.marklogic.client.DatabaseClientFactory.KerberosAuthContext;
-import com.marklogic.client.DatabaseClientFactory.MarkLogicCloudAuthContext;
-import com.marklogic.client.DatabaseClientFactory.SAMLAuthContext;
-import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
@@ -75,7 +69,6 @@ import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
-import javax.net.ssl.*;
 import javax.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -186,70 +179,26 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  @Override
-  public void connect(String host, int port, String basePath, String database, SecurityContext securityContext){
 
-	  if (host == null)
-		  throw new IllegalArgumentException("No host provided");
-	  if (securityContext == null)
-		  throw new IllegalArgumentException("No security context provided");
+	@Override
+	public void connect(String host, int port, String basePath, String database, SecurityContext securityContext) {
+		if (host == null)
+			throw new IllegalArgumentException("No host provided");
+		if (securityContext == null)
+			throw new IllegalArgumentException("No security context provided");
 
-	  OkHttpClient.Builder clientBuilder = OkHttpUtil.newClientBuilder();
-	  AuthenticationConfigurer authenticationConfigurer = null;
+		this.checkFirstRequest = securityContext instanceof DigestAuthContext;
+		this.database = database;
+		this.baseUri = HttpUrlBuilder.newBaseUrl(host, port, basePath, securityContext.getSSLContext());
 
-	  // As of 6.1.0, kerberos/saml/certificate are still coded within this class to avoid potential breaks from
-	  // refactoring. Once the tests for these auth methods are running properly, the code for each can be
-	  // safely refactored.
-	  if (securityContext instanceof BasicAuthContext) {
-		  authenticationConfigurer = new BasicAuthenticationConfigurer();
-		  checkFirstRequest = false;
-	  } else if (securityContext instanceof DigestAuthContext) {
-		  authenticationConfigurer = new DigestAuthenticationConfigurer();
-		  checkFirstRequest = true;
-	  } else if (securityContext instanceof KerberosAuthContext) {
-		  configureKerberosAuth((KerberosAuthContext) securityContext, host, clientBuilder);
-		  checkFirstRequest = false;
-	  } else if (securityContext instanceof CertificateAuthContext) {
-		  checkFirstRequest = false;
-	  } else if (securityContext instanceof SAMLAuthContext) {
-		  configureSAMLAuth((SAMLAuthContext) securityContext, clientBuilder);
-		  checkFirstRequest = false;
-	  } else if (securityContext instanceof MarkLogicCloudAuthContext) {
-		  authenticationConfigurer = new MarkLogicCloudAuthenticationConfigurer(host, port);
-		  checkFirstRequest = false;
-	  }
-	  else {
-		  throw new IllegalArgumentException("Unsupported security context: " + securityContext.getClass());
-	  }
-
-	  if (authenticationConfigurer != null) {
-		  authenticationConfigurer.configureAuthentication(clientBuilder, securityContext);
-	  }
-
-	  SSLContext sslContext = securityContext.getSSLContext();
-	  X509TrustManager trustManager = securityContext.getTrustManager();
-
-	  SSLHostnameVerifier sslVerifier = null;
-	  if (sslContext != null || securityContext instanceof CertificateAuthContext) {
-		  sslVerifier = securityContext.getSSLHostnameVerifier() != null ?
-			  securityContext.getSSLHostnameVerifier() :
-			  SSLHostnameVerifier.COMMON;
-	  }
-
-	  OkHttpUtil.configureSocketFactory(clientBuilder, sslContext, trustManager);
-	  OkHttpUtil.configureHostnameVerifier(clientBuilder, sslVerifier);
-
-    this.database = database;
-    this.baseUri = HttpUrlBuilder.newBaseUrl(host, port, basePath, sslContext);
-
-    Properties props = System.getProperties();
-    if (props.containsKey(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) {
-        configureOkHttpLogging(clientBuilder, props);
-    }
-    this.configureDelayAndRetry(props);
-
-    this.client = clientBuilder.build();
-  }
+		OkHttpClient.Builder clientBuilder = OkHttpClientFactory.newOkHttpClientBuilder(host, port, securityContext);
+		Properties props = System.getProperties();
+		if (props.containsKey(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) {
+			configureOkHttpLogging(clientBuilder, props);
+		}
+		this.configureDelayAndRetry(props);
+		this.client = clientBuilder.build();
+	}
 
 	/**
 	 * Based on the given properties, add a network interceptor to the given OkHttpClient.Builder to log HTTP
@@ -297,25 +246,6 @@ public class OkHttpServices implements RESTServices {
         }
     }
 
-  private void configureKerberosAuth(KerberosAuthContext keberosAuthContext, String host, OkHttpClient.Builder clientBuilder) {
-	  Map<String, String> kerberosOptions = keberosAuthContext.getKrbOptions();
-	  Interceptor interceptor = new HTTPKerberosAuthInterceptor(host, kerberosOptions);
-	  clientBuilder.addInterceptor(interceptor);
-  }
-
-  private void configureSAMLAuth(SAMLAuthContext samlAuthContext, OkHttpClient.Builder clientBuilder) {
-      Interceptor interceptor;
-      String authorizationTokenValue = samlAuthContext.getToken();
-      if(authorizationTokenValue != null && authorizationTokenValue.length() > 0) {
-          interceptor = new HTTPSamlAuthInterceptor(authorizationTokenValue);
-      } else if(samlAuthContext.getAuthorizer()!=null) {
-           interceptor = new HTTPSamlAuthInterceptor(samlAuthContext.getAuthorizer());
-      } else if(samlAuthContext.getRenewer()!=null) {
-          interceptor = new HTTPSamlAuthInterceptor(samlAuthContext.getAuthorization(),samlAuthContext.getRenewer());
-      } else
-          throw new IllegalArgumentException("Either a call back or renewer expected.");
-	  clientBuilder.addInterceptor(interceptor);
-  }
 
   @Override
   public DatabaseClient getDatabaseClient() {

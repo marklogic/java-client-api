@@ -116,7 +116,7 @@ public class BulkIOCallersFnTest extends BasicJavaClientREST {
     @BeforeAll
     public static void setUp() throws Exception {
         System.out.println("In setup");
-        loadGradleProperties();
+        loadTestProperties();
 
         host = getServer();
         DataConfigDirPath = getDataConfigDirPath() + "/data/";

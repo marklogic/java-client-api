@@ -33,7 +33,6 @@ import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
@@ -75,7 +74,7 @@ public class ExportToWriterListenerTest extends BasicJavaClientREST {
 
   @BeforeAll
   public static void setUpBeforeClass() throws Exception {
-    loadGradleProperties();
+    loadTestProperties();
     server = getRestAppServerName();
     port = getRestAppServerPort();
 

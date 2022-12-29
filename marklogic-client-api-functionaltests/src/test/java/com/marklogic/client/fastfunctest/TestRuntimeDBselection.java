@@ -16,26 +16,18 @@
 
 package com.marklogic.client.fastfunctest;
 
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
-
-
 public class TestRuntimeDBselection extends AbstractFunctionalTest {
-  private static String appServerHostname = null;
 
   @BeforeAll
   public static void setUpBeforeClass() throws Exception {
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
-    appServerHostname = getRestAppServerHostName();
   }
 
   @AfterAll
@@ -51,10 +43,7 @@ public class TestRuntimeDBselection extends AbstractFunctionalTest {
 		String originalServerAuthentication = getServerAuthentication(getRestServerName());
       try {
 		  setAuthentication("basic", getRestServerName());
-        int restPort = getRestServerPort();
-        SecurityContext secContext = new DatabaseClientFactory.BasicAuthContext("eval-user", "x");
-
-        client = newClient(appServerHostname, restPort, "java-functest", secContext, getConnType());
+		client = newClientAsUser("eval-user", "x", "basic");
         String insertJSON = "xdmp:document-insert(\"test2.json\",object-node {\"test\":\"hello\"})";
         client.newServerEval().xquery(insertJSON).eval();
         String query1 = "fn:count(fn:doc())";
