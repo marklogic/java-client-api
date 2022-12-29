@@ -1,5 +1,4 @@
 MarkLogic Java API Examples
-October 2014
 
 == Cookbook =============
 
@@ -8,7 +7,7 @@ for common tasks using the MarkLogic Java API.
 
 Before using the examples, perform the following actions:
 
-1.  Install MarkLogic 8 for your chosen platform.
+1.  Install the latest version of MarkLogic for your chosen platform.
 
 2.  Edit Example.properties to specify the connection parameters for the
 REST API instance.
@@ -42,7 +41,7 @@ The examples illustrate the following common tasks:
 *  RawCombinedSearch          search with a criteria structure and options
                               in the request
 *  MultiStatementTransaction  complete a transaction with several requests
-*  ServerResponseTransform    transform a search response on the server 
+*  ServerResponseTransform    transform a search response on the server
 *  DocumentReadTransform      transform content on the server while reading
 *  DocumentWriteTransform     transform content on the server while writing
 *  ResourcExtension           extend the Java API to execute other capabilities

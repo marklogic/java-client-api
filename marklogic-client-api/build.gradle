@@ -10,51 +10,46 @@ group = 'com.marklogic'
 description = "The official MarkLogic Java client API."
 
 dependencies {
-    if (JavaVersion.current().isJava9Compatible()) {
-        implementation 'javax.xml.bind:jaxb-api:2.3.1'
-        implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.2'
-        implementation 'org.glassfish.jaxb:jaxb-core:2.3.0.1'
-    }
-    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version:'4.10.0'
-    implementation group: 'com.squareup.okhttp3', name: 'logging-interceptor', version:'4.10.0'
-    implementation group: 'io.github.rburgst', name: 'okhttp-digest', version:'2.7'
-    implementation group: 'com.sun.mail', name: 'javax.mail', version:'1.6.2'
-    implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version:'2.1.1'
-    implementation group: 'org.slf4j', name: 'slf4j-api', version:'1.7.36'
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.13.4'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.13.4'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4.2'
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.13.4'
+	if (JavaVersion.current().isJava9Compatible()) {
+		implementation 'javax.xml.bind:jaxb-api:2.3.1'
+		implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.2'
+		implementation 'org.glassfish.jaxb:jaxb-core:2.3.0.1'
+	}
+	implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+	implementation 'com.squareup.okhttp3:logging-interceptor:4.10.0'
+	implementation 'io.github.rburgst:okhttp-digest:2.7'
+	implementation 'com.sun.mail:javax.mail:1.6.2'
+	implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
+	implementation 'org.slf4j:slf4j-api:1.7.36'
+	implementation 'com.fasterxml.jackson.core:jackson-core:2.13.4'
+	implementation 'com.fasterxml.jackson.core:jackson-annotations:2.13.4'
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4.2'
+	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.13.4'
+	
+	// Only used by extras (which some examples then depend on)
+	compileOnly 'org.apache.httpcomponents:httpclient:4.5.14'
+	compileOnly 'org.jdom:jdom2:2.0.6.1'
+	compileOnly 'dom4j:dom4j:1.6.1'
+	compileOnly 'com.google.code.gson:gson:2.10'
 
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
 	testImplementation 'org.xmlunit:xmlunit-legacy:2.9.0'
+	testImplementation project(':examples')
 
 	// Allows talking to the Manage API. It depends on the Java Client itself, which will usually be a slightly older
 	// version, but that should not have any impact on the tests.
 	testImplementation "com.marklogic:ml-app-deployer:4.4.0"
 
 	testImplementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.4'
-    testImplementation "org.mockito:mockito-core:4.9.0"
-    testImplementation "org.mockito:mockito-inline:4.9.0"
-    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.11'
-    testImplementation group: 'org.hsqldb', name: 'hsqldb', version:'2.5.1'
-// schema validation issue with testImplementation group: 'xerces', name: 'xercesImpl', version:'2.12.0'
-    testImplementation group: 'org.opengis.cite.xerces', name: 'xercesImpl-xsd11', version:'2.12-beta-r1667115'
-		testImplementation 'org.apache.commons:commons-lang3:3.12.0'
-		testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
-
-	// Only used by extras (which some examples then depend on)
-	compileOnly 'org.apache.httpcomponents:httpclient:4.5.14'
-	compileOnly 'org.jdom:jdom2:2.0.6.1'
-	compileOnly 'dom4j:dom4j:1.6.1'
-	compileOnly 'com.google.code.gson:gson:2.10'
-	compileOnly 'com.opencsv:opencsv:4.6'
-	compileOnly 'org.geonames:geonames:1.0'
-
-	// Only used by examples
-	compileOnly 'org.apache.commons:commons-lang3:3.12.0'
-	compileOnly 'org.springframework:spring-jdbc:5.3.24'
-	compileOnly 'net.sourceforge.htmlcleaner:htmlcleaner:2.26'
+	testImplementation "org.mockito:mockito-core:4.9.0"
+	testImplementation "org.mockito:mockito-inline:4.9.0"
+	testImplementation 'ch.qos.logback:logback-classic:1.2.11'
+// schema validation issue with testImplementation 'xerces:xercesImpl:2.12.0'
+	testImplementation 'org.opengis.cite.xerces:xercesImpl-xsd11:2.12-beta-r1667115'
+	testImplementation 'org.apache.commons:commons-lang3:3.12.0'
+	testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
+	testImplementation 'com.opencsv:opencsv:4.6'
+	testImplementation 'org.geonames:geonames:1.0'
 }
 
 // Ensure that mlHost and mlPassword can override the defaults of localhost/admin if they've been modified
@@ -70,16 +65,14 @@ test {
 
 jar {
     exclude (
-            'search.xsd', 'search-bindings.xjb', 'query-options-template.xml',
-            'com/marklogic/client/example/**', 'data/**', 'Example.properties',
-            'example/**', 'scripts/**', '*.txt', 'property.xsd',
+            'search.xsd', 'search-bindings.xjb',
+            '*.txt', 'property.xsd',
             'restapi-bindings.xjb', 'security.xsd'
     )
 }
 task sourcesJar(type: Jar) {
     classifier = 'sources'
-    exclude ('data/**', 'Example.properties', 'example/**', 'scripts/**',
-             'property', '*.xsd', '*.xjb')
+    exclude ('property', '*.xsd', '*.xjb')
     from sourceSets.main.allSource
 }
 
@@ -193,15 +186,15 @@ distributions {
                 include ("LICENSE.txt")
             }
             into ("example") {
-                from ("src/main/resources") {
+                from ("../examples/src/main/resources") {
                     include ("data/**")
                     include ("scripts/**")
                     include ("Example.properties")
                 }
-                from ("src/main/resources/example") {
+                from ("../examples/src/main/resources/example") {
                     include ("README.txt")
                 }
-                from ("src/main/java/") {
+                from ("../examples/src/main/java/") {
                     include ("com/marklogic/client/example/cookbook/*.java")
                     include ("com/marklogic/client/example/handle/*.java")
                     include ("com/marklogic/client/example/extension/*.java")
