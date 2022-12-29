@@ -40,18 +40,33 @@ def runtests(String type, String version){
                 ./gradlew ml-development-tools:generateTests || true
                 ./gradlew ml-development-tools:test || true
             '''
-            sh label:'run functional tests', script: '''#!/bin/bash
+            sh label:'run fragile functional tests', script: '''#!/bin/bash
                 export JAVA_HOME=$JAVA_HOME_DIR
                 export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
                 export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
                 cd java-client-api
-                mkdir -p marklogic-client-api-functionaltests/build/test-results/runFragileTests
-                mkdir -p marklogic-client-api-functionaltests/build/test-results/runFastFunctionalTests
-                mkdir -p marklogic-client-api-functionaltests/build/test-results/runSlowFunctionalTests
                 ./gradlew -i mlDeploy -PmlForestDataDirectory=/space
-                ./gradlew -i marklogic-client-api-functionaltests:runFunctionalTests || true
+                ./gradlew -i marklogic-client-api-functionaltests:runFragileTests || true
+            '''
+            sh label:'run fast functional tests', script: '''#!/bin/bash
+                export JAVA_HOME=$JAVA_HOME_DIR
+                export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+                export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+                cd java-client-api
+                ./gradlew -i marklogic-client-api-functionaltests:runFastFunctionalTests || true
+            '''
+            sh label:'run slow functional tests', script: '''#!/bin/bash
+                export JAVA_HOME=$JAVA_HOME_DIR
+                export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+                export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+                cd java-client-api
+                ./gradlew -i marklogic-client-api-functionaltests:runSlowFunctionalTests || true
             '''
             sh label:'post-test-process', script: '''
+            		cd java-client-api
+								mkdir -p marklogic-client-api-functionaltests/build/test-results/runFragileTests
+								mkdir -p marklogic-client-api-functionaltests/build/test-results/runFastFunctionalTests
+								mkdir -p marklogic-client-api-functionaltests/build/test-results/runSlowFunctionalTests
                 cd $WORKSPACE/java-client-api/marklogic-client-api/build/test-results/test/
                 sed -i "s/classname=\\"/classname=\\"${STAGE_NAME}-/g" TEST*.xml
                 cd $WORKSPACE/java-client-api/ml-development-tools/build/test-results/test/
