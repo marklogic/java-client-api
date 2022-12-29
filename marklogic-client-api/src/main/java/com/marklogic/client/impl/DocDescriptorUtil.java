@@ -12,7 +12,6 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
@@ -44,7 +43,8 @@ class DocDescriptorUtil {
         String uri = writeOp.getUri();
         docDescriptor.put("uri", uri);
 
-        if (StringUtils.isNotBlank(writeOp.getTemporalDocumentURI())) {
+		final String temporalURI = writeOp.getTemporalDocumentURI();
+        if (temporalURI != null && temporalURI.trim().length() > 0) {
             docDescriptor.put("temporalCollection", writeOp.getTemporalDocumentURI());
         }
 

@@ -39,11 +39,6 @@ subprojects {
         mavenCentral()
     }
 
-    dependencies {
-        compileOnly group: 'org.apache.commons', name: 'commons-lang3', version:'3.10'
-        compileOnly group: 'org.apache.httpcomponents', name: 'httpclient', version:'4.5.12'
-    }
-
 	test {
 		systemProperty "file.encoding", "UTF-8"
 		systemProperty "javax.xml.stream.XMLOutputFactory", "com.sun.xml.internal.stream.XMLOutputFactoryImpl"
