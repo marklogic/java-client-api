@@ -20,16 +20,16 @@ task testSandbox(type:Test) {
 
 dependencies {
   implementation project (':marklogic-client-api')
-  implementation group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0'
-  implementation group: 'org.slf4j', name: 'slf4j-api', version:'1.7.36'
+  implementation 'org.skyscreamer:jsonassert:1.5.0'
+  implementation 'org.slf4j:slf4j-api:1.7.36'
   implementation 'commons-io:commons-io:2.11.0'
-  implementation group: 'com.squareup.okhttp3', name: 'okhttp', version:'4.10.0'
-  implementation 'com.fasterxml.jackson.core:jackson-core:2.13.4'
-  implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4.2'
+  implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+  implementation 'com.fasterxml.jackson.core:jackson-core:2.14.1'
+  implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.1'
   implementation "org.jdom:jdom2:2.0.6.1"
-  implementation "com.marklogic:ml-app-deployer:4.3.6"
+  implementation "com.marklogic:ml-app-deployer:4.4.0"
 
-  testImplementation group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.11'
+  testImplementation 'ch.qos.logback:logback-classic:1.3.5'
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
 	testImplementation 'org.xmlunit:xmlunit-legacy:2.9.0'
 	testImplementation 'org.apache.commons:commons-lang3:3.12.0'
