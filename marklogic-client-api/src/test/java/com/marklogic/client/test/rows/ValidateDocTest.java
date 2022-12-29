@@ -26,8 +26,10 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.RequiresML11;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,6 +37,7 @@ import java.util.stream.Collectors;
 import static com.marklogic.client.io.Format.XML;
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(RequiresML11.class)
 public class ValidateDocTest extends AbstractOpticUpdateTest {
 
     private Set<String> expectedUris = new HashSet<>();
@@ -47,9 +50,6 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
 
     @Test
     public void testXmlSchemaWithLaxMode() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
         WriteBatcher writeBatcher = dataMovementManager.newWriteBatcher();
         DocumentMetadataHandle meta = newDefaultMetadata();
         dataMovementManager.startJob(writeBatcher);
@@ -83,9 +83,6 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
 
     @Test
     public void testXmlSchemaWithStrictMode() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
         String[][] triples = new String[][]{
                 new String[]{"http://example.org/rowgraph/s1", "http://example.org/rowgraph/p1", "http://example.org/rowgraph/o1"},
                 new String[]{"http://example.org/rowgraph/s1", "http://example.org/rowgraph/p2", "http://example.org/rowgraph/o2"},
@@ -132,9 +129,6 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
 
     @Test
     public void testWriteWithXmlSchemaWithStrictMode() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
         String[][] triples = new String[][]{
                 new String[]{"http://example.org/rowgraph/s1", "http://example.org/rowgraph/p1", "http://example.org/rowgraph/o1"},
                 new String[]{"http://example.org/rowgraph/s1", "http://example.org/rowgraph/p2", "http://example.org/rowgraph/o2"},
@@ -172,9 +166,6 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
 
     @Test
     public void testUsingFromParamAndSchematron() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
         DocumentMetadataHandle metadata = newDefaultMetadata();
 
@@ -225,9 +216,6 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
 
     @Test
     public void testWithJsonSchema() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
         PlanBuilder.ModifyPlan plan = op
                 .fromDocDescriptors(
                         op.docDescriptor(newWriteOp("/acme/doc1.json", mapper.createObjectNode().put("count", 1).put("total",2))),
@@ -259,9 +247,6 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
 
     @Test
     public void testWithJsonSchemaAndInvalidJsons() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
         PlanBuilder.ModifyPlan plan = op
                 .fromDocDescriptors(
                         op.docDescriptor(newWriteOp("/acme/doc1.json", mapper.createObjectNode().put("count", 1).put("total",2))),

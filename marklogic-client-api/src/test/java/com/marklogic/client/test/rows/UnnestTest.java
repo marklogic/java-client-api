@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.RequiresML11;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -19,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * Test demonstrates the primary use case for unnest, which is, for a given row, to create N rows based on a column in
  * that row containing an array with N values.
  */
+@ExtendWith(RequiresML11.class)
 public class UnnestTest extends AbstractOpticUpdateTest {
 
     private final static String SINGLE_NAME_COLUMN = "teamMemberName";
@@ -28,10 +31,6 @@ public class UnnestTest extends AbstractOpticUpdateTest {
      */
     @BeforeEach
     public void insertTestDocument() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         ObjectNode doc = mapper.createObjectNode();
         ArrayNode office = doc.putArray("office");
         Stream.of("Engineering:Cindy,Alice", "Sales:Bob", "Marketing: ").forEach(value -> {
@@ -46,10 +45,6 @@ public class UnnestTest extends AbstractOpticUpdateTest {
 
     @Test
     public void unnestInner() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.ModifyPlan plan = op.fromView("unnestSchema", "unnestView")
             .bind(op.as("teamMemberNameArray", op.fn.tokenize(op.col("teamMembers"), op.xs.string(","))))
             .unnestInner("teamMemberNameArray", SINGLE_NAME_COLUMN)
@@ -64,10 +59,6 @@ public class UnnestTest extends AbstractOpticUpdateTest {
 
     @Test
     public void unnestInnerWithOrdinality() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.ModifyPlan plan = op.fromView("unnestSchema", "unnestView")
             .bind(op.as("teamMemberNameArray", op.fn.tokenize(op.col("teamMembers"), op.xs.string(","))))
             .unnestInner("teamMemberNameArray", SINGLE_NAME_COLUMN, "index")
@@ -87,10 +78,6 @@ public class UnnestTest extends AbstractOpticUpdateTest {
 
     @Test
     public void unnestLeftOuter() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.ModifyPlan plan = op.fromView("unnestSchema", "unnestView")
             .bind(op.as("teamMemberNameArray", op.fn.tokenize(op.col("teamMembers"), op.xs.string(","))))
             .unnestLeftOuter("teamMemberNameArray", SINGLE_NAME_COLUMN)
@@ -106,10 +93,6 @@ public class UnnestTest extends AbstractOpticUpdateTest {
 
     @Test
     public void unnestLeftOuterWithOrdinality() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.ModifyPlan plan = op.fromView("unnestSchema", "unnestView")
             .bind(op.as("teamMemberNameArray", op.fn.tokenize(op.col("teamMembers"), op.xs.string(","))))
             .unnestLeftOuter("teamMemberNameArray", SINGLE_NAME_COLUMN, "myIndex")

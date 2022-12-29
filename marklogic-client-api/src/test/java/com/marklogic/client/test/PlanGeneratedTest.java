@@ -17,8 +17,10 @@
 package com.marklogic.client.test;
 
 import com.marklogic.client.io.Format;
+import com.marklogic.client.test.junit5.RequiresML11;
 import com.marklogic.client.type.ServerExpression;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 // IMPORTANT: Do not edit. This file is generated.
 // Exception - some of these tests cannot pass on ML <= 10. Those have been modified to not run unless ML is >= 11.
@@ -725,10 +727,9 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     }
 
     @Test
+	@ExtendWith(RequiresML11.class)
     public void testGeoGeohashDecode1Exec() {
-        if (Common.markLogicIsVersion11OrHigher()) {
-            executeTester("testGeoGeohashDecode1", p.geo.geohashDecode(p.col("1")), false, "cts:box", null, null, "[-90, -180, 90, 180]", new ServerExpression[]{p.xs.string("abc")});
-        }
+		executeTester("testGeoGeohashDecode1", p.geo.geohashDecode(p.col("1")), false, "cts:box", null, null, "[-90, -180, 90, 180]", new ServerExpression[]{p.xs.string("abc")});
     }
 
     @Test
@@ -752,10 +753,9 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     }
 
     @Test
+	@ExtendWith(RequiresML11.class)
     public void testGeoParseWkt1Exec() {
-        if (Common.markLogicIsVersion11OrHigher()) {
-            executeTester("testGeoParseWkt1", p.geo.parseWkt(p.col("1")), false, "cts:linestring", null, null, "LINESTRING(-112.25 47.100002,-112.3 47.100002,-112.39999 47.199997)", new ServerExpression[]{p.xs.string("LINESTRING(-112.25 47.1,-112.3 47.1,-112.4 47.2)")});
-        }
+		executeTester("testGeoParseWkt1", p.geo.parseWkt(p.col("1")), false, "cts:linestring", null, null, "LINESTRING(-112.25 47.100002,-112.3 47.100002,-112.39999 47.199997)", new ServerExpression[]{p.xs.string("LINESTRING(-112.25 47.1,-112.3 47.1,-112.4 47.2)")});
     }
 
     @Test
@@ -1659,10 +1659,9 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     }
 
     @Test
+	@ExtendWith(RequiresML11.class)
     public void testXdmpUnquote1Exec() {
-		if (Common.markLogicIsVersion11OrHigher()) {
-			executeTester("testXdmpUnquote1", p.xdmp.unquote(p.col("1")), false, null, "array", Format.JSON, "[123]", new ServerExpression[]{p.xs.string("[123]")});
-		}
+		executeTester("testXdmpUnquote1", p.xdmp.unquote(p.col("1")), false, null, "array", Format.JSON, "[123]", new ServerExpression[]{p.xs.string("[123]")});
     }
 
     @Test

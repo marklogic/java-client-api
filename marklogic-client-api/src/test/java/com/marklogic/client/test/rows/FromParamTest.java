@@ -8,8 +8,10 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.RequiresML11;
 import com.marklogic.client.type.PlanParamExpr;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,14 +24,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Tests various scenarios involving the {@code fromParam} accessor and the need to bind a content handle as a parameter
  * to the plan.
  */
+@ExtendWith(RequiresML11.class)
 public class FromParamTest extends AbstractOpticUpdateTest {
 
     @Test
     public void fromParamWithSimpleJsonArray() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         // Specify the columns that describe the rows that will be passed in
         PlanBuilder.Plan plan = op.fromParam("myDocs", "", op.colTypes(
                 op.colType("lastName", "string"),
@@ -52,10 +51,6 @@ public class FromParamTest extends AbstractOpticUpdateTest {
 
     @Test
     public void fromParamWithXmlAttachments() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.Plan plan = op.fromParam("bindingParam", "", op.colTypes(
                 op.colType("rowId", "integer"),
                 op.colType("doc")
@@ -85,10 +80,6 @@ public class FromParamTest extends AbstractOpticUpdateTest {
 
     @Test
     public void fromParamWithBinaryAttachments() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.Plan plan = op.fromParam("bindingParam", "", op.colTypes(
                 op.colType("rowId", "integer"),
                 op.colType("doc")
@@ -116,10 +107,6 @@ public class FromParamTest extends AbstractOpticUpdateTest {
 
     @Test
     public void fromParamWithTextAttachments() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.Plan plan = op.fromParam("bindingParam", "", op.colTypes(
                 op.colType("rowId", "integer"),
                 op.colType("doc")
@@ -152,10 +139,6 @@ public class FromParamTest extends AbstractOpticUpdateTest {
      */
     @Test
     public void fromParamWithRawPlan() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         // The raw plan is the serialized representation of the plan in fromParamWithTextAttachments
         RawPlanDefinition rawPlan = rowManager.newRawPlanDefinition(new StringHandle("{\n" +
                 "    \"$optic\": {\n" +
@@ -225,10 +208,6 @@ public class FromParamTest extends AbstractOpticUpdateTest {
      */
     @Test
     public void fromParamWithMultipleAttachmentColumns() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.Plan plan = op.fromParam("bindingParam", "", op.colTypes(
                 op.colType("rowId", "integer"),
                 op.colType("doc"),
@@ -267,10 +246,6 @@ public class FromParamTest extends AbstractOpticUpdateTest {
 
     @Test
     public void xmlDocumentWriteSetSingleDocBug57894() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.Plan plan = op.fromParam("myDocs", "", op.docColTypes());
 
         DocumentMetadataHandle metadata = new DocumentMetadataHandle();

@@ -12,7 +12,9 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.RequiresML11;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -23,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * In addition to testing fromDocDescriptors, this class contains tests to verify that default collections and
  * permissions are honored correctly.
  */
+@ExtendWith(RequiresML11.class)
 public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
 
     private final static String USER_WITH_DEFAULT_COLLECTIONS_AND_PERMISSIONS = "writer-default-collections-and-permissions";
@@ -33,10 +36,6 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
      */
     @Test
     public void insertDocsWithUserWithDefaultCollectionsAndPermissions() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         final String firstUri = "/acme/doc1.json";
         final String secondUri = "/acme/doc2.json";
 
@@ -80,10 +79,6 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
 
     @Test
     public void updateOnlyDocAsUserWithNoDefaults() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         // Default test user does not have any default collections or permissions, so no need to switch to
         // a different user
         verifyOnlyDocCanBeUpdatedWithoutLosingAnyMetadata();
@@ -91,10 +86,6 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
 
     @Test
     public void updateOnlyDocWithUserWithDefaultCollectionsAndPermissions() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         // Set up client as user with default collections and permissions
         Common.client = Common.newClientAsUser(USER_WITH_DEFAULT_COLLECTIONS_AND_PERMISSIONS);
         rowManager = Common.client.newRowManager();
@@ -109,10 +100,6 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
      */
     @Test
     public void updateOnlyCollection() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         final String uri = writeDocWithAllMetadata();
 
         // Update the collections on the doc
@@ -148,10 +135,6 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
 
     @Test
     public void updateOnlyMetadata() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         final String uri = writeDocWithAllMetadata();
 
         // Update only metadata
@@ -175,10 +158,6 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
 
     @Test
     public void updateOnlyPermissions() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         final String uri = writeDocWithAllMetadata();
 
         // Update only permissions
@@ -205,10 +184,6 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
 
     @Test
     public void updateOnlyQuality() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         final String uri = writeDocWithAllMetadata();
 
         // Update only quality
@@ -248,10 +223,6 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
      */
     @Test
     public void writeIndividualDocDescriptors() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         final String firstUri = "/acme/doc1.json";
         final String secondUri = "/acme/doc2.json";
         ObjectNode doc1 = mapper.createObjectNode().put("hello", "doc1");
@@ -282,10 +253,6 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
 
     @Test
     public void documentWriteSetWithQualifier() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         final String uri = "/acme/doc1.json";
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
         writeSet.add(newWriteOp(uri, mapper.createObjectNode().put("hello", "world")));
@@ -303,10 +270,6 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
 
     @Test
     public void writingNonJsonContentShouldFail() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
         writeSet.add("/acme/doc1.xml", new DocumentMetadataHandle(),
             new StringHandle("<doc>1</doc>").withFormat(Format.XML));
@@ -323,10 +286,6 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
 
     @Test
     public void testExport() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
         writeSet.add(newWriteOp("/acme/doc1.json", mapper.createObjectNode().put("hello", "doc1")));
         writeSet.add(newWriteOp("/acme/doc2.json", mapper.createObjectNode().put("hello", "doc2")));

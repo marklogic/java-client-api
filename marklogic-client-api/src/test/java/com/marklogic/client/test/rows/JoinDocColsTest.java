@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.RequiresML11;
 import com.marklogic.client.type.PlanColumn;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(RequiresML11.class)
 public class JoinDocColsTest extends AbstractOpticUpdateTest {
 
     // 4 musician documents are expected to be in this directory via mlDeploy
@@ -21,10 +24,6 @@ public class JoinDocColsTest extends AbstractOpticUpdateTest {
 
     @Test
     public void defaultColumnsNoQualifier() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.Plan plan = op
             .fromDocUris(op.cts.directoryQuery(MUSICIAN_DIRECTORY))
             .joinDocCols(null, op.col("uri"))
@@ -45,10 +44,6 @@ public class JoinDocColsTest extends AbstractOpticUpdateTest {
 
     @Test
     public void defaultColumnsWithTargetQualifier() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.ModifyPlan plan = op
             .fromDocUris(op.cts.directoryQuery(MUSICIAN_DIRECTORY))
             .joinDocCols(op.docCols("target"), op.col("uri"))
@@ -70,10 +65,6 @@ public class JoinDocColsTest extends AbstractOpticUpdateTest {
 
     @Test
     public void defaultColumnsWithSourceQualifier() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.ModifyPlan plan = op
             .fromDocUris(op.cts.directoryQuery(MUSICIAN_DIRECTORY), "source")
             .joinDocCols(op.docCols(), op.viewCol("source", "uri"))
@@ -96,10 +87,6 @@ public class JoinDocColsTest extends AbstractOpticUpdateTest {
 
     @Test
     public void defaultColumnsWithSourceAndTargetQualifier() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.ModifyPlan plan = op
             .fromDocUris(op.cts.directoryQuery(MUSICIAN_DIRECTORY), "source")
             .joinDocCols(op.docCols("target"), op.viewCol("source", "uri"))
@@ -122,10 +109,6 @@ public class JoinDocColsTest extends AbstractOpticUpdateTest {
 
     @Test
     public void columnSubsetNoQualifier() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.ModifyPlan plan = op
             .fromDocUris(op.cts.directoryQuery(MUSICIAN_DIRECTORY))
             .joinDocCols(op.docCols(null, op.xs.stringSeq("uri", "doc")), op.col("uri"))
@@ -143,10 +126,6 @@ public class JoinDocColsTest extends AbstractOpticUpdateTest {
 
     @Test
     public void columnSubsetWithTargetQualifier() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.ModifyPlan plan = op
             .fromDocUris(op.cts.directoryQuery(MUSICIAN_DIRECTORY))
             .joinDocCols(op.docCols(op.xs.string("target"), op.xs.stringSeq("uri", "doc")), op.col("uri"))
@@ -165,10 +144,6 @@ public class JoinDocColsTest extends AbstractOpticUpdateTest {
 
     @Test
     public void columnSubsetWithSourceAndTargetQualifier() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.ModifyPlan plan = op
             .fromDocUris(op.cts.directoryQuery(MUSICIAN_DIRECTORY), "source")
             .joinDocCols(op.docCols(op.xs.string("target"), op.xs.stringSeq("uri", "doc")), op.viewCol("source", "uri"))
@@ -187,10 +162,6 @@ public class JoinDocColsTest extends AbstractOpticUpdateTest {
 
     @Test
     public void customColumns() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         Map<String, PlanColumn> columns = new HashMap<>();
         columns.put("doc", op.col("doc2"));
         columns.put("quality", op.col("myQuality"));

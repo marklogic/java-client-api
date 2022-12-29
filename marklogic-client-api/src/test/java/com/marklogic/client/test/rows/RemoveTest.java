@@ -11,20 +11,19 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.RequiresML11;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(RequiresML11.class)
 public class RemoveTest extends AbstractOpticUpdateTest {
 
     @Test
     public void removeTwoOfThreeDocs() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         writeThreeXmlDocuments();
 
         rowManager.execute(op
@@ -35,10 +34,6 @@ public class RemoveTest extends AbstractOpticUpdateTest {
 
     @Test
     public void uriColumnSpecified() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         writeThreeXmlDocuments();
 
         rowManager.execute(op
@@ -49,10 +44,6 @@ public class RemoveTest extends AbstractOpticUpdateTest {
 
     @Test
     public void multipleQualifiedUriColumns() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         writeThreeXmlDocuments();
 
         ModifyPlan plan = op
@@ -73,10 +64,6 @@ public class RemoveTest extends AbstractOpticUpdateTest {
 
     @Test
     public void fromParamWithCustomUriColumn() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         writeThreeXmlDocuments();
 
         ArrayNode paramValue = mapper.createArrayNode();
@@ -93,10 +80,6 @@ public class RemoveTest extends AbstractOpticUpdateTest {
 
     @Test
     public void fromParamWithQualifiedUriColumn() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         writeThreeXmlDocuments();
 
         ArrayNode paramValue = mapper.createArrayNode();
@@ -113,10 +96,6 @@ public class RemoveTest extends AbstractOpticUpdateTest {
 
     @Test
     public void removeTemporal() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         final String uri = "/acme/temporal-remove.json";
         final String temporalCollection = "temporal-collection";
 
