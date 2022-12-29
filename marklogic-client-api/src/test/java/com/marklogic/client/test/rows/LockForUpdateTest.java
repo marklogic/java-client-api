@@ -6,21 +6,20 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.RequiresML11;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(RequiresML11.class)
 public class LockForUpdateTest extends AbstractOpticUpdateTest {
 
     @Test
     public void basicTest() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         final String uri = "/acme/doc1.json";
 
         // Write a document
@@ -69,10 +68,6 @@ public class LockForUpdateTest extends AbstractOpticUpdateTest {
 
     @Test
     public void uriColumnSpecified() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         List<RowRecord> rows = resultRows(op
             .fromDocUris("/optic/test/musician1.json")
             .lockForUpdate(op.col("uri")));
@@ -81,10 +76,6 @@ public class LockForUpdateTest extends AbstractOpticUpdateTest {
 
     @Test
     public void fromParamWithCustomUriColumn() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         ArrayNode paramValue = mapper.createArrayNode();
         paramValue.addObject().put("myUri", "/optic/test/musician1.json");
 
@@ -97,10 +88,6 @@ public class LockForUpdateTest extends AbstractOpticUpdateTest {
 
     @Test
     public void fromParamWithQualifiedUriColumn() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         ArrayNode paramValue = mapper.createArrayNode();
         paramValue.addObject().put("myUri", "/optic/test/musician1.json");
 

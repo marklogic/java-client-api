@@ -359,7 +359,8 @@ public class ClientApiFunctionalTest extends AbstractFunctionalTest {
 			System.out.println("Exception from API responses of call are " + msgEx);
 			assertTrue(
 				msgEx.toString().contains("Local message: failed to POST at") &&
-				msgEx.toString().contains("/ext/TestE2EIntegerParamReturnDouble/TestE2EIntegerParamReturnDoubleErrorCond.sjs"));
+				msgEx.toString().contains("/ext/TestE2EIntegerParamReturnDouble/TestE2EIntegerParamReturnDoubleErrorCond.sjs"),
+				"Unexpected error message: " + msgEx);
 		}
 	}
 

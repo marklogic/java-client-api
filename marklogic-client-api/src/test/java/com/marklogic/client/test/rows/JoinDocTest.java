@@ -5,8 +5,10 @@ import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.RequiresML11;
 import com.marklogic.client.type.CtsReferenceExpr;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,14 +19,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Written for bug 58069; see that description for more information.
  */
+@ExtendWith(RequiresML11.class)
 public class JoinDocTest extends AbstractOpticUpdateTest {
 
     @Test
     public void propertiesFragmentsShouldNotBeReturned() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.ModifyPlan plan = op
             .fromDocUris(op.cts.directoryQuery("/acme/"))
             .joinDoc(op.col("doc"), op.col("uri"));
@@ -40,10 +39,6 @@ public class JoinDocTest extends AbstractOpticUpdateTest {
      */
     @Test
     public void propertiesFragmentShouldNotBeReturnedByFromLexicons() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         Map<String, CtsReferenceExpr> lexicons = new HashMap<>();
         lexicons.put("uri", op.cts.uriReference());
 

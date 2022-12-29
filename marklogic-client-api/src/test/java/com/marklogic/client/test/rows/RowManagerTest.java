@@ -30,12 +30,14 @@ import com.marklogic.client.row.RowManager.RowSetPart;
 import com.marklogic.client.row.RowManager.RowStructure;
 import com.marklogic.client.row.RowRecord.ColumnKind;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.RequiresML11;
 import com.marklogic.client.type.*;
 import com.marklogic.client.util.EditableNamespaceContext;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -516,11 +518,8 @@ public class RowManagerTest {
   }
 
   @Test
+  @ExtendWith(RequiresML11.class)
   public void testErrorWhileStreamingRows() {
-    if (!Common.markLogicIsVersion11OrHigher()) {
-      return;
-    }
-
     final String validQueryThatEventuallyThrowsAnError = "select case " +
         "when lastName = 'Davis' then fn_error(fn_qname('', 'SQL-TABLENOTFOUND'), 'Internal Server Error') end, " +
         "opticUnitTest.musician.* from (select * from opticUnitTest.musician order by lastName)";
@@ -1391,7 +1390,7 @@ public class RowManagerTest {
     RawPlan builtPlan = rowMgr.newRawSPARQLSelectPlan(new StringHandle(plan));
     List<RowRecord> rows = rowMgr.resultRows(builtPlan).stream().collect(Collectors.toList());
 
-    if (Common.markLogicIsVersion11OrHigher()) {
+    if (Common.getMarkLogicVersion().getMajor() >= 11) {
       assertEquals(18, rows.size(),
 		  "Starting in ML 11, dedup is off by default, so 18 rows are expected");
     } else {
@@ -1523,11 +1522,8 @@ public class RowManagerTest {
   }
 
   @Test
+  @ExtendWith(RequiresML11.class)
   public void testFromDocUrisWithWordQuery() {
-    if (!Common.markLogicIsVersion11OrHigher()) {
-      return;
-    }
-
     RowManager rowMgr = Common.client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     PlanBuilder.ExportablePlan builtPlan = p.fromDocUris(p.cts.wordQuery("trumpet"), "");
@@ -1545,10 +1541,8 @@ public class RowManagerTest {
   }
 
   @Test
+  @ExtendWith(RequiresML11.class)
   public void testFromDocUrisWithDirectoryQuery() {
-    if (!Common.markLogicIsVersion11OrHigher()) {
-      return;
-    }
     RowManager rowMgr = Common.client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     PlanBuilder.ExportablePlan builtPlan = p.fromDocUris(p.cts.directoryQuery("/testFromDocUrisWithDirectoryQuery/"), "");

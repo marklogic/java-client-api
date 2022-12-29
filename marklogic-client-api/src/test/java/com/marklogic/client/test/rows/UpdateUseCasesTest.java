@@ -10,8 +10,10 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.RequiresML11;
 import com.marklogic.client.type.PlanSystemColumn;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Intended to capture interesting use cases, particularly those called out in the functional spec.
  */
+@ExtendWith(RequiresML11.class)
 public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
 
     /**
@@ -31,10 +34,6 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
      */
     @Test
     public void updateAndIgnoreNonExistentURIs() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         // First, write a document that can then be updated
         final String firstUri = "/acme/1.json";
         rowManager.execute(op
@@ -72,10 +71,6 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
 
     @Test
     public void notExistsJoin() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         // Insert doc1
         rowManager.execute(op
             .fromDocDescriptors(op.docDescriptor(newWriteOp("/acme/doc1.json", mapper.createObjectNode().put("hello", "world"))))
@@ -110,10 +105,6 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
 
     @Test
     public void dedupDescriptorsAndWrite() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         final String duplicateUri = "/acme/a1.json";
 
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
@@ -140,10 +131,6 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
 
     @Test
     public void wrapContentInEnvelope() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
         writeSet.add(newWriteOp("/acme/1.json", mapper.createObjectNode().put("value", 1)));
         writeSet.add(newWriteOp("/acme/2.json", mapper.createObjectNode().put("value", 2)));
@@ -173,10 +160,6 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
 
     @Test
     public void writeNewDocsFromView() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanSystemColumn idColumn = op.fragmentIdCol("fragmentId");
 
         ModifyPlan plan = op.fromView("opticUnitTest", "musician", null, idColumn)
@@ -226,10 +209,6 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
 
     @Test
     public void writeThreeDocsAndAuditLogDoc() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();
         DocumentMetadataHandle metadata = newDefaultMetadata().withCollections("audited-doc");
         writeSet.add(newWriteOp("/acme/1.json", metadata, mapper.createObjectNode().put("value", 1)));
@@ -298,10 +277,6 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
      */
     @Test
     public void writeWithReferenceDataFromViewJoinedIn() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         List<RowRecord> rows = OpticUpdateExample.runPlanToWriteDocuments(rowManager).stream().collect(Collectors.toList());
         assertEquals(2, rows.size());
 

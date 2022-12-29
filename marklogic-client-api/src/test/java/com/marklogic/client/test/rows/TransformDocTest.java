@@ -10,7 +10,9 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.RequiresML11;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,14 +21,11 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(RequiresML11.class)
 public class TransformDocTest extends AbstractOpticUpdateTest {
 
     @Test
     public void mjsTransformWithParam() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         ArrayNode rows = mapper.createArrayNode();
         rows.addObject().putObject("doc").put("some", "content");
 
@@ -49,10 +48,6 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
 
     @Test
     public void mjsTransformWithColParam() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         ModifyPlan plan = op
             .fromDocUris(op.cts.documentQuery("/optic/test/musician1.json"))
             .joinDoc(op.col("doc"), op.col("uri"))
@@ -75,10 +70,6 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
 
     @Test
     public void mjsTransformWithQualifiedColParam() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         final String qualifier = "source";
         ModifyPlan plan = op
             .fromDocUris(op.cts.documentQuery("/optic/test/musician1.json"), qualifier)
@@ -99,10 +90,6 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
 
     @Test
     public void mjsTransformWithoutParam() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         ArrayNode rows = mapper.createArrayNode();
         rows.addObject().putObject("doc").put("some", "content");
 
@@ -122,10 +109,6 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
 
     @Test
     public void mjsTransformReturnsMultipleRows() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         ModifyPlan plan = op
             .fromDocDescriptors(
                 op.docDescriptor(newWriteOp("will-be-replaced", mapper.createObjectNode().put("hello", "there")))
@@ -153,10 +136,6 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
 
     @Test
     public void transformThrowsError() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         ModifyPlan plan = op
             .fromDocUris("/optic/test/musician1.json")
             .joinDoc(op.col("doc"), op.col("uri"))
@@ -169,10 +148,6 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
 
     @Test
     public void multipleJsonDocs() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         ModifyPlan plan = op
             .fromDocUris("/optic/test/musician1.json", "/optic/test/musician2.json")
             .joinDoc(op.col("doc"), op.col("uri"))
@@ -196,10 +171,6 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
 
     @Test
     public void xsltTransformWithParam() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         ArrayNode rows = mapper.createArrayNode();
         rows.addObject().put("rowId", 1).put("doc", "doc1.xml");
         Map<String, AbstractWriteHandle> attachments = new HashMap<>();
@@ -229,10 +200,6 @@ public class TransformDocTest extends AbstractOpticUpdateTest {
 
     @Test
     public void xsltTransformWithoutParam() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         ArrayNode rows = mapper.createArrayNode();
         rows.addObject().put("doc", "doc1.xml");
         Map<String, AbstractWriteHandle> attachments = new HashMap<>();

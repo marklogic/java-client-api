@@ -13,21 +13,20 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.RequiresML11;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(RequiresML11.class)
 public class FromParamWriteTest extends AbstractOpticUpdateTest {
 
     @Test
     public void jsonDocumentWithAllMetadata() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.Plan plan = op
             .fromParam("myDocs", "", op.docColTypes())
             .write();
@@ -59,10 +58,6 @@ public class FromParamWriteTest extends AbstractOpticUpdateTest {
 
     @Test
     public void xmlDocumentWriteSet() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.Plan plan = op.fromParam("myDocs", "", op.docColTypes()).write();
 
         DocumentMetadataHandle metadata = newDefaultMetadata();
@@ -83,10 +78,6 @@ public class FromParamWriteTest extends AbstractOpticUpdateTest {
      */
     @Test
     public void jsonAndXmlDocumentsInDocumentWriteSet() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         PlanBuilder.Plan plan = op.fromParam("myDocs", "", op.docColTypes()).write();
 
         DocumentMetadataHandle metadata = newDefaultMetadata();
@@ -106,10 +97,6 @@ public class FromParamWriteTest extends AbstractOpticUpdateTest {
      */
     @Test
     public void rawPlanAndDocumentWriteSet() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         RawPlanDefinition rawPlan = rowManager.newRawPlanDefinition(new StringHandle("{\n" +
             "    \"$optic\": {\n" +
             "        \"ns\": \"op\",\n" +
@@ -163,10 +150,6 @@ public class FromParamWriteTest extends AbstractOpticUpdateTest {
 
     @Test
     public void temporalWrite() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         final String uri = "/acme/doc1-temporal.json";
         final String temporalCollection = "temporal-collection";
         ObjectNode temporalContent = newTemporalContent();
@@ -207,10 +190,6 @@ public class FromParamWriteTest extends AbstractOpticUpdateTest {
 
     @Test
     public void invalidTemporalWrite() {
-        if (!Common.markLogicIsVersion11OrHigher()) {
-            return;
-        }
-
         final String temporalCollection = "temporal-collection";
         assertThrows(
             // The error message is not of interest, as it's controlled by temporal.documentInsert and not by Optic.
