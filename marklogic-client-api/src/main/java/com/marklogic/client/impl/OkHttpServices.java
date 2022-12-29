@@ -39,10 +39,7 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResultIterator;
 
-import com.marklogic.client.impl.okhttp.BasicAuthenticationConfigurer;
-import com.marklogic.client.impl.okhttp.DigestAuthenticationConfigurer;
-import com.marklogic.client.impl.okhttp.AuthenticationConfigurer;
-import com.marklogic.client.impl.okhttp.HttpUrlBuilder;
+import com.marklogic.client.impl.okhttp.*;
 import com.marklogic.client.io.*;
 import com.marklogic.client.io.marker.*;
 import com.marklogic.client.query.*;
@@ -77,7 +74,6 @@ import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
-import javax.net.SocketFactory;
 import javax.net.ssl.*;
 import javax.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
@@ -90,20 +86,13 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.math.BigDecimal;
-import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.net.URLEncoder;
-import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -129,8 +118,6 @@ public class OkHttpServices implements RESTServices {
 
   private final static MediaType URLENCODED_MIME_TYPE = MediaType.parse("application/x-www-form-urlencoded; charset=UTF-8");
   private final static String UTF8_ID = StandardCharsets.UTF_8.toString();
-
-  static final private ConnectionPool connectionPool = new ConnectionPool();
 
   private DatabaseClient databaseClient;
   private String database = null;
@@ -206,7 +193,7 @@ public class OkHttpServices implements RESTServices {
 	  if (securityContext == null)
 		  throw new IllegalArgumentException("No security context provided");
 
-	  OkHttpClient.Builder clientBuilder = newClientBuilder();
+	  OkHttpClient.Builder clientBuilder = OkHttpUtil.newClientBuilder();
 	  AuthenticationConfigurer authenticationConfigurer = null;
 
 	  // As of 6.1.0, kerberos/saml/certificate are still coded within this class to avoid potential breaks from
@@ -244,8 +231,8 @@ public class OkHttpServices implements RESTServices {
 			  SSLHostnameVerifier.COMMON;
 	  }
 
-    this.configureSocketFactory(clientBuilder, sslContext, trustManager);
-    this.configureHostnameVerifier(clientBuilder, sslVerifier);
+	  OkHttpUtil.configureSocketFactory(clientBuilder, sslContext, trustManager);
+	  OkHttpUtil.configureHostnameVerifier(clientBuilder, sslVerifier);
 
     this.database = database;
     this.baseUri = HttpUrlBuilder.newBaseUrl(host, port, basePath, sslContext);
@@ -258,83 +245,6 @@ public class OkHttpServices implements RESTServices {
 
     this.client = clientBuilder.build();
   }
-
-	/**
-	 * @return an OkHttpClient.Builder initialized with a sensible set of defaults that can then have authentication
-	 * configured
-	 */
-	private OkHttpClient.Builder newClientBuilder() {
-		return new OkHttpClient.Builder()
-			.followRedirects(false)
-			.followSslRedirects(false)
-			// all clients share a single connection pool
-			.connectionPool(connectionPool)
-			// cookies are ignored (except when a Transaction is being used)
-			.cookieJar(CookieJar.NO_COOKIES)
-			// no timeouts since some of our clients' reads and writes can be massive
-			.readTimeout(0, TimeUnit.SECONDS)
-			.writeTimeout(0, TimeUnit.SECONDS)
-			// prefer ipv4 to ipv6
-			.dns(new DnsImpl());
-	}
-
-	/**
-	 * Configure the socket factory used by the given OkHttpClient.Builder based on whether SSL is required or not.
-	 *
-	 * @param clientBuilder
-	 * @param sslContext
-	 * @param trustManager
-	 */
-    private void configureSocketFactory(OkHttpClient.Builder clientBuilder, SSLContext sslContext, X509TrustManager trustManager) {
-        if (sslContext == null) {
-            clientBuilder.socketFactory(new SocketFactoryDelegator(SocketFactory.getDefault()));
-        } else if (trustManager != null) {
-			clientBuilder.sslSocketFactory(new SSLSocketFactoryDelegator(sslContext.getSocketFactory()), trustManager);
-		} else {
-			// OkHttp requires the trust manager on Java 9 and on Java 8 after 8u251
-			// transitional workaround -- at next backward incompatibility boundary, replace try with thrown exception
-			try {
-				TrustManagerFactory trustMgrFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-				trustMgrFactory.init((KeyStore) null);
-				TrustManager[] trustMgrs = trustMgrFactory.getTrustManagers();
-				if (trustMgrs == null || trustMgrs.length == 0) {
-					throw new IllegalArgumentException("no trust manager and could not get default trust manager");
-				}
-				if (!(trustMgrs[0] instanceof X509TrustManager)) {
-					throw new IllegalArgumentException("no trust manager and default is not an X509TrustManager");
-				}
-				trustManager = (X509TrustManager) trustMgrs[0];
-				sslContext.init(null, trustMgrs, null);
-				clientBuilder.sslSocketFactory(new SSLSocketFactoryDelegator(sslContext.getSocketFactory()), trustManager);
-			} catch (KeyStoreException e) {
-				throw new IllegalArgumentException("no trust manager and cannot initialize factory for default", e);
-			} catch (NoSuchAlgorithmException e) {
-				throw new IllegalArgumentException("no trust manager and no algorithm for default manager", e);
-			} catch (KeyManagementException e) {
-				throw new IllegalArgumentException("no trust manager and cannot initialize context with default", e);
-			}
-        }
-    }
-
-	/**
-	 * Configure the hostname verifier for the given OkHttpClient.Builder based on the given SSLHostnameVerifier.
-	 *
-	 * @param clientBuilder
-	 * @param sslVerifier
-	 */
-	private void configureHostnameVerifier(OkHttpClient.Builder clientBuilder, SSLHostnameVerifier sslVerifier) {
-		HostnameVerifier hostnameVerifier = null;
-		if (SSLHostnameVerifier.ANY.equals(sslVerifier)) {
-			hostnameVerifier = (hostname, session) -> true;
-		} else if (SSLHostnameVerifier.COMMON.equals(sslVerifier) || SSLHostnameVerifier.STRICT.equals(sslVerifier)) {
-			hostnameVerifier = null;
-		} else if (sslVerifier != null) {
-			hostnameVerifier = new SSLHostnameVerifier.HostnameVerifierAdapter(sslVerifier);
-		}
-		if (hostnameVerifier != null) {
-			clientBuilder.hostnameVerifier(hostnameVerifier);
-		}
-	}
 
 	/**
 	 * Based on the given properties, add a network interceptor to the given OkHttpClient.Builder to log HTTP
@@ -6744,19 +6654,5 @@ public class OkHttpServices implements RESTServices {
   @FunctionalInterface
   private interface ResultIteratorConstructor<T> {
     T construct(RequestLogger logger, List list, Closeable closeable);
-  }
-
-  static class DnsImpl implements Dns {
-      @Override
-      public List<InetAddress> lookup(String hostname) throws UnknownHostException {
-          List<InetAddress> rawAddresses = Dns.SYSTEM.lookup(hostname);
-          List<InetAddress> ipv4Addresses = new ArrayList<>();
-          for (InetAddress address: rawAddresses) {
-              if (address instanceof Inet4Address) {
-                  ipv4Addresses.add(address);
-              }
-          }
-          return ipv4Addresses.isEmpty() ? rawAddresses : ipv4Addresses;
-      }
   }
 }
