@@ -1,0 +1,31 @@
+// Copyright (c) 2022 MarkLogic Corporation
+
+plugins {
+	id "java-library"
+}
+
+dependencies {
+	if (JavaVersion.current().isJava9Compatible()) {
+		implementation 'javax.xml.bind:jaxb-api:2.3.1'
+		implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.2'
+		implementation 'org.glassfish.jaxb:jaxb-core:2.3.0.1'
+	}
+	implementation project(':marklogic-client-api')
+
+	// The 'api' configuration is used so that the test configuration in marklogic-client-api doesn't have to declare
+	// all of these dependencies. This library project won't otherwise be depended on by anything else as it's not
+	// setup for publishing.
+	api 'com.squareup.okhttp3:okhttp:4.10.0'
+	api 'io.github.rburgst:okhttp-digest:2.7'
+	api 'org.slf4j:slf4j-api:1.7.36'
+	api 'com.fasterxml.jackson.core:jackson-databind:2.13.4.2'
+	api 'org.hsqldb:hsqldb:2.5.2'
+	api 'org.jdom:jdom2:2.0.6.1'
+	api 'dom4j:dom4j:1.6.1'
+	api 'com.google.code.gson:gson:2.10'
+	api 'net.sourceforge.htmlcleaner:htmlcleaner:2.26'
+	api 'com.opencsv:opencsv:4.6'
+	api 'org.springframework:spring-jdbc:5.3.24'
+	api 'org.apache.commons:commons-lang3:3.12.0'
+	api 'org.apache.httpcomponents:httpclient:4.5.14'
+}

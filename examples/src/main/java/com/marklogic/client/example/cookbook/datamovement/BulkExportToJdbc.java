@@ -30,25 +30,13 @@ import com.marklogic.client.query.StructuredQueryDefinition;
 
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowCallbackHandler;
-
-import com.fasterxml.jackson.core.JsonParser.Feature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.ArrayList;
-import java.util.List;
 import javax.sql.DataSource;
 
 import java.text.SimpleDateFormat;

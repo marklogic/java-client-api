@@ -1,6 +1,5 @@
 package com.marklogic.client.example.cookbook.datamovement;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -73,15 +72,15 @@ public class BulkExportOpticResults {
      * Extraction) which are needed to project SQL tables from the documents
      * present in the database. We have two template documents - one for
      * customers and the other for orders.
-     * 
+     *
      * From customers, we project name, id and phone number From orders, we
      * project orderid, customerid and orderdate
-     * 
+     *
      */
     TextDocumentManager schemaDocMgr = schemaDBclient.newTextDocumentManager();
     StringHandle orderHandle = new StringHandle();
-    orderHandle.set("<template xmlns=\"http://marklogic.com/xdmp/tde\"> " + 
-      "<context>/orders</context>" +  
+    orderHandle.set("<template xmlns=\"http://marklogic.com/xdmp/tde\"> " +
+      "<context>/orders</context>" +
       "<rows>" +
       "<row>" +
         "<schema-name>opticExample</schema-name>" +
@@ -97,17 +96,17 @@ public class BulkExportOpticResults {
     StringHandle customerHandle = new StringHandle();
     customerHandle.set("<template xmlns=\"http://marklogic.com/xdmp/tde\">" +
       "<context>/customers</context>" +
-      "<rows>" + 
-      "<row>" + 
-        "<schema-name>opticExample</schema-name>" + 
-        "<view-name>customers</view-name>" + 
-        "<columns>" + 
-          "<column><name>name</name><scalar-type>string</scalar-type><val>name</val></column>" + 
-          "<column><name>id</name><scalar-type>int</scalar-type><val>id</val></column>" + 
-          "<column><name>phone</name><scalar-type>string</scalar-type><val>phone</val></column>" + 
-        "</columns>" + 
-      "</row>" + 
-      "</rows>" + 
+      "<rows>" +
+      "<row>" +
+        "<schema-name>opticExample</schema-name>" +
+        "<view-name>customers</view-name>" +
+        "<columns>" +
+          "<column><name>name</name><scalar-type>string</scalar-type><val>name</val></column>" +
+          "<column><name>id</name><scalar-type>int</scalar-type><val>id</val></column>" +
+          "<column><name>phone</name><scalar-type>string</scalar-type><val>phone</val></column>" +
+        "</columns>" +
+      "</row>" +
+      "</rows>" +
       "</template>");
     DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
     metadataHandle.getPermissions().add("rest-writer", Capability.UPDATE, Capability.READ);
@@ -118,15 +117,15 @@ public class BulkExportOpticResults {
 
     /*
      * Create customer and order documents to demonstrate the example.
-     * 
+     *
      * Sample customer document:
-     * <customers> 
-     *   <name>Alice</name> 
-     *   <id>1</id> 
-     *   <phone>8793993333</phone> 
-     *   <state>CA</state> 
+     * <customers>
+     *   <name>Alice</name>
+     *   <id>1</id>
+     *   <phone>8793993333</phone>
+     *   <state>CA</state>
      * </customers>
-     * 
+     *
      * Sample order document:
      * <orders>
      *   <id>16</id>
@@ -137,7 +136,7 @@ public class BulkExportOpticResults {
      *   </products>
      *   <orderdate>2017-07-10T03:25:45Z</orderdate>
      * </orders>
-     * 
+     *
      */
 
     // Populate Customers data set
@@ -186,7 +185,7 @@ public class BulkExportOpticResults {
     // Build a query to retrieve the order documents that contain a particular
     // product with a given product ID and pass it to the QueryBatcher.
     StructuredQueryBuilder sb = new StructuredQueryBuilder();
-    StructuredQueryDefinition query = sb.and(sb.collection("orders"), 
+    StructuredQueryDefinition query = sb.and(sb.collection("orders"),
         sb.value(sb.element("product"), productID));
     // Create a Row manager to construct plans and query on
     // rows projected from the documents

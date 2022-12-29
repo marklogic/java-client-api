@@ -36,7 +36,6 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.io.IOException;
 import java.sql.ResultSet;

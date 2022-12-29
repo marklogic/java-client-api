@@ -26,13 +26,6 @@ import com.marklogic.client.example.cookbook.datamovement.Employee.Title;
 
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowCallbackHandler;
-
-import com.fasterxml.jackson.core.JsonParser.Feature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 
 import org.slf4j.Logger;
