@@ -447,7 +447,47 @@ public class DatabaseClientFactory {
       this.trustManager = trustManager;
       return this;
     }
+  }
 
+  public static class MarkLogicCloudAuthContext extends AuthContext {
+      private String tokenEndpoint;
+      private String grantType;
+      private String key;
+
+      public MarkLogicCloudAuthContext(String key) {
+          this(key, "/token", "apikey");
+      }
+
+      public MarkLogicCloudAuthContext(String key, String tokenEndpoint, String grantType) {
+          this.key = key;
+          this.tokenEndpoint = tokenEndpoint;
+          this.grantType = grantType;
+      }
+
+      public String getTokenEndpoint() {
+          return tokenEndpoint;
+      }
+
+      public String getGrantType() {
+          return grantType;
+      }
+
+      public String getKey() {
+          return key;
+      }
+
+	  @Override
+      public MarkLogicCloudAuthContext withSSLContext(SSLContext context, X509TrustManager trustManager) {
+          this.sslContext = context;
+          this.trustManager = trustManager;
+          return this;
+      }
+
+      @Override
+      public MarkLogicCloudAuthContext withSSLHostnameVerifier(SSLHostnameVerifier verifier) {
+          this.sslVerifier = verifier;
+          return this;
+      }
   }
 
   public static class BasicAuthContext extends AuthContext {

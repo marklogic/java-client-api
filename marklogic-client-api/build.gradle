@@ -236,3 +236,10 @@ task testRows(type: Test) {
 	description = "Run all 'rows' tests; i.e. those exercising Optic and Optic Update functionality"
 	include "com/marklogic/client/test/rows/**"
 }
+
+task debugCloudAuth(type: JavaExec) {
+	description = "Test program for manual testing of cloud-based authentication against a MarkLogic Cloud instance"
+	main = 'com.marklogic.client.test.MarkLogicCloudAuthenticationDebugger'
+	classpath = sourceSets.test.runtimeClasspath
+	args = [tokenHost, tokenKey]
+}

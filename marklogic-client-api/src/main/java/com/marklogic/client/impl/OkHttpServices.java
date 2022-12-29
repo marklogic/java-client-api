@@ -22,6 +22,7 @@ import com.marklogic.client.DatabaseClientFactory.BasicAuthContext;
 import com.marklogic.client.DatabaseClientFactory.CertificateAuthContext;
 import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.DatabaseClientFactory.KerberosAuthContext;
+import com.marklogic.client.DatabaseClientFactory.MarkLogicCloudAuthContext;
 import com.marklogic.client.DatabaseClientFactory.SAMLAuthContext;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
@@ -213,7 +214,11 @@ public class OkHttpServices implements RESTServices {
 	  } else if (securityContext instanceof SAMLAuthContext) {
 		  configureSAMLAuth((SAMLAuthContext) securityContext, clientBuilder);
 		  checkFirstRequest = false;
-	  } else {
+	  } else if (securityContext instanceof MarkLogicCloudAuthContext) {
+		  authenticationConfigurer = new MarkLogicCloudAuthenticationConfigurer(host, port);
+		  checkFirstRequest = false;
+	  }
+	  else {
 		  throw new IllegalArgumentException("Unsupported security context: " + securityContext.getClass());
 	  }
 
