@@ -32,7 +32,6 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -224,12 +223,6 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 	}
 
 	@Test
-	@Disabled("Ignoring this test for now, as it's failing intermittently due to the bug captured at " +
-		"https://github.com/marklogic/java-client-api/issues/1327; did some cleanup on this before ignoring it, as " +
-		"when it passed, the onQueryFailure handler was never being invoked. So that stuff was removed. It appears " +
-		"that the intent of the test is to verify that the retry mechanism for QueryBatcher kicks in when a failure " +
-		"occurs due to the database being temporarily disabled. But due to the 1327 bug, the test can hang " +
-		"indefinitely when the queryMgr.uris call fails.")
 	public void queryFailures() throws Exception {
 		// Insert documents to query
 		String jsonDoc = "{" + "\"employees\": [" + "{ \"firstName\":\"John\" , \"lastName\":\"Doe\" },"
