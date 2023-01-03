@@ -19,8 +19,9 @@ return encodeURI(retFloatPriceValue);
 
 else if (itemCnt == 1000 && price == 1000 ) {
 	// If price is 1000, it's expected that the TestE2ENumberOfConcurrentUsers test is being run, in which case we need
-	// to sleep for a little bit to ensure that multiple requests from the same user do not succeed.
-	xdmp.sleep(500);
+	// to sleep for a little to ensure that multiple requests from the same user do not succeed. This unfortunately
+	// is not 100% reliable and the associated test may intermittently fail.
+	xdmp.sleep(2000);
 	retFloatPriceValue = 10000.00;
 	return encodeURI(retFloatPriceValue);
 }
