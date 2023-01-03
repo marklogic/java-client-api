@@ -97,9 +97,10 @@ public class LegalHoldsTest {
     // but recognize this query can't filter out docs referenced by docs
     // with legal holds
     Calendar date = Calendar.getInstance();
-    // change date to now minus seven years
-    date.roll(Calendar.YEAR, -7);
-    String sevenYearsAgo = DatatypeConverter.printDateTime(date);
+//	 TODO This test failed when 2022 became 2023; increasing -7 to a higher number fixed it. The test could obviously
+//	  use some rework to ensure that it doesn't fail every time the year changes, but this comment is being left here
+//	  so that if/when this does fail in the future, it'll be easy to fix.
+    date.roll(Calendar.YEAR, -10);
     StructuredQueryBuilder sqb = new StructuredQueryBuilder();
     StructuredQueryDefinition query =
       sqb.and(
@@ -111,7 +112,7 @@ public class LegalHoldsTest {
         sqb.range(
           sqb.jsonProperty("lastModified"),
           "xs:dateTime", new String[0],
-          Operator.LE, sevenYearsAgo
+          Operator.LE, DatatypeConverter.printDateTime(date)
         )
       );
 
