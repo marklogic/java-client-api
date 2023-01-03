@@ -18,15 +18,14 @@ return encodeURI(retFloatPriceValue);
 }
 
 else if (itemCnt == 1000 && price == 1000 ) {
-// Simulate a long running module so that multiple users test gets a Forbidden user exception. Return sleep period back to caller.
-var i;
-for (i = 0; i < 10000000; i++) {
+	// If price is 1000, it's expected that the TestE2ENumberOfConcurrentUsers test is being run, in which case we need
+	// to sleep for a little bit to ensure that multiple requests from the same user do not succeed.
+	xdmp.sleep(500);
+	retFloatPriceValue = 10000.00;
+	return encodeURI(retFloatPriceValue);
 }
-retFloatPriceValue = 10000.00;
-return encodeURI(retFloatPriceValue);
-}
-else {
 
+else {
 var itemNo = parseInt(itemCnt, 10);
 var price = parseFloat(price, 10);
 
