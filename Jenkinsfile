@@ -10,11 +10,12 @@ def getJava(){
     }
 }
 
-def runtests(String type, String version){
+def runAllTests(String type, String version, Boolean useReverseProxy){
             copyRPM type, version
             setUpML '$WORKSPACE/xdmp/src/Mark*.rpm'
             copyConvertersRPM type,version
             setUpMLConverters '$WORKSPACE/xdmp/src/Mark*Converters*.rpm'
+
             sh label:'deploy test app', script: '''#!/bin/bash
                 export JAVA_HOME=$JAVA_HOME_DIR
                 export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
@@ -22,14 +23,27 @@ def runtests(String type, String version){
                 cd java-client-api
                 ./gradlew -i mlDeploy -PmlForestDataDirectory=/space
             '''
-            sh label:'run marklogic-client-api tests', script: '''#!/bin/bash
-                export JAVA_HOME=$JAVA_HOME_DIR
-                export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-                export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-                cd java-client-api
-                mkdir -p marklogic-client-api/build/test-results/test
-                ./gradlew marklogic-client-api:test  || true
-            '''
+
+            if (useReverseProxy) {
+							sh label:'run marklogic-client-api tests with reverse proxy', script: '''#!/bin/bash
+									export JAVA_HOME=$JAVA_HOME_DIR
+									export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+									export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+									cd java-client-api
+									mkdir -p marklogic-client-api/build/test-results/test
+                  ./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api:test || true
+							'''
+            } else {
+							sh label:'run marklogic-client-api tests', script: '''#!/bin/bash
+									export JAVA_HOME=$JAVA_HOME_DIR
+									export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+									export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+									cd java-client-api
+									mkdir -p marklogic-client-api/build/test-results/test
+									./gradlew marklogic-client-api:test  || true
+							'''
+            }
+
             sh label:'run ml-development-tools tests', script: '''#!/bin/bash
                 export JAVA_HOME=$JAVA_HOME_DIR
                 export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
@@ -40,28 +54,63 @@ def runtests(String type, String version){
                 ./gradlew ml-development-tools:generateTests || true
                 ./gradlew ml-development-tools:test || true
             '''
-            sh label:'run fragile functional tests', script: '''#!/bin/bash
-                export JAVA_HOME=$JAVA_HOME_DIR
-                export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-                export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-                cd java-client-api
-                ./gradlew -i mlDeploy -PmlForestDataDirectory=/space
-                ./gradlew -i marklogic-client-api-functionaltests:runFragileTests || true
-            '''
-            sh label:'run fast functional tests', script: '''#!/bin/bash
-                export JAVA_HOME=$JAVA_HOME_DIR
-                export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-                export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-                cd java-client-api
-                ./gradlew -i marklogic-client-api-functionaltests:runFastFunctionalTests || true
-            '''
-            sh label:'run slow functional tests', script: '''#!/bin/bash
-                export JAVA_HOME=$JAVA_HOME_DIR
-                export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
-                export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
-                cd java-client-api
-                ./gradlew -i marklogic-client-api-functionaltests:runSlowFunctionalTests || true
-            '''
+
+            if (useReverseProxy) {
+            	sh label:'run fragile functional tests with reverse proxy', script: '''#!/bin/bash
+									export JAVA_HOME=$JAVA_HOME_DIR
+									export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+									export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+									cd java-client-api
+									./gradlew mlDeploy -PmlForestDataDirectory=/space
+									./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api-functionaltests:runFragileTests || true
+							'''
+            } else {
+							sh label:'run fragile functional tests', script: '''#!/bin/bash
+									export JAVA_HOME=$JAVA_HOME_DIR
+									export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+									export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+									cd java-client-api
+									./gradlew mlDeploy -PmlForestDataDirectory=/space
+									./gradlew marklogic-client-api-functionaltests:runFragileTests || true
+							'''
+            }
+
+            if (useReverseProxy) {
+							sh label:'run fast functional tests with reverse proxy', script: '''#!/bin/bash
+									export JAVA_HOME=$JAVA_HOME_DIR
+									export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+									export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+									cd java-client-api
+									./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api-functionaltests:runFastFunctionalTests || true
+							'''
+            } else {
+							sh label:'run fast functional tests', script: '''#!/bin/bash
+									export JAVA_HOME=$JAVA_HOME_DIR
+									export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+									export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+									cd java-client-api
+									./gradlew marklogic-client-api-functionaltests:runFastFunctionalTests || true
+							'''
+            }
+
+            if (useReverseProxy) {
+            	sh label:'run slow functional tests with reverse proxy', script: '''#!/bin/bash
+									export JAVA_HOME=$JAVA_HOME_DIR
+									export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+									export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+									cd java-client-api
+									./gradlew -PtestUseReverseProxyServer=true test-app:runReverseProxyServer marklogic-client-api-functionaltests:runSlowFunctionalTests || true
+							'''
+            } else {
+							sh label:'run slow functional tests', script: '''#!/bin/bash
+									export JAVA_HOME=$JAVA_HOME_DIR
+									export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
+									export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
+									cd java-client-api
+									./gradlew marklogic-client-api-functionaltests:runSlowFunctionalTests || true
+							'''
+            }
+
             sh label:'post-test-process', script: '''
             		cd java-client-api
 								mkdir -p marklogic-client-api-functionaltests/build/test-results/runFragileTests
@@ -126,15 +175,6 @@ pipeline{
         '''
         junit '**/build/**/TEST*.xml'
       }
-      post{
-        unsuccessful{
-            script{
-                if(params.regressions){
-                    sendMail params.Email,'<h3>Some Tests Failed on Released 11.0 ML Nightly Server Single Node </h3><h4><a href=${JENKINS_URL}/blue/organizations/jenkins/java-client-api-regression/detail/$JOB_BASE_NAME/$BUILD_ID/tests><font color=red>Check the Test Report</font></a></h4><h4><a href=${RUN_DISPLAY_URL}>Check the Pipeline View</a></h4><h4> <a href=${BUILD_URL}/console> Check Console Output Here</a></h4><h4>Please create bugs for the failed regressions and fix them</h4>',false,'${STAGE_NAME} on  develop against ML 11.0-nightly Failed'
-                }
-            }
-        }
-      }
     }
 
     stage('regressions-11.0-Latest') {
@@ -145,14 +185,22 @@ pipeline{
         }
       }
       steps {
-        runtests('Latest','11.0')
+        runAllTests('Latest', '11.0', false)
         junit '**/build/**/TEST*.xml'
       }
-      post {
-        unsuccessful {
-          sendMail params.Email,'<h3>Some Tests Failed on Released 11.0 ML Nightly Server Single Node </h3><h4><a href=${JENKINS_URL}/blue/organizations/jenkins/java-client-api-regression/detail/$JOB_BASE_NAME/$BUILD_ID/tests><font color=red>Check the Test Report</font></a></h4><h4><a href=${RUN_DISPLAY_URL}>Check the Pipeline View</a></h4><h4> <a href=${BUILD_URL}/console> Check Console Output Here</a></h4><h4>Please create bugs for the failed regressions and fix them</h4>',false,'${STAGE_NAME} on  develop against ML 11.0-nightly Failed'
-        }
-      }
+    }
+
+    stage('regressions-11.0-Latest-reverseProxy') {
+    	when {
+				allOf {
+					branch 'develop'
+					expression {return params.regressions}
+				}
+			}
+			steps {
+				runAllTests('Latest', '11.0', true)
+				junit '**/build/**/TEST*.xml'
+			}
     }
 
     stage('regressions-10.0-9') {
@@ -163,13 +211,8 @@ pipeline{
         }
       }
       steps {
-        runtests('Release','10.0-9.5')
+        runAllTests('Release', '10.0-9.5', false)
         junit '**/build/**/TEST*.xml'
-      }
-      post {
-        unsuccessful {
-          sendMail params.Email,'<h3>Some Tests Failed on Released 10.0-9.5 ML  Server Single Node </h3><h4><a href=${JENKINS_URL}/blue/organizations/jenkins/java-client-api-regression/detail/$JOB_BASE_NAME/$BUILD_ID/tests><font color=red>Check the Test Report</font></a></h4><h4><a href=${RUN_DISPLAY_URL}>Check the Pipeline View</a></h4><h4> <a href=${BUILD_URL}/console> Check Console Output Here</a></h4><h4>Please create bugs for the failed regressions and fix them</h4>',false,'${STAGE_NAME} on  develop against ML 10.0-9.5 Failed'
-        }
       }
     }
   }
