@@ -449,7 +449,10 @@ public class DatabaseClientFactory {
     }
   }
 
-  public static class MarkLogicCloudAuthContext extends AuthContext {
+	/**
+	 * @since 6.1.0
+	 */
+	public static class MarkLogicCloudAuthContext extends AuthContext {
       private String tokenEndpoint;
       private String grantType;
       private String key;
@@ -1336,6 +1339,7 @@ public class DatabaseClientFactory {
 	 * @param connectionType whether the client connects directly to the MarkLogic host
 	 *            or using a gateway such as a load balancer
 	 * @return a new client for making database requests
+	 * @since 6.1.0
 	 */
   static public DatabaseClient newClient(String host, int port, String basePath, String database,
                                          SecurityContext securityContext,
@@ -1617,10 +1621,21 @@ public class DatabaseClientFactory {
       this.port = port;
     }
 
+	  /**
+	   *
+	   * @return optional base path to use for constructing a client
+	   * @since 6.1.0
+	   */
       public String getBasePath() {
           return basePath;
       }
 
+	  /**
+	   * Set a base path to use for constructing a client
+	   *
+	   * @param basePath
+	   * @since 6.1.0
+	   */
       public void setBasePath(String basePath) {
           this.basePath = basePath;
       }
@@ -1669,7 +1684,9 @@ public class DatabaseClientFactory {
      * Returns the external name for Kerberos clients created with a
      * DatabaseClientFactory.Bean object.
      * @return	the external name
+	 * @deprecated	(as of 6.1.0, though has never had any impact)
      */
+	@Deprecated
     public String getExternalName() {
       return externalName;
     }
@@ -1677,7 +1694,9 @@ public class DatabaseClientFactory {
      * Specifies the external name for Kerberos clients created with a
      * DatabaseClientFactory.Bean object.
      * @param externalName	the external name
+	 * @deprecated	(as of 6.1.0, though has never had any impact)
      */
+	@Deprecated
     public void setExternalName(String externalName) {
       this.externalName = externalName;
     }
