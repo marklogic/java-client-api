@@ -371,7 +371,14 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
 
         this.batchCount = (getRowEstimate() / super.getBatchSize()) + 1;
         this.batchSize = Long.divideUnsigned(MAX_UNSIGNED_LONG, this.batchCount);
-        logger.info("batch count: {}, batch size: {}", batchCount, batchSize);
+		// It is not expected that batch size will be meaningful to a user. It is more likely to be confusing since it's
+		// not the same value that a user would have provided via withBatchSize. And we don't want to log it when it's
+		// -1, which will be the case for a single batch.
+		if (logger.isDebugEnabled() && this.batchSize > 0) {
+			logger.debug("batch count: {}, calculated batch size: {}", batchCount, batchSize);
+		} else {
+			logger.info("batch count: {}", batchCount);
+		}
 
         if (this.hostInfos != null && getMoveMgr().getConnectionType() == DatabaseClient.ConnectionType.DIRECT) {
             RowManager.RowSetPart    datatypeStyle = getRowManager().getDatatypeStyle();
@@ -414,7 +421,7 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
         String upperBoundStr = Long.toUnsignedString(
                 (currentBatch == this.batchCount) ? MAX_UNSIGNED_LONG : (lowerBound + (this.batchSize - 1))
         );
-        logger.info("current batch: {}, lower bound: {}, upper bound: {}", currentBatch, lowerBoundStr, upperBoundStr);
+        logger.debug("current batch: {}, lower bound: {}, upper bound: {}", currentBatch, lowerBoundStr, upperBoundStr);
 
         PlanBuilder.Plan plan = this.pagedPlan
                 .bindParam(LOWER_BOUND, lowerBoundStr)

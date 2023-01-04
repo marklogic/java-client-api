@@ -238,8 +238,11 @@ public class RowBatcherTest {
                         .withThreadCount(threads);
     }
     private RowBatcher<Document> xmlBatcher(int threads) {
+		// Bumped the batch size to MAX_VALUE to ensure that at least one test for RowBatcher uses a single batch. This
+		// ensures that a change made to RowBatcherImpl to only log the batch size when batch count is > 1 works
+		// properly when there's a single batch.
         return moveMgr.newRowBatcher(new DOMHandle())
-                .withBatchSize(30)
+                .withBatchSize(Integer.MAX_VALUE)
                 .withThreadCount(threads);
     }
     private RowBatcher<String> csvBatcher(int threads) {
