@@ -1,5 +1,6 @@
 package com.marklogic.client.test;
 
+import com.marklogic.client.ext.modulesloader.ssl.SimpleX509TrustManager;
 import io.undertow.Undertow;
 import io.undertow.client.ClientCallback;
 import io.undertow.client.ClientConnection;
@@ -10,11 +11,16 @@ import io.undertow.server.handlers.proxy.ProxyCallback;
 import io.undertow.server.handlers.proxy.ProxyClient;
 import io.undertow.server.handlers.proxy.ProxyConnection;
 import io.undertow.server.handlers.proxy.ProxyHandler;
+import org.springframework.core.io.ClassPathResource;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import java.io.IOException;
 import java.net.URI;
+import java.security.KeyStore;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,6 +50,7 @@ public class ReverseProxyServer {
 		String markLogicHost = "localhost";
 		String serverHost = "localhost";
 		int serverPort = 8020;
+		int secureServerPort = 8021;
 
 		if (args.length > 0) {
 			markLogicHost = args[0];
@@ -66,6 +73,7 @@ public class ReverseProxyServer {
 
 		Undertow.builder()
 			.addHttpListener(serverPort, serverHost)
+			.addHttpsListener(secureServerPort, serverHost, buildSSLContext())
 			.setIoThreads(4)
 			.setHandler(ProxyHandler.builder()
 				.setProxyClient(new ReverseProxyClient(mapping))
@@ -74,6 +82,27 @@ public class ReverseProxyServer {
 			)
 			.build()
 			.start();
+	}
+
+	/**
+	 * Tried to enable SSL so that CheckSSLConnectionTest would succeed, but no luck so far. This is using a test
+	 * keystore (copied from the marklogic-nifi project). Undertow seems to accept the request and then forward it
+	 * along, but the test gets a 403. It seems that the basic authentication is not being sent correctly, as testing
+	 * via a web browser results in the authentication being rejected.
+	 *
+	 * @return
+	 * @throws Exception
+	 */
+	private static SSLContext buildSSLContext() throws Exception {
+		final String keyStorePassword = "passwordpassword";
+		KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+		keyStore.load(new ClassPathResource("keystore.jks").getInputStream(), keyStorePassword.toCharArray());
+		kmf.init(keyStore, keyStorePassword.toCharArray());
+
+		SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+		sslContext.init(kmf.getKeyManagers(), new TrustManager[]{new SimpleX509TrustManager()}, null);
+		return sslContext;
 	}
 
 	private static class ReverseProxyClient implements ProxyClient {
