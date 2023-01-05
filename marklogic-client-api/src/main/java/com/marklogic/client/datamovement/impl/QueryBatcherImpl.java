@@ -228,9 +228,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     runnable.run();
   }
   /*
-   * Accepts a QueryBatch which was successfully retrieved from the server and a 
-   * QueryBatchListener which was failed to apply and retry that listener on the batch. 
-   * 
+   * Accepts a QueryBatch which was successfully retrieved from the server and a
+   * QueryBatchListener which was failed to apply and retry that listener on the batch.
+   *
    */
   @Override
   public void retryListener(QueryBatch batch, QueryBatchListener queryBatchListener) {
@@ -675,23 +675,22 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     private boolean callFailListeners;
     private String afterUri;
     private String nextAfterUri;
-    boolean isQueryBatch;
     private QueryBatchImpl batch;
     private int totalProcessedCount = 0;
-    private boolean isLastBatch;
-    private int lastBatchNum;
 
     QueryTask(DataMovementManager moveMgr, QueryBatcherImpl batcher, Forest forest,
         String queryMethod, SearchQueryDefinition query, Boolean filtered, long forestBatchNum, long start, QueryBatchImpl batch
               ) {
       this(moveMgr, batcher, forest, queryMethod, query, filtered, forestBatchNum, start, batch, null, -1, true);
     }
+
     QueryTask(DataMovementManager moveMgr, QueryBatcherImpl batcher, Forest forest,
         String queryMethod, SearchQueryDefinition query, Boolean filtered, long forestBatchNum, long start, QueryBatchImpl batch, String afterUri
     ) {
       this(moveMgr, batcher, forest, queryMethod, query, filtered, forestBatchNum, start, batch, afterUri,
               -1, true);
     }
+
     QueryTask(DataMovementManager moveMgr, QueryBatcherImpl batcher, Forest forest,
         String queryMethod, SearchQueryDefinition query, Boolean filtered, long forestBatchNum, long start,
               QueryBatchImpl batch, String afterUri, long retryBatchNumber, boolean callFailListeners
@@ -704,7 +703,6 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       this.filtered = filtered;
       this.forestBatchNum = forestBatchNum;
       this.start = start;
-      this.isQueryBatch = isQueryBatch;
       this.retryBatchNumber = retryBatchNumber;
       this.callFailListeners = callFailListeners;
       this.batch = batch;
@@ -745,12 +743,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
         if (consistentSnapshot == true && serverTimestamp.get() > -1) {
           handle.setPointInTimeQueryTimestamp(serverTimestamp.get());
         }
-        // this try-with-resources block will call results.close() once the block is done
-        // here we call the /v1/internal/uris endpoint to get the text/uri-list of documents
-        // matching this structured or string query
+
         try (UrisHandle results = queryMgr.uris(queryMethod, query, filtered, handle, start, afterUri, forest.getForestName())) {
-          // if we're doing consistentSnapshot and this is the first result set, let's capture the
-          // serverTimestamp so we can use it for all future queries
           if (consistentSnapshot == true && serverTimestamp.get() == -1) {
             if (serverTimestamp.compareAndSet(-1, results.getServerTimestamp())) {
               logger.info("Consistent snapshot timestamp=[{}]", serverTimestamp);
@@ -785,7 +779,15 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
           isDone.set(true);
           shutdownIfAllForestsAreDone();
           return;
-        }
+        } catch (Throwable t) {
+			// The above catch on a ResourceNotFoundException seems to be an expected error that doesn't need to be
+			// logged. But if the query fails for any other reason, such as an invalid index, the error should be
+			// logged and the job stopped.
+			logger.error("Query for URIs failed, stopping job; cause: " + t.getMessage(), t);
+			isDone.set(true);
+			shutdownIfAllForestsAreDone();
+			return;
+		}
 
         batch = batch
                 .withItems(uris.get(0).toArray(new String[uris.get(0).size()]))
