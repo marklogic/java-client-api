@@ -340,11 +340,6 @@ public class RowBatcherTest {
                         System.out.println(e.getMessage());
                         e.printStackTrace(System.out);
                     }
-                })
-                .onFailure((event, throwable) -> {
-                    failed.set(true);
-                    System.out.println("failed batch="+event.getJobBatchNumber()+
-                            " from "+event.getLowerBound()+" through "+event.getUpperBound());
                 });
 
         moveMgr.startJob(rowBatcher);
@@ -416,11 +411,6 @@ public class RowBatcherTest {
                         System.out.println(e.getMessage());
                         e.printStackTrace(System.out);
                     }
-                })
-                .onFailure((event, throwable) -> {
-                    failed.set(true);
-                    System.out.println("failed batch="+event.getJobBatchNumber()+
-                            " from "+event.getLowerBound()+" through "+event.getUpperBound());
                 });
 
         moveMgr.startJob(rowBatcher);
@@ -523,11 +513,6 @@ public class RowBatcherTest {
                         System.out.println(e.getMessage());
                         e.printStackTrace(System.out);
                     }
-                })
-                .onFailure((event, throwable) -> {
-                    failed.set(true);
-                    System.out.println("failed batch="+event.getJobBatchNumber()+
-                            " from "+event.getLowerBound()+" through "+event.getUpperBound());
                 });
 
         moveMgr.startJob(rowBatcher);
@@ -613,11 +598,6 @@ public class RowBatcherTest {
                         System.out.println(e.getMessage());
                         e.printStackTrace(System.out);
                     }
-                })
-                .onFailure((event, throwable) -> {
-                    failed.set(true);
-                    System.out.println("failed batch="+event.getJobBatchNumber()+
-                            " from "+event.getLowerBound()+" through "+event.getUpperBound());
                 });
 
         moveMgr.startJob(rowBatcher);

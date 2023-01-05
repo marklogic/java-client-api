@@ -80,11 +80,7 @@ public class RowBatcherFuncTest extends AbstractFunctionalTest {
                          resultAmt.add(resDoc.get(i).get("opticFunctionalTest.detail.amount").asDouble());
                      }
                 }
-        })
-        .onFailure((fevt, mythrows)-> {
-            failedBuf.append("Batch Failures in " + fevt.getJobBatchNumber() + "batch from "+ fevt.getLowerBound() + "to" + fevt.getUpperBound());
-                }
-        );
+        });
         dmManager.startJob(rowsBatcherOfJsonObj);
         rowsBatcherOfJsonObj.awaitCompletion();
         for (Double d : resultAmt) {
@@ -133,11 +129,7 @@ public class RowBatcherFuncTest extends AbstractFunctionalTest {
                     resultAmt.add(resDoc.get(i).get("opticFunctionalTest.detail.amount").asDouble());
                 }
             }
-        })
-                .onFailure((fevt, mythrows)-> {
-                            failedBuf.append("Batch Failures in " + fevt.getJobBatchNumber() + "batch from "+ fevt.getLowerBound() + "to" + fevt.getUpperBound());
-                        }
-                );
+        });
         dmManager.startJob(rowsBatcherOfJsonObj);
         rowsBatcherOfJsonObj.awaitCompletion();
         for (Double d : resultAmt) {
@@ -188,11 +180,7 @@ public class RowBatcherFuncTest extends AbstractFunctionalTest {
                     resultAmt.add(resDoc.get(i).get("added").asDouble());
                 }
             }
-        })
-                .onFailure((fevt, mythrows) -> {
-                            failedBuf.append("Batch Failures in " + fevt.getJobBatchNumber() + "batch from " + fevt.getLowerBound() + "to" + fevt.getUpperBound());
-                        }
-                );
+        });
         dmManager.startJob(rowsBatcherOfJsonObj);
         rowsBatcherOfJsonObj.awaitCompletion();
         for (Double d : resultAmt) {
@@ -243,9 +231,7 @@ public class RowBatcherFuncTest extends AbstractFunctionalTest {
             else {
                 rows.forEach(row -> citiesFound.add(row.get("myCity.city").asText()));
             }
-            }).onFailure((fevt, mythrows) -> {
-                failedBuf.append("Batch Failures in " + fevt.getJobBatchNumber() + "batch from " + fevt.getLowerBound() + "to" + fevt.getUpperBound());
-            } );
+            });
         dmManager.startJob(rowsBatcherOfJsonObj);
         rowsBatcherOfJsonObj.awaitCompletion();
 
@@ -297,8 +283,6 @@ public class RowBatcherFuncTest extends AbstractFunctionalTest {
                     resultAmt2.add(resDoc.get(i).get("opticFunctionalTest.detail.amount").asDouble());
                 }
             }
-        }).onFailure((fevt, mythrows)-> {
-            failedBuf.append("Batch Failures in " + fevt.getJobBatchNumber() + "batch from "+ fevt.getLowerBound() + "to" + fevt.getUpperBound());
         });
         dmManager.startJob(rowsBatcherOfJsonObj);
         rowsBatcherOfJsonObj.awaitCompletion();
@@ -352,8 +336,6 @@ public class RowBatcherFuncTest extends AbstractFunctionalTest {
         try {
             rowsBatcherOfJsonObj.withBatchView(plan3);
             rowsBatcherOfJsonObj.onSuccess(e -> {
-            }).onFailure((fevt, mythrows) -> {
-                                failedBuf.append("Batch Failures in " + fevt.getJobBatchNumber() + "batch from " + fevt.getLowerBound() + "to" + fevt.getUpperBound());
             });
             dmManager.startJob(rowsBatcherOfJsonObj);
             rowsBatcherOfJsonObj.awaitCompletion();
@@ -405,8 +387,6 @@ public class RowBatcherFuncTest extends AbstractFunctionalTest {
                     s.length();
                     //System.out.println("Thread id : " + Thread.currentThread().getId() + " is named as " + Thread.currentThread().getName());
                 }
-        }).onFailure((fevt, mythrows) -> {
-                failedBuf.append("Batch Failures in " + fevt.getJobBatchNumber() + "batch from " + fevt.getLowerBound() + "to" + fevt.getUpperBound());
         });
         dmManager.startJob(rowsBatcherOfJsonObj);
         rowsBatcherOfJsonObj.awaitCompletion();
