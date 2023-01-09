@@ -16,7 +16,6 @@
 
 package com.marklogic.client.fastfunctest;
 
-import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
@@ -68,12 +67,7 @@ public class TestBulkWriteWithTransformations extends AbstractFunctionalTest {
     // create new connection for each test below
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
-    if (isLBHost())
-    	client	= getDatabaseClient("eval-user", "x", getConnType());
-    else {
-    	SecurityContext secContext = newSecurityContext("eval-user", "x");
-    client = newClient(appServerHostname, getRestServerPort(), getRestServerName(), secContext, getConnType());
-    }
+	client = newClientAsUser("eval-user", "x");
   }
 
   @AfterEach

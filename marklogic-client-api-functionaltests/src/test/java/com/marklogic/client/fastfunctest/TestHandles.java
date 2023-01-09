@@ -45,14 +45,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestHandles extends AbstractFunctionalTest {
 
-    private static String dbName = "java-functest";
-    private static String appServerHostname = null;
-
     @BeforeAll
     public static void setUp() throws Exception {
         createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
         createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
-        appServerHostname = getRestAppServerHostName();
     }
 
     @AfterEach
@@ -68,7 +64,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
     // Begin TestBytesHandle
     @Test
-    public void testXmlCRUD_BytesHandle() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException {
+    public void testXmlCRUD_BytesHandle() throws IOException, SAXException, ParserConfigurationException {
 
         String filename = "xml-original-test.xml";
         String uri = "/write-xml-domhandle/";
@@ -76,9 +72,7 @@ public class TestHandles extends AbstractFunctionalTest {
         XMLUnit.setIgnoreWhitespace(true);
         XMLUnit.setNormalizeWhitespace(true);
 
-        // connect the client
-        DatabaseClientFactory.SecurityContext secContext = newSecurityContext("eval-user", "x");
-        DatabaseClient client = newClient(appServerHostname, getRestServerPort(), dbName, secContext, getConnType());
+        DatabaseClient client = newClientAsUser("eval-user", "x");
 
         // write docs
         writeDocumentUsingBytesHandle(client, filename, uri, null, "XML");
@@ -133,14 +127,12 @@ public class TestHandles extends AbstractFunctionalTest {
     }
 
     @Test
-    public void testTextCRUD_BytesHandle() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException {
+    public void testTextCRUD_BytesHandle() throws IOException, ParserConfigurationException, SAXException {
         String filename = "text-original.txt";
         String uri = "/write-text-Byteshandle/";
         System.out.println("Runing test TextCRUD_BytesHandle");
 
-        // connect the client
-        DatabaseClientFactory.SecurityContext secContext = newSecurityContext("eval-user", "x");
-        DatabaseClient client = newClient(appServerHostname, getRestServerPort(), dbName, secContext, getConnType());
+        DatabaseClient client = newClientAsUser("eval-user", "x");
 
         // write docs
         writeDocumentUsingBytesHandle(client, filename, uri, "Text");
@@ -199,9 +191,7 @@ public class TestHandles extends AbstractFunctionalTest {
 
         ObjectMapper mapper = new ObjectMapper();
 
-        // connect the client
-        DatabaseClientFactory.SecurityContext secContext = newSecurityContext("eval-user", "x");
-        DatabaseClient client = newClient(appServerHostname, getRestServerPort(), dbName, secContext, getConnType());
+        DatabaseClient client = newClientAsUser("eval-user", "x");
 
         // write docs
         writeDocumentUsingBytesHandle(client, filename, uri, "JSON");
@@ -260,9 +250,7 @@ public class TestHandles extends AbstractFunctionalTest {
         String uri = "/write-bin-Bytehandle/";
         System.out.println("Running testBinaryCRUD_BytesHandle");
 
-        // connect the client
-        DatabaseClientFactory.SecurityContext secContext = newSecurityContext("eval-user", "x");
-        DatabaseClient client = newClient(appServerHostname, getRestServerPort(), dbName, secContext, getConnType());
+        DatabaseClient client = newClientAsUser("eval-user", "x");
 
         // write docs
         writeDocumentUsingBytesHandle(client, filename, uri, "Binary");

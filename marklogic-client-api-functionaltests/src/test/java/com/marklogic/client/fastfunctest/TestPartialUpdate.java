@@ -46,19 +46,16 @@ import java.io.IOException;
 
 
 public class TestPartialUpdate extends AbstractFunctionalTest {
-  private static String dbName = "java-functest";
-  private static int uberPort;
-  private static String appServerHostname = null;
+
+  private static DatabaseClient client;
 
   @BeforeAll
   public static void setUp() throws Exception {
     System.out.println("In setup");
-	// Don't know why this was called "uberPort" or why it defaulted to 8000 before
-	uberPort = getRestServerPort();
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createUserRolesWithPrevilages("replaceRoleTest", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval", "replaceRoleTest", "rest-admin", "rest-writer", "rest-reader");
-    appServerHostname = getRestAppServerHostName();
+	  client = newClientAsUser("eval-user", "x");
   }
 
   @Test
@@ -66,9 +63,6 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     System.out.println("Running testPartialUpdateXML");
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
-
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -125,8 +119,6 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     String xmlStr2Mod = new String("<resources><screen name=\"screen_small\">false</screen><screen name=\"adjust_view_bounds\">true</screen></resources>");
 
     assertTrue( content1.contains(xmlStr2Mod));
-    // release client
-    client.release();
   }
 
   /*
@@ -142,15 +134,13 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     String[] filenames = { "json-original.json" };
 
-    SecurityContext secContext = newSecurityContext("bad-eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
+	DatabaseClient badClient = newClientAsUser("bad-eval-user", "x");
 
     // write docs
     for (String filename : filenames) {
-      assertThrows(FailedRequestException.class, () -> writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON"));
+      assertThrows(FailedRequestException.class, () -> writeDocumentUsingInputStreamHandle(badClient, filename, "/partial-update/", "JSON"));
     }
-    // release client
-    client.release();
+    badClient.release();
   }
 
   @Test
@@ -158,9 +148,6 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     System.out.println("Running testPartialUpdateJSON");
 
     String[] filenames = { "json-original.json" };
-
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -221,9 +208,6 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     // Make sure the inserted content is present.
     assertTrue( content1.contains("{\"original\":false}"));
     assertTrue( content1.contains("{\"modified\":true}"));
-
-    // release client
-    client.release();
   }
 
   @Test
@@ -232,9 +216,6 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     System.out.println("Running testPartialUpdateContent");
 
     String filename = "constraint1.xml";
-
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "XML");
@@ -317,18 +298,12 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     System.out.println("After Updating" + contentAfter);
     // Check
     assertTrue( contentAfter.contains("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2006-02-02</date>"));
-
-    // release client
-    client.release();
   }
 
   @Test
   public void testPartialUpdateDeletePath() throws IOException
   {
     System.out.println("Running testPartialUpdateDeletePath");
-
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     String filename = "constraint1.xml";
@@ -362,16 +337,11 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     System.out.println("After Updating" + contentAfter);
     assertFalse( contentAfter.contains("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2005-01-01</date>"));
-
-    // release client
-    client.release();
   }
 
   @Test
   public void testPartialUpdateFragments() throws Exception {
     System.out.println("Running testPartialUpdateFragments");
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     String filename = "constraint1.xml";
@@ -401,16 +371,10 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     assertTrue( content.contains("<modified>2013-03-21</modified>"));
     assertTrue( content.contains("<End>bye</End>"));
     assertFalse( content.contains("<false>Entry</false>"));
-    // release client
-    client.release();
   }
 
   @Test
   public void testPartialUpdateInsertFragments() throws Exception {
-    System.out.println("Running testPartialUpdateInsertFragments");
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
-
     // write docs
     String filename = "constraint1.xml";
     writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "XML");
@@ -436,16 +400,10 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     assertTrue( content.contains("<replaced>foo</replaced>"));
     assertFalse( content.contains("<replaced>FalseEntry</replaced>"));
     assertTrue( content.contains("<foo>bar</foo>"));
-    // release client
-    client.release();
   }
 
   @Test
   public void testPartialUpdateInsertExistingFragments() throws Exception {
-    System.out.println("Running testPartialUpdateInsertExistingFragments");
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
-
     // write docs
     String filename = "constraint1.xml";
     writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "XML");
@@ -470,16 +428,12 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     assertTrue(content.contains("<foo>LastChild</foo>"));
     assertTrue( content.contains("<foo>Before</foo>"));
     assertTrue( content.contains("<foo>After</foo>"));
-
-    // release client
-    client.release();
   }
 
   @Test
   public void testPartialUpdateReplaceApply() throws Exception {
     System.out.println("Running testPartialUpdateReplaceApply");
-    SecurityContext secContext = newSecurityContext("rest-admin", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, secContext, getConnType());
+    DatabaseClient client = newClientAsUser("rest-admin", "x");
     ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
 
     libsMgr.write("/ext/patch/custom-lib.xqy", new FileHandle(new File("src/test/java/com/marklogic/client/functionaltest/data/custom-lib.xqy")).withFormat(Format.TEXT));
@@ -593,18 +547,12 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     System.out.println("After Update on divide with fn() values " + content3);
     assertTrue( strErr.toString().isEmpty());
 
-    // release client
     libsMgr.delete("/ext/patch/custom-lib.xqy");
     libsMgr.delete("/ext/patch/qatests.sjs");
-    client.release();
   }
 
   @Test
   public void testPartialUpdateCombination() throws Exception {
-    System.out.println("Running testPartialUpdateCombination");
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
-
     // write docs
     String filename = "constraint1.xml";
     writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "XML");
@@ -627,15 +575,10 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     assertTrue( content.contains("<popularity>10</popularity>"));
     assertFalse( content.contains("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2005-01-01</date>"));
     assertTrue( content.contains("<modified>2012-11-5</modified>"));
-    // release client
-    client.release();
   }
 
   @Test
   public void testPartialUpdateCombinationTransc() throws Exception {
-    System.out.println("Running testPartialUpdateCombination");
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
     Transaction t = client.openTransaction("Transac");
     // write docs
     String filename = "constraint1.xml";
@@ -664,16 +607,10 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     assertTrue( content.contains("<popularity>10</popularity>"));
     assertFalse( content.contains("<date xmlns=\"http://purl.org/dc/elements/1.1/\">2005-01-01</date>"));
     assertTrue( content.contains("<modified>2012-11-5</modified>"));
-
-    // release client
-    client.release();
   }
 
   @Test
   public void testPartialUpdateCombinationTranscRevert() throws Exception {
-    System.out.println("Running testPartialUpdateCombinationTranscRevert");
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
     // write docs
     String[] filenames = { "constraint1.xml", "constraint2.xml" };
     for (String filename : filenames) {
@@ -708,9 +645,6 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     String content2 = xmlDocMgr2.read(docId2, new StringHandle()).get();
     System.out.println(" After Updating Document 2 : Transaction Rollback" + content2);
-
-    // release client
-    client.release();
   }
 
   /*
@@ -757,17 +691,10 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     assertTrue( content.contains("{\"insertedKey\":9}"));
     assertTrue( content.contains("{\"firstName\":\"AnnHi\", \"lastName\":\"Smith\"}"));
     assertFalse( content.contains("{\"firstName\":\"Bob\", \"lastName\":\"Foo\"}"));
-
-    // release client
-    client.release();
   }
 
   @Test
   public void testPartialUpdateMetadata() throws Exception {
-    System.out.println("Running testPartialUpdateMetadata");
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
-
     // write docs
     String filename = "constraint1.xml";
     writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "XML");
@@ -829,19 +756,11 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     assertFalse( contentMetadataDel.contains("<rapi:collection>/document/collection4</rapi:collection>"));
     assertFalse( contentMetadataDel.contains("<rapi:role-name>admin</rapi:role-name>"));
     assertFalse( contentMetadataDel.contains("<Hello xsi:type=\"xs:string\">Bye</Hello>"));
-
-    // release client
-    client.release();
   }
 
   @Test
   public void testPartialUpdateXMLDscriptor() throws IOException {
-    System.out.println("Running testPartialUpdateXMLDescriptor");
-
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
-
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -866,19 +785,11 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     System.out.println("After" + content);
 
     assertTrue( content.contains("<modified>2013-03-21</modified></root>"));
-
-    // release client
-    client.release();
   }
 
   @Test
   public void testPartialUpdateJSONDescriptor() throws IOException {
-    System.out.println("Running testPartialUpdateJSONDescriptor");
-
     String[] filenames = { "json-original.json" };
-
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -911,19 +822,11 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     System.out.println("After" + content);
 
     assertTrue( content.contains("{\"insertedKey\":9}]"));
-
-    // release client
-    client.release();
   }
 
   @Test
   public void testPartialUpdateXMLDscriptorTranc() throws IOException {
-    System.out.println("Running testPartialUpdateXMLDescriptorTranc");
-
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
-
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -950,19 +853,11 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     System.out.println("After" + content);
 
     assertTrue( content.contains("<modified>2013-03-21</modified></root>"));
-
-    // release client
-    client.release();
   }
 
   @Test
   public void testPartialUpdateJSONDescriptorTranc() throws IOException {
-    System.out.println("Running testPartialUpdateJSONDescriptorTranc");
-
     String[] filenames = { "json-original.json" };
-
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -995,19 +890,11 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
     System.out.println("After" + content);
 
     assertTrue( content.contains("{\"insertedKey\":9}]"));
-
-    // release client
-    client.release();
   }
 
   @Test
   public void testPartialUpdateCardinality() throws IOException {
-    System.out.println("Running testPartialUpdateCardinality");
-
     String filename = "constraint1.xml";
-
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "XML");
@@ -1046,9 +933,6 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     System.out.println("Content after Updating with Cardinality.ZERO_OR_ONE" + contentAfter);
     assertTrue( contentAfter.contains("</id><modified>2013-07-29"));
-
-    // release client
-    client.release();
   }
 
   /*
@@ -1060,12 +944,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
   @Test
   public void testPartialUpdateReplaceValueJSON() throws IOException, JSONException
   {
-    System.out.println("Running testPartialUpdateReplaceValueJSON");
-
     String[] filenames = { "json-original.json" };
-
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -1093,9 +972,6 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
         "{\"firstName\":\"Ann\", \"lastName\":\"Smith\"}," +
         "{\"firstName\":\"Jack\", \"lastName\":\"Foo\"}]}";
     JSONAssert.assertEquals(exp, content, false);
-
-    // release client
-    client.release();
   }
 
   /*
@@ -1107,12 +983,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
   @Test
   public void testPartialUpdateReplaceFragmentJSON() throws IOException, JSONException
   {
-    System.out.println("Running testPartialUpdateReplaceValueJSON");
-
     String[] filenames = { "json-original.json" };
-
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -1140,9 +1011,6 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
         "{\"firstName\":\"Ann\", \"lastName\":\"Smith\"}," +
         "{\"firstName\":\"Albert\", \"lastName\":\"Einstein\"}]}";
     JSONAssert.assertEquals(exp, content, false);
-
-    // release client
-    client.release();
   }
 
   /*
@@ -1155,12 +1023,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
   @Test
   public void testPartialUpdateReplaceInsertFragmentNewJSON() throws IOException, JSONException
   {
-    System.out.println("Running testPartialUpdateReplaceInsertFragmentExistingJSON");
-
     String[] filenames = { "json-original.json" };
-
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -1189,9 +1052,6 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
         "{\"firstName\":\"Albert\", \"lastName\":\"Einstein\"}," +
         "{\"firstName\":\"Bob\", \"lastName\":\"Foo\"}]}";
     JSONAssert.assertEquals(exp, content, false);
-
-    // release client
-    client.release();
   }
 
   /*
@@ -1204,12 +1064,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
   @Test
   public void testPartialUpdateReplaceInsertFragmentExistingJSON() throws IOException, JSONException
   {
-    System.out.println("Running testPartialUpdateReplaceInsertFragmentExistingJSON");
-
     String[] filenames = { "json-original.json" };
-
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -1237,9 +1092,6 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
         "{\"firstName\":\"Ann\", \"lastName\":\"Smith\"}," +
         "{\"firstName\":\"Albert\", \"lastName\":\"Einstein\"}]}";
     JSONAssert.assertEquals(exp, content, false);
-
-    // release client
-    client.release();
   }
 
   /*
@@ -1251,12 +1103,7 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
   @Test
   public void testPartialUpdateDeleteJSON() throws IOException, JSONException
   {
-    System.out.println("Running testPartialUpdateReplaceValueJSON");
-
     String[] filenames = { "json-original.json" };
-
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -1284,15 +1131,11 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
         "{\"firstName\":\"Ann\", \"lastName\":\"Smith\"}," +
         "{\"lastName\":\"Foo\"}]}";
     JSONAssert.assertEquals(exp, content, false);
-
-    // release client
-    client.release();
   }
 
   // Sanity test to make sure that restricted Xpath predicate functions can be used to patch documents.
   @Test
-  public void testRestrictedXPath() throws IOException, JSONException {
-      System.out.println("Running testRestrictedXPaths");
+  public void testRestrictedXPath() {
       final String DIRECTORY = "/RXath/";
       final int BATCH_SIZE = 10;
       StringBuilder content1 = new StringBuilder();
@@ -1307,8 +1150,6 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
       content1.append("{ \"RegionId\": \"1004\", \"Direction\": \"SW\" }");
       content1.append("]}}]}");
 
-      SecurityContext secContext = newSecurityContext("eval-user", "x");
-      DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
       int count = 1;
       XMLDocumentManager docMgr = client.newXMLDocumentManager();
       // Write docs
@@ -1385,12 +1226,8 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
   @Test
   public void testMetaDataUpdateJSON() throws IOException, JSONException
   {
-    System.out.println("Running testPartialUpdateReplaceInsertFragmentExistingJSON");
-
     String[] filenames = { "json-original.json" };
 
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
     DocumentMetadataHandle mhRead = new DocumentMetadataHandle();
 
     // write docs
@@ -1455,9 +1292,6 @@ public class TestPartialUpdate extends AbstractFunctionalTest {
 
     // String str = new
     // String("{\"patch\": [{ \"insert\": {\"context\": \"collections\",\"position\": \"before\",\"content\": { \"shapes\":\"squares\" }}}]}");
-
-    // release client
-    client.release();
   }
 
   @AfterAll

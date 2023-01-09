@@ -1019,8 +1019,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     System.out.println("In tear down");
 
     if (!IsSecurityEnabled()) {
-      setDefaultUser("nobody", restServerName);
-      setAuthentication(securityContextType, restServerName);
+		setAuthenticationAndDefaultUser(restServerName, securityContextType, "nobody");
     }
     // Associate the Server with Documents. Due to test orders being
     // undeterministic not sure which DB will be associated.

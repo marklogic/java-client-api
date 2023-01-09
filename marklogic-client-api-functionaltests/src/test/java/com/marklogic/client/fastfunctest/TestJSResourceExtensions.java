@@ -136,10 +136,7 @@ public class TestJSResourceExtensions extends AbstractFunctionalTest {
 
   @BeforeEach
   public void setUp() throws Exception {
-
-    int restPort = getRestServerPort();
-    String appServerHostname = getRestAppServerHostName();
-    client = getDatabaseClientOnDatabase(appServerHostname, restPort, "java-functest", "eval-user", "x", getConnType());
+    client = newClientAsUser("eval-user", "x");
     resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
     ExtensionMetadata resextMetadata = new ExtensionMetadata();
     resextMetadata.setTitle("BasicJSTest");
@@ -176,7 +173,7 @@ public class TestJSResourceExtensions extends AbstractFunctionalTest {
     TestJSExtension tjs = new TestJSExtension(client);
     String expectedResponse = "{\"response\":[200, \"OK\"]}";
     JSONAssert.assertEquals(expectedResponse, tjs.putJSON("helloJS.json"), false);
-    String expAftrPut = "{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\",\"database-name\":\"" + client.getDatabase() + "\", \"document-count\":1, \"content\":\"This is a JSON document\", \"document-content\":{\"argument1\":\"hello\", \"argument2\":\"Earth\", \"content\":\"This is a JSON document\", \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}, \"response\":[200, \"OK\"], \"outputTypes\":[\"application/json\"]}";
+    String expAftrPut = "{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\",\"database-name\":\"java-functest\", \"document-count\":1, \"content\":\"This is a JSON document\", \"document-content\":{\"argument1\":\"hello\", \"argument2\":\"Earth\", \"content\":\"This is a JSON document\", \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}, \"response\":[200, \"OK\"], \"outputTypes\":[\"application/json\"]}";
     JSONAssert.assertEquals(expAftrPut, tjs.getJSON("helloJS.json"), false);
     JSONAssert.assertEquals(expectedResponse, tjs.postJSON("helloJS.json"), false);
     String expAftrPost = "{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\", \"document-count\":1, \"content\":\"This is a JSON document\", \"document-content\":{\"argument1\":\"hello\", \"argument2\":\"Earth\", \"content\":\"This is a JSON document\", \"array\":[1, 2, 3], \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}, \"response\":[200, \"OK\"], \"outputTypes\":[\"application/json\"]}";
@@ -206,7 +203,7 @@ public class TestJSResourceExtensions extends AbstractFunctionalTest {
     assertEquals( 150, jh.get().get("document-count").intValue());
 
     String expAftrPut = "{\"argument1\":\"hello\", \"argument2\":\"Earth\", \"content\":\"This is a JSON document\", \"array\":[1, 2, 3], \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}";
-    String expected = "{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\", \"database-name\":\"" + client.getDatabase() + "\", \"document-count\":0, \"content\":\"This is a JSON document\", \"document-content\":null, \"response\":[200, \"OK\"], \"outputTypes\":[\"application/json\"]}";
+    String expected = "{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\", \"database-name\":\"java-functest\", \"document-count\":0, \"content\":\"This is a JSON document\", \"document-content\":null, \"response\":[200, \"OK\"], \"outputTypes\":[\"application/json\"]}";
     // verify by reading all the documents to see put and post services
     // correctly inserted documents and delete them
     for (int j = 0; j < 150; j++) {

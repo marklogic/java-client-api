@@ -55,20 +55,11 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
         MarkLogicVersion version = MarkLogicVersion.getMarkLogicVersion(connectAsAdmin());
         System.out.println("ML version: " + version.getVersionString());
         isML11OrHigher = version.getMajor() >= 11;
-        final String schemasDbName = "java-functest-schemas";
-        final String modulesDbName = "java-unittest-modules";
-        if (IsSecurityEnabled()) {
-            schemasClient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemasDbName, OPTIC_USER, OPTIC_USER_PASSWORD, getConnType());
-            client = getDatabaseClient(OPTIC_USER, OPTIC_USER_PASSWORD, getConnType());
-            adminModulesClient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), modulesDbName, getAdminUser(), getAdminPassword(), getConnType());
-        } else {
-            schemasClient = newClient(getRestServerHostName(), getRestServerPort(), schemasDbName,
-                newSecurityContext(OPTIC_USER, OPTIC_USER_PASSWORD));
-            client = newClient(getRestServerHostName(), getRestServerPort(), null,
-                newSecurityContext(OPTIC_USER, OPTIC_USER_PASSWORD));
-            adminModulesClient = newClient(getRestServerHostName(), getRestServerPort(), modulesDbName,
-                newSecurityContext(getAdminUser(), getAdminPassword()));
-        }
+
+		client = newClientAsUser(OPTIC_USER, OPTIC_USER_PASSWORD);
+		schemasClient = newClient(getRestServerHostName(), getRestServerPort(), "java-functest-schemas",
+			newSecurityContext(OPTIC_USER, OPTIC_USER_PASSWORD), null);
+		adminModulesClient = newAdminModulesClient();
 
         // Required to ensure that tests using the "/ext/" prefix work reliably. Expand to other directories as needed.
         adminModulesClient.newServerEval()
@@ -157,13 +148,11 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
     }
 
     protected static DatabaseClient connectAsRestWriter() {
-        return newClient(getRestServerHostName(), getRestServerPort(),
-            newSecurityContext("rest-writer", "x"), getConnType());
+		return newClientAsUser("rest-writer", "x");
     }
 
     protected static DatabaseClient connectAsAdmin() {
-        return newClient(getRestServerHostName(), getRestServerPort(),
-            newSecurityContext(getAdminUser(), getAdminPassword()), getConnType());
+		return newClientAsUser(getAdminUser(), getAdminPassword());
     }
 
     protected static void removeFieldIndices() {

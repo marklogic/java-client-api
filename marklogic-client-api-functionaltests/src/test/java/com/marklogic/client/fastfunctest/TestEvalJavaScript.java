@@ -70,9 +70,8 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
   }
 
   @BeforeEach
-  public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-    int restPort = getRestServerPort();
-    client = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-userJS", "x", getConnType());
+  public void setUp() throws Exception {
+    client = newClientAsUser("eval-userJS", "x");
   }
 
   /*
@@ -519,9 +518,7 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
   public void testJSReturningDifferentTypesOrder3fromModules() throws Exception {
 	System.out.println("Running testJSReturningDifferentTypesOrder3fromModules");
     InputStream inputStream = null;
-    int restPort = getRestServerPort();
-    DatabaseClient moduleClient = getDatabaseClientOnDatabase(appServerHostname, restPort, "java-unittest-modules",
-        getAdminUser(), getAdminPassword(), getConnType());
+    DatabaseClient moduleClient = newAdminModulesClient();
     try {
       inputStream = new FileInputStream(
           "src/test/java/com/marklogic/client/functionaltest/data/javascriptQueries.sjs");
@@ -645,15 +642,13 @@ public class TestEvalJavaScript extends AbstractFunctionalTest {
 
   // Making sure that mjs modules can be used in eval.
   @Test
-  public void testJavaScriptModules() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+  public void testJavaScriptModules() {
 	  System.out.println("Running testJavaScriptModules");
 	  DatabaseClient moduleClient = null;
 	  try {
 		  String docId[] = { "/test/words/wd1.json", "/test/words/wd2.json", "/test/words/wd3.json",
 				  "/test/words/wd4.xml", "/test/words/wd5.xml"};
-		  int restPort = getRestServerPort();
-		  moduleClient = getDatabaseClientOnDatabase(appServerHostname, restPort, ("java-unittest-modules"),
-              getAdminUser(), getAdminPassword(), getConnType());
+		  moduleClient = newAdminModulesClient();
 		  String mjsString = "import sr from '/MarkLogic/jsearch';" +
 	              "var output =" +
 	              " sr.documents()" +

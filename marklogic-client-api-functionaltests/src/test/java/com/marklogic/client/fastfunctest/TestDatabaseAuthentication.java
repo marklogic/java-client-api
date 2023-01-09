@@ -18,7 +18,6 @@ package com.marklogic.client.fastfunctest;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.io.InputStreamHandle;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,27 +38,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestDatabaseAuthentication extends AbstractFunctionalTest {
 
-  private static String restServerName = "java-functest";
-  private String originalServerAuthentication;
+	private static String restServerName = "java-functest";
+	private String originalServerAuthentication;
 
-  @BeforeEach
-  public void before() {
-	  originalServerAuthentication = getServerAuthentication(restServerName);
-  }
+	@BeforeEach
+	public void before() {
+		originalServerAuthentication = getServerAuthentication(restServerName);
+	}
 
-  @AfterEach
-  public void teardown() throws Exception {
-    setAuthentication(originalServerAuthentication, restServerName);
-    setDefaultUser("nobody", restServerName);
-  }
+	@AfterEach
+	public void teardown() throws Exception {
+		setAuthenticationAndDefaultUser(restServerName, originalServerAuthentication, "nobody");
+	}
 
   @Test
   public void testAuthenticationNone()
   {
     System.out.println("Running testAuthenticationNone");
     if (!IsSecurityEnabled()) {
-      setAuthentication("application-level", restServerName);
-      setDefaultUser("rest-admin", restServerName);
+		setAuthenticationAndDefaultUser(restServerName, "application-level", "rest-admin");
       // connect the client
       StringBuilder str = new StringBuilder();
       try {
@@ -77,16 +74,14 @@ public class TestDatabaseAuthentication extends AbstractFunctionalTest {
   public void testAuthenticationBasic() throws IOException
   {
     if (!IsSecurityEnabled()) {
-      setAuthentication("basic", restServerName);
-      setDefaultUser("rest-writer", restServerName);
+		setAuthenticationAndDefaultUser(restServerName, "basic", "rest-writer");
 
       System.out.println("Running testAuthenticationBasic");
 
       String filename = "text-original.txt";
 
       // connect the client
-      SecurityContext secContext = new DatabaseClientFactory.BasicAuthContext("rest-writer", "x");
-      DatabaseClient client = newClient(getRestServerHostName(), getRestServerPort(), secContext, getConnType());
+      DatabaseClient client = newBasicAuthClient("rest-writer", "x");
 
       // write doc
       writeDocumentUsingStringHandle(client, filename, "/write-text-doc-basic/", "Text");
