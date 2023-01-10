@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClient.ConnectionType;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.impl.OkHttpServices;
@@ -35,8 +34,6 @@ import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.ManageConfig;
 import com.marklogic.mgmt.resource.appservers.ServerManager;
 import com.marklogic.mgmt.resource.databases.DatabaseManager;
-import com.marklogic.mgmt.resource.security.RoleManager;
-import com.marklogic.mgmt.resource.security.UserManager;
 import okhttp3.*;
 import org.json.JSONObject;
 
@@ -66,10 +63,6 @@ public abstract class ConnectedRESTQA {
 	private static String ssl_host_name = null;
 	private static String admin_user = null;
 	private static String admin_password = null;
-	private static String mlRestWriteUser = null;
-	private static String mlRestWritePassword = null;
-	private static String mlRestAdminUser = null;
-	private static String mlRestAdminPassword = null;
 	private static String mlRestReadUser = null;
 	private static String mlRestReadPassword = null;
 	private static String ml_certificate_password = null;
@@ -1848,6 +1841,15 @@ public abstract class ConnectedRESTQA {
 		);
 	}
 
+	public static void setAuthenticationAndDefaultUser(String restServerName, String authentication, String defaultUser) {
+		new ServerManager(newManageClient()).save(
+			newServerPayload(restServerName)
+				.put("authentication", authentication)
+				.put("default-user", defaultUser)
+				.toString()
+		);
+	}
+
 	public static String getServerAuthentication(String serverName) {
 		String json = new ServerManager(newManageClient()).getPropertiesAsJson(serverName);
 		try {
@@ -1855,12 +1857,6 @@ public abstract class ConnectedRESTQA {
 		} catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	public static void setDefaultUser(String username, String restServerName) {
-		new ServerManager(newManageClient()).save(
-			newServerPayload(restServerName).put("default-user", username).toString()
-		);
 	}
 
 	public static void setupServerRequestLogging(DatabaseClient client, boolean flag) throws Exception {
@@ -2023,12 +2019,23 @@ public abstract class ConnectedRESTQA {
 		return bSecurityEnabled;
 	}
 
-	public static DatabaseClient newClient(String host, int port, String database, SecurityContext securityContext) {
-		return newClient(host, port, database, securityContext, null);
+	public static DatabaseClient newClientAsUser(String username, String password) {
+		return newClient(getRestServerHostName(), getRestServerPort(), null, newSecurityContext(username, password), null);
 	}
 
-	public static DatabaseClient newClient(String host, int port, SecurityContext securityContext, ConnectionType connectionType) {
-		return newClient(host, port, null, securityContext, connectionType);
+	public static DatabaseClient newAdminModulesClient() {
+		return newClient(getRestServerHostName(), getRestServerPort(), "java-unittest-modules",
+			newSecurityContext(getAdminUser(), getAdminPassword()), null);
+	}
+
+	public static DatabaseClient newBasicAuthClient(String username, String password) {
+		return newClient(getRestServerHostName(), getRestServerPort(), null,
+			new DatabaseClientFactory.BasicAuthContext(username, password), null);
+	}
+
+	public static DatabaseClient getDatabaseClient(String user, String password, ConnectionType connType)
+			throws KeyManagementException, NoSuchAlgorithmException, IOException {
+		return newClient(getRestServerHostName(), getRestServerPort(), null, newSecurityContext(user, password), connType);
 	}
 
 	/**
@@ -2048,54 +2055,9 @@ public abstract class ConnectedRESTQA {
 		return DatabaseClientFactory.newClient(host, port, basePath, database, securityContext, connectionType);
 	}
 
-	public static DatabaseClient getDatabaseClient(String user, String password, ConnectionType connType)
-			throws KeyManagementException, NoSuchAlgorithmException, IOException {
-		SSLContext sslcontext = null;
-		SecurityContext secContext = newSecurityContext(user,password);
-		if (IsSecurityEnabled()) {
-			try {
-				sslcontext = getSslContext();
-			} catch (UnrecoverableKeyException | KeyStoreException | CertificateException e) {
-				e.printStackTrace();
-			}
-			secContext = secContext.withSSLContext(sslcontext).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
-		}
-		return newClient(getRestServerHostName(), getRestServerPort(), null, secContext, connType);
-	}
-
-	/*
-	 * To provide DatabaseClient instance in the following cases. Access a
-	 * specific database on non uber port i.e., 8012 Access a specific database
-	 * through uber server on port (specifically port 8000)
-	 */
 	public static DatabaseClient getDatabaseClientOnDatabase(String hostName, int port, String databaseName,
-			String user, String password, ConnectionType connType)
-			throws KeyManagementException, NoSuchAlgorithmException, IOException {
-		try {
-			SSLContext sslcontext = null;
-			// Enable secure access on non 8000 port. Uber servers on port 8000
-			// aren't
-			// security enabled as of now.
-
-			if (IsSecurityEnabled() && port != 8000) {
-
-				sslcontext = getSslContext();
-				if (hostName.equalsIgnoreCase(host_name))
-					hostName = getSslServer();
-
-				SecurityContext secContext = newSecurityContext(user,password);
-				secContext.withSSLContext(sslcontext).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
-
-				return newClient(hostName, port, databaseName, secContext, connType);
-			} else {
-				SecurityContext secContext = newSecurityContext(user,password);
-				if (hostName.equalsIgnoreCase(host_name))
-					hostName = getServer();
-				return newClient(hostName, port, databaseName, secContext, connType);
-			}
-		} catch (Exception ex) {
-			throw new RuntimeException("Unable to create DatabaseClient", ex);
-		}
+															 String user, String password, ConnectionType connType) {
+		return newClient(hostName, port, databaseName, newSecurityContext(user, password), connType);
 	}
 
 	//Return a Server name. For SSL runs returns value in restSslServerName For
@@ -2166,12 +2128,6 @@ public abstract class ConnectedRESTQA {
 		admin_user = properties.getProperty("mlAdminUser");
 		admin_password = properties.getProperty("mlAdminPassword");
 
-		mlRestWriteUser = properties.getProperty("mlRestWriteUser");
-		mlRestWritePassword = properties.getProperty("mlRestWritePassword");
-
-		mlRestAdminUser = properties.getProperty("mlRestAdminUser");
-		mlRestAdminPassword = properties.getProperty("mlRestAdminPassword");
-
 		mlRestReadUser = properties.getProperty("mlRestReadUser");
 		mlRestReadPassword = properties.getProperty("mlRestReadPassword");
 
@@ -2202,22 +2158,6 @@ public abstract class ConnectedRESTQA {
 
 	public static String getAdminPassword() {
 		return admin_password;
-	}
-
-	public static String getRestWriterUser() {
-		return mlRestWriteUser;
-	}
-
-	public static String getRestWriterPassword() {
-		return mlRestWritePassword;
-	}
-
-	public static String getRestAdminUser() {
-		return mlRestAdminUser;
-	}
-
-	public static String getRestAdminPassword() {
-		return mlRestAdminPassword;
 	}
 
 	public static String getRestReaderUser() {

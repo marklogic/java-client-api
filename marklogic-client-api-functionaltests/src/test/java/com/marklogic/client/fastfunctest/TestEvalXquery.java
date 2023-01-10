@@ -415,15 +415,11 @@ public class TestEvalXquery extends AbstractFunctionalTest {
   // Issue 156 , have test cases where you can pass, element node, text node,
   // binary node, json object, json array as an external variable
   @Test
-  public void testXqueryInvokeModuleRetDiffTypes() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+  public void testXqueryInvokeModuleRetDiffTypes() throws Exception {
 
     InputStream inputStream = null;
 
-    int restPort = getRestServerPort();
-    String appServerHostname = getRestAppServerHostName();
-
-    DatabaseClient moduleClient = getDatabaseClientOnDatabase(appServerHostname, restPort, "java-unittest-modules",
-        getAdminUser(), getAdminPassword(), getConnType());
+    DatabaseClient moduleClient = newAdminModulesClient();
     try {
       inputStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/xquery-modules-with-diff-variable-types.xqy");
       InputStreamHandle ish = new InputStreamHandle();
@@ -446,9 +442,6 @@ public class TestEvalXquery extends AbstractFunctionalTest {
       EvalResultIterator evr = evl.eval();
       this.validateReturnTypes(evr);
       evr.close();
-
-    } catch (Exception e) {
-      throw e;
     } finally {
       if (inputStream != null) {
         inputStream.close();
