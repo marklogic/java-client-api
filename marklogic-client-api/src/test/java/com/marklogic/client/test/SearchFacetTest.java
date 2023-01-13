@@ -123,7 +123,7 @@ public class SearchFacetTest {
 
   @BeforeAll
   public static void beforeClass() {
-    Common.connectAdmin();
+    Common.connectRestAdmin();
     Common.connect();
   }
 
@@ -142,7 +142,7 @@ public class SearchFacetTest {
     DocumentBuilder builder = factory.newDocumentBuilder();
     Document document = builder.parse(new InputSource(new StringReader(options)));
 
-    mgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    mgr = Common.restAdminClient.newServerConfigManager().newQueryOptionsManager();
     mgr.writeOptions("photos", new DOMHandle(document));
 
     QueryManager queryMgr = Common.client.newQueryManager();

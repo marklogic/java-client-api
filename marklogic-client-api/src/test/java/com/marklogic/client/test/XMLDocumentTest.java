@@ -69,9 +69,9 @@ public class XMLDocumentTest {
 
   @BeforeAll
   public static void beforeClass() {
-    Common.connectAdmin();
+    Common.connectRestAdmin();
     // get a manager
-    libsMgr = Common.adminClient
+    libsMgr = Common.restAdminClient
       .newServerConfigManager().newExtensionLibrariesManager();
 
     // write XQuery file to the modules database

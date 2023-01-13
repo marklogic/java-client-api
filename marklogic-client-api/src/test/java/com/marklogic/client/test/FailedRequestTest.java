@@ -38,8 +38,8 @@ public class FailedRequestTest {
   public void testFailedRequest()
   throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException, XMLStreamException
   {
-    Common.connectAdmin();
-    QueryOptionsManager mgr = Common.adminClient.newServerConfigManager()
+    Common.connectRestAdmin();
+    QueryOptionsManager mgr = Common.restAdminClient.newServerConfigManager()
       .newQueryOptionsManager();
 
     try {
@@ -52,9 +52,9 @@ public class FailedRequestTest {
       assertEquals(403, e.getServerStatusCode());
       assertEquals("Forbidden", e.getServerStatus());
     }
-    mgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    mgr = Common.restAdminClient.newServerConfigManager().newQueryOptionsManager();
 
-    Common.adminClient.newServerConfigManager().setQueryOptionValidation(true);
+    Common.restAdminClient.newServerConfigManager().setQueryOptionValidation(true);
 
     Common.propertyWait();
 

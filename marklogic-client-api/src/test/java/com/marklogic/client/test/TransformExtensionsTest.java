@@ -51,7 +51,7 @@ public class TransformExtensionsTest {
   @BeforeAll
   public static void beforeClass() throws IOException {
     Common.connect();
-    Common.connectAdmin();
+    Common.connectRestAdmin();
 
     XMLUnit.setIgnoreAttributeOrder(true);
     XMLUnit.setIgnoreWhitespace(true);
@@ -100,7 +100,7 @@ public class TransformExtensionsTest {
     throws XpathException, SAXException, IOException, FailedRequestException, ResourceNotFoundException, ForbiddenUserException, ResourceNotResendableException
   {
     TransformExtensionsManager extensionMgr =
-      Common.adminClient.newServerConfigManager().newTransformExtensionsManager();
+      Common.restAdminClient.newServerConfigManager().newTransformExtensionsManager();
 
     StringHandle handle = new StringHandle();
     handle.setFormat(Format.TEXT);

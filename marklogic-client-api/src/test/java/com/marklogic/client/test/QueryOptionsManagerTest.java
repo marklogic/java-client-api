@@ -46,7 +46,7 @@ public class QueryOptionsManagerTest {
 
   @BeforeAll
   public static void beforeClass() {
-    Common.connectAdmin();
+    Common.connectRestAdmin();
   }
   @AfterAll
   public static void afterClass() {
@@ -57,7 +57,7 @@ public class QueryOptionsManagerTest {
     throws JAXBException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
   {
     QueryOptionsManager mgr =
-      Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+      Common.restAdminClient.newServerConfigManager().newQueryOptionsManager();
     assertNotNull( mgr);
 
     mgr.writeOptions("testempty", new StringHandle("{\"options\":{}}").withFormat(Format.JSON));
@@ -90,7 +90,7 @@ public class QueryOptionsManagerTest {
     domDocument.appendChild(root);
 
     QueryOptionsManager queryOptionsMgr =
-      Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+      Common.restAdminClient.newServerConfigManager().newQueryOptionsManager();
 
     queryOptionsMgr.writeOptions(optionsName, new DOMHandle(domDocument));
 
@@ -111,7 +111,7 @@ public class QueryOptionsManagerTest {
     throws JAXBException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
   {
     QueryOptionsManager mgr =
-      Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+      Common.restAdminClient.newServerConfigManager().newQueryOptionsManager();
     assertNotNull( mgr);
 
     FileHandle jsonHandle = new FileHandle(new File("src/test/resources/json-config.json"));

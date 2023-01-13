@@ -56,7 +56,7 @@ public class LegalHoldsTest {
   private static String directory = "/LegalHoldsTest/";
   private static ObjectMapper mapper = new ObjectMapper();
   private static DatabaseClient evalClient = Common.connectEval();
-  private static DatabaseClient adminClient = Common.connectAdmin();
+  private static DatabaseClient restAdminClient = Common.connectRestAdmin();
 
   @BeforeAll
   public static void beforeClass() throws Exception {
@@ -69,7 +69,7 @@ public class LegalHoldsTest {
   }
   @AfterAll
   public static void afterClass() throws Exception {
-    cleanup(adminClient);
+    cleanup(restAdminClient);
   }
 
   @Test
@@ -200,7 +200,7 @@ public class LegalHoldsTest {
 
   private static void installModule() throws Exception {
     // get a modules manager
-    ExtensionLibrariesManager libsMgr = adminClient.newServerConfigManager().newExtensionLibrariesManager();
+    ExtensionLibrariesManager libsMgr = restAdminClient.newServerConfigManager().newExtensionLibrariesManager();
 
     // write server-side javascript module file to the modules database
     libsMgr.write("/ext" + directory + "filterUrisReferencedByHolds.sjs",
@@ -209,7 +209,7 @@ public class LegalHoldsTest {
   }
 
   private static void setMergeTimestamp(String timestampXQuery) throws Exception {
-    adminClient.newServerEval()
+    restAdminClient.newServerEval()
       .xquery(
         "import module namespace admin = 'http://marklogic.com/xdmp/admin' at '/MarkLogic/admin.xqy';" +
 

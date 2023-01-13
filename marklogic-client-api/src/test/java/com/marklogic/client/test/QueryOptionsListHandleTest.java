@@ -46,7 +46,7 @@ public class QueryOptionsListHandleTest {
   @BeforeAll
   public static void beforeClass() {
     Common.connect();
-    Common.connectAdmin();
+    Common.connectRestAdmin();
   }
 
   @AfterAll
@@ -82,7 +82,7 @@ public class QueryOptionsListHandleTest {
     throws IOException, ParserConfigurationException, SAXException, ForbiddenUserException, FailedRequestException
   {
     QueryManager queryMgr = Common.client.newQueryManager();
-    QueryOptionsManager queryOptionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    QueryOptionsManager queryOptionsMgr = Common.restAdminClient.newServerConfigManager().newQueryOptionsManager();
 
     StringHandle results = queryMgr.optionsList(new StringHandle());
     assertNotNull(results);

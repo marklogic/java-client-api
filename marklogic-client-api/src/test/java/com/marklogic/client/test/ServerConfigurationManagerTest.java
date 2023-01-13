@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ServerConfigurationManagerTest {
   @BeforeAll
   public static void beforeClass() {
-    Common.connectAdmin();
+    Common.connectRestAdmin();
   }
   @AfterAll
   public static void afterClass() {
@@ -42,7 +42,7 @@ public class ServerConfigurationManagerTest {
   public void testSetGet()
     throws IOException, FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException
   {
-    ServerConfigurationManager initialServerConfig  = Common.adminClient.newServerConfigManager();
+    ServerConfigurationManager initialServerConfig  = Common.restAdminClient.newServerConfigManager();
 
     assertNull( initialServerConfig.getQueryOptionValidation());
 
@@ -63,7 +63,7 @@ public class ServerConfigurationManagerTest {
     UpdatePolicy modVersionReq   = (initialVersionReq == UpdatePolicy.VERSION_OPTIONAL) ?
                                    UpdatePolicy.VERSION_REQUIRED : UpdatePolicy.VERSION_OPTIONAL;
 
-    ServerConfigurationManager modifiedServerConfig = Common.adminClient.newServerConfigManager();
+    ServerConfigurationManager modifiedServerConfig = Common.restAdminClient.newServerConfigManager();
     modifiedServerConfig.setQueryValidation(modQueryValid);
     modifiedServerConfig.setQueryOptionValidation(modOptionValid);
     modifiedServerConfig.setDefaultDocumentReadTransform(modReadTrans);
@@ -74,7 +74,7 @@ public class ServerConfigurationManagerTest {
 
     Common.propertyWait();
 
-    ServerConfigurationManager refreshedServerConfig = Common.adminClient.newServerConfigManager();
+    ServerConfigurationManager refreshedServerConfig = Common.restAdminClient.newServerConfigManager();
     refreshedServerConfig.readConfiguration();
 
     Boolean refreshQueryValid      = refreshedServerConfig.getQueryValidation();

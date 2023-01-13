@@ -303,8 +303,8 @@ public class BulkReadWriteTest {
 
   @Test
   public void testF_TextLoadWithTransform() throws IOException {
-    DatabaseClient adminClient = Common.connectAdmin();
-    adminClient.newServerConfigManager().newTransformExtensionsManager().writeXQueryTransformAs(
+    DatabaseClient restAdminClient = Common.connectRestAdmin();
+    restAdminClient.newServerConfigManager().newTransformExtensionsManager().writeXQueryTransformAs(
       TransformExtensionsTest.XQUERY_NAME,
       TransformExtensionsTest.makeXQueryMetadata(),
       Common.testFileToString(TransformExtensionsTest.XQUERY_FILE)

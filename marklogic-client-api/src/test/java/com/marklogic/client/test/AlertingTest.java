@@ -52,20 +52,20 @@ public class AlertingTest {
   private static QueryOptionsManager queryOptionsManager;
   private static QueryManager queryManager;
   private static TransformExtensionsManager transformManager;
-  private static DatabaseClient adminClient = Common.connectAdmin();
+  private static DatabaseClient restAdminClient = Common.connectRestAdmin();
   private static final String RULE_NAME_WRITE_RULE_AS_TEST = "writeRuleAsTest";
 
   @AfterAll
   public static void teardown()
     throws ForbiddenUserException, FailedRequestException, ResourceNotFoundException
   {
-    XMLDocumentManager docMgr = adminClient.newXMLDocumentManager();
+    XMLDocumentManager docMgr = restAdminClient.newXMLDocumentManager();
     docMgr.delete("/alert/first.xml");
     docMgr.delete("/alert/second.xml");
     docMgr.delete("/alert/third.xml");
     teardownMatchRules();
 
-    transformManager = adminClient.newServerConfigManager().newTransformExtensionsManager();
+    transformManager = restAdminClient.newServerConfigManager().newTransformExtensionsManager();
     transformManager.deleteTransform("ruleTransform");
   }
 
@@ -76,19 +76,19 @@ public class AlertingTest {
     XMLUnit.setIgnoreWhitespace(true);
 
 
-    queryOptionsManager = adminClient.newServerConfigManager()
+    queryOptionsManager = restAdminClient.newServerConfigManager()
       .newQueryOptionsManager();
     File options = new File("src/test/resources/alerting-options.xml");
     queryOptionsManager.writeOptions("alerts", new FileHandle(options));
 
-    queryManager = adminClient.newQueryManager();
+    queryManager = restAdminClient.newQueryManager();
 
-    transformManager = adminClient.newServerConfigManager().newTransformExtensionsManager();
+    transformManager = restAdminClient.newServerConfigManager().newTransformExtensionsManager();
 
     File ruleTransform = new File("src/test/resources/rule-transform.xqy");
     transformManager.writeXQueryTransform("ruleTransform", new FileHandle(ruleTransform));
 
-    adminClient.newServerConfigManager().setServerRequestLogging(true);
+    restAdminClient.newServerConfigManager().setServerRequestLogging(true);
     Common.connect();
 
     // write three files for alert tests.

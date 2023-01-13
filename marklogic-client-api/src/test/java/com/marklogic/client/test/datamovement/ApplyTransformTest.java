@@ -66,9 +66,9 @@ public class ApplyTransformTest {
   }
 
   public static void installModule() {
-    Common.newAdminClient().newServerConfigManager().newTransformExtensionsManager().writeJavascriptTransform(
+    Common.newRestAdminClient().newServerConfigManager().newTransformExtensionsManager().writeJavascriptTransform(
       transformName1, new FileHandle(new File("src/test/resources/" + transformName1)));
-    Common.newAdminClient().newServerConfigManager().newTransformExtensionsManager().writeJavascriptTransform(
+    Common.newRestAdminClient().newServerConfigManager().newTransformExtensionsManager().writeJavascriptTransform(
       transformName2, new FileHandle(new File("src/test/resources/" + transformName2)));
   }
 

@@ -63,9 +63,9 @@ public class BitemporalFeaturesTest {
 
   @BeforeAll
   public static void beforeClass() {
-    Common.connectAdmin();
-    docMgr = Common.adminClient.newXMLDocumentManager();
-    queryMgr = Common.adminClient.newQueryManager();
+    Common.connectRestAdmin();
+    docMgr = Common.restAdminClient.newXMLDocumentManager();
+    queryMgr = Common.restAdminClient.newQueryManager();
   }
 
   @AfterAll
@@ -102,7 +102,7 @@ public class BitemporalFeaturesTest {
     docMgr.write(docId2, temporalDocument2, null, handle2, null, null, temporalCollection);
     StringHandle handle3 = new StringHandle(doc3).withFormat(Format.XML);
     docMgr.write(docId3, temporalDocument1, null, handle3, null, null, temporalCollection);
-    QueryManager queryMgr = Common.adminClient.newQueryManager();
+    QueryManager queryMgr = Common.restAdminClient.newQueryManager();
     queryMgr.setPageLength(1000);
     QueryDefinition query = queryMgr.newStringDefinition();
     query.setCollections(temporalDocument1);
@@ -149,7 +149,7 @@ public class BitemporalFeaturesTest {
     writeSet.add(prefix + "_D.xml", new StringHandle(doc4).withFormat(Format.XML), temporalDocument4);
     docMgr.write(writeSet, null, null, temporalCollection);
     writeSet = docMgr.newWriteSet();
-    QueryManager queryMgr = Common.adminClient.newQueryManager();
+    QueryManager queryMgr = Common.restAdminClient.newQueryManager();
     queryMgr.setPageLength(1000);
     QueryDefinition query = queryMgr.newStringDefinition();
     query.setCollections(temporalDocument1);
@@ -234,7 +234,7 @@ public class BitemporalFeaturesTest {
     Common.waitFor(1500);
 
     docMgr.wipe(logicalID, temporalCollection);
-    QueryManager queryMgr = Common.adminClient.newQueryManager();
+    QueryManager queryMgr = Common.restAdminClient.newQueryManager();
     queryMgr.setPageLength(1000);
     QueryDefinition query = queryMgr.newStringDefinition();
     query.setCollections(logicalID);

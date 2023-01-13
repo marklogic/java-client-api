@@ -46,7 +46,7 @@ public class GeospatialRegionQueriesTest {
   private static void deleteEnvironment() {
     XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
     docMgr.delete("usa.xml", "cuba.xml", "mexico.xml", "p1.xml", "p2.xml","newpolygon.xml");
-    Common.adminClient.newServerConfigManager().setQueryValidation(false);
+    Common.restAdminClient.newServerConfigManager().setQueryValidation(false);
 
     Common.propertyWait();
   }
@@ -54,7 +54,7 @@ public class GeospatialRegionQueriesTest {
   @BeforeAll
   public static void setup() {
     Common.connect();
-    Common.connectAdmin();
+    Common.connectRestAdmin();
     try {
       buildEnvironment();
     } catch (ParserConfigurationException e) {
@@ -142,7 +142,7 @@ public class GeospatialRegionQueriesTest {
     writeset.add("p2.xml", new DOMHandle().with(domDocument));
 
     docMgr.write(writeset);
-    Common.adminClient.newServerConfigManager().setQueryValidation(true);
+    Common.restAdminClient.newServerConfigManager().setQueryValidation(true);
 
     Common.propertyWait();
   }
@@ -201,7 +201,7 @@ public class GeospatialRegionQueriesTest {
                    + "</options>";
     StringHandle writeHandle = new StringHandle(options);
 
-    QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    QueryOptionsManager optionsMgr = Common.restAdminClient.newServerConfigManager().newQueryOptionsManager();
     optionsMgr.writeOptions("geodoubleoptions", writeHandle);
 
     QueryManager queryMgr = Common.client.newQueryManager();
@@ -307,7 +307,7 @@ public class GeospatialRegionQueriesTest {
     // create a handle to send the query options
     StringHandle writeHandle = new StringHandle(options);
 
-    QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    QueryOptionsManager optionsMgr = Common.restAdminClient.newServerConfigManager().newQueryOptionsManager();
     optionsMgr.writeOptions("geooptions", writeHandle);
 
     QueryManager queryMgr = Common.client.newQueryManager();

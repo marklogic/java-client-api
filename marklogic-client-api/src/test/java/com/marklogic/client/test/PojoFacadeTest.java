@@ -320,7 +320,7 @@ public class PojoFacadeTest {
 
     // - then let's show the old work-around using stored options
     QueryOptionsManager queryOptionsMgr =
-      Common.newAdminClient().newServerConfigManager().newQueryOptionsManager();
+      Common.newRestAdminClient().newServerConfigManager().newQueryOptionsManager();
     queryOptionsMgr.writeOptions("filtered",
       new StringHandle("{\"options\":{\"search-option\":\"filtered\"}}").withFormat(Format.JSON));
 

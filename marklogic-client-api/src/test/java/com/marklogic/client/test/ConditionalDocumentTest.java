@@ -39,14 +39,13 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ConditionalDocumentTest {
-  static DatabaseClient adminClient = Common.connectAdmin();
   static ServerConfigurationManager serverConfig;
 
   @BeforeAll
   public static void beforeClass()
     throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException
   {
-    serverConfig = adminClient.newServerConfigManager();
+    serverConfig = Common.connectRestAdmin().newServerConfigManager();
     serverConfig.readConfiguration();
     serverConfig.setUpdatePolicy(UpdatePolicy.VERSION_REQUIRED);
     serverConfig.writeConfiguration();

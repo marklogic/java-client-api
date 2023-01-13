@@ -42,7 +42,7 @@ public class ResourceServicesTest {
 
   @BeforeAll
   public static void beforeClass() throws IOException {
-    Common.connectAdmin();
+    Common.connectRestAdmin();
     resourceServices = Common.testFileToString(ResourceExtensionsTest.XQUERY_FILE, "UTF-8");
   }
   @AfterAll
@@ -53,7 +53,7 @@ public class ResourceServicesTest {
   @Test
   public void testResourceServices() throws XpathException {
     ResourceExtensionsManager extensionMgr =
-      Common.adminClient.newServerConfigManager().newResourceExtensionsManager();
+      Common.restAdminClient.newServerConfigManager().newResourceExtensionsManager();
 
     extensionMgr.writeServices(
       ResourceExtensionsTest.RESOURCE_NAME,
@@ -63,7 +63,7 @@ public class ResourceServicesTest {
     );
 
     SimpleResourceManager resourceMgr =
-      Common.adminClient.init(ResourceExtensionsTest.RESOURCE_NAME, new SimpleResourceManager());
+      Common.restAdminClient.init(ResourceExtensionsTest.RESOURCE_NAME, new SimpleResourceManager());
 
     RequestParameters params = new RequestParameters();
     params.put("value", "true");
@@ -148,10 +148,10 @@ public class ResourceServicesTest {
   /** Avoid regression on https://github.com/marklogic/java-client-api/issues/172 */
   public void test_172() {
     ResourceExtensionsManager extensionMgr =
-      Common.adminClient.newServerConfigManager().newResourceExtensionsManager();
-    Common.adminClient.release();
+      Common.restAdminClient.newServerConfigManager().newResourceExtensionsManager();
+    Common.restAdminClient.release();
     // since we released the existing connection, clear it out
-    Common.adminClient = null;
+    Common.restAdminClient = null;
     String expectedMessage = "You cannot use this connected object anymore--connection has already been released";
     try { extensionMgr.writeServices(ResourceExtensionsTest.RESOURCE_NAME, null, null);
     } catch (IllegalStateException e) { assertEquals( expectedMessage, e.getMessage()); }
