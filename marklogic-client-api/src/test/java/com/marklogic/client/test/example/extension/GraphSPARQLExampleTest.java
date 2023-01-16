@@ -29,7 +29,7 @@ public class GraphSPARQLExampleTest {
   public void testMain() {
     boolean succeeded = false;
     try {
-      GraphSPARQLExample.run(Common.newClient(), Common.newAdminClient());
+      GraphSPARQLExample.run(Common.newClient(), Common.newRestAdminClient());
       succeeded = true;
     } catch (IOException e) {
       e.printStackTrace();

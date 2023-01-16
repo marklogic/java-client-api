@@ -45,7 +45,7 @@ public class ResourceExtensionsTest {
 
   @BeforeAll
   public static void beforeClass() throws IOException {
-    Common.connectAdmin();
+    Common.connectRestAdmin();
     resourceServices = Common.testFileToString(XQUERY_FILE);
 
     XMLUnit.setIgnoreAttributeOrder(true);
@@ -89,7 +89,7 @@ public class ResourceExtensionsTest {
   @Test
   public void testResourceServiceExtension() throws XpathException, SAXException, IOException {
     ResourceExtensionsManager extensionMgr =
-      Common.adminClient.newServerConfigManager().newResourceExtensionsManager();
+      Common.restAdminClient.newServerConfigManager().newResourceExtensionsManager();
 
     StringHandle handle = new StringHandle();
 

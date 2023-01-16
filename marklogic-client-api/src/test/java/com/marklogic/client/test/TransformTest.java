@@ -57,8 +57,8 @@ public class TransformTest {
   public static void beforeClass()
     throws IOException, FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
     Common.connect();
-    Common.connectAdmin();
-    confMgr = Common.adminClient.newServerConfigManager();
+    Common.connectRestAdmin();
+    confMgr = Common.restAdminClient.newServerConfigManager();
 
     extensionMgr = confMgr.newTransformExtensionsManager();
     optionsName = ValuesHandleTest.makeValuesOptions();

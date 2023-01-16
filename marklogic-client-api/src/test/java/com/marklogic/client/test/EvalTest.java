@@ -58,11 +58,11 @@ import static org.junit.jupiter.api.Assertions.*;
 public class EvalTest {
   private static GregorianCalendar septFirst = new GregorianCalendar(TimeZone.getTimeZone("CET"));
   private static ExtensionLibrariesManager libMgr;
-  private static DatabaseClient adminClient = Common.connectAdmin();
+  private static DatabaseClient restAdminClient = Common.connectRestAdmin();
 
   @BeforeAll
   public static void beforeClass() {
-    libMgr = adminClient.newServerConfigManager().newExtensionLibrariesManager();
+    libMgr = restAdminClient.newServerConfigManager().newExtensionLibrariesManager();
     Common.connectEval();
 
     septFirst.set(2014, Calendar.SEPTEMBER, 1, 0, 0, 0);
@@ -450,7 +450,7 @@ public class EvalTest {
   @Test
   public void test_582_need_privilege() throws Exception{
     try {
-      assertEquals("hello", adminClient.newServerEval()
+      assertEquals("hello", restAdminClient.newServerEval()
         .xquery("'hello'").eval().next().getString());
       fail("a FailedRequestException should have been thrown since rest_admin doesn't have eval privileges");
     } catch (FailedRequestException fre) {

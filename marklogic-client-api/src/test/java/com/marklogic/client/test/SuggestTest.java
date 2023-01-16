@@ -53,10 +53,10 @@ public class SuggestTest {
   public static void setup()
     throws FileNotFoundException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
     XMLUnit.setIgnoreWhitespace(true);
-    Common.connectAdmin();
-    writeOptions(Common.adminClient);
+    Common.connectRestAdmin();
+    writeOptions(Common.restAdminClient);
 
-    Common.adminClient.newServerConfigManager().setServerRequestLogging(true);
+    Common.restAdminClient.newServerConfigManager().setServerRequestLogging(true);
     Common.connect();
 
     // write three files for alert tests.

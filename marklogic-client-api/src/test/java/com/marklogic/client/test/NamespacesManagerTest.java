@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class NamespacesManagerTest {
   @BeforeAll
   public static void beforeClass() {
-    Common.connectAdmin();
+    Common.connectRestAdmin();
   }
   @AfterAll
   public static void afterClass() {
@@ -40,7 +40,7 @@ public class NamespacesManagerTest {
     throws ForbiddenUserException, FailedRequestException, ResourceNotFoundException
   {
     NamespacesManager nsMgr =
-      Common.adminClient.newServerConfigManager().newNamespacesManager();
+      Common.restAdminClient.newServerConfigManager().newNamespacesManager();
 
     nsMgr.updatePrefix("dc", "http://purl.org/dc/terms/");
 
@@ -85,7 +85,7 @@ public class NamespacesManagerTest {
     throws ForbiddenUserException, FailedRequestException, ResourceNotFoundException
   {
     NamespacesManager nsMgr =
-      Common.adminClient.newServerConfigManager().newNamespacesManager();
+      Common.restAdminClient.newServerConfigManager().newNamespacesManager();
 
     boolean illegalArgument = false;
     try {

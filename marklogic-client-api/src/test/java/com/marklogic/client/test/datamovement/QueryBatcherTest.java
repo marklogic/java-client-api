@@ -119,7 +119,7 @@ public class QueryBatcherTest {
       "</options>")
       .withFormat(XML);
     QueryOptionsManager queryOptionsMgr =
-      Common.connectAdmin().newServerConfigManager().newQueryOptionsManager();
+      Common.connectRestAdmin().newServerConfigManager().newQueryOptionsManager();
     queryOptionsMgr.writeOptions("employees", options);
   }
 

@@ -34,7 +34,7 @@ public class DatabaseClientTest {
   @BeforeAll
   public static void beforeClass() {
     Common.connect();
-    Common.connectAdmin();
+    Common.connectRestAdmin();
   }
   @AfterAll
   public static void afterClass() {
@@ -102,7 +102,7 @@ public class DatabaseClientTest {
 
   @Test
   public void testNewQueryOptionsManager() {
-    QueryOptionsManager mgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    QueryOptionsManager mgr = Common.restAdminClient.newServerConfigManager().newQueryOptionsManager();
     assertNotNull( mgr);
   }
 

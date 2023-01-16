@@ -47,7 +47,7 @@ public class StringSearchTest {
   @BeforeAll
   public static void beforeClass() {
     Common.connect();
-    Common.connectAdmin();
+    Common.connectRestAdmin();
   }
 
   @AfterAll
@@ -260,7 +260,7 @@ public class StringSearchTest {
       "}";
 
     QueryOptionsManager queryOptionsMgr =
-      Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+      Common.restAdminClient.newServerConfigManager().newQueryOptionsManager();
 
     queryOptionsMgr.writeOptions(optionsName, new StringHandle(options).withFormat(Format.JSON));
 

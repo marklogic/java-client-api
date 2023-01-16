@@ -82,7 +82,7 @@ public class Common {
 	};
 
 	public static DatabaseClient client;
-  public static DatabaseClient adminClient;
+  public static DatabaseClient restAdminClient;
   public static DatabaseClient serverAdminClient;
   public static DatabaseClient evalClient;
   public static DatabaseClient readOnlyClient;
@@ -92,10 +92,10 @@ public class Common {
       client = newClient();
     return client;
   }
-  public static DatabaseClient connectAdmin() {
-    if (adminClient == null)
-      adminClient = newAdminClient();
-    return adminClient;
+  public static DatabaseClient connectRestAdmin() {
+    if (restAdminClient == null)
+      restAdminClient = newRestAdminClient();
+    return restAdminClient;
   }
   public static DatabaseClient connectServerAdmin() {
     if (serverAdminClient == null)
@@ -108,18 +108,19 @@ public class Common {
     return evalClient;
   }
   public static DatabaseClient connectReadOnly() {
-    if (readOnlyClient == null)
-      readOnlyClient = newReadOnlyClient();
+    if (readOnlyClient == null) {
+		readOnlyClient = makeNewClient(Common.HOST, Common.PORT, newSecurityContext(Common.READ_ONLY_USER, Common.READ_ONLY_PASS));
+	}
     return readOnlyClient;
   }
   public static DatabaseClient newClient() {
     return newClient(null);
   }
   public static DatabaseClient newClient(String databaseName) {
-    return newClientAsUser(Common.USER, databaseName);
+	  return makeNewClient(Common.HOST, Common.PORT, databaseName, newSecurityContext(Common.USER, Common.PASS), null);
   }
   public static DatabaseClient newClientAsUser(String username) {
-    return newClientAsUser(username, null);
+	  return makeNewClient(Common.HOST, Common.PORT, null, newSecurityContext(username, Common.PASS), null);
   }
 
   public static DatabaseClientFactory.SecurityContext newSecurityContext(String username, String password) {
@@ -129,21 +130,8 @@ public class Common {
     return new DatabaseClientFactory.DigestAuthContext(username, password);
   }
 
-  public static DatabaseClient newClientAsUser(String username, String databaseName) {
-    return makeNewClient(Common.HOST, Common.PORT, databaseName, newSecurityContext(username, Common.PASS));
-  }
-
   public static DatabaseClient makeNewClient(String host, int port, DatabaseClientFactory.SecurityContext securityContext) {
-    return makeNewClient(host, port, null, securityContext);
-  }
-
-  public static DatabaseClient makeNewClient(String host, int port, String database, DatabaseClientFactory.SecurityContext securityContext) {
-    return makeNewClient(host, port, database, securityContext, CONNECTION_TYPE);
-  }
-
-  public static DatabaseClient makeNewClient(String host, int port, DatabaseClientFactory.SecurityContext securityContext,
-                                             DatabaseClient.ConnectionType connectionType) {
-    return makeNewClient(host, port, null, securityContext, connectionType);
+    return makeNewClient(host, port, null, securityContext, null);
   }
 
   /**
@@ -157,12 +145,9 @@ public class Common {
     return DatabaseClientFactory.newClient(host, port, BASE_PATH, database, securityContext, connectionType);
   }
 
-  public static DatabaseClient newAdminClient() {
-    return newAdminClient(null);
-  }
-  public static DatabaseClient newAdminClient(String databaseName) {
-    return makeNewClient(Common.HOST, Common.PORT, databaseName,
-       newSecurityContext(Common.REST_ADMIN_USER, Common.REST_ADMIN_PASS), CONNECTION_TYPE);
+  public static DatabaseClient newRestAdminClient() {
+	  return makeNewClient(Common.HOST, Common.PORT, null,
+		  newSecurityContext(Common.REST_ADMIN_USER, Common.REST_ADMIN_PASS), CONNECTION_TYPE);
   }
   public static DatabaseClient newServerAdminClient() {
     return newServerAdminClient(null);
@@ -177,10 +162,6 @@ public class Common {
   public static DatabaseClient newEvalClient(String databaseName) {
     return makeNewClient(Common.HOST, Common.PORT, databaseName,
         newSecurityContext(Common.EVAL_USER, Common.EVAL_PASS), CONNECTION_TYPE);
-  }
-  public static DatabaseClient newReadOnlyClient() {
-    return makeNewClient(Common.HOST, Common.PORT,
-        newSecurityContext(Common.READ_ONLY_USER, Common.READ_ONLY_PASS), CONNECTION_TYPE);
   }
 
   public static MarkLogicVersion getMarkLogicVersion() {

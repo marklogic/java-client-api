@@ -50,7 +50,7 @@ public class ValuesHandleTest {
   @BeforeAll
   public static void beforeClass() {
     Common.connect();
-    Common.connectAdmin();
+    Common.connectRestAdmin();
   }
 
   @AfterAll
@@ -87,7 +87,7 @@ public class ValuesHandleTest {
     assertTrue(
       1.43 < second && second < 1.44);
 
-    Common.adminClient.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
+    Common.restAdminClient.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
   }
 
   @Test
@@ -135,7 +135,7 @@ public class ValuesHandleTest {
       assertEquals( 3, dv.length);
     }
 
-    Common.adminClient.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
+    Common.restAdminClient.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
   }
 
   @Test
@@ -189,7 +189,7 @@ public class ValuesHandleTest {
     assertEquals(
       dv[1].get("xs:double", Double.class).toString(), "2.2");
 
-    Common.adminClient.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
+    Common.restAdminClient.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
   }
 
   // this test only works if you've loaded the 5min guide @Test
@@ -233,7 +233,7 @@ public class ValuesHandleTest {
         "<return-metrics>false</return-metrics>"+
       "</options>";
 
-    QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    QueryOptionsManager optionsMgr = Common.restAdminClient.newServerConfigManager().newQueryOptionsManager();
     optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
 
     return "valuesoptions";

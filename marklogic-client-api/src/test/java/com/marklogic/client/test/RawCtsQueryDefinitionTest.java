@@ -56,13 +56,13 @@ public class RawCtsQueryDefinitionTest {
     throws FileNotFoundException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException,
            ResourceNotResendableException
   {
-    Common.connectAdmin();
+    Common.connectRestAdmin();
 
-    QueryOptionsManager queryOptionsManager = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    QueryOptionsManager queryOptionsManager = Common.restAdminClient.newServerConfigManager().newQueryOptionsManager();
     File options = new File("src/test/resources/alerting-options.xml");
     queryOptionsManager.writeOptions("alerts", new FileHandle(options));
 
-    Common.adminClient.newServerConfigManager().setServerRequestLogging(true);
+    Common.restAdminClient.newServerConfigManager().setServerRequestLogging(true);
 
     Common.connect();
     JSONDocumentManager jsonDocMgr = Common.client.newJSONDocumentManager();

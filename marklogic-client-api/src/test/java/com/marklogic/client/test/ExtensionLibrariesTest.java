@@ -36,9 +36,9 @@ public class ExtensionLibrariesTest {
   public void testXQueryModuleCRUD()
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 
-    Common.connectAdmin();
+    Common.connectRestAdmin();
     // get a manager
-    ExtensionLibrariesManager libsMgr = Common.adminClient
+    ExtensionLibrariesManager libsMgr = Common.restAdminClient
       .newServerConfigManager().newExtensionLibrariesManager();
 
     // write XQuery file to the modules database
@@ -85,10 +85,10 @@ public class ExtensionLibrariesTest {
 
   @Test
   public void testXQueryModuleCRUDXmlFileNegative() {
-    Common.connectAdmin();
+    Common.connectRestAdmin();
 
     // get a manager
-    ExtensionLibrariesManager libsMgr = Common.adminClient.newServerConfigManager().newExtensionLibrariesManager();
+    ExtensionLibrariesManager libsMgr = Common.restAdminClient.newServerConfigManager().newExtensionLibrariesManager();
 
     String libraryPath = "/foo/my/path/to/my/module.xqy";
     FileHandle f = new FileHandle(new File("test-complete/src/test/java/com/marklogic/client/functionaltest/data/all_well.xml")).withFormat(Format.XML);
