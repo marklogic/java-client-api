@@ -28,10 +28,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class SemanticsPermissionsTest {
   private static GraphManager gmgr;
   private static String graphUri = "SemanticsPermissionsTest";
-  private static DatabaseClient readPrivilegedClient = Common.makeNewClient(
-    Common.HOST, Common.PORT, Common.newSecurityContext(Common.READ_PRIVILIGED_USER, Common.READ_PRIVILIGED_PASS));
-  private static DatabaseClient writePrivilegedClient = Common.makeNewClient(
-    Common.HOST, Common.PORT, Common.newSecurityContext(Common.WRITE_PRIVILIGED_USER, Common.WRITE_PRIVILIGED_PASS));
+  private static DatabaseClient readPrivilegedClient = Common.newClientBuilder().withUsername("read-privileged").build();
+  private static DatabaseClient writePrivilegedClient = Common.newClientBuilder().withUsername("write-privileged").build();
 
   @BeforeAll
   public static void beforeClass() {

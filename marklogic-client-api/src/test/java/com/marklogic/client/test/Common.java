@@ -18,9 +18,11 @@ package com.marklogic.client.test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientBuilder;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.ManageConfig;
+import org.springframework.util.FileCopyUtils;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -40,17 +42,10 @@ public class Common {
   final public static String USER= "rest-writer";
   final public static String PASS= "x";
   final public static String REST_ADMIN_USER= "rest-admin";
-  final public static String REST_ADMIN_PASS= "x";
   final public static String SERVER_ADMIN_USER= "admin";
   final public static String SERVER_ADMIN_PASS = System.getProperty("TEST_ADMIN_PASSWORD", "admin");
   final public static String EVAL_USER= "rest-evaluator";
-  final public static String EVAL_PASS= "x";
   final public static String READ_ONLY_USER= "rest-reader";
-  final public static String READ_ONLY_PASS= "x";
-  final public static String READ_PRIVILIGED_USER = "read-privileged";
-  final public static String READ_PRIVILIGED_PASS = "x";
-  final public static String WRITE_PRIVILIGED_USER = "write-privileged";
-  final public static String WRITE_PRIVILIGED_PASS = "x";
 
   final public static String  HOST          = System.getProperty("TEST_HOST", "localhost");
 
@@ -109,18 +104,13 @@ public class Common {
   }
   public static DatabaseClient connectReadOnly() {
     if (readOnlyClient == null) {
-		readOnlyClient = makeNewClient(Common.HOST, Common.PORT, newSecurityContext(Common.READ_ONLY_USER, Common.READ_ONLY_PASS));
+		readOnlyClient = newClientBuilder().withUsername(READ_ONLY_USER).build();
 	}
     return readOnlyClient;
   }
+
   public static DatabaseClient newClient() {
-    return newClient(null);
-  }
-  public static DatabaseClient newClient(String databaseName) {
-	  return makeNewClient(Common.HOST, Common.PORT, databaseName, newSecurityContext(Common.USER, Common.PASS), null);
-  }
-  public static DatabaseClient newClientAsUser(String username) {
-	  return makeNewClient(Common.HOST, Common.PORT, null, newSecurityContext(username, Common.PASS), null);
+	  return newClientBuilder().build();
   }
 
   public static DatabaseClientFactory.SecurityContext newSecurityContext(String username, String password) {
@@ -130,38 +120,45 @@ public class Common {
     return new DatabaseClientFactory.DigestAuthContext(username, password);
   }
 
-  public static DatabaseClient makeNewClient(String host, int port, DatabaseClientFactory.SecurityContext securityContext) {
-    return makeNewClient(host, port, null, securityContext, null);
+  public static DatabaseClientBuilder newClientBuilder() {
+	  return new DatabaseClientBuilder()
+		  .withHost(HOST)
+		  .withPort(PORT)
+		  .withBasePath(BASE_PATH)
+		  .withUsername(USER)
+		  .withPassword(PASS) // Most of the test users all have the same password, so we can use a default one here
+		  .withSecurityContextType(SECURITY_CONTEXT_TYPE)
+		  .withConnectionType(CONNECTION_TYPE);
   }
 
-  /**
-   * Intent is to route every call to this method so that changes to how newClient works can easily be made in the
-   * future.
-   */
-  public static DatabaseClient makeNewClient(String host, int port, String database,
-                                             DatabaseClientFactory.SecurityContext securityContext,
-                                             DatabaseClient.ConnectionType connectionType) {
-    System.out.println("Connecting to: " + Common.HOST + ":" + port + "; basePath: " + BASE_PATH  + "; auth: " + securityContext.getClass().getSimpleName());
-    return DatabaseClientFactory.newClient(host, port, BASE_PATH, database, securityContext, connectionType);
+  public static DatabaseClient makeNewClient(String host, int port, DatabaseClientFactory.SecurityContext securityContext) {
+	  return newClientBuilder()
+		  .withHost(host)
+		  .withPort(port)
+		  .withSecurityContext(securityContext)
+		  .build();
   }
 
   public static DatabaseClient newRestAdminClient() {
-	  return makeNewClient(Common.HOST, Common.PORT, null,
-		  newSecurityContext(Common.REST_ADMIN_USER, Common.REST_ADMIN_PASS), CONNECTION_TYPE);
+	  return newClientBuilder().withUsername(REST_ADMIN_USER).build();
   }
+
   public static DatabaseClient newServerAdminClient() {
-    return newServerAdminClient(null);
+    return newClientBuilder()
+		.withUsername(Common.SERVER_ADMIN_USER)
+		.withPassword(Common.SERVER_ADMIN_PASS)
+		.build();
   }
-  public static DatabaseClient newServerAdminClient(String databaseName) {
-    return makeNewClient(Common.HOST, Common.PORT, databaseName,
-       newSecurityContext(Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS), CONNECTION_TYPE);
-  }
+
   public static DatabaseClient newEvalClient() {
     return newEvalClient(null);
   }
+
   public static DatabaseClient newEvalClient(String databaseName) {
-    return makeNewClient(Common.HOST, Common.PORT, databaseName,
-        newSecurityContext(Common.EVAL_USER, Common.EVAL_PASS), CONNECTION_TYPE);
+	  return newClientBuilder()
+		  .withDatabase(databaseName)
+		  .withUsername(Common.EVAL_USER)
+		  .build();
   }
 
   public static MarkLogicVersion getMarkLogicVersion() {
@@ -170,26 +167,13 @@ public class Common {
   }
 
   public static byte[] streamToBytes(InputStream is) throws IOException {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    byte[] b = new byte[1000];
-    int len = 0;
-    while (((len=is.read(b)) != -1)) {
-      baos.write(b, 0, len);
-    }
-    return baos.toByteArray();
+	  return FileCopyUtils.copyToByteArray(is);
   }
+
   public static String readerToString(Reader r) throws IOException {
-    StringWriter w = new StringWriter();
-    char[] cbuf = new char[1000];
-    int len = 0;
-    while (((len=r.read(cbuf)) != -1)) {
-      w.write(cbuf, 0, len);
-    }
-    r.close();
-    String result = w.toString();
-    w.close();
-    return result;
+	  return FileCopyUtils.copyToString(r);
   }
+
   // the testFile*() methods get a file in the src/test/resources directory
   public static String testFileToString(String filename) throws IOException {
     return testFileToString(filename, null);

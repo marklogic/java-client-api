@@ -201,7 +201,7 @@ public class HandleAsTest {
 
   @Test
   public void testSearch() throws JAXBException {
-    DatabaseClientFactory.Bean clientFactoryBean = makeClientBeanFactory();
+    DatabaseClientFactory.Bean clientFactoryBean = makeClientFactoryBean();
 
     clientFactoryBean.getHandleRegistry().register(
       JAXBHandle.newFactory(Product.class)
@@ -304,7 +304,7 @@ public class HandleAsTest {
   public void testHandleRegistry() {
     int[] iterations = {1,2};
     for (int i: iterations) {
-      DatabaseClientFactory.Bean clientFactoryBean = (i == 1) ? null : makeClientFactory();
+      DatabaseClientFactory.Bean clientFactoryBean = (i == 1) ? null : makeClientFactoryBean();
 
       HandleFactoryRegistry registry =
         (i == 1) ? DatabaseClientFactory.getHandleRegistry()
@@ -322,7 +322,7 @@ public class HandleAsTest {
 
       // instantiate a client with a copy of the registry
       DatabaseClient client =
-        (i == 1) ? Common.newClient()
+        (i == 1) ? DatabaseClientFactory.newClient(Common.HOST, Common.PORT, Common.newSecurityContext(Common.USER, Common.PASS))
                  : clientFactoryBean.newClient();
 
       registry.unregister(StringBuilder.class);
@@ -362,7 +362,7 @@ public class HandleAsTest {
     }
   }
 
-  private DatabaseClientFactory.Bean makeClientFactory() {
+  private DatabaseClientFactory.Bean makeClientFactoryBean() {
     DatabaseClientFactory.Bean clientFactoryBean = new DatabaseClientFactory.Bean();
     clientFactoryBean.setHost(Common.HOST);
     clientFactoryBean.setPort(Common.PORT);
@@ -370,16 +370,6 @@ public class HandleAsTest {
 	clientFactoryBean.setSecurityContext(Common.newSecurityContext(Common.USER, Common.PASS));
     return clientFactoryBean;
   }
-
-  private DatabaseClientFactory.Bean makeClientBeanFactory() {
-    DatabaseClientFactory.Bean clientFactoryBean = new DatabaseClientFactory.Bean();
-    clientFactoryBean.setHost(Common.HOST);
-    clientFactoryBean.setPort(Common.PORT);
-    clientFactoryBean.setBasePath(Common.BASE_PATH);
-    clientFactoryBean.setSecurityContext(Common.newSecurityContext(Common.USER, Common.PASS));
-    return clientFactoryBean;
-  }
-
 
   static public class BufferHandle
     extends BaseHandle<String, String>

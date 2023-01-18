@@ -45,7 +45,7 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
         writeSet.add(newWriteOp(secondUri, newDefaultMetadata().withCollections("custom1", "custom2"),
             mapper.createObjectNode().put("hello", "two")));
 
-        Common.client = Common.newClientAsUser(USER_WITH_DEFAULT_COLLECTIONS_AND_PERMISSIONS);
+        Common.client = Common.newClientBuilder().withUsername(USER_WITH_DEFAULT_COLLECTIONS_AND_PERMISSIONS).build();
         Common.client.newRowManager().execute(op
             .fromDocDescriptors(op.docDescriptors(writeSet))
             .write());
@@ -87,7 +87,7 @@ public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
     @Test
     public void updateOnlyDocWithUserWithDefaultCollectionsAndPermissions() {
         // Set up client as user with default collections and permissions
-        Common.client = Common.newClientAsUser(USER_WITH_DEFAULT_COLLECTIONS_AND_PERMISSIONS);
+        Common.client = Common.newClientBuilder().withUsername(USER_WITH_DEFAULT_COLLECTIONS_AND_PERMISSIONS).build();
         rowManager = Common.client.newRowManager();
         op = rowManager.newPlanBuilder();
 

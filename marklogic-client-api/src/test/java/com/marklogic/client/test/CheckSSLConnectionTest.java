@@ -10,7 +10,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(RequireSSLExtension.class)
 class CheckSSLConnectionTest {
@@ -36,10 +38,11 @@ class CheckSSLConnectionTest {
 		SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
 		sslContext.init(null, new TrustManager[]{Common.TRUST_ALL_MANAGER}, null);
 
-		DatabaseClient client = Common.makeNewClient(Common.HOST, Common.PORT,
-			Common.newSecurityContext(Common.USER, Common.PASS)
-				.withSSLContext(sslContext, Common.TRUST_ALL_MANAGER)
-				.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY));
+		DatabaseClient client = Common.newClientBuilder()
+			.withSSLContext(sslContext)
+			.withTrustManager(Common.TRUST_ALL_MANAGER)
+			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
+			.build();
 
 		DatabaseClient.ConnectionResult result = client.checkConnection();
 		assertEquals(0, result.getStatusCode(), "A value of zero implies that a connection was successfully made, " +
@@ -49,10 +52,11 @@ class CheckSSLConnectionTest {
 
 	@Test
 	void defaultSslContext() throws Exception {
-		DatabaseClient client = Common.makeNewClient(Common.HOST, Common.PORT,
-			Common.newSecurityContext(Common.USER, Common.PASS)
-				.withSSLContext(SSLContext.getDefault(), Common.TRUST_ALL_MANAGER)
-				.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY));
+		DatabaseClient client = Common.newClientBuilder()
+			.withSSLContext(SSLContext.getDefault())
+			.withTrustManager(Common.TRUST_ALL_MANAGER)
+			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
+			.build();
 
 		assertThrows(MarkLogicIOException.class, () -> client.checkConnection(),
 			"The connection should fail because the JVM's default SSL Context does not have a CA certificate that " +

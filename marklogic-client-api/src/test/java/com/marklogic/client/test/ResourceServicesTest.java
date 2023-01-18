@@ -166,7 +166,7 @@ public class ResourceServicesTest {
   @Test
   /** Avoid regression on https://github.com/marklogic/java-client-api/issues/761 */
   public void test_issue_761() {
-    DatabaseClient client = Common.newClient("Documents");
+    DatabaseClient client = Common.newClientBuilder().withDatabase("Documents").build();
     try {
       client.newServerConfigManager().newResourceExtensionsManager()
         .listServices(new DOMHandle());

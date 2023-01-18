@@ -161,8 +161,7 @@ public class DatabaseClientFactoryTest {
 
     DatabaseClientFactory.addConfigurator(configurator);
 
-    DatabaseClient client = Common.makeNewClient(
-      Common.HOST, Common.PORT, Common.newSecurityContext(Common.USER, Common.PASS));
+	DatabaseClient client = Common.newClientBuilder().build();
     try {
       assertTrue( configurator.isConfigured);
       OkHttpClient okClient = (OkHttpClient) client.getClientImplementation();
