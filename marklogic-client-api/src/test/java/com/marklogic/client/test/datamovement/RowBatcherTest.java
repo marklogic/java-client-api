@@ -78,7 +78,11 @@ public class RowBatcherTest {
     private static void setupIndex() {
         final String tdeUri = TEST_COLLECTION+".tdex";
 
-        DatabaseClient schemasDB = Common.newServerAdminClient("java-unittest-schemas");
+        DatabaseClient schemasDB = Common.newClientBuilder()
+			.withDatabase("java-unittest-schemas")
+			.withUsername(Common.SERVER_ADMIN_USER)
+			.withPassword(Common.SERVER_ADMIN_PASS)
+			.build();
         XMLDocumentManager schemaMgr = schemasDB.newXMLDocumentManager();
 
         if (schemaMgr.exists(tdeUri) == null) {
@@ -184,7 +188,7 @@ public class RowBatcherTest {
     @Test
     public void testJsonRows1ThreadForDB() throws Exception {
         runJsonRowsTest(jsonBatcher(
-                Common.newClient("java-unittest").newDataMovementManager(),
+                Common.newClientBuilder().withDatabase("java-unittest").build().newDataMovementManager(),
                 1));
     }
     @Test

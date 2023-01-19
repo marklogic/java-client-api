@@ -49,14 +49,11 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import com.marklogic.client.impl.RESTServices;
+import com.marklogic.client.impl.*;
 import okhttp3.OkHttpClient;
 
 import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
 import com.marklogic.client.extra.httpclient.HttpClientConfigurator;
-import com.marklogic.client.impl.DatabaseClientImpl;
-import com.marklogic.client.impl.HandleFactoryRegistryImpl;
-import com.marklogic.client.impl.OkHttpServices;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
 
@@ -1218,6 +1215,47 @@ public class DatabaseClientFactory {
       return certPassword;
     }
   }
+
+	/**
+	 * Creates a client to access the database by means of a REST server with connection and authentication information
+	 * retrieved from the given {@code propertySource}. The {@code propertySource} function will be invoked once for
+	 * each of the below properties, giving the function a chance to return a value associated with the property if
+	 * desired. The set of values returned for the below property names will then be used to construct and return a new
+	 * {@code DatabaseClient} instance.
+	 *
+	 * <ol>
+	 *     <li>marklogic.client.host = required; must be a String</li>
+	 *     <li>marklogic.client.port = required; must be an int, Integer, or String that can be parse as an int</li>
+	 *     <li>marklogic.client.basePath = must be a String</li>
+	 *     <li>marklogic.client.database = must be a String</li>
+	 *     <li>marklogic.client.connectionType = must be a String or instance of {@code ConnectionType}</li>
+	 *     <li>marklogic.client.securityContext = an instance of {@code SecurityContext}; if set, then all other
+	 *     properties pertaining to the construction of a {@code SecurityContext} will be ignored</li>
+	 *     <li>marklogic.client.securityContextType = required if marklogic.client.securityContext is not set;
+	 *     must be a String and one of "basic", "digest", "cloud", "kerberos", "certificate", or "saml"</li>
+	 *     <li>marklogic.client.username = must be a String; required for basic and digest authentication</li>
+	 *     <li>marklogic.client.password = must be a String; required for basic and digest authentication</li>
+	 *     <li>marklogic.client.cloud.apiKey = must be a String; required for cloud authentication</li>
+	 *     <li>marklogic.client.kerberos.principal = must be a String</li>
+	 *     <li>marklogic.client.certificate.file = must be a String; required for certificate authentication</li>
+	 *     <li>marklogic.client.certificate.password = must be a String; required for certificate authentication</li>
+	 *     <li>marklogic.client.saml.token = must be a String; required for SAML authentication</li>
+	 *     <li>marklogic.client.sslContext = must be an instance of {@code javax.net.ssl.SSLContext}</li>
+	 *     <li>marklogic.client.sslProtocol = must be a String; if "default', then uses the JVM default SSL
+	 *     context; else, the value is passed to the {@code getInstance} method in {@code javax.net.ssl.SSLContext}</li>
+	 *     <li>marklogic.client.sslHostnameVerifier = must either be an instance of {@code SSLHostnameVerifier} or
+	 *     a String with a value of either "any", "common", or "strict"</li>
+	 *     <li>marklogic.client.trustManager = must be an instance of {@code javax.net.ssl.X509TrustManager};
+	 *     if not specified and an SSL context is configured, an attempt will be made to use the JVM's default trust manager</li>
+	 * </ol>
+	 *
+	 * @param propertySource
+	 * @return
+	 * @since 6.1.0
+	 */
+	public static DatabaseClient newClient(Function<String, Object> propertySource) {
+		return new DatabaseClientPropertySource(propertySource).newClient();
+	}
 
   /**
    * Creates a client to access the database by means of a REST server

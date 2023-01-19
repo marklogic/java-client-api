@@ -15,11 +15,14 @@
  */
 package com.marklogic.client.test;
 
-import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClient.ConnectionResult;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.alerting.RuleManager;
-import com.marklogic.client.document.*;
+import com.marklogic.client.document.BinaryDocumentManager;
+import com.marklogic.client.document.GenericDocumentManager;
+import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.document.TextDocumentManager;
+import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.QueryManager;
@@ -28,7 +31,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DatabaseClientTest {
   @BeforeAll
@@ -115,21 +120,13 @@ public class DatabaseClientTest {
 
   @Test
   public void testCheckConnectionWithValidUser() {
-
-	DatabaseClient marklogic = Common.makeNewClient(Common.HOST,
-		        Common.PORT, Common.newSecurityContext(
-				        Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS));
-
-    ConnectionResult connResult = marklogic.checkConnection();
+    ConnectionResult connResult = Common.newClient().checkConnection();
     assertTrue(connResult.isConnected());
   }
 
   @Test
   public void testCheckConnectionWithInvalidUser() {
-	DatabaseClient marklogic = Common.makeNewClient(Common.HOST,
-		        Common.PORT, Common.newSecurityContext("invalid", "invalid"));
-
-    ConnectionResult connResult = marklogic.checkConnection();
+    ConnectionResult connResult = Common.newClientBuilder().withUsername("invalid").withPassword("invalid").build().checkConnection();
     assertFalse(connResult.isConnected());
     assertTrue(connResult.getStatusCode() == 401);
     assertTrue(connResult.getErrorMessage().equalsIgnoreCase("Unauthorized"));
