@@ -1,13 +1,20 @@
 package com.marklogic.client.impl.okhttp;
 
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.impl.HTTPKerberosAuthInterceptor;
+import com.marklogic.client.impl.HTTPSamlAuthInterceptor;
 import okhttp3.ConnectionPool;
 import okhttp3.CookieJar;
 import okhttp3.Dns;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 
 import javax.net.SocketFactory;
-import javax.net.ssl.*;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -17,6 +24,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -28,11 +36,53 @@ public abstract class OkHttpUtil {
 
 	final private static ConnectionPool connectionPool = new ConnectionPool();
 
+	public static OkHttpClient.Builder newOkHttpClientBuilder(String host, int port, DatabaseClientFactory.SecurityContext securityContext) {
+		OkHttpClient.Builder clientBuilder = OkHttpUtil.newClientBuilder();
+		AuthenticationConfigurer authenticationConfigurer = null;
+
+		// As of 6.1.0, kerberos/saml/certificate are still coded within this class to avoid potential breaks from
+		// refactoring. Once the tests for these auth methods are running properly, the code for each can be
+		// safely refactored.
+		if (securityContext instanceof DatabaseClientFactory.BasicAuthContext) {
+			authenticationConfigurer = new BasicAuthenticationConfigurer();
+		} else if (securityContext instanceof DatabaseClientFactory.DigestAuthContext) {
+			authenticationConfigurer = new DigestAuthenticationConfigurer();
+		} else if (securityContext instanceof DatabaseClientFactory.KerberosAuthContext) {
+			configureKerberosAuth((DatabaseClientFactory.KerberosAuthContext) securityContext, host, clientBuilder);
+		} else if (securityContext instanceof DatabaseClientFactory.CertificateAuthContext) {
+		} else if (securityContext instanceof DatabaseClientFactory.SAMLAuthContext) {
+			configureSAMLAuth((DatabaseClientFactory.SAMLAuthContext) securityContext, clientBuilder);
+		} else if (securityContext instanceof DatabaseClientFactory.MarkLogicCloudAuthContext) {
+			authenticationConfigurer = new MarkLogicCloudAuthenticationConfigurer(host, port);
+		} else {
+			throw new IllegalArgumentException("Unsupported security context: " + securityContext.getClass());
+		}
+
+		if (authenticationConfigurer != null) {
+			authenticationConfigurer.configureAuthentication(clientBuilder, securityContext);
+		}
+
+		SSLContext sslContext = securityContext.getSSLContext();
+		X509TrustManager trustManager = securityContext.getTrustManager();
+
+		DatabaseClientFactory.SSLHostnameVerifier sslVerifier = null;
+		if (sslContext != null || securityContext instanceof DatabaseClientFactory.CertificateAuthContext) {
+			sslVerifier = securityContext.getSSLHostnameVerifier() != null ?
+				securityContext.getSSLHostnameVerifier() :
+				DatabaseClientFactory.SSLHostnameVerifier.COMMON;
+		}
+
+		OkHttpUtil.configureSocketFactory(clientBuilder, sslContext, trustManager);
+		OkHttpUtil.configureHostnameVerifier(clientBuilder, sslVerifier);
+
+		return clientBuilder;
+	}
+
 	/**
 	 * @return an OkHttpClient.Builder initialized with a sensible set of defaults that can then have authentication
 	 * configured
 	 */
-	public static OkHttpClient.Builder newClientBuilder() {
+	static OkHttpClient.Builder newClientBuilder() {
 		return new OkHttpClient.Builder()
 			.followRedirects(false)
 			.followSslRedirects(false)
@@ -47,13 +97,33 @@ public abstract class OkHttpUtil {
 			.dns(new DnsImpl());
 	}
 
+	private static void configureKerberosAuth(DatabaseClientFactory.KerberosAuthContext keberosAuthContext, String host, OkHttpClient.Builder clientBuilder) {
+		Map<String, String> kerberosOptions = keberosAuthContext.getKrbOptions();
+		Interceptor interceptor = new HTTPKerberosAuthInterceptor(host, kerberosOptions);
+		clientBuilder.addInterceptor(interceptor);
+	}
+
+	private static void configureSAMLAuth(DatabaseClientFactory.SAMLAuthContext samlAuthContext, OkHttpClient.Builder clientBuilder) {
+		Interceptor interceptor;
+		String authorizationTokenValue = samlAuthContext.getToken();
+		if (authorizationTokenValue != null && authorizationTokenValue.length() > 0) {
+			interceptor = new HTTPSamlAuthInterceptor(authorizationTokenValue);
+		} else if (samlAuthContext.getAuthorizer() != null) {
+			interceptor = new HTTPSamlAuthInterceptor(samlAuthContext.getAuthorizer());
+		} else if (samlAuthContext.getRenewer() != null) {
+			interceptor = new HTTPSamlAuthInterceptor(samlAuthContext.getAuthorization(), samlAuthContext.getRenewer());
+		} else
+			throw new IllegalArgumentException("Either a call back or renewer expected.");
+		clientBuilder.addInterceptor(interceptor);
+	}
+
 	/**
 	 * Configure the hostname verifier for the given OkHttpClient.Builder based on the given SSLHostnameVerifier.
 	 *
 	 * @param clientBuilder
 	 * @param sslVerifier
 	 */
-	public static void configureHostnameVerifier(OkHttpClient.Builder clientBuilder, DatabaseClientFactory.SSLHostnameVerifier sslVerifier) {
+	private static void configureHostnameVerifier(OkHttpClient.Builder clientBuilder, DatabaseClientFactory.SSLHostnameVerifier sslVerifier) {
 		HostnameVerifier hostnameVerifier = null;
 		if (DatabaseClientFactory.SSLHostnameVerifier.ANY.equals(sslVerifier)) {
 			hostnameVerifier = (hostname, session) -> true;
@@ -75,7 +145,7 @@ public abstract class OkHttpUtil {
 	 * @param sslContext
 	 * @param trustManager
 	 */
-	public static void configureSocketFactory(OkHttpClient.Builder clientBuilder, SSLContext sslContext, X509TrustManager trustManager) {
+	private static void configureSocketFactory(OkHttpClient.Builder clientBuilder, SSLContext sslContext, X509TrustManager trustManager) {
 		/**
 		 * Per https://square.github.io/okhttp/3.x/okhttp/okhttp3/OkHttpClient.Builder.html#sslSocketFactory-javax.net.ssl.SSLSocketFactory- ,
 		 * OkHttp requires a TrustManager to be specified so that it can build a clean certificate chain. If trustManager
