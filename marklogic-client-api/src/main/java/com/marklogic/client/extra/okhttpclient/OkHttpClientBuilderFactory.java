@@ -28,7 +28,7 @@ import okhttp3.OkHttpClient;
  */
 public interface OkHttpClientBuilderFactory {
 
-	static OkHttpClient.Builder newOkHttpClientBuilder(String host, int port, DatabaseClientFactory.SecurityContext securityContext) {
-		return OkHttpUtil.newOkHttpClientBuilder(host, port, securityContext);
+	static OkHttpClient.Builder newOkHttpClientBuilder(String host, DatabaseClientFactory.SecurityContext securityContext) {
+		return OkHttpUtil.newOkHttpClientBuilder(host, securityContext);
 	}
 }

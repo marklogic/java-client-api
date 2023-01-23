@@ -1383,6 +1383,13 @@ public class DatabaseClientFactory {
                                          SecurityContext securityContext,
                                          DatabaseClient.ConnectionType connectionType) {
       RESTServices services = new OkHttpServices();
+	  // As of 6.1.0, the following optimization is made as it's guaranteed that if the user is connecting to a
+	  // MarkLogic Cloud instance, then port 443 will be used. Every path for constructing a DatabaseClient goes through
+	  // this method, ensuring that this optimization will always be applied, and thus freeing the user from having to
+	  // worry about what port to configure when using MarkLogic Cloud.
+	  if (securityContext instanceof MarkLogicCloudAuthContext) {
+		  port = 443;
+	  }
       services.connect(host, port, basePath, database, securityContext);
 
       if (clientConfigurator != null) {

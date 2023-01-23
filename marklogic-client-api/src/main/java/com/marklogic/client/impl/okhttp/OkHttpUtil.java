@@ -36,7 +36,7 @@ public abstract class OkHttpUtil {
 
 	final private static ConnectionPool connectionPool = new ConnectionPool();
 
-	public static OkHttpClient.Builder newOkHttpClientBuilder(String host, int port, DatabaseClientFactory.SecurityContext securityContext) {
+	public static OkHttpClient.Builder newOkHttpClientBuilder(String host, DatabaseClientFactory.SecurityContext securityContext) {
 		OkHttpClient.Builder clientBuilder = OkHttpUtil.newClientBuilder();
 		AuthenticationConfigurer authenticationConfigurer = null;
 
@@ -53,7 +53,7 @@ public abstract class OkHttpUtil {
 		} else if (securityContext instanceof DatabaseClientFactory.SAMLAuthContext) {
 			configureSAMLAuth((DatabaseClientFactory.SAMLAuthContext) securityContext, clientBuilder);
 		} else if (securityContext instanceof DatabaseClientFactory.MarkLogicCloudAuthContext) {
-			authenticationConfigurer = new MarkLogicCloudAuthenticationConfigurer(host, port);
+			authenticationConfigurer = new MarkLogicCloudAuthenticationConfigurer(host);
 		} else {
 			throw new IllegalArgumentException("Unsupported security context: " + securityContext.getClass());
 		}

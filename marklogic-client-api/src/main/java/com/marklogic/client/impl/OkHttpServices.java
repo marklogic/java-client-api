@@ -197,7 +197,7 @@ public class OkHttpServices implements RESTServices {
 	  this.database = database;
 	  this.baseUri = HttpUrlBuilder.newBaseUrl(host, port, basePath, securityContext.getSSLContext());
 
-	  OkHttpClient.Builder clientBuilder = OkHttpUtil.newOkHttpClientBuilder(host, port, securityContext);
+	  OkHttpClient.Builder clientBuilder = OkHttpUtil.newOkHttpClientBuilder(host, securityContext);
 
 	  Properties props = System.getProperties();
 	  if (props.containsKey(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) {

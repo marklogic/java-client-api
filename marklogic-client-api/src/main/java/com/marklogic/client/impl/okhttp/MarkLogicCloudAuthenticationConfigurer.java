@@ -29,11 +29,9 @@ public class MarkLogicCloudAuthenticationConfigurer implements AuthenticationCon
 	private final static Logger logger = LoggerFactory.getLogger(MarkLogicCloudAuthenticationConfigurer.class);
 
 	private String host;
-	private int port;
 
-	public MarkLogicCloudAuthenticationConfigurer(String host, int port) {
+	public MarkLogicCloudAuthenticationConfigurer(String host) {
 		this.host = host;
-		this.port = port;
 	}
 
 	@Override
@@ -84,10 +82,12 @@ public class MarkLogicCloudAuthenticationConfigurer implements AuthenticationCon
 	}
 
 	protected HttpUrl buildTokenUrl(MarkLogicCloudAuthContext securityContext) {
+		// For the near future, it's guaranteed that https and 443 will be required for connecting to MarkLogic Cloud,
+		// so providing the ability to customize this would be misleading.
 		return new HttpUrl.Builder()
-			.scheme(securityContext.getSSLContext() != null ? "https" : "http")
+			.scheme("https")
 			.host(host)
-			.port(port)
+			.port(443)
 			.build()
 			.resolve(securityContext.getTokenEndpoint()).newBuilder().build();
 	}
