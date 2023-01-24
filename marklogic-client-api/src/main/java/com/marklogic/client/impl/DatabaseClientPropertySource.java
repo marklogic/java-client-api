@@ -91,9 +91,6 @@ public class DatabaseClientPropertySource {
 			}
 		});
 		bean.setSecurityContext(newSecurityContext());
-		if (bean.getSecurityContext() != null && bean.getSecurityContext().getSSLContext() != null && bean.getPort() == 0) {
-			bean.setPort(443);
-		}
 		return bean;
 	}
 

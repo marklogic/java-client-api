@@ -17,22 +17,11 @@ public class MarkLogicCloudAuthenticationConfigurerTest {
 
 	@Test
 	void buildTokenUrl() throws Exception {
-		HttpUrl tokenUrl = new MarkLogicCloudAuthenticationConfigurer("somehost", 443).buildTokenUrl(
+		HttpUrl tokenUrl = new MarkLogicCloudAuthenticationConfigurer("somehost").buildTokenUrl(
 			new DatabaseClientFactory.MarkLogicCloudAuthContext("doesnt-matter")
 				.withSSLContext(SSLContext.getDefault(), null)
 		);
-		assertEquals("https://somehost/token", tokenUrl.toString(),
-			"When the port is 443, OkHttp won't include it in the URL");
-	}
-
-	@Test
-	void buildTokenUrlWithNonStandardPort() throws Exception {
-		HttpUrl tokenUrl = new MarkLogicCloudAuthenticationConfigurer("somehost", 444).buildTokenUrl(
-			new DatabaseClientFactory.MarkLogicCloudAuthContext("doesnt-matter")
-				.withSSLContext(SSLContext.getDefault(), null)
-		);
-		assertEquals("https://somehost:444/token", tokenUrl.toString(),
-			"If the port isn't 443, then OkHttp will include it in the URL");
+		assertEquals("https://somehost/token", tokenUrl.toString());
 	}
 
 	/**
@@ -41,7 +30,7 @@ public class MarkLogicCloudAuthenticationConfigurerTest {
 	 */
 	@Test
 	void buildTokenUrlWithCustomTokenPath() throws Exception {
-		HttpUrl tokenUrl = new MarkLogicCloudAuthenticationConfigurer("otherhost", 443).buildTokenUrl(
+		HttpUrl tokenUrl = new MarkLogicCloudAuthenticationConfigurer("otherhost").buildTokenUrl(
 			new DatabaseClientFactory.MarkLogicCloudAuthContext("doesnt-matter", "/customToken", "doesnt-matter")
 				.withSSLContext(SSLContext.getDefault(), null)
 		);
@@ -50,7 +39,7 @@ public class MarkLogicCloudAuthenticationConfigurerTest {
 
 	@Test
 	void newFormBody() {
-		FormBody body = new MarkLogicCloudAuthenticationConfigurer("doesnt-matter", 443)
+		FormBody body = new MarkLogicCloudAuthenticationConfigurer("doesnt-matter")
 			.newFormBody(new DatabaseClientFactory.MarkLogicCloudAuthContext("myKey"));
 		assertEquals("grant_type", body.name(0));
 		assertEquals("apikey", body.value(0));
@@ -64,7 +53,7 @@ public class MarkLogicCloudAuthenticationConfigurerTest {
 	 */
 	@Test
 	void newFormBodyWithOverrides() {
-		FormBody body = new MarkLogicCloudAuthenticationConfigurer("doesnt-matter", 443)
+		FormBody body = new MarkLogicCloudAuthenticationConfigurer("doesnt-matter")
 			.newFormBody(new DatabaseClientFactory.MarkLogicCloudAuthContext("myKey", "doesnt-matter", "custom-grant-type"));
 		assertEquals("grant_type", body.name(0));
 		assertEquals("custom-grant-type", body.value(0));

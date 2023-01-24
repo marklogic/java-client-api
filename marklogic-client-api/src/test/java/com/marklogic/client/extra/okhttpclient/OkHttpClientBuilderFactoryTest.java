@@ -12,8 +12,7 @@ public class OkHttpClientBuilderFactoryTest {
 	@Test
 	void smokeTest() {
 		DatabaseClientFactory.Bean bean = Common.newClientBuilder().buildBean();
-		OkHttpClient.Builder builder = OkHttpClientBuilderFactory.newOkHttpClientBuilder(
-			bean.getHost(), bean.getPort(), bean.getSecurityContext());
+		OkHttpClient.Builder builder = OkHttpClientBuilderFactory.newOkHttpClientBuilder(bean.getHost(), bean.getSecurityContext());
 		assertNotNull(builder);
 
 		OkHttpClient client = builder.build();

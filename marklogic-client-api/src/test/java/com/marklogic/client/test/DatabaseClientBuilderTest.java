@@ -216,19 +216,4 @@ public class DatabaseClientBuilderTest {
 		assertEquals(Common.TRUST_ALL_MANAGER, context.getTrustManager());
 		assertEquals(DatabaseClientFactory.SSLHostnameVerifier.COMMON, context.getSSLHostnameVerifier());
 	}
-
-	@Test
-	void sslContextWithNoPort() throws Exception {
-		bean = new DatabaseClientBuilder()
-			.withSecurityContextType("DIGEST")
-			.withSSLContext(SSLContext.getDefault())
-			.buildBean();
-
-		assertTrue(bean.getSecurityContext() instanceof DatabaseClientFactory.DigestAuthContext);
-		assertNotNull(bean.getSecurityContext().getSSLContext());
-		assertEquals(443, bean.getPort(),
-			"If an SSLContext is provided with no port, then assume 443, as that's the standard port for HTTPS calls. " +
-				"That makes life a little simpler for MarkLogic Cloud users as well, as they don't need to worry about " +
-				"setting the port.");
-	}
 }
