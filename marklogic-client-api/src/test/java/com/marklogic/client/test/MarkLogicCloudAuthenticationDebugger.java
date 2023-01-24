@@ -17,10 +17,10 @@ public class MarkLogicCloudAuthenticationDebugger {
 	public static void main(String[] args) throws Exception {
 		String cloudHost = args[0];
 		String apiKey = args[1];
+		String basePath = args[2];
 		int port = 443;
 		String database = null;
 		DatabaseClient.ConnectionType connectionType = null;
-		String basePath = "/ml/etest/ml/manage/";
 		X509TrustManager trustManager = Common.TRUST_ALL_MANAGER;
 		SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
 		sslContext.init(null, new TrustManager[]{trustManager}, null);

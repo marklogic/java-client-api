@@ -241,5 +241,5 @@ task debugCloudAuth(type: JavaExec) {
 	description = "Test program for manual testing of cloud-based authentication against a MarkLogic Cloud instance"
 	main = 'com.marklogic.client.test.MarkLogicCloudAuthenticationDebugger'
 	classpath = sourceSets.test.runtimeClasspath
-	args = [tokenHost, tokenKey]
+	args = [cloudHost, cloudKey, cloudBasePath]
 }
