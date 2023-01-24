@@ -81,7 +81,7 @@ public class TestDatabaseAuthentication extends AbstractFunctionalTest {
       String filename = "text-original.txt";
 
       // connect the client
-      DatabaseClient client = newBasicAuthClient("rest-writer", "x");
+      DatabaseClient client = newDatabaseClientBuilder().withBasicAuth("rest-writer", "x").build();
 
       // write doc
       writeDocumentUsingStringHandle(client, filename, "/write-text-doc-basic/", "Text");

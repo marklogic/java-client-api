@@ -38,6 +38,13 @@ import java.util.function.Function;
 public class DatabaseClientBuilder {
 
 	public final static String PREFIX = "marklogic.client.";
+	public final static String SECURITY_CONTEXT_TYPE_BASIC = "basic";
+	public final static String SECURITY_CONTEXT_TYPE_DIGEST = "digest";
+	public final static String SECURITY_CONTEXT_TYPE_MARKLOGIC_CLOUD = "cloud";
+	public final static String SECURITY_CONTEXT_TYPE_KERBEROS = "kerberos";
+	public final static String SECURITY_CONTEXT_TYPE_CERTIFICATE = "certificate";
+	public final static String SECURITY_CONTEXT_TYPE_SAML = "saml";
+
 	private final Map<String, Object> props;
 
 	public DatabaseClientBuilder() {
@@ -113,9 +120,48 @@ public class DatabaseClientBuilder {
 		return this;
 	}
 
+	/**
+	 *
+	 * @param type must be one of "basic", "digest", "cloud", "kerberos", "certificate", or "saml"
+	 * @return
+	 */
 	public DatabaseClientBuilder withSecurityContextType(String type) {
 		props.put(PREFIX + "securityContextType", type);
 		return this;
+	}
+
+	public DatabaseClientBuilder withBasicAuth(String username, String password) {
+		return withSecurityContextType(SECURITY_CONTEXT_TYPE_BASIC)
+			.withUsername(username)
+			.withPassword(password);
+	}
+
+	public DatabaseClientBuilder withDigestAuth(String username, String password) {
+		return withSecurityContextType(SECURITY_CONTEXT_TYPE_DIGEST)
+			.withUsername(username)
+			.withPassword(password);
+	}
+
+	public DatabaseClientBuilder withMarkLogicCloudAuth(String apiKey, String basePath) {
+		return withSecurityContextType(SECURITY_CONTEXT_TYPE_MARKLOGIC_CLOUD)
+			.withCloudApiKey(apiKey)
+			.withBasePath(basePath);
+	}
+
+	public DatabaseClientBuilder withKerberosAuth(String principal) {
+		return withSecurityContextType(SECURITY_CONTEXT_TYPE_KERBEROS)
+			.withKerberosPrincipal(principal);
+	}
+
+	public DatabaseClientBuilder withCertificateAuth(String file, String password) {
+		return withSecurityContextType(SECURITY_CONTEXT_TYPE_CERTIFICATE)
+			.withCertificateFile(file)
+			.withCertificatePassword(password);
+	}
+
+	public DatabaseClientBuilder withSAMLAuth(String token) {
+		return withSecurityContextType(SECURITY_CONTEXT_TYPE_SAML)
+			.withSAMLToken(token);
 	}
 
 	public DatabaseClientBuilder withConnectionType(DatabaseClient.ConnectionType type) {

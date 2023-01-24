@@ -57,7 +57,7 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
         isML11OrHigher = version.getMajor() >= 11;
 
 		client = newDatabaseClientBuilder().build();
-		schemasClient = newClientForDatabase("java-functest-schemas");
+		schemasClient = newDatabaseClientBuilder().withDatabase("java-functest-schemas").build();
 		adminModulesClient = newAdminModulesClient();
 
         // Required to ensure that tests using the "/ext/" prefix work reliably. Expand to other directories as needed.
