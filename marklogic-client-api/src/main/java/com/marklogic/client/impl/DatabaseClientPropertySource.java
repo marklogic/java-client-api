@@ -31,6 +31,8 @@ import java.util.function.Function;
  * Contains the implementation for the {@code DatabaseClientFactory.newClient} method that accepts a function as a
  * property source. Implementation is here primarily to ease readability and avoid making the factory class any larger
  * than it already is.
+ *
+ * @since 6.1.0
  */
 public class DatabaseClientPropertySource {
 
@@ -117,17 +119,17 @@ public class DatabaseClientPropertySource {
 
 	private DatabaseClientFactory.SecurityContext newSecurityContext(String type) {
 		switch (type.toLowerCase()) {
-			case "basic":
+			case DatabaseClientBuilder.SECURITY_CONTEXT_TYPE_BASIC:
 				return newBasicAuthContext();
-			case "digest":
+			case DatabaseClientBuilder.SECURITY_CONTEXT_TYPE_DIGEST:
 				return newDigestAuthContext();
-			case "cloud":
+			case DatabaseClientBuilder.SECURITY_CONTEXT_TYPE_MARKLOGIC_CLOUD:
 				return newCloudAuthContext();
-			case "kerberos":
+			case DatabaseClientBuilder.SECURITY_CONTEXT_TYPE_KERBEROS:
 				return newKerberosAuthContext();
-			case "certificate":
+			case DatabaseClientBuilder.SECURITY_CONTEXT_TYPE_CERTIFICATE:
 				return newCertificateAuthContext();
-			case "saml":
+			case DatabaseClientBuilder.SECURITY_CONTEXT_TYPE_SAML:
 				return newSAMLAuthContext();
 			default:
 				throw new IllegalArgumentException("Unrecognized security context type: " + type);

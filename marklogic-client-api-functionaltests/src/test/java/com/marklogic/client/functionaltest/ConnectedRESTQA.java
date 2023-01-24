@@ -2027,24 +2027,10 @@ public abstract class ConnectedRESTQA {
 		return new DatabaseClientBuilder(props);
 	}
 
-	public static DatabaseClient newBasicAuthClient(String username, String password) {
-		return newDatabaseClientBuilder()
-			.withUsername(username)
-			.withPassword(password)
-			.withSecurityContextType("basic")
-			.build();
-	}
-
 	public static DatabaseClient newClientAsUser(String username, String password) {
 		return newDatabaseClientBuilder()
 			.withUsername(username)
 			.withPassword(password)
-			.build();
-	}
-
-	public static DatabaseClient newClientForDatabase(String database) {
-		return newDatabaseClientBuilder()
-			.withDatabase(database)
 			.build();
 	}
 

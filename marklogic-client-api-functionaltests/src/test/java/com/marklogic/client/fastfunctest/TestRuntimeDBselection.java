@@ -43,7 +43,7 @@ public class TestRuntimeDBselection extends AbstractFunctionalTest {
 		String originalServerAuthentication = getServerAuthentication(getRestServerName());
       try {
 		  setAuthentication("basic", getRestServerName());
-		client = newBasicAuthClient("eval-user", "x");
+		client = newDatabaseClientBuilder().withBasicAuth("eval-user", "x").build();
         String insertJSON = "xdmp:document-insert(\"test2.json\",object-node {\"test\":\"hello\"})";
         client.newServerEval().xquery(insertJSON).eval();
         String query1 = "fn:count(fn:doc())";

@@ -78,9 +78,7 @@ public class DatabaseClientBuilderTest {
 	@Test
 	void digest() {
 		bean = Common.newClientBuilder()
-			.withUsername("my-user")
-			.withPassword("my-password")
-			.withSecurityContextType("digest")
+			.withDigestAuth("my-user", "my-password")
 			.buildBean();
 
 		DatabaseClientFactory.DigestAuthContext context = (DatabaseClientFactory.DigestAuthContext) bean.getSecurityContext();
@@ -91,9 +89,7 @@ public class DatabaseClientBuilderTest {
 	@Test
 	void basic() {
 		bean = Common.newClientBuilder()
-			.withUsername("my-user")
-			.withPassword("my-password")
-			.withSecurityContextType("basic")
+			.withBasicAuth("my-user", "my-password")
 			.buildBean();
 
 		DatabaseClientFactory.BasicAuthContext context = (DatabaseClientFactory.BasicAuthContext) bean.getSecurityContext();
@@ -104,9 +100,7 @@ public class DatabaseClientBuilderTest {
 	@Test
 	void cloudWithBasePath() {
 		bean = Common.newClientBuilder()
-			.withSecurityContextType("cloud")
-			.withCloudApiKey("my-key")
-			.withBasePath("/my/path")
+			.withMarkLogicCloudAuth("my-key", "/my/path")
 			.buildBean();
 
 		DatabaseClientFactory.MarkLogicCloudAuthContext context =
@@ -127,8 +121,7 @@ public class DatabaseClientBuilderTest {
 	@Test
 	void kerberos() {
 		bean = Common.newClientBuilder()
-			.withSecurityContextType("kerberos")
-			.withKerberosPrincipal("someone")
+			.withKerberosAuth("someone")
 			.buildBean();
 
 		DatabaseClientFactory.KerberosAuthContext context = (DatabaseClientFactory.KerberosAuthContext) bean.getSecurityContext();
@@ -138,9 +131,7 @@ public class DatabaseClientBuilderTest {
 	@Test
 	void certificate() {
 		DatabaseClientBuilder builder = Common.newClientBuilder()
-			.withSecurityContextType("CERTificate")
-			.withCertificateFile("not.found")
-			.withCertificatePassword("passwd");
+			.withCertificateAuth("not.found", "passwd");
 
 		Exception ex = assertThrows(Exception.class, () -> builder.buildBean());
 		assertTrue(ex.getMessage().contains("Unable to create CertificateAuthContext"),
@@ -151,8 +142,7 @@ public class DatabaseClientBuilderTest {
 	@Test
 	void saml() {
 		bean = Common.newClientBuilder()
-			.withSecurityContextType("saml")
-			.withSAMLToken("my-token")
+			.withSAMLAuth("my-token")
 			.buildBean();
 
 		DatabaseClientFactory.SAMLAuthContext context = (DatabaseClientFactory.SAMLAuthContext) bean.getSecurityContext();
