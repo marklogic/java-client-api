@@ -1,6 +1,7 @@
 package com.marklogic.client.test;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientBuilder;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.io.JacksonHandle;
 
@@ -18,18 +19,13 @@ public class MarkLogicCloudAuthenticationDebugger {
 		String cloudHost = args[0];
 		String apiKey = args[1];
 		String basePath = args[2];
-		int port = 443;
-		String database = null;
-		DatabaseClient.ConnectionType connectionType = null;
-		X509TrustManager trustManager = Common.TRUST_ALL_MANAGER;
-		SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-		sslContext.init(null, new TrustManager[]{trustManager}, null);
 
-		DatabaseClient client = DatabaseClientFactory.newClient(
-			cloudHost, port, basePath, database,
-			new DatabaseClientFactory.MarkLogicCloudAuthContext(apiKey)
-				.withSSLContext(sslContext, trustManager)
-			, connectionType);
+		DatabaseClient client = new DatabaseClientBuilder()
+			.withHost(cloudHost)
+			.withMarkLogicCloudAuth(apiKey, basePath)
+			.withSSLContext(SSLContext.getDefault())
+			.withTrustManager(Common.TRUST_ALL_MANAGER)
+			.build();
 
 		DatabaseClient.ConnectionResult result = client.checkConnection();
 		if (result.getStatusCode() != 0) {
