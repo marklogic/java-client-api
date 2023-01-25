@@ -58,8 +58,9 @@ public class MarkLogicCloudAuthenticationConfigurer implements AuthenticationCon
 	private Response callTokenEndpoint(MarkLogicCloudAuthContext securityContext) {
 		final HttpUrl tokenUrl = buildTokenUrl(securityContext);
 		OkHttpClient.Builder clientBuilder = OkHttpUtil.newClientBuilder();
-		// Initial testing has shown that neither the OkHttp socket factory nor hostname verifier need to be configured
-		// for the goal of invoking the token endpoint.
+		// Current assumption is that the SSL config provided for connecting to MarkLogic should also be applicable
+		// for connecting to MarkLogic Cloud's "/token" endpoint.
+		OkHttpUtil.configureSocketFactory(clientBuilder, securityContext.getSSLContext(), securityContext.getTrustManager());
 
 		if (logger.isInfoEnabled()) {
 			logger.info("Calling token endpoint at: " + tokenUrl);
