@@ -167,6 +167,11 @@ public class DatabaseClientBuilderTest {
 		assertNotNull(bean.getSecurityContext().getSSLContext());
 		assertNull(bean.getSecurityContext().getTrustManager());
 		assertNull(bean.getSecurityContext().getSSLHostnameVerifier());
+
+		assertThrows(IllegalStateException.class, () -> bean.getSecurityContext().getSSLContext().getSocketFactory(),
+			"If an SSL protocol is provided with no trust manager, the builder is expected to create an instance of " +
+				"SSLContext but not to initialize it. Later on - via OkHttpUtil - the Java Client will attempt to " +
+				"initialize the SSLContext before using it by using the JVM's default trust manager.");
 	}
 
 	@Test
@@ -190,6 +195,12 @@ public class DatabaseClientBuilderTest {
 		assertNotNull(bean.getSecurityContext().getTrustManager());
 		assertEquals(Common.TRUST_ALL_MANAGER, bean.getSecurityContext().getTrustManager());
 		assertNull(bean.getSecurityContext().getSSLHostnameVerifier());
+
+		assertNotNull(bean.getSecurityContext().getSSLContext().getSocketFactory(),
+			"Since a protocol was provided with a trust manager, the builder is expected to initialize the " +
+				"SSLContext created via the protocol using the given trust manager. This is primarily intended to " +
+				"support a use case of providing a custom trust manager (often a 'trust all' one in a development or " +
+				"test environment) without forcing the user to initialize an SSLContext themselves.");
 	}
 
 	@Test

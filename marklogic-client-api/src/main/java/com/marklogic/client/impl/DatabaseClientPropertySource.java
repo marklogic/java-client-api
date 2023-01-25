@@ -21,6 +21,7 @@ import com.marklogic.client.DatabaseClientFactory;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
+import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -109,10 +110,12 @@ public class DatabaseClientPropertySource {
 		}
 		securityContext = newSecurityContext(type);
 
-		SSLContext sslContext = determineSSLContext();
+		X509TrustManager trustManager = determineTrustManager();
+		SSLContext sslContext = determineSSLContext(trustManager);
 		if (sslContext != null) {
-			securityContext.withSSLContext(sslContext, determineTrustManager());
+			securityContext.withSSLContext(sslContext, trustManager);
 		}
+
 		securityContext.withSSLHostnameVerifier(determineHostnameVerifier());
 		return securityContext;
 	}
@@ -180,10 +183,10 @@ public class DatabaseClientPropertySource {
 		);
 	}
 
-	private SSLContext determineSSLContext() {
-		Object sslContext = propertySource.apply(PREFIX + "sslContext");
-		if (sslContext instanceof SSLContext) {
-			return (SSLContext) sslContext;
+	private SSLContext determineSSLContext(X509TrustManager trustManager) {
+		SSLContext sslContext = (SSLContext) propertySource.apply(PREFIX + "sslContext");
+		if (sslContext != null) {
+			return sslContext;
 		}
 		String protocol = (String) propertySource.apply(PREFIX + "sslProtocol");
 		if (protocol != null) {
@@ -195,13 +198,21 @@ public class DatabaseClientPropertySource {
 				}
 			}
 			try {
-				// Note that if only a protocol is specified, and not a TrustManager, an attempt will later be made
-				// to use the JVM's default TrustManager
-				return SSLContext.getInstance(protocol);
+				sslContext = SSLContext.getInstance(protocol);
 			} catch (NoSuchAlgorithmException e) {
 				throw new RuntimeException("Unable to get SSLContext instance with protocol: " + protocol
 					+ "; cause: " + e.getMessage(), e);
 			}
+			// Note that if only a protocol is specified, and not a TrustManager, an attempt will later be made
+			// to use the JVM's default TrustManager
+			if (trustManager != null) {
+				try {
+					sslContext.init(null, new X509TrustManager[]{trustManager}, null);
+				} catch (KeyManagementException e) {
+					throw new RuntimeException("Unable to initialize SSLContext; protocol: " + protocol + "; cause: " + e.getMessage(), e);
+				}
+			}
+			return sslContext;
 		}
 		return null;
 	}
