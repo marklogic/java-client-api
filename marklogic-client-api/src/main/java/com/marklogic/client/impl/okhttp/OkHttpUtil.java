@@ -145,7 +145,7 @@ public abstract class OkHttpUtil {
 	 * @param sslContext
 	 * @param trustManager
 	 */
-	private static void configureSocketFactory(OkHttpClient.Builder clientBuilder, SSLContext sslContext, X509TrustManager trustManager) {
+	static void configureSocketFactory(OkHttpClient.Builder clientBuilder, SSLContext sslContext, X509TrustManager trustManager) {
 		/**
 		 * Per https://square.github.io/okhttp/3.x/okhttp/okhttp3/OkHttpClient.Builder.html#sslSocketFactory-javax.net.ssl.SSLSocketFactory- ,
 		 * OkHttp requires a TrustManager to be specified so that it can build a clean certificate chain. If trustManager
