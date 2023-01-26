@@ -1230,7 +1230,8 @@ public class DatabaseClientFactory {
 	 *     <li>marklogic.client.database = must be a String</li>
 	 *     <li>marklogic.client.connectionType = must be a String or instance of {@code ConnectionType}</li>
 	 *     <li>marklogic.client.securityContext = an instance of {@code SecurityContext}; if set, then all other
-	 *     properties pertaining to the construction of a {@code SecurityContext} will be ignored</li>
+	 *     properties pertaining to the construction of a {@code SecurityContext} will be ignored, including the
+	 *     properties pertaing to SSL</li>
 	 *     <li>marklogic.client.securityContextType = required if marklogic.client.securityContext is not set;
 	 *     must be a String and one of "basic", "digest", "cloud", "kerberos", "certificate", or "saml"</li>
 	 *     <li>marklogic.client.username = must be a String; required for basic and digest authentication</li>

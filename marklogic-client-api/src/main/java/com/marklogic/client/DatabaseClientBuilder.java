@@ -121,7 +121,6 @@ public class DatabaseClientBuilder {
 	}
 
 	/**
-	 *
 	 * @param type must be one of "basic", "digest", "cloud", "kerberos", "certificate", or "saml"
 	 * @return
 	 */
@@ -143,17 +142,9 @@ public class DatabaseClientBuilder {
 	}
 
 	public DatabaseClientBuilder withMarkLogicCloudAuth(String apiKey, String basePath) {
-		withSecurityContextType(SECURITY_CONTEXT_TYPE_MARKLOGIC_CLOUD)
+		return withSecurityContextType(SECURITY_CONTEXT_TYPE_MARKLOGIC_CLOUD)
 			.withCloudApiKey(apiKey)
 			.withBasePath(basePath);
-
-		// Assume sensible defaults for establishing an SSL connection. In the scenario where the user's JVM's
-		// truststore has a certificate matching that of the MarkLogic Cloud instance, this saves the user from having
-		// to configure anything except the API key and base path.
-		if (null == props.get(PREFIX + "sslProtocol") && null == props.get(PREFIX + "sslContext")) {
-			withSSLProtocol("default");
-		}
-		return this;
 	}
 
 	public DatabaseClientBuilder withKerberosAuth(String principal) {

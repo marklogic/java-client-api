@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Intent of this test is to cover code that cannot be covered by DatabaseClientBuilderTest.
@@ -26,6 +28,8 @@ public class DatabaseClientPropertySourceTest {
 	void beforeEach() {
 		props = new HashMap() {{
 			put(PREFIX + "securityContextType", "digest");
+			put(PREFIX + "username", "someuser");
+			put(PREFIX + "password", "someword");
 		}};
 	}
 
@@ -66,6 +70,30 @@ public class DatabaseClientPropertySourceTest {
 		props.put(PREFIX + "port", "8000");
 		bean = buildBean();
 		assertEquals(8000, bean.getPort());
+	}
+
+	@Test
+	void cloudAuthWithNoSslInputs() {
+		props.put(PREFIX + "securityContextType", "cloud");
+		props.put(PREFIX + "cloud.apiKey", "abc123");
+		props.put(PREFIX + "basePath", "/my/path");
+
+		bean = buildBean();
+
+		assertEquals("/my/path", bean.getBasePath());
+		assertTrue(bean.getSecurityContext() instanceof DatabaseClientFactory.MarkLogicCloudAuthContext);
+
+		DatabaseClientFactory.MarkLogicCloudAuthContext context = (DatabaseClientFactory.MarkLogicCloudAuthContext) bean.getSecurityContext();
+		assertEquals("abc123", context.getKey());
+
+		assertNotNull(context.getSSLContext(), "If cloud is chosen with no SSL protocol or context, the default JVM " +
+			"SSLContext should be used");
+
+		assertNotNull(context.getSSLContext().getSocketFactory(), "The default JVM SSLContext should already be " +
+			"initialized and thus it should be possible to get a socket factory from it");
+
+		assertNotNull(context.getTrustManager(), "If cloud is chosen with no SSL protocol or context, the default JVM " +
+			"trust manager should be used");
 	}
 
 	private DatabaseClientFactory.Bean buildBean() {
