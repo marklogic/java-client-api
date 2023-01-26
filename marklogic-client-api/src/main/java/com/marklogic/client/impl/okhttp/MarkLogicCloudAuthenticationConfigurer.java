@@ -61,6 +61,7 @@ public class MarkLogicCloudAuthenticationConfigurer implements AuthenticationCon
 		// Current assumption is that the SSL config provided for connecting to MarkLogic should also be applicable
 		// for connecting to MarkLogic Cloud's "/token" endpoint.
 		OkHttpUtil.configureSocketFactory(clientBuilder, securityContext.getSSLContext(), securityContext.getTrustManager());
+		OkHttpUtil.configureHostnameVerifier(clientBuilder, securityContext.getSSLHostnameVerifier());
 
 		if (logger.isInfoEnabled()) {
 			logger.info("Calling token endpoint at: " + tokenUrl);
