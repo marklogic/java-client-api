@@ -107,6 +107,15 @@ public class DatabaseClientBuilderTest {
 			(DatabaseClientFactory.MarkLogicCloudAuthContext) bean.getSecurityContext();
 		assertEquals("my-key", context.getKey());
 		assertEquals("/my/path", bean.getBasePath());
+
+		assertNotNull(context.getSSLContext(), "If no sslProtocol or sslContext is set, the JVM's default SSL " +
+			"context should be used");
+
+		assertNotNull(context.getSSLContext().getSocketFactory(), "Since the JVM's default SSL context is expected " +
+			"to be used, it should already be initialized, and thus able to return a socket factory");
+
+		assertNotNull(context.getTrustManager(), "Since the JVM's default SSL context is used, the JVM's default " +
+			"trust manager should be used as well if the user doesn't provide their own");
 	}
 
 	@Test
@@ -173,6 +182,27 @@ public class DatabaseClientBuilderTest {
 				"SSLContext but not to initialize it. Later on - via OkHttpUtil - the Java Client will attempt to " +
 				"initialize the SSLContext before using it by using the JVM's default trust manager.");
 	}
+
+	@Test
+	void defaultSslProtocolAndNoTrustManager() {
+		bean = Common.newClientBuilder()
+			.withSSLProtocol("default")
+			.buildBean();
+
+		DatabaseClientFactory.SecurityContext context = bean.getSecurityContext();
+		assertNotNull(context);
+
+		SSLContext sslContext = context.getSSLContext();
+		assertNotNull(sslContext);
+		assertNotNull(sslContext.getSocketFactory(), "A protocol of 'default' should result in the JVM's default " +
+			"SSLContext being used, which is expected to have been initialized already and can thus return a socket " +
+			"factory");
+
+		assertNotNull(context.getTrustManager(), "If the user specifies a protocol of 'default' but does not " +
+			"provide a trust manager, the assumption is that the JVM's default trust manager should be used, thus " +
+			"saving the user from having to do the work of providing this themselves.");
+	}
+
 
 	@Test
 	void invalidSslProtocol() {

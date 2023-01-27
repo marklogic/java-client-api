@@ -18,6 +18,8 @@ package com.marklogic.client.impl;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientBuilder;
 import com.marklogic.client.DatabaseClientFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
@@ -37,7 +39,8 @@ import java.util.function.Function;
  */
 public class DatabaseClientPropertySource {
 
-	private final static String PREFIX = DatabaseClientBuilder.PREFIX;
+	private static final Logger logger = LoggerFactory.getLogger(DatabaseClientPropertySource.class);
+	private static final String PREFIX = DatabaseClientBuilder.PREFIX;
 
 	private final Function<String, Object> propertySource;
 
@@ -225,6 +228,18 @@ public class DatabaseClientPropertySource {
 			}
 			throw new IllegalArgumentException(
 				String.format("Trust manager must be an instance of %s", X509TrustManager.class.getName()));
+		}
+		// If the user chooses the "default" SSLContext, then it's already been initialized - but OkHttp still
+		// needs a separate X509TrustManager, so use the JVM's default trust manager. The assumption is that the
+		// default SSLContext was initialized with the JVM's default trust manager. A user can of course always override
+		// this by simply providing their own trust manager.
+		if ("default".equalsIgnoreCase((String) propertySource.apply(PREFIX + "sslProtocol"))) {
+			X509TrustManager defaultTrustManager = SSLUtil.getDefaultTrustManager();
+			if (logger.isDebugEnabled() && defaultTrustManager != null && defaultTrustManager.getAcceptedIssuers() != null) {
+				logger.debug("Count of accepted issuers in default trust manager: {}",
+					defaultTrustManager.getAcceptedIssuers().length);
+			}
+			return defaultTrustManager;
 		}
 		return null;
 	}

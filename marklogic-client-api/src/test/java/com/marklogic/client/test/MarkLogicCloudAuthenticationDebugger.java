@@ -5,13 +5,13 @@ import com.marklogic.client.DatabaseClientBuilder;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.io.JacksonHandle;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
 /**
  * We don't yet have a way to run tests against a MarkLogic Cloud instance. In the meantime, this program and its
  * related Gradle task can be used for easy manual testing.
+ *
+ * For local testing against the ReverseProxyServer in the test-app project, which emulates MarkLogic Cloud, use
+ * "localhost" as the cloud host, "username:password" (often "admin:the admin password") as the apiKey, and
+ * "local/manage" as the basePath.
  */
 public class MarkLogicCloudAuthenticationDebugger {
 
@@ -20,11 +20,12 @@ public class MarkLogicCloudAuthenticationDebugger {
 		String apiKey = args[1];
 		String basePath = args[2];
 
+		// Expected to default to the JVM's default SSL context and default trust manager
 		DatabaseClient client = new DatabaseClientBuilder()
 			.withHost(cloudHost)
 			.withMarkLogicCloudAuth(apiKey, basePath)
-			.withSSLContext(SSLContext.getDefault())
-			.withTrustManager(Common.TRUST_ALL_MANAGER)
+			// Have to use "ANY", as the default is "COMMON", which won't work for our selfsigned cert
+			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
 			.build();
 
 		DatabaseClient.ConnectionResult result = client.checkConnection();

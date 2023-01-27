@@ -3,6 +3,7 @@ package com.marklogic.client.impl.okhttp;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.impl.HTTPKerberosAuthInterceptor;
 import com.marklogic.client.impl.HTTPSamlAuthInterceptor;
+import com.marklogic.client.impl.SSLUtil;
 import okhttp3.ConnectionPool;
 import okhttp3.CookieJar;
 import okhttp3.Dns;
@@ -13,15 +14,11 @@ import javax.net.SocketFactory;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -123,7 +120,7 @@ public abstract class OkHttpUtil {
 	 * @param clientBuilder
 	 * @param sslVerifier
 	 */
-	private static void configureHostnameVerifier(OkHttpClient.Builder clientBuilder, DatabaseClientFactory.SSLHostnameVerifier sslVerifier) {
+	static void configureHostnameVerifier(OkHttpClient.Builder clientBuilder, DatabaseClientFactory.SSLHostnameVerifier sslVerifier) {
 		HostnameVerifier hostnameVerifier = null;
 		if (DatabaseClientFactory.SSLHostnameVerifier.ANY.equals(sslVerifier)) {
 			hostnameVerifier = (hostname, session) -> true;
@@ -169,25 +166,16 @@ public abstract class OkHttpUtil {
 	 * @param sslContext
 	 */
 	private static void initializeSslContext(OkHttpClient.Builder clientBuilder, SSLContext sslContext) {
+		TrustManager[] trustManagers = SSLUtil.getDefaultTrustManagers();
 		try {
-			TrustManagerFactory trustMgrFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-			trustMgrFactory.init((KeyStore) null);
-			TrustManager[] trustMgrs = trustMgrFactory.getTrustManagers();
-			if (trustMgrs == null || trustMgrs.length == 0) {
-				throw new IllegalArgumentException("no trust manager and could not get default trust manager");
-			}
-			if (!(trustMgrs[0] instanceof X509TrustManager)) {
-				throw new IllegalArgumentException("no trust manager and default is not an X509TrustManager");
-			}
-			sslContext.init(null, trustMgrs, null);
-			clientBuilder.sslSocketFactory(new SSLSocketFactoryDelegator(sslContext.getSocketFactory()), (X509TrustManager) trustMgrs[0]);
-		} catch (KeyStoreException e) {
-			throw new IllegalArgumentException("no trust manager and cannot initialize factory for default", e);
-		} catch (NoSuchAlgorithmException e) {
-			throw new IllegalArgumentException("no trust manager and no algorithm for default manager", e);
+			// In a future release, we may want to check if getSocketFactory() works already, implying that the
+			// SSLContext has already been initialized. However, if that's the case, then it's not guaranteed that
+			// the default trust manager is the appropriate one to pass to OkHttp.
+			sslContext.init(null, trustManagers, null);
 		} catch (KeyManagementException e) {
-			throw new IllegalArgumentException("no trust manager and cannot initialize context with default", e);
+			throw new RuntimeException("Unable to initialize SSLContext; cause: " + e.getMessage(), e);
 		}
+		clientBuilder.sslSocketFactory(new SSLSocketFactoryDelegator(sslContext.getSocketFactory()), (X509TrustManager) trustManagers[0]);
 	}
 
 	static class DnsImpl implements Dns {
