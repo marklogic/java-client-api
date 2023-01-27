@@ -40,7 +40,6 @@ public class DeleteListenerTest extends BasicJavaClientREST {
   private static final String TEST_DIR_PREFIX = "/WriteHostBatcher-testdata/";
 
   private static DatabaseClient dbClient;
-  private static String host = null;
   private static String user = "admin";
   private static int port = 8000;
   private static String password = "admin";
@@ -64,7 +63,6 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     server = getRestAppServerName();
     port = getRestAppServerPort();
 
-    host = getRestAppServerHostName();
     hostNames = getHosts();
     createDB(dbName);
     Thread.currentThread().sleep(500L);
@@ -124,16 +122,6 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     Thread.currentThread().sleep(1000L);
     WriteBatcher ihb2 = dmManager.newWriteBatcher();
     ihb2.withBatchSize(27).withThreadCount(10);
-    ihb2.onBatchSuccess(
-        batch -> {
-
-        }
-        )
-        .onBatchFailure(
-            (batch, throwable) -> {
-              throwable.printStackTrace();
-            });
-
     dmManager.startJob(ihb2);
     for (int j = 0; j < 2000; j++) {
       String uri = "/local/json-" + j;
@@ -141,7 +129,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     }
 
     ihb2.flushAndWait();
-    assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
+    assertEquals(2000, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
   }
 
   @AfterEach
@@ -154,7 +142,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     HashSet<String> urisList = new HashSet<>();
 
     assertTrue(urisList.isEmpty());
-    assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
+    assertEquals(2000, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 
     QueryBatcher queryBatcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("DeleteListener"))
         .withBatchSize(11, 1)
@@ -175,7 +163,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     dmManager.stopJob(ticket);
 
     Thread.currentThread().sleep(2000L);
-    assertTrue(urisList.size() == 2000);
+    assertEquals(2000, urisList.size());
 
     AtomicInteger successDocs = new AtomicInteger();
     HashSet<String> uris2 = new HashSet<>();
@@ -198,7 +186,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
 
     if (failures2.length() > 0)
       fail(failures2.toString());
-    assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+    assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
   }
 
   @Test
@@ -226,7 +214,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     queryBatcher.awaitCompletion();
     dmManager.stopJob(ticket);
 
-    assertTrue(urisList.size() == 2000);
+    assertEquals(2000, urisList.size());
 
     AtomicInteger successDocs = new AtomicInteger();
     HashSet<String> uris2 = new HashSet<>();
@@ -249,7 +237,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
 
     if (failures2.length() > 0)
       fail(failures2.toString());
-    assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+    assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
   }
 
   @Test
@@ -309,7 +297,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
 
     if (failures2.length() > 0)
       fail(failures2.toString());
-    assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
+    assertEquals(2000, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
   }
 
   // ISSUE 94
@@ -396,7 +384,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
   }
 
   @Test
-  public void deleteEmptyIterator() throws Exception {
+  public void deleteEmptyIterator() {
 
     HashSet<String> urisList = new HashSet<>();
 
@@ -419,27 +407,27 @@ public class DeleteListenerTest extends BasicJavaClientREST {
 
     if (failures2.length() > 0)
       fail(failures2.toString());
-    assertTrue(successDocs.intValue() == 0);
-    assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
+    assertEquals(0, successDocs.intValue());
+    assertEquals(2000, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
   }
 
   @Test
   public void deleteOnDiskUris() throws Exception {
     String pathname = "uriCache.txt";
-    assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
+    assertEquals(2000, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 
     ArrayList<String> foundUris = getUris();
     ArrayList<String> diskUris = writeUrisToDisk();
 
-    assertTrue(foundUris.size() == diskUris.size());
+    assertEquals(foundUris.size(), diskUris.size());
 
     File file = new File(pathname);
     assertTrue(file.exists());
 
     ArrayList<String> deletedUris = deleteDocuments(pathname);
 
-    assertTrue(foundUris.size() == deletedUris.size());
-    assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+    assertEquals(foundUris.size(), deletedUris.size());
+    assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
     file.delete();
   }
 

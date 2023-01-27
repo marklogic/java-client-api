@@ -2024,7 +2024,9 @@ public abstract class ConnectedRESTQA {
 	public static DatabaseClientBuilder newDatabaseClientBuilder() {
 		Map<String, Object> props = new HashMap<>();
 		testProperties.entrySet().forEach(entry -> props.put((String) entry.getKey(), entry.getValue()));
-		return new DatabaseClientBuilder(props);
+		DatabaseClientBuilder builder = new DatabaseClientBuilder(props);
+		// Have to override the port so that the "slow" functional tests can still hit 8011
+		return builder.withPort(getRestServerPort());
 	}
 
 	public static DatabaseClient newClientAsUser(String username, String password) {
