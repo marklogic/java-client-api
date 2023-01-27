@@ -26,7 +26,7 @@ public class DatabaseClientBuilderTest {
 		bean = new DatabaseClientBuilder()
 			.withHost("myhost")
 			.withPort(8000)
-			.withSecurityContextType("digest")
+			.withBasicAuth("someuser", "someword")
 			.buildBean();
 
 		assertEquals("myhost", bean.getHost());
@@ -34,7 +34,7 @@ public class DatabaseClientBuilderTest {
 		assertNull(bean.getDatabase());
 		assertNull(bean.getBasePath());
 		assertNull(bean.getConnectionType());
-		assertTrue(bean.getSecurityContext() instanceof DatabaseClientFactory.DigestAuthContext);
+		assertTrue(bean.getSecurityContext() instanceof DatabaseClientFactory.BasicAuthContext);
 	}
 
 	@Test
@@ -42,7 +42,7 @@ public class DatabaseClientBuilderTest {
 		bean = new DatabaseClientBuilder()
 			.withHost("myhost")
 			.withPort(8000)
-			.withSecurityContextType("digest")
+			.withDigestAuth("someuser", "someword")
 			.withBasePath("/my/path")
 			.withDatabase("Documents")
 			.withConnectionType(DatabaseClient.ConnectionType.DIRECT)
@@ -62,7 +62,7 @@ public class DatabaseClientBuilderTest {
 			.withHost("some-host")
 			.withPort(10)
 			.buildBean());
-		assertEquals("Must define a security context or security context type", ex.getMessage());
+		assertEquals("Security context should be set, or security context type must be of type String", ex.getMessage());
 	}
 
 	@Test
@@ -124,7 +124,7 @@ public class DatabaseClientBuilderTest {
 			.withSecurityContextType("cloud")
 			.withBasePath("/my/path")
 			.build());
-		assertEquals("No API key provided", ex.getMessage());
+		assertEquals("cloud.apiKey must be of type String", ex.getMessage());
 	}
 
 	@Test
