@@ -34,5 +34,5 @@ task runBlockingReverseProxyServer(type: JavaExec) {
 		"sudo ./gradlew runBlockingReverseProxyServer -PrpsHttpsPort=443 ."
 	classpath = sourceSets.main.runtimeClasspath
 	main = "com.marklogic.client.test.ReverseProxyServer"
-	args = [rpsMarkLogicServer, rpsProxyServer, rpsHttpPort, rpsHttpsPort]
+	args = [rpsMarkLogicServer, rpsProxyServer, rpsHttpPort, rpsHttpsPort, rpsCustomMappings]
 }

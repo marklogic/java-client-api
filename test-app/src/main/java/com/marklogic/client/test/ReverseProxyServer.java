@@ -30,8 +30,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.security.KeyStore;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -73,6 +75,7 @@ public class ReverseProxyServer extends LoggingObject {
 		String serverHost = "localhost";
 		int serverPort = 8020;
 		int secureServerPort = 0;
+		List<String> customMappings = new ArrayList<>();
 
 		if (args.length > 0) {
 			markLogicHost = args[0];
@@ -82,15 +85,18 @@ public class ReverseProxyServer extends LoggingObject {
 					serverPort = Integer.parseInt(args[2]);
 					if (args.length > 3) {
 						secureServerPort = Integer.parseInt(args[3]);
+						if (args.length > 4) {
+							customMappings = Arrays.asList(args[4].split(","));
+						}
 					}
 				}
 			}
 		}
 
-		new ReverseProxyServer(markLogicHost, serverHost, serverPort, secureServerPort);
+		new ReverseProxyServer(markLogicHost, serverHost, serverPort, secureServerPort, customMappings);
 	}
 
-	public ReverseProxyServer(String markLogicHost, String serverHost, int serverPort, int secureServerPort) throws Exception {
+	public ReverseProxyServer(String markLogicHost, String serverHost, int serverPort, int secureServerPort, List<String> customMappings) throws Exception {
 		logger.info("MarkLogic host: {}", markLogicHost);
 		logger.info("Proxy server host: {}", serverHost);
 		logger.info("Proxy server HTTP port: {}", serverPort);
@@ -117,6 +123,10 @@ public class ReverseProxyServer extends LoggingObject {
 		// Emulate MarkLogic Cloud "/token" requests by mapping to the handler defined below that can respond to
 		// these requests in a suitable fashion for manual testing.
 		mapping.put("/token", new URI(String.format("http://%s:8022", serverHost)));
+
+		for (int i = 0; i < customMappings.size(); i += 2) {
+			mapping.put(customMappings.get(i), new URI(String.format("http://%s:%s", serverHost, customMappings.get(i + 1))));
+		}
 
 		mapping.entrySet().forEach(entry -> {
 			logger.info("Mapped: " + entry.getKey() + " : " + entry.getValue());
