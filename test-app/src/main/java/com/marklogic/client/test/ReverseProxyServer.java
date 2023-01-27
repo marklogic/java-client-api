@@ -246,8 +246,8 @@ public class ReverseProxyServer extends LoggingObject {
 		 */
 		private void replaceFakeMarkLogicCloudHeaderIfNecessary(HttpServerExchange exchange) {
 			final String auth = exchange.getRequestHeaders().getFirst("Authorization");
-			final String fakeBearerIndicator = "Bearer " + FAKE_ACCESS_TOKEN_INDICATOR;
-			if (auth != null && auth.startsWith(fakeBearerIndicator)) {
+			final String fakeBearerIndicator = "BEARER " + FAKE_ACCESS_TOKEN_INDICATOR;
+			if (auth != null && auth.toUpperCase().startsWith(fakeBearerIndicator)) {
 				String basicAuthValue = auth.substring(fakeBearerIndicator.length());
 				logger.info("Replacing fake MarkLogic Cloud Authorization header with a basic Authorization header: " + basicAuthValue);
 				exchange.getRequestHeaders().put(Headers.AUTHORIZATION, basicAuthValue);
