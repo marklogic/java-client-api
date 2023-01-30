@@ -300,76 +300,80 @@ public class HandleAsTest {
     client.release();
   }
 
-  @Test
-  public void testHandleRegistry() {
-    int[] iterations = {1,2};
-    for (int i: iterations) {
-      DatabaseClientFactory.Bean clientFactoryBean = (i == 1) ? null : makeClientFactoryBean();
+	@Test
+	void testHandleRegistryWithClientFactoryBean() {
+		verifyHandleRegistry(makeClientFactoryBean());
+	}
 
-      HandleFactoryRegistry registry =
-        (i == 1) ? DatabaseClientFactory.getHandleRegistry()
-                 : clientFactoryBean.getHandleRegistry();
+	@Test
+	void testHandleRegistryWithoutClientFactoryBean() {
+		verifyHandleRegistry(null);
+	}
 
-      registry.register(new BufferHandleFactory());
-      assertTrue(registry.isRegistered(StringBuilder.class));
+	private void verifyHandleRegistry(DatabaseClientFactory.Bean clientFactoryBean) {
+		HandleFactoryRegistry registry = clientFactoryBean == null ?
+			DatabaseClientFactory.getHandleRegistry() :
+			clientFactoryBean.getHandleRegistry();
 
-      Set<Class<?>> registered = registry.listRegistered();
-      assertTrue(registered.contains(StringBuilder.class));
+		registry.register(new BufferHandleFactory());
+		assertTrue(registry.isRegistered(StringBuilder.class));
 
-      ContentHandle<StringBuilder> handle = registry.makeHandle(StringBuilder.class);
-      assertNotNull(handle);
-      assertEquals(handle.getClass(),BufferHandle.class);
+		Set<Class<?>> registered = registry.listRegistered();
+		assertTrue(registered.contains(StringBuilder.class));
 
-      // instantiate a client with a copy of the registry
-      DatabaseClient client =
-        (i == 1) ? DatabaseClientFactory.newClient(Common.HOST, Common.PORT, Common.newSecurityContext(Common.USER, Common.PASS))
-                 : clientFactoryBean.newClient();
+		ContentHandle<StringBuilder> handle = registry.makeHandle(StringBuilder.class);
+		assertNotNull(handle);
+		assertEquals(handle.getClass(),BufferHandle.class);
 
-      registry.unregister(StringBuilder.class);
-      assertTrue(!registry.isRegistered(StringBuilder.class));
+		// instantiate a client with a copy of the registry
+		DatabaseClient client = clientFactoryBean == null ?
+			Common.newClientBuilder().build() :
+			clientFactoryBean.newClient();
 
-      String beforeText = "A simple text document";
+		registry.unregister(StringBuilder.class);
+		assertTrue(!registry.isRegistered(StringBuilder.class));
 
-      TextDocumentManager textMgr = client.newTextDocumentManager();
-      String textDocId = "/test/testAs1.txt";
+		String beforeText = "A simple text document";
 
-      // use the handled class
-      StringBuilder buffer = new StringBuilder();
-      buffer.append(beforeText);
+		TextDocumentManager textMgr = client.newTextDocumentManager();
+		String textDocId = "/test/testAs1.txt";
 
-      textMgr.writeAs(textDocId, buffer);
-      buffer = textMgr.readAs(textDocId, StringBuilder.class);
-      textMgr.delete(textDocId);
-      assertEquals(beforeText, buffer.toString());
+		// use the handled class
+		StringBuilder buffer = new StringBuilder();
+		buffer.append(beforeText);
 
-      boolean threwError = false;
-      try {
-        textMgr.writeAs(textDocId, new Integer(5));
-      } catch(Exception e) {
-        threwError = true;
-      }
-      assertTrue(threwError);
+		textMgr.writeAs(textDocId, buffer);
+		buffer = textMgr.readAs(textDocId, StringBuilder.class);
+		textMgr.delete(textDocId);
+		assertEquals(beforeText, buffer.toString());
 
-      threwError = false;
-      try {
-        textMgr.readAs(textDocId, Integer.class);
-      } catch(Exception e) {
-        threwError = true;
-      }
-      assertTrue(threwError);
+		boolean threwError = false;
+		try {
+			textMgr.writeAs(textDocId, new Integer(5));
+		} catch(Exception e) {
+			threwError = true;
+		}
+		assertTrue(threwError);
 
-      client.release();
-    }
-  }
+		threwError = false;
+		try {
+			textMgr.readAs(textDocId, Integer.class);
+		} catch(Exception e) {
+			threwError = true;
+		}
+		assertTrue(threwError);
 
-  private DatabaseClientFactory.Bean makeClientFactoryBean() {
-    DatabaseClientFactory.Bean clientFactoryBean = new DatabaseClientFactory.Bean();
-    clientFactoryBean.setHost(Common.HOST);
-    clientFactoryBean.setPort(Common.PORT);
-	clientFactoryBean.setBasePath(Common.BASE_PATH);
-	clientFactoryBean.setSecurityContext(Common.newSecurityContext(Common.USER, Common.PASS));
-    return clientFactoryBean;
-  }
+		client.release();
+	}
+
+	private DatabaseClientFactory.Bean makeClientFactoryBean() {
+		DatabaseClientFactory.Bean clientFactoryBean = new DatabaseClientFactory.Bean();
+		clientFactoryBean.setHost(Common.HOST);
+		clientFactoryBean.setPort(Common.PORT);
+		clientFactoryBean.setBasePath(Common.BASE_PATH);
+		clientFactoryBean.setSecurityContext(Common.newSecurityContext(Common.USER, Common.PASS));
+		return clientFactoryBean;
+	}
 
   static public class BufferHandle
     extends BaseHandle<String, String>
