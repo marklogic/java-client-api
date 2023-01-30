@@ -27,7 +27,7 @@ public class DatabaseClientPropertySourceTest {
 	@BeforeEach
 	void beforeEach() {
 		props = new HashMap() {{
-			put(PREFIX + "securityContextType", "digest");
+			put(PREFIX + "authType", "digest");
 			put(PREFIX + "username", "someuser");
 			put(PREFIX + "password", "someword");
 		}};
@@ -74,7 +74,7 @@ public class DatabaseClientPropertySourceTest {
 
 	@Test
 	void cloudAuthWithNoSslInputs() {
-		props.put(PREFIX + "securityContextType", "cloud");
+		props.put(PREFIX + "authType", "cloud");
 		props.put(PREFIX + "cloud.apiKey", "abc123");
 		props.put(PREFIX + "basePath", "/my/path");
 
@@ -84,7 +84,7 @@ public class DatabaseClientPropertySourceTest {
 		assertTrue(bean.getSecurityContext() instanceof DatabaseClientFactory.MarkLogicCloudAuthContext);
 
 		DatabaseClientFactory.MarkLogicCloudAuthContext context = (DatabaseClientFactory.MarkLogicCloudAuthContext) bean.getSecurityContext();
-		assertEquals("abc123", context.getKey());
+		assertEquals("abc123", context.getApiKey());
 
 		assertNotNull(context.getSSLContext(), "If cloud is chosen with no SSL protocol or context, the default JVM " +
 			"SSLContext should be used");

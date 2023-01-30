@@ -51,7 +51,7 @@ public class Common {
 
   final public static boolean USE_REVERSE_PROXY_SERVER = Boolean.parseBoolean(System.getProperty("TEST_USE_REVERSE_PROXY_SERVER", "false"));
   final public static int     PORT          = USE_REVERSE_PROXY_SERVER ? 8020 : Integer.parseInt(System.getProperty("TEST_PORT", "8012"));
-  final public static String SECURITY_CONTEXT_TYPE = USE_REVERSE_PROXY_SERVER ? "basic" : System.getProperty("TEST_SECURITY_CONTEXT_TYPE", "digest");
+  final public static String AUTH_TYPE = USE_REVERSE_PROXY_SERVER ? "basic" : System.getProperty("TEST_AUTH_TYPE", "digest");
   final public static String BASE_PATH = USE_REVERSE_PROXY_SERVER ? "test/marklogic/unit" : System.getProperty("TEST_BASE_PATH", null);
   final public static boolean WITH_WAIT     = Boolean.parseBoolean(System.getProperty("TEST_WAIT", "false"));
   final public static int     PROPERTY_WAIT = Integer.parseInt(System.getProperty("TEST_PROPERTY_WAIT", WITH_WAIT ? "8200" : "0"));
@@ -114,7 +114,7 @@ public class Common {
   }
 
   public static DatabaseClientFactory.SecurityContext newSecurityContext(String username, String password) {
-    if ("basic".equalsIgnoreCase(SECURITY_CONTEXT_TYPE)) {
+    if ("basic".equalsIgnoreCase(AUTH_TYPE)) {
       return new DatabaseClientFactory.BasicAuthContext(username, password);
     }
     return new DatabaseClientFactory.DigestAuthContext(username, password);
@@ -127,7 +127,7 @@ public class Common {
 		  .withBasePath(BASE_PATH)
 		  .withUsername(USER)
 		  .withPassword(PASS) // Most of the test users all have the same password, so we can use a default one here
-		  .withSecurityContextType(SECURITY_CONTEXT_TYPE)
+		  .withAuthType(AUTH_TYPE)
 		  .withConnectionType(CONNECTION_TYPE);
   }
 
