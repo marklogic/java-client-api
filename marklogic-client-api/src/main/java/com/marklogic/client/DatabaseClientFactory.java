@@ -1259,37 +1259,6 @@ public class DatabaseClientFactory {
 	}
 
   /**
-   * Creates a client to access the database by means of a REST server
-   * without any authentication. Such clients can be convenient for
-   * experimentation but should not be used in production.
-   *
-   * @param host	the host with the REST server
-   * @param port	the port for the REST server
-   * @return	a new client for making database requests
-   */
-  static public DatabaseClient newClient(String host, int port) {
-    return newClient(host, port, null, null, null, null, null, null);
-  }
-
-  /**
-   * Creates a client to access the database by means of a REST server
-   * without any authentication. Such clients can be convenient for
-   * experimentation but should not be used in production.
-   *
-   * A data service interface can only call an endpoint for the configured content database
-   * of the appserver. You cannot specify the database when constructing a client for working
-   * with a data service.
-   *
-   * @param host	the host with the REST server
-   * @param port	the port for the REST server
-   * @param database	the database to access (default: configured database for the REST server)
-   * @return	a new client for making database requests
-   */
-  static public DatabaseClient newClient(String host, int port, String database) {
-    return newClient(host, port, database, null, null, null, null, null);
-  }
-
-  /**
    * Creates a client to access the database by means of a REST server.
    *
    * @param host the host with the REST server
