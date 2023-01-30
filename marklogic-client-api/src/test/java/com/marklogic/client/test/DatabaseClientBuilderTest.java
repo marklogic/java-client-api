@@ -62,17 +62,17 @@ public class DatabaseClientBuilderTest {
 			.withHost("some-host")
 			.withPort(10)
 			.buildBean());
-		assertEquals("Security context should be set, or security context type must be of type String", ex.getMessage());
+		assertEquals("Security context should be set, or auth type must be of type String", ex.getMessage());
 	}
 
 	@Test
-	void invalidSecurityContextType() {
+	void invalidAuthType() {
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> new DatabaseClientBuilder()
 			.withHost("another-host")
 			.withPort(200)
-			.withSecurityContextType("invalid-type")
+			.withAuthType("invalid-type")
 			.buildBean());
-		assertEquals("Unrecognized security context type: invalid-type", ex.getMessage());
+		assertEquals("Unrecognized auth type: invalid-type", ex.getMessage());
 	}
 
 	@Test
@@ -105,7 +105,7 @@ public class DatabaseClientBuilderTest {
 
 		DatabaseClientFactory.MarkLogicCloudAuthContext context =
 			(DatabaseClientFactory.MarkLogicCloudAuthContext) bean.getSecurityContext();
-		assertEquals("my-key", context.getKey());
+		assertEquals("my-key", context.getApiKey());
 		assertEquals("/my/path", bean.getBasePath());
 
 		assertNotNull(context.getSSLContext(), "If no sslProtocol or sslContext is set, the JVM's default SSL " +
@@ -121,7 +121,7 @@ public class DatabaseClientBuilderTest {
 	@Test
 	void cloudNoApiKey() {
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> Common.newClientBuilder()
-			.withSecurityContextType("cloud")
+			.withAuthType("cloud")
 			.withBasePath("/my/path")
 			.build());
 		assertEquals("cloud.apiKey must be of type String", ex.getMessage());

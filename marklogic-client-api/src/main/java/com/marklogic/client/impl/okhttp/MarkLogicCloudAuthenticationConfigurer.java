@@ -36,7 +36,7 @@ public class MarkLogicCloudAuthenticationConfigurer implements AuthenticationCon
 
 	@Override
 	public void configureAuthentication(OkHttpClient.Builder clientBuilder, MarkLogicCloudAuthContext securityContext) {
-		final String apiKey = securityContext.getKey();
+		final String apiKey = securityContext.getApiKey();
 		if (apiKey == null || apiKey.trim().length() < 1) {
 			throw new IllegalArgumentException("No API key provided");
 		}
@@ -97,7 +97,7 @@ public class MarkLogicCloudAuthenticationConfigurer implements AuthenticationCon
 	protected FormBody newFormBody(MarkLogicCloudAuthContext securityContext) {
 		return new FormBody.Builder()
 			.add("grant_type", securityContext.getGrantType())
-			.add("key", securityContext.getKey()).build();
+			.add("key", securityContext.getApiKey()).build();
 	}
 
 	private String getAccessTokenFromResponse(Response response) {

@@ -38,12 +38,12 @@ import java.util.function.Function;
 public class DatabaseClientBuilder {
 
 	public final static String PREFIX = "marklogic.client.";
-	public final static String SECURITY_CONTEXT_TYPE_BASIC = "basic";
-	public final static String SECURITY_CONTEXT_TYPE_DIGEST = "digest";
-	public final static String SECURITY_CONTEXT_TYPE_MARKLOGIC_CLOUD = "cloud";
-	public final static String SECURITY_CONTEXT_TYPE_KERBEROS = "kerberos";
-	public final static String SECURITY_CONTEXT_TYPE_CERTIFICATE = "certificate";
-	public final static String SECURITY_CONTEXT_TYPE_SAML = "saml";
+	public final static String AUTH_TYPE_BASIC = "basic";
+	public final static String AUTH_TYPE_DIGEST = "digest";
+	public final static String AUTH_TYPE_MARKLOGIC_CLOUD = "cloud";
+	public final static String AUTH_TYPE_KERBEROS = "kerberos";
+	public final static String AUTH_TYPE_CERTIFICATE = "certificate";
+	public final static String AUTH_TYPE_SAML = "saml";
 
 	private final Map<String, Object> props;
 
@@ -124,42 +124,42 @@ public class DatabaseClientBuilder {
 	 * @param type must be one of "basic", "digest", "cloud", "kerberos", "certificate", or "saml"
 	 * @return
 	 */
-	public DatabaseClientBuilder withSecurityContextType(String type) {
-		props.put(PREFIX + "securityContextType", type);
+	public DatabaseClientBuilder withAuthType(String type) {
+		props.put(PREFIX + "authType", type);
 		return this;
 	}
 
 	public DatabaseClientBuilder withBasicAuth(String username, String password) {
-		return withSecurityContextType(SECURITY_CONTEXT_TYPE_BASIC)
+		return withAuthType(AUTH_TYPE_BASIC)
 			.withUsername(username)
 			.withPassword(password);
 	}
 
 	public DatabaseClientBuilder withDigestAuth(String username, String password) {
-		return withSecurityContextType(SECURITY_CONTEXT_TYPE_DIGEST)
+		return withAuthType(AUTH_TYPE_DIGEST)
 			.withUsername(username)
 			.withPassword(password);
 	}
 
 	public DatabaseClientBuilder withMarkLogicCloudAuth(String apiKey, String basePath) {
-		return withSecurityContextType(SECURITY_CONTEXT_TYPE_MARKLOGIC_CLOUD)
+		return withAuthType(AUTH_TYPE_MARKLOGIC_CLOUD)
 			.withCloudApiKey(apiKey)
 			.withBasePath(basePath);
 	}
 
 	public DatabaseClientBuilder withKerberosAuth(String principal) {
-		return withSecurityContextType(SECURITY_CONTEXT_TYPE_KERBEROS)
+		return withAuthType(AUTH_TYPE_KERBEROS)
 			.withKerberosPrincipal(principal);
 	}
 
 	public DatabaseClientBuilder withCertificateAuth(String file, String password) {
-		return withSecurityContextType(SECURITY_CONTEXT_TYPE_CERTIFICATE)
+		return withAuthType(AUTH_TYPE_CERTIFICATE)
 			.withCertificateFile(file)
 			.withCertificatePassword(password);
 	}
 
 	public DatabaseClientBuilder withSAMLAuth(String token) {
-		return withSecurityContextType(SECURITY_CONTEXT_TYPE_SAML)
+		return withAuthType(AUTH_TYPE_SAML)
 			.withSAMLToken(token);
 	}
 

@@ -452,14 +452,14 @@ public class DatabaseClientFactory {
 	public static class MarkLogicCloudAuthContext extends AuthContext {
       private String tokenEndpoint;
       private String grantType;
-      private String key;
+      private String apiKey;
 
-      public MarkLogicCloudAuthContext(String key) {
-          this(key, "/token", "apikey");
+      public MarkLogicCloudAuthContext(String apiKey) {
+          this(apiKey, "/token", "apikey");
       }
 
-      public MarkLogicCloudAuthContext(String key, String tokenEndpoint, String grantType) {
-          this.key = key;
+      public MarkLogicCloudAuthContext(String apiKey, String tokenEndpoint, String grantType) {
+          this.apiKey = apiKey;
           this.tokenEndpoint = tokenEndpoint;
           this.grantType = grantType;
       }
@@ -472,8 +472,8 @@ public class DatabaseClientFactory {
           return grantType;
       }
 
-      public String getKey() {
-          return key;
+      public String getApiKey() {
+          return apiKey;
       }
 
 	  @Override
@@ -1230,16 +1230,18 @@ public class DatabaseClientFactory {
 	 *     <li>marklogic.client.database = must be a String</li>
 	 *     <li>marklogic.client.connectionType = must be a String or instance of {@code ConnectionType}</li>
 	 *     <li>marklogic.client.securityContext = an instance of {@code SecurityContext}; if set, then all other
-	 *     properties pertaining to the construction of a {@code SecurityContext} will be ignored, including the
-	 *     properties pertaing to SSL</li>
-	 *     <li>marklogic.client.securityContextType = required if marklogic.client.securityContext is not set;
-	 *     must be a String and one of "basic", "digest", "cloud", "kerberos", "certificate", or "saml"</li>
+	 *     authentication properties pertaining to the construction of a {@code SecurityContext} will be ignored,
+	 *     including the properties pertaining to SSL; this is effectively an escape hatch for providing a
+	 *     {@code SecurityContext} in case an appropriate one cannot be created via the other supported properties</li>
+	 *     <li>marklogic.client.authType = determines the type of authentication to use; required if
+	 *     marklogic.client.securityContext is not set; must be a String and one of "basic", "digest", "cloud",
+	 *     "kerberos", "certificate", or "saml"</li>
 	 *     <li>marklogic.client.username = must be a String; required for basic and digest authentication</li>
 	 *     <li>marklogic.client.password = must be a String; required for basic and digest authentication</li>
-	 *     <li>marklogic.client.cloud.apiKey = must be a String; required for cloud authentication</li>
-	 *     <li>marklogic.client.kerberos.principal = must be a String</li>
 	 *     <li>marklogic.client.certificate.file = must be a String; required for certificate authentication</li>
 	 *     <li>marklogic.client.certificate.password = must be a String; required for certificate authentication</li>
+	 *     <li>marklogic.client.cloud.apiKey = must be a String; required for cloud authentication</li>
+	 *     <li>marklogic.client.kerberos.principal = must be a String; required for Kerberos authentication</li>
 	 *     <li>marklogic.client.saml.token = must be a String; required for SAML authentication</li>
 	 *     <li>marklogic.client.sslContext = must be an instance of {@code javax.net.ssl.SSLContext}</li>
 	 *     <li>marklogic.client.sslProtocol = must be a String; if "default', then uses the JVM default SSL

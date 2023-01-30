@@ -136,14 +136,14 @@ public class DatabaseClientPropertySource {
 			throw new IllegalArgumentException("Security context must be of type " + DatabaseClientFactory.SecurityContext.class.getName());
 		}
 
-		Object typeValue = propertySource.apply(PREFIX + "securityContextType");
+		Object typeValue = propertySource.apply(PREFIX + "authType");
 		if (typeValue == null || !(typeValue instanceof String)) {
-			throw new IllegalArgumentException("Security context should be set, or security context type must be of type String");
+			throw new IllegalArgumentException("Security context should be set, or auth type must be of type String");
 		}
-		final String securityContextType = (String)typeValue;
-		final SSLInputs sslInputs = buildSSLInputs(securityContextType);
+		final String authType = (String)typeValue;
+		final SSLInputs sslInputs = buildSSLInputs(authType);
 
-		DatabaseClientFactory.SecurityContext securityContext = newSecurityContext(securityContextType, sslInputs);
+		DatabaseClientFactory.SecurityContext securityContext = newSecurityContext(authType, sslInputs);
 
 		X509TrustManager trustManager = determineTrustManager(sslInputs);
 		SSLContext sslContext = sslInputs.getSslContext() != null ?
@@ -160,20 +160,20 @@ public class DatabaseClientPropertySource {
 
 	private DatabaseClientFactory.SecurityContext newSecurityContext(String type, SSLInputs sslInputs) {
 		switch (type.toLowerCase()) {
-			case DatabaseClientBuilder.SECURITY_CONTEXT_TYPE_BASIC:
+			case DatabaseClientBuilder.AUTH_TYPE_BASIC:
 				return newBasicAuthContext();
-			case DatabaseClientBuilder.SECURITY_CONTEXT_TYPE_DIGEST:
+			case DatabaseClientBuilder.AUTH_TYPE_DIGEST:
 				return newDigestAuthContext();
-			case DatabaseClientBuilder.SECURITY_CONTEXT_TYPE_MARKLOGIC_CLOUD:
+			case DatabaseClientBuilder.AUTH_TYPE_MARKLOGIC_CLOUD:
 				return newCloudAuthContext();
-			case DatabaseClientBuilder.SECURITY_CONTEXT_TYPE_KERBEROS:
+			case DatabaseClientBuilder.AUTH_TYPE_KERBEROS:
 				return newKerberosAuthContext();
-			case DatabaseClientBuilder.SECURITY_CONTEXT_TYPE_CERTIFICATE:
+			case DatabaseClientBuilder.AUTH_TYPE_CERTIFICATE:
 				return newCertificateAuthContext(sslInputs);
-			case DatabaseClientBuilder.SECURITY_CONTEXT_TYPE_SAML:
+			case DatabaseClientBuilder.AUTH_TYPE_SAML:
 				return newSAMLAuthContext();
 			default:
-				throw new IllegalArgumentException("Unrecognized security context type: " + type);
+				throw new IllegalArgumentException("Unrecognized auth type: " + type);
 		}
 	}
 
@@ -302,11 +302,11 @@ public class DatabaseClientPropertySource {
 	 * Uses the given propertySource to construct the inputs pertaining to constructing an SSLContext and an
 	 * X509TrustManager.
 	 *
-	 * @param securityContextType used for applying "default" as the SSL protocol for MarkLogic cloud authentication in
+	 * @param authType used for applying "default" as the SSL protocol for MarkLogic cloud authentication in
 	 *                            case the user does not define their own SSLContext or SSL protocol
 	 * @return
 	 */
-	private SSLInputs buildSSLInputs(String securityContextType) {
+	private SSLInputs buildSSLInputs(String authType) {
 		SSLContext sslContext = null;
 		Object val = propertySource.apply(PREFIX + "sslContext");
 		if (val != null) {
@@ -320,7 +320,7 @@ public class DatabaseClientPropertySource {
 		String sslProtocol = getNullableStringValue("sslProtocol");
 		if (sslContext == null &&
 			(sslProtocol == null || sslProtocol.trim().length() == 0) &&
-			DatabaseClientBuilder.SECURITY_CONTEXT_TYPE_MARKLOGIC_CLOUD.equalsIgnoreCase(securityContextType)) {
+			DatabaseClientBuilder.AUTH_TYPE_MARKLOGIC_CLOUD.equalsIgnoreCase(authType)) {
 			sslProtocol = "default";
 		}
 

@@ -32,7 +32,6 @@ import com.marklogic.client.io.DocumentMetadataHandle.DocumentMetadataValues;
 import com.marklogic.client.query.*;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
@@ -1019,7 +1018,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     System.out.println("In tear down");
 
     if (!IsSecurityEnabled()) {
-		setAuthenticationAndDefaultUser(restServerName, securityContextType, "nobody");
+		setAuthenticationAndDefaultUser(restServerName, authType, "nobody");
     }
     // Associate the Server with Documents. Due to test orders being
     // undeterministic not sure which DB will be associated.

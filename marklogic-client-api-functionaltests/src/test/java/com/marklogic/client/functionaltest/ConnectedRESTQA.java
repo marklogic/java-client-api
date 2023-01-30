@@ -50,7 +50,7 @@ public abstract class ConnectedRESTQA {
 
 	protected static Properties testProperties = null;
 
-	protected static String securityContextType;
+	protected static String authType;
 	protected static String restServerName = null;
 	private static String restSslServerName = null;
 	private static String ssl_enabled = null;
@@ -2101,7 +2101,7 @@ public abstract class ConnectedRESTQA {
 			testProperties.setProperty("httpPort", "8020");
 			testProperties.setProperty("marklogic.client.port", "8020");
 			testProperties.setProperty("marklogic.client.basePath", "testFunctional");
-			testProperties.setProperty("marklogic.client.securityContextType", "basic");
+			testProperties.setProperty("marklogic.client.authType", "basic");
 		}
 	}
 
@@ -2119,7 +2119,7 @@ public abstract class ConnectedRESTQA {
 
 		overrideTestPropertiesWithSystemProperties(properties);
 
-		securityContextType = properties.getProperty("marklogic.client.securityContextType");
+		authType = properties.getProperty("marklogic.client.authType");
 		restServerName = properties.getProperty("mlAppServerName");
 		restSslServerName = properties.getProperty("mlAppServerSSLName");
 
@@ -2151,9 +2151,9 @@ public abstract class ConnectedRESTQA {
 		testProperties = properties;
 
 		System.out.println("For 'slow' tests, will connect to: " + host_name + ":" + http_port + "; basePath: " +  basePath +
-			"; auth: " + securityContextType);
+			"; auth: " + authType);
 		System.out.println("For 'fast' tests, will connect to: " + host_name + ":" + fast_http_port + "; basePath: " +  basePath +
-			"; auth: " + securityContextType);
+			"; auth: " + authType);
 	}
 
 	public static boolean isLBHost() {
@@ -2598,7 +2598,7 @@ public abstract class ConnectedRESTQA {
 	}
 
 	public static DatabaseClientFactory.SecurityContext newSecurityContext(String username, String password) {
-		if ("basic".equalsIgnoreCase(securityContextType)) {
+		if ("basic".equalsIgnoreCase(authType)) {
 			return new DatabaseClientFactory.BasicAuthContext(username, password);
 		}
 		return new DatabaseClientFactory.DigestAuthContext(username, password);
