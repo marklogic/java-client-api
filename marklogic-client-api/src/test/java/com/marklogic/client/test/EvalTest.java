@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Transaction;
@@ -32,6 +33,8 @@ import com.marklogic.client.impl.HandleAccessor;
 import com.marklogic.client.io.*;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.mgmt.ManageClient;
+import com.marklogic.mgmt.resource.appservers.ServerManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -61,15 +64,47 @@ public class EvalTest {
   private static DatabaseClient restAdminClient = Common.connectRestAdmin();
 
   @BeforeAll
-  public static void beforeClass() {
+  public static void beforeAll() {
     libMgr = restAdminClient.newServerConfigManager().newExtensionLibrariesManager();
     Common.connectEval();
 
     septFirst.set(2014, Calendar.SEPTEMBER, 1, 0, 0, 0);
     septFirst.set(Calendar.MILLISECOND, 0);
+
+	  // In order to verify that X-Error-Accept is used to request back errors as JSON, the app server used by this test
+	  // must first be modified to default to "compatible" which results in a block of HTML being sent back, which will
+	  // cause an error to be returned when the client tries to process it as JSON.
+	  ObjectNode payload = Common.newServerPayload().put("default-error-format", "compatible");
+	  new ServerManager(Common.newManageClient()).save(payload.toString());
   }
+
   @AfterAll
-  public static void afterClass() {
+  public static void afterAll() {
+	  // Reset the app server back to the default of "json" as the error format
+	  ObjectNode payload = Common.newServerPayload().put("default-error-format", "json");
+	  new ServerManager(Common.newManageClient()).save(payload.toString());
+  }
+
+  @Test
+  void invalidJavascript() {
+	  FailedRequestException ex = assertThrows(FailedRequestException.class, () ->
+		  Common.evalClient.newServerEval().javascript("console.log('This fails").evalAs(String.class));
+
+	  String message = ex.getServerMessage();
+	  assertTrue(message.contains("Invalid or unexpected token"), "The error message from the server is expected " +
+		  "to contain the actual error, which in this case is due to bad syntax. In order for this to happen, the " +
+		  "Java Client should send the X-Error-Accept header per the docs at " +
+		  "https://docs.marklogic.com/guide/rest-dev/intro#id_34966; actual error: " + message);
+  }
+
+  @Test
+  void invalidXQuery() {
+	  FailedRequestException ex = assertThrows(FailedRequestException.class, () ->
+		  Common.evalClient.newServerEval().xquery("let $var := this fails").evalAs(String.class));
+
+	  String message = ex.getServerMessage();
+	  assertTrue(message.contains("Unexpected token syntax error"), "The server error message should contain the " +
+		  "actual error; actual message: " + message);
   }
 
   @Test

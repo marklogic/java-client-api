@@ -3851,28 +3851,24 @@ public class OkHttpServices implements RESTServices {
     requestBldr = addTransactionScopedCookies(requestBldr, transaction);
     requestBldr = addTelemetryAgentId(requestBldr);
     requestBldr = addTrailerHeadersIfNecessary(requestBldr, path);
+	requestBldr = setErrorFormatIfNecessary(requestBldr, path);
 
-    Consumer<Boolean> resendableConsumer = new Consumer<Boolean>() {
-      public void accept(Boolean resendable) {
+    Consumer<Boolean> resendableConsumer = resendable -> {
         if (!isResendable) {
           checkFirstRequest();
           throw new ResourceNotResendableException(
             "Cannot retry request for " + path);
         }
-      }
     };
-    Function<Request.Builder, Response> doPostFunction = new Function<Request.Builder, Response>() {
-      public Response apply(Request.Builder funcBuilder) {
-        return doPost(reqlog, funcBuilder.header(HEADER_ACCEPT, multipartMixedWithBoundary()),
-          inputBase.sendContent());
-      }
-    };
-    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPostFunction, resendableConsumer);
-    int status = response.code();
 
-    checkStatus(response, status, "apply", "resource", path,
-      ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
+    Function<Request.Builder, Response> doPostFunction = requestBuilder -> doPost(
+		reqlog,
+		requestBuilder.header(HEADER_ACCEPT, multipartMixedWithBoundary()),
+		inputBase.sendContent()
+	);
 
+	Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPostFunction, resendableConsumer);
+    checkStatus(response, response.code(), "apply", "resource", path, ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
     return makeResults(constructor, reqlog, "apply", "resource", response);
   }
 
@@ -4197,6 +4193,18 @@ public class OkHttpServices implements RESTServices {
         }
         return requestBldr;
     }
+
+	private Request.Builder setErrorFormatIfNecessary(Request.Builder requestBuilder, String path) {
+		// Slightly dirty hack; per https://docs.marklogic.com/guide/rest-dev/intro#id_34966, the X-Error-Accept header
+		// should be used to specify the error format. A REST API server defaults to 'json', though the App-Services app
+		// server defaults to 'compatible'. If the error format is 'compatible', a block of HTML is sent back which
+		// causes an error that prevents the user from seeing the actual error from the server. So for all eval calls,
+		// X-Error-Accept is used to request any errors back as JSON so that they can be handled correctly.
+		if ("eval".equals(path)) {
+			requestBuilder.addHeader(HEADER_ERROR_FORMAT, "application/json");
+		}
+		return requestBuilder;
+	}
 
   private <W extends AbstractWriteHandle> boolean addParts(
     MultipartBody.Builder multiPart, RequestLogger reqlog, W[] input)
