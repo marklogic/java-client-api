@@ -29,7 +29,7 @@ import com.marklogic.client.util.EditableNamespaceContext;
  * for a server-side {@link #xquery xquery} or {@link #javascript javascript} eval or
  * invoke ({@link #modulePath modulePath}) call. ServerEvaluationCall also
  * conveniently has the eval* methods which execute those calls and return the
- * results.  You must call one and only one of the following methods: xquery, 
+ * results.  You must call one and only one of the following methods: xquery,
  * javascript, or modulePath.  The xquery
  * and javascript methods initialize this call for server-side eval and accept
  * source code as a String or a TextWriteHandle (in case you are streaming the
@@ -89,8 +89,7 @@ import com.marklogic.client.util.EditableNamespaceContext;
  * }</pre>
  *
  * <p>Each call can be executed within a {@link #transaction transaction}, within a
- * {@link DatabaseClientFactory#newClient(String, int, String) particular database},
- * and with particular {@link #namespaceContext namespaces} available for expansion
+ * particular database, and with particular {@link #namespaceContext namespaces} available for expansion
  * of prefixed variable names.</p>
  *
  * <p>Each call can be executed with only one expected response of a particular {@link

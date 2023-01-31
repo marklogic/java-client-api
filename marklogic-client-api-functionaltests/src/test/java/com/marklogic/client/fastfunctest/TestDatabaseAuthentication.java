@@ -52,25 +52,6 @@ public class TestDatabaseAuthentication extends AbstractFunctionalTest {
 	}
 
   @Test
-  public void testAuthenticationNone()
-  {
-    System.out.println("Running testAuthenticationNone");
-    if (!IsSecurityEnabled()) {
-		setAuthenticationAndDefaultUser(restServerName, "application-level", "rest-admin");
-      // connect the client
-      StringBuilder str = new StringBuilder();
-      try {
-		  // This does not need to specify basePath since it's expected to fail
-		  DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort());
-      } catch (Exception ex) {
-        str.append(ex.getMessage());
-      }
-      assertEquals( "makeSecurityContext should only be called with BASIC or DIGEST Authentication",
-          str.toString().trim());
-    }
-  }
-
-  @Test
   public void testAuthenticationBasic() throws IOException
   {
     if (!IsSecurityEnabled()) {
