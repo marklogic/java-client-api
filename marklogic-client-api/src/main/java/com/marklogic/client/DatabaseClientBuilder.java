@@ -141,7 +141,7 @@ public class DatabaseClientBuilder {
 			.withPassword(password);
 	}
 
-	public DatabaseClientBuilder withMarkLogicCloudAuth(String apiKey, String basePath) {
+	public DatabaseClientBuilder withCloudAuth(String apiKey, String basePath) {
 		return withAuthType(AUTH_TYPE_MARKLOGIC_CLOUD)
 			.withCloudApiKey(apiKey)
 			.withBasePath(basePath);

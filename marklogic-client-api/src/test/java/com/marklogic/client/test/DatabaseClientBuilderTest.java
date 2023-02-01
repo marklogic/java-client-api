@@ -100,7 +100,7 @@ public class DatabaseClientBuilderTest {
 	@Test
 	void cloudWithBasePath() {
 		bean = Common.newClientBuilder()
-			.withMarkLogicCloudAuth("my-key", "/my/path")
+			.withCloudAuth("my-key", "/my/path")
 			.buildBean();
 
 		DatabaseClientFactory.MarkLogicCloudAuthContext context =
