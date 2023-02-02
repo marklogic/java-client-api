@@ -35,6 +35,7 @@ import io.undertow.server.handlers.proxy.ProxyHandler;
 import io.undertow.util.Headers;
 import okhttp3.Credentials;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.util.StringUtils;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
@@ -100,7 +101,7 @@ public class ReverseProxyServer extends LoggingObject {
 					serverPort = Integer.parseInt(args[2]);
 					if (args.length > 3) {
 						secureServerPort = Integer.parseInt(args[3]);
-						if (args.length > 4) {
+						if (args.length > 4 && StringUtils.hasText(args[4])) {
 							customMappings = Arrays.asList(args[4].split(","));
 						}
 					}
