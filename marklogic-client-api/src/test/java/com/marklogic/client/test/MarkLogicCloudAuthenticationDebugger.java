@@ -23,7 +23,7 @@ public class MarkLogicCloudAuthenticationDebugger {
 		// Expected to default to the JVM's default SSL context and default trust manager
 		DatabaseClient client = new DatabaseClientBuilder()
 			.withHost(cloudHost)
-			.withMarkLogicCloudAuth(apiKey, basePath)
+			.withCloudAuth(apiKey, basePath)
 			// Have to use "ANY", as the default is "COMMON", which won't work for our selfsigned cert
 			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
 			.build();
