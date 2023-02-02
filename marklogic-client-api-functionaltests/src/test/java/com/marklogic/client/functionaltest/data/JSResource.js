@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
+ * Copyright (c) 2023 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-// module that exports get, post, put and delete 
-function get(context, params) { 
+// module that exports get, post, put and delete
+function get(context, params) {
  context.outputTypes = ["application/json"];
  var arg1 = params.arg1;
  var arg2 = params.arg2;
  var x = arg1.toString();
 
-   
+
 return {
 	"argument1": x,
 	"argument2": arg2,
@@ -31,13 +31,13 @@ return {
     "document-content": fn.doc(),
     "response": xdmp.getResponseCode(),
 	"outputTypes": context.outputTypes,
-	
+
   }
 };
-function post(context, params, input) { 
-    
+function post(context, params, input) {
+
    var argUrl = params.uri;
-        	
+
     xdmp.eval(" \
     declareUpdate(); \
     var argUrl; \
@@ -50,7 +50,7 @@ function post(context, params, input) {
    return ({"response": xdmp.getResponseCode()})
 
  };
- 
+
 // Function responding to PUT method - must use local name 'put'.
 function put(context, params, input) {
     var argUrl = params.uri;

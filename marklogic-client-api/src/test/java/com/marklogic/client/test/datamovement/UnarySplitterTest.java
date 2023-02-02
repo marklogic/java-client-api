@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
+ * Copyright (c) 2023 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ public class UnarySplitterTest {
     static final private String xmlFile = "src/test/resources/data" + File.separator + "/pathSplitter/people.xml";
     static final private String xmlContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<!--\n" +
-            " Copyright (c) 2022 MarkLogic Corporation\n" +
+            " Copyright (c) 2023 MarkLogic Corporation\n" +
             "\n" +
             " Licensed under the Apache License, Version 2.0 (the \"License\");\n" +
             " you may not use this file except in compliance with the License.\n" +

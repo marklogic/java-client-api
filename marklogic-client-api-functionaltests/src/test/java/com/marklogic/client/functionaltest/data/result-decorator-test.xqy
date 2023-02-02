@@ -1,12 +1,12 @@
 (:
-  Copyright (c) 2022 MarkLogic Corporation
- 
+  Copyright (c) 2023 MarkLogic Corporation
+
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
- 
+
      http://www.apache.org/licenses/LICENSE-2.0
- 
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,10 +39,10 @@ declare function rd:decorator(
   let $mimetype := xdmp:uri-content-type($uri)
   return (
     attribute href { concat("/documents/are/here?uri=", $uri) },
- 
+
     if (empty($mimetype)) then ()
     else attribute mimetype {$mimetype},
- 
+
     if (empty($format)) then ()
     else attribute format { $format },
 	element my-elem { "Result Decorated" }
@@ -57,10 +57,10 @@ declare function rd:decoratorWithoutMimeType(
   let $mimetype := xdmp:uri-content-type($uri)
   return (
     attribute href { concat("/documents/are/here?uri=", $uri) },
- 
+
    if (empty($mimetype)) then ()
     else attribute mimetype {"Null"},
- 
+
     if (empty($format)) then ()
     else attribute format { $format },
 	element my-elem { "Result Decorated" }
@@ -75,10 +75,10 @@ declare function rd:decorate-element(
     let $mimetype := xdmp:uri-content-type($uri)
     return (
         element search:href { concat("/documents/are/here?uri=", $uri) },
- 
+
         if (empty($mimetype)) then ()
         else element search:mimetype {$mimetype},
- 
+
         if (empty($format)) then ()
         else element search:format { $format }
         )
@@ -92,10 +92,10 @@ declare function rd:decorate-with-attribute(
     let $mimetype := xdmp:uri-content-type($uri)
     return (
         attribute href { concat("/documents/are/here?uri=", $uri) },
- 
+
         if (empty($mimetype)) then ()
         else attribute mimetype {$mimetype},
- 
+
         if (empty($format)) then ()
         else attribute format { $format }
         )

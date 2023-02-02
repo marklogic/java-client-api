@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
+ * Copyright (c) 2023 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import com.marklogic.client.pojo.annotation.PathIndexProperty.ScalarType;
 /*
  * This class is similar to the Artifact class. It is used to test path range index on multiple class fields
  * Property name been annotated with @Id.
- * 
+ *
  */
 public class ArtifactIndexedOnMultipleFields {
   @Id

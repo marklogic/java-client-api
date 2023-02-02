@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
+ * Copyright (c) 2023 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -283,7 +283,7 @@ public interface RESTServices {
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params, R output)
     throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
   ConnectionResult checkConnection();
-  
+
   // backdoor
   Object getClientImplementation();
 
@@ -442,12 +442,12 @@ public interface RESTServices {
     public CallField toBuffered() {
     	return this;
     }
-    
+
     @Override
     public int hashCode() {
         return getParamName().hashCode();
     }
-    
+
     @Override
     public boolean equals(Object arg0) {
       if (!(arg0 instanceof CallField)) return false;
@@ -508,7 +508,7 @@ public interface RESTServices {
       super(paramName);
       this.paramValues = paramValues;
     }
-    
+
     @Override
     public BufferedMultipleAtomicCallField toBuffered() {
     	return new BufferedMultipleAtomicCallField(super.getParamName(), paramValues);
@@ -526,29 +526,29 @@ public interface RESTServices {
       super(paramName);
       this.paramValues = paramValues;
     }
-    
+
     @Override
     public Stream<? extends BufferableHandle> getParamValues() {
       return paramValues;
     }
-    
+
     @Override
     public BufferedMultipleNodeCallField toBuffered() {
     	return new BufferedMultipleNodeCallField(super.getParamName(), paramValues);
     }
-    
+
   }
   class BufferedMultipleAtomicCallField extends MultipleAtomicCallField {
 	private final String[] paramValues;
 	public BufferedMultipleAtomicCallField(String paramName, Stream<String> paramValues) {
         this(paramName, paramValues.toArray(String[]::new));
     }
-	
+
 	public BufferedMultipleAtomicCallField(String paramName, String[] paramValues) {
 	    super(paramName);
 	    this.paramValues = paramValues;
 	}
-  
+
 	@Override
 	public Stream<String> getParamValues() {
 		return Stream.of(paramValues);
@@ -574,12 +574,12 @@ public interface RESTServices {
 	  void setParamValues(BufferableHandle[] paramValues) {
 	      this.paramValues = paramValues;
 	  }
-	  
+
 	  public BufferedMultipleNodeCallField toBuffered() {
           return new BufferedMultipleNodeCallField(super.getParamName(), NodeConverter.bufferAsBytes(paramValues));
       }
   }
-  
+
   interface CallRequest {
     boolean hasStreamingPart();
     SessionState getSession();

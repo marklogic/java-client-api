@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
+ * Copyright (c) 2023 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,7 +115,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 {
   /**
    * Write document using InputStreamHandle
-   * 
+   *
    * @param client
    * @param filename
    * @param uri
@@ -147,7 +147,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Write document using InputStreamHandle with metadata
-   * 
+   *
    * @param client
    * @param filename
    * @param uri
@@ -181,7 +181,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Reading document using InputStreamHandle
-   * 
+   *
    * @param client
    * @param uri
    * @param type
@@ -207,7 +207,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Reading document using InputSourceHandle
-   * 
+   *
    * @param client
    * @param uri
    * @param type
@@ -234,7 +234,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Reading document using SourceHandle
-   * 
+   *
    * @param client
    * @param uri
    * @param type
@@ -261,7 +261,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Update document using InputStreamHandle
-   * 
+   *
    * @param client
    * @param filename
    * @param uri
@@ -293,7 +293,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Write document using BytesHandle
-   * 
+   *
    * @param client
    * @param filename
    * @param uri
@@ -335,7 +335,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Write document using BytesHandle with metadata
-   * 
+   *
    * @param client
    * @param filename
    * @param uri
@@ -378,7 +378,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Write document using StringHandle with metadata
-   * 
+   *
    * @param client
    * @param filename
    * @param uri
@@ -414,7 +414,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Write document using StringHandle
-   * 
+   *
    * @param client
    * @param filename
    * @param uri
@@ -449,7 +449,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Write document using JAXBHandle with metadata
-   * 
+   *
    * @param client
    * @param product
    * @param uri
@@ -481,7 +481,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Write document using OutputStreamHandle with metadata
-   * 
+   *
    * @param client
    * @param filename
    * @param uri
@@ -599,7 +599,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Write document to databae using ReaderHandle
-   * 
+   *
    * @param client
    *          : the database client connection
    * @param filename
@@ -636,7 +636,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Update document using ReaderHandle
-   * 
+   *
    * @param client
    * @param filename
    * @param uri
@@ -709,7 +709,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Read document using ReaderHandle
-   * 
+   *
    * @param client
    * @param uri
    * @param type
@@ -735,7 +735,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Read document using XMLEventReaderHandle
-   * 
+   *
    * @param client
    * @param uri
    * @param type
@@ -776,7 +776,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Write document using DOMHandle
-   * 
+   *
    * @param client
    * @param filename
    * @param uri
@@ -811,7 +811,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Returning a content of the document
-   * 
+   *
    */
 
   public Document getDocumentContent(String xmltype) throws IOException, ParserConfigurationException, SAXException
@@ -830,7 +830,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Update document using DOMHandle
-   * 
+   *
    * @param client
    * @param filename
    * @param uri
@@ -865,7 +865,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Read document using DOMHandle
-   * 
+   *
    * @param client
    * @param uri
    * @param type
@@ -891,7 +891,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Read document using StringHandle
-   * 
+   *
    * @param client
    * @param uri
    * @param type
@@ -918,7 +918,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Write document using FileHandle
-   * 
+   *
    * @param client
    * @param filename
    * @param uri
@@ -948,7 +948,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Read document using FileHandle
-   * 
+   *
    * @param client
    * @param uri
    * @param type
@@ -974,7 +974,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Update document using FileHandle
-   * 
+   *
    * @param client
    * @param filename
    * @param uri
@@ -1004,7 +1004,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Update document using FileHandle
-   * 
+   *
    * @param client
    * @param filename
    * @param uri
@@ -1040,7 +1040,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Read document using BytesHandle
-   * 
+   *
    * @param client
    * @param uri
    * @param type
@@ -1065,7 +1065,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * get Binary Size From Byte
-   * 
+   *
    * @param fileRead
    * @throws IOException
    */
@@ -1080,7 +1080,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Read document using BytesHandle
-   * 
+   *
    * @param client
    * @param filename
    * @param uri
@@ -1129,7 +1129,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Delete document
-   * 
+   *
    * @param client
    * @param uri
    * @param type
@@ -1148,7 +1148,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Check if document exist
-   * 
+   *
    * @param client
    * @param uri
    * @return
@@ -1157,17 +1157,17 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    * public DocumentDescriptor isDocumentExist(DatabaseClient client, String
    * uri, String type) { // create doc manager DocumentManager docMgr = null;
    * docMgr = documentManagerSelector(client, docMgr, type);
-   * 
+   *
    * String checkDocId = uri;
-   * 
+   *
    * DocumentDescriptor docExist;
-   * 
+   *
    * docExist = docMgr.exists(checkDocId); return docExist; }
    */
 
   /**
    * Read metadata from document
-   * 
+   *
    * @param client
    * @param uri
    * @param type
@@ -1194,7 +1194,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Set query option in XML
-   * 
+   *
    * @param client
    * @param queryOptionName
    * @throws FileNotFoundException
@@ -1221,7 +1221,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Copy Files from One location to Other
-   * 
+   *
    * @param Source
    *          File
    * @param target
@@ -1268,7 +1268,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Set query option in JSON
-   * 
+   *
    * @param client
    * @param queryOptionName
    * @throws FileNotFoundException
@@ -1341,7 +1341,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Get the size of binary file
-   * 
+   *
    * @param fileRead
    * @return
    * @throws IOException
@@ -1361,7 +1361,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Get document properties in string
-   * 
+   *
    * @param properties
    * @return
    */
@@ -1381,7 +1381,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Get document permissions in string
-   * 
+   *
    * @param permissions
    * @return
    */
@@ -1401,7 +1401,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Get document collections in string
-   * 
+   *
    * @param collections
    * @return
    */
@@ -1420,7 +1420,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Function to select and create document manager based on the type
-   * 
+   *
    * @param client
    * @param docMgr
    * @param type
@@ -1455,7 +1455,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Get the expected XML document
-   * 
+   *
    * @param filename
    * @return
    * @throws ParserConfigurationException
@@ -1473,7 +1473,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Get the expected JSON document
-   * 
+   *
    * @param filename
    * @return
    * @throws JsonParseException
@@ -1491,7 +1491,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Get the metadata xml
-   * 
+   *
    * @param filename
    * @return
    * @throws ParserConfigurationException
@@ -1510,7 +1510,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
   /**
    * Convert string to xml document. Used on actual read content for XML
    * comparison
-   * 
+   *
    * @param readContent
    * @return
    * @throws ParserConfigurationException
@@ -1530,7 +1530,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Convert XMLStreamReader To String
-   * 
+   *
    * @param reader
    * @return String
    * @throws XMLStreamException
@@ -1552,7 +1552,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Convert xml document to string. Useful for debugging purpose
-   * 
+   *
    * @param readContent
    * @return
    * @throws TransformerException
@@ -1570,7 +1570,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Convert inputstream to string. Used on InputStreamHandle
-   * 
+   *
    * @param fileRead
    * @return
    * @throws IOException
@@ -1591,7 +1591,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Convert inputsource to string. Used on InputSourceHandle
-   * 
+   *
    * @param fileRead
    * @return
    * @throws IOException
@@ -1611,7 +1611,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Convert source to string. Used on SourceHandle
-   * 
+   *
    * @param reader
    * @return
    * @throws IOException
@@ -1631,7 +1631,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Convert reader to string. Used on ReaderHandle
-   * 
+   *
    * @param fileRead
    * @return
    * @throws IOException
@@ -1651,7 +1651,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Convert file to string. Used on FileHandle
-   * 
+   *
    * @param fileRead
    * @return
    * @throws FileNotFoundException
@@ -1667,7 +1667,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 
   /**
    * Load geo data for geo spatial tests
-   * 
+   *
    * @throws IOException
    * @throws NoSuchAlgorithmException
    * @throws KeyManagementException

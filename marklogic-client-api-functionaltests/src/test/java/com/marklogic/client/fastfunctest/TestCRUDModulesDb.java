@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
+ * Copyright (c) 2023 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -179,7 +179,7 @@ public class TestCRUDModulesDb extends AbstractFunctionalTest {
 
         // read it back
         String xqueryModuleAsString = libsMgr.read(Path, new StringHandle()).get();
-        assertTrue( xqueryModuleAsString.startsWith("Copyright (c) 2022 MarkLogic Corporation"));
+        assertTrue( xqueryModuleAsString.startsWith("Copyright (c) 2023 MarkLogic Corporation"));
 
         // get the list of descriptors
         ExtensionLibraryDescriptor[] descriptors = libsMgr.list();
