@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
+ * Copyright (c) 2023 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import com.marklogic.client.pojo.annotation.PathIndexProperty.ScalarType;
 
 /* This class is used to test range path index creation, when the Annotation is
  * in the super class and also in sub class on the same class property with same data type.
- * 
- * Used to test annotation with collisions in a hierarchy. 
+ *
+ * Used to test annotation with collisions in a hierarchy.
  */
 
 public class ArtifactMultipleIndexedOnInt extends ArtifactIndexedOnInt {

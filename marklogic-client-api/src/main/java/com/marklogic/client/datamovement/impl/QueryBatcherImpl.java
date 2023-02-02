@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
+ * Copyright (c) 2023 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -961,7 +961,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
             final List<String> uris = uriQueue;
             final boolean finalLastBatch = lastBatch;
             final long results = resultsSoFar.addAndGet(uris.size());
-            if(maxUris <= results) 
+            if(maxUris <= results)
                 lastBatch = true;
             uriQueue = new ArrayList<>(getBatchSize());
             Runnable processBatch = new Runnable() {
