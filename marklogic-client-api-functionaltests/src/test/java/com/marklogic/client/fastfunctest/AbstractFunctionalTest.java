@@ -29,8 +29,6 @@ import java.util.stream.Stream;
  */
 public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
 
-    protected final static String OPTIC_USER = "opticUser";
-    protected final static String OPTIC_USER_PASSWORD = "0pt1c";
     protected final static String DB_NAME = "java-functest";
 
     protected static DatabaseClient client;

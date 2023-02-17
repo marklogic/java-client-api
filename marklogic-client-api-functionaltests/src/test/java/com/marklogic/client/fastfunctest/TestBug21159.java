@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.marklogic.client.functionaltest;
+package com.marklogic.client.fastfunctest;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
+import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.TuplesHandle;
@@ -41,33 +42,16 @@ import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TestBug21159 extends BasicJavaClientREST {
-
-  private static String dbName = "TestTuplesRawCombinedQueryDB";
-  private static String[] fNames = { "TestTuplesRawCombinedQueryDB-1" };
-
-  @BeforeAll
-  public static void setUp() throws Exception
-  {
-    System.out.println("In setup");
-    configureRESTServer(dbName, fNames);
-    setupAppServicesConstraint(dbName);
-
-    addRangeElementIndex(dbName, "string", "", "grandchild", "http://marklogic.com/collation/");
-    addRangeElementIndex(dbName, "double", "", "double");
-    addRangeElementIndex(dbName, "int", "", "int");
-    addRangeElementIndex(dbName, "string", "", "string", "http://marklogic.com/collation/");
-  }
+public class TestBug21159 extends AbstractFunctionalTest {
 
   @Test
-  public void testBug21159Tuples() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
-      TransformerException
+  public void testBug21159Tuples() throws IOException
   {
     System.out.println("Running testBug21159Tuples");
 
     String[] filenames = { "tuples-test1.xml", "tuples-test2.xml", "tuples-test3.xml", "tuples-test4.xml", "lexicon-test1.xml", "lexicon-test2.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
+    DatabaseClient client = newDatabaseClientBuilder().build();
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -110,14 +94,13 @@ public class TestBug21159 extends BasicJavaClientREST {
   }
 
   @Test
-  public void testBug21159Values() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
-      TransformerException
+  public void testBug21159Values() throws IOException
   {
     System.out.println("Running testBug21159Values");
 
     String[] filenames = { "tuples-test1.xml", "tuples-test2.xml", "tuples-test3.xml", "tuples-test4.xml", "lexicon-test1.xml", "lexicon-test2.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
+    DatabaseClient client = newDatabaseClientBuilder().build();
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -157,15 +140,14 @@ public class TestBug21159 extends BasicJavaClientREST {
   }
 
   @Test
-  public void testTuplesWithRawCtsQueryDefinition() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
-      TransformerException
+  public void testTuplesWithRawCtsQueryDefinition() throws IOException
   {
     System.out.println("Running testTuplesWithRawCtsQueryDefinition");
     String queryOptionName = "tuplesTest";
 
     String[] filenames = { "tuples-test1.xml", "tuples-test2.xml", "tuples-test3.xml", "tuples-test4.xml", "lexicon-test1.xml", "lexicon-test2.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
+    DatabaseClient client = newDatabaseClientBuilder().build();
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
     srvMgr.readConfiguration();
@@ -236,13 +218,12 @@ public class TestBug21159 extends BasicJavaClientREST {
   }
 
   @Test
-  public void testTuplesWithRawCombinedCtsQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
-      TransformerException
+  public void testTuplesWithRawCombinedCtsQuery() throws IOException
   {
     System.out.println("Running testTuplesWithRawCombinedCtsQuery");
     String[] filenames = { "tuples-test1.xml", "tuples-test2.xml", "tuples-test3.xml", "tuples-test4.xml", "lexicon-test1.xml", "lexicon-test2.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
+    DatabaseClient client = newDatabaseClientBuilder().build();
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
     srvMgr.readConfiguration();
@@ -310,12 +291,5 @@ public class TestBug21159 extends BasicJavaClientREST {
     assertTrue(seconddistinctValues[2].get(String.class).trim().contains("Alaska"));
     // release client
     client.release();
-  }
-
-  @AfterAll
-  public static void tearDown() throws Exception
-  {
-    System.out.println("In tear down");
-    cleanupRESTServer(dbName, fNames);
   }
 }

@@ -207,8 +207,40 @@
       "collation": "http://marklogic.com/collation/",
       "range-value-positions": false,
       "invalid-values": "reject"
-    }
-  ],
+    },
+		{
+			"scalar-type": "int",
+			"namespace-uri": "",
+			"localname": "int",
+			"collation": "",
+			"range-value-positions": false,
+			"invalid-values": "ignore"
+		},
+		{
+			"scalar-type": "string",
+			"namespace-uri": "",
+			"localname": "grandchild",
+			"collation": "http://marklogic.com/collation/",
+			"range-value-positions": false,
+			"invalid-values": "reject"
+		},
+		{
+			"scalar-type": "string",
+			"namespace-uri": "",
+			"localname": "string",
+			"collation": "http://marklogic.com/collation/",
+			"range-value-positions": false,
+			"invalid-values": "reject"
+		},
+		{
+			"scalar-type": "double",
+			"namespace-uri": "",
+			"localname": "double",
+			"collation": "",
+			"range-value-positions": false,
+			"invalid-values": "reject"
+		}
+	],
   "element-word-lexicon": [
     {
       "namespace-uri": "",

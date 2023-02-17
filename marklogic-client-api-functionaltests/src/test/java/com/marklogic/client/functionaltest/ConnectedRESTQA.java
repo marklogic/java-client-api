@@ -989,6 +989,10 @@ public abstract class ConnectedRESTQA {
 		logTestMessages(" Ending TESTCASE TEARDOWN ", beforeTeardown);
 	}
 
+	public static void setMergeTimestamp(String dbName, String value) {
+		setDatabaseProperties(dbName, "merge-timestamp", value);
+	}
+
 	public static void setDatabaseProperties(String dbName, String prop, String propValue) {
 		ObjectNode properties = new ObjectMapper().createObjectNode();
 		properties.put("database-name", dbName);

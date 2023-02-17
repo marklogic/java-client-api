@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.marklogic.client.functionaltest;
+package com.marklogic.client.fastfunctest;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
 import com.marklogic.client.io.*;
 import com.marklogic.client.query.*;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
@@ -29,6 +30,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.w3c.dom.Document;
@@ -45,29 +47,15 @@ import java.security.NoSuchAlgorithmException;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TestBug18736 extends BasicJavaClientREST {
+public class TestBug18736 extends AbstractFunctionalTest {
 
-  private static String dbName = "Bug18736DB";
-  private static String[] fNames = { "Bug18736DB-1" };
-
-  @BeforeAll
-  public static void setUp() throws Exception
-  {
-    System.out.println("In setup");
-    configureRESTServer(dbName, fNames);
-    setupAppServicesConstraint(dbName);
-  }
-
-  @AfterEach
-  public void afterEach() throws Exception
-  {
-    System.out.println("In afterEach");
-    clearDB();
-  }
-
+	@BeforeEach
+	void setup() {
+		deleteDocuments(newDatabaseClientBuilder().build());
+	}
 
   @Test
-  public void testBug18736() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, ParserConfigurationException, SAXException, IOException
+  public void testBug18736() throws KeyManagementException, NoSuchAlgorithmException, TransformerException, IOException
   {
     System.out.println("Running testBug18736");
 
@@ -684,13 +672,5 @@ public class TestBug18736 extends BasicJavaClientREST {
 
     // release client
     client.release();
-  }
-
-  @AfterAll
-  public static void tearDown() throws Exception
-  {
-    System.out.println("In tear down");
-    cleanupRESTServer(dbName, fNames);
-
   }
 }
