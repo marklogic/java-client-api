@@ -208,16 +208,6 @@ public class LegalHoldsTest {
         .withFormat(Format.TEXT));
   }
 
-  private static void setMergeTimestamp(String timestampXQuery) throws Exception {
-    restAdminClient.newServerEval()
-      .xquery(
-        "import module namespace admin = 'http://marklogic.com/xdmp/admin' at '/MarkLogic/admin.xqy';" +
-
-          "admin:save-configuration(admin:database-set-merge-timestamp(admin:get-configuration(), " +
-          "    xdmp:database(), " + timestampXQuery + ")), " + timestampXQuery
-      ).eval();
-  }
-
   private static void uploadData() throws Exception {
     DocumentMetadataHandle meta = new DocumentMetadataHandle()
       .withCollections(collection);

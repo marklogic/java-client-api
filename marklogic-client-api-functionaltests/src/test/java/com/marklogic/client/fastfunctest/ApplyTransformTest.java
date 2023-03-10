@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.marklogic.client.datamovement.functionaltests;
+package com.marklogic.client.fastfunctest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +23,7 @@ import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.datamovement.*;
 import com.marklogic.client.datamovement.ApplyTransformListener.ApplyResult;
+import com.marklogic.client.datamovement.functionaltests.WriteHostBatcherTest;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.ServerTransform;

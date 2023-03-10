@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.marklogic.client.functionaltest;
+package com.marklogic.client.fastfunctest;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
@@ -25,14 +25,27 @@ import com.marklogic.client.Transaction;
 import com.marklogic.client.alerting.RuleDefinition;
 import com.marklogic.client.alerting.RuleDefinitionList;
 import com.marklogic.client.alerting.RuleManager;
-import com.marklogic.client.document.*;
+import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager.Metadata;
-import com.marklogic.client.io.*;
+import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentUriTemplate;
+import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.document.TextDocumentManager;
+import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
+import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentMetadataValues;
-import com.marklogic.client.query.*;
+import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.TuplesHandle;
+import com.marklogic.client.io.ValuesHandle;
+import com.marklogic.client.io.ValuesListHandle;
+import com.marklogic.client.query.AggregateResult;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.query.SuggestDefinition;
+import com.marklogic.client.query.ValuesDefinition;
+import com.marklogic.client.query.ValuesListDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -41,7 +54,13 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -55,46 +74,11 @@ import java.util.Scanner;
 import java.util.TreeMap;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TestDatabaseClientConnection extends BasicJavaClientREST {
-
-  private static String dbName = "DatabaseClientConnectionDB";
-  private static String[] fNames = { "DatabaseClientConnectionDB-1" };
-  private static String restServerName;
-
-  // These members are used to test Git Issue 332.
-  private static String UberdbName = "UberDatabaseClientConnectionDB";
-  private static String[] UberfNames = { "UberDatabaseClientConnectionDB-1" };
-  private static int Uberport = 8000;
-  private static String UberrestServerName = "App-Services";
-  private static String appServerHostname = null;
-
-  @BeforeAll
-  public static void setUp() throws Exception {
-    System.out.println("In setup");
-    configureRESTServer(dbName, fNames);
-    restServerName = getRestServerName();
-    appServerHostname = getRestAppServerHostName();
-
-    /*
-     * Only users with the http://marklogic.com/xdmp/privileges/xdmp-eval-in
-     * (xdmp:eval-in) or equivalent privilege can send request parameter that
-     * enables the request to be evaluated against a content database other than
-     * the default database associated with the REST API instances
-     */
-    createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
-    createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "rest-extension-user", "manage-user");
-
-    // Create a database and forest for use on uber port (8000). Do not
-    // associate the REST server (on 8000) with an DB.
-    createDB(UberdbName);
-    createForest(UberfNames[0], UberdbName);
-
-    setupAppServicesConstraint(UberdbName);
-    addRangeElementIndex(UberdbName, "string", "http://action/", "title", "http://marklogic.com/collation/");
-    addRangeElementIndex(UberdbName, "string", "http://noun/", "title", "http://marklogic.com/collation/");
-  }
+public class TestDatabaseClientConnection extends AbstractFunctionalTest {
 
   @Test
   public void testReleasedClient() throws IOException, KeyManagementException, NoSuchAlgorithmException
@@ -169,8 +153,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 		})
 		.withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
 
-		client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(),
-				secContext, getConnType());
+		client = newDatabaseClientBuilder().withSecurityContext(secContext).build();
 	SecurityContext readSecContext = client.getSecurityContext();
 	String verifier = readSecContext.getSSLHostnameVerifier().toString();
 	String protocol = readSecContext.getSSLContext().getProtocol();
@@ -191,8 +174,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     String filename = "facebook-10443244874876159931";
 
-    SecurityContext secContext = newSecurityContext("rest-reader", "x");
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8033, secContext, getConnType());
+    DatabaseClient client = newDatabaseClientBuilder().withPort(8033).build();
 
     String expectedException = null;
     String exception = "";
@@ -272,14 +254,13 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
   }
 
   @Test
-  public void testDatabaseClientConnectionInvalidHost() throws IOException
+  public void testDatabaseClientConnectionInvalidHost()
   {
     System.out.println("Running testDatabaseClientConnectionInvalidHost");
 
     String filename = "facebook-10443244874876159931";
 
-    SecurityContext secContext = newSecurityContext("rest-writer", "x");
-    DatabaseClient client = DatabaseClientFactory.newClient("foobarhost", 8011, secContext, getConnType());
+    DatabaseClient client = newDatabaseClientBuilder().withHost("badhost").build();
 
     // String expectedException =
     // "com.sun.jersey.api.client.ClientHandlerException: java.net.UnknownHostException: foobarhost: Name or service not known";
@@ -305,17 +286,6 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
   /*
    * These tests are specifically to validate Git Issue 332.
    * https://github.com/marklogic/java-client-api/issues/332
-   *
-   * We need to test that REST calls can pass a database name and access that
-   * database on the uber server port (8000). Create a database, forest and
-   * associate the database to the uber server on port 8000, where App-Services
-   * is running. We will be testing the following :
-   *
-   * QueryManager.suggest() QueryManager.tuples() QueryManager.values()
-   * QueryManager.valuesList() Transaction.readStatus()
-   * RuleManager.readRule(As)() RuleManager.match(As)() with
-   * StructureWriteHandle with StringQueryDefinition with
-   * StructuredQueryDefinition with RawQueryDefinition with docIds
    */
 
   // Trying to access database without specifying the database name.
@@ -326,8 +296,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     String filename = "xml-original-test.xml";
     String uri = "/write-xml-string/";
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, secContext, getConnType());
+    DatabaseClient client = newDatabaseClientBuilder().build();
 
     // write doc
     writeDocumentUsingStringHandle(client, filename, uri, "XML");
@@ -349,19 +318,13 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
   // Trying to access database by specifying the database name.
   @Test
-  public void testDBClientUsingWithDatabaseName() throws IOException, SAXException, ParserConfigurationException, KeyManagementException, NoSuchAlgorithmException
+  public void testDBClientUsingWithDatabaseName() throws IOException, SAXException, ParserConfigurationException
   {
     System.out.println("Running testDBClientUsingWithDatabaseName");
 
     String filename = "xml-original-test.xml";
     String uri = "/write-xml-string/";
-    DatabaseClient client = null;
-    if (isLBHost())
-    	client	= getDatabaseClient("eval-user", "x", getConnType());
-    else {
-    	SecurityContext secContext = newSecurityContext("eval-user", "x");
-    	client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
-    }
+    DatabaseClient client = newDatabaseClientBuilder().withDatabase(DB_NAME).build();
 
     // write doc
     writeDocumentUsingStringHandle(client, filename, uri, "XML");
@@ -389,8 +352,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     String[] filenames = { "multibyte1.xml", "multibyte2.xml", "multibyte3.xml" };
     String queryOptionName = "suggestionOpt.xml";
 
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
+    DatabaseClient client = newDatabaseClientBuilder().build();
     // write docs
     for (String filename : filenames) {
       writeDocumentUsingInputStreamHandle(client, filename, "/ss/", "XML");
@@ -412,15 +374,14 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
   }
 
   @Test
-  public void testQueryManagerTuples() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+  public void testQueryManagerTuples() throws IOException
   {
     System.out.println("Running testQueryManagerTuples");
-
     String[] filenames = { "aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml", "aggr5.xml" };
     String queryOptionName = "aggregatesOpt.xml";
 
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
+    DatabaseClient client = newDatabaseClientBuilder().build();
+	  deleteDocuments(client);
 
     // write docs
     for (String filename : filenames) {
@@ -453,8 +414,8 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     System.out.println(roundedCorrelation);
     System.out.println(roundedCovariance);
 
-    assertEquals( "0.37", roundedCorrelation);
-    assertEquals( "0.48", roundedCovariance);
+    assertEquals( "0.26", roundedCorrelation);
+    assertEquals( "0.35", roundedCovariance);
 
     ValuesListDefinition vdef = queryMgr.newValuesListDefinition("aggregatesOpt.xml");
     ValuesListHandle results = queryMgr.valuesList(vdef, new ValuesListHandle());
@@ -470,15 +431,14 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
   }
 
   @Test
-  public void testValuesOccurences() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+  public void testValuesOccurrences() throws IOException
   {
     System.out.println("Running testValuesOccurences");
 
     String[] filenames = { "aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml" };
     String queryOptionName = "aggregatesOpt5Occ.xml";
 
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
+    DatabaseClient client = newDatabaseClientBuilder().withDatabase(DB_NAME).build();
 
     // write docs
     for (String filename : filenames) {
@@ -507,13 +467,12 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
   }
 
   @Test
-  public void testTransactionReadStatus() throws Exception {
+  public void testTransactionReadStatus() {
 
     System.out.println("Running testTransactionReadStatus");
 
     String docId[] = { "/foo/test/transactionURIFoo1.txt", "/foo/test/transactionURIFoo2.txt", "/foo/test/transactionURIFoo3.txt" };
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
+    DatabaseClient client =  newDatabaseClientBuilder().build();
     Transaction transaction = client.openTransaction();
     try {
       TextDocumentManager docMgr = client.newTextDocumentManager();
@@ -526,8 +485,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
       docMgr.write(writeset, transaction);
       StringHandle wrteTransHandle = new StringHandle();
       transaction.readStatus(wrteTransHandle);
-      assertTrue((wrteTransHandle.get()).contains(UberrestServerName));
-      assertTrue((wrteTransHandle.get()).contains("App-Services"));
+      assertTrue((wrteTransHandle.get()).contains(getRestServerName()));
       transaction.commit();
 
       transaction = client.openTransaction();
@@ -536,8 +494,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
       assertTrue(page.size() == 3);
       StringHandle readTransHandle = new StringHandle();
       transaction.readStatus(readTransHandle);
-      assertTrue((readTransHandle.get()).contains(UberrestServerName));
-      assertTrue((readTransHandle.get()).contains("App-Services"));
+      assertTrue((readTransHandle.get()).contains(getRestServerName()));
 
     } catch (Exception exp) {
       System.out.println(exp.getMessage());
@@ -548,8 +505,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
   }
 
   @Test
-  public void testRMMatchQDAndDocIds() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException, KeyManagementException,
-      NoSuchAlgorithmException
+  public void testRMMatchQDAndDocIds() throws IOException, KeyManagementException, NoSuchAlgorithmException
   {
     System.out.println("Running testRMMatchQDAndDocIds");
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
@@ -631,8 +587,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     System.out.println("Running testAddAs");
 
     String[] docId = { "aggr1.xml", "aggr2.xml", "aggr3.xml" };
-    SecurityContext secContext = newSecurityContext("eval-user", "x");
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
+    DatabaseClient client = newDatabaseClientBuilder().build();
     Transaction transaction = client.openTransaction();
 
     try {
@@ -650,8 +605,8 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
       docMgr.write(writeset, transaction);
       StringHandle wrteTransHandle = new StringHandle();
       transaction.readStatus(wrteTransHandle);
-      assertTrue((wrteTransHandle.get()).contains(UberrestServerName));
-      assertTrue((wrteTransHandle.get()).contains("App-Services"));
+		System.out.println(wrteTransHandle.get());
+      assertTrue((wrteTransHandle.get()).contains(getRestServerName()));
       transaction.commit();
 
       transaction = client.openTransaction();
@@ -669,8 +624,8 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
       StringHandle readTransHandle = new StringHandle();
       transaction.readStatus(readTransHandle);
-      assertTrue((readTransHandle.get()).contains(UberrestServerName));
-      assertTrue((readTransHandle.get()).contains(dbName));
+      assertTrue((readTransHandle.get()).contains(getRestServerName()));
+      assertTrue((readTransHandle.get()).contains(DB_NAME));
       assertTrue((readTransHandle.get()).contains(txId));
     } catch (Exception exp) {
       System.out.println(exp.getMessage());
@@ -692,8 +647,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     try {
       String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-      SecurityContext secContext = newSecurityContext("eval-user", "x");
-      client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, secContext, getConnType());
+      client = newDatabaseClientBuilder().build();
       // write docs
       for (String filename : filenames) {
         writeDocumentUsingInputStreamHandle(client, filename, "/raw-alert/", "XML");
@@ -1011,23 +965,5 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
     // release client
     client.release();
-  }
-
-  @AfterAll
-  public static void tearDown() throws Exception {
-    System.out.println("In tear down");
-
-    if (!IsSecurityEnabled()) {
-		setAuthenticationAndDefaultUser(restServerName, authType, "nobody");
-    }
-    // Associate the Server with Documents. Due to test orders being
-    // undeterministic not sure which DB will be associated.
-    associateRESTServerWithDB(restServerName, "Documents");
-    cleanupRESTServer(dbName, fNames);
-    deleteDB(UberdbName);
-    deleteForest(UberfNames[0]);
-
-    deleteRESTUser("eval-user");
-    deleteUserRole("test-eval");
   }
 }
