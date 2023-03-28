@@ -17,6 +17,9 @@ package com.marklogic.client.query;
 
 import com.marklogic.client.pojo.PojoQueryDefinition;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 /**
  * A StructuredQueryDefinition represents a structured query.
  *
@@ -31,6 +34,8 @@ public interface StructuredQueryDefinition
    * @return The serialized definition.
    */
   String serialize();
+
+	void serialize(XMLStreamWriter serializer) throws XMLStreamException;
 
   /**
    * Returns the query criteria, that is the query string.

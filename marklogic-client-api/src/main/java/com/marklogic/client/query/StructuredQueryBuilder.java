@@ -1231,6 +1231,11 @@ public class StructuredQueryBuilder {
       return this;
     }
 
+	@Override
+	public void serialize(XMLStreamWriter serializer) throws XMLStreamException {
+		innerSerialize(serializer);
+	}
+
     @Override
     public String serialize() {
       return serializeQueries(this);
