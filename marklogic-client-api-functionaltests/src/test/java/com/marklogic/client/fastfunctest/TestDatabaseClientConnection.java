@@ -20,6 +20,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.alerting.RuleDefinition;
@@ -46,6 +47,7 @@ import com.marklogic.client.query.SuggestDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -167,35 +169,18 @@ public class TestDatabaseClientConnection extends AbstractFunctionalTest {
   }
 
 
-  @Test
-  public void testDatabaseClientConnectionInvalidPort() throws IOException
-  {
-    System.out.println("Running testDatabaseClientConnectionInvalidPort");
+	@Test
+	void invalidPort() {
+		int assumedInvalidPort = 60123;
+		DatabaseClient client = newDatabaseClientBuilder().withPort(assumedInvalidPort).build();
 
-    String filename = "facebook-10443244874876159931";
-
-    DatabaseClient client = newDatabaseClientBuilder().withPort(8033).build();
-
-    String expectedException = null;
-    String exception = "";
-    if (IsSecurityEnabled())
-      expectedException = "Failed to connect";
-    else
-      expectedException = "com.marklogic.client.MarkLogicIOException";
-
-    // write doc
-    try {
-      writeDocumentUsingStringHandle(client, filename, "/write-text-doc/", "Text");
-    } catch (Exception e) {
-      exception = e.toString();
-      System.out.println("Exception is " + exception);
-    }
-
-    assertTrue(exception.contains(expectedException));
-
-    // release client
-    client.release();
-  }
+		MarkLogicIOException ex = Assertions.assertThrows(MarkLogicIOException.class, () -> client.checkConnection());
+		String expected = "Error occurred while calling http://localhost:60123/v1/ping; java.net.ConnectException: " +
+							  "Failed to connect to localhost/127.0.0.1:60123 ; possible reasons for the error include " +
+							  "that a MarkLogic app server may not be listening on the port, or MarkLogic was stopped " +
+							  "or restarted during the request; check the MarkLogic server logs for more information.";
+		assertEquals(expected, ex.getMessage());
+	}
 
   @Test
   public void testDatabaseClientConnectionInvalidUser() throws IOException, KeyManagementException, NoSuchAlgorithmException
