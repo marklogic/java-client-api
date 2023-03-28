@@ -17,6 +17,9 @@ package com.marklogic.client.query;
 
 import com.marklogic.client.pojo.PojoQueryDefinition;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 /**
  * A StructuredQueryDefinition represents a structured query.
  *
@@ -25,12 +28,23 @@ import com.marklogic.client.pojo.PojoQueryDefinition;
 public interface StructuredQueryDefinition
   extends QueryDefinition, ValueQueryDefinition, PojoQueryDefinition
 {
-  /**
-   * Returns the structured query definition as a serialized XML string.
-   *
-   * @return The serialized definition.
-   */
-  String serialize();
+	/**
+	 * Returns the structured query definition as a serialized XML string.
+	 *
+	 * @return The serialized definition.
+	 */
+	String serialize();
+
+	/**
+	 * Serializes the structured query definition to the given XML stream writer. To ensure that the query elements are
+	 * written to the correct namespace, you must set the {@code XMLOutputFactory.IS_REPAIRING_NAMESPACES} property on
+	 * the {@code XMLOutputFactory} to "true". You may also wish to specify a prefix for the MarkLogic search namespace;
+	 * you may do so via e.g. {@code xmlStreamWriter.setPrefix("search", "http://marklogic.com/appservices/search");}.
+	 *
+	 * @param xmlStreamWriter The XML stream writer to which the query definition should be serialized.
+	 * @throws XMLStreamException
+	 */
+	void serialize(XMLStreamWriter xmlStreamWriter) throws XMLStreamException;
 
   /**
    * Returns the query criteria, that is the query string.

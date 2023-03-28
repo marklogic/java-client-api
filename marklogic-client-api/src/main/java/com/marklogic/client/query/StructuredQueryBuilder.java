@@ -1231,6 +1231,11 @@ public class StructuredQueryBuilder {
       return this;
     }
 
+	@Override
+	public void serialize(XMLStreamWriter serializer) throws XMLStreamException {
+		innerSerialize(serializer);
+	}
+
     @Override
     public String serialize() {
       return serializeQueries(this);
@@ -1302,7 +1307,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("not-in-query");
+      writeSearchElement(serializer, "not-in-query");
       writeQuery(serializer, "positive-query", (AbstractStructuredQuery) positive);
       writeQuery(serializer, "negative-query", (AbstractStructuredQuery) negative);
       serializer.writeEndElement();
@@ -1322,7 +1327,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("and-not-query");
+      writeSearchElement(serializer, "and-not-query");
       writeQuery(serializer, "positive-query", (AbstractStructuredQuery) positive);
       writeQuery(serializer, "negative-query", (AbstractStructuredQuery) negative);
       serializer.writeEndElement();
@@ -1342,7 +1347,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("boost-query");
+      writeSearchElement(serializer, "boost-query");
       writeQuery(serializer, "matching-query", (AbstractStructuredQuery) matchingQuery);
       writeQuery(serializer, "boosting-query", (AbstractStructuredQuery) boostingQuery);
       serializer.writeEndElement();
@@ -1361,7 +1366,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("document-query");
+      writeSearchElement(serializer, "document-query");
       writeTextList(serializer, "uri", uris);
       serializer.writeEndElement();
     }
@@ -1380,7 +1385,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("term-query");
+      writeSearchElement(serializer, "term-query");
       writeTextList(serializer, "text", terms);
       writeText(serializer, "weight", weight);
       serializer.writeEndElement();
@@ -1411,10 +1416,10 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("near-query");
+      writeSearchElement(serializer, "near-query");
       writeQueryList(serializer, queries);
       if (order != null) {
-        serializer.writeStartElement("ordered");
+        writeSearchElement(serializer, "ordered");
         serializer.writeCharacters(
           Boolean.toString(order == Ordering.ORDERED));
         serializer.writeEndElement();
@@ -1437,7 +1442,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("collection-query");
+      writeSearchElement(serializer, "collection-query");
       writeTextList(serializer, "uri", uris);
       serializer.writeEndElement();
     }
@@ -1465,7 +1470,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("directory-query");
+      writeSearchElement(serializer, "directory-query");
       if (depth != null) {
         serializer.writeAttribute("depth", Integer.toString(depth));
       }
@@ -1544,7 +1549,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("container-constraint-query");
+      writeSearchElement(serializer, "container-constraint-query");
       writeText(serializer, "constraint-name", name);
       writeQuery(serializer, query);
       serializer.writeEndElement();
@@ -1564,7 +1569,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("properties-constraint-query");
+      writeSearchElement(serializer, "properties-constraint-query");
       writeText(serializer, "constraint-name", name);
       writeQuery(serializer, query);
       serializer.writeEndElement();
@@ -1584,7 +1589,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("collection-constraint-query");
+      writeSearchElement(serializer, "collection-constraint-query");
       writeText(serializer, "constraint-name", name);
       writeTextList(serializer, "uri", uris);
       serializer.writeEndElement();
@@ -1611,7 +1616,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("value-constraint-query");
+      writeSearchElement(serializer, "value-constraint-query");
       writeText(serializer, "constraint-name", name);
       writeTextList(serializer, "text", values);
       writeText(serializer, "weight", weight);
@@ -1639,7 +1644,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("word-constraint-query");
+      writeSearchElement(serializer, "word-constraint-query");
       writeText(serializer, "constraint-name", name);
       writeTextList(serializer, "text", words);
       writeText(serializer, "weight", weight);
@@ -1662,7 +1667,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("range-constraint-query");
+      writeSearchElement(serializer, "range-constraint-query");
       writeText(serializer, "constraint-name", name);
       writeTextList(serializer, "value", values);
       writeText(serializer, "range-operator", operator);
@@ -1683,7 +1688,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("geospatial-constraint-query");
+      writeSearchElement(serializer, "geospatial-constraint-query");
       writeText(serializer, "constraint-name", name);
       for (Region region : regions) {
         ((RegionImpl) region).innerSerialize(serializer);
@@ -1706,7 +1711,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("geo-region-constraint-query");
+      writeSearchElement(serializer, "geo-region-constraint-query");
       writeText(serializer, "constraint-name", name);
       writeText(serializer, "geospatial-operator", operator.toString());
       for (Region region : regions) {
@@ -1729,7 +1734,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("custom-constraint-query");
+      writeSearchElement(serializer, "custom-constraint-query");
       writeText(serializer, "constraint-name", name);
       writeTextList(serializer, "text", terms);
       serializer.writeEndElement();
@@ -1746,7 +1751,7 @@ public class StructuredQueryBuilder {
     }
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("container-query");
+      writeSearchElement(serializer, "container-query");
       ((IndexImpl) index).innerSerialize(serializer);
       writeQuery(serializer, query);
       serializer.writeEndElement();
@@ -1803,7 +1808,7 @@ public class StructuredQueryBuilder {
     }
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("value-query");
+      writeSearchElement(serializer, "value-query");
       if ( values != null && values.length > 0 ) {
         if ( values[0] == null ) {
           serializer.writeAttribute("type", "null");
@@ -1848,7 +1853,7 @@ public class StructuredQueryBuilder {
     }
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("word-query");
+      writeSearchElement(serializer, "word-query");
       super.innerSerialize(serializer);
       serializer.writeEndElement();
     }
@@ -1909,7 +1914,7 @@ public class StructuredQueryBuilder {
     }
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("range-query");
+      writeSearchElement(serializer, "range-query");
       if (type != null) {
         serializer.writeAttribute("type", type);
         if (collation!= null) {
@@ -1974,7 +1979,7 @@ public class StructuredQueryBuilder {
         throw new IllegalStateException(
           "unknown index class: "+index.getClass().getName());
 
-      serializer.writeStartElement(elemName);
+      writeSearchElement(serializer, elemName);
       ((IndexImpl) index).innerSerialize(serializer);
       if (scope != null) {
         writeText(serializer, "fragment-scope",
@@ -2003,7 +2008,7 @@ public class StructuredQueryBuilder {
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
       String elemName = "geo-region-path-query";
-      serializer.writeStartElement(elemName);
+      writeSearchElement(serializer, elemName);
       if(index.coordinateSystem != null) {
         serializer.writeAttribute("coord", index.coordinateSystem.toString());
       }
@@ -2043,7 +2048,7 @@ public class StructuredQueryBuilder {
     }
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("period");
+      writeSearchElement(serializer, "period");
       writeText(serializer, "period-start", formattedStart);
       writeText(serializer, "period-end", formattedEnd);
       serializer.writeEndElement();
@@ -2064,7 +2069,7 @@ public class StructuredQueryBuilder {
     }
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("period-range-query");
+      writeSearchElement(serializer, "period-range-query");
       writeTextList(serializer, "axis", axes);
       writeText(serializer, "temporal-operator", operator.toString().toLowerCase());
       for ( Period period : periods ) {
@@ -2089,7 +2094,7 @@ public class StructuredQueryBuilder {
     }
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("period-compare-query");
+      writeSearchElement(serializer, "period-compare-query");
       writeText(serializer, "axis1", axis1);
       writeText(serializer, "temporal-operator", operator.toString().toLowerCase());
       writeText(serializer, "axis2", axis2);
@@ -2114,7 +2119,7 @@ public class StructuredQueryBuilder {
     }
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("lsqt-query");
+      writeSearchElement(serializer, "lsqt-query");
       writeText(serializer, "temporal-collection", temporalCollection);
       if ( formattedTimestamp != null && formattedTimestamp.length() > 0 ) {
         writeText(serializer, "timestamp", formattedTimestamp);
@@ -2124,7 +2129,7 @@ public class StructuredQueryBuilder {
       serializer.writeEndElement();
     }
   }
-    
+
   protected class TimeQuery extends AbstractStructuredQuery {
 	  private String formattedTimestamp = null;
 	  private String startElement = null;
@@ -2137,7 +2142,7 @@ public class StructuredQueryBuilder {
 	  }
 	  @Override
 	  public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-		  serializer.writeStartElement(startElement);
+		  writeSearchElement(serializer, startElement);
 		  if (formattedTimestamp != null && formattedTimestamp.length() > 0) {
 			  writeText(serializer, "timestamp", formattedTimestamp);
 		  }
@@ -2198,7 +2203,7 @@ public class StructuredQueryBuilder {
     }
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("field");
+      writeSearchElement(serializer, "field");
       serializer.writeAttribute("name", name);
       serializer.writeEndElement();
     }
@@ -2398,7 +2403,7 @@ public class StructuredQueryBuilder {
     }
 
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("point");
+      writeSearchElement(serializer, "point");
       writeText(serializer, "latitude", String.valueOf(lat));
       writeText(serializer, "longitude", String.valueOf(lon));
       serializer.writeEndElement();
@@ -2418,7 +2423,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("circle");
+      writeSearchElement(serializer, "circle");
       writeText(serializer, "radius", String.valueOf(radius));
       center.innerSerialize(serializer);
       serializer.writeEndElement();
@@ -2439,7 +2444,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("box");
+      writeSearchElement(serializer, "box");
       writeText(serializer, "south", String.valueOf(south));
       writeText(serializer, "west",  String.valueOf(west));
       writeText(serializer, "north", String.valueOf(north));
@@ -2459,7 +2464,7 @@ public class StructuredQueryBuilder {
 
     @Override
     public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
-      serializer.writeStartElement("polygon");
+      writeSearchElement(serializer, "polygon");
       for (Point point: points) {
         point.innerSerialize(serializer);
       }
@@ -2540,7 +2545,7 @@ public class StructuredQueryBuilder {
 
 // omit the XML prolog
 //            serializer.writeStartDocument();
-      serializer.writeStartElement(SEARCH_API_NS, "query");
+      writeSearchElement(serializer, "query");
 
       if (objects != null) {
         if (objects instanceof AbstractStructuredQuery[]) {
@@ -2572,7 +2577,7 @@ public class StructuredQueryBuilder {
                                           String elemName, QName qname, String name)
     throws XMLStreamException
   {
-    serializer.writeStartElement(elemName);
+    writeSearchElement(serializer, elemName);
     if (qname != null) {
       String ns = qname.getNamespaceURI();
       serializer.writeAttribute("ns", (ns != null) ? ns : "");
@@ -2591,7 +2596,7 @@ public class StructuredQueryBuilder {
     if (object == null) {
       return;
     }
-    serializer.writeStartElement(container);
+    writeSearchElement(serializer, container);
     serializer.writeCharacters(
       (object instanceof String) ?
         (String) object : object.toString()
@@ -2607,7 +2612,7 @@ public class StructuredQueryBuilder {
     }
     for (Object object: objects) {
       if ( object == null ) continue;
-      serializer.writeStartElement(container);
+      writeSearchElement(serializer, container);
       serializer.writeCharacters(
         (object instanceof String) ?
           (String) object : object.toString()
@@ -2636,7 +2641,7 @@ public class StructuredQueryBuilder {
                                  String container, AbstractStructuredQuery query)
     throws XMLStreamException
   {
-    serializer.writeStartElement(container);
+    writeSearchElement(serializer, container);
     if (query != null) {
       query.innerSerialize(serializer);
     }
@@ -2646,7 +2651,7 @@ public class StructuredQueryBuilder {
                                      String container, AbstractStructuredQuery... queries)
     throws XMLStreamException
   {
-    serializer.writeStartElement(container);
+    writeSearchElement(serializer, container);
     if (queries != null) {
       for (AbstractStructuredQuery query: queries) {
         query.innerSerialize(serializer);
@@ -2966,14 +2971,14 @@ public class StructuredQueryBuilder {
     if ( temporalCollection == null ) throw new IllegalArgumentException("temporalCollection cannot be null");
     return new TemporalLsqtQuery(temporalCollection, timestamp, weight, options);
   }
-  
+
   /**
    * Matches documents with timestamp prior to the given timestamp.
    * @param timestamp time in ISO 8601 format - documents with timestamp equal to or
    *        prior to this timestamp will match
    * @return a query to filter.
    */
-  public StructuredQueryDefinition beforeQuery(long timestamp) 
+  public StructuredQueryDefinition beforeQuery(long timestamp)
   {
 	  if (timestamp == 0) throw new IllegalArgumentException("timestamp cannot be zero");
 	  return new TimeQuery(Long.toUnsignedString(timestamp), "before-query");
@@ -2984,9 +2989,20 @@ public class StructuredQueryBuilder {
    * @param timestamp time in ISO 8601 format - documents with timestamp after this time will match.
    * @return a query to filter.
    */
-  public StructuredQueryDefinition afterQuery(long timestamp) 
+  public StructuredQueryDefinition afterQuery(long timestamp)
   {
 	  if (timestamp == 0) throw new IllegalArgumentException("timestamp cannot be zero");
 	  return new TimeQuery(Long.toUnsignedString(timestamp), "after-query");
   }
+
+	/**
+	 * Convenience method for writing an element in the "search" namespace.
+	 *
+	 * @param serializer
+	 * @param elementName
+	 * @throws XMLStreamException
+	 */
+	private static void writeSearchElement(XMLStreamWriter serializer, String elementName) throws XMLStreamException {
+		serializer.writeStartElement(SEARCH_API_NS, elementName);
+	}
 }
