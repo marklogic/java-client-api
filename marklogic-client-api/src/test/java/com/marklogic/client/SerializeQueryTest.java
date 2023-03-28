@@ -29,7 +29,7 @@ public class SerializeQueryTest {
 		XMLStreamWriter serializer = factory.createXMLStreamWriter(writer);
 
 		// Must set this in order for the serialized query to be in the correct namespace.
-		serializer.setDefaultNamespace(SEARCH_NS);
+//		serializer.setDefaultNamespace(SEARCH_NS);
 
 		serializer.writeStartElement("someOtherNamespace", "myDocument");
 		serializer.writeStartElement("someLocalElement");
@@ -37,10 +37,10 @@ public class SerializeQueryTest {
 
 		// In order for query.serialize to work, it appears necessary to wrap the query in an element in the search
 		// namespace. And because that's the default namespace on the XMLStreamWriter, it will be applied to each of
-		// the child elements produced by query.serialize. 
-		serializer.writeStartElement(SEARCH_NS, "theMarkLogicQuery");
+		// the child elements produced by query.serialize.
+//		serializer.writeStartElement(SEARCH_NS, "theMarkLogicQuery");
 		query.serialize(serializer);
-		serializer.writeEndElement();
+//		serializer.writeEndElement();
 
 		serializer.writeEndElement();
 		serializer.flush();
