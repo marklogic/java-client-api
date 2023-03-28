@@ -53,18 +53,18 @@ public interface RowManager {
     /**
      * Specifies whether to emit the data type of each column in each row or only in the header
      * in the response for requests made with the row manager.
-     * 
+     *
      * The distinction is significant when getting the rows as JSON or XML.
      * Because the server supports columns with variant data types, the default is in each row.
      * You can configure the row manager to return more concise objects if the data type
      * is consistent or if you aren't using the data type.
-     * 
+     *
      * @param style	the part of the rowset that should contain data types
      */
     void setDatatypeStyle(RowSetPart style);
 
     /**
-     * Returns whether each row should have an array or object structure 
+     * Returns whether each row should have an array or object structure
      * in the response for requests made with the row manager.
      * @return	the style of row structure
      */
@@ -72,10 +72,10 @@ public interface RowManager {
     /**
      * Specifies whether to get each row as an object (the default) or as an array
      * in the response for requests made with the row manager.
-     * 
+     *
      * The distinction is significant when getting the rows as JSON
      * and also when executing a map or reduce function on the server.
-     * 
+     *
      * @param style	the structure of rows in the response
      */
     void setRowStructureStyle(RowStructure style);
@@ -130,14 +130,14 @@ public interface RowManager {
 
     /**
      * Execute the given plan without returning any result.
-     * 
+     *
      * @param plan the definition of a plan
      */
     void execute(Plan plan);
 
     /**
      * Execute the given plan without returning any result.
-     * 
+     *
      * @param plan the definition of a plan
      * @param transaction a open transaction for the execute operation to run within
      */
@@ -170,7 +170,7 @@ public interface RowManager {
     <T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle);
     /**
      * Constructs and retrieves a set of database rows based on a plan using
-     * a JSON or XML handle for each row and reflecting documents written or 
+     * a JSON or XML handle for each row and reflecting documents written or
      * deleted by an uncommitted transaction.
      * @param plan	the definition of a plan for the database rows
      * @param rowHandle	the JSON or XML handle that provides each row
@@ -182,15 +182,15 @@ public interface RowManager {
 
     /**
      * Constructs and retrieves a set of database rows based on a plan using
-     * a JSON or XML handle for each row and reflecting documents written or 
+     * a JSON or XML handle for each row and reflecting documents written or
      * deleted by an uncommitted transaction.
-     * 
+     *
      * The IO class must have been registered before creating the database client.
-     * By default, the provided handles that implement 
+     * By default, the provided handles that implement
      * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
-     * 
+     *
      * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
-     * 
+     *
      * @param plan	the definition of a plan for the database rows
      * @param as	the IO class for reading each row as JSON or XML content
      * @param <T> the type of object that will be returned by the handle registered for it
@@ -199,15 +199,15 @@ public interface RowManager {
     <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as);
     /**
      * Constructs and retrieves a set of database rows based on a plan using
-     * a JSON or XML handle for each row and reflecting documents written or 
+     * a JSON or XML handle for each row and reflecting documents written or
      * deleted by an uncommitted transaction.
-     * 
+     *
      * The IO class must have been registered before creating the database client.
-     * By default, the provided handles that implement 
+     * By default, the provided handles that implement
      * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
-     * 
+     *
      * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
-     * 
+     *
      * @param plan	the definition of a plan for the database rows
      * @param as	the IO class for reading each row as JSON or XML content
      * @param transaction	a open transaction for documents from which rows have been projected
@@ -240,13 +240,13 @@ public interface RowManager {
     /**
      * Constructs and retrieves a set of database rows based on a plan
      * in the representation specified by the IO class.
-     * 
+     *
      * The IO class must have been registered before creating the database client.
-     * By default, the provided handles that implement 
+     * By default, the provided handles that implement
      * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
-     * 
+     *
      * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
-     * 
+     *
      * @param plan	the definition of a plan for the database rows
      * @param as	the IO class for reading the set of rows
      * @param <T> the type of the IO object for reading the set of rows
@@ -257,13 +257,13 @@ public interface RowManager {
      * Constructs and retrieves a set of database rows based on a plan
      * in the representation specified by the IO class and reflecting
      * documents written or deleted by an uncommitted transaction.
-     * 
+     *
      * The IO class must have been registered before creating the database client.
-     * By default, the provided handles that implement 
+     * By default, the provided handles that implement
      * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
-     * 
+     *
      * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
-     * 
+     *
      * @param plan	the definition of a plan for the database rows
      * @param as	the IO class for reading the set of rows
      * @param transaction	a open transaction for documents from which rows have been projected
@@ -284,13 +284,13 @@ public interface RowManager {
     /**
      * Constructs a plan for retrieving a set of database rows and returns an explanation
      * of the plan in the representation specified by the IO class.
-     * 
+     *
      * The IO class must have been registered before creating the database client.
-     * By default, the provided handles that implement 
+     * By default, the provided handles that implement
      * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
-     * 
+     *
      * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
-     * 
+     *
      * @param plan	the definition of a plan for database rows
      * @param as	the IO class for reading the explanation for the plan
      * @param <T> the type of the IO object for reading the explanation
@@ -361,4 +361,24 @@ public interface RowManager {
      * @return	an object of the IO class with the content of the column information for the plan
      */
     <T> T columnInfoAs(PlanBuilder.PreparePlan plan, Class<T> as);
+
+	/**
+	 * Executes a GraphQL query against the database and returns the results as a JSON object.
+	 *
+	 * @param query the GraphQL query to execute
+	 * @param resultsHandle the IO class for capturing the results
+	 * @param <T> the type of the IO object for r the results
+	 * @return an object of the IO class containing the query results, which will include error messages if the query fails
+	 */
+	<T extends JSONReadHandle> T graphql(JSONWriteHandle query, T resultsHandle);
+
+	/**
+	 * Executes a GraphQL query against the database and returns the results as a JSON object.
+	 *
+	 * @param query the GraphQL query to execute
+	 * @param as the class type of the results to return; typically JsonNode or String
+	 * @param <T> the type of the results to return
+	 * @return an instance of the given return type that contains the query results, which will include error messages if the query fails
+	 */
+	<T> T graphqlAs(JSONWriteHandle query, Class<T> as);
 }

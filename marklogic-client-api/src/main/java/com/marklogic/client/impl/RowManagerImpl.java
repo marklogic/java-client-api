@@ -75,7 +75,7 @@ public class RowManagerImpl
     this.handleRegistry = handleRegistry;
   }
 
-  @Override
+	@Override
   public PlanBuilder newPlanBuilder() {
     PlanBuilderImpl planBuilder = new PlanBuilderSubImpl();
 
@@ -211,7 +211,7 @@ public class RowManagerImpl
   public void execute(Plan plan) {
     execute(plan, null);
   }
-  
+
   @Override
   public void execute(Plan plan, Transaction transaction) {
     PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
@@ -268,7 +268,7 @@ public class RowManagerImpl
         .withColumnTypes(datatypeStyle)
         .withOutput(rowStructureStyle)
         .getRequestParameters();
-    
+
     RESTServiceResultIterator iter = submitPlan(requestPlan, params, transaction);
     RowSetObject<T> rowset = new RowSetObject<>(rowFormat, datatypeStyle, rowStructureStyle, iter, rowHandle);
     rowset.init();
@@ -356,7 +356,31 @@ public class RowManagerImpl
     return handle.get();
   }
 
-  private <T extends AbstractReadHandle> String getRowFormat(T rowHandle) {
+	@Override
+	public <T extends JSONReadHandle> T graphql(JSONWriteHandle query, T resultsHandle) {
+		if (resultsHandle == null) {
+			throw new IllegalArgumentException("Must specify a handle for the results of the GraphQL query");
+		}
+		RequestParameters params = new RequestParameters();
+		// Must force the MIME type before passing this to OkHttpServices - which does the exact same check below,
+		// requiring that the query handle be an instance of HandleImplementation.
+		HandleAccessor.checkHandle(query, "write").setMimetype("application/graphql");
+		return services.postResource(requestLogger, "rows/graphql", null, params, query, resultsHandle);
+	}
+
+	@Override
+	public <T> T graphqlAs(JSONWriteHandle query, Class<T> as) {
+	  ContentHandle<T> handle = handleFor(as);
+	  if (!(handle instanceof JSONReadHandle)) {
+		  throw new IllegalArgumentException("The handle is not an instance of JSONReadHandle.");
+	  }
+	  if (graphql(query, (JSONReadHandle) handle) == null) {
+		  return null;
+	  }
+	  return handle.get();
+	}
+
+	private <T extends AbstractReadHandle> String getRowFormat(T rowHandle) {
     if (rowHandle == null) {
       throw new IllegalArgumentException("Must specify a handle to iterate over the rows");
     }
