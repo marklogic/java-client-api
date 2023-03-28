@@ -503,7 +503,13 @@ public class OkHttpServices implements RESTServices {
     try {
       return getConnection().newCall(request).execute();
     } catch (IOException e) {
-      throw new MarkLogicIOException(e);
+		String message = String.format(
+			"Error occurred while calling %s; %s: %s " +
+				"; possible reasons for the error include that a MarkLogic app server may not be listening on the port, " +
+				"or MarkLogic was stopped or restarted during the request; check the MarkLogic server logs for more information.",
+			request.url(), e.getClass().getName(), e.getMessage()
+		);
+		throw new MarkLogicIOException(message, e);
     }
   }
 
