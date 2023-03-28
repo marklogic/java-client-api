@@ -20,6 +20,7 @@ import com.marklogic.client.query.StructuredQueryBuilder.FragmentScope;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.util.EditableNamespaceContext;
+import com.marklogic.rest.util.Fragment;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
@@ -32,6 +33,8 @@ import org.xml.sax.helpers.DefaultHandler;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -71,6 +74,45 @@ public class StructuredQueryBuilderTest {
     StringInputStream(String input) {
       super(input.getBytes());
     }
+  }
+
+  @Test
+  void serializeQueryIntoStaxDocument() throws Exception {
+	  StructuredQueryBuilder qb = Common.newClient().newQueryManager().newStructuredQueryBuilder();
+	  StructuredQueryDefinition query = qb.and(qb.collection("hello"), qb.term("world"));
+
+	  XMLOutputFactory factory = XMLOutputFactory.newFactory();
+	  factory.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, true);
+
+	  StringWriter writer = new StringWriter();
+	  XMLStreamWriter xmlWriter = factory.createXMLStreamWriter(writer);
+	  xmlWriter.setPrefix("example", "http://example.org/");
+	  xmlWriter.setPrefix("search", "http://marklogic.com/appservices/search");
+
+	  xmlWriter.writeStartElement("http://example.org/", "myDocument");
+	  xmlWriter.writeStartElement("someLocalElement");
+	  xmlWriter.writeEndElement();
+	  query.serialize(xmlWriter);
+	  xmlWriter.writeEndElement();
+	  xmlWriter.flush();
+	  xmlWriter.close();
+
+	  String xml = new Fragment(writer.toString()).getPrettyXml();
+
+	  final String expectedXml = "<example:myDocument xmlns:example='http://example.org/'>\n" +
+									 "  <someLocalElement />\n" +
+									 "  <search:and-query xmlns:search='http://marklogic.com/appservices/search'>\n" +
+									 "    <search:collection-query>\n" +
+									 "      <search:uri>hello</search:uri>\n" +
+									 "    </search:collection-query>\n" +
+									 "    <search:term-query>\n" +
+									 "      <search:text>world</search:text>\n" +
+									 "    </search:term-query>\n" +
+									 "  </search:and-query>\n" +
+									 "</example:myDocument>";
+
+	  assertXMLEqual("The query should have been embedded correctly in the XML document, with the Search namespace " +
+						 "being associated with the 'search' prefix.", expectedXml, xml);
   }
 
   @SuppressWarnings("deprecation")
