@@ -17,10 +17,12 @@ public class MarkLogicCloudAuthenticationConfigurerTest {
 
 	@Test
 	void buildTokenUrl() throws Exception {
-		HttpUrl tokenUrl = new MarkLogicCloudAuthenticationConfigurer("somehost").buildTokenUrl(
+		MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator client = new MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator("somehost",
 			new DatabaseClientFactory.MarkLogicCloudAuthContext("doesnt-matter")
 				.withSSLContext(SSLContext.getDefault(), null)
 		);
+
+		HttpUrl tokenUrl = client.buildTokenUrl();
 		assertEquals("https://somehost/token", tokenUrl.toString());
 	}
 
@@ -30,17 +32,20 @@ public class MarkLogicCloudAuthenticationConfigurerTest {
 	 */
 	@Test
 	void buildTokenUrlWithCustomTokenPath() throws Exception {
-		HttpUrl tokenUrl = new MarkLogicCloudAuthenticationConfigurer("otherhost").buildTokenUrl(
+		MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator client = new MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator("otherhost",
 			new DatabaseClientFactory.MarkLogicCloudAuthContext("doesnt-matter", "/customToken", "doesnt-matter")
 				.withSSLContext(SSLContext.getDefault(), null)
 		);
+
+		HttpUrl tokenUrl = client.buildTokenUrl();
 		assertEquals("https://otherhost/customToken", tokenUrl.toString());
 	}
 
 	@Test
 	void newFormBody() {
-		FormBody body = new MarkLogicCloudAuthenticationConfigurer("doesnt-matter")
-			.newFormBody(new DatabaseClientFactory.MarkLogicCloudAuthContext("myKey"));
+		FormBody body = new MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator("host-doesnt-matter",
+			new DatabaseClientFactory.MarkLogicCloudAuthContext("myKey"))
+							.newFormBody();
 		assertEquals("grant_type", body.name(0));
 		assertEquals("apikey", body.value(0));
 		assertEquals("key", body.name(1));
@@ -53,8 +58,9 @@ public class MarkLogicCloudAuthenticationConfigurerTest {
 	 */
 	@Test
 	void newFormBodyWithOverrides() {
-		FormBody body = new MarkLogicCloudAuthenticationConfigurer("doesnt-matter")
-			.newFormBody(new DatabaseClientFactory.MarkLogicCloudAuthContext("myKey", "doesnt-matter", "custom-grant-type"));
+		FormBody body = new MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator("host-doesnt-matter",
+			new DatabaseClientFactory.MarkLogicCloudAuthContext("myKey", "doesnt-matter", "custom-grant-type"))
+							.newFormBody();
 		assertEquals("grant_type", body.name(0));
 		assertEquals("custom-grant-type", body.value(0));
 		assertEquals("key", body.name(1));
