@@ -1,11 +1,9 @@
 /**
  * The package provides base and support classes so you can derive
- * a new Resource Manager to provide a client interface for a 
+ * a new Resource Manager to provide a client interface for a
  * Resource Services extension on the REST server.  Use
  * {@link com.marklogic.client.admin.ResourceExtensionsManager}
  * to install a Resource Services extension on the REST server.
- * See {@link com.marklogic.client.example.cookbook.ResourceExtension}
- * for an example.
  */
 /*
  * Copyright (c) 2022 MarkLogic Corporation
