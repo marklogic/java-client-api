@@ -34,7 +34,7 @@ import com.marklogic.client.impl.JacksonBaseHandle;
  *
  * <p>Always call {@link #close} when finished with this handle to release the resources.</p>
  *
- * @see <a href="http://wiki.fasterxml.com/JacksonStreamingApi">Jackson Streaming API</a>
+ * @see <a href="https://github.com/FasterXML/jackson">Jackson Streaming API</a>
  */
 public class JacksonParserHandle
   extends JacksonBaseHandle<JsonParser>
