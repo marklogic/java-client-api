@@ -43,6 +43,7 @@ public interface StructuredQueryDefinition
 	 *
 	 * @param xmlStreamWriter The XML stream writer to which the query definition should be serialized.
 	 * @throws XMLStreamException
+	 * @since 6.2.0
 	 */
 	void serialize(XMLStreamWriter xmlStreamWriter) throws XMLStreamException;
 

@@ -369,6 +369,7 @@ public interface RowManager {
 	 * @param resultsHandle the IO class for capturing the results
 	 * @param <T> the type of the IO object for r the results
 	 * @return an object of the IO class containing the query results, which will include error messages if the query fails
+	 * @since 6.2.0
 	 */
 	<T extends JSONReadHandle> T graphql(JSONWriteHandle query, T resultsHandle);
 
@@ -379,6 +380,7 @@ public interface RowManager {
 	 * @param as the class type of the results to return; typically JsonNode or String
 	 * @param <T> the type of the results to return
 	 * @return an instance of the given return type that contains the query results, which will include error messages if the query fails
+	 * @since 6.2.0
 	 */
 	<T> T graphqlAs(JSONWriteHandle query, Class<T> as);
 }
