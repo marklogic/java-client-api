@@ -74,7 +74,8 @@ public class ExportListener implements QueryBatchListener {
   private QueryManager.QueryView view;
   private Set<DocumentManager.Metadata> categories = new HashSet<>();
   private Format nonDocumentFormat;
-  private List<Consumer<DocumentRecord>> exportListeners = new ArrayList<>();
+  private List<Consumer<DocumentRecord>> documentListeners = new ArrayList<>();
+  private Consumer<DocumentPage> documentPageListener;
   private boolean consistentSnapshot = false;
   private List<BatchFailureListener<Batch<String>>> failureListeners = new ArrayList<>();
   private List<BatchFailureListener<QueryBatch>> queryBatchFailureListeners = new ArrayList<>();
@@ -127,15 +128,19 @@ public class ExportListener implements QueryBatchListener {
   @Override
   public void processEvent(QueryBatch batch) {
     try ( DocumentPage docs = getDocs(batch) ) {
-      while ( docs.hasNext() ) {
-        for ( Consumer<DocumentRecord> listener : exportListeners ) {
-          try {
-            listener.accept(docs.next());
-          } catch (Throwable t) {
-            logger.error("Exception thrown by an onDocumentReady listener", t);
-          }
-        }
-      }
+		if (documentPageListener != null) {
+			documentPageListener.accept(docs);
+		} else {
+			while ( docs.hasNext() ) {
+				for ( Consumer<DocumentRecord> listener : documentListeners) {
+					try {
+						listener.accept(docs.next());
+					} catch (Throwable t) {
+						logger.error("Exception thrown by an onDocumentReady listener", t);
+					}
+				}
+			}
+		}
     } catch (Throwable t) {
       for ( BatchFailureListener<Batch<String>> listener : failureListeners ) {
         try {
@@ -232,9 +237,7 @@ public class ExportListener implements QueryBatchListener {
    * file system, a REST service, or any target supported by Java.  If further
    * information is required about the document beyond what DocumentRecord can
    * provide, register a listener with {@link QueryBatcher#onUrisReady
-   * QueryBatcher.onUrisReady} instead.  You do not need to call close() on
-   * each DocumentRecord because the ExportListener will call close for you on
-   * the entire DocumentPage.
+   * QueryBatcher.onUrisReady} instead.
    *
    * @param listener the code which will process each document
    * @return this instance for method chaining
@@ -243,9 +246,31 @@ public class ExportListener implements QueryBatchListener {
    * @see DocumentRecord
    */
   public ExportListener onDocumentReady(Consumer<DocumentRecord> listener) {
-    exportListeners.add(listener);
-    return this;
+	  if (this.documentPageListener != null) {
+		  throw new IllegalStateException("Cannot call onDocumentReady if a listener has already been set via onDocumentPageReady");
+	  }
+	  documentListeners.add(listener);
+	  return this;
   }
+
+	/**
+	 * Sets a listener to process a page of retrieved documents. Useful for when documents should be written to an
+	 * external system where it's more efficient to make batched writes to that system. Note that {@code close()} does
+	 * need to be invoked on the {@code DocumentPage}; this class will handle that.
+	 *
+	 * @param listener the code which will process each page of documents
+	 * @return this instance for method chaining
+	 * @see Consumer
+	 * @see DocumentPage
+	 * @since 6.2.0
+	 */
+	public ExportListener onDocumentPageReady(Consumer<DocumentPage> listener) {
+		if (this.documentListeners != null && !this.documentListeners.isEmpty()) {
+			throw new IllegalStateException("Cannot call onDocumentPageReady if a listener has already been added via onDocumentReady");
+		}
+		this.documentPageListener = listener;
+		return this;
+	}
 
   /**
    * When a batch fails or a callback throws an Exception, run this listener
