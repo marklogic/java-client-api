@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.marklogic.client.datamovement.functionaltests;
+package com.marklogic.client.fastfunctest.datamovement;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.*;
 
+import com.marklogic.client.fastfunctest.AbstractFunctionalTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,58 +41,19 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 
-public class ExportListenerTest extends BasicJavaClientREST {
+public class ExportListenerTest extends AbstractFunctionalTest {
 
-  private static String dbName = "ExportListener";
   private static DataMovementManager dmManager = null;
   private static DatabaseClient dbClient;
-  private static String user = "admin";
-  private static int port = 8000;
-  private static String password = "admin";
-  private static String server = "App-Services";
 
   private static final String query1 = "fn:count(fn:doc())";
-  private static String[] hostNames;
-
-  @BeforeAll
-  public static void setUpBeforeClass() throws Exception {
-    loadGradleProperties();
-    server = getRestAppServerName();
-    port = getRestAppServerPort();
-
-    hostNames = getHosts();
-    createDB(dbName);
-    Thread.currentThread().sleep(500L);
-    int count = 1;
-    for (String forestHost : hostNames) {
-      createForestonHost(dbName + "-" + count, dbName, forestHost);
-      count++;
-      Thread.currentThread().sleep(500L);
-    }
-    // Create App Server if needed.
- 	createRESTServerWithDB(server, port);
-    assocRESTServer(server, dbName, port);
-    if (IsSecurityEnabled()) {
-		enableSecurityOnRESTServer(server, dbName);
-	}
-
-    dbClient = getDatabaseClient(user, password, getConnType());
-    dmManager = dbClient.newDataMovementManager();
-  }
-
-  @AfterAll
-  public static void tearDownAfterClass() throws Exception {
-    associateRESTServerWithDB(server, "Documents");
-    for (int i = 0; i < hostNames.length; i++) {
-      System.out.println(dbName + "-" + (i + 1));
-      detachForest(dbName, dbName + "-" + (i + 1));
-      deleteForest(dbName + "-" + (i + 1));
-    }
-    deleteDB(dbName);
-  }
 
   @BeforeEach
   public void setUp() throws Exception {
+	  dbClient = client;
+	  dmManager = client.newDataMovementManager();
+	  deleteDocuments(client);
+
     String jsonDoc = "{" +
         "\"employees\": [" +
         "{ \"firstName\":\"John\" , \"lastName\":\"Doe\" }," +
@@ -99,25 +61,15 @@ public class ExportListenerTest extends BasicJavaClientREST {
         "{ \"firstName\":\"Bob\" , \"lastName\":\"Foo\" }]" +
         "}";
 
-    // Use WriteBatcher to write the files.
     WriteBatcher wbatcher = dmManager.newWriteBatcher();
-
-    wbatcher.withBatchSize(1000);
     StringHandle handle = new StringHandle();
     handle.set(jsonDoc);
     String uri = null;
-
-    // Insert 10K documents
     for (int i = 0; i < 100; i++) {
       uri = "firstName" + i + ".json";
       wbatcher.add(uri, handle);
     }
     wbatcher.flushAndWait();
-  }
-
-  @AfterEach
-  public void tearDown() throws Exception {
-    clearDB(port);
   }
 
   /*
@@ -128,13 +80,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
    * 3) Second query batcher after delete listener should return 0 uris.
    */
   @Test
-  public void testPointInTimeQueryDeterministicSet() throws Exception {
-    System.out.println("Running testPointInTimeQueryDeterministicSet");
-    Map<String, String> props = new HashMap<String, String>();
-    props.put("merge-timestamp", "-6000000000");
-    changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
-    Thread.currentThread().sleep(10000L);
-
+  public void testPointInTimeQueryDeterministicSet() {
     List<String> docExporterList = Collections.synchronizedList(new ArrayList<String>());
     List<String> batcherList2 = Collections.synchronizedList(new ArrayList<String>());
 
@@ -146,7 +92,6 @@ public class ExportListenerTest extends BasicJavaClientREST {
     querydef2.setCriteria("John AND Bob");
     StringBuffer batchResults = new StringBuffer();
 
-    try {
       // Listener IS setup with withConsistentSnapshot()
       ExportListener exportListener = new ExportListener();
       exportListener.withConsistentSnapshot()
@@ -191,14 +136,9 @@ public class ExportListenerTest extends BasicJavaClientREST {
 
       dmManager.startJob(batcher2);
       batcher2.awaitCompletion();
-    } catch (Exception ex) {
-      System.out.println("Exceptions from testPointInTimeQueryDeterministicSet method is" + ex.getMessage());
-    } finally {
-    }
 
-    System.out.println("Batch" + batchResults.toString());
-    props.put("merge-timestamp", "0");
-    changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
+	  System.out.println("Batch" + batchResults.toString());
+
     assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
     System.out.println("List size from second QueryBatcher is " + batcherList2.size());
     System.out.println("List size from Export Listener is " + docExporterList.size());
@@ -214,13 +154,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
    * ConsistentSnapshot and 2) Listener is setup with ConsistentSnapshot.
    */
   @Test
-  public void testWithSnapshots() throws Exception {
-    System.out.println("Running testWithSnapshots");
-    Map<String, String> props = new HashMap<String, String>();
-    props.put("merge-timestamp", "-6000000000");
-    changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
-    Thread.currentThread().sleep(5000L);
-
+  public void testWithSnapshots() {
     List<String> docExporterList = Collections.synchronizedList(new ArrayList<String>());
     List<String> batcherList = Collections.synchronizedList(new ArrayList<String>());
 
@@ -271,11 +205,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
               assertEquals("Ann", node.path("employees").get(1).path("firstName").asText());
               assertEquals("Bob", node.path("employees").get(2).path("firstName").asText());
             }
-            try {
-              Thread.sleep(5000);
-            } catch (Exception e) {
-              e.printStackTrace();
-            }
+			// This test used to sleep for 5 seconds for unknown reasons.
           })
           .onQueryFailure(exception -> {
             System.out.println("Exceptions thrown from testPointInTimeQueryDeterministicSet callback onQueryFailure");
@@ -301,12 +231,9 @@ public class ExportListenerTest extends BasicJavaClientREST {
       exportBatcher.awaitCompletion();
     } catch (Exception ex) {
       System.out.println("Exceptions from testPointInTimeQueryDeterministicSet method is" + ex.getMessage());
-    } finally {
     }
 
     System.out.println("Batch" + batchResults.toString());
-    props.put("merge-timestamp", "0");
-    changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
 
     System.out.println("List size from QueryBatcher is " + batcherList.size());
     System.out.println("List size from Export Listener is " + docExporterList.size());
@@ -321,20 +248,13 @@ public class ExportListenerTest extends BasicJavaClientREST {
   // Verify getServerTimestamp on the batch with no ConsistentSnapshot - Git
   // Issue 629
   @Test
-  public void testServerTimestampNoSnapshots() throws Exception {
-    System.out.println("Running testServerTimestampNoSnapshots");
-    Map<String, String> props = new HashMap<String, String>();
-    props.put("merge-timestamp", "-6000000000");
-    changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
-    Thread.currentThread().sleep(5000L);
-
+  public void testServerTimestampNoSnapshots() {
     List<String> docExporterList = Collections.synchronizedList(new ArrayList<String>());
 
     QueryManager queryMgr = dbClient.newQueryManager();
     StringQueryDefinition querydef = queryMgr.newStringDefinition();
     querydef.setCriteria("John AND Bob");
 
-    try {
       // Listener is setup with no withConsistentSnapshot()
       ExportListener exportListener = new ExportListener();
       exportListener
@@ -361,12 +281,6 @@ public class ExportListenerTest extends BasicJavaClientREST {
           });
       dmManager.startJob(exportBatcher);
       exportBatcher.awaitCompletion();
-    } catch (Exception ex) {
-      System.out.println("Exceptions from testPointInTimeQueryDeterministicSet method is" + ex.getMessage());
-    } finally {
-      props.put("merge-timestamp", "0");
-      changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
-    }
   }
 
   /*
@@ -376,13 +290,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
    * ConsistentSnapshot and 2) Listener is NOT setup with ConsistentSnapshot.
    */
   @Test
-  public void testNoSnapshotOnListener() throws Exception {
-    System.out.println("Running testNoSnapshotOnListener");
-    Map<String, String> props = new HashMap<String, String>();
-    props.put("merge-timestamp", "-6000000000");
-    changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
-    Thread.currentThread().sleep(5000L);
-
+  public void testNoSnapshotOnListener() {
     List<String> docExporterList = new ArrayList<String>();
     List<String> batcherList = new ArrayList<String>();
 
@@ -391,14 +299,12 @@ public class ExportListenerTest extends BasicJavaClientREST {
     querydef.setCriteria("John AND Bob");
     StringBuffer batchResults = new StringBuffer();
 
-    try {
       // Listener is NOT setup with withConsistentSnapshot()
       ExportListener exportListener = new ExportListener();
       exportListener.onDocumentReady(doc -> {
         String uriOfDoc = doc.getUri();
         docExporterList.add(uriOfDoc);
-      }
-          );
+      });
 
       QueryBatcher exportBatcher = dmManager.newQueryBatcher(querydef)
           .withConsistentSnapshot()
@@ -423,11 +329,8 @@ public class ExportListenerTest extends BasicJavaClientREST {
               assertEquals("Ann", node.path("employees").get(1).path("firstName").asText());
               assertEquals("Bob", node.path("employees").get(2).path("firstName").asText());
             }
-            try {
-              Thread.sleep(1000);
-            } catch (Exception e) {
-              e.printStackTrace();
-            }
+			// Not known why this is needed.
+			waitFor(1000);
           })
           .onQueryFailure(exception -> {
             System.out.println("Exceptions thrown from exportBatcher callback onQueryFailure");
@@ -444,19 +347,13 @@ public class ExportListenerTest extends BasicJavaClientREST {
       deleteBatcher.awaitCompletion();
 
       exportBatcher.awaitCompletion();
-    } catch (Exception ex) {
-      System.out.println("Exceptions from deleteBatcher method is" + ex.getMessage());
-    } finally {
-    }
 
     System.out.println("Batch" + batchResults.toString());
-    props.put("merge-timestamp", "0");
-    changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
 
     System.out.println("List size from QueryBatcher is " + batcherList.size());
     System.out.println("List size from Export Listener is " + docExporterList.size());
 
-    assertTrue(batcherList.size() == 100);
+    assertEquals(100, batcherList.size());
     assertTrue(docExporterList.size() != 100);
 
     // Doc count should be zero after both batchers are done.
@@ -472,13 +369,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
    * delete listener Results should be non deterministic.
    */
   @Test
-  public void testPointInTimeQueryNonDeterministicSet() throws Exception {
-    System.out.println("Running testPointInTimeQueryNonDeterministicSet");
-    Map<String, String> props = new HashMap<String, String>();
-    props.put("merge-timestamp", "-6000000000");
-    changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
-    Thread.currentThread().sleep(5000L);
-
+  public void testPointInTimeQueryNonDeterministicSet() {
     List<String> docExporterList = new ArrayList<String>();
     List<String> batcherList = new ArrayList<String>();
 
@@ -487,7 +378,6 @@ public class ExportListenerTest extends BasicJavaClientREST {
     querydef.setCriteria("John AND Bob");
     StringBuffer batchResults = new StringBuffer();
 
-    try {
       ExportListener exportListener = new ExportListener();
       exportListener.onDocumentReady(doc -> {
         String uriOfDoc = doc.getUri();
@@ -505,13 +395,9 @@ public class ExportListenerTest extends BasicJavaClientREST {
               batcherList.add(u);
             }
             batchResults.append("|");
-            System.out.println("Batch Numer is " + batch.getJobBatchNumber());
-
-            try {
-              Thread.sleep(5000);
-            } catch (Exception e) {
-              e.printStackTrace();
-            }
+            System.out.println("Batch Number is " + batch.getJobBatchNumber());
+			// Not known why this is needed.
+			waitFor(1000);
           })
           .onQueryFailure(exception -> {
             System.out.println("Exceptions thrown from testPointInTimeQueryDeterministicSet callback onQueryFailure");
@@ -528,14 +414,8 @@ public class ExportListenerTest extends BasicJavaClientREST {
       deleteBatcher.awaitCompletion();
 
       exportBatcher.awaitCompletion();
-    } catch (Exception ex) {
-      System.out.println("Exceptions from testPointInTimeQueryDeterministicSet method is" + ex.getMessage());
-    } finally {
-    }
 
     System.out.println("Batch" + batchResults.toString());
-    props.put("merge-timestamp", "0");
-    changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
 
     assertTrue(batcherList.size() != 100);
     assertTrue(docExporterList.size() != 100);
@@ -549,13 +429,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
    */
 
   @Test
-  public void testOnBatchFailure() throws Exception {
-    System.out.println("Running testOnBatchFailure");
-    Map<String, String> props = new HashMap<String, String>();
-    props.put("merge-timestamp", "-6000000000");
-    changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
-    Thread.currentThread().sleep(5000L);
-
+  public void testOnBatchFailure() {
     String jsonDoc = "{" +
         "\"employees\": [" +
         "{ \"firstName\":\"Will\" , \"lastName\":\"Kirkham\" }," +
@@ -585,7 +459,6 @@ public class ExportListenerTest extends BasicJavaClientREST {
     querydef.setCriteria("Will AND Hus");
     StringBuilder onBatchFailureStr = new StringBuilder();
 
-    try {
       QueryBatcher exportBatcher = dmManager.newQueryBatcher(querydef)
           .withBatchSize(50)
           .onUrisReady(
@@ -613,11 +486,8 @@ public class ExportListenerTest extends BasicJavaClientREST {
       dmManager.startJob(exportBatcher);
 
       exportBatcher.awaitCompletion();
-    } catch (Exception ex) {
-      System.out.println("Exceptions from testOnBatchFailure method is" + ex.getMessage());
-    } finally {
-    }
-    System.out.println("On Batch Failure contents are " + onBatchFailureStr.toString());
-    assertTrue(onBatchFailureStr.toString().contains("From onBatchFailure QA Exception"));
+
+    assertTrue(onBatchFailureStr.toString().contains("From onBatchFailure QA Exception"),
+		"Unexpected exception: " + onBatchFailureStr);
   }
 }

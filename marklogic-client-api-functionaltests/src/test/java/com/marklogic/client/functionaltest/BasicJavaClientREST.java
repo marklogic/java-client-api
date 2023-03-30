@@ -1147,25 +1147,6 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
   }
 
   /**
-   * Check if document exist
-   *
-   * @param client
-   * @param uri
-   * @return
-   */
-  /*
-   * public DocumentDescriptor isDocumentExist(DatabaseClient client, String
-   * uri, String type) { // create doc manager DocumentManager docMgr = null;
-   * docMgr = documentManagerSelector(client, docMgr, type);
-   *
-   * String checkDocId = uri;
-   *
-   * DocumentDescriptor docExist;
-   *
-   * docExist = docMgr.exists(checkDocId); return docExist; }
-   */
-
-  /**
    * Read metadata from document
    *
    * @param client

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.marklogic.client.fastfunctest;
+package com.marklogic.client.fastfunctest.datamovement;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
