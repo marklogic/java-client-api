@@ -364,12 +364,17 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
 
   @Override
   public QueryBatcher withThreadCount(int threadCount) {
-    requireNotStarted();
-    if ( getThreadCount() <= 0 ) {
+    if (threadCount <= 0 ) {
       throw new IllegalArgumentException("threadCount must be 1 or greater");
     }
-    threadCountSet = true;
-    super.withThreadCount(threadCount);
+	if (threadPool != null) {
+		logger.info("Adjusting thread pool size from {} to {}", getThreadCount(), threadCount);
+		threadPool.setCorePoolSize(threadCount);
+		threadPool.setMaximumPoolSize(threadCount);
+	} else {
+		threadCountSet = true;
+	}
+	super.withThreadCount(threadCount);
     return this;
   }
 

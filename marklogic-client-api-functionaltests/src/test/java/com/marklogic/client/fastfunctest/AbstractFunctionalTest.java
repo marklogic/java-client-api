@@ -17,6 +17,8 @@ import com.marklogic.mgmt.resource.databases.DatabaseManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -34,6 +36,7 @@ import java.util.stream.Stream;
 public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
 
     protected final static String DB_NAME = "java-functest";
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	protected final static ObjectMapper objectMapper = new ObjectMapper();
 

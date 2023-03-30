@@ -142,7 +142,7 @@ public interface QueryBatcher extends Batcher {
   QueryBatcher onQueryFailure(QueryFailureListener listener);
 
   /**
-   * <p>Add a listener to run when the Query job is completed i.e. when all the 
+   * <p>Add a listener to run when the Query job is completed i.e. when all the
    * document URIs are retrieved and the associated listeners are completed</p>
    *
    * @param listener the code to run when the Query job is completed
@@ -333,6 +333,12 @@ public interface QueryBatcher extends Batcher {
    * threads used for processing the queued batches (running processEvent on
    * the listeners regiested with onUrisReady).
    *
+   * As of the 6.2.0 release, this can now be adjusted after the batcher has been started. The underlying Java
+   * {@code ThreadPoolExecutor} will have both its core and max pool sizes set to the given thread count. Use caution
+   * when reducing this to a value of 1 while the batcher is running; in some cases, the underlying
+   * {@code ThreadPoolExecutor} may halt execution of any tasks. Execution can be resumed by increasing the thread count
+   * to a value of 2 or higher.
+   *
    * @return this instance for method chaining
    */
   @Override
@@ -391,19 +397,19 @@ public interface QueryBatcher extends Batcher {
    * Retry in the same thread to query a batch that failed. If it fails again,
    * all the failure listeners associated with the batcher using onQueryFailure
    * method would be processed.
-   * 
+   *
    * Note : Use this method with caution as there is a possibility of infinite
    * loops. If a batch fails and one of the failure listeners calls this method
    * to retry with failure listeners and if the batch again fails, this would go
    * on as an infinite loop until the batch succeeds.
-   * 
+   *
    * @param queryEvent the information about the batch that failed
    */
   void retryWithFailureListeners(QueryEvent queryEvent);
-  
+
   /**
    * Sets the limit for the maximum number of batches that can be collected.
-   * 
+   *
    * @param maxBatches is the value of the limit.
    */
   void setMaxBatches(long maxBatches);
@@ -412,10 +418,10 @@ public interface QueryBatcher extends Batcher {
    * Caps the query at the current batch.
    */
   void setMaxBatches();
-  
+
   /**
-   * Returns the maximum number of Batches for the current job. 
-   * 
+   * Returns the maximum number of Batches for the current job.
+   *
    * @return the maximum number of Batches that can be collected.
    */
   long getMaxBatches();
