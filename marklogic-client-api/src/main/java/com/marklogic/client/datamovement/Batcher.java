@@ -74,7 +74,7 @@ public interface Batcher {
    * that batches will be processed sequentially because the calling thread
    * will sometimes also process batches.</p>
    *
-   * <p>This method cannot be called after the job has started.</p>
+   * <p>Unless otherwise noted by a subclass, this method cannot be called after the job has started.</p>
    *
    * @param threadCount the number of threads to use in this Batcher
    *
