@@ -8,9 +8,11 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.MarkLogicVersion;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.mgmt.resource.databases.DatabaseManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -20,6 +22,8 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -30,6 +34,8 @@ import java.util.stream.Stream;
 public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
 
     protected final static String DB_NAME = "java-functest";
+
+	protected final static ObjectMapper objectMapper = new ObjectMapper();
 
     protected static DatabaseClient client;
     protected static DatabaseClient schemasClient;
@@ -78,6 +84,31 @@ public abstract class AbstractFunctionalTest extends BasicJavaClientREST {
         client.release();
         schemasClient.release();
     }
+
+	/**
+	 * Convenience method for easily writing some JSON docs where the content of the docs doesn't matter.
+	 * 
+	 * @param count
+	 * @param collections
+	 * @return
+	 */
+	protected List<String> writeJsonDocs(int count, String... collections) {
+		DocumentMetadataHandle metadata = new DocumentMetadataHandle()
+			.withCollections(collections)
+			.withPermission("rest-reader", DocumentMetadataHandle.Capability.READ, DocumentMetadataHandle.Capability.UPDATE);
+		JSONDocumentManager mgr = client.newJSONDocumentManager();
+		DocumentWriteSet set = mgr.newWriteSet();
+		List<String> uris = new ArrayList<>();
+		for (int i = 1; i <= count; i++) {
+			String uri = "/test/" + i + ".json";
+			uris.add(uri);
+			set.add(uri, metadata, new JacksonHandle(
+				objectMapper.createObjectNode().put("test", i)
+			));
+		}
+		mgr.write(set);
+		return uris;
+	}
 
     protected static void loadFileToDB(DatabaseClient client, String filename, String uri, String type, String[] collections) throws IOException, ParserConfigurationException,
         SAXException {
