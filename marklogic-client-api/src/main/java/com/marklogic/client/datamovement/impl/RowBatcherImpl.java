@@ -67,33 +67,41 @@ class RowBatcherImpl<T>  extends BatcherImpl implements RowBatcher<T> {
     private final AtomicLong serverTimestamp = new AtomicLong(-1);
 
 	private final ContentHandle<T> rowsHandle;
-	private final Class<T> rowsClass;
 	private final RowManager defaultRowManager;
 
 	RowBatcherImpl(DataMovementManagerImpl moveMgr, ContentHandle<T> rowsHandle) {
         super(moveMgr);
-        if (rowsHandle == null)
-            throw new IllegalArgumentException("Cannot create RowBatcher with null rows manager");
-        if (!(rowsHandle instanceof StructureReadHandle))
-            throw new IllegalArgumentException("Rows handle must also be StructureReadHandle");
-        if (!(rowsHandle instanceof BaseHandle))
-            throw new IllegalArgumentException("Rows handle must also be BaseHandle");
-        if (((BaseHandle) rowsHandle).getFormat() == Format.UNKNOWN)
-            throw new IllegalArgumentException("Rows handle must specify a format");
+		validateRowsHandle(rowsHandle);
         this.rowsHandle = rowsHandle;
-        this.rowsClass = rowsHandle.getContentClass();
-        if (this.rowsClass == null)
-            throw new IllegalArgumentException("Rows handle cannot have a null content class");
-        if (!DatabaseClientFactory.getHandleRegistry().isRegistered(this.rowsClass))
-            throw new IllegalArgumentException(
-                    "Rows handle must be registered with DatabaseClientFactory.HandleFactoryRegistry"
-            );
-        defaultRowManager = getPrimaryClient().newRowManager();
+
+		defaultRowManager = getPrimaryClient().newRowManager();
         super.withBatchSize(DEFAULT_BATCH_SIZE);
         if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.DIRECT) {
             withForestConfig(moveMgr.getForestConfig());
         }
     }
+
+	private void validateRowsHandle(ContentHandle<T> rowsHandle) {
+		if (rowsHandle == null) {
+			throw new IllegalArgumentException("Cannot create RowBatcher with null rows manager");
+		}
+		if (!(rowsHandle instanceof StructureReadHandle)) {
+			throw new IllegalArgumentException("Rows handle must also be StructureReadHandle");
+		}
+		if (!(rowsHandle instanceof BaseHandle)) {
+			throw new IllegalArgumentException("Rows handle must also be BaseHandle");
+		}
+		if (((BaseHandle) rowsHandle).getFormat() == Format.UNKNOWN) {
+			throw new IllegalArgumentException("Rows handle must specify a format");
+		}
+
+		Class<T> rowsClass = rowsHandle.getContentClass();
+		if (rowsClass == null) {
+			throw new IllegalArgumentException("Rows handle cannot have a null content class");
+		} else if (!DatabaseClientFactory.getHandleRegistry().isRegistered(rowsClass)) {
+			throw new IllegalArgumentException("Rows handle must be registered with DatabaseClientFactory.HandleFactoryRegistry");
+		}
+	}
 
     @Override
     public RowManager getRowManager() {
