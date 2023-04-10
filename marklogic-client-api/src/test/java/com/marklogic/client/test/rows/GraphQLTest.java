@@ -6,12 +6,15 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.test.Common;
+import com.marklogic.client.test.junit5.RequiresML11;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(RequiresML11.class)
 public class GraphQLTest extends AbstractOpticUpdateTest {
 
 	private final static String QUERY = "query myQuery { opticUnitTest_musician {firstName lastName}}";
