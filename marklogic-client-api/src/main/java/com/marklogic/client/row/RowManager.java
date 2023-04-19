@@ -344,10 +344,12 @@ public interface RowManager {
      * @param <T> the type of the handle for the column information
      * @return	the handle with the content of the column information for the plan
      */
-    <T extends JSONReadHandle> T columnInfo(PlanBuilder.PreparePlan plan, T handle);
-    /**This function can be used to inspect the state of a plan before execution. It returns the information about each
+    <T extends JSONReadHandle> T columnInfo(PlanBuilder.Plan plan, T handle);
+
+    /**
+	 * This function can be used to inspect the state of a plan before execution. It returns the information about each
      * column in the plan, including schema name, view name, column name, data type and nullability. It also returns the
-     * information about system columns.Generates generates a view that encapsulates a plan.
+     * information about system columns.
      *
      * The IO class must have been registered before creating the database client.
      * By default, the provided handles that implement
@@ -360,7 +362,7 @@ public interface RowManager {
      * @param <T> the type of the IO object for reading the column information
      * @return	an object of the IO class with the content of the column information for the plan
      */
-    <T> T columnInfoAs(PlanBuilder.PreparePlan plan, Class<T> as);
+    <T> T columnInfoAs(PlanBuilder.Plan plan, Class<T> as);
 
 	/**
 	 * Executes a GraphQL query against the database and returns the results as a JSON object.

@@ -1,0 +1,222 @@
+{
+	"template": {
+		"context": "/allTypes",
+		"rows": [
+			{
+				"schemaName": "javaClient",
+				"viewName": "allTypes",
+				"columns": [
+					{
+						"name": "intValue",
+						"scalarType": "int",
+						"val": "intValue"
+					},
+					{
+						"name": "unsignedIntValue",
+						"scalarType": "unsignedInt",
+						"val": "unsignedIntValue",
+						"nullable": true
+					},
+					{
+						"name": "longValue",
+						"scalarType": "long",
+						"val": "longValue",
+						"nullable": true
+					},
+					{
+						"name": "unsignedLongValue",
+						"scalarType": "unsignedLong",
+						"val": "unsignedLongValue",
+						"nullable": true
+					},
+					{
+						"name": "floatValue",
+						"scalarType": "float",
+						"val": "floatValue",
+						"nullable": true
+					},
+					{
+						"name": "doubleValue",
+						"scalarType": "double",
+						"val": "doubleValue",
+						"nullable": true
+					},
+					{
+						"name": "decimalValue",
+						"scalarType": "decimal",
+						"val": "decimalValue",
+						"nullable": true
+					},
+					{
+						"name": "dateTimeValue",
+						"scalarType": "dateTime",
+						"val": "dateTimeValue",
+						"nullable": true
+					},
+					{
+						"name": "timeValue",
+						"scalarType": "time",
+						"val": "timeValue",
+						"nullable": true
+					},
+					{
+						"name": "dateValue",
+						"scalarType": "date",
+						"val": "dateValue",
+						"nullable": true
+					},
+					{
+						"name": "gYearMonthValue",
+						"scalarType": "gYearMonth",
+						"val": "gYearMonthValue",
+						"nullable": true
+					},
+					{
+						"name": "gYearValue",
+						"scalarType": "gYear",
+						"val": "gYearValue",
+						"nullable": true
+					},
+					{
+						"name": "gMonthValue",
+						"scalarType": "gMonth",
+						"val": "gMonthValue",
+						"nullable": true
+					},
+					{
+						"name": "gDayValue",
+						"scalarType": "gDay",
+						"val": "gDayValue",
+						"nullable": true
+					},
+					{
+						"name": "yearMonthDurationValue",
+						"scalarType": "yearMonthDuration",
+						"val": "yearMonthDurationValue",
+						"nullable": true
+					},
+					{
+						"name": "dayTimeDurationValue",
+						"scalarType": "dayTimeDuration",
+						"val": "dayTimeDurationValue",
+						"nullable": true
+					},
+					{
+						"name": "stringValue",
+						"scalarType": "string",
+						"val": "stringValue",
+						"nullable": true
+					},
+					{
+						"name": "anyURIValue",
+						"scalarType": "anyURI",
+						"val": "anyURIValue",
+						"nullable": true
+					},
+					{
+						"name": "pointValue",
+						"scalarType": "point",
+						"val": "pointValue",
+						"nullable": true
+					},
+					{
+						"name": "longLatPointValue",
+						"scalarType": "longLatPoint",
+						"val": "longLatPointValue",
+						"nullable": true
+					},
+					{
+						"name": "booleanValue",
+						"scalarType": "boolean",
+						"val": "booleanValue",
+						"nullable": true
+					},
+					{
+						"name": "base64BinaryValue",
+						"scalarType": "base64Binary",
+						"val": "base64BinaryValue",
+						"nullable": true
+					},
+					{
+						"name": "hexBinaryValue",
+						"scalarType": "hexBinary",
+						"val": "hexBinaryValue",
+						"nullable": true
+					},
+					{
+						"name": "byteValue",
+						"scalarType": "byte",
+						"val": "byteValue",
+						"nullable": true
+					},
+					{
+						"name": "durationValue",
+						"scalarType": "duration",
+						"val": "durationValue",
+						"nullable": true
+					},
+					{
+						"name": "gMonthDayValue",
+						"scalarType": "gMonthDay",
+						"val": "gMonthDayValue",
+						"nullable": true
+					},
+					{
+						"name": "integerValue",
+						"scalarType": "integer",
+						"val": "integerValue",
+						"nullable": true
+					},
+					{
+						"name": "negativeIntegerValue",
+						"scalarType": "negativeInteger",
+						"val": "negativeIntegerValue",
+						"nullable": true
+					},
+					{
+						"name": "nonNegativeIntegerValue",
+						"scalarType": "nonNegativeInteger",
+						"val": "nonNegativeIntegerValue",
+						"nullable": true
+					},
+					{
+						"name": "nonPositiveIntegerValue",
+						"scalarType": "nonPositiveInteger",
+						"val": "nonPositiveIntegerValue",
+						"nullable": true
+					},
+					{
+						"name": "positiveIntegerValue",
+						"scalarType": "positiveInteger",
+						"val": "positiveIntegerValue",
+						"nullable": true
+					},
+					{
+						"name": "shortValue",
+						"scalarType": "short",
+						"val": "shortValue",
+						"nullable": true
+					},
+					{
+						"name": "unsignedByteValue",
+						"scalarType": "unsignedByte",
+						"val": "unsignedByteValue",
+						"nullable": true
+					},
+					{
+						"name": "unsignedShortValue",
+						"scalarType": "unsignedShort",
+						"val": "unsignedShortValue",
+						"nullable": true
+					},
+					{
+						"name": "IRIValue",
+						"scalarType": "IRI",
+						"val": "IRIValue",
+						"nullable": true
+					}
+				]
+			}
+		]
+	}
+}
