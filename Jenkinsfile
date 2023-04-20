@@ -154,9 +154,9 @@ pipeline{
         }
       }
       steps {
-        copyRPM 'Latest','11.0'
+        copyRPM 'Latest','11'
         setUpML '$WORKSPACE/xdmp/src/Mark*.rpm'
-        copyConvertersRPM 'Latest','11.0'
+        copyConvertersRPM 'Latest','11'
         setUpMLConverters '$WORKSPACE/xdmp/src/Mark*Converters*.rpm'
         sh label:'deploy test app', script: '''#!/bin/bash
           export JAVA_HOME=$JAVA_HOME_DIR
@@ -194,7 +194,7 @@ pipeline{
         '''
       }
     }
-    stage('regressions-11.0-Latest') {
+    stage('regressions-11-Latest') {
       when {
         allOf {
           branch 'develop'
@@ -202,12 +202,12 @@ pipeline{
         }
       }
       steps {
-        runAllTests('Latest', '11.0', false)
+        runAllTests('Latest', '11', false)
         junit '**/build/**/TEST*.xml'
       }
     }
 
-    stage('regressions-11.0-Latest-reverseProxy') {
+    stage('regressions-11-Latest-reverseProxy') {
     	when {
 				allOf {
 					branch 'develop'
@@ -215,7 +215,7 @@ pipeline{
 				}
 			}
 			steps {
-				runAllTests('Latest', '11.0', true)
+				runAllTests('Latest', '11', true)
 				junit '**/build/**/TEST*.xml'
 			}
     }
