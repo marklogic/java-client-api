@@ -16,6 +16,7 @@
 package com.marklogic.client.datamovement.impl;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientBuilder;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.datamovement.*;
 import com.marklogic.client.impl.DatabaseClientImpl;
@@ -189,12 +190,13 @@ public class DataMovementManagerImpl implements DataMovementManager {
       client = clientMap.get(hostName);
       if (client != null) return client;
 
-      client = DatabaseClientFactory.newClient(
-              hostName,
-              primaryClient.getPort(),
-              primaryClient.getDatabase(),
-              primaryClient.getSecurityContext()
-      );
+	  client = new DatabaseClientBuilder()
+		  .withHost(hostName)
+		  .withPort(primaryClient.getPort())
+		  .withDatabase(primaryClient.getDatabase())
+		  .withBasePath(primaryClient.getBasePath())
+		  .withSecurityContext(primaryClient.getSecurityContext())
+		  .build();
       clientMap.put(hostName, client);
     }
     return client;
