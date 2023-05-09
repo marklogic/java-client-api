@@ -12,7 +12,7 @@ dependencies {
     compileOnly gradleApi()
     implementation project(':marklogic-client-api')
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.6.20'
-    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.14.1'
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.15.0'
     implementation 'com.networknt:json-schema-validator:1.0.76'
 
 	// Not yet migrating this project to JUnit 5. Will reconsider it once we have a reason to enhance
@@ -20,7 +20,7 @@ dependencies {
 	testImplementation 'junit:junit:4.13.2'
 	testImplementation 'xmlunit:xmlunit:1.6'
 	testCompileOnly gradleTestKit()
-	testImplementation 'com.squareup.okhttp3:okhttp:4.10.0'
+	testImplementation 'com.squareup.okhttp3:okhttp:4.11.0'
 }
 
 // Added to avoid problem where processResources fails because - somehow - the plugin properties file is getting
