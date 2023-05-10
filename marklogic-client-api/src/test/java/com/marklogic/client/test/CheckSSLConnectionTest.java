@@ -2,17 +2,20 @@ package com.marklogic.client.test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.test.junit5.RequireSSLExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.TrustManager;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(RequireSSLExtension.class)
 class CheckSSLConnectionTest {
@@ -58,8 +61,34 @@ class CheckSSLConnectionTest {
 			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
 			.build();
 
-		assertThrows(MarkLogicIOException.class, () -> client.checkConnection(),
+		MarkLogicIOException ex = assertThrows(MarkLogicIOException.class, () -> client.checkConnection(),
 			"The connection should fail because the JVM's default SSL Context does not have a CA certificate that " +
 				"corresponds to the test-only certificate that the app server is using for this test");
+
+		assertTrue(ex.getCause() instanceof SSLHandshakeException, "Unexpected cause: " + ex.getCause());
+		String message = ex.getCause().getMessage();
+		assertTrue(message.contains("PKIX path building failed"), "The call should have failed because the JVM's " +
+			"default SSL context does not have a CA certificate for the app server's certificate; " +
+			"unexpected error: " + message);
+	}
+
+	@Test
+	void noSslContext() {
+		DatabaseClient client = Common.newClientBuilder().build();
+
+		DatabaseClient.ConnectionResult result = client.checkConnection();
+		assertEquals("Forbidden", result.getErrorMessage(), "MarkLogic is expected to return a 403 Forbidden when the " +
+			"user tries to access an HTTPS app server using HTTP");
+		assertEquals(403, result.getStatusCode());
+
+		ForbiddenUserException ex = assertThrows(ForbiddenUserException.class,
+			() -> client.newServerEval().javascript("fn.currentDate()").evalAs(String.class));
+
+		assertEquals(
+			"Local message: User is not allowed to apply resource at eval. Server Message: You have attempted to access an HTTPS server using HTTP.",
+			ex.getMessage(),
+			"The user should get a clear message on why the connection failed as opposed to the previous error " +
+				"message of 'Server (not a REST instance?)'."
+		);
 	}
 }
