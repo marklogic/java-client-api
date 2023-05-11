@@ -157,8 +157,8 @@ public class MarkLogicCloudAuthenticationConfigurer implements AuthenticationCon
 		@Override
 		public Response intercept(Chain chain) throws IOException {
 			Response response = chain.proceed(addTokenToRequest(chain));
-			if (response.code() == 403) {
-				logger.info("Received 403; will generate new token if necessary and retry request");
+			if (response.code() == 401) {
+				logger.info("Received 401; will generate new token if necessary and retry request");
 				response.close();
 				final String currentToken = this.token;
 				generateNewTokenIfNecessary(currentToken);
@@ -169,7 +169,7 @@ public class MarkLogicCloudAuthenticationConfigurer implements AuthenticationCon
 
 		/**
 		 * In the case of N threads using the same DatabaseClient - e.g. when using DMSDK - all of them
-		 * may make a request at the same time and get a 403 back. Functionally, it should be fine if all
+		 * may make a request at the same time and get a 401 back. Functionally, it should be fine if all
 		 * make their own requests to renew the token, with the last thread being the one whose token
 		 * value is retained on this class. But to simplify matters, this block is synchronized so only one
 		 * thread can be in here. And if that thread finds that this.token is different from currentToken,
@@ -182,7 +182,7 @@ public class MarkLogicCloudAuthenticationConfigurer implements AuthenticationCon
 		 */
 		private synchronized void generateNewTokenIfNecessary(String currentToken) {
 			if (currentToken.equals(this.token)) {
-				logger.info("Generating new token based on receiving 403");
+				logger.info("Generating new token based on receiving 401");
 				this.token = tokenGenerator.generateToken();
 			} else if (logger.isDebugEnabled()) {
 				logger.debug("This instance's token has already been updated, presumably by another thread");

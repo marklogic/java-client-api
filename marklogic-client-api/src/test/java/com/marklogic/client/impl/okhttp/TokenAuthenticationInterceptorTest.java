@@ -40,30 +40,30 @@ public class TokenAuthenticationInterceptorTest extends LoggingObject {
 	}
 
 	@Test
-	void receive403() {
-		enqueueResponseCodes(200, 200, 403, 200);
+	void receive401() {
+		enqueueResponseCodes(200, 200, 401, 200);
 
 		verifyRequestReturnsResponseCode(200);
 		verifyRequestReturnsResponseCode(200);
 		verifyRequestReturnsResponseCode(200,
-			"If a 403 is received from the server, then the token should be renewed, and then the 200 should be " +
+			"If a 401 is received from the server, then the token should be renewed, and then the 200 should be " +
 				"returned to the caller.");
 
 		assertEquals(2, fakeTokenGenerator.timesInvoked,
-			"A token should have been generated for the first request and then again when the 403 was received.");
+			"A token should have been generated for the first request and then again when the 401 was received.");
 	}
 
 	@Test
-	void receive401() {
-		enqueueResponseCodes(200, 200, 401);
+	void receive403() {
+		enqueueResponseCodes(200, 200, 403);
 
 		verifyRequestReturnsResponseCode(200);
 		verifyRequestReturnsResponseCode(200);
-		verifyRequestReturnsResponseCode(401);
+		verifyRequestReturnsResponseCode(403);
 
 		assertEquals(1, fakeTokenGenerator.timesInvoked,
-			"A token should have been generated for the first request, and the 401 should not have resulted in the " +
-				"token being renewed; only a 403 should.");
+			"A token should have been generated for the first request, and the 403 should not have resulted in the " +
+				"token being renewed; only a 401 should.");
 	}
 
 	@Test
@@ -76,8 +76,8 @@ public class TokenAuthenticationInterceptorTest extends LoggingObject {
 		};
 
 		// Mock up 4 responses for each of the 2 threads created below. For each thread, the first call succeeds; the
-		// second receives a 403 and then succeeds; and the third call succeeds.
-		enqueueResponseCodes(200, 200, 403, 403, 200, 200, 200, 200);
+		// second receives a 401 and then succeeds; and the third call succeeds.
+		enqueueResponseCodes(200, 200, 401, 401, 200, 200, 200, 200);
 
 		// Spawn two threads and wait for them to complete.
 		ExecutorService service = Executors.newFixedThreadPool(2);
@@ -88,7 +88,7 @@ public class TokenAuthenticationInterceptorTest extends LoggingObject {
 
 		assertEquals(2, fakeTokenGenerator.timesInvoked,
 			"The fake token generator should have been invoked twice - once when the interceptor was created, and then " +
-				"only one more time when the two threads received 403's at almost the exact same time. The interceptor " +
+				"only one more time when the two threads received 401's at almost the exact same time. The interceptor " +
 				"is expected to synchronize the call for generating a token such that only one thread will generate a " +
 				"new token. The other token is expected to see that the token has changed and uses the new token " +
 				"instead of generating a new token itself.");
