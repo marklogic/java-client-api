@@ -17,8 +17,12 @@ package com.marklogic.client.test.example.cookbook;
 
 import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
-import com.marklogic.client.example.cookbook.datamovement.*;
-import org.hsqldb.server.Server;
+import com.marklogic.client.example.cookbook.datamovement.BulkExportToJdbc;
+import com.marklogic.client.example.cookbook.datamovement.BulkLoadFromJdbcRaw;
+import com.marklogic.client.example.cookbook.datamovement.BulkLoadFromJdbcWithJoins;
+import com.marklogic.client.example.cookbook.datamovement.BulkLoadFromJdbcWithSimpleJoins;
+import com.marklogic.client.example.cookbook.datamovement.IncrementalLoadFromJdbc;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -29,7 +33,7 @@ import java.io.IOException;
 public class JdbcCookbookTest {
 
   class Database {
-    Server hsqlDBServer;
+//    Server hsqlDBServer;
     JdbcTemplate jdbcTemplate;
     Database() throws IOException {
       setupHSQLDBServer();
@@ -37,11 +41,11 @@ public class JdbcCookbookTest {
     }
 
     private void setupHSQLDBServer() {
-      hsqlDBServer = new Server();
-      hsqlDBServer.setDatabaseName(0, "employees");
-      hsqlDBServer.setDatabasePath(0, "mem:employees");
-      hsqlDBServer.setPort(9002);
-      hsqlDBServer.start();
+//      hsqlDBServer = new Server();
+//      hsqlDBServer.setDatabaseName(0, "employees");
+//      hsqlDBServer.setDatabasePath(0, "mem:employees");
+//      hsqlDBServer.setPort(9002);
+//      hsqlDBServer.start();
     }
 
     private DataSource getDataSource() throws IOException {
@@ -54,10 +58,12 @@ public class JdbcCookbookTest {
     }
 
     public void tearDown() {
-      hsqlDBServer.stop();
+//      hsqlDBServer.stop();
     }
   }
 
+	@Disabled("Disabled until the Java Client drops Java 8 support, which then allows for the most recent version " +
+		"of org.hsqldb:hsqldb to be used, thus avoiding a High CVE.")
   @Test
   public void testMain() throws Exception {
     Database hsqlDB = new Database();
