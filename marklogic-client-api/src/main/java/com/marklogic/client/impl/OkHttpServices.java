@@ -165,26 +165,38 @@ public class OkHttpServices implements RESTServices {
     this.maxDelay = maxDelay;
   }
 
-  private FailedRequest extractErrorFields(Response response) {
-    if (response == null) return null;
-    try {
-      if (response.code() == STATUS_UNAUTHORIZED) {
-        FailedRequest failure = new FailedRequest();
-        failure.setMessageString("Unauthorized");
-        failure.setStatusString("Failed Auth");
-        return failure;
-      }
-      String responseBody = getEntity(response.body(), String.class);
-      InputStream is = new ByteArrayInputStream(responseBody.getBytes(StandardCharsets.UTF_8));
-      FailedRequest handler = FailedRequest.getFailedRequest(response.code(), response.header(HEADER_CONTENT_TYPE), is);
-      if (handler.getMessage() == null) {
-        handler.setMessageString(responseBody);
-      }
-      return handler;
-    } finally {
-      closeResponse(response);
-    }
-  }
+	private FailedRequest extractErrorFields(Response response) {
+		if (response == null) return null;
+		try {
+			if (response.code() == STATUS_UNAUTHORIZED) {
+				FailedRequest failure = new FailedRequest();
+				failure.setMessageString("Unauthorized");
+				failure.setStatusString("Failed Auth");
+				return failure;
+			}
+
+			final String responseBody = getEntity(response.body(), String.class);
+			// If HTTP is used but HTTPS is required, MarkLogic returns a text/html response that is not suitable to
+			// return to a user. But it will contain the below error message, which is much nicer to return to the user.
+			final String sslErrorMessage = "You have attempted to access an HTTPS server using HTTP";
+			if (response.code() == STATUS_FORBIDDEN && responseBody != null && responseBody.contains(sslErrorMessage)) {
+				FailedRequest failure = new FailedRequest();
+				failure.setMessageString(sslErrorMessage + ".");
+				failure.setStatusString("Forbidden");
+				failure.setStatusCode(STATUS_FORBIDDEN);
+				return failure;
+			}
+
+			InputStream is = new ByteArrayInputStream(responseBody.getBytes(StandardCharsets.UTF_8));
+			FailedRequest handler = FailedRequest.getFailedRequest(response.code(), response.header(HEADER_CONTENT_TYPE), is);
+			if (handler.getMessage() == null) {
+				handler.setMessageString(responseBody);
+			}
+			return handler;
+		} finally {
+			closeResponse(response);
+		}
+	}
 
   @Override
   public void connect(String host, int port, String basePath, String database, SecurityContext securityContext){
