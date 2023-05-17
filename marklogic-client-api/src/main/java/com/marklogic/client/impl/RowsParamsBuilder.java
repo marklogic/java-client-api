@@ -91,6 +91,13 @@ class RowsParamsBuilder {
         return this;
     }
 
+	public RowsParamsBuilder withTimestamp(long serverTimestamp) {
+		if (serverTimestamp > 0) {
+			params.add("timestamp", serverTimestamp + "");
+		}
+		return this;
+	}
+
     public RequestParameters getRequestParameters() {
         return this.params;
     }
