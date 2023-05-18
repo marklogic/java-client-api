@@ -226,7 +226,7 @@ public class RowManagerImpl
 
   @Override
   public <T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle) {
-    return resultRows(plan, rowHandle, (Transaction) null);
+    return resultRows(plan, rowHandle, null);
   }
 
   @Override
@@ -236,13 +236,18 @@ public class RowManagerImpl
     String rowFormat = getRowFormat(rowHandle);
 
     PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
-    RequestParameters params = newRowsParamsBuilder(requestPlan)
-        .withRowFormat(rowFormat)
-        .withNodeColumns("inline")
-        .withColumnTypes(datatypeStyle)
-        .withOutput(rowStructureStyle)
-        .getRequestParameters();
 
+	RowsParamsBuilder rowsParamsBuilder = newRowsParamsBuilder(requestPlan)
+		.withRowFormat(rowFormat)
+		.withNodeColumns("inline")
+		.withColumnTypes(datatypeStyle)
+		.withOutput(rowStructureStyle);
+
+	if (rowHandle instanceof BaseHandle) {
+		rowsParamsBuilder.withTimestamp(((BaseHandle)rowHandle).getPointInTimeQueryTimestamp());
+	}
+
+    RequestParameters params = rowsParamsBuilder.getRequestParameters();
     RESTServiceResultIterator iter = submitPlan(requestPlan, params, transaction);
     RowSetHandle<T> rowset = new RowSetHandle<>(rowFormat, datatypeStyle, rowStructureStyle, iter, rowHandle);
     rowset.init();
