@@ -16,6 +16,7 @@
 
 package com.marklogic.client.fastfunctest;
 
+import com.marklogic.client.ContentNoVersionException;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.ServerConfigurationManager.UpdatePolicy;
@@ -29,6 +30,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestBug18920 extends AbstractFunctionalTest {
@@ -81,23 +84,9 @@ public class TestBug18920 extends AbstractFunctionalTest {
     String docUri = desc.getUri();
     System.out.println(docUri);
 
-    String exception = "";
-    String statusCode = "";
-    String expectedException = "com.marklogic.client.FailedRequestException: Local message: Content version required to write document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /bug18920/xml-original.xml";
-    int expCode = 0;
     // update document with no content version
-    try {
-      docMgr.write(docUri, handle);
-    } catch (FailedRequestException e) {
-      exception = e.toString();
-      statusCode = e.getFailedRequest().getMessageCode();
-      expCode = e.getFailedRequest().getStatusCode();
-    }
-    System.out.println("Exception is " + exception);
-    System.out.println("Status message --- codenumber are " + statusCode + " --- " + expCode);
-    assertTrue( statusCode.contains("RESTAPI-CONTENTNOVERSION"));
-    assertTrue( expCode == 428);
-    assertTrue( exception.contains(expectedException));
+	  ContentNoVersionException ex = assertThrows(ContentNoVersionException.class, () -> docMgr.write(docUri, handle));
+	  assertEquals(428, ex.getServerStatusCode());
   }
 
   @AfterAll
