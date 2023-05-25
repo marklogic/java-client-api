@@ -294,4 +294,16 @@ public class ValidateDocTest extends AbstractOpticUpdateTest {
          assertTrue(expectedUris.contains("/acme/doc5.json"));
          assertTrue(expectedUris.contains("/acme/doc6.json"));
     }
+	@Test
+	public void testWithNonExistingSchema() {
+		PlanBuilder.ModifyPlan plan = op
+			.fromDocDescriptors(
+				op.docDescriptor(newWriteOp("/acme/doc1.json", mapper.createObjectNode().put("count", 1).put("total",2)))
+			).validateDoc(op.col("doc"),
+				op.schemaDefinition("jsonSchema").withSchemaUri("/validateDoc/Non-Existing.json"));
+		rowManager.execute(plan.write());
+		DocumentManager docMgr = Common.client.newDocumentManager();
+		assertNull(docMgr.exists("/acme/doc1.json"), "When a schema is used that doesn't exist, " +
+			"the validation by the server is expected to silently fail, and thus the document is not written");
+	}
 }
