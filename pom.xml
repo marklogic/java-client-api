@@ -11,7 +11,7 @@ It is not intended to be used to build this project.
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.marklogic</groupId>
   <artifactId>marklogic-client-api</artifactId>
-  <version>6.2-SNAPSHOT</version>
+  <version>6.2.1</version>
   <dependencies>
     <dependency>
       <groupId>javax.xml.bind</groupId>
