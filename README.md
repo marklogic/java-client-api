@@ -41,13 +41,13 @@ To use the API in your [Maven](https://maven.apache.org/) project, include the f
     <dependency>
         <groupId>com.marklogic</groupId>
         <artifactId>marklogic-client-api</artifactId>
-        <version>6.0.0</version>
+        <version>6.2.1</version>
     </dependency>
 
 To use the API in your [Gradle](https://gradle.org/) project, include the following in your build.gradle file:
 
     dependencies {
-        implementation "com.marklogic:marklogic-client-api:6.0.0"
+        implementation "com.marklogic:marklogic-client-api:6.2.1"
     }
 
 Next, read [The Java API in Five Minutes](http://developer.marklogic.com/try/java/index) to get started.
