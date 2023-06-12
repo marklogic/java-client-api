@@ -787,12 +787,8 @@ public class DocumentMetadataHandle
 
       serializer.flush();
       serializer.close();
-    } catch (XMLStreamException e) {
-      throw new MarkLogicIOException("Failed to serialize metadata", e);
-    } catch (TransformerFactoryConfigurationError e) {
-      throw new MarkLogicIOException("Failed to serialize metadata", e);
-    } catch (TransformerException e) {
-      throw new MarkLogicIOException("Failed to serialize metadata", e);
+    } catch (Exception e) {
+		throw new MarkLogicIOException("Failed to serialize metadata: cause: " + e.getMessage(), e);
     }
   }
 
