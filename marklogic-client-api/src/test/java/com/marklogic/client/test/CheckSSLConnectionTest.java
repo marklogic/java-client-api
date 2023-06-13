@@ -10,7 +10,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.TrustManager;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -51,6 +50,27 @@ class CheckSSLConnectionTest {
 		DatabaseClient.ConnectionResult result = client.checkConnection();
 		assertEquals(0, result.getStatusCode(), "A value of zero implies that a connection was successfully made, " +
 			"which should happen since a 'trust all' manager is being used");
+		assertNull(result.getErrorMessage());
+	}
+
+	/**
+	 * Demonstrates using a custom X509TrustManager that only accepts the issuer of the public certificate associated
+	 * with the certificate template created via RequireSSLExtension.
+	 */
+	@Test
+	void customTrustManager() {
+		if (Common.USE_REVERSE_PROXY_SERVER) {
+			return;
+		}
+
+		DatabaseClient client = Common.newClientBuilder()
+			.withSSLProtocol("TLSv1.2")
+			.withTrustManager(RequireSSLExtension.newTrustManager())
+			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
+			.build();
+
+		DatabaseClient.ConnectionResult result = client.checkConnection();
+		assertEquals(0, result.getStatusCode());
 		assertNull(result.getErrorMessage());
 	}
 
