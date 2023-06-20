@@ -5,9 +5,16 @@ import com.marklogic.client.test.Common;
 import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.resource.appservers.ServerManager;
 import com.marklogic.mgmt.resource.security.CertificateTemplateManager;
+import com.marklogic.rest.util.Fragment;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+
+import javax.net.ssl.X509TrustManager;
+import java.io.ByteArrayInputStream;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 
 /**
  * Use this on tests that require an app server to require SSL connections. The app server will be modified to require
@@ -50,6 +57,39 @@ public class RequireSSLExtension extends LoggingObject implements BeforeAllCallb
 		setSslCertificateTemplate("");
 		logger.info("Removing requirement for SSL on app server: " + Common.SERVER_NAME);
 		new CertificateTemplateManager(manageClient).delete(TEMPLATE);
+	}
+
+	/**
+	 * @return a trust manager that accepts the public certificate associated with the certificate template created
+	 * by this class.
+	 */
+	public static X509TrustManager newTrustManager() {
+		return new X509TrustManager() {
+			@Override
+			public void checkClientTrusted(X509Certificate[] chain, String authType) {
+			}
+
+			@Override
+			public void checkServerTrusted(X509Certificate[] chain, String authType) {
+			}
+
+			@Override
+			public X509Certificate[] getAcceptedIssuers() {
+				return new X509Certificate[]{getCertificate()};
+			}
+		};
+	}
+
+	private static X509Certificate getCertificate() {
+		CertificateTemplateManager mgr = new CertificateTemplateManager(Common.newManageClient());
+
+		Fragment response = mgr.getCertificatesForTemplate(TEMPLATE_NAME);
+		String cert = response.getElementValue("/msec:certificate-list/msec:certificate/msec:pem");
+		try {
+			return (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(cert.getBytes()));
+		} catch (CertificateException e) {
+			throw new RuntimeException("Unable to generate X509Certificate: " + e.getMessage(), e);
+		}
 	}
 
 	private void setSslCertificateTemplate(String templateName) {
