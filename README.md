@@ -41,13 +41,13 @@ To use the API in your [Maven](https://maven.apache.org/) project, include the f
     <dependency>
         <groupId>com.marklogic</groupId>
         <artifactId>marklogic-client-api</artifactId>
-        <version>6.2.1</version>
+        <version>6.2.2</version>
     </dependency>
 
 To use the API in your [Gradle](https://gradle.org/) project, include the following in your build.gradle file:
 
     dependencies {
-        implementation "com.marklogic:marklogic-client-api:6.2.1"
+        implementation "com.marklogic:marklogic-client-api:6.2.2"
     }
 
 Next, read [The Java API in Five Minutes](http://developer.marklogic.com/try/java/index) to get started.
@@ -130,7 +130,7 @@ https://developer.marklogic.com/free-developer
 
 To obtain verified downloads signed with MarkLogic's PGP key, use maven tools or directly download
 the .jar and .asc files from
-[maven central](https://repo1.maven.org/maven2/com/marklogic/marklogic-client-api/5.3.0/).  MarkLogic's
+[maven central](https://repo1.maven.org/maven2/com/marklogic/marklogic-client-api/).  MarkLogic's
 pgp key ID is 48D4B86E and it is available from pgp.mit.edu by installing gnupg and running the command:
 
     $ gpg --keyserver pgp.mit.edu --recv-key 48D4B86E

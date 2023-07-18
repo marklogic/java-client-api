@@ -158,6 +158,13 @@ public class DatabaseClientBuilder {
 			.withCertificatePassword(password);
 	}
 
+	/**
+	 *
+	 * @param sslContext
+	 * @param trustManager
+	 * @return
+	 * @since 6.2.2
+	 */
 	public DatabaseClientBuilder withCertificateAuth(SSLContext sslContext, X509TrustManager trustManager) {
 		return withAuthType(AUTH_TYPE_CERTIFICATE)
 			.withSSLContext(sslContext)
