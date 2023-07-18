@@ -1238,8 +1238,8 @@ public class DatabaseClientFactory {
 	 *     "kerberos", "certificate", or "saml"</li>
 	 *     <li>marklogic.client.username = must be a String; required for basic and digest authentication</li>
 	 *     <li>marklogic.client.password = must be a String; required for basic and digest authentication</li>
-	 *     <li>marklogic.client.certificate.file = must be a String; required for certificate authentication</li>
-	 *     <li>marklogic.client.certificate.password = must be a String; required for certificate authentication</li>
+	 *     <li>marklogic.client.certificate.file = must be a String; optional for certificate authentication</li>
+	 *     <li>marklogic.client.certificate.password = must be a String; optional for certificate authentication</li>
 	 *     <li>marklogic.client.cloud.apiKey = must be a String; required for cloud authentication</li>
 	 *     <li>marklogic.client.kerberos.principal = must be a String; required for Kerberos authentication</li>
 	 *     <li>marklogic.client.saml.token = must be a String; required for SAML authentication</li>

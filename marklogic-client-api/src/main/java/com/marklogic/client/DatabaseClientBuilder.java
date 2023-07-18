@@ -158,6 +158,12 @@ public class DatabaseClientBuilder {
 			.withCertificatePassword(password);
 	}
 
+	public DatabaseClientBuilder withCertificateAuth(SSLContext sslContext, X509TrustManager trustManager) {
+		return withAuthType(AUTH_TYPE_CERTIFICATE)
+			.withSSLContext(sslContext)
+			.withTrustManager(trustManager);
+	}
+
 	public DatabaseClientBuilder withSAMLAuth(String token) {
 		return withAuthType(AUTH_TYPE_SAML)
 			.withSAMLToken(token);
