@@ -61,7 +61,7 @@ public class KerberosSSLClientCreator {
     };
 
     // create an SSL context
-    SSLContext sslContext = SSLContext.getInstance("SSLv3");
+    SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
     sslContext.init(null, new TrustManager[] { naiveTrustMgr }, null);
 
     // create the client
