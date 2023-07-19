@@ -3,13 +3,18 @@ package com.marklogic.client.test;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientBuilder;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.ext.modulesloader.ssl.SimpleX509TrustManager;
 import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
+
+import java.security.NoSuchAlgorithmException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -138,14 +143,45 @@ public class DatabaseClientBuilderTest {
 	}
 
 	@Test
-	void certificate() {
+	void certificateValidFile() {
+		DatabaseClient client = Common.newClientBuilder()
+			.withCertificateAuth("src/test/resources/test_certificate.p12", "abc")
+			.build();
+
+		assertNotNull(client);
+		assertNotNull(client.getSecurityContext().getSSLContext(), "An SSLContext should have been created based " +
+			"on the test keystore.");
+	}
+
+	@Test
+	void certificateInvalidFile() {
 		DatabaseClientBuilder builder = Common.newClientBuilder()
 			.withCertificateAuth("not.found", "passwd");
 
 		Exception ex = assertThrows(Exception.class, () -> builder.buildBean());
-		assertTrue(ex.getMessage().contains("Unable to create CertificateAuthContext"),
-			"We don't yet have a real test for certificate authentication, so there's not yet a certificate store " +
-				"to test against; just making sure that an attempt is made to create a CertificateAuthContext");
+		assertEquals("Unable to create CertificateAuthContext; cause not.found (No such file or directory)",
+			ex.getMessage(), "Should fail because the certificate file path is not valid, and thus a keystore " +
+				"cannot be created from it.");
+	}
+
+	@Test
+	void certificateWithNoFile() throws NoSuchAlgorithmException {
+		SSLContext defaultContext = SSLContext.getDefault();
+		X509TrustManager trustManager = new SimpleX509TrustManager();
+		DatabaseClientBuilder builder = Common.newClientBuilder()
+			.withCertificateAuth(defaultContext, trustManager)
+			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.STRICT);
+
+		// Verify the SSL-related objects are the same ones passed in above.
+		DatabaseClientFactory.Bean bean = builder.buildBean();
+		assertSame(defaultContext, bean.getSecurityContext().getSSLContext());
+		assertSame(trustManager, bean.getSecurityContext().getTrustManager());
+		assertSame(DatabaseClientFactory.SSLHostnameVerifier.STRICT, bean.getSecurityContext().getSSLHostnameVerifier());
+
+		DatabaseClient client = bean.newClient();
+		assertNotNull(client, "The client can be instantiated because a certificate file and password aren't " +
+			"required. In this scenario, it's expected that a user will provide their own SSLContext to use for " +
+			"certificate authentication.");
 	}
 
 	@Test

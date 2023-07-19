@@ -210,15 +210,19 @@ public class DatabaseClientPropertySource {
 	}
 
 	private DatabaseClientFactory.SecurityContext newCertificateAuthContext(SSLInputs sslInputs) {
-		try {
-			return new DatabaseClientFactory.CertificateAuthContext(
-				getRequiredStringValue("certificate.file"),
-				getRequiredStringValue("certificate.password"),
-				sslInputs.getTrustManager()
-			);
-		} catch (Exception e) {
-			throw new RuntimeException("Unable to create CertificateAuthContext; cause " + e.getMessage(), e);
+		String file = getNullableStringValue("certificate.file");
+		String password = getNullableStringValue("certificate.password");
+		if (file != null && file.trim().length() > 0) {
+			try {
+				if (password != null && password.trim().length() > 0) {
+					return new DatabaseClientFactory.CertificateAuthContext(file, password, sslInputs.getTrustManager());
+				}
+				return new DatabaseClientFactory.CertificateAuthContext(file, sslInputs.getTrustManager());
+			} catch (Exception e) {
+				throw new RuntimeException("Unable to create CertificateAuthContext; cause " + e.getMessage(), e);
+			}
 		}
+		return new DatabaseClientFactory.CertificateAuthContext(sslInputs.getSslContext(), sslInputs.getTrustManager());
 	}
 
 	private DatabaseClientFactory.SecurityContext newKerberosAuthContext() {
