@@ -1,5 +1,5 @@
 plugins {
-	id 'com.marklogic.ml-gradle' version '4.4.0'
+	id 'com.marklogic.ml-gradle' version '4.5.2'
 	id 'java'
 	id "com.github.psxpaul.execfork" version "0.2.2"
 }
@@ -7,11 +7,12 @@ plugins {
 dependencies {
 	implementation "io.undertow:undertow-core:2.2.24.Final"
 	implementation "io.undertow:undertow-servlet:2.2.24.Final"
-	implementation "com.marklogic:ml-javaclient-util:4.4.0"
+	implementation "com.marklogic:ml-javaclient-util:4.5.1"
 	implementation 'org.slf4j:slf4j-api:1.7.36'
 	implementation 'ch.qos.logback:logback-classic:1.3.5'
-	implementation "com.fasterxml.jackson.core:jackson-databind:2.14.1"
-	implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+	implementation "com.fasterxml.jackson.core:jackson-databind:2.14.3"
+	implementation 'com.squareup.okio:okio:3.4.0'
+	implementation 'com.squareup.okhttp3:okhttp:4.11.0'
 }
 
 // See https://github.com/psxpaul/gradle-execfork-plugin for docs.
