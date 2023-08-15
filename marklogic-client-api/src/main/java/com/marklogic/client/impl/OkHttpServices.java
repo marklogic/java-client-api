@@ -4201,12 +4201,18 @@ public class OkHttpServices implements RESTServices {
     return requestBldr.header("ML-Agent-ID", "java");
   }
 
+	/**
+	 * Per https://docs.marklogic.com/10.0/guide/relnotes/chap3#id_73268 , support for ML-Check-ML11-Headers was added
+	 * for MarkLogic 10.0-9. It is no longer needed in MarkLogic 11 or later. The addition of it will not cause any
+	 * harm, but it can be removed once the Java client no longer needs to support MarkLogic 10.
+	 *
+	 * @param requestBldr
+	 * @param path
+	 * @return
+	 */
     private Request.Builder addTrailerHeadersIfNecessary(Request.Builder requestBldr, String path) {
         if ("rows".equals(path)) {
-            // Standard header supported by ML 11
             requestBldr.addHeader("TE", "trailers");
-
-            // Proprietary header recognized by ML 10.0-9, per https://docs.marklogic.com/guide/relnotes/chap3#id_73268
             requestBldr.addHeader("ML-Check-ML11-Headers", "true");
         }
         return requestBldr;
