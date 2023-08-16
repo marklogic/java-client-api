@@ -185,6 +185,14 @@ public class OkHttpServices implements RESTServices {
 				failure.setStatusString("Forbidden");
 				failure.setStatusCode(STATUS_FORBIDDEN);
 				return failure;
+			} else if (response.code() == STATUS_FORBIDDEN && "".equals(responseBody)) {
+				// When the responseBody is empty, this seems preferable vs the "Server (not a REST instance?)" message
+				// which is very confusing given that the app server usually is a REST instance.
+				FailedRequest failure = new FailedRequest();
+				failure.setMessageString("No message received from server.");
+				failure.setStatusString("Forbidden");
+				failure.setStatusCode(STATUS_FORBIDDEN);
+				return failure;
 			}
 
 			InputStream is = new ByteArrayInputStream(responseBody.getBytes(StandardCharsets.UTF_8));
@@ -515,6 +523,13 @@ public class OkHttpServices implements RESTServices {
     try {
       return getConnection().newCall(request).execute();
     } catch (IOException e) {
+		if (e instanceof SSLException) {
+			String message = e.getMessage();
+			if (message != null && message.contains("readHandshakeRecord")) {
+				throw new MarkLogicIOException(String.format("SSL error occurred: %s; ensure you are using a valid certificate " +
+					"if the MarkLogic app server requires a client certificate for SSL.", message));
+			}
+		}
 		String message = String.format(
 			"Error occurred while calling %s; %s: %s " +
 				"; possible reasons for the error include that a MarkLogic app server may not be listening on the port, " +
