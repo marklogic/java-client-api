@@ -1,0 +1,8 @@
+{
+	"user-name": "JavaClientCertificateUser",
+	"description": "java-client-api user for testing certificate authentication.",
+	"password": "doesnt-matter-wont-be-used",
+	"role": [
+		"rest-reader"
+	]
+}
