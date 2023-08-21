@@ -1,5 +1,5 @@
 {
-  "role-name": "rest-delete-graph",
+  "role-name": "java-test-delete-graph",
   "description": "Addresses a bug found in ML 10.0-8.3 and ML 10.0-9.2 where term-query is needed to delete a graph",
   "privilege": [
     {

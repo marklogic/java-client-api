@@ -1,8 +1,8 @@
 {
   "user-name": "write-privileged",
-  "description": "write-privileged user",
+  "description": "Test user for the java-client-api project",
   "role": [
-    "write-privileged"
+    "java-test-write-privileged"
   ],
   "password": "x"
 }

@@ -1,8 +1,8 @@
 {
   "user-name": "read-privileged",
-  "description": "read-privileged user",
+  "description": "Test user for the java-client-api project",
   "role": [
-    "read-privileged"
+    "java-test-read-privileged"
   ],
   "password": "x"
 }

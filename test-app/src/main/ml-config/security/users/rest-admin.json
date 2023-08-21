@@ -3,7 +3,7 @@
   "description": "rest-admin user",
   "role": [
     "rest-admin",
-    "rest-delete-temporal"
+    "java-test-delete-temporal"
   ],
   "password": "x"
 }

@@ -1,6 +1,6 @@
 {
-  "role-name": "read-privileged",
-  "description": "read-privileged",
+  "role-name": "java-test-read-privileged",
+  "description": "java-client-api test role",
   "privilege": [
     {
       "privilege-name": "rest-reader",

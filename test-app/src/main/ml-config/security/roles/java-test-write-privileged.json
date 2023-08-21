@@ -1,6 +1,6 @@
 {
-  "role-name": "write-privileged",
-  "description": "write-privileged",
+  "role-name": "java-test-write-privileged",
+  "description": "java-client-api test role",
   "privilege": [
     {
       "privilege-name": "rest-writer",

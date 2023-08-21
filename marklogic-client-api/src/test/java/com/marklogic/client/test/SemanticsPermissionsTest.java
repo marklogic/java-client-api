@@ -36,8 +36,8 @@ public class SemanticsPermissionsTest {
     Common.connect();
     gmgr = Common.client.newGraphManager();
     String triple = "<s> <p> <o>.";
-    GraphPermissions perms = gmgr.permission("read-privileged", Capability.READ)
-      .permission("write-privileged", Capability.UPDATE);
+    GraphPermissions perms = gmgr.permission("java-test-read-privileged", Capability.READ)
+      .permission("java-test-write-privileged", Capability.UPDATE);
     gmgr.write(graphUri, new StringHandle(triple).withMimetype(RDFMimeTypes.NTRIPLES), perms);
   }
 
@@ -62,7 +62,7 @@ public class SemanticsPermissionsTest {
   }
 
   @Test
-  public void B_testWritePermission() throws Exception {
+  public void B_testWritePermission() {
     // a negative test to ensure a user without update privilege can't write
     try {
       GraphManager readPrivilegedGmgr = readPrivilegedClient.newGraphManager();
@@ -74,41 +74,41 @@ public class SemanticsPermissionsTest {
   }
 
   @Test
-  public void C_testGetPermissions() throws Exception {
+  public void C_testGetPermissions() {
     GraphManager readPrivilegedGmgr = readPrivilegedClient.newGraphManager();
     GraphPermissions permissions = readPrivilegedGmgr.getPermissions(graphUri);
     assertEquals(6, permissions.size());
-    assertNotNull(permissions.get("read-privileged"));
-    assertNotNull(permissions.get("write-privileged"));
-    assertEquals(1, permissions.get("read-privileged").size());
-    assertEquals(1, permissions.get("write-privileged").size());
-    assertEquals(Capability.READ, permissions.get("read-privileged").iterator().next());
-    assertEquals(Capability.UPDATE, permissions.get("write-privileged").iterator().next());
+    assertNotNull(permissions.get("java-test-read-privileged"));
+    assertNotNull(permissions.get("java-test-write-privileged"));
+    assertEquals(1, permissions.get("java-test-read-privileged").size());
+    assertEquals(1, permissions.get("java-test-write-privileged").size());
+    assertEquals(Capability.READ, permissions.get("java-test-read-privileged").iterator().next());
+    assertEquals(Capability.UPDATE, permissions.get("java-test-write-privileged").iterator().next());
   }
 
   @Test
-  public void D_testWritePermissions() throws Exception {
+  public void D_testWritePermissions() {
     GraphPermissions perms = gmgr.newGraphPermissions();
-    perms = perms.permission("read-privileged", Capability.EXECUTE);
+    perms = perms.permission("java-test-read-privileged", Capability.EXECUTE);
     gmgr.writePermissions(graphUri, perms);
     GraphPermissions permissions = gmgr.getPermissions(graphUri);
     assertEquals(5, permissions.size());
-    assertNotNull(permissions.get("read-privileged"));
-    assertEquals(1, permissions.get("read-privileged").size());
-    for ( Capability capability : permissions.get("read-privileged") ) {
+    assertNotNull(permissions.get("java-test-read-privileged"));
+    assertEquals(1, permissions.get("java-test-read-privileged").size());
+    for ( Capability capability : permissions.get("java-test-read-privileged") ) {
       assertEquals(Capability.EXECUTE, capability);
     }
   }
 
   @Test
-  public void E_testMergePermissions() throws Exception {
-    GraphPermissions perms = gmgr.permission("read-privileged", Capability.READ);
+  public void E_testMergePermissions() {
+    GraphPermissions perms = gmgr.permission("java-test-read-privileged", Capability.READ);
     gmgr.mergePermissions(graphUri, perms);
     GraphPermissions permissions = gmgr.getPermissions(graphUri);
     assertEquals(5, permissions.size());
-    assertNotNull(permissions.get("read-privileged"));
-    assertEquals(2, permissions.get("read-privileged").size());
-    for ( Capability capability : permissions.get("read-privileged") ) {
+    assertNotNull(permissions.get("java-test-read-privileged"));
+    assertEquals(2, permissions.get("java-test-read-privileged").size());
+    for ( Capability capability : permissions.get("java-test-read-privileged") ) {
       if ( capability == null ) fail("capability should not be null");
       if ( capability != Capability.READ && capability != Capability.EXECUTE ) {
         fail("capabilities should be read or execute, not [" + capability + "]");
@@ -117,27 +117,27 @@ public class SemanticsPermissionsTest {
   }
 
   @Test
-  public void F_testDeletePermissions() throws Exception {
+  public void F_testDeletePermissions() {
     gmgr.deletePermissions(graphUri);
     GraphPermissions permissions = gmgr.getPermissions(graphUri);
     assertEquals(4, permissions.size());
-    assertNull(permissions.get("read-privileged"));
+    assertNull(permissions.get("java-test-read-privileged"));
   }
 
   @Test
-  public void G_testSPARQLInsertPermissions() throws Exception {
+  public void G_testSPARQLInsertPermissions() {
     String localGraphUri = graphUri + ".SPARQLPermissions";
     String sparql = "INSERT DATA { GRAPH <" + localGraphUri + "> { <s2> <p2> <o2> } }";
     SPARQLQueryManager sparqlMgr = Common.client.newSPARQLQueryManager();
     SPARQLQueryDefinition qdef = sparqlMgr.newQueryDefinition(sparql)
-      .withUpdatePermission("write-privileged", Capability.READ)
-      .withUpdatePermission("write-privileged", Capability.UPDATE);
+      .withUpdatePermission("java-test-write-privileged", Capability.READ)
+      .withUpdatePermission("java-test-write-privileged", Capability.UPDATE);
     sparqlMgr.executeUpdate(qdef);
     GraphPermissions getPermissions = gmgr.getPermissions(localGraphUri);
     assertEquals(5, getPermissions.size());
-    assertNotNull(getPermissions.get("write-privileged"));
-    assertEquals(2, getPermissions.get("write-privileged").size());
-    for ( Capability capability : getPermissions.get("write-privileged") ) {
+    assertNotNull(getPermissions.get("java-test-write-privileged"));
+    assertEquals(2, getPermissions.get("java-test-write-privileged").size());
+    for ( Capability capability : getPermissions.get("java-test-write-privileged") ) {
       if ( capability == null ) fail("capability should not be null");
       if ( capability != Capability.READ && capability != Capability.UPDATE ) {
         fail("capabilities should be read or update, not [" + capability + "]");
