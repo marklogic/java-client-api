@@ -1,5 +1,5 @@
 {
-  "role-name": "rest-delete-temporal",
+  "role-name": "java-test-delete-temporal",
   "description": "Allows for temporal documents to be deleted as part of test cleanup",
   "privilege": [
     {

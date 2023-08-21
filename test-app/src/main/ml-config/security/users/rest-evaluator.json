@@ -1,8 +1,8 @@
 {
   "user-name": "rest-evaluator",
-  "description": "rest-evaluator user",
+  "description": "Test user for the java-client-api-project",
   "role": [
-    "rest-evaluator"
+    "java-test-evaluator"
   ],
   "password": "x"
 }

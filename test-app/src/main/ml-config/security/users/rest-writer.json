@@ -3,7 +3,7 @@
   "description": "rest-writer user",
   "role": [
     "rest-writer",
-    "rest-delete-graph"
+    "java-test-delete-graph"
   ],
   "password": "x"
 }
