@@ -31,7 +31,7 @@ dependencies {
 	api 'org.jdom:jdom2:2.0.6.1'
 	api 'org.dom4j:dom4j:2.1.4'
 	api 'com.google.code.gson:gson:2.10.1'
-	api 'net.sourceforge.htmlcleaner:htmlcleaner:2.26'
+	api 'net.sourceforge.htmlcleaner:htmlcleaner:2.29'
 	api 'com.opencsv:opencsv:4.6'
 	api 'org.springframework:spring-jdbc:5.3.29'
 	api 'org.apache.commons:commons-lang3:3.12.0'
