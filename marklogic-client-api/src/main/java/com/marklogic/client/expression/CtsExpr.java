@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
+ * Copyright (c) 2023 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -3240,7 +3240,7 @@ public interface CtsExpr {
   * @return  a CtsCircleSeqExpr sequence
   */
   public CtsCircleSeqExpr circleSeq(CtsCircleExpr... items);
-
+ 
 /**
   * Constructs a sequence of CtsPeriodExpr items.
   * @param items  the CtsPeriodExpr items collected by the sequence
