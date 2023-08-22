@@ -18,13 +18,7 @@ package com.marklogic.client.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.*;
 import com.marklogic.client.DatabaseClient.ConnectionResult;
-import com.marklogic.client.DatabaseClientFactory.BasicAuthContext;
-import com.marklogic.client.DatabaseClientFactory.CertificateAuthContext;
 import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
-import com.marklogic.client.DatabaseClientFactory.KerberosAuthContext;
-import com.marklogic.client.DatabaseClientFactory.MarkLogicCloudAuthContext;
-import com.marklogic.client.DatabaseClientFactory.SAMLAuthContext;
-import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
@@ -437,7 +431,7 @@ public class OkHttpServices implements RESTServices {
     if (status == STATUS_PRECONDITION_REQUIRED) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
-        throw new FailedRequestException(
+        throw new ContentNoVersionException(
           "Content version required to delete document", failure);
       }
       throw new FailedRequestException(
@@ -450,9 +444,7 @@ public class OkHttpServices implements RESTServices {
     if (status == STATUS_PRECONDITION_FAILED) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION")) {
-        throw new FailedRequestException(
-          "Content version must match to delete document",
-          failure);
+        throw new ContentWrongVersionException("Content version must match to delete document", failure);
       } else if (failure.getMessageCode().equals("RESTAPI-EMPTYBODY")) {
         throw new FailedRequestException(
           "Empty request body sent to server", failure);
@@ -1308,8 +1300,7 @@ public class OkHttpServices implements RESTServices {
     if (status == STATUS_PRECONDITION_REQUIRED) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
-        throw new FailedRequestException(
-          "Content version required to write document", failure);
+        throw new ContentNoVersionException("Content version required to write document", failure);
       }
       throw new FailedRequestException(
         "Precondition required to write document", failure);
@@ -1321,8 +1312,7 @@ public class OkHttpServices implements RESTServices {
     if (status == STATUS_PRECONDITION_FAILED) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION")) {
-        throw new FailedRequestException(
-          "Content version must match to write document", failure);
+        throw new ContentWrongVersionException("Content version must match to write document", failure);
       } else if (failure.getMessageCode().equals("RESTAPI-EMPTYBODY")) {
         throw new FailedRequestException(
           "Empty request body sent to server", failure);
@@ -1453,8 +1443,7 @@ public class OkHttpServices implements RESTServices {
     if (status == STATUS_PRECONDITION_REQUIRED) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
-        throw new FailedRequestException(
-          "Content version required to write document", failure);
+        throw new ContentNoVersionException("Content version required to write document", failure);
       }
       throw new FailedRequestException(
         "Precondition required to write document", failure);
@@ -1466,8 +1455,7 @@ public class OkHttpServices implements RESTServices {
     if (status == STATUS_PRECONDITION_FAILED) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION")) {
-        throw new FailedRequestException(
-          "Content version must match to write document", failure);
+        throw new ContentWrongVersionException("Content version must match to write document", failure);
       } else if (failure.getMessageCode().equals("RESTAPI-EMPTYBODY")) {
         throw new FailedRequestException(
           "Empty request body sent to server", failure);
@@ -4398,7 +4386,7 @@ public class OkHttpServices implements RESTServices {
           failure);
       }
       if ("RESTAPI-CONTENTNOVERSION".equals(failure.getMessageCode())) {
-        throw new FailedRequestException("Content version required to " +
+        throw new ContentNoVersionException("Content version required to " +
           operation + " " + entityType + " at " + path, failure);
       } else if (status == STATUS_FORBIDDEN) {
         throw new ForbiddenUserException("User is not allowed to "
