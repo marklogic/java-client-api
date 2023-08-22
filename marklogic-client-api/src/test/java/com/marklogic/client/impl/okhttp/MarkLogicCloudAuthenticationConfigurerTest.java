@@ -42,6 +42,30 @@ public class MarkLogicCloudAuthenticationConfigurerTest {
 	}
 
 	@Test
+	void buildTokenUrlWithDuration() throws Exception {
+		Integer duration = 10;
+		MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator client = new MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator("somehost",
+			new DatabaseClientFactory.MarkLogicCloudAuthContext("doesnt-matter", duration)
+				.withSSLContext(SSLContext.getDefault(), null)
+		);
+
+		HttpUrl tokenUrl = client.buildTokenUrl();
+		assertEquals("https://somehost/token?duration=10", tokenUrl.toString());
+	}
+
+	@Test
+	void buildTokenUrlWithDurationAndCustomPath() throws Exception {
+		Integer duration = 10;
+		MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator client = new MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator("somehost",
+			new DatabaseClientFactory.MarkLogicCloudAuthContext("doesnt-matter", "/customToken", "doesnt-matter", duration)
+				.withSSLContext(SSLContext.getDefault(), null)
+		);
+
+		HttpUrl tokenUrl = client.buildTokenUrl();
+		assertEquals("https://somehost/customToken?duration=10", tokenUrl.toString());
+	}
+
+	@Test
 	void newFormBody() {
 		FormBody body = new MarkLogicCloudAuthenticationConfigurer.DefaultTokenGenerator("host-doesnt-matter",
 			new DatabaseClientFactory.MarkLogicCloudAuthContext("myKey"))

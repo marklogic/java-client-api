@@ -124,6 +124,16 @@ public class DatabaseClientBuilderTest {
 	}
 
 	@Test
+	void cloudWithDuration() {
+		bean = Common.newClientBuilder().withCloudAuth("abc123", "/my/path", 10).buildBean();
+		DatabaseClientFactory.MarkLogicCloudAuthContext context =
+			(DatabaseClientFactory.MarkLogicCloudAuthContext) bean.getSecurityContext();
+		assertEquals("abc123", context.getApiKey());
+		assertEquals("/my/path", bean.getBasePath());
+		assertEquals(10, context.getTokenDuration());
+	}
+
+	@Test
 	void cloudNoApiKey() {
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> Common.newClientBuilder()
 			.withAuthType("cloud")

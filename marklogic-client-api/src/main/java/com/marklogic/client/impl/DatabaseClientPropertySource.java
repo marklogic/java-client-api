@@ -206,7 +206,17 @@ public class DatabaseClientPropertySource {
 	}
 
 	private DatabaseClientFactory.SecurityContext newCloudAuthContext() {
-		return new DatabaseClientFactory.MarkLogicCloudAuthContext(getRequiredStringValue("cloud.apiKey"));
+		String apiKey = getRequiredStringValue("cloud.apiKey");
+		String val = getNullableStringValue("cloud.tokenDuration");
+		Integer duration = null;
+		if (val != null) {
+			try {
+				duration = Integer.parseInt(val);
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException("Cloud token duration must be numeric");
+			}
+		}
+		return new DatabaseClientFactory.MarkLogicCloudAuthContext(apiKey, duration);
 	}
 
 	private DatabaseClientFactory.SecurityContext newCertificateAuthContext(SSLInputs sslInputs) {
