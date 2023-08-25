@@ -108,6 +108,21 @@ public class DatabaseClientPropertySourceTest {
 		assertEquals("Cloud token duration must be numeric", ex.getMessage());
 	}
 
+	@Test
+	void disableGzippedResponses() {
+		final String prop = PREFIX + "disableGzippedResponses";
+
+		props.put(PREFIX + prop, "true");
+		// Won't throw an error, but we can't verify the results because the list of configurators in
+		// DatabaseClientFactory is private.
+		buildBean();
+
+		// Verifying this doesn't throw an error either; the impl should be using Boolean.parseBoolean which only cares
+		// if the value equals 'true'.
+		props.put(prop, "123");
+		buildBean();
+	}
+
 	private DatabaseClientFactory.Bean buildBean() {
 		DatabaseClientPropertySource source = new DatabaseClientPropertySource(propertyName -> props.get(propertyName));
 		return source.newClientBean();

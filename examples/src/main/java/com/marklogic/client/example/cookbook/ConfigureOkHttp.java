@@ -22,7 +22,10 @@ public class ConfigureOkHttp {
 	 * header should not result in losing any other values besides "gzip" for the header. You are free to
 	 * customize this as you wish though; this is primarily intended as an example for how to customize OkHttp
 	 * when using the MarkLogic Java Client.
-	 */
+	 *
+	 * As of Java Client 6.3.0, this can now be accomplished via the {@code DatabaseClientFactory} class and
+	 * {@code RemoveAcceptEncodingConfigurator}.
+ 	 */
 	public static void removeAcceptEncodingGzipHeader() {
 		DatabaseClientFactory.addConfigurator(new OkHttpClientConfigurator() {
 			@Override

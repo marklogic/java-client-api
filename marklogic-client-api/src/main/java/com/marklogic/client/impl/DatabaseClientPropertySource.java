@@ -18,6 +18,7 @@ package com.marklogic.client.impl;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientBuilder;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.extra.okhttpclient.RemoveAcceptEncodingConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,6 +90,17 @@ public class DatabaseClientPropertySource {
 				}
 			} else {
 				throw new IllegalArgumentException("Connection type must either be a String or an instance of ConnectionType");
+			}
+		});
+		connectionPropertyHandlers.put(PREFIX + "disableGzippedResponses", (bean, value) -> {
+			boolean disableGzippedResponses = false;
+			if (value instanceof Boolean && Boolean.TRUE.equals(value)) {
+				disableGzippedResponses = true;
+			} else if (value instanceof String) {
+				disableGzippedResponses = Boolean.parseBoolean((String)value);
+			}
+			if (disableGzippedResponses) {
+				DatabaseClientFactory.addConfigurator(new RemoveAcceptEncodingConfigurator());
 			}
 		});
 	}

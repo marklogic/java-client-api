@@ -168,6 +168,7 @@ public class DatabaseClientFactoryTest {
       assertEquals(testConnectTimeoutMillis, okClient.connectTimeoutMillis());
     } finally {
       client.release();
+	  DatabaseClientFactory.removeConfigurators();
     }
   }
 
