@@ -450,45 +450,89 @@ public class DatabaseClientFactory {
 	 * @since 6.1.0
 	 */
 	public static class MarkLogicCloudAuthContext extends AuthContext {
-      private String tokenEndpoint;
-      private String grantType;
-      private String apiKey;
+		private String tokenEndpoint;
+		private String grantType;
+		private String apiKey;
+		private Integer tokenDuration;
 
-      public MarkLogicCloudAuthContext(String apiKey) {
-          this(apiKey, "/token", "apikey");
-      }
+		/**
+		 * @param apiKey user's API key for accessing MarkLogic Cloud
+		 */
+		public MarkLogicCloudAuthContext(String apiKey) {
+			this(apiKey, null);
+		}
 
-      public MarkLogicCloudAuthContext(String apiKey, String tokenEndpoint, String grantType) {
-          this.apiKey = apiKey;
-          this.tokenEndpoint = tokenEndpoint;
-          this.grantType = grantType;
-      }
+		/**
+		 * @param apiKey user's API key for accessing MarkLogic Cloud
+		 * @param tokenDuration length in minutes until the generated access token expires
+		 * @since 6.3.0
+		 */
+		public MarkLogicCloudAuthContext(String apiKey, Integer tokenDuration) {
+			this(apiKey, "/token", "apikey", tokenDuration);
+		}
 
-      public String getTokenEndpoint() {
-          return tokenEndpoint;
-      }
+		/**
+		 * Only intended to be used in the scenario that the token endpoint of "/token" and the grant type of "apikey"
+		 * are not the intended values.
+		 *
+		 * @param apiKey user's API key for accessing MarkLogic Cloud
+		 * @param tokenEndpoint for overriding the default token endpoint if necessary
+		 * @param grantType for overriding the default grant type if necessary
+		 */
+		public MarkLogicCloudAuthContext(String apiKey, String tokenEndpoint, String grantType) {
+			this(apiKey, tokenEndpoint, grantType, null);
+		}
 
-      public String getGrantType() {
-          return grantType;
-      }
+		/**
+		 * Only intended to be used in the scenario that the token endpoint of "/token" and the grant type of "apikey"
+		 * are not the intended values.
+		 *
+		 * @param apiKey user's API key for accessing MarkLogic Cloud
+		 * @param tokenEndpoint for overriding the default token endpoint if necessary
+		 * @param grantType for overriding the default grant type if necessary
+		 * @param tokenDuration length in minutes until the generated access token expires
+		 * @since 6.3.0
+		 */
+		public MarkLogicCloudAuthContext(String apiKey, String tokenEndpoint, String grantType, Integer tokenDuration) {
+			this.apiKey = apiKey;
+			this.tokenEndpoint = tokenEndpoint;
+			this.grantType = grantType;
+			this.tokenDuration = tokenDuration;
+		}
 
-      public String getApiKey() {
-          return apiKey;
-      }
+		public String getTokenEndpoint() {
+			return tokenEndpoint;
+		}
 
-	  @Override
-      public MarkLogicCloudAuthContext withSSLContext(SSLContext context, X509TrustManager trustManager) {
-          this.sslContext = context;
-          this.trustManager = trustManager;
-          return this;
-      }
+		public String getGrantType() {
+			return grantType;
+		}
 
-      @Override
-      public MarkLogicCloudAuthContext withSSLHostnameVerifier(SSLHostnameVerifier verifier) {
-          this.sslVerifier = verifier;
-          return this;
-      }
-  }
+		public String getApiKey() {
+			return apiKey;
+		}
+
+		/**
+		 * @return
+		 * @since 6.3.0
+		 */
+		public Integer getTokenDuration() {
+			return tokenDuration;
+		}
+
+		@Override
+		public MarkLogicCloudAuthContext withSSLContext(SSLContext context, X509TrustManager trustManager) {
+			this.sslContext = context;
+			this.trustManager = trustManager;
+			return this;
+		}
+
+		@Override
+		public MarkLogicCloudAuthContext withSSLHostnameVerifier(SSLHostnameVerifier verifier) {
+			this.sslVerifier = verifier;
+			return this;
+		}
+	}
 
   public static class BasicAuthContext extends AuthContext {
     String user;

@@ -109,18 +109,24 @@ public class MarkLogicCloudAuthenticationConfigurer implements AuthenticationCon
 		protected HttpUrl buildTokenUrl() {
 			// For the near future, it's guaranteed that https and 443 will be required for connecting to MarkLogic Cloud,
 			// so providing the ability to customize this would be misleading.
-			return new HttpUrl.Builder()
-					   .scheme("https")
-					   .host(host)
-					   .port(443)
-					   .build()
-					   .resolve(securityContext.getTokenEndpoint()).newBuilder().build();
+			HttpUrl.Builder builder = new HttpUrl.Builder()
+				.scheme("https")
+				.host(host)
+				.port(443)
+				.build()
+				.resolve(securityContext.getTokenEndpoint()).newBuilder();
+
+			Integer duration = securityContext.getTokenDuration();
+			return duration != null ?
+				builder.addQueryParameter("duration", duration.toString()).build() :
+				builder.build();
 		}
 
 		protected FormBody newFormBody() {
 			return new FormBody.Builder()
-					   .add("grant_type", securityContext.getGrantType())
-					   .add("key", securityContext.getApiKey()).build();
+				.add("grant_type", securityContext.getGrantType())
+				.add("key", securityContext.getApiKey())
+				.build();
 		}
 
 		private String getAccessTokenFromResponse(Response response) {
@@ -191,8 +197,8 @@ public class MarkLogicCloudAuthenticationConfigurer implements AuthenticationCon
 
 		private Request addTokenToRequest(Chain chain) {
 			return chain.request().newBuilder()
-					   .header("Authorization", "Bearer " + token)
-					   .build();
+				.header("Authorization", "Bearer " + token)
+				.build();
 		}
 	}
 }

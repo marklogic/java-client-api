@@ -11,6 +11,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -94,6 +95,17 @@ public class DatabaseClientPropertySourceTest {
 
 		assertNotNull(context.getTrustManager(), "If cloud is chosen with no SSL protocol or context, the default JVM " +
 			"trust manager should be used");
+	}
+
+	@Test
+	void cloudWithNonNumericDuration() {
+		props.put(PREFIX + "authType", "cloud");
+		props.put(PREFIX + "cloud.apiKey", "abc123");
+		props.put(PREFIX + "basePath", "/my/path");
+		props.put(PREFIX + "cloud.tokenDuration", "abc");
+
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> buildBean());
+		assertEquals("Cloud token duration must be numeric", ex.getMessage());
 	}
 
 	private DatabaseClientFactory.Bean buildBean() {
