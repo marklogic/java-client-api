@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.test;
+package com.marklogic.client.test.io;
 
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.BinaryDocumentManager;
@@ -24,6 +24,7 @@ import com.marklogic.client.io.DocumentMetadataHandle.*;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.test.Common;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
