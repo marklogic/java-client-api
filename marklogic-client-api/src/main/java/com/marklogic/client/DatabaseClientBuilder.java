@@ -148,7 +148,6 @@ public class DatabaseClientBuilder {
 	}
 
 	/**
-	 *
 	 * @param apiKey
 	 * @param basePath
 	 * @param tokenDuration length in minutes until the generated access token expires
@@ -174,7 +173,6 @@ public class DatabaseClientBuilder {
 	}
 
 	/**
-	 *
 	 * @param sslContext
 	 * @param trustManager
 	 * @return
@@ -248,6 +246,17 @@ public class DatabaseClientBuilder {
 
 	public DatabaseClientBuilder withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier sslHostnameVerifier) {
 		props.put(PREFIX + "sslHostnameVerifier", sslHostnameVerifier);
+		return this;
+	}
+
+	/**
+	 * Prevents the underlying OkHttp library from sending an "Accept-Encoding-gzip" request header on each request.
+	 *
+	 * @return
+	 * @since 6.3.0
+	 */
+	public DatabaseClientBuilder withGzippedResponsesDisabled() {
+		props.put(PREFIX + "disableGzippedResponses", true);
 		return this;
 	}
 }

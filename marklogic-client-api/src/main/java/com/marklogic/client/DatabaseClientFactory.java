@@ -63,7 +63,7 @@ import com.marklogic.client.io.marker.ContentHandleFactory;
  */
 public class DatabaseClientFactory {
 
-  static private ClientConfigurator<?> clientConfigurator;
+  static private List<ClientConfigurator<?>> clientConfigurators = new ArrayList<>();
   static private HandleFactoryRegistry handleRegistry =
     HandleFactoryRegistryImpl.newDefault();
 
@@ -1273,6 +1273,9 @@ public class DatabaseClientFactory {
 	 *     <li>marklogic.client.basePath = must be a String</li>
 	 *     <li>marklogic.client.database = must be a String</li>
 	 *     <li>marklogic.client.connectionType = must be a String or instance of {@code ConnectionType}</li>
+	 *     <li>marklogic.client.disableGzippedResponses = can be a String or Boolean; if "true" or true, the client
+	 *     will not send an "Accept-Encoding" request header with a value of "gzip" on each request; supported
+	 *     since 6.3.0.</li>
 	 *     <li>marklogic.client.securityContext = an instance of {@code SecurityContext}; if set, then all other
 	 *     authentication properties pertaining to the construction of a {@code SecurityContext} will be ignored,
 	 *     including the properties pertaining to SSL; this is effectively an escape hatch for providing a
@@ -1285,6 +1288,8 @@ public class DatabaseClientFactory {
 	 *     <li>marklogic.client.certificate.file = must be a String; optional for certificate authentication</li>
 	 *     <li>marklogic.client.certificate.password = must be a String; optional for certificate authentication</li>
 	 *     <li>marklogic.client.cloud.apiKey = must be a String; required for cloud authentication</li>
+	 *     <li>marklogic.client.cloud.tokenDuration = must be a number; optional for configuring the duration in
+	 *     minutes for which an access token lasts; supported since 6.3.0.</li>
 	 *     <li>marklogic.client.kerberos.principal = must be a String; required for Kerberos authentication</li>
 	 *     <li>marklogic.client.saml.token = must be a String; required for SAML authentication</li>
 	 *     <li>marklogic.client.sslContext = must be an instance of {@code javax.net.ssl.SSLContext}</li>
@@ -1408,17 +1413,19 @@ public class DatabaseClientFactory {
 	  }
       services.connect(host, port, basePath, database, securityContext);
 
-      if (clientConfigurator != null) {
-          if (clientConfigurator instanceof OkHttpClientConfigurator) {
-              OkHttpClient okHttpClient = (OkHttpClient) services.getClientImplementation();
-              OkHttpClient.Builder clientBuilder = okHttpClient.newBuilder();
-              ((OkHttpClientConfigurator) clientConfigurator).configure(clientBuilder);
-              ((OkHttpServices) services).setClientImplementation(clientBuilder.build());
-          } else if (clientConfigurator instanceof HttpClientConfigurator) {
-              // do nothing as we no longer use HttpClient so there's nothing this can configure
-          } else {
-              throw new IllegalArgumentException("A ClientConfigurator must implement OkHttpClientConfigurator");
-          }
+      if (clientConfigurators != null) {
+		  clientConfigurators.forEach(configurator -> {
+			  if (configurator instanceof OkHttpClientConfigurator) {
+				  OkHttpClient okHttpClient = (OkHttpClient) services.getClientImplementation();
+				  OkHttpClient.Builder clientBuilder = okHttpClient.newBuilder();
+				  ((OkHttpClientConfigurator) configurator).configure(clientBuilder);
+				  ((OkHttpServices) services).setClientImplementation(clientBuilder.build());
+			  } else if (configurator instanceof HttpClientConfigurator) {
+				  // do nothing as we no longer use HttpClient so there's nothing this can configure
+			  } else {
+				  throw new IllegalArgumentException("A ClientConfigurator must implement OkHttpClientConfigurator");
+			  }
+		  });
       }
 
       DatabaseClientImpl client = new DatabaseClientImpl(
@@ -1584,6 +1591,10 @@ public class DatabaseClientFactory {
   /**
    * Adds a listener that provides custom configuration when a communication library
    * is created.
+   *
+   * As of 6.3.0, this method can now be called multiple times. When a {@code DatabaseClient} is constructed,
+   * configurators will be invoked in the order they were passed in.
+   *
    * @see com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator
    * @param configurator	the listener for configuring the communication library
    */
@@ -1594,7 +1605,16 @@ public class DatabaseClientFactory {
       );
     }
 
-    clientConfigurator = configurator;
+    clientConfigurators.add(configurator);
+  }
+
+	/**
+	 * Removes any instances of {@code ClientConfigurator} that were passed in via {@code addConfigurator}.
+	 *
+	 * @since 6.3.0
+	 */
+	static public void removeConfigurators() {
+	  clientConfigurators.clear();
   }
 
   /**
