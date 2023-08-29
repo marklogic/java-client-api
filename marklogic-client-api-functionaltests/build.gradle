@@ -25,8 +25,8 @@ dependencies {
   implementation 'commons-io:commons-io:2.11.0'
 	implementation 'com.squareup.okio:okio:3.4.0'
   implementation 'com.squareup.okhttp3:okhttp:4.11.0'
-  implementation 'com.fasterxml.jackson.core:jackson-core:2.14.3'
-  implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.3'
+  implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
+  implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
   implementation "org.jdom:jdom2:2.0.6.1"
   implementation "com.marklogic:ml-app-deployer:4.5.2"
 
