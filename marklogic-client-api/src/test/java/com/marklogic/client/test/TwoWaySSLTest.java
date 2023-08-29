@@ -55,6 +55,9 @@ public class TwoWaySSLTest {
 
 	@BeforeAll
 	public static void setup() throws Exception {
+		if (Common.USE_REVERSE_PROXY_SERVER) {
+			return;
+		}
 		// Create a client using the java-unittest app server - which requires SSL via RequiresSSLExtension - and that
 		// talks to the Security database.
 		securityClient = Common.newClientBuilder()
@@ -77,6 +80,9 @@ public class TwoWaySSLTest {
 
 	@AfterAll
 	public static void teardown() {
+		if (Common.USE_REVERSE_PROXY_SERVER) {
+			return;
+		}
 		removeTwoWaySSLConfig();
 		deleteCertificateAuthority();
 	}
