@@ -75,20 +75,11 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = '1.8'
 }
 
-task setupTestServer(type: JavaExec) {
-    classpath = sourceSets.test.runtimeClasspath
-    main = 'com.marklogic.client.test.dbfunction.FntestconfKt'
-    args = [ 'setup' ]
-}
 task generateTests(type: JavaExec) {
-    dependsOn setupTestServer
     classpath = sourceSets.test.runtimeClasspath
     main = 'com.marklogic.client.test.dbfunction.FntestgenKt'
     args = [ './src/test/', 'latest' ]
 }
-task teardownTestServer(type: JavaExec) {
-    dependsOn test
-    classpath = sourceSets.test.runtimeClasspath
-    main = 'com.marklogic.client.test.dbfunction.FntestconfKt'
-    args = [ 'teardown' ]
-}
+
+// Allows running "./gradlew test" without having to remember to generate the tests first.
+test.dependsOn generateTests

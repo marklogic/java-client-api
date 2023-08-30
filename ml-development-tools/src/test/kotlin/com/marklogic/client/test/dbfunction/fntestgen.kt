@@ -565,13 +565,13 @@ fun dbfTestGenerate(testDir: String, release: String) {
   val db = DatabaseClientFactory.newClient(
       host,
       8000,
-      "DBFUnitTest",
+      "java-dev-tools-content",
       DatabaseClientFactory.DigestAuthContext("admin", "admin")
   )
   val modDb = DatabaseClientFactory.newClient(
       host,
       8000,
-      "DBFUnitTestModules",
+      "java-unittest-modules",
       DatabaseClientFactory.DigestAuthContext("admin", "admin")
   )
 
