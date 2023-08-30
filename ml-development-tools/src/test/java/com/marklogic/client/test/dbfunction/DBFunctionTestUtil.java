@@ -40,7 +40,7 @@ public class DBFunctionTestUtil {
       return makeClientImpl(auth, "8012", false);
    }
    private static DatabaseClient makeTestClientImpl(DatabaseClientFactory.DigestAuthContext auth) {
-      return makeClientImpl(auth, "8016", true);
+      return makeClientImpl(auth, "8013", true);
    }
    private static DatabaseClient makeClientImpl(
            DatabaseClientFactory.DigestAuthContext auth, String defaultPort, boolean withCheck
