@@ -1,0 +1,16 @@
+{
+  "functionName": "lookup",
+  "params": [
+    {
+      "name": "productCode",
+      "datatype": "string"
+    },
+    {
+      "name": "customerId",
+      "datatype": "unsignedLong"
+    }
+  ],
+  "return": {
+    "datatype": "jsonDocument"
+  }
+}

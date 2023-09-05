@@ -41,10 +41,13 @@ Individual tests can be run in the following manner (replace `GraphsTest` with t
 
     ./gradlew marklogic-client-api:test --tests GraphsTest
 
-Tests for the ml-development-tools Gradle plugin can be run via:
+Tests for the `ml-development-tools` Gradle plugin can be run via:
 
     ./gradlew ml-development-tools:test
 
 You can also undeploy the test application if you do not wish to keep it around on your MarkLogic instance:
 
     ./gradlew mlUndeploy -i -Pconfirm=true
+
+To test the `ml-development-tools` Gradle plugin, see the README.md file located at 
+`ml-development-tools/src/test/example-project`.
