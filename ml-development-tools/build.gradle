@@ -5,14 +5,13 @@ plugins {
     id 'maven-publish'
     id 'com.gradle.plugin-publish' version '1.0.0'
     id 'java-gradle-plugin'
-    id 'org.jetbrains.kotlin.jvm'  version '1.6.20'
+    id 'org.jetbrains.kotlin.jvm'  version '1.8.22'
 }
 
 dependencies {
 	compileOnly gradleApi()
 	implementation project(':marklogic-client-api')
-	// Sticking with 1.6.20 for now as that's what OkHttp 4.11.0 depends on.
-	implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.6.20'
+	implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
 	implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2'
 	implementation 'com.networknt:json-schema-validator:1.0.86'
 
