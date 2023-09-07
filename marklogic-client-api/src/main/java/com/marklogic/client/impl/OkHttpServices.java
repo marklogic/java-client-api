@@ -18,13 +18,7 @@ package com.marklogic.client.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.*;
 import com.marklogic.client.DatabaseClient.ConnectionResult;
-import com.marklogic.client.DatabaseClientFactory.BasicAuthContext;
-import com.marklogic.client.DatabaseClientFactory.CertificateAuthContext;
 import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
-import com.marklogic.client.DatabaseClientFactory.KerberosAuthContext;
-import com.marklogic.client.DatabaseClientFactory.MarkLogicCloudAuthContext;
-import com.marklogic.client.DatabaseClientFactory.SAMLAuthContext;
-import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
@@ -182,6 +176,14 @@ public class OkHttpServices implements RESTServices {
 			if (response.code() == STATUS_FORBIDDEN && responseBody != null && responseBody.contains(sslErrorMessage)) {
 				FailedRequest failure = new FailedRequest();
 				failure.setMessageString(sslErrorMessage + ".");
+				failure.setStatusString("Forbidden");
+				failure.setStatusCode(STATUS_FORBIDDEN);
+				return failure;
+			} else if (response.code() == STATUS_FORBIDDEN && "".equals(responseBody)) {
+				// When the responseBody is empty, this seems preferable vs the "Server (not a REST instance?)" message
+				// which is very confusing given that the app server usually is a REST instance.
+				FailedRequest failure = new FailedRequest();
+				failure.setMessageString("No message received from server.");
 				failure.setStatusString("Forbidden");
 				failure.setStatusCode(STATUS_FORBIDDEN);
 				return failure;
@@ -429,7 +431,7 @@ public class OkHttpServices implements RESTServices {
     if (status == STATUS_PRECONDITION_REQUIRED) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
-        throw new FailedRequestException(
+        throw new ContentNoVersionException(
           "Content version required to delete document", failure);
       }
       throw new FailedRequestException(
@@ -442,9 +444,7 @@ public class OkHttpServices implements RESTServices {
     if (status == STATUS_PRECONDITION_FAILED) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION")) {
-        throw new FailedRequestException(
-          "Content version must match to delete document",
-          failure);
+        throw new ContentWrongVersionException("Content version must match to delete document", failure);
       } else if (failure.getMessageCode().equals("RESTAPI-EMPTYBODY")) {
         throw new FailedRequestException(
           "Empty request body sent to server", failure);
@@ -515,6 +515,13 @@ public class OkHttpServices implements RESTServices {
     try {
       return getConnection().newCall(request).execute();
     } catch (IOException e) {
+		if (e instanceof SSLException) {
+			String message = e.getMessage();
+			if (message != null && message.contains("readHandshakeRecord")) {
+				throw new MarkLogicIOException(String.format("SSL error occurred: %s; ensure you are using a valid certificate " +
+					"if the MarkLogic app server requires a client certificate for SSL.", message));
+			}
+		}
 		String message = String.format(
 			"Error occurred while calling %s; %s: %s " +
 				"; possible reasons for the error include that a MarkLogic app server may not be listening on the port, " +
@@ -1293,8 +1300,7 @@ public class OkHttpServices implements RESTServices {
     if (status == STATUS_PRECONDITION_REQUIRED) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
-        throw new FailedRequestException(
-          "Content version required to write document", failure);
+        throw new ContentNoVersionException("Content version required to write document", failure);
       }
       throw new FailedRequestException(
         "Precondition required to write document", failure);
@@ -1306,8 +1312,7 @@ public class OkHttpServices implements RESTServices {
     if (status == STATUS_PRECONDITION_FAILED) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION")) {
-        throw new FailedRequestException(
-          "Content version must match to write document", failure);
+        throw new ContentWrongVersionException("Content version must match to write document", failure);
       } else if (failure.getMessageCode().equals("RESTAPI-EMPTYBODY")) {
         throw new FailedRequestException(
           "Empty request body sent to server", failure);
@@ -1438,8 +1443,7 @@ public class OkHttpServices implements RESTServices {
     if (status == STATUS_PRECONDITION_REQUIRED) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
-        throw new FailedRequestException(
-          "Content version required to write document", failure);
+        throw new ContentNoVersionException("Content version required to write document", failure);
       }
       throw new FailedRequestException(
         "Precondition required to write document", failure);
@@ -1451,8 +1455,7 @@ public class OkHttpServices implements RESTServices {
     if (status == STATUS_PRECONDITION_FAILED) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION")) {
-        throw new FailedRequestException(
-          "Content version must match to write document", failure);
+        throw new ContentWrongVersionException("Content version must match to write document", failure);
       } else if (failure.getMessageCode().equals("RESTAPI-EMPTYBODY")) {
         throw new FailedRequestException(
           "Empty request body sent to server", failure);
@@ -4201,12 +4204,18 @@ public class OkHttpServices implements RESTServices {
     return requestBldr.header("ML-Agent-ID", "java");
   }
 
+	/**
+	 * Per https://docs.marklogic.com/10.0/guide/relnotes/chap3#id_73268 , support for ML-Check-ML11-Headers was added
+	 * for MarkLogic 10.0-9. It is no longer needed in MarkLogic 11 or later. The addition of it will not cause any
+	 * harm, but it can be removed once the Java client no longer needs to support MarkLogic 10.
+	 *
+	 * @param requestBldr
+	 * @param path
+	 * @return
+	 */
     private Request.Builder addTrailerHeadersIfNecessary(Request.Builder requestBldr, String path) {
         if ("rows".equals(path)) {
-            // Standard header supported by ML 11
             requestBldr.addHeader("TE", "trailers");
-
-            // Proprietary header recognized by ML 10.0-9, per https://docs.marklogic.com/guide/relnotes/chap3#id_73268
             requestBldr.addHeader("ML-Check-ML11-Headers", "true");
         }
         return requestBldr;
@@ -4377,7 +4386,7 @@ public class OkHttpServices implements RESTServices {
           failure);
       }
       if ("RESTAPI-CONTENTNOVERSION".equals(failure.getMessageCode())) {
-        throw new FailedRequestException("Content version required to " +
+        throw new ContentNoVersionException("Content version required to " +
           operation + " " + entityType + " at " + path, failure);
       } else if (status == STATUS_FORBIDDEN) {
         throw new ForbiddenUserException("User is not allowed to "

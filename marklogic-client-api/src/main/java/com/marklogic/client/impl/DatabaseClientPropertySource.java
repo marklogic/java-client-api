@@ -18,6 +18,7 @@ package com.marklogic.client.impl;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientBuilder;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.extra.okhttpclient.RemoveAcceptEncodingConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,6 +90,17 @@ public class DatabaseClientPropertySource {
 				}
 			} else {
 				throw new IllegalArgumentException("Connection type must either be a String or an instance of ConnectionType");
+			}
+		});
+		connectionPropertyHandlers.put(PREFIX + "disableGzippedResponses", (bean, value) -> {
+			boolean disableGzippedResponses = false;
+			if (value instanceof Boolean && Boolean.TRUE.equals(value)) {
+				disableGzippedResponses = true;
+			} else if (value instanceof String) {
+				disableGzippedResponses = Boolean.parseBoolean((String)value);
+			}
+			if (disableGzippedResponses) {
+				DatabaseClientFactory.addConfigurator(new RemoveAcceptEncodingConfigurator());
 			}
 		});
 	}
@@ -206,7 +218,17 @@ public class DatabaseClientPropertySource {
 	}
 
 	private DatabaseClientFactory.SecurityContext newCloudAuthContext() {
-		return new DatabaseClientFactory.MarkLogicCloudAuthContext(getRequiredStringValue("cloud.apiKey"));
+		String apiKey = getRequiredStringValue("cloud.apiKey");
+		String val = getNullableStringValue("cloud.tokenDuration");
+		Integer duration = null;
+		if (val != null) {
+			try {
+				duration = Integer.parseInt(val);
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException("Cloud token duration must be numeric");
+			}
+		}
+		return new DatabaseClientFactory.MarkLogicCloudAuthContext(apiKey, duration);
 	}
 
 	private DatabaseClientFactory.SecurityContext newCertificateAuthContext(SSLInputs sslInputs) {

@@ -50,8 +50,6 @@ def runAllTests(String type, String version, Boolean useReverseProxy){
                 export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
                 cd java-client-api
                 mkdir -p ml-development-tools/build/test-results/test
-                ./gradlew ml-development-tools:setupTestServer || true
-                ./gradlew ml-development-tools:generateTests || true
                 ./gradlew ml-development-tools:test || true
             '''
 

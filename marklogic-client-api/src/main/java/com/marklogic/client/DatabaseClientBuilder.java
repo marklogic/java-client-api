@@ -147,6 +147,20 @@ public class DatabaseClientBuilder {
 			.withBasePath(basePath);
 	}
 
+	/**
+	 * @param apiKey
+	 * @param basePath
+	 * @param tokenDuration length in minutes until the generated access token expires
+	 * @return
+	 * @since 6.3.0
+	 */
+	public DatabaseClientBuilder withCloudAuth(String apiKey, String basePath, Integer tokenDuration) {
+		return withAuthType(AUTH_TYPE_MARKLOGIC_CLOUD)
+			.withCloudApiKey(apiKey)
+			.withBasePath(basePath)
+			.withCloudTokenDuration(tokenDuration != null ? tokenDuration.toString() : null);
+	}
+
 	public DatabaseClientBuilder withKerberosAuth(String principal) {
 		return withAuthType(AUTH_TYPE_KERBEROS)
 			.withKerberosPrincipal(principal);
@@ -159,7 +173,6 @@ public class DatabaseClientBuilder {
 	}
 
 	/**
-	 *
 	 * @param sslContext
 	 * @param trustManager
 	 * @return
@@ -183,6 +196,16 @@ public class DatabaseClientBuilder {
 
 	public DatabaseClientBuilder withCloudApiKey(String cloudApiKey) {
 		props.put(PREFIX + "cloud.apiKey", cloudApiKey);
+		return this;
+	}
+
+	/**
+	 * @param tokenDuration length in minutes until the generated access token expires
+	 * @return
+	 * @since 6.3.0
+	 */
+	public DatabaseClientBuilder withCloudTokenDuration(String tokenDuration) {
+		props.put(PREFIX + "cloud.tokenDuration", tokenDuration);
 		return this;
 	}
 
@@ -223,6 +246,17 @@ public class DatabaseClientBuilder {
 
 	public DatabaseClientBuilder withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier sslHostnameVerifier) {
 		props.put(PREFIX + "sslHostnameVerifier", sslHostnameVerifier);
+		return this;
+	}
+
+	/**
+	 * Prevents the underlying OkHttp library from sending an "Accept-Encoding-gzip" request header on each request.
+	 *
+	 * @return
+	 * @since 6.3.0
+	 */
+	public DatabaseClientBuilder withGzippedResponsesDisabled() {
+		props.put(PREFIX + "disableGzippedResponses", true);
 		return this;
 	}
 }

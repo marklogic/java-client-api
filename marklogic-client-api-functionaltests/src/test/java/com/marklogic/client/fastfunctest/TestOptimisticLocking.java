@@ -17,6 +17,8 @@
 package com.marklogic.client.fastfunctest;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.marklogic.client.ContentNoVersionException;
+import com.marklogic.client.ContentWrongVersionException;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ResourceNotFoundException;
@@ -46,7 +48,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public class TestOptimisticLocking extends AbstractFunctionalTest {
@@ -109,24 +111,10 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
 
     // create document descriptor
     DocumentDescriptor desc = docMgr.newDescriptor(docId);
+	  AtomicReference<DocumentDescriptor> descRef = new AtomicReference<>(desc);
 
     desc.setVersion(badVersion);
-
-    String exception = "";
-    String expectedException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /optimistic-locking/xml-original.xml doesn't match if-match: 1111";
-
-    // CREATE
-    // write document with bad version
-    try
-    {
-      docMgr.write(desc, handle);
-    } catch (FailedRequestException e) {
-      exception = e.toString();
-    }
-
-    boolean isExceptionThrown = exception.contains(expectedException);
-    assertTrue( isExceptionThrown);
-    System.out.println(exception);
+	assertThrows(ContentWrongVersionException.class, () -> docMgr.write(descRef.get(), handle));
 
     // write document with unknown version
     desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
@@ -151,36 +139,14 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
 
     // update with bad version
     desc.setVersion(badVersion);
-
-    String updateException = "";
-    String expectedUpdateException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /optimistic-locking/xml-original.xml has current version";
-
-    try {
-      docMgr.write(desc, updateHandle);
-    } catch (FailedRequestException e) {
-      updateException = e.toString();
-    }
-    System.out.println(updateException);
-    boolean isUpdateExceptionThrown = updateException.contains(expectedUpdateException);
-    assertTrue( isUpdateExceptionThrown);
+	assertThrows(ContentWrongVersionException.class, () -> docMgr.write(descRef.get(), updateHandle));
 
     // update with unknown version
     desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
-
-    String updateUnknownException = "";
-    String expectedUpdateUnknownException = "com.marklogic.client.FailedRequestException: Local message: Content version required to write document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /optimistic-locking/xml-original.xml";
-
-    try {
-      docMgr.write(desc, updateHandle);
-    } catch (FailedRequestException e) {
-      updateUnknownException = e.toString();
-    }
-
-    boolean isUpdateUnknownExceptionThrown = updateUnknownException.contains(expectedUpdateUnknownException);
-    System.out.println(updateUnknownException);
-    assertTrue( isUpdateUnknownExceptionThrown);
+	assertThrows(ContentNoVersionException.class, () -> docMgr.write(descRef.get(), updateHandle));
 
     desc = docMgr.exists(docId);
+	descRef.set(desc);
     goodVersion = desc.getVersion();
 
     System.out.println("version before update: " + goodVersion);
@@ -197,35 +163,11 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     // DELETE
     // delete using bad version
     desc.setVersion(badVersion);
-
-    String deleteException = "";
-    String expectedDeleteException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to delete document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /optimistic-locking/xml-original.xml has current version";
-
-    try {
-      docMgr.delete(desc);
-    } catch (FailedRequestException e) {
-      deleteException = e.toString();
-    }
-
-    boolean isDeleteExceptionThrown = deleteException.contains(expectedDeleteException);
-    System.out.println("Delete exception" + deleteException);
-    assertTrue( isDeleteExceptionThrown);
+	assertThrows(ContentWrongVersionException.class, () -> docMgr.delete(descRef.get()));
 
     // delete using unknown version
     desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
-
-    String deleteUnknownException = "";
-    String expectedDeleteUnknownException = "com.marklogic.client.FailedRequestException: Local message: Content version required to delete document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /optimistic-locking/xml-original.xml";
-
-    try {
-      docMgr.delete(desc);
-    } catch (FailedRequestException e) {
-      deleteUnknownException = e.toString();
-    }
-
-    boolean isDeleteUnknownExceptionThrown = deleteUnknownException.contains(expectedDeleteUnknownException);
-    System.out.println("Delete exception" + deleteUnknownException);
-    assertTrue( isDeleteUnknownExceptionThrown);
+	assertThrows(ContentNoVersionException.class, () -> docMgr.delete(descRef.get()));
 
     // delete using good version
     desc = docMgr.exists(docId);
@@ -291,20 +233,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     DocumentDescriptor desc = docMgr.newDescriptor(docId);
 
     desc.setVersion(badVersion);
-
-    String exception = "";
-    String expectedException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION";
-
-    // CREATE
-    // write document with bad version
-    try {
-      docMgr.write(desc, handle);
-    } catch (FailedRequestException e) {
-      exception = e.toString();
-    }
-
-    boolean isExceptionThrown = exception.contains(expectedException);
-    assertTrue( isExceptionThrown);
+	assertThrows(ContentWrongVersionException.class, () -> docMgr.write(desc, handle));
 
     // write document with unknown version
     desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
@@ -329,18 +258,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
 
     // update with bad version
     desc.setVersion(badVersion);
-
-    String updateException = "";
-    String expectedUpdateException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION";
-
-    try {
-      docMgr.write(desc, updateHandle);
-    } catch (FailedRequestException e) {
-      updateException = e.toString();
-    }
-
-    boolean isUpdateExceptionThrown = updateException.contains(expectedUpdateException);
-    assertTrue( isUpdateExceptionThrown);
+	assertThrows(ContentWrongVersionException.class, () -> docMgr.write(desc, updateHandle));
 
     // update with unknown version
     desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
@@ -366,18 +284,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     // DELETE
     // delete using bad version
     desc.setVersion(badVersion);
-
-    String deleteException = "";
-    String expectedDeleteException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to delete document";
-
-    try {
-      docMgr.delete(desc);
-    } catch (FailedRequestException e) {
-      deleteException = e.toString();
-    }
-
-    boolean isDeleteExceptionThrown = deleteException.contains(expectedDeleteException);
-    assertTrue( isDeleteExceptionThrown);
+	assertThrows(ContentWrongVersionException.class, () -> docMgr.delete(desc));
 
     // delete using unknown version
     desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
@@ -441,21 +348,10 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     // create document descriptor
     DocumentDescriptor desc = docMgr.newDescriptor(docId);
 
-    desc.setVersion(badVersion);
-
-    String exception = "";
-    String expectedException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION";
-
     // CREATE
     // write document with bad version
-    try {
-      docMgr.write(desc, handle);
-    } catch (FailedRequestException e) {
-      exception = e.toString();
-    }
-
-    boolean isExceptionThrown = exception.contains(expectedException);
-    assertTrue( isExceptionThrown);
+	  desc.setVersion(badVersion);
+	  assertThrows(ContentWrongVersionException.class, () -> docMgr.write(desc, handle));
 
     // write document with unknown version
     desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
@@ -480,18 +376,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
 
     // update with bad version
     desc.setVersion(badVersion);
-
-    String updateException = "";
-    String expectedUpdateException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION";
-
-    try {
-      docMgr.write(desc, updateHandle);
-    } catch (FailedRequestException e) {
-      updateException = e.toString();
-    }
-
-    boolean isUpdateExceptionThrown = updateException.contains(expectedUpdateException);
-    assertTrue( isUpdateExceptionThrown);
+	assertThrows(ContentWrongVersionException.class, () -> docMgr.write(desc, updateHandle));
 
     // update with good version
     desc.setVersion(goodVersion);
@@ -517,18 +402,7 @@ public class TestOptimisticLocking extends AbstractFunctionalTest {
     // DELETE
     // delete using bad version
     desc.setVersion(badVersion);
-
-    String deleteException = "";
-    String expectedDeleteException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to delete document";
-
-    try {
-      docMgr.delete(desc);
-    } catch (FailedRequestException e) {
-      deleteException = e.toString();
-    }
-
-    boolean isDeleteExceptionThrown = deleteException.contains(expectedDeleteException);
-    assertTrue( isDeleteExceptionThrown);
+	assertThrows(ContentWrongVersionException.class, () -> docMgr.delete(desc));
 
     // delete using good version
     desc.setVersion(goodVersion);

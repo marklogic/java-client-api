@@ -3,7 +3,7 @@
   "description": "test user that does not have the rest-writer role so as to avoid having default permissions",
   "role": [
     "test-rest-writer",
-    "rest-delete-graph",
+    "java-test-delete-graph",
     "rest-extension-user",
     "rest-reader"
   ],

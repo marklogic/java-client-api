@@ -1,0 +1,9 @@
+{
+	"server-name": "java-dev-tools-test",
+	"port": 8013,
+	"server-type": "http",
+	"root": "/",
+	"content-database": "java-dev-tools-content",
+	"modules-database": "java-unittest-modules",
+	"authentication": "digestbasic"
+}

@@ -1,0 +1,35 @@
+buildscript {
+	repositories {
+		mavenLocal()
+		mavenCentral()
+	}
+	dependencies {
+		classpath "com.marklogic:ml-development-tools:6.3.0"
+	}
+}
+
+plugins {
+	id 'java'
+}
+
+apply plugin: "com.marklogic.ml-development-tools"
+
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'com.marklogic:marklogic-client-api:6.3.0'
+}
+
+task testFullPath(type: com.marklogic.client.tools.gradle.EndpointProxiesGenTask) {
+	serviceDeclarationFile = "/Users/rrudin/workspace/java-client-api/example-project/src/main/ml-modules/root/inventory/service.json"
+}
+
+task testProjectPath(type: com.marklogic.client.tools.gradle.EndpointProxiesGenTask) {
+	serviceDeclarationFile = "src/main/ml-modules/root/inventory/service.json"
+}

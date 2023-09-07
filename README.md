@@ -1,3 +1,8 @@
+![GitHub release](https://img.shields.io/github/release/marklogic/java-client-api.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/marklogic/java-client-api.svg)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Known Vulnerabilities](https://snyk.io/test/github/marklogic/java-client-api/badge.svg)](https://snyk.io/test/github/marklogic/java-client-api)
+
 # The MarkLogic Java Client API
 
 The API makes it easy to write, read, delete, and find documents

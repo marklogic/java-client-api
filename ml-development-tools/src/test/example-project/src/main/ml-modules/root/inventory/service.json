@@ -1,0 +1,4 @@
+{
+  "endpointDirectory" : "/inventory/",
+  "$javaClass"        : "org.example.inventory.DynamicPricer"
+}

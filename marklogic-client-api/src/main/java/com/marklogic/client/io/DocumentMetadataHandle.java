@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -95,18 +94,33 @@ public class DocumentMetadataHandle
     }
   }
 
-  /**
-   * Represents the permissions for a database document.
-   */
-  public interface DocumentPermissions extends Map<String,Set<Capability>> {
-    /**
-     * Adds a role with one or more capabilities to the metadata that can be written
-     * for the document.
-     * @param role	the role for users permitted to access the document
-     * @param capabilities	the permissions to be granted to users with the role
-     */
-    public void add(String role, Capability... capabilities);
-  }
+	/**
+	 * Represents the permissions for a database document.
+	 */
+	public interface DocumentPermissions extends Map<String, Set<Capability>> {
+		/**
+		 * Adds a role with one or more capabilities to the metadata that can be written
+		 * for the document.
+		 *
+		 * @param role         the role for users permitted to access the document
+		 * @param capabilities the permissions to be granted to users with the role
+		 */
+		void add(String role, Capability... capabilities);
+
+		/**
+		 * Adds one or more permissions based on the given comma-delimited string. Each capability value is
+		 * case-insensitive; you do not need to worry about providing the correct case. Similar to {@code add}, this
+		 * method adds permissions and can thus add capabilities to roles already present in this object.
+		 *
+		 * For example, the following string would add two permissions - a "read" permission for "rest-reader" and an
+		 * "update" permission for "rest-writer": rest-reader,read,rest-writer,update.
+		 *
+		 * @param commaDelimitedRolesAndCapabilities comma-delimited string of the pattern: role1,capability1,role2,capability2,etc.
+		 * @since 6.3.0
+		 */
+		void addFromDelimitedString(String commaDelimitedRolesAndCapabilities);
+	}
+
   @SuppressWarnings("serial")
   static private class PermissionsImpl extends HashMap<String,Set<Capability>> implements DocumentPermissions {
     @Override
@@ -130,7 +144,42 @@ public class DocumentMetadataHandle
         put(role, caps );
       }
     }
+
+	  /**
+	   *
+	   * @param commaDelimitedRolesAndCapabilities comma-delimited string of the pattern: role1,capability1,role2,capability2,etc.
+	   * @since 6.3.0
+	   */
+	  @Override
+	  public void addFromDelimitedString(String commaDelimitedRolesAndCapabilities) {
+		  if (commaDelimitedRolesAndCapabilities != null && commaDelimitedRolesAndCapabilities.trim().length() > 0) {
+			  String[] tokens = commaDelimitedRolesAndCapabilities.trim().split(",");
+			  for (int i = 0; i < tokens.length; i += 2) {
+				  String role = tokens[i];
+				  if (i + 1 >= tokens.length) {
+					  throw new IllegalArgumentException(String.format(
+						  "Unable to parse permissions string, which must be a comma-delimited " +
+							  "list of role names and capabilities - i.e. role1,read,role2,update,role3,execute; string: %s",
+						  commaDelimitedRolesAndCapabilities));
+				  }
+				  Capability c;
+				  try {
+					  c = Capability.getValueOf(tokens[i + 1]);
+				  } catch (Exception e) {
+					  throw new IllegalArgumentException(String.format(
+						  "Unable to parse permissions string: %s; cause: %s",
+						  commaDelimitedRolesAndCapabilities, e.getMessage()));
+				  }
+				  if (this.containsKey(role)) {
+					  this.get(role).add(c);
+				  } else {
+					  this.add(role, c);
+				  }
+			  }
+		  }
+	  }
   }
+
   /**
    * A document operation restricted to users with a role.
    */

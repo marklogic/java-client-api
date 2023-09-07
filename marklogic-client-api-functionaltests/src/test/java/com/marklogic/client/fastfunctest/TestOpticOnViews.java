@@ -2991,8 +2991,9 @@ public class TestOpticOnViews extends AbstractFunctionalTest {
         new ColumnInfo("DetailName", "string"),
         new ColumnInfo("opticFunctionalTest", "detail", "amount", "double"),
         new ColumnInfo("opticFunctionalTest", "detail", "color", "string"),
-        new ColumnInfo("opticFunctionalTest", "detail", "fragIdCol1", expectedFragmentValue, true),
-        new ColumnInfo("opticFunctionalTest", "master", "fragIdCol2", expectedFragmentValue, true)
+		// Per DBQ-123, since the fragment IDs are being selected, hidden should now be false
+        new ColumnInfo("opticFunctionalTest", "detail", "fragIdCol1", expectedFragmentValue, false),
+        new ColumnInfo("opticFunctionalTest", "master", "fragIdCol2", expectedFragmentValue, false)
     );
   }
 }

@@ -11,6 +11,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -94,6 +95,32 @@ public class DatabaseClientPropertySourceTest {
 
 		assertNotNull(context.getTrustManager(), "If cloud is chosen with no SSL protocol or context, the default JVM " +
 			"trust manager should be used");
+	}
+
+	@Test
+	void cloudWithNonNumericDuration() {
+		props.put(PREFIX + "authType", "cloud");
+		props.put(PREFIX + "cloud.apiKey", "abc123");
+		props.put(PREFIX + "basePath", "/my/path");
+		props.put(PREFIX + "cloud.tokenDuration", "abc");
+
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> buildBean());
+		assertEquals("Cloud token duration must be numeric", ex.getMessage());
+	}
+
+	@Test
+	void disableGzippedResponses() {
+		final String prop = PREFIX + "disableGzippedResponses";
+
+		props.put(PREFIX + prop, "true");
+		// Won't throw an error, but we can't verify the results because the list of configurators in
+		// DatabaseClientFactory is private.
+		buildBean();
+
+		// Verifying this doesn't throw an error either; the impl should be using Boolean.parseBoolean which only cares
+		// if the value equals 'true'.
+		props.put(prop, "123");
+		buildBean();
 	}
 
 	private DatabaseClientFactory.Bean buildBean() {

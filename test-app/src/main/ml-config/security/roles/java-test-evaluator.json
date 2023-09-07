@@ -1,6 +1,6 @@
 {
-  "role-name": "rest-evaluator",
-  "description": "rest-evaluator",
+  "role-name": "java-test-evaluator",
+  "description": "Test role for the java-client-api project that can use the /v1/eval endpoint",
   "role": [
     "rest-writer"
   ],
