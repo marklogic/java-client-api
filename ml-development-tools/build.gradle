@@ -24,6 +24,20 @@ dependencies {
 	// Forcing usage of 3.4.0 instead of 3.2.0 to address vulnerability - https://security.snyk.io/vuln/SNYK-JAVA-COMSQUAREUPOKIO-5820002
 	testImplementation 'com.squareup.okio:okio:3.4.0'
 	testImplementation 'com.squareup.okhttp3:okhttp:4.11.0'
+
+	// The jakarta.xml.bind implementation dependencies don't appear to come over from the implementation dependency
+	// on the marklogic-client-api project, so they're declared here again.
+	if (JavaVersion.current().isJava11Compatible()) {
+		println "\nJava version is 11 or higher, so using jakarta.xml.bind 4.x; Java version: " + JavaVersion.current()
+		testImplementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.0"
+		testImplementation "org.glassfish.jaxb:jaxb-runtime:4.0.1"
+		testImplementation "org.glassfish.jaxb:jaxb-core:4.0.1"
+	} else {
+		println "\nJava version is less than 11, so using jakarta.xml.bind 3.x; Java version: " + JavaVersion.current()
+		testImplementation "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
+		testImplementation "org.glassfish.jaxb:jaxb-runtime:3.0.1"
+		testImplementation "org.glassfish.jaxb:jaxb-core:3.0.1"
+	}
 }
 
 // Added to avoid problem where processResources fails because - somehow - the plugin properties file is getting

@@ -35,7 +35,7 @@ import com.marklogic.client.query.StructuredQueryBuilder.TemporalOperator;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import org.junit.jupiter.api.*;
 
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 import javax.xml.datatype.DatatypeFactory;
 import java.util.Calendar;
 

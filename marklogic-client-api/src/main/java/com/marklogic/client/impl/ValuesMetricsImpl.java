@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.impl;
 
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 
 import com.marklogic.client.impl.ValuesBuilder.Values;
 import com.marklogic.client.query.ValuesMetrics;

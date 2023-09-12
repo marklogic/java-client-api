@@ -5,11 +5,18 @@ plugins {
 }
 
 dependencies {
-	if (JavaVersion.current().isJava9Compatible()) {
-		implementation 'javax.xml.bind:jaxb-api:2.3.1'
-		implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.2'
-		implementation 'org.glassfish.jaxb:jaxb-core:2.3.0.1'
+	if (JavaVersion.current().isJava11Compatible()) {
+		println "\nJava version is 11 or higher, so using jakarta.xml.bind 4.x; Java version: " + JavaVersion.current()
+		implementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.0"
+		implementation "org.glassfish.jaxb:jaxb-runtime:4.0.1"
+		implementation "org.glassfish.jaxb:jaxb-core:4.0.1"
+	} else {
+		println "\nJava version is less than 11, so using jakarta.xml.bind 3.x; Java version: " + JavaVersion.current()
+		implementation "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
+		implementation "org.glassfish.jaxb:jaxb-runtime:3.0.1"
+		implementation "org.glassfish.jaxb:jaxb-core:3.0.1"
 	}
+
 	implementation project(':marklogic-client-api')
 
 	// Forcing usage of 3.4.0 instead of 3.2.0 to address vulnerability - https://security.snyk.io/vuln/SNYK-JAVA-COMSQUAREUPOKIO-5820002

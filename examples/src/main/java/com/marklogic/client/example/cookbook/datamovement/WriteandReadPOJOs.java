@@ -15,8 +15,8 @@
  */
 package com.marklogic.client.example.cookbook.datamovement;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +53,7 @@ public class WriteandReadPOJOs {
 
   /**
    * A sample class which we will be using in order to demonstrate
-   * reading and writing large number of POJOs 
+   * reading and writing large number of POJOs
    */
   @XmlRootElement
   public static class ProductDetails {
@@ -136,7 +136,7 @@ public class WriteandReadPOJOs {
     // Create a query definition in order to use it with QueryBatcher
     StructuredQueryDefinition query = new StructuredQueryBuilder().collection("products-collection1");
 
-    // Create a QueryBatcher in order to retrieve bulk POJOs 
+    // Create a QueryBatcher in order to retrieve bulk POJOs
     // from the database matching the query definition
     QueryBatcher queryBatcher = moveMgr.newQueryBatcher(query)
       .withBatchSize(batchSize)

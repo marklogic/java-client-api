@@ -18,7 +18,7 @@ package com.marklogic.client.test.example.cookbook;
 import com.marklogic.client.example.cookbook.JAXBDocument;
 import org.junit.jupiter.api.Test;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 

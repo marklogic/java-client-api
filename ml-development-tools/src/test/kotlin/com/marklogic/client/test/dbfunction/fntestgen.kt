@@ -46,7 +46,7 @@ enum class TestVariant {
 }
 fun getAtomicMappingImports(): String {
   return """
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 import javax.xml.datatype.DatatypeFactory;
 import java.time.format.DateTimeFormatter;
 import java.util.regex.Pattern;
@@ -1852,7 +1852,7 @@ import java.io.Reader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.Stream;
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 import java.lang.reflect.Array;
 
 $extraImports

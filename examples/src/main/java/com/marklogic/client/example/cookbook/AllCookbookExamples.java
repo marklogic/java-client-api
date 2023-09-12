@@ -17,7 +17,7 @@ package com.marklogic.client.example.cookbook;
 
 import java.io.IOException;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import javax.xml.xpath.XPathExpressionException;
 
 import com.marklogic.client.FailedRequestException;

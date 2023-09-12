@@ -18,7 +18,7 @@ package com.marklogic.client.test;
 import com.marklogic.client.pojo.annotation.*;
 import com.marklogic.client.pojo.annotation.PathIndexProperty.ScalarType;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class City {
