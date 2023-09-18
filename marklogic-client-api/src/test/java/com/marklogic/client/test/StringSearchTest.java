@@ -20,6 +20,10 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentRecord;
+import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.SearchHandle;
@@ -37,6 +41,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -107,6 +112,30 @@ public class StringSearchTest {
     }
   }
 
+	@Test
+	public void testStringSearch3() throws IOException {
+		TextDocumentManager textDocumentManager = Common.client.newTextDocumentManager();
+		DocumentWriteSet batch = textDocumentManager.newWriteSet();
+		int numberOfDocs = 100;
+		String[] uris = new String[numberOfDocs];
+		for(int i=0; i<numberOfDocs;i++){
+			uris[i]="/test/forTesting/"+i+".txt";
+			batch.add(uris[i], new StringHandle("Text for doc -"+i).withFormat(Format.TEXT));
+		}
+		textDocumentManager.delete(uris);
+		textDocumentManager.write(batch);
+		QueryManager queryMgr = Common.client.newQueryManager();
+		queryMgr.setPageLength(200);
+		StringQueryDefinition qdef = queryMgr.newStringDefinition();
+		qdef.setDirectory("/test/forTesting/");
+		ArrayList<String> ar = new ArrayList<>();
+		DocumentPage page = textDocumentManager.search(qdef, 1);
+			while(page.hasNext()){
+				DocumentRecord rec = page.next();
+				ar.add(rec.getContent(new StringHandle()).toString());
+			}
+		assertTrue(ar.size()==100,"The number of docs returned is "+ar.size()+" instead of "+numberOfDocs);
+	}
   @Test
   public void testStringSearch4()
     throws IOException, FailedRequestException, ForbiddenUserException, ResourceNotFoundException,
