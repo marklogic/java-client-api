@@ -1,4 +1,4 @@
-package com.marklogic.client.test;
+package com.marklogic.client.test.ssl;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
@@ -8,6 +8,7 @@ import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.test.Common;
 import com.marklogic.client.test.junit5.RequireSSLExtension;
 import com.marklogic.mgmt.ManageClient;
 import com.marklogic.mgmt.resource.appservers.ServerManager;

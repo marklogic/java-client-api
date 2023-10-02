@@ -15,6 +15,9 @@
  */
 package com.marklogic.client.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
@@ -25,7 +28,12 @@ import java.security.NoSuchAlgorithmException;
 public interface SSLUtil {
 
 	static X509TrustManager getDefaultTrustManager() {
-		return (X509TrustManager) getDefaultTrustManagers()[0];
+		X509TrustManager trustManager = (X509TrustManager) getDefaultTrustManagers()[0];
+		Logger logger = LoggerFactory.getLogger(SSLUtil.class);
+		if (logger.isDebugEnabled() && trustManager.getAcceptedIssuers() != null) {
+			logger.debug("Count of accepted issuers in default trust manager: {}", trustManager.getAcceptedIssuers().length);
+		}
+		return trustManager;
 	}
 
 	/**

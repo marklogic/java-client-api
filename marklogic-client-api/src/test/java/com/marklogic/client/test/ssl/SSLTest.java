@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.test;
+package com.marklogic.client.test.ssl;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.test.Common;
 import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.*;
