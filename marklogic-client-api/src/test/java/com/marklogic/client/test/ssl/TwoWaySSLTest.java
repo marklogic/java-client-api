@@ -44,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class TwoWaySSLTest {
 
 	private final static String TEST_DOCUMENT_URI = "/optic/test/musician1.json";
+	private final static String KEYSTORE_PASSWORD = "password";
 
 	// Used for creating a temporary JKS (Java KeyStore) file.
 	@TempDir
@@ -52,6 +53,7 @@ public class TwoWaySSLTest {
 	private static DatabaseClient securityClient;
 	private static ManageClient manageClient;
 	private static File keyStoreFile;
+	private static File p12File;
 
 
 	@BeforeAll
@@ -77,6 +79,7 @@ public class TwoWaySSLTest {
 		createPkcs12File(tempDir);
 		createKeystoreFile(tempDir);
 		keyStoreFile = new File(tempDir.toFile(), "client.jks");
+		p12File = new File(tempDir.toFile(), "client.p12");
 	}
 
 	@AfterAll
@@ -126,16 +129,17 @@ public class TwoWaySSLTest {
 			"Unexpected exception: " + userException.getMessage());
 	}
 
+	/**
+	 * Verifies certificate authentication when a user provides their own SSLContext.
+	 */
 	@Test
-	void certificateAuthentication() throws Exception {
+	void certificateAuthenticationWithSSLContext() throws Exception {
 		if (Common.USE_REVERSE_PROXY_SERVER) {
 			return;
 		}
 
+		setAuthenticationToCertificate();
 		try {
-			new ServerManager(manageClient)
-				.save(Common.newServerPayload().put("authentication", "certificate").toString());
-
 			SSLContext sslContext = createSSLContextWithClientCertificate(keyStoreFile);
 			DatabaseClient client = Common.newClientBuilder()
 				.withCertificateAuth(sslContext, RequireSSLExtension.newTrustManager())
@@ -144,9 +148,42 @@ public class TwoWaySSLTest {
 
 			verifyTestDocumentCanBeRead(client);
 		} finally {
-			new ServerManager(manageClient)
-				.save(Common.newServerPayload().put("authentication", "digestbasic").toString());
+			setAuthenticationToDigestbasic();
 		}
+	}
+
+	/**
+	 * Verifies certificate authentication when a user provides a file and password, which must point to a PKC12
+	 * keystore.
+	 */
+	@Test
+	void certificateAuthenticationWithCertificateFileAndPassword() {
+		if (Common.USE_REVERSE_PROXY_SERVER) {
+			return;
+		}
+
+		setAuthenticationToCertificate();
+		try {
+			DatabaseClient client = Common.newClientBuilder()
+				.withCertificateAuth(p12File.getAbsolutePath(), KEYSTORE_PASSWORD)
+				.withTrustManager(RequireSSLExtension.newTrustManager())
+				.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
+				.build();
+
+			verifyTestDocumentCanBeRead(client);
+		} finally {
+			setAuthenticationToDigestbasic();
+		}
+	}
+
+	private void setAuthenticationToCertificate() {
+		new ServerManager(manageClient)
+			.save(Common.newServerPayload().put("authentication", "certificate").toString());
+	}
+
+	private void setAuthenticationToDigestbasic() {
+		new ServerManager(manageClient)
+			.save(Common.newServerPayload().put("authentication", "digestbasic").toString());
 	}
 
 	private void verifyTestDocumentCanBeRead(DatabaseClient client) {
@@ -157,9 +194,9 @@ public class TwoWaySSLTest {
 
 	private SSLContext createSSLContextWithClientCertificate(File keystoreFile) throws Exception {
 		KeyStore keyStore = KeyStore.getInstance("JKS");
-		keyStore.load(new FileInputStream(keystoreFile), "password".toCharArray());
+		keyStore.load(new FileInputStream(keystoreFile), KEYSTORE_PASSWORD.toCharArray());
 		KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-		keyManagerFactory.init(keyStore, "password".toCharArray());
+		keyManagerFactory.init(keyStore, KEYSTORE_PASSWORD.toCharArray());
 		SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
 		sslContext.init(
 			keyManagerFactory.getKeyManagers(),
@@ -316,7 +353,7 @@ public class TwoWaySSLTest {
 			"-in", "cert.pem", "-inkey", "client.key",
 			"-out", "client.p12",
 			"-name", "my-client",
-			"-passout", "pass:password");
+			"-passout", "pass:" + KEYSTORE_PASSWORD);
 
 		ExecutorService executorService = Executors.newSingleThreadExecutor();
 		Process process = builder.start();
@@ -330,12 +367,12 @@ public class TwoWaySSLTest {
 		ProcessBuilder builder = new ProcessBuilder();
 		builder.directory(tempDir.toFile());
 		builder.command("keytool", "-importkeystore",
-			"-deststorepass", "password",
-			"-destkeypass", "password",
+			"-deststorepass", KEYSTORE_PASSWORD,
+			"-destkeypass", KEYSTORE_PASSWORD,
 			"-destkeystore", "client.jks",
 			"-srckeystore", "client.p12",
 			"-srcstoretype", "PKCS12",
-			"-srcstorepass", "password",
+			"-srcstorepass", KEYSTORE_PASSWORD,
 			"-alias", "my-client");
 
 		Process process = builder.start();

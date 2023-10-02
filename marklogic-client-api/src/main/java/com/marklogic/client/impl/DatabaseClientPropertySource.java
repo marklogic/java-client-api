@@ -290,8 +290,9 @@ public class DatabaseClientPropertySource {
 				useNewSSLContext(sslProtocol, userTrustManager);
 		}
 
-		// Approach 4 - no SSL connection is needed.
-		return new SSLInputs(null, null);
+		// Approach 4 - still return the user-defined TrustManager as that may be needed for certificate authentication,
+		// which has its own way of constructing an SSLContext from a PKCS12 file.
+		return new SSLInputs(null, userTrustManager);
 	}
 
 	private X509TrustManager getTrustManager() {
