@@ -1,9 +1,10 @@
-package com.marklogic.client.test;
+package com.marklogic.client.test.ssl;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.test.Common;
 import com.marklogic.client.test.junit5.RequireSSLExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
