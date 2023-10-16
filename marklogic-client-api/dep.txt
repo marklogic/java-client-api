@@ -1,0 +1,487 @@
+
+> Task :marklogic-client-api:dependencies
+
+------------------------------------------------------------
+Project ':marklogic-client-api' - The official MarkLogic Java client API.
+------------------------------------------------------------
+
+annotationProcessor - Annotation processors and their dependencies for source set 'main'.
+No dependencies
+
+apiElements - API elements for main. (n)
+No dependencies
+
+archives - Configuration for archive artifacts. (n)
+No dependencies
+
+compileClasspath - Compile classpath for source set 'main'.
++--- commons-codec:commons-codec:1.15
++--- org.apache.httpcomponents:httpclient:4.5.14
+|    +--- org.apache.httpcomponents:httpcore:4.4.16
+|    +--- commons-logging:commons-logging:1.2
+|    \--- commons-codec:commons-codec:1.11 -> 1.15
++--- org.jdom:jdom2:2.0.6.1
++--- org.dom4j:dom4j:2.1.4
++--- com.google.code.gson:gson:2.10.1
++--- com.squareup.okio:okio:3.4.0
+|    \--- com.squareup.okio:okio-jvm:3.4.0
+|         +--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0
+|         |    +--- org.jetbrains.kotlin:kotlin-stdlib:1.8.0
+|         |    |    +--- org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0
+|         |    |    \--- org.jetbrains:annotations:13.0
+|         |    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.0
+|         |         \--- org.jetbrains.kotlin:kotlin-stdlib:1.8.0 (*)
+|         \--- org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0
++--- com.squareup.okhttp3:okhttp:4.11.0
+|    +--- com.squareup.okio:okio:3.2.0 -> 3.4.0 (*)
+|    +--- org.jetbrains.kotlin:kotlin-stdlib:1.6.20 -> 1.8.0 (*)
+|    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.20 -> 1.8.0 (*)
++--- com.squareup.okhttp3:logging-interceptor:4.11.0
+|    +--- com.squareup.okhttp3:okhttp:4.11.0 (*)
+|    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10 -> 1.8.0 (*)
++--- io.github.rburgst:okhttp-digest:2.7
++--- com.sun.mail:javax.mail:1.6.2
+|    \--- javax.activation:activation:1.1
++--- javax.ws.rs:javax.ws.rs-api:2.1.1
++--- org.slf4j:slf4j-api:1.7.36
++--- com.fasterxml.jackson.core:jackson-core:2.15.2
++--- com.fasterxml.jackson.core:jackson-annotations:2.15.2
++--- com.fasterxml.jackson.core:jackson-databind:2.15.2
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.15.2
+|    \--- com.fasterxml.jackson.core:jackson-core:2.15.2
+\--- com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.15.2
+     +--- com.fasterxml.jackson.core:jackson-databind:2.15.2 (*)
+     +--- com.fasterxml.jackson.core:jackson-annotations:2.15.2
+     \--- com.fasterxml.jackson.core:jackson-core:2.15.2
+
+compileOnly - Compile only dependencies for source set 'main'. (n)
++--- commons-codec:commons-codec:1.15 (n)
++--- org.apache.httpcomponents:httpclient:4.5.14 (n)
++--- org.jdom:jdom2:2.0.6.1 (n)
++--- org.dom4j:dom4j:2.1.4 (n)
+\--- com.google.code.gson:gson:2.10.1 (n)
+
+default - Configuration for default artifacts. (n)
+No dependencies
+
+implementation - Implementation only dependencies for source set 'main'. (n)
++--- com.squareup.okio:okio:3.4.0 (n)
++--- com.squareup.okhttp3:okhttp:4.11.0 (n)
++--- com.squareup.okhttp3:logging-interceptor:4.11.0 (n)
++--- io.github.rburgst:okhttp-digest:2.7 (n)
++--- com.sun.mail:javax.mail:1.6.2 (n)
++--- javax.ws.rs:javax.ws.rs-api:2.1.1 (n)
++--- org.slf4j:slf4j-api:1.7.36 (n)
++--- com.fasterxml.jackson.core:jackson-core:2.15.2 (n)
++--- com.fasterxml.jackson.core:jackson-annotations:2.15.2 (n)
++--- com.fasterxml.jackson.core:jackson-databind:2.15.2 (n)
+\--- com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.15.2 (n)
+
+mainSourceElements - List of source directories contained in the Main SourceSet. (n)
+No dependencies
+
+runtimeClasspath - Runtime classpath of source set 'main'.
++--- com.squareup.okio:okio:3.4.0
+|    \--- com.squareup.okio:okio-jvm:3.4.0
+|         +--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0
+|         |    +--- org.jetbrains.kotlin:kotlin-stdlib:1.8.0
+|         |    |    +--- org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0
+|         |    |    \--- org.jetbrains:annotations:13.0
+|         |    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.0
+|         |         \--- org.jetbrains.kotlin:kotlin-stdlib:1.8.0 (*)
+|         \--- org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0
++--- com.squareup.okhttp3:okhttp:4.11.0
+|    +--- com.squareup.okio:okio:3.2.0 -> 3.4.0 (*)
+|    +--- org.jetbrains.kotlin:kotlin-stdlib:1.6.20 -> 1.8.0 (*)
+|    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.20 -> 1.8.0 (*)
++--- com.squareup.okhttp3:logging-interceptor:4.11.0
+|    +--- com.squareup.okhttp3:okhttp:4.11.0 (*)
+|    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10 -> 1.8.0 (*)
++--- io.github.rburgst:okhttp-digest:2.7
+|    \--- com.squareup.okhttp3:okhttp:4.9.3 -> 4.11.0 (*)
++--- com.sun.mail:javax.mail:1.6.2
+|    \--- javax.activation:activation:1.1
++--- javax.ws.rs:javax.ws.rs-api:2.1.1
++--- org.slf4j:slf4j-api:1.7.36
++--- com.fasterxml.jackson.core:jackson-core:2.15.2
++--- com.fasterxml.jackson.core:jackson-annotations:2.15.2
++--- com.fasterxml.jackson.core:jackson-databind:2.15.2
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.15.2
+|    \--- com.fasterxml.jackson.core:jackson-core:2.15.2
+\--- com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.15.2
+     +--- com.fasterxml.jackson.core:jackson-databind:2.15.2 (*)
+     +--- com.fasterxml.jackson.core:jackson-annotations:2.15.2
+     \--- com.fasterxml.jackson.core:jackson-core:2.15.2
+
+runtimeElements - Elements of runtime for main. (n)
+No dependencies
+
+runtimeOnly - Runtime only dependencies for source set 'main'. (n)
+No dependencies
+
+testAnnotationProcessor - Annotation processors and their dependencies for source set 'test'.
+No dependencies
+
+testCompileClasspath - Compile classpath for source set 'test'.
++--- commons-codec:commons-codec:1.15
++--- org.apache.httpcomponents:httpclient:4.5.14
+|    +--- org.apache.httpcomponents:httpcore:4.4.16
+|    +--- commons-logging:commons-logging:1.2
+|    \--- commons-codec:commons-codec:1.11 -> 1.15
++--- org.jdom:jdom2:2.0.6.1
++--- org.dom4j:dom4j:2.1.4
++--- com.google.code.gson:gson:2.10.1
++--- com.squareup.okio:okio:3.4.0
+|    \--- com.squareup.okio:okio-jvm:3.4.0
+|         +--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0
+|         |    +--- org.jetbrains.kotlin:kotlin-stdlib:1.8.0
+|         |    |    +--- org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0
+|         |    |    \--- org.jetbrains:annotations:13.0
+|         |    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.0
+|         |         \--- org.jetbrains.kotlin:kotlin-stdlib:1.8.0 (*)
+|         \--- org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0
++--- com.squareup.okhttp3:okhttp:4.11.0
+|    +--- com.squareup.okio:okio:3.2.0 -> 3.4.0 (*)
+|    +--- org.jetbrains.kotlin:kotlin-stdlib:1.6.20 -> 1.8.0 (*)
+|    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.20 -> 1.8.0 (*)
++--- com.squareup.okhttp3:logging-interceptor:4.11.0
+|    +--- com.squareup.okhttp3:okhttp:4.11.0 (*)
+|    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10 -> 1.8.0 (*)
++--- io.github.rburgst:okhttp-digest:2.7
++--- com.sun.mail:javax.mail:1.6.2
+|    \--- javax.activation:activation:1.1
++--- javax.ws.rs:javax.ws.rs-api:2.1.1
++--- org.slf4j:slf4j-api:1.7.36 -> 2.0.4
++--- com.fasterxml.jackson.core:jackson-core:2.15.2
++--- com.fasterxml.jackson.core:jackson-annotations:2.15.2
++--- com.fasterxml.jackson.core:jackson-databind:2.15.2
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.15.2
+|    \--- com.fasterxml.jackson.core:jackson-core:2.15.2
++--- com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.15.2
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.15.2 (*)
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.15.2
+|    \--- com.fasterxml.jackson.core:jackson-core:2.15.2
++--- org.junit.jupiter:junit-jupiter:5.9.3
+|    +--- org.junit:junit-bom:5.9.3
+|    |    +--- org.junit.jupiter:junit-jupiter:5.9.3 (c)
+|    |    +--- org.junit.jupiter:junit-jupiter-api:5.9.3 (c)
+|    |    +--- org.junit.jupiter:junit-jupiter-params:5.9.3 (c)
+|    |    \--- org.junit.platform:junit-platform-commons:1.9.3 (c)
+|    +--- org.junit.jupiter:junit-jupiter-api:5.9.3
+|    |    +--- org.junit:junit-bom:5.9.3 (*)
+|    |    +--- org.opentest4j:opentest4j:1.2.0
+|    |    +--- org.junit.platform:junit-platform-commons:1.9.3
+|    |    |    +--- org.junit:junit-bom:5.9.3 (*)
+|    |    |    \--- org.apiguardian:apiguardian-api:1.1.2
+|    |    \--- org.apiguardian:apiguardian-api:1.1.2
+|    \--- org.junit.jupiter:junit-jupiter-params:5.9.3
+|         +--- org.junit:junit-bom:5.9.3 (*)
+|         +--- org.junit.jupiter:junit-jupiter-api:5.9.3 (*)
+|         \--- org.apiguardian:apiguardian-api:1.1.2
++--- junit:junit:4.13.2
+|    \--- org.hamcrest:hamcrest-core:1.3
++--- org.xmlunit:xmlunit-legacy:2.9.1
+|    +--- org.xmlunit:xmlunit-core:2.9.1
+|    \--- junit:junit:3.8.1 -> 4.13.2 (*)
++--- project :examples
+|    +--- com.squareup.okhttp3:okhttp:4.11.0 (*)
+|    +--- io.github.rburgst:okhttp-digest:2.7
+|    +--- org.slf4j:slf4j-api:1.7.36 -> 2.0.4
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.15.2 (*)
+|    +--- org.jdom:jdom2:2.0.6.1
+|    +--- org.dom4j:dom4j:2.1.4
+|    +--- com.google.code.gson:gson:2.10.1
+|    +--- net.sourceforge.htmlcleaner:htmlcleaner:2.29
+|    |    \--- org.jdom:jdom2:2.0.6.1
+|    +--- com.opencsv:opencsv:4.6
+|    |    +--- org.apache.commons:commons-lang3:3.8.1 -> 3.12.0
+|    |    +--- org.apache.commons:commons-text:1.3
+|    |    |    \--- org.apache.commons:commons-lang3:3.7 -> 3.12.0
+|    |    +--- commons-beanutils:commons-beanutils:1.9.3
+|    |    |    +--- commons-logging:commons-logging:1.2
+|    |    |    \--- commons-collections:commons-collections:3.2.2
+|    |    \--- org.apache.commons:commons-collections4:4.2
+|    +--- org.springframework:spring-jdbc:5.3.29
+|    |    +--- org.springframework:spring-beans:5.3.29
+|    |    |    \--- org.springframework:spring-core:5.3.29
+|    |    |         \--- org.springframework:spring-jcl:5.3.29
+|    |    +--- org.springframework:spring-core:5.3.29 (*)
+|    |    \--- org.springframework:spring-tx:5.3.29
+|    |         +--- org.springframework:spring-beans:5.3.29 (*)
+|    |         \--- org.springframework:spring-core:5.3.29 (*)
+|    +--- org.apache.commons:commons-lang3:3.12.0
+|    \--- org.apache.httpcomponents:httpclient:4.5.14 (*)
++--- com.marklogic:ml-app-deployer:4.5.2
+|    +--- com.marklogic:ml-javaclient-util:4.5.1
+|    |    +--- com.marklogic:marklogic-client-api:6.2.0 -> project :marklogic-client-api (*)
+|    |    +--- com.marklogic:marklogic-xcc:11.0.2
+|    |    \--- org.springframework:spring-context:5.3.27
+|    |         +--- org.springframework:spring-aop:5.3.27
+|    |         |    +--- org.springframework:spring-beans:5.3.27 -> 5.3.29 (*)
+|    |         |    \--- org.springframework:spring-core:5.3.27 -> 5.3.29 (*)
+|    |         +--- org.springframework:spring-beans:5.3.27 -> 5.3.29 (*)
+|    |         +--- org.springframework:spring-core:5.3.27 -> 5.3.29 (*)
+|    |         \--- org.springframework:spring-expression:5.3.27
+|    |              \--- org.springframework:spring-core:5.3.27 -> 5.3.29 (*)
+|    +--- org.springframework:spring-web:5.3.27
+|    |    +--- org.springframework:spring-beans:5.3.27 -> 5.3.29 (*)
+|    |    \--- org.springframework:spring-core:5.3.27 -> 5.3.29 (*)
+|    \--- com.fasterxml.jackson.core:jackson-databind:2.14.1 -> 2.15.2 (*)
++--- org.mockito:mockito-core:4.11.0
+|    +--- net.bytebuddy:byte-buddy:1.12.19
+|    \--- net.bytebuddy:byte-buddy-agent:1.12.19
++--- org.mockito:mockito-inline:4.11.0
+|    \--- org.mockito:mockito-core:4.11.0 (*)
++--- com.squareup.okhttp3:mockwebserver:4.11.0
+|    +--- com.squareup.okhttp3:okhttp:4.11.0 (*)
+|    +--- junit:junit:4.13 -> 4.13.2 (*)
+|    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10 -> 1.8.0 (*)
++--- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2
+|    +--- com.fasterxml.jackson.core:jackson-core:2.15.2
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.15.2
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.15.2 (*)
+|    +--- org.codehaus.woodstox:stax2-api:4.2.1
+|    +--- com.fasterxml.woodstox:woodstox-core:6.5.1
+|    |    \--- org.codehaus.woodstox:stax2-api:4.2.1
+|    \--- com.fasterxml.jackson:jackson-bom:2.15.2
+|         +--- com.fasterxml.jackson.core:jackson-annotations:2.15.2 (c)
+|         +--- com.fasterxml.jackson.core:jackson-core:2.15.2 (c)
+|         +--- com.fasterxml.jackson.core:jackson-databind:2.15.2 (c)
+|         +--- com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.15.2 (c)
+|         \--- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2 (c)
++--- ch.qos.logback:logback-classic:1.3.5
+|    +--- ch.qos.logback:logback-core:1.3.5
+|    \--- org.slf4j:slf4j-api:2.0.4
++--- org.opengis.cite.xerces:xercesImpl-xsd11:2.12-beta-r1667115
+|    +--- xml-apis:xml-apis:1.4.01
+|    \--- org.opengis.cite.eclipse.webtools.sse:org.eclipse.wst.xml.xpath2.processor:1.1.5-738bb7b85d
+|         +--- org.opengis.cite.xerces:xercesImpl-xsd11:2.12-beta-r1667115 (*)
+|         \--- edu.princeton.cup:java-cup:10k
++--- org.apache.commons:commons-lang3:3.12.0
++--- com.opencsv:opencsv:4.6 (*)
++--- org.geonames:geonames:1.0
+|    \--- jdom:jdom:1.0
+\--- org.skyscreamer:jsonassert:1.5.1
+     \--- com.vaadin.external.google:android-json:0.0.20131108.vaadin1
+
+testCompileOnly - Compile only dependencies for source set 'test'. (n)
+No dependencies
+
+testImplementation - Implementation only dependencies for source set 'test'. (n)
++--- org.junit.jupiter:junit-jupiter:5.9.3 (n)
++--- junit:junit:4.13.2 (n)
++--- org.xmlunit:xmlunit-legacy:2.9.1 (n)
++--- project examples (n)
++--- com.marklogic:ml-app-deployer:4.5.2 (n)
++--- org.mockito:mockito-core:4.11.0 (n)
++--- org.mockito:mockito-inline:4.11.0 (n)
++--- com.squareup.okio:okio:3.4.0 (n)
++--- com.squareup.okhttp3:mockwebserver:4.11.0 (n)
++--- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2 (n)
++--- ch.qos.logback:logback-classic:1.3.5 (n)
++--- org.opengis.cite.xerces:xercesImpl-xsd11:2.12-beta-r1667115 (n)
++--- org.apache.commons:commons-lang3:3.12.0 (n)
++--- org.apache.httpcomponents:httpclient:4.5.14 (n)
++--- com.opencsv:opencsv:4.6 (n)
++--- org.geonames:geonames:1.0 (n)
+\--- org.skyscreamer:jsonassert:1.5.1 (n)
+
+testResultsElementsForTest - Directory containing binary results of running tests for the test Test Suite's test target. (n)
+No dependencies
+
+testRuntimeClasspath - Runtime classpath of source set 'test'.
++--- commons-codec:commons-codec:1.15
++--- org.apache.httpcomponents:httpclient:4.5.14
+|    +--- org.apache.httpcomponents:httpcore:4.4.16
+|    +--- commons-logging:commons-logging:1.2
+|    \--- commons-codec:commons-codec:1.11 -> 1.15
++--- org.jdom:jdom2:2.0.6.1
++--- org.dom4j:dom4j:2.1.4
+|    +--- jaxen:jaxen:1.1.6 -> 1.2.0
+|    +--- javax.xml.stream:stax-api:1.0-2
+|    +--- net.java.dev.msv:xsdlib:2013.6.1
+|    |    \--- relaxngDatatype:relaxngDatatype:20020414
+|    +--- javax.xml.bind:jaxb-api:2.2.12 -> 2.3.1
+|    |    \--- javax.activation:javax.activation-api:1.2.0
+|    +--- pull-parser:pull-parser:2.1.10
+|    \--- xpp3:xpp3:1.1.4c
++--- com.google.code.gson:gson:2.10.1
++--- com.squareup.okio:okio:3.4.0
+|    \--- com.squareup.okio:okio-jvm:3.4.0
+|         +--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0
+|         |    +--- org.jetbrains.kotlin:kotlin-stdlib:1.8.0
+|         |    |    +--- org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0
+|         |    |    \--- org.jetbrains:annotations:13.0
+|         |    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.0
+|         |         \--- org.jetbrains.kotlin:kotlin-stdlib:1.8.0 (*)
+|         \--- org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0
++--- com.squareup.okhttp3:okhttp:4.11.0
+|    +--- com.squareup.okio:okio:3.2.0 -> 3.4.0 (*)
+|    +--- org.jetbrains.kotlin:kotlin-stdlib:1.6.20 -> 1.8.0 (*)
+|    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.20 -> 1.8.0 (*)
++--- com.squareup.okhttp3:logging-interceptor:4.11.0
+|    +--- com.squareup.okhttp3:okhttp:4.11.0 (*)
+|    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10 -> 1.8.0 (*)
++--- io.github.rburgst:okhttp-digest:2.7
+|    \--- com.squareup.okhttp3:okhttp:4.9.3 -> 4.11.0 (*)
++--- com.sun.mail:javax.mail:1.6.2
+|    \--- javax.activation:activation:1.1
++--- javax.ws.rs:javax.ws.rs-api:2.1.1
++--- org.slf4j:slf4j-api:1.7.36 -> 2.0.4
++--- com.fasterxml.jackson.core:jackson-core:2.15.2
++--- com.fasterxml.jackson.core:jackson-annotations:2.15.2
++--- com.fasterxml.jackson.core:jackson-databind:2.15.2
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.15.2
+|    \--- com.fasterxml.jackson.core:jackson-core:2.15.2
++--- com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.15.2
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.15.2 (*)
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.15.2
+|    \--- com.fasterxml.jackson.core:jackson-core:2.15.2
++--- org.junit.jupiter:junit-jupiter:5.9.3
+|    +--- org.junit:junit-bom:5.9.3
+|    |    +--- org.junit.jupiter:junit-jupiter:5.9.3 (c)
+|    |    +--- org.junit.jupiter:junit-jupiter-api:5.9.3 (c)
+|    |    +--- org.junit.jupiter:junit-jupiter-engine:5.9.3 (c)
+|    |    +--- org.junit.jupiter:junit-jupiter-params:5.9.3 (c)
+|    |    +--- org.junit.platform:junit-platform-commons:1.9.3 (c)
+|    |    \--- org.junit.platform:junit-platform-engine:1.9.3 (c)
+|    +--- org.junit.jupiter:junit-jupiter-api:5.9.3
+|    |    +--- org.junit:junit-bom:5.9.3 (*)
+|    |    +--- org.opentest4j:opentest4j:1.2.0
+|    |    \--- org.junit.platform:junit-platform-commons:1.9.3
+|    |         \--- org.junit:junit-bom:5.9.3 (*)
+|    +--- org.junit.jupiter:junit-jupiter-params:5.9.3
+|    |    +--- org.junit:junit-bom:5.9.3 (*)
+|    |    \--- org.junit.jupiter:junit-jupiter-api:5.9.3 (*)
+|    \--- org.junit.jupiter:junit-jupiter-engine:5.9.3
+|         +--- org.junit:junit-bom:5.9.3 (*)
+|         +--- org.junit.platform:junit-platform-engine:1.9.3
+|         |    +--- org.junit:junit-bom:5.9.3 (*)
+|         |    +--- org.opentest4j:opentest4j:1.2.0
+|         |    \--- org.junit.platform:junit-platform-commons:1.9.3 (*)
+|         \--- org.junit.jupiter:junit-jupiter-api:5.9.3 (*)
++--- junit:junit:4.13.2
+|    \--- org.hamcrest:hamcrest-core:1.3
++--- org.xmlunit:xmlunit-legacy:2.9.1
+|    +--- org.xmlunit:xmlunit-core:2.9.1
+|    \--- junit:junit:3.8.1 -> 4.13.2 (*)
++--- project :examples
+|    +--- com.squareup.okhttp3:okhttp:4.11.0 (*)
+|    +--- io.github.rburgst:okhttp-digest:2.7 (*)
+|    +--- org.slf4j:slf4j-api:1.7.36 -> 2.0.4
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.15.2 (*)
+|    +--- org.jdom:jdom2:2.0.6.1
+|    +--- org.dom4j:dom4j:2.1.4 (*)
+|    +--- com.google.code.gson:gson:2.10.1
+|    +--- net.sourceforge.htmlcleaner:htmlcleaner:2.29
+|    |    \--- org.jdom:jdom2:2.0.6.1
+|    +--- com.opencsv:opencsv:4.6
+|    |    +--- org.apache.commons:commons-lang3:3.8.1 -> 3.12.0
+|    |    +--- org.apache.commons:commons-text:1.3
+|    |    |    \--- org.apache.commons:commons-lang3:3.7 -> 3.12.0
+|    |    +--- commons-beanutils:commons-beanutils:1.9.3
+|    |    |    +--- commons-logging:commons-logging:1.2
+|    |    |    \--- commons-collections:commons-collections:3.2.2
+|    |    \--- org.apache.commons:commons-collections4:4.2 -> 4.4
+|    +--- org.springframework:spring-jdbc:5.3.29
+|    |    +--- org.springframework:spring-beans:5.3.29
+|    |    |    \--- org.springframework:spring-core:5.3.29
+|    |    |         \--- org.springframework:spring-jcl:5.3.29
+|    |    +--- org.springframework:spring-core:5.3.29 (*)
+|    |    \--- org.springframework:spring-tx:5.3.29
+|    |         +--- org.springframework:spring-beans:5.3.29 (*)
+|    |         \--- org.springframework:spring-core:5.3.29 (*)
+|    +--- org.apache.commons:commons-lang3:3.12.0
+|    +--- org.apache.httpcomponents:httpclient:4.5.14 (*)
+|    +--- project :marklogic-client-api (*)
+|    \--- com.squareup.okio:okio:3.4.0 (*)
++--- com.marklogic:ml-app-deployer:4.5.2
+|    +--- com.marklogic:ml-javaclient-util:4.5.1
+|    |    +--- com.marklogic:marklogic-client-api:6.2.0 -> project :marklogic-client-api (*)
+|    |    +--- com.marklogic:marklogic-xcc:11.0.2
+|    |    +--- org.springframework:spring-context:5.3.27
+|    |    |    +--- org.springframework:spring-aop:5.3.27
+|    |    |    |    +--- org.springframework:spring-beans:5.3.27 -> 5.3.29 (*)
+|    |    |    |    \--- org.springframework:spring-core:5.3.27 -> 5.3.29 (*)
+|    |    |    +--- org.springframework:spring-beans:5.3.27 -> 5.3.29 (*)
+|    |    |    +--- org.springframework:spring-core:5.3.27 -> 5.3.29 (*)
+|    |    |    \--- org.springframework:spring-expression:5.3.27
+|    |    |         \--- org.springframework:spring-core:5.3.27 -> 5.3.29 (*)
+|    |    +--- org.jdom:jdom2:2.0.6.1
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.14.1 -> 2.15.2 (*)
+|    |    \--- org.slf4j:slf4j-api:1.7.36 -> 2.0.4
+|    +--- org.springframework:spring-web:5.3.27
+|    |    +--- org.springframework:spring-beans:5.3.27 -> 5.3.29 (*)
+|    |    \--- org.springframework:spring-core:5.3.27 -> 5.3.29 (*)
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.14.1 -> 2.15.2 (*)
+|    +--- jaxen:jaxen:1.2.0
+|    +--- com.squareup.okhttp3:okhttp:4.10.0 -> 4.11.0 (*)
+|    +--- io.github.rburgst:okhttp-digest:2.7 (*)
+|    +--- org.apache.httpcomponents:httpclient:4.5.14 (*)
+|    +--- org.jdom:jdom2:2.0.6.1
+|    +--- commons-codec:commons-codec:1.15
+|    +--- org.apache.commons:commons-lang3:3.12.0
+|    +--- com.flipkart.zjsonpatch:zjsonpatch:0.4.14
+|    |    +--- com.fasterxml.jackson.core:jackson-core:2.14.0 -> 2.15.2
+|    |    \--- org.apache.commons:commons-collections4:4.4
+|    +--- javax.xml.bind:jaxb-api:2.3.1 (*)
+|    +--- com.sun.xml.bind:jaxb-core:2.3.0.1
+|    \--- com.sun.xml.bind:jaxb-impl:2.3.7
+|         +--- jakarta.xml.bind:jakarta.xml.bind-api:2.3.3
+|         \--- com.sun.activation:jakarta.activation:1.2.2
++--- org.mockito:mockito-core:4.11.0
+|    +--- net.bytebuddy:byte-buddy:1.12.19
+|    +--- net.bytebuddy:byte-buddy-agent:1.12.19
+|    \--- org.objenesis:objenesis:3.3
++--- org.mockito:mockito-inline:4.11.0
+|    \--- org.mockito:mockito-core:4.11.0 (*)
++--- com.squareup.okhttp3:mockwebserver:4.11.0
+|    +--- com.squareup.okhttp3:okhttp:4.11.0 (*)
+|    +--- junit:junit:4.13 -> 4.13.2 (*)
+|    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10 -> 1.8.0 (*)
++--- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2
+|    +--- com.fasterxml.jackson.core:jackson-core:2.15.2
+|    +--- com.fasterxml.jackson.core:jackson-annotations:2.15.2
+|    +--- com.fasterxml.jackson.core:jackson-databind:2.15.2 (*)
+|    +--- org.codehaus.woodstox:stax2-api:4.2.1
+|    +--- com.fasterxml.woodstox:woodstox-core:6.5.1
+|    |    \--- org.codehaus.woodstox:stax2-api:4.2.1
+|    \--- com.fasterxml.jackson:jackson-bom:2.15.2
+|         +--- com.fasterxml.jackson.core:jackson-annotations:2.15.2 (c)
+|         +--- com.fasterxml.jackson.core:jackson-core:2.15.2 (c)
+|         +--- com.fasterxml.jackson.core:jackson-databind:2.15.2 (c)
+|         +--- com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.15.2 (c)
+|         \--- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2 (c)
++--- ch.qos.logback:logback-classic:1.3.5
+|    +--- ch.qos.logback:logback-core:1.3.5
+|    \--- org.slf4j:slf4j-api:2.0.4
++--- org.opengis.cite.xerces:xercesImpl-xsd11:2.12-beta-r1667115
+|    +--- xml-apis:xml-apis:1.4.01
+|    \--- org.opengis.cite.eclipse.webtools.sse:org.eclipse.wst.xml.xpath2.processor:1.1.5-738bb7b85d
+|         +--- org.opengis.cite.xerces:xercesImpl-xsd11:2.12-beta-r1667115 (*)
+|         \--- edu.princeton.cup:java-cup:10k
++--- org.apache.commons:commons-lang3:3.12.0
++--- com.opencsv:opencsv:4.6 (*)
++--- org.geonames:geonames:1.0
+|    \--- jdom:jdom:1.0
+\--- org.skyscreamer:jsonassert:1.5.1
+     \--- com.vaadin.external.google:android-json:0.0.20131108.vaadin1
+
+testRuntimeOnly - Runtime only dependencies for source set 'test'. (n)
+No dependencies
+
+(c) - dependency constraint
+(*) - dependencies omitted (listed previously)
+
+(n) - Not resolved (configuration is not meant to be resolved)
+
+A web-based, searchable dependency report is available by adding the --scan option.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 8.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+See https://docs.gradle.org/7.6.1/userguide/command_line_interface.html#sec:command_line_warnings
+
+BUILD SUCCESSFUL in 11s
+1 actionable task: 1 executed
