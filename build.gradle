@@ -1,43 +1,43 @@
-// Copyright (c) 2022 MarkLogic Corporation
+// Copyright (c) 2023 MarkLogic Corporation
 
 // We need the properties plugin to work on both marklogic-client-api and test-app. The 'plugins' Gradle syntax can't be
 // used for that. So we have to add the properties plugin to the buildscript classpath and then apply the properties
 // plugin via subprojects below.
 buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath "net.saliman:gradle-properties-plugin:1.5.2"
-    }
+	repositories {
+		maven {
+			url "https://plugins.gradle.org/m2/"
+		}
+	}
+	dependencies {
+		classpath "net.saliman:gradle-properties-plugin:1.5.2"
+	}
 }
 
 subprojects {
-    apply plugin: "net.saliman.properties"
-    apply plugin: 'java'
+	apply plugin: "net.saliman.properties"
+	apply plugin: 'java'
 
- 	tasks.withType(JavaCompile) {
-    	options.encoding = 'UTF-8'
-  	}
+	tasks.withType(JavaCompile) {
+		options.encoding = 'UTF-8'
+	}
 
-    // To ensure that the Java Client continues to support Java 8, both source and target compatibility are set to 1.8.
-    // May adjust this for src/test/java so that tests can take advantage of more expressive functions in Java 9+, such
-    // as Map.of().
-    java {
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
-    }
+	// To ensure that the Java Client continues to support Java 8, both source and target compatibility are set to 1.8.
+	// May adjust this for src/test/java so that tests can take advantage of more expressive functions in Java 9+, such
+	// as Map.of().
+	java {
+		sourceCompatibility = 1.8
+		targetCompatibility = 1.8
+	}
 
-    configurations {
-        testImplementation.extendsFrom compileOnly
-    }
+	configurations {
+		testImplementation.extendsFrom compileOnly
+	}
 
-    repositories {
-        mavenLocal()
-        mavenCentral()
-    }
+	repositories {
+		mavenLocal()
+		mavenCentral()
+	}
 
 	test {
 		systemProperty "file.encoding", "UTF-8"
@@ -45,10 +45,22 @@ subprojects {
 	}
 
 	// Until we do a cleanup of javadoc errors, the build (and specifically the javadoc task) fails on Java 11
-    // and higher. Preventing that until the cleanup can occur.
-    javadoc.failOnError = false
+	// and higher. Preventing that until the cleanup can occur.
+	javadoc.failOnError = false
 
-    // Ignores warnings on param tags with no descriptions. Will remove this once javadoc errors are addressed.
-    // Until then, it's just a lot of noise.
-    javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+	// Ignores warnings on param tags with no descriptions. Will remove this once javadoc errors are addressed.
+	// Until then, it's just a lot of noise.
+	javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+task updateCopyright {
+	doLast {
+		def oldCopyright = "2022 MarkLogic Corporation"
+		for (def filename : file("diff.txt").text.split("\n")) {
+			def content = file(filename).text
+			if (content.contains(oldCopyright)) {
+
+			}
+		}
+	}
 }
