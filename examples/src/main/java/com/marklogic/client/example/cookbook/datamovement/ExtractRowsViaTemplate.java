@@ -63,7 +63,7 @@ public class ExtractRowsViaTemplate {
 
   public void run() throws ParseException, IOException {
     setup();
-    StructuredQueryDefinition query = new StructuredQueryBuilder().directory(1, "/employees/");
+    StructuredQueryDefinition query = new StructuredQueryBuilder().directory(false, "/employees/");
     QueryBatcher qb = moveMgr.newQueryBatcher(query)
       .onUrisReady(
         // This object will be closed by the QueryBatcher when stopJob is
