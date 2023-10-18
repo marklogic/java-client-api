@@ -197,7 +197,7 @@ public class BulkReadWriteTest {
     SearchHandle searchHandle = new SearchHandle();
     int pageLength = 100;
     docMgr.setPageLength(pageLength);
-    DocumentPage page = docMgr.search(new StructuredQueryBuilder().directory(1, DIRECTORY), 1, searchHandle);
+    DocumentPage page = docMgr.search(new StructuredQueryBuilder().directory(false, DIRECTORY), 1, searchHandle);
     try {
       for ( DocumentRecord record : page ) {
         validateRecord(record);
