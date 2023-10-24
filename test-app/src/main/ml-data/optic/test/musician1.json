@@ -6,6 +6,8 @@
     "instrument": [
       "trumpet",
       "vocal"
-    ]
+    ],
+		"point": "1 2",
+		"polygon": "1,2 3,4 5,6 1,2"
   }
 }
