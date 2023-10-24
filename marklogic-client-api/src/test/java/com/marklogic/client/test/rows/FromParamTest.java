@@ -12,10 +12,8 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
-import com.marklogic.client.test.junit5.RequiresML11;
 import com.marklogic.client.type.PlanParamExpr;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Tests various scenarios involving the {@code fromParam} accessor and the need to bind a content handle as a parameter
  * to the plan.
  */
-@ExtendWith(RequiresML11.class)
 public class FromParamTest extends AbstractOpticUpdateTest {
 
 	@Test

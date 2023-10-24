@@ -30,14 +30,12 @@ import com.marklogic.client.row.RowManager.RowSetPart;
 import com.marklogic.client.row.RowManager.RowStructure;
 import com.marklogic.client.row.RowRecord.ColumnKind;
 import com.marklogic.client.test.Common;
-import com.marklogic.client.test.junit5.RequiresML11;
 import com.marklogic.client.type.*;
 import com.marklogic.client.util.EditableNamespaceContext;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -518,7 +516,6 @@ public class RowManagerTest {
   }
 
   @Test
-  @ExtendWith(RequiresML11.class)
   public void testErrorWhileStreamingRows() {
     final String validQueryThatEventuallyThrowsAnError = "select case " +
         "when lastName = 'Davis' then fn_error(fn_qname('', 'SQL-TABLENOTFOUND'), 'Internal Server Error') end, " +
@@ -1522,7 +1519,6 @@ public class RowManagerTest {
   }
 
   @Test
-  @ExtendWith(RequiresML11.class)
   public void testFromDocUrisWithWordQuery() {
     RowManager rowMgr = Common.client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
@@ -1541,7 +1537,6 @@ public class RowManagerTest {
   }
 
   @Test
-  @ExtendWith(RequiresML11.class)
   public void testFromDocUrisWithDirectoryQuery() {
     RowManager rowMgr = Common.client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();

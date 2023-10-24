@@ -13,10 +13,8 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
-import com.marklogic.client.test.junit5.RequiresML11;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 
@@ -24,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@ExtendWith(RequiresML11.class)
 public class FromParamWriteTest extends AbstractOpticUpdateTest {
 
 	@Test

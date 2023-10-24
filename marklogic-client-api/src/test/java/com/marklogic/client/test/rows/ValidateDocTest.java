@@ -26,10 +26,8 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
-import com.marklogic.client.test.junit5.RequiresML11;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,7 +35,6 @@ import java.util.stream.Collectors;
 import static com.marklogic.client.io.Format.XML;
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(RequiresML11.class)
 public class ValidateDocTest extends AbstractOpticUpdateTest {
 
     private Set<String> expectedUris = new HashSet<>();

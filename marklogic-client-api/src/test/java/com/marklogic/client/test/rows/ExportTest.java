@@ -5,11 +5,9 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.test.Common;
-import com.marklogic.client.test.junit5.RequiresML11;
 import com.marklogic.client.type.CtsReferenceExpr;
 import com.marklogic.client.type.PlanTripleOption;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +22,6 @@ import java.util.Map;
 public class ExportTest extends AbstractOpticUpdateTest {
 
     @Test
-	@ExtendWith(RequiresML11.class)
     public void fromDocUris() {
         verifyExportedPlanReturnsSameRowCount(
                 op.fromDocUris(op.cts.wordQuery("trumpet"), "")
@@ -43,7 +40,6 @@ public class ExportTest extends AbstractOpticUpdateTest {
     }
 
     @Test
-	@ExtendWith(RequiresML11.class)
     public void fromParam() {
         DocumentMetadataHandle metadata = new DocumentMetadataHandle();
         DocumentWriteSet writeSet = Common.client.newDocumentManager().newWriteSet();

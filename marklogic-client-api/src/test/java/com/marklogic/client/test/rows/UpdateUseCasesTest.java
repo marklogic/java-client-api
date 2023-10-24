@@ -10,10 +10,8 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
-import com.marklogic.client.test.junit5.RequiresML11;
 import com.marklogic.client.type.PlanSystemColumn;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Intended to capture interesting use cases, particularly those called out in the functional spec.
  */
-@ExtendWith(RequiresML11.class)
 public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
 
     /**

@@ -4,10 +4,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.row.RowRecord;
-import com.marklogic.client.test.junit5.RequiresML11;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -20,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * Test demonstrates the primary use case for unnest, which is, for a given row, to create N rows based on a column in
  * that row containing an array with N values.
  */
-@ExtendWith(RequiresML11.class)
 public class UnnestTest extends AbstractOpticUpdateTest {
 
 	private final static String TEAM_MEMBER_NAME_COLUMN = "teamMemberName";

@@ -3,11 +3,8 @@ package com.marklogic.client.test.rows;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.row.RowRecord;
-import com.marklogic.client.test.Common;
-import com.marklogic.client.test.junit5.RequiresML11;
 import com.marklogic.client.type.PlanColumn;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +13,6 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@ExtendWith(RequiresML11.class)
 public class JoinDocColsTest extends AbstractOpticUpdateTest {
 
     // 4 musician documents are expected to be in this directory via mlDeploy

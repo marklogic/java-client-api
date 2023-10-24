@@ -12,9 +12,7 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
-import com.marklogic.client.test.junit5.RequiresML11;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -25,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * In addition to testing fromDocDescriptors, this class contains tests to verify that default collections and
  * permissions are honored correctly.
  */
-@ExtendWith(RequiresML11.class)
 public class FromDocDescriptorsTest extends AbstractOpticUpdateTest {
 
     private final static String USER_WITH_DEFAULT_COLLECTIONS_AND_PERMISSIONS = "writer-default-collections-and-permissions";

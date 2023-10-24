@@ -2,10 +2,7 @@ package com.marklogic.client.test.rows;
 
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.row.RowRecord;
-import com.marklogic.client.test.Common;
-import com.marklogic.client.test.junit5.RequiresML11;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 
@@ -16,7 +13,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * verify that a particular valid value for "optimize" had the intended effect. So this test ensures that valid values
  * don't throw errors, and invalid values do not work.
  */
-@ExtendWith(RequiresML11.class)
 public class TraceLabelAndOptimizeTest extends AbstractOpticUpdateTest {
 
     @Test
