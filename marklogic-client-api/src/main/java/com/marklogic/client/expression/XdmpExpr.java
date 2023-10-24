@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
+ * Copyright (c) 2023 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -177,7 +177,7 @@ public interface XdmpExpr {
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:describe" target="mlserverdoc">xdmp:describe</a> server function.
   * @param item  The item sequence whose description is returned.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
-  * @param maxSequenceLength  Represents the maximum number of items per sequence to print. The default is 3. () means no maximum.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
+  * @param maxSequenceLength  Represents the maximum number of items per sequence to print. The default is 3.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
   public ServerExpression describe(ServerExpression item, ServerExpression maxSequenceLength);
@@ -186,8 +186,8 @@ public interface XdmpExpr {
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:describe" target="mlserverdoc">xdmp:describe</a> server function.
   * @param item  The item sequence whose description is returned.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
-  * @param maxSequenceLength  Represents the maximum number of items per sequence to print. The default is 3. () means no maximum.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
-  * @param maxItemLength  Represents the maximum number of characters per item to print. The default is 64. The minimum is 8. () means no limit.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
+  * @param maxSequenceLength  Represents the maximum number of items per sequence to print. The default is 3.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
+  * @param maxItemLength  Represents the maximum number of characters per item to print. The default is 64. The minimum is 8.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
   * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
   public ServerExpression describe(ServerExpression item, ServerExpression maxSequenceLength, ServerExpression maxItemLength);

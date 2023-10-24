@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
+ * Copyright (c) 2023 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -769,6 +769,17 @@ public interface GeoExpr {
   public ServerExpression geohashPrecisionDimensions(ServerExpression precision);
 /**
   * Given a geohash string, return the 32 subhashes.
+  *
+  * <a name="ml-server-type-geohash-subhashes"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/geo:geohash-subhashes" target="mlserverdoc">geo:geohash-subhashes</a> server function.
+  * @param hash  The geohash string, as produced from the function geo:geohash-encode.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
+  */
+  public ServerExpression geohashSubhashes(ServerExpression hash);
+/**
+  * Given a geohash string, return the 32 subhashes.
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:geohash-subhashes" target="mlserverdoc">geo:geohash-subhashes</a> server function.
   * @param hash  The geohash string, as produced from the function geo:geohash-encode.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
@@ -778,9 +789,6 @@ public interface GeoExpr {
   public ServerExpression geohashSubhashes(ServerExpression hash, String which);
 /**
   * Given a geohash string, return the 32 subhashes.
-  *
-  * <a name="ml-server-type-geohash-subhashes"></a>
-  
   * <p>
   * Provides a client interface to the <a href="http://docs.marklogic.com/geo:geohash-subhashes" target="mlserverdoc">geo:geohash-subhashes</a> server function.
   * @param hash  The geohash string, as produced from the function geo:geohash-encode.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
