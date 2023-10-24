@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 MarkLogic Corporation
+ * Copyright (c) 2023 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -184,7 +184,7 @@ class CtsExprImpl implements CtsExpr {
     return new XsExprImpl.NumericCallImpl("cts", "box-west", new Object[]{ box });
   }
 
-
+  
   @Override
   public CtsCircleExpr circle(double radius, ServerExpression center) {
     return circle(xs.doubleVal(radius), center);
