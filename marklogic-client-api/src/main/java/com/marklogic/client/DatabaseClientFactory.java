@@ -1299,6 +1299,10 @@ public class DatabaseClientFactory {
 	 *     a String with a value of either "any", "common", or "strict"</li>
 	 *     <li>marklogic.client.trustManager = must be an instance of {@code javax.net.ssl.X509TrustManager};
 	 *     if not specified and an SSL context is configured, an attempt will be made to use the JVM's default trust manager</li>
+	 *     <li>marklogic.client.ssl.keystore.path = must be a String; enables 2-way SSL if set; since 6.4.0.</li>
+	 *     <li>marklogic.client.ssl.keystore.password = must be a String; optional password for a key store; since 6.4.0.</li>
+	 *     <li>marklogic.client.ssl.keystore.type = must be a String; optional type for a key store, defaults to "JKS"; since 6.4.0.</li>
+	 *     <li>marklogic.client.ssl.keystore.algorithm = must be a String; optional algorithm for a key store, defaults to "SunX509"; since 6.4.0.</li>
 	 * </ol>
 	 *
 	 * @param propertySource

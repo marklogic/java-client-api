@@ -151,7 +151,7 @@ public class DatabaseClientPropertySource {
 		}
 		final String authType = (String) typeValue;
 
-		final SSLInputs sslInputs = buildSSLInputs(authType);
+		final SSLUtil.SSLInputs sslInputs = buildSSLInputs(authType);
 		DatabaseClientFactory.SecurityContext securityContext = newSecurityContext(authType, sslInputs);
 		if (sslInputs.getSslContext() != null) {
 			securityContext.withSSLContext(sslInputs.getSslContext(), sslInputs.getTrustManager());
@@ -160,7 +160,7 @@ public class DatabaseClientPropertySource {
 		return securityContext;
 	}
 
-	private DatabaseClientFactory.SecurityContext newSecurityContext(String type, SSLInputs sslInputs) {
+	private DatabaseClientFactory.SecurityContext newSecurityContext(String type, SSLUtil.SSLInputs sslInputs) {
 		switch (type.toLowerCase()) {
 			case DatabaseClientBuilder.AUTH_TYPE_BASIC:
 				return newBasicAuthContext();
@@ -188,11 +188,15 @@ public class DatabaseClientPropertySource {
 	}
 
 	private String getNullableStringValue(String propertyName) {
+		return getNullableStringValue(propertyName, null);
+	}
+
+	private String getNullableStringValue(String propertyName, String defaultValue) {
 		Object value = propertySource.apply(PREFIX + propertyName);
 		if (value != null && !(value instanceof String)) {
 			throw new IllegalArgumentException(propertyName + " must be of type String");
 		}
-		return (String) value;
+		return value != null ? (String) value : defaultValue;
 	}
 
 	private DatabaseClientFactory.SecurityContext newBasicAuthContext() {
@@ -221,7 +225,7 @@ public class DatabaseClientPropertySource {
 		return new DatabaseClientFactory.MarkLogicCloudAuthContext(apiKey, duration);
 	}
 
-	private DatabaseClientFactory.SecurityContext newCertificateAuthContext(SSLInputs sslInputs) {
+	private DatabaseClientFactory.SecurityContext newCertificateAuthContext(SSLUtil.SSLInputs sslInputs) {
 		String file = getNullableStringValue("certificate.file");
 		String password = getNullableStringValue("certificate.password");
 		if (file != null && file.trim().length() > 0) {
@@ -233,6 +237,9 @@ public class DatabaseClientPropertySource {
 			} catch (Exception e) {
 				throw new RuntimeException("Unable to create CertificateAuthContext; cause " + e.getMessage(), e);
 			}
+		}
+		if (sslInputs.getSslContext() == null) {
+			throw new RuntimeException("An SSLContext is required for certificate authentication.");
 		}
 		return new DatabaseClientFactory.CertificateAuthContext(sslInputs.getSslContext(), sslInputs.getTrustManager());
 	}
@@ -271,18 +278,24 @@ public class DatabaseClientPropertySource {
 	 *                 case the user does not define their own SSLContext or SSL protocol
 	 * @return
 	 */
-	private SSLInputs buildSSLInputs(String authType) {
+	private SSLUtil.SSLInputs buildSSLInputs(String authType) {
 		X509TrustManager userTrustManager = getTrustManager();
 
 		// Approach 1 - user provides an SSLContext object, in which case there's nothing further to check.
 		SSLContext sslContext = getSSLContext();
 		if (sslContext != null) {
-			return new SSLInputs(sslContext, userTrustManager);
+			return new SSLUtil.SSLInputs(sslContext, userTrustManager);
 		}
 
-		// Approaches 2 and 3 - user defines an SSL protocol.
-		// Approach 2 - "default" is a convenience for using the JVM's default SSLContext.
-		// Approach 3 - create a new SSLContext, and initialize it if the user-provided TrustManager is not null.
+		// Approach 2 - user wants two-way SSL via a keystore.
+		final String keyStorePath = getNullableStringValue("ssl.keystore.path");
+		if (keyStorePath != null && keyStorePath.trim().length() > 0) {
+			return useKeyStoreForTwoWaySSL(keyStorePath, userTrustManager);
+		}
+
+		// Approaches 3 and 4 - user defines an SSL protocol.
+		// Approach 3 - "default" is a convenience for using the JVM's default SSLContext.
+		// Approach 4 - create a new SSLContext, and initialize it if the user-provided TrustManager is not null.
 		final String sslProtocol = getSSLProtocol(authType);
 		if (sslProtocol != null) {
 			return "default".equalsIgnoreCase(sslProtocol) ?
@@ -290,9 +303,9 @@ public class DatabaseClientPropertySource {
 				useNewSSLContext(sslProtocol, userTrustManager);
 		}
 
-		// Approach 4 - still return the user-defined TrustManager as that may be needed for certificate authentication,
+		// Approach 5 - still return the user-defined TrustManager as that may be needed for certificate authentication,
 		// which has its own way of constructing an SSLContext from a PKCS12 file.
-		return new SSLInputs(null, userTrustManager);
+		return new SSLUtil.SSLInputs(null, userTrustManager);
 	}
 
 	private X509TrustManager getTrustManager() {
@@ -332,11 +345,20 @@ public class DatabaseClientPropertySource {
 		return sslProtocol;
 	}
 
+	private SSLUtil.SSLInputs useKeyStoreForTwoWaySSL(String keyStorePath, X509TrustManager userTrustManager) {
+		final String password = getNullableStringValue("ssl.keystore.password");
+		final String keyStoreType = getNullableStringValue("ssl.keystore.type", "JKS");
+		final String algorithm = getNullableStringValue("ssl.keystore.algorithm", "SunX509");
+		final char[] charPassword = password != null ? password.toCharArray() : null;
+		final String sslProtocol = getNullableStringValue("sslProtocol", "TLSv1.2");
+		return SSLUtil.createSSLContextFromKeyStore(keyStorePath, charPassword, keyStoreType, algorithm, sslProtocol, userTrustManager);
+	}
+
 	/**
 	 * Uses the JVM's default SSLContext. Because OkHttp requires a separate TrustManager, this approach will either
 	 * user the user-provided TrustManager or it will assume that the JVM's default TrustManager should be used.
 	 */
-	private SSLInputs useDefaultSSLContext(X509TrustManager userTrustManager) {
+	private SSLUtil.SSLInputs useDefaultSSLContext(X509TrustManager userTrustManager) {
 		SSLContext sslContext;
 		try {
 			sslContext = SSLContext.getDefault();
@@ -344,7 +366,7 @@ public class DatabaseClientPropertySource {
 			throw new RuntimeException("Unable to obtain default SSLContext; cause: " + e.getMessage(), e);
 		}
 		X509TrustManager trustManager = userTrustManager != null ? userTrustManager : SSLUtil.getDefaultTrustManager();
-		return new SSLInputs(sslContext, trustManager);
+		return new SSLUtil.SSLInputs(sslContext, trustManager);
 	}
 
 	/**
@@ -352,7 +374,7 @@ public class DatabaseClientPropertySource {
 	 * the user's TrustManager is not null. Otherwise, OkHttpUtil will eventually initialize the SSLContext using the
 	 * JVM's default TrustManager.
 	 */
-	private SSLInputs useNewSSLContext(String sslProtocol, X509TrustManager userTrustManager) {
+	private SSLUtil.SSLInputs useNewSSLContext(String sslProtocol, X509TrustManager userTrustManager) {
 		SSLContext sslContext;
 		try {
 			sslContext = SSLContext.getInstance(sslProtocol);
@@ -368,27 +390,6 @@ public class DatabaseClientPropertySource {
 					sslProtocol, e.getMessage()), e);
 			}
 		}
-		return new SSLInputs(sslContext, userTrustManager);
-	}
-
-	/**
-	 * Captures the inputs provided by the caller that pertain to constructing an SSLContext.
-	 */
-	private static class SSLInputs {
-		private final SSLContext sslContext;
-		private final X509TrustManager trustManager;
-
-		public SSLInputs(SSLContext sslContext, X509TrustManager trustManager) {
-			this.sslContext = sslContext;
-			this.trustManager = trustManager;
-		}
-
-		public SSLContext getSslContext() {
-			return sslContext;
-		}
-
-		public X509TrustManager getTrustManager() {
-			return trustManager;
-		}
+		return new SSLUtil.SSLInputs(sslContext, userTrustManager);
 	}
 }
