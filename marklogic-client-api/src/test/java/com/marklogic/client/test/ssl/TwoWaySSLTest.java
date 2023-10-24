@@ -105,7 +105,7 @@ public class TwoWaySSLTest {
 		DatabaseClient clientWithCert = Common.newClientBuilder()
 			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
 			.withSSLContext(createSSLContextWithClientCertificate(keyStoreFile))
-			.withTrustManager(RequireSSLExtension.newTrustManager())
+			.withTrustManager(RequireSSLExtension.newSecureTrustManager())
 			.build();
 
 		verifyTestDocumentCanBeRead(clientWithCert);
@@ -114,7 +114,7 @@ public class TwoWaySSLTest {
 		DatabaseClient clientWithoutCert = Common.newClientBuilder()
 			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
 			.withSSLProtocol("TLSv1.2")
-			.withTrustManager(RequireSSLExtension.newTrustManager())
+			.withTrustManager(RequireSSLExtension.newSecureTrustManager())
 			.build();
 
 		// The type of SSL failure varies across Java versions, so not asserting on a particular error message.
@@ -142,7 +142,7 @@ public class TwoWaySSLTest {
 		try {
 			SSLContext sslContext = createSSLContextWithClientCertificate(keyStoreFile);
 			DatabaseClient client = Common.newClientBuilder()
-				.withCertificateAuth(sslContext, RequireSSLExtension.newTrustManager())
+				.withCertificateAuth(sslContext, RequireSSLExtension.newSecureTrustManager())
 				.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
 				.build();
 
@@ -166,7 +166,7 @@ public class TwoWaySSLTest {
 		try {
 			DatabaseClient client = Common.newClientBuilder()
 				.withCertificateAuth(p12File.getAbsolutePath(), KEYSTORE_PASSWORD)
-				.withTrustManager(RequireSSLExtension.newTrustManager())
+				.withTrustManager(RequireSSLExtension.newSecureTrustManager())
 				.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
 				.build();
 
@@ -200,7 +200,7 @@ public class TwoWaySSLTest {
 		SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
 		sslContext.init(
 			keyManagerFactory.getKeyManagers(),
-			new X509TrustManager[]{RequireSSLExtension.newTrustManager()},
+			new X509TrustManager[]{RequireSSLExtension.newSecureTrustManager()},
 			null);
 		return sslContext;
 	}
