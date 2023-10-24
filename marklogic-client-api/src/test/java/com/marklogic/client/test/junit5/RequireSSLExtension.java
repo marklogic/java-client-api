@@ -61,9 +61,10 @@ public class RequireSSLExtension extends LoggingObject implements BeforeAllCallb
 
 	/**
 	 * @return a trust manager that accepts the public certificate associated with the certificate template created
-	 * by this class.
+	 * by this class. "secure" is meant to imply that this provides some level of security by only accepting the
+	 * one issuer, as opposed to a "trust everything" approach.
 	 */
-	public static X509TrustManager newTrustManager() {
+	public static X509TrustManager newSecureTrustManager() {
 		return new X509TrustManager() {
 			@Override
 			public void checkClientTrusted(X509Certificate[] chain, String authType) {
