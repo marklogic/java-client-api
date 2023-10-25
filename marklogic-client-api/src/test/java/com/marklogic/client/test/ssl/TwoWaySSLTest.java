@@ -23,22 +23,16 @@ import org.springframework.util.FileCopyUtils;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.file.Path;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(RequireSSLExtension.class)
 public class TwoWaySSLTest {
@@ -96,15 +90,19 @@ public class TwoWaySSLTest {
 	 * SSLContext can connect to the app server.
 	 */
 	@Test
-	void digestAuthentication() throws Exception {
+	void digestAuthentication() {
 		if (Common.USE_REVERSE_PROXY_SERVER) {
 			return;
 		}
 
 		// This client uses our Java KeyStore file with a client certificate in it, so it should work.
 		DatabaseClient clientWithCert = Common.newClientBuilder()
+			.withKeyStorePath(keyStoreFile.getAbsolutePath())
+			.withKeyStorePassword(KEYSTORE_PASSWORD)
+			// Still need this as "common"/"strict" don't work for our temporary server certificate.
 			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
-			.withSSLContext(createSSLContextWithClientCertificate(keyStoreFile))
+			// This is a reasonable trust manager since it references the temporary server certificate as something
+			// that it accepts instead of accepting everything.
 			.withTrustManager(RequireSSLExtension.newSecureTrustManager())
 			.build();
 
@@ -128,6 +126,51 @@ public class TwoWaySSLTest {
 		assertTrue(userException.getMessage().contains("User is not allowed to check the existence of documents"),
 			"Unexpected exception: " + userException.getMessage());
 	}
+
+	@Test
+	void invalidKeyStoreType() {
+		RuntimeException ex = assertThrows(RuntimeException.class, () -> Common.newClientBuilder()
+			.withKeyStoreType("Not a valid type!")
+			.withKeyStorePath("doesn't matter for this test")
+			.build());
+
+		assertEquals("Unable to get instance of key store with type: Not a valid type!", ex.getMessage());
+		assertTrue(ex.getCause() instanceof KeyStoreException);
+	}
+
+	@Test
+	void invalidKeyStorePath() {
+		RuntimeException ex = assertThrows(RuntimeException.class, () -> Common.newClientBuilder()
+			.withKeyStorePath("/no/keystore/here.txt").build());
+
+		assertEquals("Unable to read from key store at path: /no/keystore/here.txt", ex.getMessage());
+		assertTrue(ex.getCause() instanceof FileNotFoundException);
+	}
+
+	@Test
+	void invalidKeyStorePassword() {
+		RuntimeException ex = assertThrows(RuntimeException.class, () -> Common.newClientBuilder()
+			.withKeyStorePath(keyStoreFile.getAbsolutePath())
+			.withKeyStorePassword("wrong password!")
+			.build());
+
+		assertTrue(ex.getMessage().startsWith("Unable to read from key store at path:"),
+			"Unexpected message: " + ex.getMessage());
+		assertTrue(ex.getCause() instanceof IOException);
+	}
+
+	@Test
+	void invalidKeyStoreAlgorithm() {
+		RuntimeException ex = assertThrows(RuntimeException.class, () -> Common.newClientBuilder()
+			.withKeyStorePath(keyStoreFile.getAbsolutePath())
+			.withKeyStorePassword(KEYSTORE_PASSWORD)
+			.withKeyStoreAlgorithm("Not a valid algorithm!")
+			.build());
+
+		assertEquals("Unable to create key manager factory with algorithm: Not a valid algorithm!", ex.getMessage());
+		assertTrue(ex.getCause() instanceof NoSuchAlgorithmException);
+	}
+
 
 	/**
 	 * Verifies certificate authentication when a user provides their own SSLContext.
@@ -174,6 +217,16 @@ public class TwoWaySSLTest {
 		} finally {
 			setAuthenticationToDigestbasic();
 		}
+	}
+
+	@Test
+	void certificateAuthenticationWithNoSSLContextOrFileAndPassword() {
+		RuntimeException ex = assertThrows(RuntimeException.class, () -> Common.newClientBuilder()
+			.withCertificateAuth(null, RequireSSLExtension.newSecureTrustManager())
+			.withSSLHostnameVerifier(DatabaseClientFactory.SSLHostnameVerifier.ANY)
+			.build());
+
+		assertEquals("An SSLContext is required for certificate authentication.", ex.getMessage());
 	}
 
 	private void setAuthenticationToCertificate() {

@@ -259,6 +259,48 @@ public class DatabaseClientBuilder {
 		props.put(PREFIX + "disableGzippedResponses", true);
 		return this;
 	}
+
+	/**
+	 * Enables 2-way SSL by creating an SSL context based on the given key store path.
+	 *
+	 * @param path
+	 * @return
+	 * @since 6.4.0
+	 */
+	public DatabaseClientBuilder withKeyStorePath(String path) {
+		props.put(PREFIX + "ssl.keystore.path", path);
+		return this;
+	}
+
+	/**
+	 * @param password optional password for a key store
+	 * @return
+	 * @since 6.4.0
+	 */
+	public DatabaseClientBuilder withKeyStorePassword(String password) {
+		props.put(PREFIX + "ssl.keystore.password", password);
+		return this;
+	}
+
+	/**
+	 * @param type e.g. "JKS"
+	 * @return
+	 * @since 6.4.0
+	 */
+	public DatabaseClientBuilder withKeyStoreType(String type) {
+		props.put(PREFIX + "ssl.keystore.type", type);
+		return this;
+	}
+
+	/**
+	 * @param algorithm e.g. "SunX509"
+	 * @return
+	 * @since 6.4.0
+	 */
+	public DatabaseClientBuilder withKeyStoreAlgorithm(String algorithm) {
+		props.put(PREFIX + "ssl.keystore.algorithm", algorithm);
+		return this;
+	}
 }
 
 
