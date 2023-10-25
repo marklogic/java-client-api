@@ -1588,6 +1588,22 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   */
   public abstract ModifyPlan joinDocUri(PlanColumn uriCol, PlanColumn fragmentIdCol);
 /**
+  * This method adds an uri column and a document column to rows based on an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows). If the fragment id column is null in the row, the row is dropped from the rowset. 
+  * @param docCol  The document column to add to the rows. This can be a string or a column, op:col, op:view-col or op:schema-col, specifying the name of the new column that should have the document as its value. See {@link PlanBuilder#col(XsStringVal)}
+  * @param uriCol  The uri column to add to the rows. This can be a string or a column, op:col, op:view-col or op:schema-col, specifying the name of the new column that should have the document uri as its value. See {@link PlanBuilder#col(XsStringVal)}
+  * @param sourceCol  The document uri or fragment id value. This is either an op:fragment-id-col specifying a fragment id column or a document uri column as xs:string or as a column using op:col, op:view-col or op:schema-col. Joining on a fragment id is more efficient than joining on a uri column. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan joinDocAndUri(String docCol, String uriCol, String sourceCol);
+/**
+  * This method adds an uri column and a document column to rows based on an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows). If the fragment id column is null in the row, the row is dropped from the rowset. 
+  * @param docCol  The document column to add to the rows. This can be a string or a column, op:col, op:view-col or op:schema-col, specifying the name of the new column that should have the document as its value. See {@link PlanBuilder#col(XsStringVal)}
+  * @param uriCol  The uri column to add to the rows. This can be a string or a column, op:col, op:view-col or op:schema-col, specifying the name of the new column that should have the document uri as its value. See {@link PlanBuilder#col(XsStringVal)}
+  * @param sourceCol  The document uri or fragment id value. This is either an op:fragment-id-col specifying a fragment id column or a document uri column as xs:string or as a column using op:col, op:view-col or op:schema-col. Joining on a fragment id is more efficient than joining on a uri column. See {@link PlanBuilder#col(XsStringVal)}
+  * @return  a ModifyPlan object
+  */
+  public abstract ModifyPlan joinDocAndUri(PlanColumn docCol, PlanColumn uriCol, PlanColumn sourceCol);
+/**
   * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets. 
   * @param right  The row set from the right view.
   * @return  a ModifyPlan object

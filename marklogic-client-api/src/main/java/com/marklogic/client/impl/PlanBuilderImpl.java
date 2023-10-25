@@ -1931,6 +1931,27 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
   @Override
+  public ModifyPlan joinDocAndUri(String docCol, String uriCol, String sourceCol) {
+    return joinDocAndUri((docCol == null) ? (PlanColumn) null : col(docCol), (uriCol == null) ? (PlanColumn) null : col(uriCol), (sourceCol == null) ? (PlanColumn) null : col(sourceCol));
+  }
+
+    
+  @Override
+  public ModifyPlan joinDocAndUri(PlanColumn docCol, PlanColumn uriCol, PlanColumn sourceCol) {
+    if (docCol == null) {
+      throw new IllegalArgumentException("docCol parameter for joinDocAndUri() cannot be null");
+    }
+    if (uriCol == null) {
+      throw new IllegalArgumentException("uriCol parameter for joinDocAndUri() cannot be null");
+    }
+    if (sourceCol == null) {
+      throw new IllegalArgumentException("sourceCol parameter for joinDocAndUri() cannot be null");
+    }
+    return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "join-doc-and-uri", new Object[]{ docCol, uriCol, sourceCol });
+  }
+
+    
+  @Override
   public ModifyPlan joinDocCols(PlanDocColsIdentifier cols, String docIdCol) {
     return joinDocCols(cols, (docIdCol == null) ? (PlanColumn) null : col(docIdCol));
   }
