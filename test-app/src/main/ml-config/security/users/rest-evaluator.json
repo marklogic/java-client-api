@@ -2,7 +2,8 @@
   "user-name": "rest-evaluator",
   "description": "Test user for the java-client-api-project",
   "role": [
-    "java-test-evaluator"
+    "java-test-evaluator",
+		"qconsole-user"
   ],
   "password": "x"
 }
