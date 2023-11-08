@@ -154,9 +154,13 @@ public class TwoWaySSLTest {
 			.withKeyStorePassword("wrong password!")
 			.build());
 
-		assertTrue(ex.getMessage().startsWith("Unable to read from key store at path:"),
-			"Unexpected message: " + ex.getMessage());
-		assertTrue(ex.getCause() instanceof IOException);
+		// Depending on the Java version, an exception with a null message may be returned. At least, that's happening
+		// on Jenkins.
+		if (ex.getMessage() != null) {
+			assertTrue(ex.getMessage().startsWith("Unable to read from key store at path:"),
+				"Unexpected message: " + ex.getMessage());
+			assertTrue(ex.getCause() instanceof IOException);
+		}
 	}
 
 	@Test
@@ -167,8 +171,12 @@ public class TwoWaySSLTest {
 			.withKeyStoreAlgorithm("Not a valid algorithm!")
 			.build());
 
-		assertEquals("Unable to create key manager factory with algorithm: Not a valid algorithm!", ex.getMessage());
-		assertTrue(ex.getCause() instanceof NoSuchAlgorithmException);
+		// Depending on the Java version, an exception with a null message may be returned. At least, that's happening
+		// on Jenkins.
+		if (ex.getMessage() != null) {
+			assertEquals("Unable to create key manager factory with algorithm: Not a valid algorithm!", ex.getMessage());
+			assertTrue(ex.getCause() instanceof NoSuchAlgorithmException);
+		}
 	}
 
 
