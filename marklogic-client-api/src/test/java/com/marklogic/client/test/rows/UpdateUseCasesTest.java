@@ -8,6 +8,8 @@ import com.marklogic.client.example.cookbook.OpticUpdateExample;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.row.RawQueryDSLPlan;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.test.Common;
 import com.marklogic.client.test.junit5.RequiresML11;
@@ -277,6 +279,10 @@ public class UpdateUseCasesTest extends AbstractOpticUpdateTest {
      */
     @Test
     public void writeWithReferenceDataFromViewJoinedIn() {
+		// Verifying that only two zipcode rows exist.
+		List<RowRecord> zipcodes = resultRows(op.fromView("cookbook", "zipcode"));
+		assertEquals(2, zipcodes.size(), "Unexpected number of zipcodes: " + zipcodes);
+
         List<RowRecord> rows = OpticUpdateExample.runPlanToWriteDocuments(rowManager).stream().collect(Collectors.toList());
         assertEquals(2, rows.size());
 

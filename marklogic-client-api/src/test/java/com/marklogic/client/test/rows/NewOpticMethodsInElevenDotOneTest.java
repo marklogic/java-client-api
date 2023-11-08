@@ -1,8 +1,10 @@
 package com.marklogic.client.test.rows;
 
 import com.marklogic.client.row.RowRecord;
+import com.marklogic.client.test.junit5.RequiresMLElevenDotOne;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 
@@ -13,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * joinDocAndUri, documentRootQuery, documentFragmentQuery, documentPermissionQuery, and the string constructors for
  * cts.point and cts.polygon.
  */
+@ExtendWith(RequiresMLElevenDotOne.class)
 public class NewOpticMethodsInElevenDotOneTest extends AbstractOpticUpdateTest {
 
 	@Test
