@@ -683,16 +683,15 @@ public class QueryBatcherJobReportTest extends AbstractFunctionalTest {
 			assertTrue((batchResults2.size()>initialUrisSize && batchResults2.size()<= 2436));
 		}
 		finally {
-			// Delete all uris.
+			// This shouldn't be necessary - i.e. tests should perform cleanup before they start, not after - but
+			// leaving this in case one of the older functional tests runs after this that doesn't yet cleanup the
+			// database before it runs.
 			QueryBatcher deleteBatcher = dmManager.newQueryBatcher(urisList.iterator())
 			        .onUrisReady(new DeleteListener())
 			        .withThreadCount(10);
 			dmManager.startJob(deleteBatcher);
 			deleteBatcher.awaitCompletion();
 			dmManager.stopJob(deleteBatcher);
-			int docCnt = dbClient.newServerEval().xquery(qMaxBatches).eval().next().getNumber().intValue();
-			System.out.println("All setMaxBatches docs should have been deleted. Count after DeleteListener job is " + docCnt);
-//			assertTrue(docCnt == 0);
 		}
 	}
 }
