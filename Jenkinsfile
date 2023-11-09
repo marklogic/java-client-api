@@ -21,7 +21,7 @@ def runAllTests(String type, String version, Boolean useReverseProxy){
                 export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
                 export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
                 cd java-client-api
-                ./gradlew -i mlDeploy -PmlForestDataDirectory=/space
+                ./gradlew -i mlDeploy mlReloadSchemas -PmlForestDataDirectory=/space
             '''
 
             if (useReverseProxy) {
@@ -161,7 +161,7 @@ pipeline{
           export GRADLE_USER_HOME=$WORKSPACE/$GRADLE_DIR
           export PATH=$GRADLE_USER_HOME:$JAVA_HOME/bin:$PATH
           cd java-client-api
-          ./gradlew -i mlDeploy -PmlForestDataDirectory=/space
+          ./gradlew -i mlDeploy mlReloadSchemas -PmlForestDataDirectory=/space
         '''
         sh label:'run marklogic-client-api tests', script: '''#!/bin/bash
           export JAVA_HOME=$JAVA_HOME_DIR
