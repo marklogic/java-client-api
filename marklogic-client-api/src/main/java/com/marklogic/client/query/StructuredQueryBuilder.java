@@ -469,7 +469,7 @@ public class StructuredQueryBuilder {
    * A value of 1 means to exclude subdirectories.
    * @param uris    the identifiers for the criteria directories
    * @return    the StructuredQueryDefinition for the directory query
-   * @deprecated  since 4.6.1; a directory query in MarkLogic does not support custom depths; it is either limited
+   * @deprecated  since 6.4.0; a directory query in MarkLogic does not support custom depths; it is either limited
    * to the given directory or it is "infinite". For that reason, prefer the {@code directory} method that accepts a
    * boolean indicating whether the directory query is infinite.
    */
